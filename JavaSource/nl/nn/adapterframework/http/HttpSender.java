@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.51  2011-11-30 13:52:00  europe\m168309
+ * Revision 1.52  2011-12-05 15:25:07  l190409
+ * moved creation of providers to AuthSSLProtocolSocketFactoryForJsse10x
+ *
+ * Revision 1.51  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -160,7 +163,6 @@ import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.security.Security;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -221,14 +223,14 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setProxyUserName(String) proxyUserName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyRealm(String) proxyRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCertificate(String) certificate}</td><td>resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCertificateAuthAlias(String) certificateAuthAlias}</td><td>alias used to obtain certificate password</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeystoreType(String) keystoreType}</td><td>&nbsp;</td><td>pkcs12</td></tr>
  * <tr><td>{@link #setKeyManagerAlgorithm(String) keyManagerAlgorithm}</td><td>&nbsp;</td><td></td></tr>
- * <tr><td>{@link #setCertificate(String) certificate}</td><td>resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCertificateAuthAlias(String) certificateAuthAlias}</td><td>alias used to obtain certificate password</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststore(String) truststore}</td><td>resource URL to truststore to be used for authentication</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststoreAuthAlias(String) truststoreAuthAlias}</td><td>alias used to obtain truststore password</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststoreType(String) truststoreType}</td><td>&nbsp;</td><td>jks</td></tr>
  * <tr><td>{@link #setTrustManagerAlgorithm(String) trustManagerAlgorithm}</td><td>&nbsp;</td><td></td></tr>
  * <tr><td>{@link #setFollowRedirects(boolean) followRedirects}</td><td>when true, a redirect request will be honoured, e.g. to switch to https</td><td>true</td></tr>
@@ -327,20 +329,20 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private String proxyPassword;
 	private String proxyRealm=null;
 
-	private String keystoreType="pkcs12";
-	private String keyManagerAlgorithm=null;
 	private String certificate;
 	private String certificateAuthAlias;
 	private String certificatePassword;
+	private String keystoreType="pkcs12";
+	private String keyManagerAlgorithm=null;
 	private String truststore=null;
-	private String truststorePassword=null;
 	private String truststoreAuthAlias;
+	private String truststorePassword=null;
 	private String truststoreType="jks";
 	private String trustManagerAlgorithm=null;
 	
 	private boolean verifyHostname=true;
-	private boolean followRedirects=true;
 	private boolean jdk13Compatibility=false;
+	private boolean followRedirects=true;
 	private boolean staleChecking=true;
 	private boolean encodeMessages=false;
 
@@ -357,15 +359,6 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	
 	private Set parametersToSkip=new HashSet();
 
-
-	protected void addProvider(String name) {
-		try {
-			Class clazz = Class.forName(name);
-			Security.addProvider((java.security.Provider)clazz.newInstance());
-		} catch (Throwable t) {
-			log.error(getLogPrefix()+"cannot add provider ["+name+"], "+t.getClass().getName()+": "+t.getMessage());
-		}
-	}
 
 	protected void addParameterToSkip(Parameter param) {
 		if (param!=null) {
@@ -451,9 +444,6 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 					CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
 					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
 					if (isJdk13Compatibility()) {
-						addProvider("sun.security.provider.Sun");
-						addProvider("com.sun.net.ssl.internal.ssl.Provider");
-						System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");
 						socketfactory = new AuthSSLProtocolSocketFactoryForJsse10x(
 							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
 							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(), isVerifyHostname());
@@ -731,39 +721,47 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		this.urlParam = urlParam;
 	}
 
-	public String getProxyHost() {
-		return proxyHost;
+	public String getMethodType() {
+		return methodType;
 	}
-	public void setProxyHost(String string) {
-		proxyHost = string;
-	}
-
-	public String getProxyPassword() {
-		return proxyPassword;
-	}
-	public void setProxyPassword(String string) {
-		proxyPassword = string;
+	public void setMethodType(String string) {
+		methodType = string;
 	}
 
-	public int getProxyPort() {
-		return proxyPort;
+	public void setContentType(String string) {
+		contentType = string;
 	}
-	public void setProxyPort(int i) {
-		proxyPort = i;
-	}
-
-	public String getProxyUserName() {
-		return proxyUserName;
-	}
-	public void setProxyUserName(String string) {
-		proxyUserName = string;
+	public String getContentType() {
+		return contentType;
 	}
 
-	public String getProxyRealm() {
-		return proxyRealm;
+	public int getTimeout() {
+		return timeout;
 	}
-	public void setProxyRealm(String string) {
-		proxyRealm = string;
+	public void setTimeout(int i) {
+		timeout = i;
+	}
+
+	public int getMaxConnections() {
+		return maxConnections;
+	}
+	public void setMaxConnections(int i) {
+		maxConnections = i;
+	}
+
+	public int getMaxExecuteRetries() {
+		return maxExecuteRetries;
+	}
+	public void setMaxExecuteRetries(int i) {
+		maxExecuteRetries = i;
+	}
+
+
+	public String getAuthAlias() {
+		return authAlias;
+	}
+	public void setAuthAlias(String string) {
+		authAlias = string;
 	}
 
 	public String getUserName() {
@@ -780,12 +778,49 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		password = string;
 	}
 
-	public String getMethodType() {
-		return methodType;
+	
+	public String getProxyHost() {
+		return proxyHost;
 	}
-	public void setMethodType(String string) {
-		methodType = string;
+	public void setProxyHost(String string) {
+		proxyHost = string;
 	}
+
+	public int getProxyPort() {
+		return proxyPort;
+	}
+	public void setProxyPort(int i) {
+		proxyPort = i;
+	}
+
+	public String getProxyAuthAlias() {
+		return proxyAuthAlias;
+	}
+	public void setProxyAuthAlias(String string) {
+		proxyAuthAlias = string;
+	}
+
+	public String getProxyUserName() {
+		return proxyUserName;
+	}
+	public void setProxyUserName(String string) {
+		proxyUserName = string;
+	}
+
+	public String getProxyPassword() {
+		return proxyPassword;
+	}
+	public void setProxyPassword(String string) {
+		proxyPassword = string;
+	}
+
+	public String getProxyRealm() {
+		return proxyRealm;
+	}
+	public void setProxyRealm(String string) {
+		proxyRealm = string;
+	}
+
 
 	
 	public String getCertificate() {
@@ -793,6 +828,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public void setCertificate(String string) {
 		certificate = string;
+	}
+
+	public String getCertificateAuthAlias() {
+		return certificateAuthAlias;
+	}
+	public void setTruststoreAuthAlias(String string) {
+		truststoreAuthAlias = string;
 	}
 
 	public String getCertificatePassword() {
@@ -816,11 +858,19 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		return keyManagerAlgorithm;
 	}
 
+	
 	public String getTruststore() {
 		return truststore;
 	}
 	public void setTruststore(String string) {
 		truststore = string;
+	}
+
+	public String getTruststoreAuthAlias() {
+		return truststoreAuthAlias;
+	}
+	public void setCertificateAuthAlias(String string) {
+		certificateAuthAlias = string;
 	}
 
 	public String getTruststorePassword() {
@@ -844,18 +894,12 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		return trustManagerAlgorithm;
 	}
 
-	public int getTimeout() {
-		return timeout;
-	}
-	public void setTimeout(int i) {
-		timeout = i;
-	}
 
-	public int getMaxConnections() {
-		return maxConnections;
+	public boolean isVerifyHostname() {
+		return verifyHostname;
 	}
-	public void setMaxConnections(int i) {
-		maxConnections = i;
+	public void setVerifyHostname(boolean b) {
+		verifyHostname = b;
 	}
 
 	public boolean isJdk13Compatibility() {
@@ -879,13 +923,6 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		staleChecking = b;
 	}
 
-	public boolean isVerifyHostname() {
-		return verifyHostname;
-	}
-	public void setVerifyHostname(boolean b) {
-		verifyHostname = b;
-	}
-
 	public boolean isFollowRedirects() {
 		return followRedirects;
 	}
@@ -893,49 +930,4 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		followRedirects = b;
 	}
 
-	public String getAuthAlias() {
-		return authAlias;
-	}
-
-	public String getCertificateAuthAlias() {
-		return certificateAuthAlias;
-	}
-
-	public String getProxyAuthAlias() {
-		return proxyAuthAlias;
-	}
-
-	public String getTruststoreAuthAlias() {
-		return truststoreAuthAlias;
-	}
-
-	public void setAuthAlias(String string) {
-		authAlias = string;
-	}
-
-	public void setCertificateAuthAlias(String string) {
-		certificateAuthAlias = string;
-	}
-
-	public void setProxyAuthAlias(String string) {
-		proxyAuthAlias = string;
-	}
-
-	public void setTruststoreAuthAlias(String string) {
-		truststoreAuthAlias = string;
-	}
-
-	public void setMaxExecuteRetries(int i) {
-		maxExecuteRetries = i;
-	}
-	public int getMaxExecuteRetries() {
-		return maxExecuteRetries;
-	}
-
-	public void setContentType(String string) {
-		contentType = string;
-	}
-	public String getContentType() {
-		return contentType;
-	}
 }

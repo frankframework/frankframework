@@ -1,10 +1,7 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryForJsse10x.java,v $
- * Revision 1.13  2011-11-30 13:52:00  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
+ * Revision 1.14  2011-12-05 15:25:07  l190409
+ * moved creation of providers to AuthSSLProtocolSocketFactoryForJsse10x
  *
  * Revision 1.11  2011/06/27 15:52:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to set keyManagerAlgorithm and trustManagerAlgorithm
@@ -108,6 +105,9 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
 			final URL keystoreUrl, final String keystorePassword, final String keystoreType, final String keyManagerAlgorithm,
 			final URL truststoreUrl, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm, final boolean verifyHostname) {
 		super(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, trustManagerAlgorithm, verifyHostname);
+		addProvider("sun.security.provider.Sun");
+		addProvider("com.sun.net.ssl.internal.ssl.Provider");
+		System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");
 	}
     
     private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password, String algorithm)
