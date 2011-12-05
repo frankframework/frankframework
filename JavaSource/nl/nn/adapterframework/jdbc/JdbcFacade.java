@@ -1,10 +1,7 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.41  2011-11-30 13:51:43  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
+ * Revision 1.42  2011-12-05 15:32:13  l190409
+ * set TransactionAwareDataSourceProxy in getDatasource, not in getConnection
  *
  * Revision 1.39  2011/10/04 09:56:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use jndiContextPrefix
@@ -197,6 +194,16 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return result;
 	}
 
+//	/*
+//	 * Convenience function to be able to use DataSourceTransactionManager.
+//	 * It allows to set dataSource from Spring configuration.
+//	 * N.B. use capital S in name, to make Spring auto-wiring work.
+//	 */
+//	public void setDataSource(DataSource dataSource) {
+////		this.datasource = new TransactionAwareDataSourceProxy(dataSource);
+//		this.datasource = dataSource;
+//	}
+	
 	protected DataSource getDatasource() throws JdbcException {
 		// TODO: create bean jndiContextPrefix instead of doing multiple attempts
 			if (datasource==null) {
@@ -237,6 +244,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 					}
 //					throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
 				}
+				datasource=new TransactionAwareDataSourceProxy(datasource);
 			}
 			return datasource;
 		}
@@ -336,7 +344,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	 */
 	// TODO: consider making this one protected.
 	public Connection getConnection() throws JdbcException {
-		DataSource ds=new TransactionAwareDataSourceProxy(getDatasource());
+		DataSource ds=getDatasource();
 		try {
 			if (StringUtils.isNotEmpty(getUsername())) {
 				return ds.getConnection(getUsername(),getPassword());
