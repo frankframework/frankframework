@@ -1,6 +1,9 @@
 /*
  * $Log: JmsMessagingSourceFactory.java,v $
- * Revision 1.4  2011-11-30 13:51:51  europe\m168309
+ * Revision 1.5  2011-12-05 15:33:13  l190409
+ * JMS 1.03 compatibilty restored
+ *
+ * Revision 1.4  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -102,11 +105,11 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		}
 
 		public Connection createConnection() throws JMSException {
-			return wrapped.createConnection();
+			return createQueueConnection();
 		}
 
 		public Connection createConnection(String arg0, String arg1) throws JMSException {
-			return wrapped.createConnection(arg0, arg1);
+			return createQueueConnection(arg0, arg1);
 		}
 }
 
@@ -127,11 +130,11 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		}
 
 		public Connection createConnection() throws JMSException {
-			return wrapped.createConnection();
+			return createTopicConnection();
 		}
 
 		public Connection createConnection(String arg0, String arg1) throws JMSException {
-			return wrapped.createConnection(arg0, arg1);
+			return createTopicConnection(arg0, arg1);
 		}
 }
 
