@@ -1,25 +1,7 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.50  2011-11-30 13:51:51  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.48  2011/09/28 08:30:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * corrected javadoc
- *
- * Revision 1.47  2011/09/28 08:01:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * removed configWarning soap=true
- *
- * Revision 1.46  2011/09/28 06:40:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * removed configWarning soap=true
- *
- * Revision 1.45  2011/09/23 12:10:37  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * moved configWarning from method setSoap() to method Configuration()
- *
- * Revision 1.44  2011/09/22 14:18:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Deprecated attribute soap=true in JmsSender/JmsListener
+ * Revision 1.51  2011-12-05 15:34:00  l190409
+ * improved warning for delivery mode
  *
  * Revision 1.43  2011/06/06 14:32:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed NPE in getting contents of reply message
@@ -159,7 +141,7 @@ import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-//import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPostboxSender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
@@ -502,7 +484,8 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	public void setDeliveryMode(String deliveryMode) {
 		int newMode = stringToDeliveryMode(deliveryMode);
 		if (newMode==0) {
-			log.warn("unknown delivery mode ["+deliveryMode+"], delivery mode not changed");
+			ConfigurationWarnings cw = ConfigurationWarnings.getInstance();
+			cw.add(log,getLogPrefix()+"unknown delivery mode ["+deliveryMode+"], delivery mode not changed");
 		} else
 			this.deliveryMode=newMode;
 	}
