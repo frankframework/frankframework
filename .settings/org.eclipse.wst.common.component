@@ -3,6 +3,6 @@
         <module-type module-type-id="jst.utility">
             <version/>
         </module-type>
-        <wb-resource deploy-path="/" source-path="/Java Source"/>
+        <wb-resource deploy-path="/" source-path="/JavaSource"/>
     </wb-module>
 </project-modules>

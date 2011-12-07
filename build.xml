@@ -2,7 +2,7 @@
 	<!-- ================================================================== -->
 	<target name="jar" description="Create the jar file">
 		<property name="build.dir" value="C:/Temp/AdapterFramework/build"/>
-		<property name="lib_path" value="../IbisWar/Web Content/WEB-INF/lib"/>
+		<property name="lib_path" value="../IbisWar/WebContent/WEB-INF/lib"/>
 		<delete dir="${build.dir}"/>
 		<mkdir dir="${build.dir}"/>
 		<property file="bin/AppConstants.properties" prefix="ac"/>
@@ -11,7 +11,7 @@
 		</propertyfile>
 		<property file="${build.dir}/IAF.properties" prefix="iaf"/>
 		<jar destfile="${build.dir}/AdapterFramework ${ac.application.version}.jar" duplicate="preserve">
-			<fileset dir="Java Source"/>
+			<fileset dir="JavaSource"/>
 			<fileset dir="bin"/>
 			<manifest>
 				<attribute name="Built-By" value="${user.name}"/>
@@ -36,7 +36,7 @@
 		<pathconvert refid="project.class.path" property="project.class.path.converted" targetos="windows"/>
 		<exec executable="c:\program files\ibm\websphere studio\application developer\v5.1.2\runtimes\base_v51\java\bin\javadoc">
 			<arg value="-sourcepath"/>
-			<arg value="${basedir}\Java Source"/>
+			<arg value="${basedir}\JavaSource"/>
 			<arg value="-classpath"/>
 			<arg value="${project.class.path.converted}"/>
 			<arg value="-d"/>
