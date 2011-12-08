@@ -1,6 +1,9 @@
 /*
  * $Log: RunStateManager.java,v $
- * Revision 1.9  2011-11-30 13:51:48  europe\m168309
+ * Revision 1.10  2011-12-08 09:26:46  europe\m168309
+ * fixed javadoc
+ *
+ * Revision 1.9  2011/11/30 13:51:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -27,7 +30,7 @@ import org.apache.log4j.Logger;
  * @author Gerrit van Brakel
  */
 public class RunStateManager implements RunStateEnquirer {
-	public static final String version="$RCSfile: RunStateManager.java,v $ $Revision: 1.9 $ $Date: 2011-11-30 13:51:48 $";
+	public static final String version="$RCSfile: RunStateManager.java,v $ $Revision: 1.10 $ $Date: 2011-12-08 09:26:46 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private RunStateEnum runState = RunStateEnum.STOPPED;
@@ -64,11 +67,11 @@ public class RunStateManager implements RunStateEnquirer {
 	 * @param maxWait              maximum amount of milliseconds to wait.
 	 * @throws InterruptedException when interruption occurs
 	 */
-	public boolean waitForRunState(RunStateEnum state, long maxWait) throws InterruptedException {
+	public boolean waitForRunState(RunStateEnum requestedRunState, long maxWait) throws InterruptedException {
 		long cts = System.currentTimeMillis();
 		RunStateEnum newState = null;
 		synchronized(this) {
-			while (! (newState = getRunState()).equals(state)) {
+			while (! (newState = getRunState()).equals(requestedRunState)) {
 				long togo = maxWait - (System.currentTimeMillis() - cts);
 				if (togo > 0) {
 					wait(togo);
@@ -78,7 +81,7 @@ public class RunStateManager implements RunStateEnquirer {
 				}
 			}
 		}
-		return newState.equals(state);
+		return newState.equals(requestedRunState);
 	}
 	
 }

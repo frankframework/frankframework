@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.35  2011-11-30 13:51:49  europe\m168309
+ * Revision 1.36  2011-12-08 09:29:08  europe\m168309
+ * fixed javadoc
+ *
+ * Revision 1.35  2011/11/30 13:51:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -345,7 +348,7 @@ public class Misc {
 	/**
 	 * String replacer.
 	 * 
-	 * @param target	is the original string
+	 * @param source	is the original string
 	 * @param from		is the string to be replaced
 	 * @param to		is the string which will used to replace
 	 * @return

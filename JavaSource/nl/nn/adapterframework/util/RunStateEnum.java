@@ -19,7 +19,7 @@ public class RunStateEnum extends Enum {
    public static final RunStateEnum ERROR = new RunStateEnum("**ERROR**");
 /**
  * RunStateEnum constructor 
- * @param arg1 Value of new enumeration item
+ * @param stateDescriptor Value of new enumeration item
  */
 protected RunStateEnum(String stateDescriptor) {
 	super(stateDescriptor);
