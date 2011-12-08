@@ -1,6 +1,9 @@
 /*
  * $Log: ExtendedSoapWrapperPipe.java,v $
- * Revision 1.1  2011-11-30 13:52:00  europe\m168309
+ * Revision 1.2  2011-12-08 09:04:16  europe\m168309
+ * added messageHeaderFileName attribute
+ *
+ * Revision 1.1  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/26 12:47:18  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -11,23 +14,31 @@
 package nl.nn.adapterframework.soap;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -37,7 +48,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Extra attributes for extra functionality.
  * <p>
- * In the SOAP header the element MessageHeader is included:<br/><code><pre>
+ * In the SOAP header the element MessageHeader is included (the following example is the default MessageHeader which can be overriden):<br/><code><pre>
  *	&lt;MessageHeader xmlns="http://www.nn.nl/"&gt;
  *		&lt;From&gt;
  *			&lt;Id&gt;PolicyConversion_01_ServiceAgents_01&lt;/Id&gt;
@@ -107,8 +118,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </table> 
  * </td><td>messageHeader</td></tr>
  * <tr><td>{@link #setMessageHeaderNamespace(String) messageHeaderNamespace}</td><td>namespace used in MessageHeader</td><td>http://www.nn.nl/</td></tr>
- * <tr><td>{@link #setMessageHeaderConversationIdSessionKey(String) messageHeaderConversationIdSessionKey}</td><td>(only used when direction=wrap and the original input MessageHeader doesn't exist) key of session variable to retrieve the ConversationId for the output MessageHeader from</td><td>messageHeaderConversationId</td></tr>
- * <tr><td>{@link #setMessageHeaderExternalRefToMessageIdSessionKey(String) messageHeaderExternalRefToMessageIdSessionKey}</td><td>(only used when direction=wrap and the original input MessageHeader doesn't exist) key of session variable to retrieve the ExternalRefToMessageId for the output MessageHeader from</td><td>messageHeaderExternalRefToMessageId</td></tr>
+ * <tr><td>{@link #setMessageHeaderConversationIdSessionKey(String) messageHeaderConversationIdSessionKey} <i>deprecated</i></td><td>(only used when direction=wrap and the original input MessageHeader doesn't exist) key of session variable to retrieve the ConversationId for the output MessageHeader from</td><td>messageHeaderConversationId</td></tr>
+ * <tr><td>{@link #setMessageHeaderExternalRefToMessageIdSessionKey(String) messageHeaderExternalRefToMessageIdSessionKey} <i>deprecated</i></td><td>(only used when direction=wrap and the original input MessageHeader doesn't exist) key of session variable to retrieve the ExternalRefToMessageId for the output MessageHeader from</td><td>messageHeaderExternalRefToMessageId</td></tr>
+ * <tr><td>{@link #setMessageHeaderFileName(String) messageHeaderFileName}</td><td>(only used when direction=wrap) name of the file containing the MessageHeader</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setResultInPayload(boolean) resultInPayload}</td><td>when <code>true</code>, the Result is put in the payload (as last child in root tag) instead of in the SOAP body as sibling of the payload (last one is the old standard)</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setResultNamespace(String) resultNamespace}</td><td>namespace used in Result</td><td>http://www.nn.nl/</td></tr>
  * <tr><td>{@link #setResultErrorCodeSessionKey(String) resultErrorCodeSessionKey}</td><td>(only used when direction=wrap) key of session variable to store the Result error code in (if an error occurs)</td><td>resultErrorCode</td></tr>
@@ -130,6 +142,27 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setOmitResult(boolean) omitResult}</td><td>(only used when direction=wrap) when <code>true</code>, the Result is omitted and instead of Result/Status=ERROR a PipeRunException is thrown</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setOutputNamespace(String) outputNamespace}</td><td>(only used when direction=wrap) when not empty, namespace of the output root element in the SOAP body</td><td>&nbsp;</td></tr>
  * </table></p>
+ * <table border="1">
+ * <p><b>Parameters:</b>
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr>
+ *   <td><i>any</i></td><td><i>any</i></td>
+ * 	 <td>Any parameters defined on the pipe will be used for replacements. Each occurrence
+ * 		 of <code>${name-of-parameter}</code> in the file {@link #setMessageHeaderFileName(String) messageHeaderFileName} 
+ *       will be replaced by its corresponding <i>value-of-parameter</i>. <br>
+ *       The following parameters are default included (but can be overriden):
+ *       <ul>
+ *       	<li><code>now</code>: current datetime (yyyy-MM-dd'T'HH:mm:ss)</li>
+ *       	<li><code>instancename</code>: name of application</li>
+ *       	<li><code>uid</code>: unique identifier</li>
+ *       	<li><code>hostname</code>: name of host</li>
+ *       	<li><code>convid</code>: ConversationId from stored (received) MessageHeader</li>
+ *       	<li><code>msgid</code>: MessageId from stored (received) MessageHeader</li>
+ *       </ul>
+ *    </td>
+ * </tr>
+ * </table>
+ * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
@@ -150,6 +183,13 @@ public class ExtendedSoapWrapperPipe extends SoapWrapperPipe {
 	private final static String messageHeaderExternalRefToMessageIdXPath = "mh:MessageHeader/mh:HeaderFields/mh:MessageId";
 	private final static String resultErrorXPath = "re:Result/re:Status='ERROR'";
 
+	private final static String NOW = "now";
+	private final static String INSTANCENAME = "instancename";
+	private final static String UID = "uid";
+	private final static String HOSTNAME = "hostname";
+	private final static String CONVID = "convid";
+	private final static String MSGID = "msgid";
+
 	private final static String[][] ERRORS = { { "ERR6002", "Service Interface Request Time Out" }, {
 			"ERR6003", "Invalid Request Message" }, {
 			"ERR6004", "Invalid Backend system response" }, {
@@ -163,7 +203,10 @@ public class ExtendedSoapWrapperPipe extends SoapWrapperPipe {
 	private String messageHeaderSessionKey = "messageHeader";
 	private String messageHeaderNamespace = "http://www.nn.nl/";
 	private String messageHeaderConversationIdSessionKey = "messageHeaderConversationId";
+	private boolean warnConversationIdSessionKey = false;
 	private String messageHeaderExternalRefToMessageIdSessionKey = "messageHeaderExternalRefToMessageId";
+	private boolean warnExternalRefToMessageSessionKey = false;
+	private String messageHeaderFileName = null;
 	private boolean resultInPayload = true;
 	private String resultNamespace = "http://www.nn.nl/";
 	private String resultErrorCodeSessionKey = "resultErrorCode";
@@ -179,14 +222,14 @@ public class ExtendedSoapWrapperPipe extends SoapWrapperPipe {
 
 	private TransformerPool bodyMessageTp;
 	private TransformerPool messageHeaderTp;
-	private TransformerPool messageHeaderConversationIdTp;
-	private TransformerPool messageHeaderExternalRefToMessageIdTp;
+	private String messageHeader;
 	private TransformerPool resultErrorTp;
 	private String resultErrorXe;
 	private TransformerPool removeOutputNamespacesTp;
 	private TransformerPool outputNamespaceTp;
 
 	public void configure() throws ConfigurationException {
+		addParameters();
 		super.configure();
 		if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 			throw new ConfigurationException(getLogPrefix(null) + "soapHeaderSessionKey is not allowed");
@@ -212,9 +255,36 @@ public class ExtendedSoapWrapperPipe extends SoapWrapperPipe {
 				messageHeaderXe = soapHeaderXPath + "/" + messageHeaderXPath;
 			}
 			messageHeaderTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(messageHeaderNd, messageHeaderXe, "xml"));
-			messageHeaderConversationIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(messageHeaderNamespaceDefs, messageHeaderConversationIdXPath, "text"));
-			messageHeaderExternalRefToMessageIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(messageHeaderNamespaceDefs, messageHeaderExternalRefToMessageIdXPath, "text"));
 
+			if (StringUtils.isNotEmpty(getMessageHeaderFileName())) {
+				URL resource = null;
+				try {
+					resource = ClassUtils.getResourceURL(this,getMessageHeaderFileName());
+				} catch (Throwable e) {
+					throw new ConfigurationException(getLogPrefix(null)+"got exception searching for ["+getMessageHeaderFileName()+"]", e);
+				}
+				if (resource==null) {
+					throw new ConfigurationException(getLogPrefix(null)+"cannot find resource ["+getMessageHeaderFileName()+"]");
+				}
+	            try {
+					messageHeader = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
+	            } catch (Throwable e) {
+	                throw new ConfigurationException(getLogPrefix(null)+"got exception loading ["+getMessageHeaderFileName()+"]", e);
+	            }
+	        } else {
+	        	messageHeader = "<MessageHeader xmlns=\"" + getMessageHeaderNamespace() + "\">" +
+		        	"<From>" +
+		        	"<Id>" + getSubstVar(INSTANCENAME) + "</Id>" +
+		        	"</From>" +
+		        	"<HeaderFields>" +
+		        	"<ConversationId>" + getSubstVar(CONVID) + "</ConversationId>" +
+		        	"<MessageId>" + getSubstVar(HOSTNAME) + "_" + getSubstVar(UID) + "</MessageId>" +
+		        	"<ExternalRefToMessageId>" + getSubstVar(MSGID) + "</ExternalRefToMessageId>" +
+		        	"<Timestamp>" + getSubstVar(NOW) + "</Timestamp>" +
+		        	"</HeaderFields>" +
+		        	"</MessageHeader>";
+	        }
+				
 			String resultNamespaceDefs = "re=" + getResultNamespace();
 			String resultErrorNd = soapNamespaceDefs + "\n"  + resultNamespaceDefs;
 			if (isResultInPayload()) {
@@ -237,23 +307,128 @@ public class ExtendedSoapWrapperPipe extends SoapWrapperPipe {
 		}
 	}
 
+	private String getSubstVar(String var) {
+		return "${" + var + "}";
+	}
+	
+	private void addParameters() {
+		boolean nowExists = false;
+		boolean instancenameExists = false;
+		boolean uidExists = false;
+		boolean hostnameExists = false;
+		boolean convidExists = false;
+		boolean msgidExists = false;
+		ParameterList parameterList = getParameterList();
+		for (int i = 0; i < parameterList.size(); i++) {
+			Parameter parameter = parameterList.getParameter(i);
+			if (parameter.getName().equalsIgnoreCase(NOW)) {
+				nowExists = true;
+			} else if (parameter.getName().equalsIgnoreCase(INSTANCENAME)) {
+					instancenameExists = true;
+			} else if (parameter.getName().equalsIgnoreCase(UID)) {
+					uidExists = true;
+			} else if (parameter.getName().equalsIgnoreCase(HOSTNAME)) {
+				hostnameExists = true;
+			} else if (parameter.getName().equalsIgnoreCase(CONVID)) {
+				convidExists = true;
+			} else if (parameter.getName().equalsIgnoreCase(MSGID)) {
+				msgidExists = true;
+			}
+		}
+		Parameter p;
+		if (!nowExists) {
+			p = new Parameter();
+			p.setName(NOW);
+			p.setPattern("{now,date,yyyy-MM-dd'T'HH:mm:ss}");
+			addParameter(p);
+		}
+		if (!instancenameExists) {
+			p = new Parameter();
+			p.setName(INSTANCENAME);
+			p.setValue(AppConstants.getInstance().getProperty("instance.name", ""));
+			addParameter(p);
+		}
+		if (!uidExists) {
+			p = new Parameter();
+			p.setName(UID);
+			p.setPattern("{uid}");
+			addParameter(p);
+		}
+		if (!hostnameExists) {
+			p = new Parameter();
+			p.setName(HOSTNAME);
+			p.setPattern("{hostname}");
+			addParameter(p);
+		}
+		if (!convidExists) {
+			p = new Parameter();
+			p.setName(CONVID);
+			p.setSessionKey(getMessageHeaderSessionKey());
+			// TODO: why is following xpathExpression not namespace aware?
+			//String messageHeaderNamespaceDefs = "mh=" + getMessageHeaderNamespace();
+			//p.setNamespaceDefs(messageHeaderNamespaceDefs);
+			//p.setXpathExpression(messageHeaderConversationIdXPath);
+			p.setXpathExpression(Misc.replace(messageHeaderConversationIdXPath, "mh:", ""));
+			addParameter(p);
+		}
+		if (!msgidExists) {
+			p = new Parameter();
+			p.setName(MSGID);
+			p.setSessionKey(getMessageHeaderSessionKey());
+			// TODO: why is following xpathExpression not namespace aware?
+			//String messageHeaderNamespaceDefs = "mh=" + getMessageHeaderNamespace();
+			//p.setNamespaceDefs(messageHeaderNamespaceDefs);
+			//p.setXpathExpression(messageHeaderExternalRefToMessageIdXPath);
+			p.setXpathExpression(Misc.replace(messageHeaderExternalRefToMessageIdXPath, "mh:", ""));
+			addParameter(p);
+		}
+	}
+		
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		String output;
 		try {
 			if ("wrap".equalsIgnoreCase(getDirection())) {
-				String originalMessageHeader = (String) session.get(getMessageHeaderSessionKey());
-				String messageHeaderConversationId = null;
-				String messageHeaderExternalRefToMessageId = null;
-				if (originalMessageHeader == null) {
-					if (StringUtils.isNotEmpty(getMessageHeaderConversationIdSessionKey())) {
-						messageHeaderConversationId = (String) session.get(getMessageHeaderConversationIdSessionKey());
+				if (getParameterList()!=null) {
+					ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session);
+					ParameterValueList pvl;
+					try {
+						pvl = prc.getValues(getParameterList());
+					} catch (ParameterException e) {
+						throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
 					}
-					if (StringUtils.isNotEmpty(getMessageHeaderExternalRefToMessageIdSessionKey())) {
-						messageHeaderExternalRefToMessageId = (String) session.get(getMessageHeaderExternalRefToMessageIdSessionKey());
+					String originalMessageHeader = null;
+					if (StringUtils.isNotEmpty(getMessageHeaderSessionKey())) {
+						originalMessageHeader = (String) session.get(getMessageHeaderSessionKey());
+					}
+					String pvName;
+					String pvStringValue;
+					for (int i=0; i<pvl.size(); i++) {
+						ParameterValue pv = pvl.getParameterValue(i);
+						pvName = pv.getDefinition().getName();
+						pvStringValue = pv.asStringValue("");
+						if (StringUtils.isEmpty(getMessageHeaderFileName()) && originalMessageHeader == null) {
+							if (pvName.equals(CONVID)) {
+								pvStringValue = (String) session.get(getMessageHeaderConversationIdSessionKey());
+								if (StringUtils.isNotEmpty(pvStringValue) && warnConversationIdSessionKey == false) {
+									ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+									String msg = getLogPrefix(null) + "The attribute messageHeaderConversationIdSessionKey has been deprecated. Please use the parameter " + CONVID;
+									configWarnings.add(log, msg);
+									warnConversationIdSessionKey = true;
+								}
+							} else if (pvName.equals(MSGID)) {
+								pvStringValue = (String) session.get(getMessageHeaderExternalRefToMessageIdSessionKey());
+								if (StringUtils.isNotEmpty(pvStringValue) && warnExternalRefToMessageSessionKey == false) {
+									ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+									String msg = getLogPrefix(null) + "The attribute messageHeaderExternalRefToMessageIdSessionKey has been deprecated. Please use the parameter " + MSGID;
+									configWarnings.add(log, msg);
+									warnExternalRefToMessageSessionKey = true;
+								}
+							}
+						}
+						messageHeader = Misc.replace(messageHeader,getSubstVar(pvName),pvStringValue);
 					}
 				}
-				String messageHeader = prepareMessageHeader(originalMessageHeader, messageHeaderConversationId, messageHeaderExternalRefToMessageId);
-
+				
 				String resultErrorCode = null;
 				if (StringUtils.isNotEmpty(getResultErrorCodeSessionKey())) {
 					resultErrorCode = (String) session.get(getResultErrorCodeSessionKey());
@@ -327,43 +502,6 @@ public class ExtendedSoapWrapperPipe extends SoapWrapperPipe {
 
 		}
 		return new PipeRunResult(getForward(), output);
-	}
-
-	private String prepareMessageHeader(String originalMessageHeader, String conversationId, String externalRefToMessageId) throws DomBuilderException, IOException, TransformerException {
-		XmlBuilder messageHeaderElement = new XmlBuilder("MessageHeader");
-		messageHeaderElement.addAttribute("xmlns", getMessageHeaderNamespace());
-		XmlBuilder fromElement = new XmlBuilder("From");
-		XmlBuilder idElement = new XmlBuilder("Id");
-		idElement.setValue(AppConstants.getInstance().getProperty("instance.name", ""));
-		fromElement.addSubElement(idElement);
-		messageHeaderElement.addSubElement(fromElement);
-		XmlBuilder headerFieldsElement = new XmlBuilder("HeaderFields");
-		XmlBuilder conversationIdElement = new XmlBuilder("ConversationId");
-		if (originalMessageHeader == null) {
-			conversationIdElement.setValue(conversationId);
-		} else {
-			if (messageHeaderConversationIdTp != null) {
-				conversationIdElement.setValue(messageHeaderConversationIdTp.transform(originalMessageHeader, null, true));
-			}
-		}
-		headerFieldsElement.addSubElement(conversationIdElement);
-		XmlBuilder messageIdElement = new XmlBuilder("MessageId");
-		messageIdElement.setValue(Misc.getHostname() + "_" + Misc.createSimpleUUID());
-		headerFieldsElement.addSubElement(messageIdElement);
-		XmlBuilder externalRefToMessageIdElement = new XmlBuilder("ExternalRefToMessageId");
-		if (originalMessageHeader == null) {
-			externalRefToMessageIdElement.setValue(externalRefToMessageId);
-		} else {
-			if (messageHeaderExternalRefToMessageIdTp != null) {
-				externalRefToMessageIdElement.setValue(messageHeaderExternalRefToMessageIdTp.transform(originalMessageHeader, null, true));
-			}
-		}
-		headerFieldsElement.addSubElement(externalRefToMessageIdElement);
-		XmlBuilder timestampElement = new XmlBuilder("Timestamp");
-		timestampElement.setValue(DateUtils.format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"));
-		headerFieldsElement.addSubElement(timestampElement);
-		messageHeaderElement.addSubElement(headerFieldsElement);
-		return messageHeaderElement.toXML();
 	}
 
 	private String prepareResult(String errorCode, String errorText, String serviceName, String actionName, String detailText) throws DomBuilderException, IOException, TransformerException {
@@ -505,6 +643,14 @@ public class ExtendedSoapWrapperPipe extends SoapWrapperPipe {
 
 	public String getMessageHeaderExternalRefToMessageIdSessionKey() {
 		return messageHeaderExternalRefToMessageIdSessionKey;
+	}
+
+	public void setMessageHeaderFileName(String messageHeaderFileName) {
+		this.messageHeaderFileName = messageHeaderFileName;
+	}
+
+	public String getMessageHeaderFileName() {
+		return messageHeaderFileName;
 	}
 
 	public void setResultInPayload(boolean b) {
