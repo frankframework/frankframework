@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.20  2011-11-30 13:51:42  europe\m168309
+ * Revision 1.21  2011-12-08 11:15:50  europe\m168309
+ * fixed javadoc
+ *
+ * Revision 1.20  2011/11/30 13:51:42  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -133,7 +136,7 @@ import org.springframework.transaction.TransactionStatus;
  * Operation of scheduling:
  * <ul>
  *   <li>at configuration time {@link nl.nn.adapterframework.configuration.Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; </li>
- *   <li>this calls {@link nl.nn.adapterframework.scheduler.SchedulerHelper.scheduleJob() SchedulerHelper.scheduleJob(Object, JobDef)};</li>
+ *   <li>this calls {@link nl.nn.adapterframework.scheduler.SchedulerHelper#scheduleJob(IbisManager, JobDef) SchedulerHelper.scheduleJob()};</li>
  *   <li>this creates a Quartz JobDetail object, and copies adaptername, receivername, function and a reference to the configuration to jobdetail's datamap;</li>
  *   <li>it sets the class to execute to AdapterJob</li>
  *   <li>this job is scheduled using the cron expression</li> 
