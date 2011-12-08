@@ -1,6 +1,9 @@
 /*
  * $Log: XComSender.java,v $
- * Revision 1.15  2011-11-30 13:52:04  europe\m168309
+ * Revision 1.16  2011-12-08 09:12:09  europe\m168309
+ * fixed javadoc
+ *
+ * Revision 1.15  2011/11/30 13:52:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -95,10 +98,10 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * </p>
  *  
- * @author: John Dekker
+ * @author John Dekker
  */
 public class XComSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.15 $ $Date: 2011-11-30 13:52:04 $";
+	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.16 $ $Date: 2011-12-08 09:12:09 $";
 
 	private File workingDir;
 	private String name;
