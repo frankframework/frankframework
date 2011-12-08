@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springTOMCAT6.xml,v $
-  Revision 1.5  2011-11-30 13:51:45  europe\m168309
+  Revision 1.6  2011-12-08 14:06:16  m00f069
+  Made Tomcat work with the Spring DataSourceTransactionManager which will use the jdbc/<ibis name lower case> by default (Spring Tomcat configuration doesn't need to be changed manually anymore) (replaced JOTM as it didn't really work).
+
+  Revision 1.5  2011/11/30 13:51:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
   adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
 
   Revision 1.1  2011/10/19 14:49:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -32,17 +35,38 @@
     <!-- In order to properly handle 'Propagation: Supports', set property
          'transactionSynchronization' to 'Synchronize on actual transaction'. -->
     
-    <!-- Defining a open source transaction manager -->
-    <bean id="txManagerReal" class="org.springframework.transaction.jta.JtaTransactionManager"
-    	lazy-init="true">
-        <property name="transactionManager">
-            <bean class="org.springframework.transaction.jta.JotmFactoryBean"/>
+    <!-- Use Spring DataSourceTransactionManager which is good enough in case
+         only one data source needs to be managed by the transaction manager.
+         Otherwise a transaction manager like Atomikos, Bitronix or JOTM needs
+         to be used (will need some integration with Tomcat). In case no
+         database is needed the DataSourceTransactionManager can be used in
+         combination with an in-memory database like H2. -->
+    <bean id="txManagerReal" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource">
+            <ref bean="defaultDataSource"/>
         </property>
         <property name="transactionSynchronization">
             <util:constant static-field="org.springframework.transaction.support.AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION"/>
         </property>
     </bean>
-    
+    <bean id="defaultDataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
+        <property name="targetDataSource">
+            <bean class="org.springframework.jndi.JndiObjectFactoryBean">
+                <property name="jndiName" value="java:comp/env/jdbc/${instance.name.lc}"/>
+            </bean>
+        </property>
+    </bean>
+    <!-- Make the proxied data source available to the JdbcFacade -->
+    <bean id="proxiedDataSources" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="jdbc/${instance.name.lc}">
+                    <ref bean="defaultDataSource"/>
+                </entry>
+            </map>
+        </constructor-arg>
+    </bean>
+     
     <!-- Replace with whatever TaskExecutor implementation suits best -->
     <bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor"
         scope="singleton">

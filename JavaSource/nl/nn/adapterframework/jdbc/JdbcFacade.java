@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.42  2011-12-05 15:32:13  l190409
+ * Revision 1.43  2011-12-08 14:06:16  m00f069
+ * Made Tomcat work with the Spring DataSourceTransactionManager which will use the jdbc/<ibis name lower case> by default (Spring Tomcat configuration doesn't need to be changed manually anymore) (replaced JOTM as it didn't really work).
+ *
+ * Revision 1.42  2011/12/05 15:32:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set TransactionAwareDataSourceProxy in getDatasource, not in getConnection
  *
  * Revision 1.39  2011/10/04 09:56:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -127,6 +130,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
+import java.util.Map;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -147,7 +151,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
 import org.apache.commons.lang.StringUtils;
-import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 /**
  * Provides functions for JDBC connections.
@@ -172,6 +175,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
     private String username=null;
     private String password=null;
     
+	private Map proxiedDataSources = null;
 	private DataSource datasource = null;
 	private String datasourceName = null;
 
@@ -186,6 +190,10 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
+	public void setProxiedDataSources(Map proxiedDataSources) {
+		this.proxiedDataSources = proxiedDataSources;
+	}
+
 	public String getDataSourceNameToUse() throws JdbcException {
 		String result = getDatasourceName();
 		if (StringUtils.isEmpty(result)) {
@@ -194,20 +202,13 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return result;
 	}
 
-//	/*
-//	 * Convenience function to be able to use DataSourceTransactionManager.
-//	 * It allows to set dataSource from Spring configuration.
-//	 * N.B. use capital S in name, to make Spring auto-wiring work.
-//	 */
-//	public void setDataSource(DataSource dataSource) {
-////		this.datasource = new TransactionAwareDataSourceProxy(dataSource);
-//		this.datasource = dataSource;
-//	}
-	
 	protected DataSource getDatasource() throws JdbcException {
-		// TODO: create bean jndiContextPrefix instead of doing multiple attempts
-			if (datasource==null) {
-				String dsName = getDataSourceNameToUse();
+		if (datasource==null) {
+			String dsName = getDataSourceNameToUse();
+			if (proxiedDataSources != null && proxiedDataSources.containsKey(dsName)) {
+				log.debug(getLogPrefix()+"looking up proxied Datasource ["+dsName+"]");
+				datasource = (DataSource)proxiedDataSources.get(dsName);
+			} else {
 				try {
 					log.debug(getLogPrefix()+"looking up Datasource ["+dsName+"]");
 					datasource =(DataSource) getContext().lookup( dsName );
@@ -244,10 +245,10 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 					}
 //					throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
 				}
-				datasource=new TransactionAwareDataSourceProxy(datasource);
 			}
-			return datasource;
 		}
+		return datasource;
+	}
 
 	public String getDatasourceInfo() throws JdbcException {
 		String dsinfo=null;

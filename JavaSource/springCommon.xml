@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springCommon.xml,v $
-  Revision 1.21  2011-11-30 13:51:45  europe\m168309
+  Revision 1.22  2011-12-08 14:06:16  m00f069
+  Made Tomcat work with the Spring DataSourceTransactionManager which will use the jdbc/<ibis name lower case> by default (Spring Tomcat configuration doesn't need to be changed manually anymore) (replaced JOTM as it didn't really work).
+
+  Revision 1.21  2011/11/30 13:51:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
   adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
 
   Revision 1.1  2011/10/19 14:49:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -92,6 +95,15 @@
 		http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
 		"
 	>
+
+    <!-- Make Ibis properties available as ${property.name} to the Spring
+         configuration. For the instance.name a special lower case variant
+         instance.name.lc is also available. -->
+    <bean class="nl.nn.adapterframework.configuration.AppConstantsPropertyPlaceholderConfigurer">
+        <!-- Ignore unresolvable placeholders to give other (custom) property
+             placeholder configurers a change to resolve them. -->
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+    </bean>
 
     <!-- IBIS Beans -->
     <bean name="configuration" class="nl.nn.adapterframework.configuration.Configuration"
