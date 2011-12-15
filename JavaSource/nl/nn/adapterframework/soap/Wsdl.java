@@ -1,3 +1,9 @@
+/*
+ * $Log: Wsdl.java,v $
+ * Revision 1.2  2011-12-15 10:08:06  m00f069
+ * Added CVS log
+ *
+ */
 package nl.nn.adapterframework.soap;
 
 import java.io.IOException;
@@ -41,15 +47,16 @@ import javanet.staxutils.events.StartElementEvent;
 import javanet.staxutils.helpers.StreamWriterDelegate;
 
 
- /**
-  *  Utility class to generate the WSDL. Straight-forwardly implemented using stax only.
-  *
-  *
-  *  TODO http://cxf.547215.n5.nabble.com/ClassName-quot-is-already-defined-in-quot-during-compilation-after-code-generation-td4299849.html
-  *
-  *  TODO perhaps use wsdl4j or easywsdl to generate the WSDL more genericly (for easy switching between 1.1 and 2.0).
-  *
-  * @author  Michiel Meeuwissen
+/**
+ *  Utility class to generate the WSDL. Straight-forwardly implemented using stax only.
+ *
+ *
+ *  TODO http://cxf.547215.n5.nabble.com/ClassName-quot-is-already-defined-in-quot-during-compilation-after-code-generation-td4299849.html
+ *
+ *  TODO perhaps use wsdl4j or easywsdl to generate the WSDL more genericly (for easy switching between 1.1 and 2.0).
+ *
+ * @version Id
+ * @author  Michiel Meeuwissen
  */
 class Wsdl  {
      private static final Logger LOG = LogUtil.getLogger(Wsdl.class);

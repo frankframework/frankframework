@@ -1,3 +1,9 @@
+/*
+ * $Log: Soap.java,v $
+ * Revision 1.2  2011-12-15 10:08:06  m00f069
+ * Added CVS log
+ *
+ */
 package nl.nn.adapterframework.soap;
 
 import javanet.staxutils.XMLStreamUtils;
@@ -14,15 +20,16 @@ import java.io.*;
 import java.util.Map;
 
 /**
-* Ibis uses soap in a bit odd way.
-* It doesn't actually use parameters. Only 'serviceName' and 'request'. Service name is the ibis adapter, and request then simply contains an XML.
-* So, the WSDL is always more or less the same it only varies in the XSD describing the 'request' parameter.
-* This servlet is soap, but targeting precisely this. So we don't use CXF or Apache RPC or so, because those will be much too powerful.
-*
-* @todo factor away a few java 6 things I probably used (@Override, StringBuilder)
-*
-* @author  Michiel Meeuwissen
-*/
+ * Ibis uses soap in a bit odd way.
+ * It doesn't actually use parameters. Only 'serviceName' and 'request'. Service name is the ibis adapter, and request then simply contains an XML.
+ * So, the WSDL is always more or less the same it only varies in the XSD describing the 'request' parameter.
+ * This servlet is soap, but targeting precisely this. So we don't use CXF or Apache RPC or so, because those will be much too powerful.
+ *
+ * @todo factor away a few java 6 things I probably used (@Override, StringBuilder)
+ *
+ * @version Id
+ * @author  Michiel Meeuwissen
+ */
 class Soap {
 
 
