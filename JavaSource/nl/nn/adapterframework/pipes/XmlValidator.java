@@ -1,10 +1,7 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.30  2011-11-30 13:51:50  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
+ * Revision 1.31  2011-12-15 09:55:31  m00f069
+ * Added Ibis WSDL generator (created by Michiel)
  *
  * Revision 1.28  2011/08/22 14:27:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * now based on XmlValidatorBase
@@ -146,7 +143,7 @@ import nl.nn.adapterframework.util.XmlValidatorBase;
 public class XmlValidator extends FixedForwardPipe {
 
 	private XmlValidatorBase validator = new XmlValidatorBase();
- 
+
     /**
      * Configure the XmlValidator
      * @throws ConfigurationException when:
@@ -158,7 +155,7 @@ public class XmlValidator extends FixedForwardPipe {
      */
     public void configure() throws ConfigurationException {
         super.configure();
-        
+
 		if (!isThrowException()){
             if (findForward("failure")==null) throw new ConfigurationException(
             getLogPrefix(null)+ "must either set throwException true, or have a forward with name [failure]");
@@ -178,19 +175,19 @@ public class XmlValidator extends FixedForwardPipe {
       * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
       */
     public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
-    	
+
 		try {
 			String resultEvent = validator.validate(input, session, getLogPrefix(session));
 			throwEvent(resultEvent);
-			
-			
+
+
 			if (XmlValidatorBase.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
 				return new PipeRunResult(getForward(), input);
 			}
-			PipeForward forward=null; 
+			PipeForward forward=null;
 			if (XmlValidatorBase.XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT.equals(resultEvent)) {
 				forward=findForward("illegalRoot");
-			} else 
+			} else
 			if (XmlValidatorBase.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT.equals(resultEvent)) {
 				forward=findForward("parserError");
 			}
@@ -204,7 +201,7 @@ public class XmlValidator extends FixedForwardPipe {
 		} catch (Exception e) {
 			throw new PipeRunException(this,getLogPrefix(session),e);
 		}
-    	
+
     }
 
     /**
@@ -246,10 +243,10 @@ public class XmlValidator extends FixedForwardPipe {
      * <p> The syntax is the same as for schemaLocation attributes
      * in instance documents: e.g, "http://www.example.com file%20name.xsd".</p>
      * <p>The user can specify more than one XML Schema in the list.</p>
-     * <p><b>Note</b> that spaces are considered separators for this attributed. 
+     * <p><b>Note</b> that spaces are considered separators for this attributed.
      * This means that, for example, spaces in filenames should be escaped to %20.
      * </p>
-     * 
+     *
      * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
      */
     public void setSchemaLocation(String schemaLocation) {
@@ -301,7 +298,7 @@ public class XmlValidator extends FixedForwardPipe {
 	public boolean isThrowException() {
 		return validator.isThrowException();
 	}
-	
+
 	/**
 	 * The sessionkey to store the reasons of misvalidation in.
 	 */
@@ -339,5 +336,13 @@ public class XmlValidator extends FixedForwardPipe {
 	public String getCharset() {
 		return  validator.getCharset();
 	}
+
+    public boolean isAddNamespaceToSchema() {
+        return validator.isAddNamespaceToSchema();
+    }
+
+    public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
+        validator.setAddNamespaceToSchema(addNamespaceToSchema);
+    }
 
 }
