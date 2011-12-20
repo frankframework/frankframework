@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryBase.java,v $
- * Revision 1.12  2011-11-30 13:52:00  europe\m168309
+ * Revision 1.13  2011-12-20 12:19:34  l190409
+ * improved error handling
+ *
+ * Revision 1.12  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -282,7 +285,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 			Class clazz = Class.forName(name);
 			java.security.Security.addProvider((java.security.Provider)clazz.newInstance());
 		} catch (Throwable t) {
-			log.error("cannot add provider ["+name+"], "+t.getClass().getName()+": "+t.getMessage());
+			log.error("cannot add provider ["+name+"], "+t.getClass().getName(),t);
 		}
 	}
 
@@ -294,20 +297,27 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 			try {
 				initSSLContext();
 			} catch (NoSuchAlgorithmException e) {
-				log.error("Unsupported algorithm exception", e);
-				throw new Error("Unsupported algorithm exception: " + e.getMessage());
+				throw new RuntimeException("Unsupported algorithm exception",e);
 			} catch (KeyStoreException e) {
-				log.error("Keystore exception", e);
-				throw new Error("Keystore exception: " + e.getMessage());
+				throw new RuntimeException("Keystore exception",e);
 			} catch (GeneralSecurityException e) {
-				log.error("Key management exception", e);
-				throw new Error("Key management exception: " + e.getMessage());
+				throw new RuntimeException("Key management exception",e);
 			} catch (IOException e) {
-				log.error("I/O error reading keystore/truststore file", e);
-				throw new Error("I/O error reading keystore/truststore file: " + e.getMessage());
+				throw new RuntimeException("I/O error reading keystore/truststore file",e);
 			}
 		}
 	}
+
+	// http://publib.boulder.ibm.com/infocenter/wasinfo/v6r1/index.jsp?topic=/com.ibm.websphere.express.doc/info/exp/ae/csec_sslkeystoreconfs.html
+//	private static KeyStore getWebsphereKeyStore() {
+//		 com.ibm.websphere.ssl.JSSEHelper jsseHelper = com.ibm.websphere.ssl.JSSEHelper.getInstance();
+//		try {
+//			String alias = "NodeAServer1SSLSettings";   // As specified in the WebSphere SSL configuration
+//			Properties sslProps = jsseHelper.getProperties(alias); 
+//		 } catch (SSLException e) {
+//			 e.printStackTrace();
+//		 }
+//	}
 
     protected static KeyStore createKeyStore(final URL url, final String password, String keyStoreType, String prefix) 
         throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException

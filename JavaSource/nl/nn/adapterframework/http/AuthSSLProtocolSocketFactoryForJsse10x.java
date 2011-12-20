@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryForJsse10x.java,v $
- * Revision 1.14  2011-12-05 15:25:07  l190409
+ * Revision 1.15  2011-12-20 12:20:53  l190409
+ * improved error handling
+ *
+ * Revision 1.14  2011/12/05 15:25:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved creation of providers to AuthSSLProtocolSocketFactoryForJsse10x
  *
  * Revision 1.11  2011/06/27 15:52:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -306,6 +309,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
 						certificate.checkValidity();
 					}
 					catch(Exception e) {
+						log.debug("Exception checking certificate validity, assuming server not trusted",e);
 						return false;
 					}
 				}
