@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.2  2011-12-20 10:50:33  europe\m168309
+ * Revision 1.3  2011-12-20 14:52:24  europe\m168309
+ * updated javadoc
+ *
+ * Revision 1.2  2011/12/20 10:50:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * completed mode 'i2t'
  *
  * Revision 1.1  2011/12/15 10:53:08  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -34,7 +37,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>From</td><td>1</td><td>&nbsp;</td></tr>
  * <tr><td>Id</td><td>2</td><td>$fromId</td></tr>
  * <tr><td>To</td><td>1</td><td>&nbsp;</td></tr>
- * <tr><td>Location</td><td>2</td><td>if $messageLayer='P2P' then<br/>&nbsp;$messagingLayer.$businessDomain.$applicationName.$applicationFunction.$paradigm<br/>else<br/>&nbsp;$messagingLayer.$businessDomain.$serviceLayer.$serviceName.$serviceContext.$serviceContextVersion.$operationName.$operationVersion.$paradigm</td></tr>
+ * <tr><td>Location</td><td>2</td><td>if $messagingLayer='P2P' then<br/>&nbsp;$messagingLayer.$businessDomain.$applicationName.$applicationFunction.$paradigm<br/>else<br/>&nbsp;$messagingLayer.$businessDomain.$serviceLayer.$serviceName.$serviceContext.$serviceContextVersion.$operationName.$operationVersion.$paradigm</td></tr>
  * <tr><td>HeaderFields</td><td>1</td><td>&nbsp;</td></tr>
  * <tr><td>CPAId</td><td>2</td><td>$cpaId</td></tr>
  * <tr><td>ConversationId</td><td>2</td><td>$conversationId</td></tr>
