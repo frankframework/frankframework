@@ -1,6 +1,9 @@
 /*
  * $Log: FTPsClient.java,v $
- * Revision 1.12  2011-11-30 13:52:04  europe\m168309
+ * Revision 1.13  2011-12-20 12:11:53  l190409
+ * improved error handling
+ *
+ * Revision 1.12  2011/11/30 13:52:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -146,8 +149,9 @@ public class FTPsClient extends FTPClient {
 				throw e;
 			}
 			catch(Exception e) {
-				log.error(e);
-				throw new IOException("Unexpected error");
+				IOException ioe = new IOException("Unexpected error");
+				ioe.initCause(e);
+				throw ioe;
 			}
 		}
 		else {
@@ -304,7 +308,9 @@ public class FTPsClient extends FTPClient {
 			replyCode = Integer.parseInt(code);
 		}
 		catch (NumberFormatException e) {
-			throw new MalformedServerReplyException("Could not parse response code.\nServer Reply: " + line);
+			MalformedServerReplyException mfre = new MalformedServerReplyException("Could not parse response code.\nServer Reply [" + line+"]");
+			mfre.initCause(e);
+			throw mfre;
 		}
 	
 		// Get extra lines if message continues.

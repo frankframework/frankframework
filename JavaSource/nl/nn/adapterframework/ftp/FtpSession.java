@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.19  2011-11-30 13:52:04  europe\m168309
+ * Revision 1.20  2011-12-20 12:11:53  l190409
+ * improved error handling
+ *
+ * Revision 1.19  2011/11/30 13:52:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -261,7 +264,7 @@ public class FtpSession {
 			getFileTypeIntValue();
 		}
 		catch(IOException e) {
-			throw new ConfigurationException(e.getMessage());
+			throw new ConfigurationException(e);
 		}
 		
 	}
