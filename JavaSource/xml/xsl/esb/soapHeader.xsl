@@ -21,7 +21,7 @@
 	<xsl:param name="correlationId" />
 	<xsl:param name="timestamp" />
 	<xsl:template match="/">
-		<MessageHeader xmlns="uri://nn.nl/XSD/Generic/MessageHeader/1">
+		<MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
 			<From>
 				<Id>
 					<xsl:value-of select="$fromId" />
