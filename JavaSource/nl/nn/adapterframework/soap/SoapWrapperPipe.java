@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapperPipe.java,v $
- * Revision 1.5  2011-12-15 10:52:11  europe\m168309
+ * Revision 1.6  2011-12-23 16:02:40  europe\m168309
+ * added soapBodyStyleSheet attribute
+ *
+ * Revision 1.5  2011/12/15 10:52:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added soapHeaderStyleSheet, removeOutputNamespaces and outputNamespace attribute
  *
  * Revision 1.4  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -48,13 +51,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
  * <tr><td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td><td>
  * <table> 
- * <tr><td><code>direction=unwrap</code></td><td>name of the session key to store the content of the SOAP header from the request in</td></tr>
- * <tr><td><code>direction=wrap</code></td><td>name of the session key to retrieve the content of the SOAP header for the response from. If the attribute soapHeaderStyleSheet is not empty, the attribute soapHeaderStyleSheet precedes this attribute</td></tr>
+ * <tr><td><code>direction=unwrap</code></td><td>name of the session key to store the content of the SOAP Header from the request in</td></tr>
+ * <tr><td><code>direction=wrap</code></td><td>name of the session key to retrieve the content of the SOAP Header for the response from. If the attribute soapHeaderStyleSheet is not empty, the attribute soapHeaderStyleSheet precedes this attribute</td></tr>
  * </table> 
  * </td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setEncodingStyle(String) encodingStyle}</td><td>the encodingStyle to be set in the messageheader</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setEncodingStyle(String) encodingStyle}</td><td>the encodingStyle to be set in the SOAP Header</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceNamespace(String) serviceNamespace}</td><td>the namespace of the message sent. Identifies the service to be called. May be overriden by an actual namespace setting in the message to be sent</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>(only used when <code>direction=wrap</code>) stylesheet to create the content of the SOAP Header. As input for this stylesheet a dummy xml string is used</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>(only used when <code>direction=wrap</code>) stylesheet to create the content of the SOAP Header. As input for this stylesheet a dummy xml string is used. Note: outputType=<code>xml</code> and xslt2=<code>true</code></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSoapBodyStyleSheet(String) soapBodyStyleSheet}</td><td>(only used when <code>direction=wrap</code>) stylesheet to apply to the input message. Note: outputType=<code>xml</code> and xslt2=<code>true</code></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoveOutputNamespaces(boolean) removeOutputNamespaces}</td><td>(only used when <code>direction=unwrap</code>) when <code>true</code>, namespaces (and prefixes) in the content of the SOAP Body are removed</td><td>false</td></tr>
  * <tr><td>{@link #setOutputNamespace(String) outputNamespace}</td><td>(only used when <code>direction=wrap</code>) when not empty, this namespace is added to the root element in the SOAP Body</td><td>&nbsp;</td></tr>
  * <table> 
@@ -79,12 +83,14 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	private String encodingStyle = null;
 	private String serviceNamespace = null;
 	private String soapHeaderStyleSheet = null;
+	private String soapBodyStyleSheet = null;
 	private boolean removeOutputNamespaces = false;
 	private String outputNamespace = null;
 
 	private SoapWrapper soapWrapper = null;
 
 	private TransformerPool soapHeaderTp = null;
+	private TransformerPool soapBodyTp = null;
 	private TransformerPool removeOutputNamespacesTp = null;
 	private TransformerPool outputNamespaceTp = null;
 
@@ -94,6 +100,9 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 
 		if (StringUtils.isNotEmpty(getSoapHeaderStyleSheet())) {
 			soapHeaderTp = TransformerPool.configureTransformer0(getLogPrefix(null), null, null, getSoapHeaderStyleSheet(), "xml", false, getParameterList(), true);
+		}
+		if (StringUtils.isNotEmpty(getSoapBodyStyleSheet())) {
+			soapBodyTp = TransformerPool.configureTransformer0(getLogPrefix(null), null, null, getSoapBodyStyleSheet(), "xml", false, getParameterList(), true);
 		}
 		try {
 			if (isRemoveOutputNamespaces()) {
@@ -118,6 +127,13 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 				throw new PipeStartException(getLogPrefix(null)+"cannot start SOAP Header TransformerPool", e);
 			}
 		}
+		if (soapBodyTp != null) {
+			try {
+				soapBodyTp.open();
+			} catch (Exception e) {
+				throw new PipeStartException(getLogPrefix(null)+"cannot start SOAP Body TransformerPool", e);
+			}
+		}
 		if (removeOutputNamespacesTp != null) {
 			try {
 				removeOutputNamespacesTp.open();
@@ -138,6 +154,9 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		super.stop();
 		if (soapHeaderTp != null) {
 			soapHeaderTp.close();
+		}
+		if (soapBodyTp != null) {
+			soapBodyTp.close();
 		}
 		if (removeOutputNamespacesTp != null) {
 			removeOutputNamespacesTp.close();
@@ -172,15 +191,23 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 				} else {
 					payload = input.toString();
 				}
+				if (soapBodyTp != null) {
+					ParameterResolutionContext prc = new ParameterResolutionContext(payload, session);
+					Map parameterValues = null;
+					if (getParameterList()!=null) {
+						parameterValues = prc.getValueMap(getParameterList());
+					}
+					payload = soapBodyTp.transform(prc.getInputSource(), parameterValues); 
+				}
 				
 				result = wrapMessage(payload, soapHeader);
 			} else {
 				result = unwrapMessage(input.toString());
 				if (StringUtils.isEmpty(result)) {
-					throw new PipeRunException(this, getLogPrefix(session) + "SOAP body is empty or message is not a SOAP message");
+					throw new PipeRunException(this, getLogPrefix(session) + "SOAP Body is empty or message is not a SOAP Message");
 				}
 				if (soapWrapper.getFaultCount(input.toString()) > 0) {
-					throw new PipeRunException(this, getLogPrefix(session) + "SOAP body contains SOAP fault");
+					throw new PipeRunException(this, getLogPrefix(session) + "SOAP Body contains SOAP Fault");
 				}
 				if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 					String soapHeader = soapWrapper.getHeader(input.toString());
@@ -237,6 +264,13 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	}
 	public String getSoapHeaderStyleSheet() {
 		return soapHeaderStyleSheet;
+	}
+
+	public void setSoapBodyStyleSheet(String string){
+		this.soapBodyStyleSheet = string;
+	}
+	public String getSoapBodyStyleSheet() {
+		return soapBodyStyleSheet;
 	}
 
 	public void setRemoveOutputNamespaces(boolean b) {
