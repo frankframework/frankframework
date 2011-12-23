@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.3  2011-12-20 14:52:24  europe\m168309
+ * Revision 1.4  2011-12-23 16:04:54  europe\m168309
+ * added mode 'reg'
+ *
+ * Revision 1.3  2011/12/20 14:52:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * updated javadoc
  *
  * Revision 1.2  2011/12/20 10:50:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -27,10 +30,14 @@ import nl.nn.adapterframework.util.AppConstants;
  * <p><b>Configuration </b><i>(where deviating from SoapWrapperPipe)</i><b>:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setMode(String) mode}</td><td><code>i2t</code> (ifsa2tibco)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMode(String) mode}</td><td>either <code>i2t</code> (ifsa2tibco) or <code>reg/reg2</code> (regular)</td><td>reg</td></tr>
+ * <tr><td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td><td>if direction=<code>unwrap</code>: </td><td>soapHeader</td></tr>
+ * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>if direction=<code>wrap</code> and mode=<code>i2t</code>:</td><td>/xml/xsl/esb/soapHeader.xsl</td></tr>
+ * <tr><td></td><td>if direction=<code>wrap</code> and mode=<code>reg</code>:</td><td>TODO (for now identical to the "<code>i2t</code>" SOAP Header)</td></tr>
+ * <tr><td>{@link #setSoapBodyStyleSheet(String) soapBodyStyleSheet}</td><td>if direction=<code>wrap</code> and mode=<code>reg</code>:</td><td>/xml/xsl/esb/soapBody.xsl</td></tr>
  * </table></p>
  * <p>
- * When mode=<code>i2t</code> the following SOAP Header is created through a stylesheet (<code>soapHeaderStyleSheet</code>) in which various parameters are used:
+ * <b>/xml/xsl/esb/soapHeader.xsl:</b>
  * <table border="1">
  * <tr><th>element</th><th>level</th><th>value</th></tr>
  * <tr><td>MessageHeader</td><td>0</td><td>&nbsp;</td></tr>
@@ -41,7 +48,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>HeaderFields</td><td>1</td><td>&nbsp;</td></tr>
  * <tr><td>CPAId</td><td>2</td><td>$cpaId</td></tr>
  * <tr><td>ConversationId</td><td>2</td><td>$conversationId</td></tr>
- * <tr><td>CorrelationId</td><td>2</td><td>$correlationId (if empty then skip element)</td></tr>
+ * <tr><td>CorrelationId</td><td>2</td><td>$correlationId (if empty then skip this element)</td></tr>
  * <tr><td>MessageId</td><td>2</td><td>$messageId</td></tr>
  * <tr><td>Timestamp</td><td>2</td><td>$timestamp</td></tr>
  * <tr><td>Service</td><td>1</td><td>&nbsp;</td></tr>
@@ -52,7 +59,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>Name</td><td>3</td><td>$operationName</td></tr>
  * <tr><td>Version</td><td>3</td><td>$operationVersion</td></tr>
  * </table>
- * </p><b>Parameters:</b>
+ * <b>Parameters:</b>
  * <table border="1">
  * <tr><th>name</th><th>default</th></tr>
  * <tr><td>businessDomain</td><td>&nbsp;</td></tr>
@@ -74,6 +81,52 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>timestamp</td><td>parameter pattern '{now,date,yyyy-MM-dd'T'HH:mm:ss}'</td></tr>
  * </table>
  * </p>
+ * <p>
+ * <b>/xml/xsl/esb/soapBody.xsl:</b>
+ * <table border="1">
+ * <tr><th>element</th><th>level</th><th>value</th></tr>
+ * <tr><td>[Payload]</td><td>0</td><td>if $errorCode is empty then the complete payload will be copied<br/>else only the root tag will be copied</td></tr>
+ * <tr><td>Result</td><td>1</td><td>this element will be the last child in the copied root tag; if $errorCode is empty then skip this element including its child elements</td></tr>
+ * <tr><td>Status</td><td>2</td><td>if $errorCode is empty then 'OK'</br>else 'ERROR'</td></tr>
+ * <tr><td>ErrorList</td><td>2</td><td>if $errorCode is empty then skip this element including its child elements</td></tr>
+ * <tr><td>Error</td><td>3</td><td>&nbsp;</td></tr>
+ * <tr><td>Code</td><td>4</td><td>$errorCode</td></tr>
+ * <tr><td>Reason</td><td>4</td><td>if $errorReason is not empty then $errorReason</br>else it will be derived from $errorCode:
+ *   <table border="1">
+ *   <tr><th>errorCode</th><th>errorText</th></tr>
+ *   <tr><td>ERR6002</td><td>Service Interface Request Time Out</td></tr>
+ *   <tr><td>ERR6003</td><td>Invalid Request Message</td></tr>
+ *   <tr><td>ERR6004</td><td>Invalid Backend system response</td></tr>
+ *   <tr><td>ERR6005</td><td>Backend system failure response</td></tr>
+ *   <tr><td>ERR6999</td><td>Unspecified Errors</td></tr>
+ *  </table>
+ * </td></tr>
+ * <tr><td>Service</td><td>4</td><td>&nbsp;</td></tr>
+ * <tr><td>Name</td><td>5</td><td>$serviceName</td></tr>
+ * <tr><td>Context</td><td>5</td><td>$serviceContext</td></tr>
+ * <tr><td>Action</td><td>5</td><td>&nbsp;</td></tr>
+ * <tr><td>Paradigm</td><td>6</td><td>$paradigm</td></tr>
+ * <tr><td>Name</td><td>6</td><td>$operationName</td></tr>
+ * <tr><td>Version</td><td>6</td><td>$operationVersion</td></tr>
+ * <tr><td>DetailList</td><td>4</td><td>if $errorDetailCode is empty then skip this element including its child elements</td></tr>
+ * <tr><td>Detail</td><td>5</td><td>&nbsp;</td></tr>
+ * <tr><td>Code</td><td>6</td><td>$errorDetailCode</td></tr>
+ * <tr><td>Text</td><td>6</td><td>$errorDetailText (if empty then skip this element)</td></tr>
+ * </table>
+ * <b>Parameters:</b>
+ * <table border="1">
+ * <tr><th>name</th><th>default</th></tr>
+ * <tr><td>errorCode</td><td>&nbsp;</td></tr>
+ * <tr><td>errorReason</td><td>&nbsp;</td></tr>
+ * <tr><td>errorDetailCode</td><td>&nbsp;</td></tr>
+ * <tr><td>errorDetailText</td><td>&nbsp;</td></tr>
+ * <tr><td>serviceName</td><td>&nbsp;</td></tr>
+ * <tr><td>serviceContext</td><td>&nbsp;</td></tr>
+ * <tr><td>operationName</td><td>&nbsp;</td></tr>
+ * <tr><td>operationVersion</td><td>1</td></tr>
+ * <tr><td>paradigm</td><td>&nbsp;</td></tr>
+ * </table>
+ * </p>
  * @version Id
  * @author Peter Leeuwenburgh
  */
@@ -86,22 +139,30 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	private final static String TIMESTAMP = "timestamp";
 
 	private final static String MODE_I2T = "i2t";
+	private final static String MODE_REG = "reg";
 	private final static String SOAPHEADER = "soapHeader";
 
-	private String mode = null;
+	private String mode = MODE_REG;
 
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getMode())) {
 			throw new ConfigurationException(getLogPrefix(null) + "mode must be set");
 		}
-		if (!getMode().equalsIgnoreCase(MODE_I2T)) {
-			throw new ConfigurationException(getLogPrefix(null)+"illegal value for mode ["+getMode()+"], must be '"+MODE_I2T+"'");
+		if (!getMode().equalsIgnoreCase(MODE_I2T) && !getMode().equalsIgnoreCase(MODE_REG)) {
+			throw new ConfigurationException(getLogPrefix(null)+"illegal value for mode ["+getMode()+"], must be '"+MODE_I2T+"' or '"+MODE_REG+"'");
 		}
 		if ("unwrap".equalsIgnoreCase(getDirection())) {
-			setSoapHeaderSessionKey(SOAPHEADER);
+			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
+				setSoapHeaderSessionKey(SOAPHEADER);
+			}
 		}
 		if ("wrap".equalsIgnoreCase(getDirection())) {
-			setSoapHeaderStyleSheet("/xml/xsl/esb/soapHeader.xsl");
+			if (StringUtils.isEmpty(getSoapHeaderStyleSheet())) {
+				setSoapHeaderStyleSheet("/xml/xsl/esb/soapHeader.xsl");
+			}
+			if (getMode().equalsIgnoreCase(MODE_REG) && StringUtils.isEmpty(getSoapBodyStyleSheet())) {
+				setSoapBodyStyleSheet("/xml/xsl/esb/soapBody.xsl");
+			}
 			addParameters();
 		}
 		super.configure();
