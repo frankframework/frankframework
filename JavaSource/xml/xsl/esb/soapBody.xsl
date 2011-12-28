@@ -91,7 +91,7 @@
 										<Code>
 											<xsl:value-of select="$errorDetailCode" />
 										</Code>
-										<xsl:if test="string-length($errorDetailCode)&gt;0">
+										<xsl:if test="string-length($errorDetailText)&gt;0">
 											<Text>
 												<xsl:value-of select="$errorDetailText" />
 											</Text>
