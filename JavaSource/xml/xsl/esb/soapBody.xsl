@@ -11,9 +11,15 @@
 	<xsl:param name="operationVersion">1</xsl:param>
 	<xsl:param name="paradigm" />
 	<!--
-		if $errorCode is empty then the complete input message is copied
+		if $errorCode is empty then the complete input message is copied and a result tag is added as last child of the root tag if it doesn't exist
 		if $errorCode is not empty then the root tag of the input message is copied and a result tag is wrapped in this copied root tag
 	-->
+	<xsl:variable name="result_exists">
+		<xsl:choose>
+			<xsl:when test="*/Result">true</xsl:when>
+			<xsl:otherwise>false</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
 	<xsl:template match="/">
 		<xsl:choose>
 			<xsl:when test="string-length($errorCode)=0">
@@ -27,6 +33,9 @@
 	<xsl:template match="*|@*|comment()|processing-instruction()|text()" mode="ok">
 		<xsl:copy>
 			<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" mode="ok" />
+			<xsl:if test="not(parent::*) and $result_exists='false'">
+				<xsl:call-template name="Result" />
+			</xsl:if>
 		</xsl:copy>
 	</xsl:template>
 	<xsl:template match="*|@*|comment()|processing-instruction()|text()" mode="error">
@@ -62,7 +71,9 @@
 										</xsl:choose>
 									</xsl:when>
 									<xsl:otherwise>
+										<xsl:text disable-output-escaping="yes">&lt;![CDATA[</xsl:text>
 										<xsl:value-of select="$errorReason" />
+										<xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
 									</xsl:otherwise>
 								</xsl:choose>
 							</Reason>
@@ -93,7 +104,9 @@
 										</Code>
 										<xsl:if test="string-length($errorDetailText)&gt;0">
 											<Text>
+												<xsl:text disable-output-escaping="yes">&lt;![CDATA[</xsl:text>
 												<xsl:value-of select="$errorDetailText" />
+												<xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
 											</Text>
 										</xsl:if>
 									</Detail>
