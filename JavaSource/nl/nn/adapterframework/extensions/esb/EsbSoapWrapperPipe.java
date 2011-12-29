@@ -1,6 +1,10 @@
 /*
  * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.4  2011-12-23 16:04:54  europe\m168309
+ * Revision 1.5  2011-12-29 13:37:48  europe\m168309
+ * - updated javadoc
+ * - added addOutputNamespace attribute
+ *
+ * Revision 1.4  2011/12/23 16:04:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added mode 'reg'
  *
  * Revision 1.3  2011/12/20 14:52:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -35,12 +39,14 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>if direction=<code>wrap</code> and mode=<code>i2t</code>:</td><td>/xml/xsl/esb/soapHeader.xsl</td></tr>
  * <tr><td></td><td>if direction=<code>wrap</code> and mode=<code>reg</code>:</td><td>TODO (for now identical to the "<code>i2t</code>" SOAP Header)</td></tr>
  * <tr><td>{@link #setSoapBodyStyleSheet(String) soapBodyStyleSheet}</td><td>if direction=<code>wrap</code> and mode=<code>reg</code>:</td><td>/xml/xsl/esb/soapBody.xsl</td></tr>
+ * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters ("http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion")</td><td><code>false</code></td></tr>
  * </table></p>
  * <p>
  * <b>/xml/xsl/esb/soapHeader.xsl:</b>
  * <table border="1">
  * <tr><th>element</th><th>level</th><th>value</th></tr>
  * <tr><td>MessageHeader</td><td>0</td><td>&nbsp;</td></tr>
+ * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns="http://nn.nl/XSD/Generic/MessageHeader/1"</td></tr>
  * <tr><td>From</td><td>1</td><td>&nbsp;</td></tr>
  * <tr><td>Id</td><td>2</td><td>$fromId</td></tr>
  * <tr><td>To</td><td>1</td><td>&nbsp;</td></tr>
@@ -85,8 +91,9 @@ import nl.nn.adapterframework.util.AppConstants;
  * <b>/xml/xsl/esb/soapBody.xsl:</b>
  * <table border="1">
  * <tr><th>element</th><th>level</th><th>value</th></tr>
- * <tr><td>[Payload]</td><td>0</td><td>if $errorCode is empty then the complete payload will be copied<br/>else only the root tag will be copied</td></tr>
- * <tr><td>Result</td><td>1</td><td>this element will be the last child in the copied root tag; if $errorCode is empty then skip this element including its child elements</td></tr>
+ * <tr><td>[Payload]</td><td>0</td><td>if $errorCode is empty then the complete payload will be copied and if not already existing a Result tag will be added<br/>else only the root tag will be copied</td></tr>
+ * <tr><td>Result</td><td>1</td><td>this element will be the last child in the copied root tag; if $errorCode is empty and a Result tag already exists then skip this element including its child elements</td></tr>
+ * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns="http://nn.nl/XSD/Generic/MessageHeader/1"</td></tr>
  * <tr><td>Status</td><td>2</td><td>if $errorCode is empty then 'OK'</br>else 'ERROR'</td></tr>
  * <tr><td>ErrorList</td><td>2</td><td>if $errorCode is empty then skip this element including its child elements</td></tr>
  * <tr><td>Error</td><td>3</td><td>&nbsp;</td></tr>
@@ -131,6 +138,12 @@ import nl.nn.adapterframework.util.AppConstants;
  * @author Peter Leeuwenburgh
  */
 public class EsbSoapWrapperPipe extends SoapWrapperPipe {
+	private final static String BUSINESSDOMAIN = "businessDomain";
+	private final static String SERVICENAME = "serviceName";
+	private final static String SERVICECONTEXT = "serviceContext";
+	private final static String SERVICECONTEXTVERSION = "serviceContextVersion";
+	private final static String OPERATIONNAME = "operationName";
+	private final static String OPERATIONVERSION = "operationVersion";
 	private final static String FROMID= "fromId";
 	private final static String CPAID = "cpaId";
 	private final static String CONVERSATIONID = "conversationId";
@@ -143,6 +156,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	private final static String SOAPHEADER = "soapHeader";
 
 	private String mode = MODE_REG;
+	private boolean addOutputNamespace = false;
 
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getMode())) {
@@ -162,6 +176,16 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			}
 			if (getMode().equalsIgnoreCase(MODE_REG) && StringUtils.isEmpty(getSoapBodyStyleSheet())) {
 				setSoapBodyStyleSheet("/xml/xsl/esb/soapBody.xsl");
+			}
+			if (isAddOutputNamespace()) {
+				ParameterList parameterList = getParameterList();
+				String ons = "http://nn.nl/XSD/" + parameterList.findParameter(BUSINESSDOMAIN).getValue() +
+					"/" + parameterList.findParameter(SERVICENAME).getValue() +
+					"/" + parameterList.findParameter(SERVICECONTEXT).getValue() +
+					"/" + parameterList.findParameter(SERVICECONTEXTVERSION).getValue() +
+					"/" + parameterList.findParameter(OPERATIONNAME).getValue() +
+					"/" + parameterList.findParameter(OPERATIONVERSION).getValue();
+				setOutputNamespace(ons);
 			}
 			addParameters();
 		}
@@ -220,4 +244,11 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return mode;
 	}
 
+	public void setAddOutputNamespace(boolean b) {
+		addOutputNamespace = b;
+	}
+
+	public boolean isAddOutputNamespace() {
+		return addOutputNamespace;
+	}
 }
