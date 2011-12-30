@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.51  2011-12-05 15:34:00  l190409
+ * Revision 1.52  2011-12-30 09:39:31  europe\m168309
+ * added addEsbSoapAction attribute
+ *
+ * Revision 1.51  2011/12/05 15:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved warning for delivery mode
  *
  * Revision 1.43  2011/06/06 14:32:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -183,6 +186,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setUseDynamicReplyQueue(boolean) useDynamicReplyQueue}</td><td>when <code>true</code>, a temporary queue is used to receive a reply</td><td>false</td></tr>
  * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAddEsbSoapAction(boolean) addEsbSoapAction}</td><td>when <code>true</code>, the SoapAction is derived from the element MessageHeader/To/Location in the SOAP header of the input message</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setSoapHeaderParam(String) soapHeaderParam}</td><td>name of parameter containing SOAP header</td><td>soapHeader</td></tr>
  * <tr><td>{@link #setReplySoapHeaderSessionKey(String) replySoapHeaderSessionKey}</td><td>session key to store SOAP header of reply</td><td>soapHeader</td></tr>
  * </table>
@@ -211,6 +215,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	private String encodingStyleURI=null;
 	private String serviceNamespaceURI=null;
 	private String soapAction=null;
+	private boolean addEsbSoapAction=false;
 	private String soapHeaderParam="soapHeader";
 	private String linkMethod="MESSAGEID";
 	
@@ -221,11 +226,23 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	 * Configures the sender
 	 */
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isNotEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
-			Parameter p = new Parameter();
-			p.setName("SoapAction");
-			p.setValue(getSoapAction());
-			addParameter(p);
+		if ((paramList==null || paramList.findParameter("SoapAction")==null)) {
+			if (isAddEsbSoapAction()) {
+				Parameter p = new Parameter();
+				p.setName("SoapAction");
+				p.setStyleSheetName("/xml/xsl/esb/soapAction.xsl");
+				if (StringUtils.isNotEmpty(getSoapAction())) {
+					p.setDefaultValue(getSoapAction());
+				}
+				addParameter(p);
+			} else {
+				if (StringUtils.isNotEmpty(getSoapAction())) {
+					Parameter p = new Parameter();
+					p.setName("SoapAction");
+					p.setValue(getSoapAction());
+					addParameter(p);
+				}
+			}
 		}
 		if (paramList!=null) {
 			paramList.configure();
@@ -531,6 +548,13 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	}
 	public String getSoapAction() {
 		return soapAction;
+	}
+
+	public void setAddEsbSoapAction(boolean b) {
+		addEsbSoapAction = b;
+	}
+	public boolean isAddEsbSoapAction() {
+		return addEsbSoapAction;
 	}
 
 	public void setSoapHeaderParam(String string) {
