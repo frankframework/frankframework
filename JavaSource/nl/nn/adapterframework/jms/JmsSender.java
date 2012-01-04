@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.52  2011-12-30 09:39:31  europe\m168309
+ * Revision 1.53  2012-01-04 10:52:46  europe\m168309
+ * adjusted addEsbSoapAction attribute
+ *
+ * Revision 1.52  2011/12/30 09:39:31  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added addEsbSoapAction attribute
  *
  * Revision 1.51  2011/12/05 15:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -231,6 +234,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 				Parameter p = new Parameter();
 				p.setName("SoapAction");
 				p.setStyleSheetName("/xml/xsl/esb/soapAction.xsl");
+				p.setRemoveNamespaces(true);
 				if (StringUtils.isNotEmpty(getSoapAction())) {
 					p.setDefaultValue(getSoapAction());
 				}
