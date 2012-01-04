@@ -16,7 +16,7 @@
 	-->
 	<xsl:variable name="result_exists">
 		<xsl:choose>
-			<xsl:when test="*/Result">true</xsl:when>
+			<xsl:when test="*/*[local-name(.)='Result']">true</xsl:when>
 			<xsl:otherwise>false</xsl:otherwise>
 		</xsl:choose>
 	</xsl:variable>
