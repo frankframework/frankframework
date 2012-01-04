@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.43  2011-11-30 13:52:03  europe\m168309
+ * Revision 1.44  2012-01-04 10:50:50  europe\m168309
+ * added removeNamespaces attribute
+ *
+ * Revision 1.43  2011/11/30 13:52:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -147,6 +150,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.xml.transform.Source;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
@@ -201,6 +205,7 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>The xpath expression to extract the parameter value from the (xml formatted) input or session-variable.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNamespaceDefs(String) namespaceDefs}</td><td>namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>URL to a stylesheet that wil be applied to the contents of the message or the value of the session-variable.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRemoveNamespaces(boolean) removeNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the input message are removed before the stylesheet/xpathExpression is executed</td><td>false</td></tr>
  * <tr><td>{@link #setDefaultValue(String) defaultValue}</td><td>If the result of sessionKey, XpathExpressen and/or Stylesheet returns null or an empty String, this value is returned</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPattern(String) pattern}</td><td>Value of parameter is determined using substitution and formating. The expression can contain references to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. {now}, {uid}, {hostname} and {fixeddate} are named constants that can be used in the expression. If fname is a parameter or session variable that resolves to Eric, then the pattern 'Hi {fname}, hoe gaat het?' resolves to 'Hi Eric, hoe gaat het?'. A guid can be generated using {hostname}_{uid}, see also <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html</a> for more information about (g)uid's.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValue(String) value}</td><td>A fixed value</td><td>&nbsp;</td></tr>
@@ -232,7 +237,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.43 $ $Date: 2011-11-30 13:52:03 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.44 $ $Date: 2012-01-04 10:50:50 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static String TYPE_XML="xml";
@@ -262,9 +267,11 @@ public class Parameter implements INamedObject, IWithParameters {
 	private String decimalSeparator = null;
 	private String groupingSeparator = null;
 	private boolean hidden = false;
+	private boolean removeNamespaces=false;
 
 	private DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
+	private TransformerPool transformerPoolRemoveNamespaces;
 	protected ParameterList paramList = null;
 	private boolean configured = false;
 
@@ -292,6 +299,14 @@ public class Parameter implements INamedObject, IWithParameters {
 				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
 			}
 	    }
+		if (isRemoveNamespaces()) {
+			String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
+			try {
+				transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
+			} catch (TransformerConfigurationException te) {
+				throw new ConfigurationException("Got error creating transformer from removeNamespaces", te);
+			}
+		}
 		if (TYPE_DATE.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_DATE_PATTERN);
 		}
@@ -374,6 +389,10 @@ public class Parameter implements INamedObject, IWithParameters {
 					source = prc.getInputSource();
 				}
 				if (source!=null) {
+					if (transformerPoolRemoveNamespaces != null) {
+						String rnResult = transformerPoolRemoveNamespaces.transform(source, null);
+						source = XmlUtils.stringToSource(rnResult);
+					}
 					transformResult = transform(source,prc);
 				}
 				if (!(transformResult instanceof String) || StringUtils.isNotEmpty((String)transformResult)) {
@@ -647,4 +666,10 @@ public class Parameter implements INamedObject, IWithParameters {
 		return namespaceDefs;
 	}
 
+	public void setRemoveNamespaces(boolean b) {
+		removeNamespaces = b;
+	}
+	public boolean isRemoveNamespaces() {
+		return removeNamespaces;
+	}
 }
