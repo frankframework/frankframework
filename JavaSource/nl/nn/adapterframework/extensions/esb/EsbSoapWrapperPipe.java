@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.5  2011-12-29 13:37:48  europe\m168309
+ * Revision 1.6  2012-01-04 11:02:21  europe\m168309
+ * adjusted xpathExpression in soap header parameters
+ *
+ * Revision 1.5  2011/12/29 13:37:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * - updated javadoc
  * - added addOutputNamespace attribute
  *
@@ -205,14 +208,16 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			p = new Parameter();
 			p.setName(CPAID);
 			p.setSessionKey(SOAPHEADER);
-			p.setXpathExpression("*/HeaderFields/CPAId");
+			p.setXpathExpression("MessageHeader/HeaderFields/CPAId");
+			p.setRemoveNamespaces(true);
 			addParameter(p);
 		}
 		if (parameterList.findParameter(CONVERSATIONID)==null) {
 			p = new Parameter();
 			p.setName(CONVERSATIONID);
 			p.setSessionKey(SOAPHEADER);
-			p.setXpathExpression("*/HeaderFields/ConversationId");
+			p.setXpathExpression("MessageHeader/HeaderFields/ConversationId");
+			p.setRemoveNamespaces(true);
 			addParameter(p);
 		}
 		if (parameterList.findParameter(MESSAGEID)==null) {
@@ -225,7 +230,8 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			p = new Parameter();
 			p.setName(CORRELATIONID);
 			p.setSessionKey(SOAPHEADER);
-			p.setXpathExpression("*/HeaderFields/MessageId");
+			p.setXpathExpression("MessageHeader/HeaderFields/MessageId");
+			p.setRemoveNamespaces(true);
 			addParameter(p);
 		}
 		if (parameterList.findParameter(TIMESTAMP)==null) {
