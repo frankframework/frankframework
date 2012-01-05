@@ -3,7 +3,7 @@
 	<xsl:output method="xml" indent="yes" />
 	<!--
 		This XSLT adjusts the IBIS configuration as follows:
-		- disable all receiver elements, except those with childs JdbcQueryListener, DirectoryListener and JavaListener
+		- disable all receiver elements, except those with childs JdbcQueryListener, DirectoryListener, JavaListener and WebServiceListener
 		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter (and copy all attributes (except transactionAttribute), errorStorage and messageLog from disabled receiver when present)
 		- disable all listener elements which have a parent pipe
 		- stub all sender elements, which have a parent pipe, by an IbisJavaSender (serviceName="testtool-[pipe name]"), except the DirectQuerySender, FixedQuerySender, XmlQuerySender, DelaySender, EchoSender, IbisLocalSender, LogSender, ParallelSenders, SenderSeries, SenderWrapper, XsltSender and CommandSender
@@ -28,6 +28,9 @@
 						<xsl:call-template name="copy" />
 					</xsl:when>
 					<xsl:when test="listener[@className='nl.nn.adapterframework.receivers.JavaListener']">
+						<xsl:call-template name="copy" />
+					</xsl:when>
+					<xsl:when test="listener[@className='nl.nn.adapterframework.http.WebServiceListener']">
 						<xsl:call-template name="copy" />
 					</xsl:when>
 					<xsl:otherwise>
