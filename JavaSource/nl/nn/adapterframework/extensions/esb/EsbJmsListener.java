@@ -1,6 +1,9 @@
 /*
  * $Log: EsbJmsListener.java,v $
- * Revision 1.1  2012-01-05 09:59:16  europe\m168309
+ * Revision 1.2  2012-01-05 10:25:13  europe\m168309
+ * corrected javadoc
+ *
+ * Revision 1.1  2012/01/05 09:59:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * initial version
  *
  *
@@ -27,7 +30,7 @@ import nl.nn.adapterframework.jms.JmsListener;
  * <ul>
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td><td>&nbsp;</td></td></tr>
+ * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUseReplyTo(boolean) useReplyTo}</td><td>if messageProtocol=<code>FF</code>: </td><td>false</td></tr>
  * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
  * </table></p>

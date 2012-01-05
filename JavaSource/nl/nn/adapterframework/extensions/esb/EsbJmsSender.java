@@ -1,6 +1,9 @@
 /*
  * $Log: EsbJmsSender.java,v $
- * Revision 1.1  2012-01-05 09:59:16  europe\m168309
+ * Revision 1.2  2012-01-05 10:25:13  europe\m168309
+ * corrected javadoc
+ *
+ * Revision 1.1  2012/01/05 09:59:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * initial version
  *
  *
@@ -24,10 +27,10 @@ import org.apache.commons.lang.StringUtils;
  * <ul>
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td><td>&nbsp;</td></td></tr>
+ * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>20000 (20s)</td></tr>
- * <tr><td>{@link #setMessageTimeToLive(String) messageTimeToLive}</td><td>if messageProtocol=<code>RR</code>: </td><td>@link #setTimeOut(long) timeOut}</td></tr>
- * <tr><td>{@link #setReplyTimeout(String) replyTimeout}</td><td>if messageProtocol=<code>RR</code>: </td><td>@link #setTimeOut(long) timeOut}</td></tr>
+ * <tr><td>{@link #setMessageTimeToLive(String) messageTimeToLive}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
+ * <tr><td>{@link #setReplyTimeout(String) replyTimeout}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
  * <tr><td>{@link #setSynchronous(String) synchronous}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>is derived from the element MessageHeader/To/Location in the SOAP header of the input message</td></tr>
  * </table></p>
