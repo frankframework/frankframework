@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.38  2011-11-30 13:52:01  europe\m168309
+ * Revision 1.39  2012-01-06 09:23:26  m00f069
+ * Don't remove SOAP envelope from response when soap="false"
+ *
+ * Revision 1.38  2011/11/30 13:52:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -143,7 +146,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrlParam(String) urlParam}</td><td>parameter that is used to obtain url; overrides url-attribute.</td><td>url</td></tr>
  * <tr><td>{@link #setContentType(String) contentType}</td><td>content-type of the request, only for POST methods</td><td>text/xml; charset=UTF-8</td></tr>
- * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope and the SOAP envelope is removed from received messages</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>the SOAPActionUri to be set in the requestheader</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapActionURI(String) soapActionURI}</td><td>deprecated: Please use soapAction instead</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapActionParam(String) soapActionParam}</td><td>parameter to obtain the SOAPActionUri</td><td>&nbsp;</td></tr>
@@ -290,8 +293,11 @@ public class WebServiceSender extends HttpSender {
 			soapWrapper.checkForSoapFault(httpResult, null);
 		}
 		try {
-			String result = soapWrapper.getBody(httpResult);
-			return (result);
+			if (isSoap()) {
+				return soapWrapper.getBody(httpResult);
+			} else {
+				return httpResult;
+			}
 		} catch (Exception e) {
 			throw new SenderException("cannot retrieve result message",e);
 		}
