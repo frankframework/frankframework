@@ -1,6 +1,9 @@
 /*
  * $Log: EsbJmsSender.java,v $
- * Revision 1.2  2012-01-05 10:25:13  europe\m168309
+ * Revision 1.3  2012-01-06 13:29:51  europe\m168309
+ * don't override soapAction when set
+ *
+ * Revision 1.2  2012/01/05 10:25:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.1  2012/01/05 09:59:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -32,7 +35,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setMessageTimeToLive(String) messageTimeToLive}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
  * <tr><td>{@link #setReplyTimeout(String) replyTimeout}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
  * <tr><td>{@link #setSynchronous(String) synchronous}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
- * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>is derived from the element MessageHeader/To/Location in the SOAP header of the input message</td></tr>
+ * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>if empty then derived from the element MessageHeader/To/Location in the SOAP header of the input message</td></tr>
  * </table></p>
  * 
  * @author  Peter Leeuwenburgh
@@ -61,7 +64,7 @@ public class EsbJmsSender extends JmsSender {
 				throw new ConfigurationException(getLogPrefix() + "replyToName [" + getReplyTo() + "] must not be set for messageProtocol [" + getMessageProtocol() + "]");
 			}
 		}
-		if ((paramList == null || paramList.findParameter("SoapAction") == null)) {
+		if (StringUtils.isNotEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
 			Parameter p = new Parameter();
 			p.setName("SoapAction");
 			p.setStyleSheetName("/xml/xsl/esb/soapAction.xsl");
