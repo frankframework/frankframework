@@ -1,6 +1,9 @@
 /*
  * $Log: ExtendedSoapWrapperPipe.java,v $
- * Revision 1.2  2011-12-08 09:04:16  europe\m168309
+ * Revision 1.3  2012-01-06 11:21:27  europe\m168309
+ * deprecated
+ *
+ * Revision 1.2  2011/12/08 09:04:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added messageHeaderFileName attribute
  *
  * Revision 1.1  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -172,6 +175,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * @version Id
  * @author Peter Leeuwenburgh
+ * @deprecated Please use nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe
  */
 public class ExtendedSoapWrapperPipe extends SoapWrapperPipe {
 	private final static String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
