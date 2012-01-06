@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.6  2012-01-04 11:02:21  europe\m168309
+ * Revision 1.7  2012-01-06 15:40:37  europe\m168309
+ * added mode 'bis'
+ *
+ * Revision 1.6  2012/01/04 11:02:21  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted xpathExpression in soap header parameters
  *
  * Revision 1.5  2011/12/29 13:37:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -37,7 +40,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <p><b>Configuration </b><i>(where deviating from SoapWrapperPipe)</i><b>:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setMode(String) mode}</td><td>either <code>i2t</code> (ifsa2tibco) or <code>reg/reg2</code> (regular)</td><td>reg</td></tr>
+ * <tr><td>{@link #setMode(String) mode}</td><td>either <code>i2t</code> (ifsa2tibco) or <code>reg</code> (regular)</td><td>reg</td></tr>
  * <tr><td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td><td>if direction=<code>unwrap</code>: </td><td>soapHeader</td></tr>
  * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>if direction=<code>wrap</code> and mode=<code>i2t</code>:</td><td>/xml/xsl/esb/soapHeader.xsl</td></tr>
  * <tr><td></td><td>if direction=<code>wrap</code> and mode=<code>reg</code>:</td><td>TODO (for now identical to the "<code>i2t</code>" SOAP Header)</td></tr>
@@ -152,10 +155,12 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	private final static String CONVERSATIONID = "conversationId";
 	private final static String MESSAGEID = "messageId";
 	private final static String CORRELATIONID = "correlationId";
+	private final static String EXTERNALREFTOMESSAGEID = "externalRefToMessageId";
 	private final static String TIMESTAMP = "timestamp";
 
 	private final static String MODE_I2T = "i2t";
 	private final static String MODE_REG = "reg";
+	private final static String MODE_BIS = "bis";
 	private final static String SOAPHEADER = "soapHeader";
 
 	private String mode = MODE_REG;
@@ -165,8 +170,8 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		if (StringUtils.isEmpty(getMode())) {
 			throw new ConfigurationException(getLogPrefix(null) + "mode must be set");
 		}
-		if (!getMode().equalsIgnoreCase(MODE_I2T) && !getMode().equalsIgnoreCase(MODE_REG)) {
-			throw new ConfigurationException(getLogPrefix(null)+"illegal value for mode ["+getMode()+"], must be '"+MODE_I2T+"' or '"+MODE_REG+"'");
+		if (!getMode().equalsIgnoreCase(MODE_I2T) && !getMode().equalsIgnoreCase(MODE_REG) && !getMode().equalsIgnoreCase(MODE_BIS)) {
+			throw new ConfigurationException(getLogPrefix(null)+"illegal value for mode ["+getMode()+"], must be '"+MODE_I2T+"', '"+MODE_REG+"' or '"+MODE_BIS+"'");
 		}
 		if ("unwrap".equalsIgnoreCase(getDirection())) {
 			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
@@ -175,10 +180,18 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		}
 		if ("wrap".equalsIgnoreCase(getDirection())) {
 			if (StringUtils.isEmpty(getSoapHeaderStyleSheet())) {
-				setSoapHeaderStyleSheet("/xml/xsl/esb/soapHeader.xsl");
+				if (getMode().equalsIgnoreCase(MODE_BIS)) {
+					setSoapHeaderStyleSheet("/xml/xsl/esb/bisSoapHeader.xsl");
+				} else {
+					setSoapHeaderStyleSheet("/xml/xsl/esb/soapHeader.xsl");
+				}
 			}
-			if (getMode().equalsIgnoreCase(MODE_REG) && StringUtils.isEmpty(getSoapBodyStyleSheet())) {
-				setSoapBodyStyleSheet("/xml/xsl/esb/soapBody.xsl");
+			if (StringUtils.isEmpty(getSoapBodyStyleSheet())) {
+				if (getMode().equalsIgnoreCase(MODE_REG)) { 
+					setSoapBodyStyleSheet("/xml/xsl/esb/soapBody.xsl");
+				} else if (getMode().equalsIgnoreCase(MODE_BIS)) {
+					setSoapBodyStyleSheet("/xml/xsl/esb/bisSoapBody.xsl");
+				}
 			}
 			if (isAddOutputNamespace()) {
 				ParameterList parameterList = getParameterList();
@@ -204,13 +217,15 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			p.setValue(AppConstants.getInstance().getProperty("instance.name", ""));
 			addParameter(p);
 		}
-		if (parameterList.findParameter(CPAID)==null) {
-			p = new Parameter();
-			p.setName(CPAID);
-			p.setSessionKey(SOAPHEADER);
-			p.setXpathExpression("MessageHeader/HeaderFields/CPAId");
-			p.setRemoveNamespaces(true);
-			addParameter(p);
+		if (!getMode().equalsIgnoreCase(MODE_BIS)) {
+			if (parameterList.findParameter(CPAID)==null) {
+				p = new Parameter();
+				p.setName(CPAID);
+				p.setSessionKey(SOAPHEADER);
+				p.setXpathExpression("MessageHeader/HeaderFields/CPAId");
+				p.setRemoveNamespaces(true);
+				addParameter(p);
+			}
 		}
 		if (parameterList.findParameter(CONVERSATIONID)==null) {
 			p = new Parameter();
@@ -226,13 +241,24 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			p.setPattern("{hostname}_{uid}");
 			addParameter(p);
 		}
-		if (parameterList.findParameter(CORRELATIONID)==null) {
-			p = new Parameter();
-			p.setName(CORRELATIONID);
-			p.setSessionKey(SOAPHEADER);
-			p.setXpathExpression("MessageHeader/HeaderFields/MessageId");
-			p.setRemoveNamespaces(true);
-			addParameter(p);
+		if (getMode().equalsIgnoreCase(MODE_BIS)) {
+			if (parameterList.findParameter(EXTERNALREFTOMESSAGEID)==null) {
+				p = new Parameter();
+				p.setName(EXTERNALREFTOMESSAGEID);
+				p.setSessionKey(SOAPHEADER);
+				p.setXpathExpression("MessageHeader/HeaderFields/MessageId");
+				p.setRemoveNamespaces(true);
+				addParameter(p);
+			}
+		} else {
+			if (parameterList.findParameter(CORRELATIONID)==null) {
+				p = new Parameter();
+				p.setName(CORRELATIONID);
+				p.setSessionKey(SOAPHEADER);
+				p.setXpathExpression("MessageHeader/HeaderFields/MessageId");
+				p.setRemoveNamespaces(true);
+				addParameter(p);
+			}
 		}
 		if (parameterList.findParameter(TIMESTAMP)==null) {
 			p = new Parameter();
