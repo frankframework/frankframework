@@ -9,9 +9,14 @@
 	<xsl:param name="serviceContext" />
 	<xsl:param name="operationName" />
 	<xsl:param name="operationVersion">1</xsl:param>
+	<xsl:param name="paradigm" />
 	<!--
-		if $errorCode is empty then the complete input message is copied and a result tag is added as last child of the root tag if it doesn't exist
-		if $errorCode is not empty then the root tag of the input message is copied and a result tag is wrapped in this copied root tag
+		if $errorCode is empty then
+		 - the complete input message is copied
+		 - a result tag is added as last child of the root tag if it doesn't exist and $paradigm equals {'Response' or 'Reply'}
+		if $errorCode is not empty then
+		 - the root tag of the input message is copied
+		 - a result tag is wrapped in this copied root tag
 	-->
 	<xsl:variable name="result_exists">
 		<xsl:choose>
@@ -32,7 +37,7 @@
 	<xsl:template match="*|@*|comment()|processing-instruction()|text()" mode="ok">
 		<xsl:copy>
 			<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" mode="ok" />
-			<xsl:if test="not(parent::*) and $result_exists='false'">
+			<xsl:if test="not(parent::*) and $result_exists='false' and ($paradigm='Response' or $paradigm='Reply')">
 				<xsl:call-template name="Result" />
 			</xsl:if>
 		</xsl:copy>

@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.8  2012-01-06 15:48:50  europe\m168309
+ * Revision 1.9  2012-01-10 11:57:39  europe\m168309
+ * added parameter paradigm in SoapBody xslt for mode 'bis'
+ *
+ * Revision 1.8  2012/01/06 15:48:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * updated javadoc
  *
  * Revision 1.7  2012/01/06 15:40:37  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -213,6 +216,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>serviceContext</td><td>&nbsp;</td></tr>
  * <tr><td>operationName</td><td>&nbsp;</td></tr>
  * <tr><td>operationVersion</td><td>1</td></tr>
+ * <tr><td>paradigm</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * @version Id
