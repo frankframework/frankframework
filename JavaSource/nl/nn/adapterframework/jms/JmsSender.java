@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.54  2012-01-05 10:00:58  europe\m168309
+ * Revision 1.55  2012-01-10 10:48:22  europe\m168309
+ * modified logging
+ *
+ * Revision 1.54  2012/01/05 10:00:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * moved addEsbSoapAction attribute to EsbJmsSender
  *
  * Revision 1.53  2012/01/04 10:52:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -355,14 +358,14 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 			send(mp, msg);
 			if (log.isDebugEnabled()) {
 				log.debug(
-					"[" + getName() + "] " + "sent message [" + message + "] " + "to [" + getDestinationName()
+					"[" + getName() + "] " + "sent message [" + message + "] " + "to [" + mp.getDestination()
 						+ "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID()
 						+ "] " + "using deliveryMode [" + getDeliveryMode() + "] "
 						+ ((replyToName != null) ? "replyTo [" + replyToName+"]" : ""));
 			} else {
 				if (log.isInfoEnabled()) {
 					log.info(
-						"[" + getName() + "] " + "sent message to [" + getDestinationName()
+						"[" + getName() + "] " + "sent message to [" + mp.getDestination()
 							+ "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID()
 							+ "] " + "using deliveryMode [" + getDeliveryMode() + "] "
 							+ ((replyToName != null) ? "replyTo [" + replyToName+"]" : ""));
