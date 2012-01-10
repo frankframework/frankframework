@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.24  2011-11-30 13:51:49  europe\m168309
+ * Revision 1.25  2012-01-10 09:49:15  m00f069
+ * Added XfbSender
+ *
+ * Revision 1.24  2011/11/30 13:51:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -243,7 +246,7 @@ public class FileUtils {
 		return null;
 	}
 
-	private static boolean copyFile(File orgFile, File destFile, boolean append) {
+	public static boolean copyFile(File orgFile, File destFile, boolean append) {
 		try {
 			FileInputStream fis = new FileInputStream(orgFile);
 			FileOutputStream fos = new FileOutputStream(destFile, append);
