@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.55  2011-11-30 13:51:43  europe\m168309
+ * Revision 1.56  2012-01-13 13:33:45  m00f069
+ * Moved code for getting schemaOwner4Check from database to bean configuration time (prevent checkAttribute at Spring bean creation time to throw an exception because jmsRealm has not yet been set by the digester)
+ *
+ * Revision 1.55  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -580,8 +583,16 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		try {
 //			if (getDatabaseType()==DbmsSupportFactory.DBMS_ORACLE) {
 				if (checkTable || checkIndices) {
+					connection=getConnection();
+					if (schemaOwner4Check==null) {
+						IDbmsSupport dbms=getDbmsSupport();
+						try {
+							schemaOwner4Check=dbms.getSchema(connection);
+						} catch (Exception e) {
+							log.warn("Exception determining current schema", e);
+						}
+					}
 					if (StringUtils.isNotEmpty(getSchemaOwner4Check())){
-						connection=getConnection();
 						if (checkTable) {
 							if (StringUtils.isNotEmpty(getTableName())) {
 							checkTable(connection);
@@ -1721,25 +1732,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	public String getSchemaOwner4Check() {
-		if (schemaOwner4Check==null) {
-			IDbmsSupport dbms=getDbmsSupport();
-			Connection conn=null;
-			try {
-				conn=getConnection();
-				schemaOwner4Check=dbms.getSchema(conn);
-			} catch (Exception e) {
-				log.warn("Exception determining current schema", e);
-				return "";
-			} finally {
-				try {
-					if (conn!=null) {
-						conn.close();
-					}
-				} catch (SQLException e1) {
-					log.warn("exception closing connection for schema owner",e1);
-				}
-			}
-		}
 		return schemaOwner4Check;
 	}
 
