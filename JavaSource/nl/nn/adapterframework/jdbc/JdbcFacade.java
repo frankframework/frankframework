@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.43  2011-12-08 14:06:16  m00f069
+ * Revision 1.44  2012-01-13 13:33:32  m00f069
+ * Always use jndi context prefixed for datasource name (otherwise useless exceptions are thrown in JBoss)
+ *
+ * Revision 1.43  2011/12/08 14:06:16  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made Tomcat work with the Spring DataSourceTransactionManager which will use the jdbc/<ibis name lower case> by default (Spring Tomcat configuration doesn't need to be changed manually anymore) (replaced JOTM as it didn't really work).
  *
  * Revision 1.42  2011/12/05 15:32:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -209,41 +212,23 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				log.debug(getLogPrefix()+"looking up proxied Datasource ["+dsName+"]");
 				datasource = (DataSource)proxiedDataSources.get(dsName);
 			} else {
+				String prefixedDsName=getJndiContextPrefix()+dsName;
+				log.debug(getLogPrefix()+"looking up Datasource ["+prefixedDsName+"]");
+				if (StringUtils.isNotEmpty(getJndiContextPrefix())) {
+					log.debug(getLogPrefix()+"using JNDI context prefix ["+getJndiContextPrefix()+"]");
+				}
 				try {
-					log.debug(getLogPrefix()+"looking up Datasource ["+dsName+"]");
-					datasource =(DataSource) getContext().lookup( dsName );
+					datasource =(DataSource) getContext().lookup( prefixedDsName );
 					if (datasource==null) {
-						throw new JdbcException("Could not find Datasource ["+dsName+"]");
+						throw new JdbcException("Could not find Datasource ["+prefixedDsName+"]");
 					}
 					String dsinfo=getDatasourceInfo();
 					if (dsinfo==null) {
 						dsinfo=datasource.toString();
 					}
-					log.info(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+dsinfo+"]");
+					log.info(getLogPrefix()+"looked up Datasource ["+prefixedDsName+"]: ["+dsinfo+"]");
 				} catch (NamingException e) {
-					try {
-						String prefixedDsName=getJndiContextPrefix()+dsName;
-						log.debug(getLogPrefix()+"could not find ["+dsName+"]",e);
-						log.debug(getLogPrefix()+"now trying for prefixed ["+prefixedDsName+"]");
-						datasource =(DataSource) getContext().lookup( prefixedDsName );
-						log.debug(getLogPrefix()+"looked up Datasource ["+prefixedDsName+"]: ["+datasource+"]");
-					} catch (NamingException e2) {
-						log.debug(getLogPrefix()+"could not find prefixed datasource",e2);
-						log.debug(getLogPrefix()+"will now rethrow original exception");
-						throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
-//						try {
-//							String jbossDsName="java:/"+dsName;
-//							log.debug(getLogPrefix()+"could not find for TomCat",e2);
-//							log.debug(getLogPrefix()+"now trying for JBoss ["+jbossDsName+"]");
-//							datasource =(DataSource) getContext().lookup( jbossDsName );
-//							log.debug(getLogPrefix()+"looked up Datasource ["+jbossDsName+"]: ["+datasource+"]");
-//						} catch (NamingException e3) {
-//							log.debug(getLogPrefix()+"could not find for JBoss",e3);
-//							log.debug(getLogPrefix()+"will now rethrow original exception");
-//							throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
-//						}
-					}
-//					throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
+					throw new JdbcException("Could not find Datasource ["+prefixedDsName+"]", e);
 				}
 			}
 		}
