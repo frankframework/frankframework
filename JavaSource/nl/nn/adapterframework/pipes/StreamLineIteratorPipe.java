@@ -1,6 +1,9 @@
 /*
  * $Log: StreamLineIteratorPipe.java,v $
- * Revision 1.10  2011-12-08 13:01:59  europe\m168309
+ * Revision 1.11  2012-01-20 10:39:09  europe\m168309
+ * StreamLineIteratorPipe: added endOfLineString attribute
+ *
+ * Revision 1.10  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.9  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -84,6 +87,7 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * <tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr>
  * <tr><td>{@link #setBlockSuffix(String) blockSuffix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.</td><td>&lt;/block&gt;</td></tr>
  * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
+ * <tr><td>{@link #setEndOfLineString(String) endOfLineString}</td><td>when set, each line has to end with this string. If the line doesn't end with this string next lines are added (including line separators) until the total line ends with the given string</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -106,8 +110,10 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * @version Id
  */
 public class StreamLineIteratorPipe extends IteratingPipe {
-	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.10 $ $Date: 2011-12-08 13:01:59 $";
+	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.11 $ $Date: 2012-01-20 10:39:09 $";
 
+	private String endOfLineString;
+	
 	protected Reader getReader(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("input is null. Must supply stream as input");
@@ -123,6 +129,16 @@ public class StreamLineIteratorPipe extends IteratingPipe {
 		return new ReaderLineIterator(getReader(input,session, correlationID,threadContext));
 	}
 
+	protected String getItem(IDataIterator it) throws SenderException {
+		String item = (String)it.next();
+		if (getEndOfLineString()!=null) {
+			while (!item.endsWith(getEndOfLineString()) && it.hasNext()) {
+				item = item + System.getProperty("line.separator") + (String)it.next();
+			}
+		}
+		return item;
+	}
+
 	public void setCloseInputstreamOnExit(boolean b) {
 		setCloseIteratorOnExit(b);
 	}
@@ -130,4 +146,10 @@ public class StreamLineIteratorPipe extends IteratingPipe {
 		return isCloseIteratorOnExit();
 	}
 
+	public void setEndOfLineString(String string) {
+		endOfLineString = string;
+	}
+	public String getEndOfLineString() {
+		return endOfLineString;
+	}
 }

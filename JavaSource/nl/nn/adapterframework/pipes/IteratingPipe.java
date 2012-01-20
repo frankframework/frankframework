@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.23  2011-12-08 13:01:59  europe\m168309
+ * Revision 1.24  2012-01-20 10:39:09  europe\m168309
+ * StreamLineIteratorPipe: added endOfLineString attribute
+ *
+ * Revision 1.23  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.22  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -200,7 +203,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.23 $ $Date: 2011-12-08 13:01:59 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.24 $ $Date: 2012-01-20 10:39:09 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -401,7 +404,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
  						keepGoing = callback.handleItem(items.toString()); 
 						
 					} else {
-						String item = (String)it.next();
+						String item = getItem(it);
 						keepGoing = callback.handleItem(item); 
 					}
 				}
@@ -426,6 +429,9 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		}
 	}
 
+	protected String getItem(IDataIterator it) throws SenderException {
+		return (String)it.next();
+	}
 
 	public void setSender(Object sender) {
 		if (sender instanceof ISender) {
