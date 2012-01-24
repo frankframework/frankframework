@@ -27,10 +27,10 @@
 	<xsl:template match="/">
 		<xsl:choose>
 			<xsl:when test="string-length($errorCode)=0">
-				<xsl:apply-templates select="*|@*|comment()|processing-instruction()" mode="ok" />
+				<xsl:apply-templates select="*|comment()|processing-instruction()" mode="ok" />
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:apply-templates select="*|@*|comment()|processing-instruction()" mode="error" />
+				<xsl:apply-templates select="*|comment()|processing-instruction()" mode="error" />
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
