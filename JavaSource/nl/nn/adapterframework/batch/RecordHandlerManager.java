@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlerManager.java,v $
- * Revision 1.13  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.14  2012-01-27 13:35:27  europe\m168309
+ * replaced HashMap with LinkedHashMap to guarantee iteration order
+ *
+ * Revision 1.13  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -41,8 +44,8 @@
 package nl.nn.adapterframework.batch;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -68,7 +71,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class RecordHandlerManager implements IRecordHandlerManager {
-	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.13 $ $Date: 2011-11-30 13:51:56 $";
+	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.14 $ $Date: 2012-01-27 13:35:27 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Map valueHandlersMap;
@@ -76,7 +79,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	private boolean initial;
 
 	RecordHandlerManager() {
-		this.valueHandlersMap = new HashMap();
+		this.valueHandlersMap = new LinkedHashMap();
 	}
 	
 	public IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String inputFilename) {
