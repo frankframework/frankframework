@@ -50,6 +50,7 @@
 	<classpathentry kind="lib" path="/IbisWar/WebContent/WEB-INF/lib/stax-api-1.0.jar"/>
 	<classpathentry kind="lib" path="/IbisWar/WebContent/WEB-INF/lib/stax-utils.jar"/>
 	<classpathentry kind="lib" path="/IbisWar/WebContent/WEB-INF/lib/wsdl4j-1.6.2.jar"/>
+	<classpathentry kind="lib" path="/IbisWar/WebContent/WEB-INF/lib/jaxb-xalan-1.5.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="var" path="WAS_60_PLUGINDIR/lib/j2ee.jar"/>
 	<classpathentry kind="var" path="WAS_60_PLUGINDIR/runtimes/com.ibm.ws.admin.client_6.1.0.jar"/>
