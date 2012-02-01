@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.17  2011-11-30 13:52:00  europe\m168309
+ * Revision 1.18  2012-02-01 10:49:56  europe\m168309
+ * wrap faultstring in soap fault as CDATA
+ *
+ * Revision 1.17  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -267,10 +270,11 @@ public class SoapWrapper {
 	}
 
 	public String createSoapFaultMessage(String faultcode, String faultstring) {
+		String faultCdataString = "<![CDATA[" + faultstring + "]]>";
 		String fault= 
 		"<soapenv:Fault>" + 	
 			"<faultcode>" + faultcode + "</faultcode>" +
-			"<faultstring>" + faultstring + "</faultstring>" +
+			"<faultstring>" + faultCdataString + "</faultstring>" +
 		"</soapenv:Fault>";
 		return putInEnvelope(fault, null, null, null);
 	}
