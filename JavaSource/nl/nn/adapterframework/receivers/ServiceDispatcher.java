@@ -1,6 +1,9 @@
 /*
  * $Log: ServiceDispatcher.java,v $
- * Revision 1.14  2011-11-30 13:51:54  europe\m168309
+ * Revision 1.15  2012-02-01 12:55:42  europe\m168309
+ * added received message to debug logging
+ *
+ * Revision 1.14  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -78,7 +81,7 @@ public class ServiceDispatcher  {
 	 */
 	public String dispatchRequest(String serviceName, String correlationId, String request, Map requestContext) throws ListenerException {
 		if (log.isDebugEnabled()) {
-			log.debug("dispatchRequest for service ["+serviceName+"] correlationId ["+correlationId+"]");
+			log.debug("dispatchRequest for service ["+serviceName+"] correlationId ["+correlationId+"] message ["+request+"]");
 		}
 		ServiceClient client=(ServiceClient)registeredListeners.get(serviceName);
 		if (client==null) {
