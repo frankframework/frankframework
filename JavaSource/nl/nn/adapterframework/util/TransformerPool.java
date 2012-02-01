@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.22  2011-11-30 13:51:48  europe\m168309
+ * Revision 1.23  2012-02-01 11:33:58  europe\m168309
+ * for XSLT 1.0 the class com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl is used to be backward compatible with WAS5
+ *
+ * Revision 1.22  2011/11/30 13:51:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -107,7 +110,7 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.22 $ $Date: 2011-11-30 13:51:48 $";
+	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.23 $ $Date: 2012-02-01 11:33:58 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerFactory tFactory;
@@ -130,7 +133,8 @@ public class TransformerPool {
 		if (xslt2) {
 			tFactory = new net.sf.saxon.TransformerFactoryImpl();
 		} else {
-			tFactory = TransformerFactory.newInstance();
+			//tFactory = TransformerFactory.newInstance();
+			tFactory = new com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl();
 		}
 		initTransformerPool(source, sysId);
 

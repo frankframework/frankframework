@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.74  2011-11-30 13:51:48  europe\m168309
+ * Revision 1.75  2012-02-01 11:34:35  europe\m168309
+ * for XSLT 1.0 the class com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl is used to be backward compatible with WAS5
+ *
+ * Revision 1.74  2011/11/30 13:51:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.2  2011/11/10 15:44:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -309,14 +312,14 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.74 $ $Date: 2011-11-30 13:51:48 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.75 $ $Date: 2012-02-01 11:34:35 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
 	static final String JAXP_SCHEMA_SOURCE =   "http://java.sun.com/xml/jaxp/properties/schemaSource";
 
-	public static final String TRANSFORMERFACTORY_KEY = "xslt.transformerFactory";
+	//public static final String TRANSFORMERFACTORY_KEY = "xslt.transformerFactory";
 	public static final String NAMESPACE_AWARE_BY_DEFAULT_KEY = "xml.namespaceAware.default";
 	public static final String AUTO_RELOAD_KEY = "xslt.auto.reload";
 	public static final String XSLT_BUFFERSIZE_KEY = "xslt.bufsize";
@@ -332,7 +335,7 @@ public class XmlUtils {
 	private static Boolean includeFieldDefinitionByDefault = null;
 	private static Boolean autoReload = null;
 	private static Integer buffersize=null;
-	private static TransformerFactory transfomerFactory=null;
+	//private static TransformerFactory transformerFactory=null;
 
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
@@ -858,30 +861,32 @@ public class XmlUtils {
 	}
 
 	public static synchronized TransformerFactory getTransformerFactory(boolean xslt2) {
-		if (transfomerFactory==null) {
+		/*
+		if (transformerFactory==null) {
 			String transformerFactoryClassName = AppConstants.getInstance().getProperty(TRANSFORMERFACTORY_KEY,null);
 			try {
 				if (StringUtils.isNotEmpty(transformerFactoryClassName)) {
-					
 					Class transformerFactoryClass = XmlUtils.class.forName(transformerFactoryClassName);
 					log.debug("loaded transformerFactoryClass ["+transformerFactoryClass.getName()+"]");
 					Constructor constructor = transformerFactoryClass.getConstructor(null);
 					log.debug("found constructor method ["+constructor.getName()+"]");
-					transfomerFactory = (TransformerFactory)constructor.newInstance(null);
-					log.debug("invoked constructor to obtain transformer factory ["+transfomerFactory.getClass().getName()+"]");
+					transformerFactory = (TransformerFactory)constructor.newInstance(null);
+					log.debug("invoked constructor to obtain transformer factory ["+transformerFactory.getClass().getName()+"]");
 				} 
 			} catch (Exception e) {
 				log.warn("Could not load TransformerFactory ["+transformerFactoryClassName+"]",e);
 			}
-			if (transfomerFactory==null) {
-				transfomerFactory = TransformerFactory.newInstance();
-				log.debug("no explicit TransformerFactory configured, now instantiated class ["+transfomerFactory.getClass().getName()+"]");
+			if (transformerFactory==null) {
+				transformerFactory = TransformerFactory.newInstance();
+				log.debug("no explicit TransformerFactory configured, now instantiated class ["+transformerFactory.getClass().getName()+"]");
 			}
 		}
+		*/
 		if (xslt2) {
 			return new net.sf.saxon.TransformerFactoryImpl();
 		} else {
-			return transfomerFactory.newInstance();
+			//return transformerFactory.newInstance();
+			return new com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl();
 		}
 	}
 	
