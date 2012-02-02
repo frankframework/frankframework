@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.42  2012-02-01 11:36:11  europe\m168309
+ * Revision 1.43  2012-02-02 08:36:06  europe\m168309
+ * default transformer factory for JVM should be the class org.apache.xalan.processor.TransformerFactoryImpl
+ *
+ * Revision 1.42  2012/02/01 11:36:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * for XSLT 1.0 the class com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl is used to be backward compatible with WAS5
  *
  * Revision 1.41  2011/11/30 13:49:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -258,8 +261,9 @@ public class Configuration {
     }
     protected void init() {
 		//Default XSLT processor 1.0, not XSLT 2.0 processor (net.sf.saxon.TransformerFactoryImpl)
-		System.setProperty("javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl");
-        log.info(VersionInfo());
+		//System.setProperty("javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl");
+		System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
+		log.info(VersionInfo());
     }
 
     /**
