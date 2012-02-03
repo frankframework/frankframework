@@ -1,5 +1,8 @@
 /* $Log: CalcboxContentHandler.java,v $
-/* Revision 1.4  2012-02-01 11:35:39  europe\m168309
+/* Revision 1.5  2012-02-03 11:18:29  europe\m168309
+/* for XSLT 1.0 the class com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl is used to be backward compatible with WAS5 (only for java vendor IBM and java version >= 1.5)
+/*
+/* Revision 1.4  2012/02/01 11:35:39  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
 /* for XSLT 1.0 the class com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl is used to be backward compatible with WAS5
 /*
 /* Revision 1.3  2011/11/30 13:52:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -61,8 +64,14 @@ public class CalcboxContentHandler implements ContentHandler {
 		Result result = new StreamResult(sw);
 
 		// Write the DOM document to the file
-		//Transformer xformer = TransformerFactory.newInstance().newTransformer();
-		TransformerFactory xfactory = new com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl();
+		String javaVendor = System.getProperty("java.vendor");
+		String javaVersion = System.getProperty("java.version");
+		TransformerFactory xfactory;
+		if (javaVendor.indexOf("IBM") >= 0 && javaVersion.compareTo("1.5") >= 0) {
+			xfactory = new com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl();
+		} else {
+			xfactory =  TransformerFactory.newInstance();
+		}
 		Transformer xformer = xfactory.newTransformer();
 		xformer.transform(source, result);
 

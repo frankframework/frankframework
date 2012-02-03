@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.23  2012-02-01 11:33:58  europe\m168309
+ * Revision 1.24  2012-02-03 11:19:15  europe\m168309
+ * for XSLT 1.0 the class com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl is used to be backward compatible with WAS5 (only for java vendor IBM and java version >= 1.5)
+ *
+ * Revision 1.23  2012/02/01 11:33:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * for XSLT 1.0 the class com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl is used to be backward compatible with WAS5
  *
  * Revision 1.22  2011/11/30 13:51:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -110,7 +113,7 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.23 $ $Date: 2012-02-01 11:33:58 $";
+	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.24 $ $Date: 2012-02-03 11:19:15 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerFactory tFactory;
@@ -133,8 +136,13 @@ public class TransformerPool {
 		if (xslt2) {
 			tFactory = new net.sf.saxon.TransformerFactoryImpl();
 		} else {
-			//tFactory = TransformerFactory.newInstance();
-			tFactory = new com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl();
+			String javaVendor = System.getProperty("java.vendor");
+			String javaVersion = System.getProperty("java.version");
+			if (javaVendor.indexOf("IBM") >= 0 && javaVersion.compareTo("1.5") >= 0) {
+				tFactory = new com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl();
+			} else {
+				tFactory = TransformerFactory.newInstance();
+			}
 		}
 		initTransformerPool(source, sysId);
 

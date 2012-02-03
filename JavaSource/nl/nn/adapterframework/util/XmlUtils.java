@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.75  2012-02-01 11:34:35  europe\m168309
+ * Revision 1.76  2012-02-03 11:19:58  europe\m168309
+ * for XSLT 1.0 the class com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl is used to be backward compatible with WAS5 (only for java vendor IBM and java version >= 1.5)
+ *
+ * Revision 1.75  2012/02/01 11:34:35  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * for XSLT 1.0 the class com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl is used to be backward compatible with WAS5
  *
  * Revision 1.74  2011/11/30 13:51:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -312,7 +315,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.75 $ $Date: 2012-02-01 11:34:35 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.76 $ $Date: 2012-02-03 11:19:58 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -885,8 +888,13 @@ public class XmlUtils {
 		if (xslt2) {
 			return new net.sf.saxon.TransformerFactoryImpl();
 		} else {
-			//return transformerFactory.newInstance();
-			return new com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl();
+			String javaVendor = System.getProperty("java.vendor");
+			String javaVersion = System.getProperty("java.version");
+			if (javaVendor.indexOf("IBM") >= 0 && javaVersion.compareTo("1.5") >= 0) {
+				return new com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl();
+			} else {
+				return TransformerFactory.newInstance();
+			}
 		}
 	}
 	
