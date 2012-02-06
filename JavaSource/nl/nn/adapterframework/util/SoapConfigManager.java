@@ -1,6 +1,9 @@
 /*
  * $Log: SoapConfigManager.java,v $
- * Revision 1.9  2011-11-30 13:51:49  europe\m168309
+ * Revision 1.10  2012-02-06 13:18:19  l190409
+ * improved SOAP error logging
+ *
+ * Revision 1.9  2011/11/30 13:51:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -18,6 +21,9 @@ package nl.nn.adapterframework.util;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Hashtable;
+
+import nl.nn.adapterframework.soap.LoggingSOAPFaultListener;
+import nl.nn.adapterframework.soap.SoapGenericProvider;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -43,10 +49,10 @@ import org.w3c.dom.NodeList;
  * @author Gerrit van Brakel IOS
  */
 public class SoapConfigManager extends XMLConfigManager {
-	public static final String version="$RCSfile: SoapConfigManager.java,v $ $Revision: 1.9 $ $Date: 2011-11-30 13:51:49 $";
+	public static final String version="$RCSfile: SoapConfigManager.java,v $ $Revision: 1.10 $ $Date: 2012-02-06 13:18:19 $";
     protected Logger log = LogUtil.getLogger(this);
 
-	private String defaultProvider="nl.nn.adapterframework.soap.SoapGenericProvider";    
+	private String defaultProvider=SoapGenericProvider.class.getName();    
 	DeploymentDescriptor defaultDD = null; 
     
 	public void loadRegistry() throws SOAPException {
@@ -112,6 +118,7 @@ public class SoapConfigManager extends XMLConfigManager {
 			}
 			dd=defaultDD;
 		}
+		dd.setFaultListener(new String[] {LoggingSOAPFaultListener.class.getName()});
 		log.info("SoapConfigManager.query["+id+"] returned DeploymentDescriptor ["+dd+"]");
 		return (dd);
 	}

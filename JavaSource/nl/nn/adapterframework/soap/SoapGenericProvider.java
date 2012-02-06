@@ -1,6 +1,9 @@
 /*
  * $Log: SoapGenericProvider.java,v $
- * Revision 1.8  2011-11-30 13:52:00  europe\m168309
+ * Revision 1.9  2012-02-06 13:18:20  l190409
+ * improved SOAP error logging
+ *
+ * Revision 1.8  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -62,7 +65,7 @@ import org.apache.soap.util.Provider;
  * @author Gerrit van Brakel
  */
 public class SoapGenericProvider implements Provider {
-	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.8 $ $Date: 2011-11-30 13:52:00 $";
+	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.9 $ $Date: 2012-02-06 13:18:20 $";
 	protected Logger log=LogUtil.getLogger(this);
 	
 	private final String TARGET_OBJECT_URI_KEY = "TargetObjectNamespaceURI";
@@ -117,11 +120,13 @@ public class SoapGenericProvider implements Provider {
 				
 		 }
 		 catch( Exception e ) {
-		 	log.warn("GenericSoapProvider caught exception:",e);
+		 	//log.warn("GenericSoapProvider caught exception:",e);
 			if ( e instanceof SOAPException ) {
 				throw (SOAPException ) e;
 			} 
-			throw new SOAPException( Constants.FAULT_CODE_SERVER, "GenericSoapProvider caught exception: "+e.toString() );
+			SOAPException se=new SOAPException( Constants.FAULT_CODE_SERVER, "GenericSoapProvider caught exception");
+			se.initCause(e);
+			throw se;
 		 }
 	}
 	
