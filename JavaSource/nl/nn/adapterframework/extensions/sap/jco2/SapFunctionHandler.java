@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionHandler.java,v $
- * Revision 1.5  2011-11-30 13:51:54  europe\m168309
+ * Revision 1.1  2012-02-06 14:33:05  m00f069
+ * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
+ *
+ * Revision 1.5  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -19,7 +22,7 @@
  * First version of SAP package
  *
  */
-package nl.nn.adapterframework.extensions.sap;
+package nl.nn.adapterframework.extensions.sap.jco2;
 
 import com.sap.mw.jco.JCO;
 import com.sap.mw.idoc.IDoc;

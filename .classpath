@@ -9,7 +9,6 @@
 	<classpathentry kind="lib" path="/IbisWar/WebContent/WEB-INF/lib/struts-11-final-Websphere.jar"/>
 	<classpathentry kind="lib" path="/IbisWar/WebContent/WEB-INF/lib/commons-cli-1.0.jar"/>
 	<classpathentry kind="lib" path="/IbisWar/WebContent/WEB-INF/lib/commons-pool-1.2.jar"/>
-	<classpathentry kind="lib" path="sapjco.jar"/>
 	<classpathentry kind="lib" path="/IbisWar/WebContent/WEB-INF/lib/soap-2_3_1.jar"/>
 	<classpathentry kind="lib" path="ojdbc14.jar"/>
 	<classpathentry kind="lib" path="/IbisWar/WebContent/WEB-INF/lib/xercesImpl-2.9.1.jar"/>
@@ -55,5 +54,8 @@
 	<classpathentry kind="var" path="WAS_60_PLUGINDIR/lib/j2ee.jar"/>
 	<classpathentry kind="var" path="WAS_60_PLUGINDIR/runtimes/com.ibm.ws.admin.client_6.1.0.jar"/>
 	<classpathentry kind="var" path="WAS_60_PLUGINDIR/lib/WMQ/java/lib/com.ibm.mqjms.jar"/>
+	<classpathentry kind="lib" path="sapjco3.jar"/>
+	<classpathentry kind="lib" path="sapidoc3.jar"/>
+	<classpathentry kind="lib" path="sapjco.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

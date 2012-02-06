@@ -1,6 +1,9 @@
 /*
  * $Log: IdocSender.java,v $
- * Revision 1.6  2011-11-30 13:51:54  europe\m168309
+ * Revision 1.1  2012-02-06 14:33:04  m00f069
+ * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
+ *
+ * Revision 1.6  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -16,16 +19,20 @@
  * first version
  *
  */
-package nl.nn.adapterframework.extensions.sap;
+package nl.nn.adapterframework.extensions.sap.jco3;
 
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import com.sap.mw.idoc.IDoc;
-import com.sap.mw.jco.JCO;
+import com.sap.conn.idoc.IDocDocument;
+import com.sap.conn.idoc.IDocException;
+import com.sap.conn.idoc.IDocFactory;
+import com.sap.conn.idoc.jco.JCoIDoc;
+import com.sap.conn.jco.JCoDestination;
 
 /**
  * Implementation of {@link ISender} that sends an IDoc to SAP.
@@ -47,12 +54,13 @@ import com.sap.mw.jco.JCO;
  * </p>
  * 
  * @author  Gerrit van Brakel
- * @since   4.8
+ * @author  Jaco de Groot
+ * @since   5.0
  * @version Id
  */
 public class IdocSender extends SapSenderBase {
 
-	protected IDoc.Document parseIdoc(SapSystem sapSystem, String message) throws SenderException {
+	protected IDocDocument parseIdoc(SapSystem sapSystem, String message) throws SenderException {
 		
 		IdocXmlHandler handler = new IdocXmlHandler(sapSystem);
 	
@@ -77,28 +85,25 @@ public class IdocSender extends SapSenderBase {
 			}
 			SapSystem sapSystem = getSystem(pvl);
 			
-			IDoc.Document idoc = parseIdoc(sapSystem,message);
+			IDocDocument idoc = parseIdoc(sapSystem,message);
 			
 			try {
 				log.debug(getLogPrefix()+"checking syntax");
 				idoc.checkSyntax();
 			}
-			catch ( IDoc.Exception e ) {
+			catch ( IDocException e ) {
 				throw new SenderException("Syntax error in idoc", e);
 			}
 
-			if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"parsed idoc ["+idoc.toXML()+"]"); } 
+			if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"parsed idoc ["+JCoIDoc.getIDocFactory().getIDocXMLProcessor().render(idoc)+"]"); }
 
-			JCO.Client client = getClient(prc.getSession(), sapSystem);
-			try {
-				tid=getTid(client,sapSystem);
-				if (tid==null) {
-					throw new SenderException("could not obtain TID to send Idoc");
-				}
-				client.send(idoc,tid);
-			} finally {
-				releaseClient(client,sapSystem);
+
+			JCoDestination destination = getDestination(prc.getSession(), sapSystem);
+			tid=getTid(destination,sapSystem);
+			if (tid==null) {
+				throw new SenderException("could not obtain TID to send Idoc");
 			}
+			JCoIDoc.send(idoc,IDocFactory.IDOC_VERSION_DEFAULT ,destination,tid);
 			return tid;
 		} catch (Exception e) {
 			throw new SenderException(e);

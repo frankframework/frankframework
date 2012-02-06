@@ -1,6 +1,9 @@
 /*
  * $Log: SynchedLocalTransactionFailedException.java,v $
- * Revision 1.3  2011-11-30 13:51:53  europe\m168309
+ * Revision 1.1  2012-02-06 14:33:05  m00f069
+ * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
+ *
+ * Revision 1.3  2011/11/30 13:51:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -11,17 +14,18 @@
  *
  */
 
-package nl.nn.adapterframework.extensions.sap.tx;
+package nl.nn.adapterframework.extensions.sap.jco3.tx;
 
-import nl.nn.adapterframework.extensions.sap.SapException;
+import nl.nn.adapterframework.extensions.sap.jco3.SapException;
 
 /**
  * Exception thrown when a synchronized local transaction failed to complete
  * (after the main transaction has already completed).
  *
  * @author Gerrit van Brakel
- * @since  4.8
- * @see    ConnectionFactoryUtils
+ * @author Jaco de Groot
+ * @since  5.0
+ * @see    DestinationFactoryUtils
  */
 public class SynchedLocalTransactionFailedException extends RuntimeException {
 

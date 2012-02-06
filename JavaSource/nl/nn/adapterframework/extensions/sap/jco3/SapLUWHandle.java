@@ -1,6 +1,9 @@
 /*
  * $Log: SapLUWHandle.java,v $
- * Revision 1.3  2011-11-30 13:51:54  europe\m168309
+ * Revision 1.1  2012-02-06 14:33:04  m00f069
+ * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
+ *
+ * Revision 1.3  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -10,37 +13,41 @@
  * introduction of SAP LUW management
  *
  */
-package nl.nn.adapterframework.extensions.sap;
+package nl.nn.adapterframework.extensions.sap.jco3;
+
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.extensions.sap.jco3.tx.RollbackException;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.util.LogUtil;
-
-import com.sap.mw.jco.JCO;
+import com.sap.conn.jco.JCoContext;
+import com.sap.conn.jco.JCoDestination;
+import com.sap.conn.jco.JCoException;
 
 /**
  * Wrapper for SAP sessions, used to control Logical Units of Work (LUWs).
  * 
  * @author  Gerrit van Brakel
- * @since   4.6.0
+ * @author  Jaco de Groot
+ * @since   5.0
  * @version Id
  */
 public class SapLUWHandle {
 	protected static Logger log = LogUtil.getLogger(SapLUWHandle.class);
 
 	private SapSystem sapSystem;
-	private JCO.Client client;
+	private JCoDestination destination;
 	private String tid;
 	private boolean useTid=false;
 	
-	private SapLUWHandle(SapSystem sapSystem) {
+	private SapLUWHandle(SapSystem sapSystem) throws JCoException {
 		super();
 		this.sapSystem = sapSystem;
-		this.client = sapSystem.getClient();
+		this.destination = sapSystem.getDestination();
 	}
 
-	public static SapLUWHandle createHandle(PipeLineSession session, String sessionKey, SapSystem sapSystem, boolean useTid) {
+	public static SapLUWHandle createHandle(PipeLineSession session, String sessionKey, SapSystem sapSystem, boolean useTid) throws JCoException {
 		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
 		if (result!=null) {
 			log.warn("LUWHandle already exists under key ["+sessionKey+"]");
@@ -56,7 +63,7 @@ public class SapLUWHandle {
 		return result;
 	}
 
-	public static SapLUWHandle retrieveHandle(PipeLineSession session, String sessionKey, boolean create, SapSystem sapSystem, boolean useTid) {
+	public static SapLUWHandle retrieveHandle(PipeLineSession session, String sessionKey, boolean create, SapSystem sapSystem, boolean useTid) throws JCoException {
 		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
 		if (result==null && create) {
 			return createHandle(session, sessionKey, sapSystem, useTid);
@@ -64,7 +71,7 @@ public class SapLUWHandle {
 		return result;
 	}
 
-	public static void releaseHandle(PipeLineSession session, String sessionKey) {
+	public static void releaseHandle(PipeLineSession session, String sessionKey) throws JCoException {
 		SapLUWHandle handle=(SapLUWHandle)session.get(sessionKey);
 		if (handle==null) {
 			log.debug("no handle found under session key ["+sessionKey+"]");
@@ -76,36 +83,44 @@ public class SapLUWHandle {
 
 	
 
-	public void begin() {
+	public void begin() throws JCoException {
 		if (isUseTid()) {
-			tid=client.createTID();
+			tid=destination.createTID();
 			log.debug("begin: created SAP TID ["+tid+"]");
+		} else {
+			// Use a stateful connection to make commit through BAPI work, this is
+			// probably not needed when using tid, but haven't found
+			// documentation on it yet.
+			JCoContext.begin(destination);
+			log.debug("begin: stateful connection");
 		}
 	}
 
-	public void commit() {
+	public void commit() throws JCoException {
 		if (isUseTid()) {
-			client.confirmTID(tid);
+			destination.confirmTID(tid);
 			log.debug("commit: confirmed SAP TID ["+tid+"]");
 		} else {
 			log.warn("Should Execute COMMIT by calling COMMIT BAPI");
 		}
-		
 	}
 
 	public void rollback() {
-		client.reset();
-		log.debug("rollback: reset connection, forget about SAP TID ["+tid+"]");
+		log.debug("rollback: forget about SAP TID ["+tid+"], throw exception to signal SAP");
 		tid=null;
+		throw new RollbackException();
 	}
 	
-	public void release() {
-		sapSystem.releaseClient(client);
-		log.debug("release: releaseed connection to System");
+	public void release() throws JCoException {
+		if (!isUseTid()) {
+			// End the stateful connection
+			JCoContext.end(destination);
+			log.debug("release: stateful connection");
+		}
 	}
 
-	public JCO.Client getClient() {
-		return client;
+	public JCoDestination getDestination() {
+		return destination;
 	}
 	public String getTid() {
 		return tid;

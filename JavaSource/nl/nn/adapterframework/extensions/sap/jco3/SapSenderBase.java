@@ -1,6 +1,9 @@
 /*
  * $Log: SapSenderBase.java,v $
- * Revision 1.5  2011-11-30 13:51:54  europe\m168309
+ * Revision 1.1  2012-02-06 14:33:04  m00f069
+ * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
+ *
+ * Revision 1.5  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -16,14 +19,14 @@
  * base class extracted from SapSender
  *
  */
-package nl.nn.adapterframework.extensions.sap;
+package nl.nn.adapterframework.extensions.sap.jco3;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.extensions.sap.tx.ClientFactoryUtils;
+import nl.nn.adapterframework.extensions.sap.jco3.tx.DestinationFactoryUtils;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -31,7 +34,8 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import com.sap.mw.jco.JCO;
+import com.sap.conn.jco.JCoDestination;
+import com.sap.conn.jco.JCoException;
 
 /**
  * Base class for functions that call SAP.
@@ -41,7 +45,7 @@ import com.sap.mw.jco.JCO;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the {@link SapSystem} used by this object</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSapSystemNameParam(String) sapSystemNameParam}</td><td>name of the parameter used to indicate the name of the {@link SapSystem} used by this object if the attribute <code>sapSystemName</code> is empty</td><td>sapSystemName</td></tr>
- * <tr><td>{@link #setLuwHandleSessionKey(String) luwHandleSessionKey}</td><td>session key in which LUW information is stored. When set, actions that share a LUW-handle will be executed using the same client. Can only be used for synchronous functions</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLuwHandleSessionKey(String) luwHandleSessionKey}</td><td>session key in which LUW information is stored. When set, actions that share a LUW-handle will be executed using the same destination. Can only be used for synchronous functions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>when <code>false</code>, the sender operates in RR mode: the a reply is expected from SAP, and the sender does not participate in a transaction. When <code>false</code>, the sender operates in FF mode: no reply is expected from SAP, and the sender joins the transaction, that must be present. The SAP transaction is committed right after the XA transaction is completed.</td><td>false</td></tr>
  * </table>
  * </p>
@@ -53,7 +57,8 @@ import com.sap.mw.jco.JCO;
  * </p>
  * 
  * @author  Gerrit van Brakel
- * @since   4.8
+ * @author  Jaco de Groot
+ * @since   5.0
  * @version Id
  */
 public abstract class SapSenderBase extends SapFunctionFacade implements ISenderWithParameters {
@@ -119,41 +124,35 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return getSapSystem(SapSystemName);
 	}
 
-	public JCO.Client getClient(PipeLineSession session, SapSystem sapSystem) throws SenderException, SapException {
-		JCO.Client result;
+	public JCoDestination getDestination(PipeLineSession session, SapSystem sapSystem) throws SenderException, SapException, JCoException {
+		JCoDestination result;
 		if (isSynchronous()) {
 			if (StringUtils.isNotEmpty(getLuwHandleSessionKey())) {
 				SapLUWHandle handle = SapLUWHandle.retrieveHandle(session, getLuwHandleSessionKey(), true, sapSystem, false);
 				if (handle==null) {
 					throw new SenderException("cannot find LUW handle from session key ["+getLuwHandleSessionKey()+"]");
 				}
-				result = handle.getClient();
+				result = handle.getDestination();
 			} else {
-				result = sapSystem.getClient();
+				result = sapSystem.getDestination();
 			}
 		} else {
-			result = ClientFactoryUtils.getTransactionalClient(sapSystem, true);
+			result = DestinationFactoryUtils.getTransactionalDestination(sapSystem, true);
 			if (result==null) {
 				if (!TransactionSynchronizationManager.isSynchronizationActive()) {
 					throw new SenderException("can only be called from within a transaction");
 				}
-				throw new SenderException(getLogPrefix()+"Could not obtain Jco Client");
+				throw new SenderException(getLogPrefix()+"Could not obtain Jco Destination");
 			}
 		}
 		return result;
 	}
 
-	public void releaseClient(JCO.Client client, SapSystem sapSystem) {
-		if (isSynchronous() && client!=null) {
-			sapSystem.releaseClient(client);
-		}
-	}
-	
-	public String getTid(JCO.Client client, SapSystem sapSystem) throws SapException {
+	public String getTid(JCoDestination destination, SapSystem sapSystem) throws SapException, JCoException {
 		if (isSynchronous()) {
 			return null;
 		}
-		return ClientFactoryUtils.getTransactionalTid(sapSystem,client,true);
+		return DestinationFactoryUtils.getTransactionalTid(sapSystem,destination,true);
 	}
 
 	public void addParameter(Parameter p) {

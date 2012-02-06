@@ -1,6 +1,9 @@
 /*
  * $Log: JcoResourceHolder.java,v $
- * Revision 1.3  2011-11-30 13:51:53  europe\m168309
+ * Revision 1.1  2012-02-06 14:33:05  m00f069
+ * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
+ *
+ * Revision 1.3  2011/11/30 13:51:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -11,7 +14,7 @@
  *
  */
 
-package nl.nn.adapterframework.extensions.sap.tx;
+package nl.nn.adapterframework.extensions.sap.jco3.tx;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,23 +22,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.extensions.sap.SapException;
-import nl.nn.adapterframework.extensions.sap.SapSystem;
+import nl.nn.adapterframework.extensions.sap.jco3.SapException;
+import nl.nn.adapterframework.extensions.sap.jco3.SapSystem;
 
 import org.springframework.transaction.support.ResourceHolderSupport;
 import org.springframework.util.Assert;
 
-import com.sap.mw.jco.JCO;
+import com.sap.conn.jco.JCoDestination;
 
 /**
- * Connection holder, wrapping a Jco client.
+ * Connection holder, wrapping a Jco destination.
  *
  * <p>based on {@link org.springframework.jms.connection.JmsResourceHolder}
  *
  * <p>Note: This is an SPI class, not intended to be used by applications.
  *
  * @author  Gerrit van Brakel
- * @since   4.8
+ * @author  Jaco de Groot
+ * @since   5.0
  * @version Id
  */
 public class JcoResourceHolder extends ResourceHolderSupport {
@@ -45,16 +49,16 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 
 	private boolean frozen = false;
 
-	private final List clients = new LinkedList();
+	private final List destinations = new LinkedList();
 
 	private final List tids = new LinkedList();
 
-	private final Map tidsPerClient = new HashMap();
+	private final Map tidsPerDestination = new HashMap();
 
 
 	/**
 	 * Create a new JcoResourceHolder that is open for resources to be added.
-	 * @see #addClient
+	 * @see #addDestination
 	 * @see #addTid
 	 */
 	public JcoResourceHolder() {
@@ -70,24 +74,24 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 	}
 
 	/**
-	 * Create a new JcoResourceHolder for the given JCO.Client.
+	 * Create a new JcoResourceHolder for the given JCoDestination.
 	 * @param sapSystem the SapSystem that this
 	 * resource holder is associated with (may be <code>null</code>)
-	 * @param client the JCO.Client
+	 * @param destination the JCoDestination
 	 */
-	public JcoResourceHolder(SapSystem sapSystem, JCO.Client client) {
+	public JcoResourceHolder(SapSystem sapSystem, JCoDestination destination) {
 		this.sapSystem = sapSystem;
-		addClient(client);
+		addDestination(destination);
 	}
 
 	/**
 	 * Create a new JcoResourceHolder for the given JCO resources.
-	 * @param client the JCO.Client
+	 * @param destination the JCoDestination
 	 * @param tid the TID
 	 */
-	public JcoResourceHolder(JCO.Client client, String tid) {
-		addClient(client);
-		addTid(tid, client);
+	public JcoResourceHolder(JCoDestination destination, String tid) {
+		addDestination(destination);
+		addTid(tid, destination);
 		this.frozen = true;
 	}
 
@@ -95,13 +99,13 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 	 * Create a new JcoResourceHolder for the given JCO resources.
 	 * @param sapSystem the SapSystem that this
 	 * resource holder is associated with (may be <code>null</code>)
-	 * @param client the JCO.Client
+	 * @param destination the JCoDestination
 	 * @param tid the TID
 	 */
-	public JcoResourceHolder(SapSystem sapSystem, JCO.Client client, String tid) {
+	public JcoResourceHolder(SapSystem sapSystem, JCoDestination destination, String tid) {
 		this.sapSystem = sapSystem;
-		addClient(client);
-		addTid(tid, client);
+		addDestination(destination);
+		addTid(tid, destination);
 		this.frozen = true;
 	}
 
@@ -110,46 +114,46 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 		return this.frozen;
 	}
 
-	public final void addClient(JCO.Client client) {
-		Assert.isTrue(!this.frozen, "Cannot add Client because JcoResourceHolder is frozen");
-		Assert.notNull(client, "Client must not be null");
-		if (!this.clients.contains(client)) {
-			this.clients.add(client);
+	public final void addDestination(JCoDestination destination) {
+		Assert.isTrue(!this.frozen, "Cannot add Destination because JcoResourceHolder is frozen");
+		Assert.notNull(destination, "Destination must not be null");
+		if (!this.destinations.contains(destination)) {
+			this.destinations.add(destination);
 		}
 	}
 
-	public final void addTid(String tid, JCO.Client client) {
+	public final void addTid(String tid, JCoDestination destination) {
 		Assert.isTrue(!this.frozen, "Cannot add TID because JcoResourceHolder is frozen");
-		Assert.notNull(client, "Client must not be null");
+		Assert.notNull(destination, "Destination must not be null");
 		Assert.notNull(tid, "TID must not be null");
 		if (!this.tids.contains(tid)) {
 			this.tids.add(tid);
-			if (client != null) {
-				List tids = (List) this.tidsPerClient.get(client);
+			if (destination != null) {
+				List tids = (List) this.tidsPerDestination.get(destination);
 				if (tids == null) {
 					tids = new LinkedList();
-					this.tidsPerClient.put(client, tids);
+					this.tidsPerDestination.put(destination, tids);
 				}
 				tids.add(tid);
 			}
 		}
 	}
 
-	public boolean containsClient(JCO.Client client) {
-		return this.clients.contains(client);
+	public boolean containsDestination(JCoDestination destination) {
+		return this.destinations.contains(destination);
 	}
 	public boolean containsTid(String tid) {
 		return this.tids.contains(tid);
 	}
 
 
-	public JCO.Client getClient() {
-		return (!this.clients.isEmpty() ? (JCO.Client) this.clients.get(0) : null);
+	public JCoDestination getDestination() {
+		return (!this.destinations.isEmpty() ? (JCoDestination) this.destinations.get(0) : null);
 	}
 
-	public String getTid(JCO.Client client) {
-		Assert.notNull(client, "Client must not be null");
-		List tids = (List) this.tidsPerClient.get(client);
+	public String getTid(JCoDestination destination) {
+		Assert.notNull(destination, "Destination must not be null");
+		List tids = (List) this.tidsPerDestination.get(destination);
 		if (tids==null) {
 			return null;
 		}
@@ -158,24 +162,17 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 
 
 	public void commitAll() throws SapException {
-		for (Iterator itc = this.clients.iterator(); itc.hasNext();) {
-			JCO.Client client = (JCO.Client)itc.next();
-			List tids = (List)this.tidsPerClient.get(client);
+		for (Iterator itc = this.destinations.iterator(); itc.hasNext();) {
+			JCoDestination destination = (JCoDestination)itc.next();
+			List tids = (List)this.tidsPerDestination.get(destination);
 			for (Iterator itt = tids.iterator(); itt.hasNext();) {
 				String tid = (String)itt.next();
 				try {
-					client.confirmTID(tid);						
+					destination.confirmTID(tid);						
 				} catch (Throwable t) {
 					throw new SapException("Could not confirm TID ["+tid+"]");
 				}
 			}
-		}
-	}
-
-	public void closeAll() {
-		for (Iterator itc = this.clients.iterator(); itc.hasNext();) {
-			JCO.Client client = (JCO.Client)itc.next();
-			JCO.releaseClient(client);
 		}
 	}
 

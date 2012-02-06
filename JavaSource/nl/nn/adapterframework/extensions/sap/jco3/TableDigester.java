@@ -1,6 +1,9 @@
 /*
  * $Log: TableDigester.java,v $
- * Revision 1.5  2011-11-30 13:51:54  europe\m168309
+ * Revision 1.1  2012-02-06 14:33:04  m00f069
+ * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
+ *
+ * Revision 1.5  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -16,7 +19,7 @@
  * alternative way to set tables from XML
  *
  */
-package nl.nn.adapterframework.extensions.sap;
+package nl.nn.adapterframework.extensions.sap.jco3;
 
 import java.io.IOException;
 
@@ -29,7 +32,8 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.sap.mw.jco.JCO;
+import com.sap.conn.jco.JCoParameterList;
+import com.sap.conn.jco.JCoTable;
 
 /**
  * Class to parse table xml and store it into SAP table.
@@ -44,7 +48,8 @@ import com.sap.mw.jco.JCO;
  * 
  * 
  * @author  Gerrit van Brakel
- * @since   4.11  
+ * @author  Jaco de Groot
+ * @since   5.0
  * @version Id
  */
 public class TableDigester {
@@ -52,15 +57,15 @@ public class TableDigester {
 
 	private class TableHandler extends DefaultHandler {
 		
-		private JCO.ParameterList tableParams;
-		private JCO.Table table=null;
+		private JCoParameterList tableParams;
+		private JCoTable table=null;
 		private StringBuffer columnValue=new StringBuffer();
 		
 		private boolean parsedTables=false;
 		private boolean parsedItem=false;
 		private boolean parsedColumn=false;
 	
-		public TableHandler(JCO.ParameterList tableParams) {
+		public TableHandler(JCoParameterList tableParams) {
 			super();
 			this.tableParams=tableParams;
 		}
@@ -158,7 +163,7 @@ public class TableDigester {
 //	}
 //
 	
-	public void digestTableXml(JCO.ParameterList tableParams, String xml) throws IOException, SAXException  {
+	public void digestTableXml(JCoParameterList tableParams, String xml) throws IOException, SAXException  {
 		
 		ContentHandler ch = new TableHandler(tableParams);
 		XmlUtils.parseXml(ch,xml);
