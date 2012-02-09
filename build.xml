@@ -57,7 +57,7 @@
 	<target name="testproject" description="Create the jar file and copy it to a test project" depends="jar">
 		<property name="ibis.testproject" value="Ibis4TestIAFWEB"/>
 		<copy file="${build.dir}/AdapterFramework ${ac.application.version}.jar" todir="../${ibis.testproject}/WebContent/WEB-INF/lib"/>
-		<eclipse.convertPath fileSystemPath="../${ibis.testproject}/WebContent/WEB-INF/lib" property="project.resource"/>
-		<eclipse.refreshLocal resource="${project.resource}" depth="infinite"/>
+		<!-- eclipse.convertPath fileSystemPath="../${ibis.testproject}/WebContent/WEB-INF/lib" property="project.resource"/>
+		<eclipse.refreshLocal resource="${project.resource}" depth="infinite"/ -->
 	</target>
 </project>
