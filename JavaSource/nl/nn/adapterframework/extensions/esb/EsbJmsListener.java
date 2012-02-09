@@ -1,6 +1,9 @@
 /*
  * $Log: EsbJmsListener.java,v $
- * Revision 1.2  2012-01-05 10:25:13  europe\m168309
+ * Revision 1.3  2012-02-09 10:40:41  europe\m168309
+ * bugfix: wrong Destination class was used
+ *
+ * Revision 1.2  2012/01/05 10:25:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.1  2012/01/05 09:59:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -12,7 +15,7 @@ package nl.nn.adapterframework.extensions.esb;
 
 import java.util.Map;
 
-import javax.print.attribute.standard.Destination;
+import javax.jms.Destination;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
