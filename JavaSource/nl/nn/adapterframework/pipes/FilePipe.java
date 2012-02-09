@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.29  2011-11-30 13:51:50  europe\m168309
+ * Revision 1.30  2012-02-09 13:38:41  m00f069
+ * Fixed faceted error (Java facet 1.4 -> 1.5)
+ *
+ * Revision 1.29  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -99,10 +102,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Dir2Xml;
 import nl.nn.adapterframework.util.FileUtils;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
-
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
 
 
 /**
@@ -258,10 +259,9 @@ public class FilePipe extends FixedForwardPipe {
 	 * Encodes the input 
 	 */
 	private class Encoder implements TransformerAction {
-		public BASE64Encoder encoder = new BASE64Encoder();
 		public void configure() {}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
-			return encoder.encode(in).getBytes();
+			return Base64.encodeBase64(in);
 		}
 	}
 	
@@ -269,10 +269,9 @@ public class FilePipe extends FixedForwardPipe {
 	 * Decodes the input
 	 */
 	private class Decoder implements TransformerAction {
-		public BASE64Decoder decoder = new BASE64Decoder();
 		public void configure() {}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
-			return decoder.decodeBuffer(in == null ? null : new String(in));
+			return Base64.decodeBase64(in == null ? null : new String(in));
 		}
 	}
 

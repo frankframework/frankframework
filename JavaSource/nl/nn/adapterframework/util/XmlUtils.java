@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.76  2012-02-03 11:19:58  europe\m168309
+ * Revision 1.77  2012-02-09 13:38:41  m00f069
+ * Fixed faceted error (Java facet 1.4 -> 1.5)
+ *
+ * Revision 1.76  2012/02/03 11:19:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * for XSLT 1.0 the class com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl is used to be backward compatible with WAS5 (only for java vendor IBM and java version >= 1.5)
  *
  * Revision 1.75  2012/02/01 11:34:35  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -315,7 +318,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.76 $ $Date: 2012-02-03 11:19:58 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.77 $ $Date: 2012-02-09 13:38:41 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1685,7 +1688,7 @@ public class XmlUtils {
 		}
 			
 		try {
-			sb.append("Xalan-Version="+org.apache.xalan.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
+			sb.append("Xalan-Version="+com.sun.org.apache.xalan.internal.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
 		}  catch (Throwable t) {
 			sb.append("Xalan-Version not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
 		}
