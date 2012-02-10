@@ -1,6 +1,10 @@
 /*
  * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.9  2012-01-10 11:57:39  europe\m168309
+ * Revision 1.10  2012-02-10 15:32:25  europe\m168309
+ * - added parameter destination
+ * - added default value for parameters conversationId and cpaId
+ *
+ * Revision 1.9  2012/01/10 11:57:39  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added parameter paradigm in SoapBody xslt for mode 'bis'
  *
  * Revision 1.8  2012/01/06 15:48:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -31,6 +35,8 @@
  *
  */
 package nl.nn.adapterframework.extensions.esb;
+
+import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -93,9 +99,10 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>applicationFunction</td><td>&nbsp;</td></tr>
  * <tr><td>messagingLayer</td><td>ESB</td></tr>
  * <tr><td>serviceLayer</td><td>&nbsp;</td></tr>
+ * <tr><td>destination</td><td>if not empty this parameters contains the preceding parameters above as described in 'Location' in the table above</td></tr>
  * <tr><td>fromId</td><td>property 'instance.name'</td></tr>
- * <tr><td>cpaId</td><td>if applicable, copied from the original (received) SOAP Header</td></tr>
- * <tr><td>conversationId</td><td>if applicable, copied from the original (received) SOAP Header</td></tr>
+ * <tr><td>cpaId</td><td>if $paradigm equals 'Response' then copied from the original (received) SOAP Header, else 'n/a'</td></tr>
+ * <tr><td>conversationId</td><td>if $paradigm equals 'Response' then copied from the original (received) SOAP Header, else parameter pattern '{hostname}_{uid}'</td></tr>
  * <tr><td>messageId</td><td>parameter pattern '{hostname}_{uid}'</td></tr>
  * <tr><td>correlationId</td><td>if applicable, copied from MessageId in the original (received) SOAP Header</td></tr>
  * <tr><td>timestamp</td><td>parameter pattern '{now,date,yyyy-MM-dd'T'HH:mm:ss}'</td></tr>
@@ -120,7 +127,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <table border="1">
  * <tr><th>name</th><th>default</th></tr>
  * <tr><td>fromId</td><td>property 'instance.name'</td></tr>
- * <tr><td>conversationId</td><td>if applicable, copied from the original (received) SOAP Header</td></tr>
+ * <tr><td>conversationId</td><td>if $paradigm equals 'Response' or 'Reply' then copied from the original (received) SOAP Header, else parameter pattern '{hostname}_{uid}'</td></tr>
  * <tr><td>messageId</td><td>parameter pattern '{hostname}_{uid}'</td></tr>
  * <tr><td>externalRefToMessageId</td><td>if applicable, copied from MessageId in the original (received) SOAP Header</td></tr>
  * <tr><td>timestamp</td><td>parameter pattern '{now,date,yyyy-MM-dd'T'HH:mm:ss}'</td></tr>
@@ -131,7 +138,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <table border="1">
  * <tr><th>element</th><th>level</th><th>value</th></tr>
  * <tr><td>[Payload]</td><td>0</td><td>if $errorCode is empty then the complete payload will be copied and if not already existing a Result tag will be added<br/>else only the root tag will be copied</td></tr>
- * <tr><td>Result</td><td>1</td><td>this element will be the last child in the copied root tag; if $errorCode is empty and a Result tag already exists then skip this element including its child elements</td></tr>
+ * <tr><td>Result</td><td>1</td><td>this element will be the last child in the copied root tag (only applicable for $paradigm 'Response'); if $errorCode is empty and a Result tag already exists then skip this element including its child elements</td></tr>
  * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns="http://nn.nl/XSD/Generic/MessageHeader/1"</td></tr>
  * <tr><td>Status</td><td>2</td><td>if $errorCode is empty then 'OK'</br>else 'ERROR'</td></tr>
  * <tr><td>ErrorList</td><td>2</td><td>if $errorCode is empty then skip this element including its child elements</td></tr>
@@ -178,7 +185,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <table border="1">
  * <tr><th>element</th><th>level</th><th>value</th></tr>
  * <tr><td>[Payload]</td><td>0</td><td>if $errorCode is empty then the complete payload will be copied and if not already existing a Result tag will be added<br/>else only the root tag will be copied</td></tr>
- * <tr><td>Result</td><td>1</td><td>this element will be the last child in the copied root tag; if $errorCode is empty and a Result tag already exists then skip this element including its child elements</td></tr>
+ * <tr><td>Result</td><td>1</td><td>this element will be the last child in the copied root tag (only applicable for $paradigm 'Response' and 'Reply'); if $errorCode is empty and a Result tag already exists then skip this element including its child elements</td></tr>
  * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns="http://www.ing.com/CSP/XSD/General/Message_2"</td></tr>
  * <tr><td>Status</td><td>2</td><td>if $errorCode is empty then 'OK'</br>else 'ERROR'</td></tr>
  * <tr><td>ErrorList</td><td>2</td><td>if $errorCode is empty then skip this element including its child elements</td></tr>
@@ -229,6 +236,12 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	private final static String SERVICECONTEXTVERSION = "serviceContextVersion";
 	private final static String OPERATIONNAME = "operationName";
 	private final static String OPERATIONVERSION = "operationVersion";
+	private final static String PARADIGM = "paradigm";
+	private final static String APPLICATIONNAME = "applicationName";
+	private final static String APPLICATIONFUNCTION = "applicationFunction";
+	private final static String MESSAGINGLAYER = "messagingLayer";
+	private final static String SERVICELAYER = "serviceLayer";
+	private final static String DESTINATION = "destination";
 	private final static String FROMID= "fromId";
 	private final static String CPAID = "cpaId";
 	private final static String CONVERSATIONID = "conversationId";
@@ -272,6 +285,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 					setSoapBodyStyleSheet("/xml/xsl/esb/bisSoapBody.xsl");
 				}
 			}
+			stripDestination();
 			if (isAddOutputNamespace()) {
 				ParameterList parameterList = getParameterList();
 				String ons = "http://nn.nl/XSD/" + parameterList.findParameter(BUSINESSDOMAIN).getValue() +
@@ -287,6 +301,73 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		super.configure();
 	}
 
+	private void stripDestination() {
+		ParameterList parameterList = getParameterList();
+		Parameter p = parameterList.findParameter(DESTINATION);
+		if (p!=null) {
+			String destination = p.getValue();
+			//In case the messaging layer is ESB, the destination syntax is:
+			// Destination = [MessagingLayer].[BusinessDomain].[ServiceLayer].[ServiceName].[ServiceContext].[ServiceContextVersion].[OperationName].[OperationVersion].[Paradigm]
+			//In case the messaging layer is P2P, the destination syntax is:
+			// Destination = [MessagingLayer].[BusinessDomain].[ApplicationName].[ApplicationFunction].[Paradigm]
+			boolean p2p = false;
+			StringTokenizer st = new StringTokenizer(destination,".");
+			int count = 0;
+			while (st.hasMoreTokens()) {
+				count++;
+				String str = st.nextToken();
+				p = new Parameter();
+				switch (count) {
+		        	case 1:
+		        		if (str.equals("P2P")) {
+		        			p2p = true;
+		        		}
+		        		p.setName(MESSAGINGLAYER);
+		        		break;
+		        	case 2:
+		        		p.setName(BUSINESSDOMAIN);
+		        		break;
+		        	case 3:
+		        		if (p2p) {
+			        		p.setName(APPLICATIONNAME);
+		        		} else {
+			        		p.setName(SERVICELAYER);
+		        		}
+		        		break;
+		        	case 4:
+		        		if (p2p) {
+			        		p.setName(APPLICATIONFUNCTION);
+		        		} else {
+			        		p.setName(SERVICENAME);
+		        		}
+		        		break;
+		        	case 5:
+		        		if (p2p) {
+			        		p.setName(PARADIGM);
+		        		} else {
+			        		p.setName(SERVICECONTEXT);
+		        		}
+		        		break;
+		        	case 6:
+		        		p.setName(SERVICECONTEXTVERSION);
+		        		break;
+		        	case 7:
+		        		p.setName(OPERATIONNAME);
+		        		break;
+		        	case 8:
+		        		p.setName(OPERATIONVERSION);
+		        		break;
+		        	case 9:
+		        		p.setName(PARADIGM);
+		        		break;
+		        	default:
+				}
+				p.setValue(str);
+				addParameter(p);
+			}
+		}
+	}
+
 	private void addParameters() {
 		ParameterList parameterList = getParameterList();
 		Parameter p;
@@ -300,18 +381,28 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			if (parameterList.findParameter(CPAID)==null) {
 				p = new Parameter();
 				p.setName(CPAID);
-				p.setSessionKey(SOAPHEADER);
-				p.setXpathExpression("MessageHeader/HeaderFields/CPAId");
-				p.setRemoveNamespaces(true);
+				String paradigm = parameterList.findParameter(PARADIGM).getValue();
+				if (paradigm.equals("Response")) {
+					p.setSessionKey(SOAPHEADER);
+					p.setXpathExpression("MessageHeader/HeaderFields/CPAId");
+					p.setRemoveNamespaces(true);
+				} else {
+					p.setValue("n/a");
+				}
 				addParameter(p);
 			}
 		}
 		if (parameterList.findParameter(CONVERSATIONID)==null) {
 			p = new Parameter();
 			p.setName(CONVERSATIONID);
-			p.setSessionKey(SOAPHEADER);
-			p.setXpathExpression("MessageHeader/HeaderFields/ConversationId");
-			p.setRemoveNamespaces(true);
+			String paradigm = parameterList.findParameter(PARADIGM).getValue();
+			if (paradigm.equals("Response") || paradigm.equals("Reply")) {
+				p.setSessionKey(SOAPHEADER);
+				p.setXpathExpression("MessageHeader/HeaderFields/ConversationId");
+				p.setRemoveNamespaces(true);
+			} else {
+				p.setPattern("{hostname}_{uid}");
+			}
 			addParameter(p);
 		}
 		if (parameterList.findParameter(MESSAGEID)==null) {
