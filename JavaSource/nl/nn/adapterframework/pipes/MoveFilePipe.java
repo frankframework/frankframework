@@ -1,6 +1,9 @@
 /*
  * $Log: MoveFilePipe.java,v $
- * Revision 1.7  2011-11-30 13:51:51  europe\m168309
+ * Revision 1.8  2012-02-13 14:31:51  europe\m168309
+ * updated javadoc
+ *
+ * Revision 1.7  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -62,7 +65,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setFilename(String) filename}</td><td>The name of the file to move (if not specified, the input for this pipe is assumed to be the name of the file</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2dir(String) move2dir}</td><td>destination directory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2file(String) move2file}</td><td>The name of the destination file (if not specified, the name of the file to move is taken)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMove2fileSessionKey(String) move2fileSessionKey}</td><td>The session key that contains the name of the file to use (only used if fileName is not set)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMove2fileSessionKey(String) move2fileSessionKey}</td><td>The session key that contains the name of the file to use (only used if move2file is not set)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNumberOfBackups(int) numberOfBackups}</td><td>number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.</td><td>5</td></tr>
  * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>when set <code>true</code>, the destination file will be deleted if it already exists</td><td>false</td></tr>
  * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of attempts before throwing an exception</td><td>10</td></tr>
@@ -77,7 +80,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class MoveFilePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.7 $ $Date: 2011-11-30 13:51:51 $";
+	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.8 $ $Date: 2012-02-13 14:31:51 $";
 
 	private String filename;
 	private String move2dir;
