@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.30  2012-02-09 13:38:41  m00f069
+ * Revision 1.31  2012-02-13 09:14:33  europe\m168309
+ * added attribute createDirectory to writing files
+ *
+ * Revision 1.30  2012/02/09 13:38:41  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Fixed faceted error (Java facet 1.4 -> 1.5)
  *
  * Revision 1.29  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -137,7 +140,7 @@ import org.apache.commons.lang.StringUtils;
  * <li>list: returns the files and directories in the directory that satisfy the specified filter (see {@link nl.nn.adapterframework.util.Dir2Xml dir2xml}). If a directory is not specified, the fileName is expected to include the directory</li>
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created (only used if fileName and fileNameSession are not set)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to read from is created if it does not exist</td><td>false</td></tr>
+ * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to read from or write to is created if it does not exist</td><td>false</td></tr>
  * <tr><td>{@link #setWriteLineSeparator(boolean) writeLineSeparator}</td><td>when set to <code>true</code>, a line separator is written after the content is written</td><td>false</td></tr>
  * <tr><td>{@link #setTestCanWrite(boolean) testCanWrite}</td><td>when set to <code>true</code>, a test is performed to find out if a temporary file can be created and deleted in the specified directory (only used if directory is set and combined with the action write, write_append or create)</td><td>true</td></tr>
  * </table>
@@ -318,6 +321,17 @@ public class FilePipe extends FixedForwardPipe {
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
 			File tmpFile=createFile(session);
 
+			if (!tmpFile.getParentFile().exists()) {
+				if (isCreateDirectory()) {
+					if (tmpFile.getParentFile().mkdirs()) {
+						log.debug( getLogPrefix(session) + "created directory [" + tmpFile.getParent() +"]");
+					} else {
+						log.warn( getLogPrefix(session) + "directory [" + tmpFile.getParent() +"] could not be created");
+					}
+				} else {
+					log.warn( getLogPrefix(session) + "directory [" + tmpFile.getParent() +"] does not exists");
+				}
+			}
 			// Use tmpFile.getPath() instead of tmpFile to be WAS 5.0 / Java 1.3 compatible
 			FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), append);
 			
