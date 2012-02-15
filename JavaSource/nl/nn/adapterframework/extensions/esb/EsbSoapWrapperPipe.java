@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.10  2012-02-10 15:32:25  europe\m168309
+ * Revision 1.11  2012-02-15 08:10:10  europe\m168309
+ * avoid NPE
+ *
+ * Revision 1.10  2012/02/10 15:32:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * - added parameter destination
  * - added default value for parameters conversationId and cpaId
  *
@@ -287,13 +290,20 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			}
 			stripDestination();
 			if (isAddOutputNamespace()) {
+				String ons = "http://nn.nl/XSD";
 				ParameterList parameterList = getParameterList();
-				String ons = "http://nn.nl/XSD/" + parameterList.findParameter(BUSINESSDOMAIN).getValue() +
-					"/" + parameterList.findParameter(SERVICENAME).getValue() +
-					"/" + parameterList.findParameter(SERVICECONTEXT).getValue() +
-					"/" + parameterList.findParameter(SERVICECONTEXTVERSION).getValue() +
-					"/" + parameterList.findParameter(OPERATIONNAME).getValue() +
-					"/" + parameterList.findParameter(OPERATIONVERSION).getValue();
+				Parameter p = parameterList.findParameter(BUSINESSDOMAIN);
+				ons = ons + "/" + ((p!=null) ? p.getValue() : "");
+				p = parameterList.findParameter(SERVICENAME);
+				ons = ons + "/" + ((p!=null) ? p.getValue() : "");
+				p = parameterList.findParameter(SERVICECONTEXT);
+				ons = ons + "/" + ((p!=null) ? p.getValue() : "");
+				p = parameterList.findParameter(SERVICECONTEXTVERSION);
+				ons = ons + "/" + ((p!=null) ? p.getValue() : "");
+				p = parameterList.findParameter(OPERATIONNAME);
+				ons = ons + "/" + ((p!=null) ? p.getValue() : "");
+				p = parameterList.findParameter(OPERATIONVERSION);
+				ons = ons + "/" + ((p!=null) ? p.getValue() : "");
 				setOutputNamespace(ons);
 			}
 			addParameters();
@@ -371,6 +381,11 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	private void addParameters() {
 		ParameterList parameterList = getParameterList();
 		Parameter p;
+		String paradigm = null;
+		p = parameterList.findParameter(PARADIGM);
+		if (p!=null) {
+			paradigm = p.getValue();
+		}
 		if (parameterList.findParameter(FROMID)==null) {
 			p = new Parameter();
 			p.setName(FROMID);
@@ -381,8 +396,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			if (parameterList.findParameter(CPAID)==null) {
 				p = new Parameter();
 				p.setName(CPAID);
-				String paradigm = parameterList.findParameter(PARADIGM).getValue();
-				if (paradigm.equals("Response")) {
+				if (paradigm!=null && paradigm.equals("Response")) {
 					p.setSessionKey(SOAPHEADER);
 					p.setXpathExpression("MessageHeader/HeaderFields/CPAId");
 					p.setRemoveNamespaces(true);
@@ -395,8 +409,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		if (parameterList.findParameter(CONVERSATIONID)==null) {
 			p = new Parameter();
 			p.setName(CONVERSATIONID);
-			String paradigm = parameterList.findParameter(PARADIGM).getValue();
-			if (paradigm.equals("Response") || paradigm.equals("Reply")) {
+			if (paradigm!=null && (paradigm.equals("Response") || paradigm.equals("Reply"))) {
 				p.setSessionKey(SOAPHEADER);
 				p.setXpathExpression("MessageHeader/HeaderFields/ConversationId");
 				p.setRemoveNamespaces(true);
