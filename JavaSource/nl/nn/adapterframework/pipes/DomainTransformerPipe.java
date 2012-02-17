@@ -1,6 +1,10 @@
 /*
  * $Log: DomainTransformerPipe.java,v $
- * Revision 1.4  2011-11-30 13:51:50  europe\m168309
+ * Revision 1.5  2012-02-17 18:04:59  m00f069
+ * Close connection too
+ * Use proxiedDataSources
+ *
+ * Revision 1.4  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -20,6 +24,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -69,20 +74,17 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	private final static String TYPE_NUMBER = "number";
 	private final static String TYPE_STRING = "string";
 
-	private String jmsRealm = null;
 	private String tableName = "mapping";
 	private String labelField = "label";
 	private String valueInField = "valueIn";
 	private String valueOutField = "valueOut";
 
-	private FixedQuerySender qs;
+	private FixedQuerySender qs = new FixedQuerySender();
 	private String query;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		qs = new FixedQuerySender();
-		qs.setJmsRealm(jmsRealm);
 		//dummy query required
 		qs.setQuery("SELECT count(*) FROM ALL_TABLES");
 		qs.configure();
@@ -113,11 +115,12 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	public PipeRunResult doPipe(Object invoer, PipeLineSession session)
 		throws PipeRunException {
+		Connection conn = null;
 		PreparedStatement stmt = null;
 		StringBuffer buffer = new StringBuffer();
 
 		try {
-			Connection conn = qs.getConnection();
+			conn = qs.getConnection();
 			stmt = conn.prepareStatement(query);
 
 			String invoerString = invoer.toString();
@@ -196,6 +199,15 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 						e);
 				}
 			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					log.warn(
+						getLogPrefix(null) + "exception closing connection",
+						e);
+				}
+			}
 		}
 
 		return new PipeRunResult(getForward(), buffer.toString());
@@ -250,12 +262,12 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		}
 	}
 
-	public void setJmsRealm(String jmsRealm) {
-		this.jmsRealm = jmsRealm;
+	public void setProxiedDataSources(Map proxiedDataSources) {
+		qs.setProxiedDataSources(proxiedDataSources);
 	}
 
-	public String getJmsRealm() {
-		return jmsRealm;
+	public void setJmsRealm(String jmsRealm) {
+		qs.setJmsRealm(jmsRealm);
 	}
 
 	public void setTableName(String tableName) {
