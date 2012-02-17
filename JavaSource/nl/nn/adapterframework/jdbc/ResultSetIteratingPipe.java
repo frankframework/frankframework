@@ -1,6 +1,10 @@
 /*
  * $Log: ResultSetIteratingPipe.java,v $
- * Revision 1.10  2011-12-08 13:01:59  europe\m168309
+ * Revision 1.11  2012-02-17 18:04:02  m00f069
+ * Use proxiedDataSources for JdbcIteratingPipeBase too
+ * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
+ *
+ * Revision 1.10  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.9  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -33,6 +37,7 @@
  */
 package nl.nn.adapterframework.jdbc;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -122,9 +127,9 @@ import nl.nn.adapterframework.core.SenderException;
  */
 public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 
-	protected IDataIterator getIterator(ResultSet rs) throws SenderException {
+	protected IDataIterator getIterator(Connection conn, ResultSet rs) throws SenderException {
 		try {
-			return new ResultSetIterator(rs);
+			return new ResultSetIterator(conn, rs);
 		} catch (SQLException e) {
 			throw new SenderException(e);
 		}

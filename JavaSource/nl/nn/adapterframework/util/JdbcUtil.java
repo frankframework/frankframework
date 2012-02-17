@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.33  2011-11-30 13:51:49  europe\m168309
+ * Revision 1.34  2012-02-17 18:04:02  m00f069
+ * Use proxiedDataSources for JdbcIteratingPipeBase too
+ * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
+ *
+ * Revision 1.33  2011/11/30 13:51:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -789,17 +793,15 @@ public class JdbcUtil {
 		}
 	}
 
-	public static void fullClose(ResultSet rs) {
+	public static void fullClose(Connection connection, ResultSet rs) {
 		Statement statement=null;
-		Connection connection=null;
 		
 		if (rs==null) {
 			log.warn("resultset to close was null");
-			return;		
+			return;
 		}
 		try {
 			statement = rs.getStatement();
-			connection = statement.getConnection();
 		} catch (SQLException e) {
 			log.warn("Could not obtain statement or connection from resultset",e);
 		} finally {
@@ -809,43 +811,34 @@ public class JdbcUtil {
 				log.warn("Could not close resultset", e);
 			} finally {
 				if (statement!=null) {
-					try {
-						statement.close();
-					} catch (SQLException e) {
-						log.warn("Could not close statement", e);
-					} finally {
-						if (connection!=null) {
-							try {
-								connection.close();
-							} catch (SQLException e) {
-								log.warn("Could not close connection", e);
-							}
-						}
-					}
+					fullClose(connection, statement);
 				}
 			}
 		}
 	}
 
-	public static void fullClose(Statement statement) {
-		Connection connection=null;
-				
+	/**
+	 * Note: Depending on the connect pool used (for example with Tomcat 7) the
+	 * connection retrieved from the statement will be the direct connection
+	 * instead of the proxied connection. After a close on this (unproxied)
+	 * connection the transaction manager isn't able to do a commit anymore.
+	 * Hence, this method doesn't get it from the statement but has an extra
+	 * connection parameter.
+	 * 
+	 * @param connection  the proxied/original connection the statement was created with
+	 * @param statement   the statement to close
+	 */
+	public static void fullClose(Connection connection, Statement statement) {
 		try {
-			connection = statement.getConnection();
+			statement.close();
 		} catch (SQLException e) {
-			log.warn("Could not obtain connection from statement",e);
+			log.warn("Could not close statement", e);
 		} finally {
-			try {
-				statement.close();
-			} catch (SQLException e) {
-				log.warn("Could not close statement", e);
-			} finally {
-				if (connection!=null) {
-					try {
-						connection.close();
-					} catch (SQLException e) {
-						log.warn("Could not close connection", e);
-					}
+			if (connection!=null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					log.warn("Could not close connection", e);
 				}
 			}
 		}

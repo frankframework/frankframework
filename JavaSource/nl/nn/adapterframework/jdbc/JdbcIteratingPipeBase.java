@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcIteratingPipeBase.java,v $
- * Revision 1.13  2011-12-08 13:01:59  europe\m168309
+ * Revision 1.14  2012-02-17 18:04:02  m00f069
+ * Use proxiedDataSources for JdbcIteratingPipeBase too
+ * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
+ *
+ * Revision 1.13  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.12  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -201,7 +205,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 	}
 
 
-	protected abstract IDataIterator getIterator(ResultSet rs) throws SenderException; 
+	protected abstract IDataIterator getIterator(Connection conn, ResultSet rs) throws SenderException; 
 
 	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		Connection connection = null;
@@ -220,17 +224,17 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 				throw new SenderException("resultset is null");
 			}
 			if (!rs.next()) {
-				JdbcUtil.fullClose(rs);
+				JdbcUtil.fullClose(connection, rs);
 				return null; // no results
 			}
-			return getIterator(rs);
-		} catch (Exception e) {
+			return getIterator(connection, rs);
+		} catch (Throwable t) {
 			try {
 				if (rs!=null) {
-					JdbcUtil.fullClose(rs);
+					JdbcUtil.fullClose(connection, rs);
 				} else {
 					if (statement!=null) {
-						JdbcUtil.fullClose(statement);
+						JdbcUtil.fullClose(connection, statement);
 					} else {
 						if (connection!=null) {
 							try {
@@ -242,7 +246,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 					}
 				}
 			} finally {
-				throw new SenderException(getLogPrefix(session),e);
+				throw new SenderException(getLogPrefix(session),t);
 			}
 		}
 	}
@@ -258,7 +262,11 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 	public String getQuery() {
 		return query;
 	}
-	
+
+	public void setProxiedDataSources(Map proxiedDataSources) {
+		querySender.setProxiedDataSources(proxiedDataSources);
+	}
+
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}

@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.56  2012-01-13 13:33:45  m00f069
+ * Revision 1.57  2012-02-17 18:04:02  m00f069
+ * Use proxiedDataSources for JdbcIteratingPipeBase too
+ * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
+ *
+ * Revision 1.56  2012/01/13 13:33:45  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Moved code for getting schemaOwner4Check from database to bean configuration time (prevent checkAttribute at Spring bean creation time to throw an exception because jmsRealm has not yet been set by the digester)
  *
  * Revision 1.55  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -1136,7 +1140,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				throw new ListenerException("read beyond end of resultset");
 			}
 			current=false;
-			return new JdbcTransactionalStorageIteratorItem(rs,false);
+			return new JdbcTransactionalStorageIteratorItem(conn,rs,false);
 		}
 
 		public void close() throws ListenerException {
@@ -1362,7 +1366,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			if (!rs.next()) {
 				throw new ListenerException("could not retrieve context for messageid ["+ messageId+"]");
 			}
-			return new JdbcTransactionalStorageIteratorItem(rs,true);
+			return new JdbcTransactionalStorageIteratorItem(conn, rs,true);
 			
 		} catch (Exception e) {
 			throw new ListenerException("cannot read context",e);
@@ -1409,11 +1413,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 	private class JdbcTransactionalStorageIteratorItem implements IMessageBrowsingIteratorItem {
 
+		private Connection conn;
 		private ResultSet rs;
 		private boolean closeOnRelease;
 		
-		public JdbcTransactionalStorageIteratorItem(ResultSet rs, boolean closeOnRelease) {
+		public JdbcTransactionalStorageIteratorItem(Connection conn, ResultSet rs, boolean closeOnRelease) {
 			super();
+			this.conn=conn;
 			this.rs=rs;
 			this.closeOnRelease=closeOnRelease;
 		}
@@ -1495,7 +1501,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 		public void release() {
 			if (closeOnRelease) {
-				JdbcUtil.fullClose(rs);
+				JdbcUtil.fullClose(conn, rs);
 			}
 		}
 		

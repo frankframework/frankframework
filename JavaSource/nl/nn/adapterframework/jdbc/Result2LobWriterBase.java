@@ -1,6 +1,10 @@
 /*
  * $Log: Result2LobWriterBase.java,v $
- * Revision 1.6  2011-11-30 13:51:43  europe\m168309
+ * Revision 1.7  2012-02-17 18:04:02  m00f069
+ * Use proxiedDataSources for JdbcIteratingPipeBase too
+ * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
+ *
+ * Revision 1.6  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -69,9 +73,10 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @version Id
  */
 public abstract class Result2LobWriterBase extends ResultWriter {
-	public static final String version = "$RCSfile: Result2LobWriterBase.java,v $  $Revision: 1.6 $ $Date: 2011-11-30 13:51:43 $";
+	public static final String version = "$RCSfile: Result2LobWriterBase.java,v $  $Revision: 1.7 $ $Date: 2012-02-17 18:04:02 $";
 	
 	protected Map openStreams = Collections.synchronizedMap(new HashMap());
+	protected Map openConnections = Collections.synchronizedMap(new HashMap());
 	protected Map openResultSets = Collections.synchronizedMap(new HashMap());
 	protected Map openLobHandles = Collections.synchronizedMap(new HashMap());
 
@@ -103,7 +108,7 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	protected Writer createWriter(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
 		querySender.sendMessage(streamId, streamId);
 		Connection conn=querySender.getConnection();
-		
+		openConnections.put(streamId, conn);
 		PreparedStatement stmt = querySender.getStatement(conn,session.getMessageId(),streamId, true);
 		ResultSet rs =stmt.executeQuery();
 		openResultSets.put(streamId,rs);
@@ -118,10 +123,11 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 			return super.finalizeResult(session,streamId, error, prc);
 		} finally {
 			Object lobHandle = openLobHandles.get(streamId);
+			Connection conn = (Connection)openResultSets.get(streamId);
 			ResultSet rs = (ResultSet)openResultSets.get(streamId);
 			if (rs!=null) {
 				updateLob(querySender.getDbmsSupport(), lobHandle, rs);
-				JdbcUtil.fullClose(rs);
+				JdbcUtil.fullClose(conn, rs);
 			}
 		}
 	}

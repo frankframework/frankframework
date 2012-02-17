@@ -1,6 +1,10 @@
 /*
  * $Log: LobLineIteratingPipeBase.java,v $
- * Revision 1.4  2011-11-30 13:51:43  europe\m168309
+ * Revision 1.5  2012-02-17 18:04:02  m00f069
+ * Use proxiedDataSources for JdbcIteratingPipeBase too
+ * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
+ *
+ * Revision 1.4  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -16,6 +20,7 @@
 package nl.nn.adapterframework.jdbc;
 
 import java.io.Reader;
+import java.sql.Connection;
 import java.sql.ResultSet;
 
 import nl.nn.adapterframework.core.IDataIterator;
@@ -35,10 +40,12 @@ public abstract class LobLineIteratingPipeBase extends JdbcIteratingPipeBase {
 	protected abstract Reader getReader(ResultSet rs) throws SenderException;
 
 	protected class ResultStreamIterator extends ReaderLineIterator {
+		Connection conn;
 		ResultSet rs;
 		
-		ResultStreamIterator(ResultSet rs, Reader reader) throws SenderException {
+		ResultStreamIterator(Connection conn, ResultSet rs, Reader reader) throws SenderException {
 			super(reader);
+			this.conn=conn;
 			this.rs=rs;
 		}
 		
@@ -46,14 +53,14 @@ public abstract class LobLineIteratingPipeBase extends JdbcIteratingPipeBase {
 			try {
 				super.close();
 			} finally {
-				JdbcUtil.fullClose(rs);
+				JdbcUtil.fullClose(conn, rs);
 			}
 		}
 
 	}
 
-	protected IDataIterator getIterator(ResultSet rs) throws SenderException {
-		return new ResultStreamIterator(rs, getReader(rs));
+	protected IDataIterator getIterator(Connection conn, ResultSet rs) throws SenderException {
+		return new ResultStreamIterator(conn, rs, getReader(rs));
 	}
 
 }

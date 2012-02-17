@@ -1,6 +1,10 @@
 /*
  * $Log: ResultSetIterator.java,v $
- * Revision 1.7  2011-11-30 13:51:43  europe\m168309
+ * Revision 1.8  2012-02-17 18:04:02  m00f069
+ * Use proxiedDataSources for JdbcIteratingPipeBase too
+ * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
+ *
+ * Revision 1.7  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -24,6 +28,7 @@
  */
 package nl.nn.adapterframework.jdbc;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -49,6 +54,7 @@ import org.apache.log4j.Logger;
 class ResultSetIterator implements IDataIterator {
 	protected Logger log = LogUtil.getLogger(this);
 
+	private Connection conn;
 	private ResultSet rs;
 		
 	private ResultSetMetaData rsmeta;
@@ -57,8 +63,9 @@ class ResultSetIterator implements IDataIterator {
 
 	int rowNumber=0;
 
-	public ResultSetIterator(ResultSet rs) throws SQLException {
+	public ResultSetIterator(Connection conn, ResultSet rs) throws SQLException {
 		super();
+		this.conn=conn;
 		this.rs=rs;
 		rsmeta=rs.getMetaData();
 	}
@@ -85,6 +92,6 @@ class ResultSetIterator implements IDataIterator {
 	}
 
 	public void close() {
-		JdbcUtil.fullClose(rs);
+		JdbcUtil.fullClose(conn, rs);
 	}
 }

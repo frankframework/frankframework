@@ -1,6 +1,10 @@
 /*
  * $Log: BatchTransformerPipeBase.java,v $
- * Revision 1.5  2011-11-30 13:51:43  europe\m168309
+ * Revision 1.6  2012-02-17 18:04:02  m00f069
+ * Use proxiedDataSources for JdbcIteratingPipeBase too
+ * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
+ *
+ * Revision 1.5  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -75,10 +79,12 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	}
 
 	public class ResultSetReader extends BufferedReader {
-		ResultSet rs;		
+		Connection conn;
+		ResultSet rs;
 
-		ResultSetReader(ResultSet rs, Reader reader) {
+		ResultSetReader(Connection conn, ResultSet rs, Reader reader) {
 			super(reader);
+			this.conn=conn;
 			this.rs=rs;
 		}
 
@@ -86,7 +92,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 			try {
 				super.close();
 			} finally {
-				JdbcUtil.fullClose(rs);
+				JdbcUtil.fullClose(conn, rs);
 			}
 		}
 		
@@ -109,7 +115,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 			if (rs==null || !rs.next()) {
 				throw new SenderException("query has empty resultset");
 			}
-			return new ResultSetReader(rs,getReader(rs, getCharset(), streamId, session));
+			return new ResultSetReader(connection, rs,getReader(rs, getCharset(), streamId, session));
 		} catch (Exception e) {
 			throw new PipeRunException(this,"cannot open reader",e);
 		}
