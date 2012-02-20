@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.31  2012-02-13 09:14:33  europe\m168309
+ * Revision 1.32  2012-02-20 13:30:58  m00f069
+ * Added attribute charset to FilePipe
+ *
+ * Revision 1.31  2012/02/13 09:14:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attribute createDirectory to writing files
  *
  * Revision 1.30  2012/02/09 13:38:41  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -123,6 +126,7 @@ import org.apache.commons.lang.StringUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>{@link #setCharset(String) charset}</td><td>The charset to be used when transforming a string to a byte array and/or the other way around</td><td>The value of the system property file.encoding</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirectory(String) directory}</td><td>base directory where files are stored in or read from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFileName(String) fileName}</td><td>The name of the file to use</td><td>&nbsp;</td></tr>
@@ -160,6 +164,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class FilePipe extends FixedForwardPipe {
 
+	protected String charset = System.getProperty("file.encoding");
 	protected String actions;
 	protected String directory;
 	protected String writeSuffix;
@@ -229,13 +234,13 @@ public class FilePipe extends FixedForwardPipe {
 				inValue = (byte [])input;
 			}
 			else {
-				inValue = (input == null) ? null : input.toString().getBytes();
+				inValue = (input == null) ? null : input.toString().getBytes(charset);
 			}
 				
 			for (Iterator it = transformers.iterator(); it.hasNext(); ) {
 				inValue = ((TransformerAction)it.next()).go(inValue, session);
 			}
-			return new PipeRunResult(getForward(), inValue == null ? null : new String(inValue));
+			return new PipeRunResult(getForward(), inValue == null ? null : new String(inValue, charset));
 		}
 		catch(Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"Error while transforming input", e); 
@@ -530,6 +535,9 @@ public class FilePipe extends FixedForwardPipe {
 		}
 	}
 
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
 
 	/**
 	 * @param actions all the actions the pipe has to do
