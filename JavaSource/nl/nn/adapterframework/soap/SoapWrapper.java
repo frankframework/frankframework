@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.18  2012-02-01 10:49:56  europe\m168309
+ * Revision 1.19  2012-02-28 13:26:39  europe\m168309
+ * adjustable soap envelope namespace
+ *
+ * Revision 1.18  2012/02/01 10:49:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * wrap faultstring in soap fault as CDATA
  *
  * Revision 1.17  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -220,7 +223,10 @@ public class SoapWrapper {
 	}
 
 	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace, String soapHeader, String namespaceDefs) {
-		
+		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, soapHeader, namespaceDefs, null);
+	}
+
+	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace, String soapHeader, String namespaceDefs, String soapNamespace) {
 		String encodingStyle="";
 		String targetObjectNamespaceClause="";
 		if (!StringUtils.isEmpty(encodingStyleUri)) {
@@ -249,9 +255,13 @@ public class SoapWrapper {
 			}
 			log.debug("namespaceClause ["+namespaceClause+"]");
 		}
+		String soapns = "http://schemas.xmlsoap.org/soap/envelope/";
+		if (StringUtils.isNotEmpty(soapNamespace)) {
+			soapns = soapNamespace;
+		}
 		String soapmsg= 
 		"<soapenv:Envelope " + 
-			"xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "+encodingStyle +
+			"xmlns:soapenv=\"" + soapns + "\" "+encodingStyle +
 			targetObjectNamespaceClause +
 //			"xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" " + 
 //			"xmlns:xsd=\"http://www.w3.org/1999/XMLSchema\" " +
