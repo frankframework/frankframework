@@ -1,34 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />
+	<xsl:param name="namespace">http://www.ing.com/CSP/XSD/General/Message_2</xsl:param>
 	<xsl:param name="fromId" />
 	<xsl:param name="conversationId" />
 	<xsl:param name="messageId" />
 	<xsl:param name="externalRefToMessageId" />
 	<xsl:param name="timestamp" />
 	<xsl:template match="/">
-		<MessageHeader xmlns="http://www.ing.com/CSP/XSD/General/Message_2">
-			<From>
-				<Id>
+		<xsl:element name="MessageHeader" namespace="{$namespace}">
+			<xsl:element name="From" namespace="{$namespace}">
+				<xsl:element name="Id" namespace="{$namespace}">
 					<xsl:value-of select="$fromId" />
-				</Id>
-			</From>
-			<HeaderFields>
-				<ConversationId>
+				</xsl:element>
+			</xsl:element>
+			<xsl:element name="HeaderFields" namespace="{$namespace}">
+				<xsl:element name="ConversationId" namespace="{$namespace}">
 					<xsl:value-of select="$conversationId" />
-				</ConversationId>
-				<MessageId>
+				</xsl:element>
+				<xsl:element name="MessageId" namespace="{$namespace}">
 					<xsl:value-of select="$messageId" />
-				</MessageId>
+				</xsl:element>
 				<xsl:if test="string-length($externalRefToMessageId)&gt;0">
-					<ExternalRefToMessageId>
+					<xsl:element name="ExternalRefToMessageId" namespace="{$namespace}">
 						<xsl:value-of select="$externalRefToMessageId" />
-					</ExternalRefToMessageId>
+					</xsl:element>
 				</xsl:if>
-				<Timestamp>
+				<xsl:element name="Timestamp" namespace="{$namespace}">
 					<xsl:value-of select="$timestamp" />
-				</Timestamp>
-			</HeaderFields>
-		</MessageHeader>
+				</xsl:element>
+			</xsl:element>
+		</xsl:element>
 	</xsl:template>
 </xsl:stylesheet>

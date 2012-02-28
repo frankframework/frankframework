@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />
+	<xsl:param name="namespace">http://www.ing.com/CSP/XSD/General/Message_2</xsl:param>
 	<xsl:param name="errorCode" />
 	<xsl:param name="errorReason" />
 	<xsl:param name="errorDetailCode" />
@@ -51,19 +52,19 @@
 		</xsl:if>
 	</xsl:template>
 	<xsl:template name="Result">
-		<Result xmlns="http://www.ing.com/CSP/XSD/General/Message_2">
+		<xsl:element name="Result" namespace="{$namespace}">
 			<xsl:choose>
 				<xsl:when test="string-length($errorCode)=0">
-					<Status>OK</Status>
+					<xsl:element name="Status" namespace="{$namespace}">OK</xsl:element>
 				</xsl:when>
 				<xsl:otherwise>
-					<Status>ERROR</Status>
-					<ErrorList>
-						<Error>
-							<Code>
+					<xsl:element name="Status" namespace="{$namespace}">ERROR</xsl:element>
+					<xsl:element name="ErrorList" namespace="{$namespace}">
+						<xsl:element name="Error" namespace="{$namespace}">
+							<xsl:element name="Code" namespace="{$namespace}">
 								<xsl:value-of select="$errorCode" />
-							</Code>
-							<Reason>
+							</xsl:element>
+							<xsl:element name="Reason" namespace="{$namespace}">
 								<xsl:choose>
 									<xsl:when test="string-length($errorReason)=0">
 										<xsl:choose>
@@ -80,43 +81,43 @@
 										<xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
 									</xsl:otherwise>
 								</xsl:choose>
-							</Reason>
-							<Service>
-								<Name>
+							</xsl:element>
+							<xsl:element name="Service" namespace="{$namespace}">
+								<xsl:element name="Name" namespace="{$namespace}">
 									<xsl:value-of select="$serviceName" />
-								</Name>
-								<Context>
+								</xsl:element>
+								<xsl:element name="Context" namespace="{$namespace}">
 									<xsl:value-of select="$serviceContext" />
-								</Context>
-								<Action>
-									<Name>
+								</xsl:element>
+								<xsl:element name="Action" namespace="{$namespace}">
+									<xsl:element name="Name" namespace="{$namespace}">
 										<xsl:value-of select="$operationName" />
-									</Name>
-									<Version>
+									</xsl:element>
+									<xsl:element name="Version" namespace="{$namespace}">
 										<xsl:value-of select="$operationVersion" />
-									</Version>
-								</Action>
-							</Service>
+									</xsl:element>
+								</xsl:element>
+							</xsl:element>
 							<xsl:if test="string-length($errorDetailCode)&gt;0">
-								<DetailList>
-									<Detail>
-										<Code>
+								<xsl:element name="DetailList" namespace="{$namespace}">
+									<xsl:element name="Detail" namespace="{$namespace}">
+										<xsl:element name="Code" namespace="{$namespace}">
 											<xsl:value-of select="$errorDetailCode" />
-										</Code>
+										</xsl:element>
 										<xsl:if test="string-length($errorDetailText)&gt;0">
-											<Text>
+											<xsl:element name="Text" namespace="{$namespace}">
 												<xsl:text disable-output-escaping="yes">&lt;![CDATA[</xsl:text>
 												<xsl:value-of select="$errorDetailText" />
 												<xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
-											</Text>
+											</xsl:element>
 										</xsl:if>
-									</Detail>
-								</DetailList>
+									</xsl:element>
+								</xsl:element>
 							</xsl:if>
-						</Error>
-					</ErrorList>
+						</xsl:element>
+					</xsl:element>
 				</xsl:otherwise>
 			</xsl:choose>
-		</Result>
+		</xsl:element>
 	</xsl:template>
 </xsl:stylesheet>
