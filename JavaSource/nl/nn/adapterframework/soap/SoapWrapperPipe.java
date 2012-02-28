@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapperPipe.java,v $
- * Revision 1.6  2011-12-23 16:02:40  europe\m168309
+ * Revision 1.7  2012-02-28 13:26:56  europe\m168309
+ * added soapNamespace attribute
+ *
+ * Revision 1.6  2011/12/23 16:02:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added soapBodyStyleSheet attribute
  *
  * Revision 1.5  2011/12/15 10:52:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -61,6 +64,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setSoapBodyStyleSheet(String) soapBodyStyleSheet}</td><td>(only used when <code>direction=wrap</code>) stylesheet to apply to the input message. Note: outputType=<code>xml</code> and xslt2=<code>true</code></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoveOutputNamespaces(boolean) removeOutputNamespaces}</td><td>(only used when <code>direction=unwrap</code>) when <code>true</code>, namespaces (and prefixes) in the content of the SOAP Body are removed</td><td>false</td></tr>
  * <tr><td>{@link #setOutputNamespace(String) outputNamespace}</td><td>(only used when <code>direction=wrap</code>) when not empty, this namespace is added to the root element in the SOAP Body</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>(only used when <code>direction=wrap</code>) namespace of the SOAP Envelope</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
  * <table> 
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -86,6 +90,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	private String soapBodyStyleSheet = null;
 	private boolean removeOutputNamespaces = false;
 	private String outputNamespace = null;
+	private String soapNamespace = null;
 
 	private SoapWrapper soapWrapper = null;
 
@@ -228,7 +233,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	}
 
 	protected String wrapMessage(String message, String soapHeader) throws DomBuilderException, TransformerException, IOException {
-		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader);
+		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader, null, getSoapNamespace());
 	}
 
 	public String getDirection() {
@@ -285,5 +290,12 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	}
 	public String getOutputNamespace() {
 		return outputNamespace;
+	}
+
+	public void setSoapNamespace(String string) {
+		soapNamespace = string;
+	}
+	public String getSoapNamespace() {
+		return soapNamespace;
 	}
 }
