@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.31  2011-12-15 09:55:31  m00f069
+ * Revision 1.32  2012-03-05 14:39:20  europe\m168309
+ * for soap messages validate the content of the soap body
+ *
+ * Revision 1.31  2011/12/15 09:55:31  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added Ibis WSDL generator (created by Michiel)
  *
  * Revision 1.28  2011/08/22 14:27:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -81,12 +84,18 @@
 package nl.nn.adapterframework.pipes;
 
 
+import java.util.StringTokenizer;
+
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.XmlValidatorBase;
 
 /**
@@ -141,8 +150,11 @@ import nl.nn.adapterframework.util.XmlValidatorBase;
  * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
  */
 public class XmlValidator extends FixedForwardPipe {
+	private final static String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
 
 	private XmlValidatorBase validator = new XmlValidatorBase();
+
+	private SoapWrapper soapWrapper = null;
 
     /**
      * Configure the XmlValidator
@@ -155,6 +167,7 @@ public class XmlValidator extends FixedForwardPipe {
      */
     public void configure() throws ConfigurationException {
         super.configure();
+		soapWrapper = SoapWrapper.getInstance();
 
 		if (!isThrowException()){
             if (findForward("failure")==null) throw new ConfigurationException(
@@ -175,9 +188,31 @@ public class XmlValidator extends FixedForwardPipe {
       * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
       */
     public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+    	String inputStr = input.toString();
 
+    	if (XmlUtils.isWellFormed(inputStr, "Envelope") && XmlUtils.getRootNamespace(inputStr).equals(soapNamespace)) {
+			log.debug(getLogPrefix(session)+"message to validate is a SOAP message");
+	    	boolean extractSoapBody = true;
+	    	if (StringUtils.isNotEmpty(getSchemaLocation())) {
+				StringTokenizer st = new StringTokenizer(getSchemaLocation(),", \t\r\n\f");
+				while (st.hasMoreTokens() && extractSoapBody) {
+					if (st.nextToken().equals(soapNamespace)) {
+						extractSoapBody = false;
+					}
+				}
+	    	}
+	    	if (extractSoapBody) {
+				try {
+					log.debug(getLogPrefix(session)+"extract SOAP body for validation");
+					inputStr = soapWrapper.getBody(inputStr);
+				} catch (Exception e) {
+					throw new PipeRunException(this,"cannot extract the SOAP body",e);
+				}
+	    	}
+    	}
+    	
 		try {
-			String resultEvent = validator.validate(input, session, getLogPrefix(session));
+			String resultEvent = validator.validate(inputStr, session, getLogPrefix(session));
 			throwEvent(resultEvent);
 
 
