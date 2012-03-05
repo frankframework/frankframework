@@ -1,6 +1,9 @@
 /*
  * $Log: CorePipeLineProcessor.java,v $
- * Revision 1.7  2012-01-25 15:52:14  europe\m168309
+ * Revision 1.8  2012-03-05 14:46:47  europe\m168309
+ * changed order of validate and wrap
+ *
+ * Revision 1.7  2012/01/25 15:52:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * skip output wrap when output validation fails
  *
  * Revision 1.6  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -70,34 +73,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		// get the first pipe to run
 		IPipe pipeToRun = pipeLine.getPipe(pipeLine.getFirstPipe());
 
-		IPipe inputWrapper = pipeLine.getInputWrapper();
-		if (inputWrapper!=null) {
-			log.debug("wrapping input");
-			long wrapStartTime= System.currentTimeMillis();
-			try {
-				PipeRunResult wrapResult = inputWrapper.doPipe(message,pipeLineSession);
-				if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
-					PipeForward wrapForward=wrapResult.getPipeForward();
-					if (wrapForward.getPath()==null) {
-						throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"] of inputWrapper has emtpy forward path");
-					}	
-					log.warn("setting first pipe to ["+wrapForward.getPath()+"] due to wrap fault");
-					pipeToRun = pipeLine.getPipe(wrapForward.getPath());
-					if (pipeToRun==null) {
-						throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"], path ["+wrapForward.getPath()+"] does not correspond to a pipe");
-					}
-				} else {
-					message = wrapResult.getResult().toString();
-				}
-			} finally {
-				long wrapEndTime = System.currentTimeMillis();
-				long wrapDuration = wrapEndTime - wrapStartTime;
-				pipeLine.getPipeStatistics(inputWrapper).addValue(wrapDuration);
-			}
-			log.debug("input after wrapping [" + message + "]");
-			object = (Object) message;
-		}
-
+		boolean inputValidateError = false;
 		IPipe inputValidator = pipeLine.getInputValidator();
 		if (inputValidator!=null) {
 			log.debug("validating input");
@@ -110,6 +86,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of inputValidator has emtpy forward path");
 					}	
 					log.warn("setting first pipe to ["+validationForward.getPath()+"] due to validation fault");
+					inputValidateError = true;
 					pipeToRun = pipeLine.getPipe(validationForward.getPath());
 					if (pipeToRun==null) {
 						throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
@@ -119,6 +96,36 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				long validationEndTime = System.currentTimeMillis();
 				long validationDuration = validationEndTime - validationStartTime;
 				pipeLine.getPipeStatistics(inputValidator).addValue(validationDuration);
+			}
+		}
+
+		if (!inputValidateError) {
+			IPipe inputWrapper = pipeLine.getInputWrapper();
+			if (inputWrapper!=null) {
+				log.debug("wrapping input");
+				long wrapStartTime= System.currentTimeMillis();
+				try {
+					PipeRunResult wrapResult = inputWrapper.doPipe(message,pipeLineSession);
+					if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
+						PipeForward wrapForward=wrapResult.getPipeForward();
+						if (wrapForward.getPath()==null) {
+							throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"] of inputWrapper has emtpy forward path");
+						}	
+						log.warn("setting first pipe to ["+wrapForward.getPath()+"] due to wrap fault");
+						pipeToRun = pipeLine.getPipe(wrapForward.getPath());
+						if (pipeToRun==null) {
+							throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"], path ["+wrapForward.getPath()+"] does not correspond to a pipe");
+						}
+					} else {
+						message = wrapResult.getResult().toString();
+					}
+				} finally {
+					long wrapEndTime = System.currentTimeMillis();
+					long wrapDuration = wrapEndTime - wrapStartTime;
+					pipeLine.getPipeStatistics(inputWrapper).addValue(wrapDuration);
+				}
+				log.debug("input after wrapping [" + message + "]");
+				object = (Object) message;
 			}
 		}
 
@@ -148,7 +155,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		}
 	
 		boolean outputValidated=false;
-		boolean outputWrapped=false;
 		try {    
 			while (!ready){
 				
@@ -176,69 +182,68 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	
 				PipeLineExit plExit=(PipeLineExit)pipeLine.getPipeLineExits().get(nextPath);
 				if (null!=plExit){
-					boolean outputValidationError=false;
-					IPipe outputValidator = pipeLine.getOutputValidator();
-					if (outputValidator !=null && !outputValidated) {
-						long validationStartTime= System.currentTimeMillis();
+					boolean outputWrapError = false;
+					IPipe outputWrapper = pipeLine.getOutputWrapper();
+					if (outputWrapper !=null) {
+						long wrapStartTime= System.currentTimeMillis();
 						try {
-							outputValidated=true;
-							log.debug("validating PipeLineResult");
-							PipeRunResult validationResult = outputValidator.doPipe(object,pipeLineSession);
-							if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-								outputValidationError=true;
-								PipeForward validationForward=validationResult.getPipeForward();
-								if (validationForward.getPath()==null) {
-									throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of outputValidator has emtpy forward path");
+							log.debug("wrapping PipeLineResult");
+							PipeRunResult wrapResult = outputWrapper.doPipe(object,pipeLineSession);
+							if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
+								PipeForward wrapForward=wrapResult.getPipeForward();
+								if (wrapForward.getPath()==null) {
+									throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"] of outputWrapper has emtpy forward path");
 								}	
-								log.warn("setting next pipe to ["+validationForward.getPath()+"] due to validation fault");
-								pipeToRun = pipeLine.getPipe(validationForward.getPath());
+								log.warn("setting next pipe to ["+wrapForward.getPath()+"] due to wrap fault");
+								outputWrapError = true;
+								pipeToRun = pipeLine.getPipe(wrapForward.getPath());
 								if (pipeToRun==null) {
-									throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
+									throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"], path ["+wrapForward.getPath()+"] does not correspond to a pipe");
 								}
 							} else {
-								log.debug("validation succeeded");
-//								ready=true;
+								log.debug("wrap succeeded");
+								object = wrapResult.getResult();
 							}
 						} finally {
-							long validationEndTime = System.currentTimeMillis();
-							long validationDuration = validationEndTime - validationStartTime;
-							pipeLine.getPipeStatistics(outputValidator).addValue(validationDuration);
+							long wrapEndTime = System.currentTimeMillis();
+							long wrapDuration = wrapEndTime - wrapStartTime;
+							pipeLine.getPipeStatistics(outputWrapper).addValue(wrapDuration);
 						}
-//					} else {
-//						ready=true;
+						log.debug("PipeLineResult after wrapping [" + object.toString() + "]");
 					}
-					if (!outputValidationError) {
-						IPipe outputWrapper = pipeLine.getOutputWrapper();
-						if (outputWrapper !=null && !outputWrapped) {
-							long wrapStartTime= System.currentTimeMillis();
+
+					if (!outputWrapError) {
+						IPipe outputValidator = pipeLine.getOutputValidator();
+						if (outputValidator !=null && !outputValidated) {
+							long validationStartTime= System.currentTimeMillis();
 							try {
-								outputWrapped=true;
-								log.debug("wrapping PipeLineResult");
-								PipeRunResult wrapResult = outputWrapper.doPipe(object,pipeLineSession);
-								if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
-									PipeForward wrapForward=wrapResult.getPipeForward();
-									if (wrapForward.getPath()==null) {
-										throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"] of outputWrapper has emtpy forward path");
+								outputValidated=true;
+								log.debug("validating PipeLineResult");
+								PipeRunResult validationResult = outputValidator.doPipe(object,pipeLineSession);
+								if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
+									PipeForward validationForward=validationResult.getPipeForward();
+									if (validationForward.getPath()==null) {
+										throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of outputValidator has emtpy forward path");
 									}	
-									log.warn("setting next pipe to ["+wrapForward.getPath()+"] due to validation fault");
-									pipeToRun = pipeLine.getPipe(wrapForward.getPath());
+									log.warn("setting next pipe to ["+validationForward.getPath()+"] due to validation fault");
+									pipeToRun = pipeLine.getPipe(validationForward.getPath());
 									if (pipeToRun==null) {
-										throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"], path ["+wrapForward.getPath()+"] does not correspond to a pipe");
+										throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
 									}
 								} else {
-									log.debug("wrap succeeded");
+									log.debug("validation succeeded");
 									ready=true;
-									object = wrapResult.getResult();
 								}
 							} finally {
-								long wrapEndTime = System.currentTimeMillis();
-								long wrapDuration = wrapEndTime - wrapStartTime;
-								pipeLine.getPipeStatistics(outputWrapper).addValue(wrapDuration);
+								long validationEndTime = System.currentTimeMillis();
+								long validationDuration = validationEndTime - validationStartTime;
+								pipeLine.getPipeStatistics(outputValidator).addValue(validationDuration);
 							}
-							log.debug("PipeLineResult after wrapping [" + object.toString() + "]");
 						} else {
 							ready=true;
 						}
+					} else {
+						ready=true;
 					}
 					if (ready) {
 						String state=plExit.getState();

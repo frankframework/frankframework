@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.77  2011-11-30 13:51:50  europe\m168309
+ * Revision 1.78  2012-03-05 14:45:55  europe\m168309
+ * changed order of validate and wrap
+ *
+ * Revision 1.77  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.2  2011/11/25 11:27:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -336,8 +339,8 @@ import org.apache.commons.lang.SystemUtils;
  * as an attribute will be done at configuration time.</td></tr>
  * <tr><td><code>inputValidator</code></td><td>specification of Pipe to validate input messages</td></tr>
  * <tr><td><code>outputValidator</code></td><td>specification of Pipe to validate output messages</td></tr>
- * <tr><td><code>inputWrapper</code></td><td>specification of Pipe to wrap input messages (after validating)</td></tr>
- * <tr><td><code>outputWrapper</code></td><td>specification of Pipe to wrap output messages (before validating)</td></tr>
+ * <tr><td><code>inputWrapper</code></td><td>specification of Pipe to wrap input messages (before validating)</td></tr>
+ * <tr><td><code>outputWrapper</code></td><td>specification of Pipe to wrap output messages (after validating)</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage messageLog}</td><td>log of all messages sent</td></tr>
  * </table>
  * </p>
@@ -617,21 +620,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 		String result = null;
 
-		if (getInputValidator()!=null) {
-			log.debug(getLogPrefix(session)+"validating input");
-			long validationStartTime= System.currentTimeMillis();
-			try {
-				PipeRunResult validationResult = getInputValidator().doPipe(input,session);
-				if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-					return validationResult;
-				}
-			} finally  {
-				long validationEndTime = System.currentTimeMillis();
-				long validationDuration = validationEndTime - validationStartTime;
-				inputValidatorStatistics.addValue(validationDuration);
-			}
-		}
-
 		if (getInputWrapper()!=null) {
 			log.debug(getLogPrefix(session)+"wrapping input");
 			long wrapStartTime= System.currentTimeMillis();
@@ -649,7 +637,22 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			}
 			log.debug(getLogPrefix(session)+"input after wrapping [" + input.toString() + "]");
 		}
-		
+
+		if (getInputValidator()!=null) {
+			log.debug(getLogPrefix(session)+"validating input");
+			long validationStartTime= System.currentTimeMillis();
+			try {
+				PipeRunResult validationResult = getInputValidator().doPipe(input,session);
+				if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
+					return validationResult;
+				}
+			} finally  {
+				long validationEndTime = System.currentTimeMillis();
+				long validationDuration = validationEndTime - validationStartTime;
+				inputValidatorStatistics.addValue(validationDuration);
+			}
+		}
+
 		if (StringUtils.isNotEmpty(getStubFileName())) {
 			ParameterList pl = getParameterList();
 			result=returnString;
@@ -851,6 +854,20 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			PipeForward illegalResultForward = findForward(ILLEGALRESULTFORWARD);
 			return new PipeRunResult(illegalResultForward, result);
 		}
+		if (getOutputValidator()!=null) {
+			log.debug(getLogPrefix(session)+"validating response");
+			long validationStartTime= System.currentTimeMillis();
+			try {
+				PipeRunResult validationResult = getOutputValidator().doPipe(result,session);
+				if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
+					return validationResult;
+				}
+			} finally  {
+				long validationEndTime = System.currentTimeMillis();
+				long validationDuration = validationEndTime - validationStartTime;
+				outputValidatorStatistics.addValue(validationDuration);
+			}
+		}
 		if (getOutputWrapper()!=null) {
 			log.debug(getLogPrefix(session)+"wrapping response");
 			long wrapStartTime= System.currentTimeMillis();
@@ -867,20 +884,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				outputWrapperStatistics.addValue(wrapDuration);
 			}
 			log.debug(getLogPrefix(session)+"response after wrapping [" + result + "]");
-		}
-		if (getOutputValidator()!=null) {
-			log.debug(getLogPrefix(session)+"validating response");
-			long validationStartTime= System.currentTimeMillis();
-			try {
-				PipeRunResult validationResult = getOutputValidator().doPipe(result,session);
-				if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-					return validationResult;
-				}
-			} finally  {
-				long validationEndTime = System.currentTimeMillis();
-				long validationDuration = validationEndTime - validationStartTime;
-				outputValidatorStatistics.addValue(validationDuration);
-			}
 		}
 		return new PipeRunResult(getForward(), result);
 	}

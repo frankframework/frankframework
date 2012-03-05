@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.97  2011-11-30 13:51:55  europe\m168309
+ * Revision 1.98  2012-03-05 14:47:38  europe\m168309
+ * changed order of validate and wrap
+ *
+ * Revision 1.97  2011/11/30 13:51:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.2  2011/11/25 11:27:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -360,8 +363,8 @@ import org.springframework.transaction.TransactionDefinition;
  * <tr><td>&lt;exits&gt; one or more {@link nl.nn.adapterframework.core.PipeLineExit exits}&lt;/exits&gt;</td><td>specifications of exit-paths, in the form &lt;exit path="<i>forwardname</i>" state="<i>statename</i>"/&gt;</td></tr>
  * <tr><td>&lt;inputValidator&gt;</td><td>specification of Pipe to validate input messages</td></tr>
  * <tr><td>&lt;outputValidator&gt;</td><td>specification of Pipe to validate output messages</td></tr>
- * <tr><td>&lt;inputWrapper&gt;</td><td>specification of Pipe to wrap input messages (before validating)</td></tr>
- * <tr><td>&lt;outputWrapper&gt;</td><td>specification of Pipe to wrap output messages (after validating)</td></tr>
+ * <tr><td>&lt;inputWrapper&gt;</td><td>specification of Pipe to wrap input messages (after validating)</td></tr>
+ * <tr><td>&lt;outputWrapper&gt;</td><td>specification of Pipe to wrap output messages (before validating)</td></tr>
  * <tr><td>&lt;cache ... /&gt;</td><td>optional {@link nl.nn.adapterframework.cache.EhCache cache} definition</td></tr>
  * </table>
  * </p>
