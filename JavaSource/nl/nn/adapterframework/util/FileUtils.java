@@ -1,6 +1,10 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.25  2012-01-10 09:49:15  m00f069
+ * Revision 1.26  2012-03-09 15:56:29  m00f069
+ * Use copy and delete in case renameTo doesn't work for moving files.
+ * Don't sleep when no new move attempt is going to be made.
+ *
+ * Revision 1.25  2012/01/10 09:49:15  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added XfbSender
  *
  * Revision 1.24  2011/11/30 13:51:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -217,13 +221,24 @@ public class FileUtils {
 		int errCount = 0;
 		
 		while (errCount++ < numberOfAttempts) {
-			// Move file to new directory
+			// Move file to new directory using renameTo
 			boolean success = orgFile.renameTo(rename2File);
-			
-			if (! success) {
-				Thread.sleep(waitTime);
+			// Move file to new directory using copy and delete in case renameTo
+			// doesn't work (for example when running on Linux and the file
+			// needs to be moved to another filesystem).
+			if (!success) {
+				success = copyFile(orgFile, rename2File, false);
+				if (success) {
+					success = orgFile.delete();
+				}
+				log.debug("Result of alternate move (copy and delete): " + success);
 			}
-			else {
+			
+			if (!success) {
+				if (errCount < numberOfAttempts) {
+					Thread.sleep(waitTime);
+				}
+			} else {
 				return rename2File.getAbsolutePath();
 			}
 		}
