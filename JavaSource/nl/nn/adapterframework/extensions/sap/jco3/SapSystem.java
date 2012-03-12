@@ -1,6 +1,9 @@
 /*
  * $Log: SapSystem.java,v $
- * Revision 1.1  2012-02-06 14:33:04  m00f069
+ * Revision 1.2  2012-03-12 15:23:00  m00f069
+ * Implemented logon group properties
+ *
+ * Revision 1.1  2012/02/06 14:33:04  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
  *
  * Revision 1.13  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -53,6 +56,7 @@ import java.util.Iterator;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.GlobalListItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.sap.conn.idoc.IDocRepository;
@@ -68,41 +72,49 @@ import com.sap.conn.jco.JCoRepository;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the System. SAP-related Ibis objects refer to SapSystems by setting their SystemName-attribute to this value</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>maximum number of connections that may connect simultaneously to the SAP system</td><td>10</td></tr>
- * <tr><td>{@link #setGwhost(String) gwhost}</td><td>name of the SAP-application server to connect to</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setHost(String) host}</td><td>default value for ashost, gwhost and mshost (i.e. when ashost, gwhost and mshost are all the same, only host needs to be specified)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAshost(String) ashost}</td><td>SAP application server</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSystemnr(String) systemnr}</td><td>SAP system nr</td><td>00</td></tr>
+ * <tr><td>{@link #setGroup(String) group}</td><td>Group of SAP application servers, when specified logon group will be used and r3name and mshost need to be specified instead of ashost</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setR3name(String) r3name}</td><td>System ID of the SAP system</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMshost(String) mshost}</td><td>SAP message server</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMsservOffset(int) msservOffset}</td><td>number added to systemNr to find corresponding message server port</td><td>3600</td></tr>
+ * <tr><td>{@link #setGwhost(String) gwhost}</td><td>Gateway host</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setGwservOffset(int) gwservOffset}</td><td>number added to systemNr to find corresponding gateway port</td><td>3300</td></tr>
  * <tr><td>{@link #setMandant(String) mandant}</td><td>Mandant i.e. 'destination'</td><td>100</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias to obtain userid and password</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserid(String) userid}</td><td>userid used in the connection</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPasswd(String) passwd}</td><td>passwd used in the connection</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLanguage(String) language}</td><td>Language indicator</td><td>NL</td></tr>
- * <tr><td>{@link #setSystemnr(String) systemnr}</td><td>SAP system nr</td><td>00</td></tr>
- * <tr><td>{@link #setTraceLevel(int) traceLevel}</td><td>trace level (effective only when logging level is debug). 0=none, 10= maximum</td><td>0</td></tr>
- * <tr><td>{@link #setServiceOffset(int) serviceOffset}</td><td>number added to systemNr to find corresponding RFC service number</td><td>3300</td></tr>
  * <tr><td>{@link #setUnicode(boolean) unicode}</td><td>when set <code>true</code> the SAP system is interpreted as Unicode SAP system, otherwise as non-Unicode (only applies to SapListeners, not to SapSenders)</td><td>false</td></tr>
+ * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>maximum number of connections that may connect simultaneously to the SAP system</td><td>10</td></tr>
+ * <tr><td>{@link #setTraceLevel(int) traceLevel}</td><td>trace level (effective only when logging level is debug). 0=none, 10= maximum</td><td>0</td></tr>
  * </table>
- * </p>
+ * </p>	
  * @author Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
  */
 public class SapSystem extends GlobalListItem {
-	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.1 $ $Date: 2012-02-06 14:33:04 $";
+	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.2 $ $Date: 2012-03-12 15:23:00 $";
 
-	private int maxConnections = 10;
-
-	private String gwhost;	// The application server where the RFC-destination is registerd
-
- 	private String authAlias= null;
-	private String mandant	= "100";	 	// mandant
-	private String userid   = null;
-	private String passwd   = null;
-	private String language = "NL";
+	private String host;
+	private String ashost;
 	private String systemnr = "00";
-	private int    traceLevel = 0;
-
-	private int serviceOffset = 3300;
-
+	private String group;
+	private String r3name;
+	private String mshost;
+	private int msservOffset = 3600;
+	private String gwhost;
+	private int gwservOffset = 3300;
+	private String mandant = "100";
+	private String authAlias= null;
+	private String userid = null;
+	private String passwd = null;
+	private String language = "NL";
 	private boolean unicode = false;
+	private int maxConnections = 10;
+	private int traceLevel = 0;
 
 	private int referenceCount=0;
 
@@ -191,32 +203,110 @@ public class SapSystem extends GlobalListItem {
 		return "SapSystem ["+getName()+"] "; 
 	}
 
-	/**
-	 * String value of sum of serviceOffset and systemnr.
-	 */
-	public String getGwserv() {
-		return String.valueOf(getServiceOffset() + Integer.parseInt(getSystemnr()));
-	}
-
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
-
 	}
 
-	public String getGwhost() {
-		return gwhost;
+	public void setHost(String host) {
+		this.host = host;
 	}
 
-	public String getLanguage() {
-		return language;
+	public void setAshost(String ashost) {
+		this.ashost = ashost;
 	}
 
-	public String getMandant() {
-		return mandant;
+	public String getAshost() {
+		if (StringUtils.isEmpty(ashost)) {
+			return host;
+		} else {
+			return ashost;
+		}
+	}
+
+	public void setSystemnr(String string) {
+		systemnr = string;
 	}
 
 	public String getSystemnr() {
 		return systemnr;
+	}
+
+	public void setGroup(String group) {
+		this.group = group;
+	}
+
+	public String getGroup() {
+		return group;
+	}
+
+	public void setR3name(String r3name) {
+		this.r3name = r3name;
+	}
+
+	public String getR3name() {
+		return r3name;
+	}
+
+	public void setMshost(String mshost) {
+		this.mshost = mshost;
+	}
+
+	public String getMshost() {
+		if (StringUtils.isEmpty(mshost)) {
+			return host;
+		} else {
+			return mshost;
+		}
+	}
+
+	/**
+	 * String value of sum of msservOffset and systemnr.
+	 */
+	public String getMsserv() {
+		return String.valueOf(getMsservOffset() + Integer.parseInt(getSystemnr()));
+	}
+
+	public int getMsservOffset() {
+		return msservOffset;
+	}
+
+	public void setMsservOffset(int i) {
+		msservOffset = i;
+	}
+
+	public void setGwhost(String string) {
+		gwhost = string;
+	}
+
+	public String getGwhost() {
+		if (StringUtils.isEmpty(gwhost)) {
+			return host;
+		} else {
+			return gwhost;
+		}
+	}
+
+	/**
+	 * String value of sum of gwservOffset and systemnr.
+	 */
+	public String getGwserv() {
+		return String.valueOf(getGwservOffset() + Integer.parseInt(getSystemnr()));
+	}
+
+	public void setGwservOffset(int i) {
+		gwservOffset = i;
+	}
+
+	public int getGwservOffset() {
+		return gwservOffset;
+	}
+
+	public void setMandant(String string) {
+		mandant = string;
+	}
+
+	public String getMandant() {
+		return mandant;
 	}
 
 	public void setAuthAlias(String string) {
@@ -243,51 +333,35 @@ public class SapSystem extends GlobalListItem {
 		return passwd;
 	}
 
-	public void setGwhost(String string) {
-		gwhost = string;
+	public String getLanguage() {
+		return language;
 	}
 
 	public void setLanguage(String string) {
 		language = string;
 	}
 
-	public void setMandant(String string) {
-		mandant = string;
-	}
-
-	public void setSystemnr(String string) {
-		systemnr = string;
-	}
-
-	public int getMaxConnections() {
-		return maxConnections;
-	}
-
-	public void setMaxConnections(int i) {
-		maxConnections = i;
-	}
-
-	public int getServiceOffset() {
-		return serviceOffset;
-	}
-
-	public void setServiceOffset(int i) {
-		serviceOffset = i;
-	}
-
-	public int getTraceLevel() {
-		return traceLevel;
-	}
-
-	public void setTraceLevel(int i) {
-		traceLevel = i;
+	public void setUnicode(boolean b) {
+		unicode = b;
 	}
 
 	public boolean isUnicode() {
 		return unicode;
 	}
 
-	public void setUnicode(boolean b) {
-		unicode = b;
+	public void setMaxConnections(int i) {
+		maxConnections = i;
+	}
+
+	public int getMaxConnections() {
+		return maxConnections;
+	}
+
+	public void setTraceLevel(int i) {
+		traceLevel = i;
+	}
+
+	public int getTraceLevel() {
+		return traceLevel;
 	}
 }

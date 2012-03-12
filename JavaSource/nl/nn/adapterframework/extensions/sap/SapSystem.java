@@ -1,6 +1,9 @@
 /*
  * $Log: SapSystem.java,v $
- * Revision 1.14  2012-02-06 14:33:04  m00f069
+ * Revision 1.15  2012-03-12 15:23:00  m00f069
+ * Implemented logon group properties
+ *
+ * Revision 1.14  2012/02/06 14:33:04  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
  *
  */
@@ -51,6 +54,72 @@ public class SapSystem {
 		}
 	}
 
+	public void setHost(String string) {
+		if (jcoVersion == 3) {
+			sapSystem3.setHost(string);
+		}
+	}
+
+	public void setAshost(String string) {
+		if (jcoVersion == 3) {
+			sapSystem3.setAshost(string);
+		}
+	}
+
+	public void setSystemnr(String string) {
+		if (jcoVersion == 3) {
+			sapSystem3.setSystemnr(string);
+		} else {
+			sapSystem2.setSystemnr(string);
+		}
+	}
+
+	public void setGroup(String string) {
+		if (jcoVersion == 3) {
+			sapSystem3.setGroup(string);
+		}
+	}
+
+	public void setR3name(String string) {
+		if (jcoVersion == 3) {
+			sapSystem3.setR3name(string);
+		}
+	}
+
+	public void setMshost(String string) {
+		if (jcoVersion == 3) {
+			sapSystem3.setMshost(string);
+		}
+	}
+
+	public void setMsservOffset(int i) {
+		if (jcoVersion == 3) {
+			sapSystem3.setMsservOffset(i);
+		}
+	}
+
+	public void setGwhost(String string) {
+		if (jcoVersion == 3) {
+			sapSystem3.setGwhost(string);
+		} else {
+			sapSystem2.setGwhost(string);
+		}
+	}
+
+	public void setGwservOffset(int i) {
+		if (jcoVersion == 3) {
+			sapSystem3.setGwservOffset(i);
+		}
+	}
+
+	public void setMandant(String string) {
+		if (jcoVersion == 3) {
+			sapSystem3.setMandant(string);
+		} else {
+			sapSystem2.setMandant(string);
+		}
+	}
+
 	public void setAuthAlias(String string) {
 		if (jcoVersion == 3) {
 			sapSystem3.setAuthAlias(string);
@@ -75,14 +144,6 @@ public class SapSystem {
 		}
 	}
 
-	public void setGwhost(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setGwhost(string);
-		} else {
-			sapSystem2.setGwhost(string);
-		}
-	}
-
 	public void setLanguage(String string) {
 		if (jcoVersion == 3) {
 			sapSystem3.setLanguage(string);
@@ -91,19 +152,11 @@ public class SapSystem {
 		}
 	}
 
-	public void setMandant(String string) {
+	public void setUnicode(boolean b) {
 		if (jcoVersion == 3) {
-			sapSystem3.setMandant(string);
+			sapSystem3.setUnicode(b);
 		} else {
-			sapSystem2.setMandant(string);
-		}
-	}
-
-	public void setSystemnr(String string) {
-		if (jcoVersion == 3) {
-			sapSystem3.setSystemnr(string);
-		} else {
-			sapSystem2.setSystemnr(string);
+			sapSystem2.setUnicode(b);
 		}
 	}
 
@@ -115,14 +168,6 @@ public class SapSystem {
 		}
 	}
 
-	public void setServiceOffset(int i) {
-		if (jcoVersion == 3) {
-			sapSystem3.setServiceOffset(i);
-		} else {
-			sapSystem2.setServiceOffset(i);
-		}
-	}
-
 	public void setTraceLevel(int i) {
 		if (jcoVersion == 3) {
 			sapSystem3.setTraceLevel(i);
@@ -131,11 +176,9 @@ public class SapSystem {
 		}
 	}
 
-	public void setUnicode(boolean b) {
-		if (jcoVersion == 3) {
-			sapSystem3.setUnicode(b);
-		} else {
-			sapSystem2.setUnicode(b);
+	public void setServiceOffset(int i) {
+		if (jcoVersion == 2) {
+			sapSystem2.setServiceOffset(i);
 		}
 	}
 

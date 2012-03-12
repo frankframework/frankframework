@@ -1,6 +1,9 @@
 /*
  * $Log: SapSystemDataProvider.java,v $
- * Revision 1.1  2012-02-06 14:33:04  m00f069
+ * Revision 1.2  2012-03-12 15:23:00  m00f069
+ * Implemented logon group properties
+ *
+ * Revision 1.1  2012/02/06 14:33:04  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
  *
  */
@@ -11,6 +14,7 @@ import java.util.Properties;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
+import org.apache.axis.utils.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.sap.conn.jco.ext.DestinationDataEventListener;
@@ -49,8 +53,15 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 			CredentialFactory cf = new CredentialFactory(sapSystem.getAuthAlias(), sapSystem.getUserid(), sapSystem.getPasswd());
 			Properties destinationProperties = new Properties();
 			// See Javadoc DestinationDataProvider for available properties and their description.
-			destinationProperties.setProperty(DestinationDataProvider.JCO_ASHOST, sapSystem.getGwhost());
-			destinationProperties.setProperty(DestinationDataProvider.JCO_SYSNR, sapSystem.getSystemnr());
+			if (StringUtils.isEmpty(sapSystem.getGroup())) {
+				destinationProperties.setProperty(DestinationDataProvider.JCO_ASHOST, sapSystem.getAshost());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SYSNR, sapSystem.getSystemnr());
+			} else {
+				destinationProperties.setProperty(DestinationDataProvider.JCO_R3NAME, sapSystem.getR3name());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_MSHOST, sapSystem.getMshost());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_MSSERV, sapSystem.getMsserv());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_GROUP, sapSystem.getGroup());
+			}
 			destinationProperties.setProperty(DestinationDataProvider.JCO_CLIENT, sapSystem.getMandant());
 			destinationProperties.setProperty(DestinationDataProvider.JCO_USER, cf.getUsername());
 			destinationProperties.setProperty(DestinationDataProvider.JCO_PASSWD, cf.getPassword());
