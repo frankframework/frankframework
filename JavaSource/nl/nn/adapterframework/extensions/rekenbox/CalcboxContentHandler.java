@@ -1,5 +1,8 @@
 /* $Log: CalcboxContentHandler.java,v $
-/* Revision 1.5  2012-02-03 11:18:29  europe\m168309
+/* Revision 1.6  2012-03-14 11:23:57  europe\m168309
+/* use getTransformerFactory() from XmlUtils instead of own code
+/*
+/* Revision 1.5  2012/02/03 11:18:29  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
 /* for XSLT 1.0 the class com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl is used to be backward compatible with WAS5 (only for java vendor IBM and java version >= 1.5)
 /*
 /* Revision 1.4  2012/02/01 11:35:39  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -15,6 +18,8 @@
 /* first version
 /* */
 package nl.nn.adapterframework.extensions.rekenbox;
+
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Attributes;
@@ -64,14 +69,7 @@ public class CalcboxContentHandler implements ContentHandler {
 		Result result = new StreamResult(sw);
 
 		// Write the DOM document to the file
-		String javaVendor = System.getProperty("java.vendor");
-		String javaVersion = System.getProperty("java.version");
-		TransformerFactory xfactory;
-		if (javaVendor.indexOf("IBM") >= 0 && javaVersion.compareTo("1.5") >= 0) {
-			xfactory = new com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl();
-		} else {
-			xfactory =  TransformerFactory.newInstance();
-		}
+		TransformerFactory xfactory = XmlUtils.getTransformerFactory();
 		Transformer xformer = xfactory.newTransformer();
 		xformer.transform(source, result);
 
