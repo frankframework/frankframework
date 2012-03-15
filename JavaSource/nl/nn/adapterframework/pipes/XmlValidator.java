@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.32  2012-03-05 14:39:20  europe\m168309
+ * Revision 1.33  2012-03-15 15:45:54  europe\m168309
+ * added soapNamespace attribute
+ *
+ * Revision 1.32  2012/03/05 14:39:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * for soap messages validate the content of the soap body
  *
  * Revision 1.31  2011/12/15 09:55:31  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -134,6 +137,7 @@ import nl.nn.adapterframework.util.XmlValidatorBase;
  * <tr><td>{@link #setRoot(String) root}</td><td>name of the root element</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValidateFile(boolean) validateFile}</td><td>when set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code></td><td>UTF-8</td></tr>
+ * <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>when the input message is a SOAP Message, the namespace of the SOAP Envelope. For input SOAP Messages the content of the SOAP Body is used for validation</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
  * </table>
  * <p><b>Exits:</b>
  * <table border="1">
@@ -150,7 +154,7 @@ import nl.nn.adapterframework.util.XmlValidatorBase;
  * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
  */
 public class XmlValidator extends FixedForwardPipe {
-	private final static String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
+	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
 
 	private XmlValidatorBase validator = new XmlValidatorBase();
 
@@ -190,13 +194,13 @@ public class XmlValidator extends FixedForwardPipe {
     public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
     	String inputStr = input.toString();
 
-    	if (XmlUtils.isWellFormed(inputStr, "Envelope") && XmlUtils.getRootNamespace(inputStr).equals(soapNamespace)) {
+    	if (XmlUtils.isWellFormed(inputStr, "Envelope") && XmlUtils.getRootNamespace(inputStr).equals(getSoapNamespace())) {
 			log.debug(getLogPrefix(session)+"message to validate is a SOAP message");
 	    	boolean extractSoapBody = true;
 	    	if (StringUtils.isNotEmpty(getSchemaLocation())) {
 				StringTokenizer st = new StringTokenizer(getSchemaLocation(),", \t\r\n\f");
 				while (st.hasMoreTokens() && extractSoapBody) {
-					if (st.nextToken().equals(soapNamespace)) {
+					if (st.nextToken().equals(getSoapNamespace())) {
 						extractSoapBody = false;
 					}
 				}
@@ -205,6 +209,11 @@ public class XmlValidator extends FixedForwardPipe {
 				try {
 					log.debug(getLogPrefix(session)+"extract SOAP body for validation");
 					inputStr = soapWrapper.getBody(inputStr);
+					String inputRootNs = XmlUtils.getRootNamespace(inputStr);
+					if (StringUtils.isNotEmpty(inputRootNs) && StringUtils.isEmpty(getSchemaLocation())) {
+						log.debug(getLogPrefix(session)+"remove namespaces from extracted SOAP body");
+			    		inputStr = XmlUtils.removeNamespaces(inputStr);
+			    	}
 				} catch (Exception e) {
 					throw new PipeRunException(this,"cannot extract the SOAP body",e);
 				}
@@ -380,4 +389,10 @@ public class XmlValidator extends FixedForwardPipe {
         validator.setAddNamespaceToSchema(addNamespaceToSchema);
     }
 
+	public void setSoapNamespace(String string) {
+		soapNamespace = string;
+	}
+	public String getSoapNamespace() {
+		return soapNamespace;
+	}
 }
