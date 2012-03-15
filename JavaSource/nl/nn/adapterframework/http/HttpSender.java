@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.52  2011-12-05 15:25:07  l190409
+ * Revision 1.53  2012-03-15 16:53:59  m00f069
+ * Made allowSelfSignedCertificates work without truststore and made it usable from the Ibis configuration.
+ *
+ * Revision 1.52  2011/12/05 15:25:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved creation of providers to AuthSSLProtocolSocketFactoryForJsse10x
  *
  * Revision 1.51  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -233,6 +236,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststoreType(String) truststoreType}</td><td>&nbsp;</td><td>jks</td></tr>
  * <tr><td>{@link #setTrustManagerAlgorithm(String) trustManagerAlgorithm}</td><td>&nbsp;</td><td></td></tr>
+ * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>when true, self signed certificates are accepted</td><td>false</td></tr>
  * <tr><td>{@link #setFollowRedirects(boolean) followRedirects}</td><td>when true, a redirect request will be honoured, e.g. to switch to https</td><td>true</td></tr>
  * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
  * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
@@ -340,6 +344,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private String truststoreType="jks";
 	private String trustManagerAlgorithm=null;
 	
+	private boolean allowSelfSignedCertificates = false;
 	private boolean verifyHostname=true;
 	private boolean jdk13Compatibility=false;
 	private boolean followRedirects=true;
@@ -438,17 +443,19 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			}
 
 			
-			if (certificateUrl!=null || truststoreUrl!=null) {
+			if (certificateUrl!=null || truststoreUrl!=null || allowSelfSignedCertificates) {
 				//AuthSSLProtocolSocketFactoryBase socketfactory ;
 				try {
 					CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
 					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
 					if (isJdk13Compatibility()) {
 						socketfactory = new AuthSSLProtocolSocketFactoryForJsse10x(
+							allowSelfSignedCertificates,
 							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
 							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(), isVerifyHostname());
 					} else {
 						socketfactory = new AuthSSLProtocolSocketFactory(
+							allowSelfSignedCertificates,
 							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
 							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(),isVerifyHostname());
 					}
@@ -928,6 +935,14 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public void setFollowRedirects(boolean b) {
 		followRedirects = b;
+	}
+
+	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
+		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
+	}
+
+	public boolean isAllowSelfSignedCertificates() {
+		return allowSelfSignedCertificates;
 	}
 
 }

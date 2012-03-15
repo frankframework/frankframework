@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryForJsse10x.java,v $
- * Revision 1.15  2011-12-20 12:20:53  l190409
+ * Revision 1.16  2012-03-15 16:53:59  m00f069
+ * Made allowSelfSignedCertificates work without truststore and made it usable from the Ibis configuration.
+ *
+ * Revision 1.15  2011/12/20 12:20:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error handling
  *
  * Revision 1.14  2011/12/05 15:25:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -105,9 +108,10 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
      * @param truststorePassword Password to unlock the truststore.
      */
 	public AuthSSLProtocolSocketFactoryForJsse10x(
+			final boolean allowSelfSignedCertificates,
 			final URL keystoreUrl, final String keystorePassword, final String keystoreType, final String keyManagerAlgorithm,
 			final URL truststoreUrl, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm, final boolean verifyHostname) {
-		super(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, trustManagerAlgorithm, verifyHostname);
+		super(allowSelfSignedCertificates, keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, trustManagerAlgorithm, verifyHostname);
 		addProvider("sun.security.provider.Sun");
 		addProvider("com.sun.net.ssl.internal.ssl.Provider");
 		System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");

@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryBase.java,v $
- * Revision 1.13  2011-12-20 12:19:34  l190409
+ * Revision 1.14  2012-03-15 16:53:59  m00f069
+ * Made allowSelfSignedCertificates work without truststore and made it usable from the Ibis configuration.
+ *
+ * Revision 1.13  2011/12/20 12:19:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error handling
  *
  * Revision 1.12  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -188,8 +191,8 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 	protected static Logger log = LogUtil.getLogger(AuthSSLProtocolSocketFactoryBase.class);;
 
 	protected String protocol = "SSL";
-	protected boolean allowSelfSignedCertificates = false;
 
+	protected boolean allowSelfSignedCertificates = false;
 	protected URL keystoreUrl = null;
 	protected String keystorePassword = null;
 	protected String keystoreType = "null";
@@ -222,9 +225,11 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
      * 		  <code>false</code> host name verification is turned off.
      */
     public AuthSSLProtocolSocketFactoryBase (
+    		final boolean allowSelfSignedCertificates,
     		final URL keystoreUrl, final String keystorePassword, final String keystoreType, final String keyManagerAlgorithm,
     		final URL truststoreUrl, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm, final boolean verifyHostname) {
         super();
+        this.allowSelfSignedCertificates = allowSelfSignedCertificates;
         this.keystoreUrl = keystoreUrl;
         this.keystorePassword = keystorePassword;
 		this.keystoreType = keystoreType;
@@ -237,6 +242,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
     }
 
 	public static AuthSSLProtocolSocketFactoryBase createSocketFactory(
+		final boolean allowSelfSignedCertificates,
 		final URL certificateUrl, final String certificateAuthAlias, final String certificatePassword, final String certificateType, final String keyManagerAlgorithm, 
 		final URL truststoreUrl, final String truststoreAuthAlias, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm, 
 		final boolean verifyHostname, boolean jdk13Compatible)
@@ -253,6 +259,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 			System.setProperty("java.protocol.handler.pkgs", "com.sun.net.ssl.internal.www.protocol");
 			factory =
 				new AuthSSLProtocolSocketFactoryForJsse10x(
+					allowSelfSignedCertificates,
 					certificateUrl,
 					certificatePassword,
 					certificateType,
@@ -266,6 +273,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 		else {
 			factory =
 				new AuthSSLProtocolSocketFactory(
+					allowSelfSignedCertificates,
 					certificateUrl,
 					certificatePassword,
 					certificateType,

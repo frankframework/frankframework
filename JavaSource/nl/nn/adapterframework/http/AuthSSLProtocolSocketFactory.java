@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactory.java,v $
- * Revision 1.14  2011-11-30 13:52:00  europe\m168309
+ * Revision 1.15  2012-03-15 16:53:59  m00f069
+ * Made allowSelfSignedCertificates work without truststore and made it usable from the Ibis configuration.
+ *
+ * Revision 1.14  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -201,9 +204,10 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
      * @param truststorePassword Password to unlock the truststore.
      */
 	public AuthSSLProtocolSocketFactory(
+			final boolean allowSelfSignedCertificates,
     		final URL keystoreUrl, final String keystorePassword, final String keystoreType, final String keyManagerAlgorithm,
     		final URL truststoreUrl, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm, final boolean verifyHostname) {
-		super(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, trustManagerAlgorithm, verifyHostname);
+		super(allowSelfSignedCertificates, keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, trustManagerAlgorithm, verifyHostname);
 	}
     
     private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password, String algorithm)
@@ -254,12 +258,15 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 		if (this.truststoreUrl != null) {
 			KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.truststoreType, "Trusted Certificate");
 			trustmanagers = createTrustManagers(keystore, this.trustManagerAlgorithm);
-
 			if (allowSelfSignedCertificates) {
 				trustmanagers = new TrustManager[] {
 					new AuthSslTrustManager(keystore, trustmanagers)
 				};
 			}
+		} else if (allowSelfSignedCertificates) {
+			trustmanagers = new TrustManager[] {
+				new AuthSslTrustManager(null, trustmanagers)
+			};
 		}
 		SSLContext sslcontext = SSLContext.getInstance(getProtocol());
 		sslcontext.init(keymanagers, trustmanagers, null);
