@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.53  2012-03-15 16:53:59  m00f069
+ * Revision 1.54  2012-03-16 10:37:09  m00f069
+ * Unified use of allowSelfSignedCertificates property for ftp and http sender
+ *
+ * Revision 1.53  2012/03/15 16:53:59  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made allowSelfSignedCertificates work without truststore and made it usable from the Ibis configuration.
  *
  * Revision 1.52  2011/12/05 15:25:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -450,14 +453,14 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
 					if (isJdk13Compatibility()) {
 						socketfactory = new AuthSSLProtocolSocketFactoryForJsse10x(
-							allowSelfSignedCertificates,
 							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
-							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(), isVerifyHostname());
+							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(),
+							isAllowSelfSignedCertificates(), isVerifyHostname());
 					} else {
 						socketfactory = new AuthSSLProtocolSocketFactory(
-							allowSelfSignedCertificates,
 							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
-							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(),isVerifyHostname());
+							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(),
+							isAllowSelfSignedCertificates(), isVerifyHostname());
 					}
 					socketfactory.initSSLContext();	
 				} catch (Throwable t) {

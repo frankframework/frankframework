@@ -1,6 +1,9 @@
 /*
  * $Log: FTPsClient.java,v $
- * Revision 1.13  2011-12-20 12:11:53  l190409
+ * Revision 1.14  2012-03-16 10:37:09  m00f069
+ * Unified use of allowSelfSignedCertificates property for ftp and http sender
+ *
+ * Revision 1.13  2011/12/20 12:11:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error handling
  *
  * Revision 1.12  2011/11/30 13:52:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -254,11 +257,11 @@ public class FTPsClient extends FTPClient {
 			session.getTruststorePassword(),
 			session.getTruststoreType(),
 			session.getTrustManagerAlgorithm(),
+			session.isAllowSelfSignedCertificates(),
 			session.isVerifyHostname(),
 			session.isJdk13Compatibility());
 			
 		factory.setProtocol(getProtocol());
-		factory.setAllowSelfSignedCertificates(session.isAllowSelfSignedCertificates());
 
 		return factory;
 	}
