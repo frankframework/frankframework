@@ -53,8 +53,10 @@ public abstract class WsdlUtils {
     static String getServiceNameSpaceURI(IAdapter a) {
         for(IListener l : getListeners(a)) {
             if (l instanceof WebServiceListener) {
-                WebServiceListener wsl = (WebServiceListener) l;
-                return wsl.getServiceNamespaceURI();
+                String tns = ((WebServiceListener) l).getServiceNamespaceURI();
+                if (tns != null) {
+                    return tns;
+                }
             }
         }
         AppConstants appConstants = AppConstants.getInstance();
