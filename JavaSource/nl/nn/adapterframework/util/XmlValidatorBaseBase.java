@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseBase.java,v $
- * Revision 1.5  2011-12-08 10:57:49  europe\m168309
+ * Revision 1.6  2012-03-16 15:35:44  m00f069
+ * Michiel added EsbSoapValidator and WsdlXmlValidator, made WSDL's available for all adapters and did a bugfix on XML Validator where it seems to be dependent on the order of specified XSD's
+ *
+ * Revision 1.5  2011/12/08 10:57:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.4  2011/11/30 13:51:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -97,7 +100,7 @@ public abstract class XmlValidatorBaseBase {
 
 					XmlBuilder reason = new XmlBuilder("reason");
 					XmlBuilder detail;
-					
+
 					detail = new XmlBuilder("message");;
 					detail.setCdataValue(message);
 					reason.addSubElement(detail);
@@ -109,20 +112,20 @@ public abstract class XmlValidatorBaseBase {
 					detail = new XmlBuilder("xpath");;
 					detail.setValue(xfh.getXpath());
 					reason.addSubElement(detail);
-					
-					xmlReasons.addSubElement(reason);	
+
+					xmlReasons.addSubElement(reason);
 				}
 			} catch (Throwable t) {
 				log.error(getLogPrefix(null)+"Exception handling errors",t);
-				
+
 				XmlBuilder reason = new XmlBuilder("reason");
 				XmlBuilder detail;
-					
+
 				detail = new XmlBuilder("message");;
 				detail.setCdataValue(t.getMessage());
 				reason.addSubElement(detail);
 
-				xmlReasons.addSubElement(reason);	
+				xmlReasons.addSubElement(reason);
 			}
 
 			if (StringUtils.isNotEmpty(location)) {
@@ -135,7 +138,7 @@ public abstract class XmlValidatorBaseBase {
 				 reasons = reasons + "\n" + message;
 			 }
 		}
-		
+
 		public void addReason(Throwable t) {
 			String location=null;
 			if (t instanceof SAXParseException) {
@@ -189,11 +192,11 @@ public abstract class XmlValidatorBaseBase {
 		if ((StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
 			 StringUtils.isNotEmpty(getSchemaLocation())) &&
 			StringUtils.isNotEmpty(getSchemaSessionKey())) {
-				throw new ConfigurationException(logPrefix+"cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
+				throw new ConfigurationException(logPrefix + "cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
 		}
         if (StringUtils.isNotEmpty(getSchemaLocation())) {
         	String resolvedLocations = XmlUtils.resolveSchemaLocations(getSchemaLocation());
-        	log.info(logPrefix+"resolved schemaLocation ["+getSchemaLocation()+"] to ["+resolvedLocations+"]");
+        	log.info(logPrefix + "resolved schemaLocation ["+getSchemaLocation()+"] to ["+resolvedLocations+"]");
         	setSchemaLocation(resolvedLocations);
         }
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
@@ -202,7 +205,7 @@ public abstract class XmlValidatorBaseBase {
 				throw new ConfigurationException(logPrefix+"could not find schema at ["+getNoNamespaceSchemaLocation()+"]");
 			}
 			String resolvedLocation =url.toExternalForm();
-			log.info(logPrefix+"resolved noNamespaceSchemaLocation to ["+resolvedLocation+"]");
+			log.info(logPrefix + "resolved noNamespaceSchemaLocation to [" + resolvedLocation+"]");
 			setNoNamespaceSchemaLocation(resolvedLocation);
 		}
 		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation()) &&
@@ -213,7 +216,7 @@ public abstract class XmlValidatorBaseBase {
     }
 
 	protected String handleFailures(XmlErrorHandler xeh, PipeLineSession session, String mainReason, String forwardName, String event, Throwable t) throws  XmlValidatorException {
-		
+
 		String fullReasons=mainReason;
 		if (StringUtils.isNotEmpty(xeh.getReasons())) {
 			if (StringUtils.isNotEmpty(mainReason)) {
@@ -244,7 +247,7 @@ public abstract class XmlValidatorBaseBase {
 
       * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
       */
-    public abstract String validate(Object input, PipeLineSession session, String logPrefix) throws XmlValidatorException; 
+    public abstract String validate(Object input, PipeLineSession session, String logPrefix) throws XmlValidatorException;
 
     /**
      * Enable full schema grammar constraint checking, including
@@ -285,10 +288,10 @@ public abstract class XmlValidatorBaseBase {
      * <p> The syntax is the same as for schemaLocation attributes
      * in instance documents: e.g, "http://www.example.com file%20name.xsd".</p>
      * <p>The user can specify more than one XML Schema in the list.</p>
-     * <p><b>Note</b> that spaces are considered separators for this attributed. 
+     * <p><b>Note</b> that spaces are considered separators for this attributed.
      * This means that, for example, spaces in filenames should be escaped to %20.
      * </p>
-     * 
+     *
      * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
      */
     public void setSchemaLocation(String schemaLocation) {
@@ -336,7 +339,7 @@ public abstract class XmlValidatorBaseBase {
 			  sb.append("["+((INamedObject)this).getName()+"] ");
 		  }
 		  if (session!=null) {
-			  sb.append("msgId ["+session.getMessageId()+"] ");
+			  sb.append("msgId [" + session.getMessageId() + "] ");
 		  }
 		  return sb.toString();
 	}
@@ -351,7 +354,7 @@ public abstract class XmlValidatorBaseBase {
 	public boolean isThrowException() {
 		return throwException;
 	}
-	
+
 	/**
 	 * The sessionkey to store the reasons of misvalidation in.
 	 */

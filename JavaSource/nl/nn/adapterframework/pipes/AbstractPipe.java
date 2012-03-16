@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.41  2011-11-30 13:51:51  europe\m168309
+ * Revision 1.42  2012-03-16 15:35:44  m00f069
+ * Michiel added EsbSoapValidator and WsdlXmlValidator, made WSDL's available for all adapters and did a bugfix on XML Validator where it seems to be dependent on the order of specified XSD's
+ *
+ * Revision 1.41  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -118,42 +121,26 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.HasTransactionAttribute;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IExtendedPipe;
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLineExit;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.monitoring.EventHandler;
-import nl.nn.adapterframework.monitoring.EventThrowing;
-import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.util.JtaUtil;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.TracingEventNumbers;
-import nl.nn.adapterframework.util.XmlUtils;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.*;
+import nl.nn.adapterframework.monitoring.*;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.util.*;
+
 /**
  * Base class for {@link nl.nn.adapterframework.core.IPipe Pipe}.
  * A Pipe represents an action to take in a {@link nl.nn.adapterframework.core.PipeLine Pipeline}. This class is ment to be extended
  * for defining steps or actions to take to complete a request. <br/>
- * The contract is that a pipe is created (by the digester), {@link #setName(String)} is called and 
+ * The contract is that a pipe is created (by the digester), {@link #setName(String)} is called and
  * other setters are called, and then {@link nl.nn.adapterframework.core.IPipe#configure()} is called, optionally
  * throwing a {@link nl.nn.adapterframework.configuration.ConfigurationException}. <br/>
  * As much as possible, class instantiating should take place in the
@@ -185,7 +172,7 @@ import org.springframework.transaction.TransactionDefinition;
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
- * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
+ * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are:
  *   <table border="1">
  *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipe excecuted in Transaction</th></tr>
  *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
@@ -216,8 +203,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
-	
-	private Map pipeForwards=new Hashtable();
+
+	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
 	private int maxThreads = 0;
 	private ParameterList parameterList = new ParameterList();
 	private long durationThreshold = -1;
@@ -229,7 +216,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
 	private boolean sizeStatistics=false;
- 
+
 	// METT event numbers
 	private int beforeEvent=-1;
 	private int afterEvent=-1;
@@ -238,17 +225,17 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private boolean active=true;
 
 	private EventHandler eventHandler=null;
-	
+
 	private PipeLine pipeline;
- 
- 
+
+
 	/**
 	 * <code>configure()</code> is called after the {@link nl.nn.adapterframework.core.PipeLine Pipeline} is registered
 	 * at the {@link nl.nn.adapterframework.core.Adapter Adapter}. Purpose of this method is to reduce
 	 * creating connections to databases etc. in the {@link #doPipe(Object) doPipe()} method.
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> method, to improve performance.
-	 */ 
+	 */
 	public void configure() throws ConfigurationException {
 		ParameterList params = getParameterList();
 		if (params!=null) {
@@ -266,7 +253,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		} else {
 			for (Iterator it = pipeForwards.keySet().iterator(); it.hasNext();) {
 				String forwardName = (String)it.next();
-				PipeForward forward=(PipeForward)pipeForwards.get(forwardName);
+				PipeForward forward= pipeForwards.get(forwardName);
 				if (forward!=null) {
 					String path=forward.getPath();
 					if (path!=null) {
@@ -287,7 +274,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 
 	/**
-	 * Extension for IExtendedPipe that calls configure(void) in its implementation. 
+	 * Extension for IExtendedPipe that calls configure(void) in its implementation.
 	 */
 	public void configure(PipeLine pipeline) throws ConfigurationException {
 		this.pipeline=pipeline;
@@ -303,7 +290,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	public PipeRunResult doPipe (Object input) throws PipeRunException {
 		throw new PipeRunException(this, "Pipe should implement method doPipe()");
 	}
-	 
+
 	/**
 	 * This is where the action takes place. Pipes may only throw a PipeRunException,
 	 * to be handled by the caller of this object.
@@ -311,7 +298,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	public PipeRunResult doPipe (Object input, PipeLineSession session) throws PipeRunException {
 		return doPipe(input);
 	}
-	
+
     /**
      * looks up a key in the pipeForward hashtable. <br/>
      * A typical use would be on return from a Pipe: <br/>
@@ -333,9 +320,9 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
     	if (StringUtils.isEmpty(forward)) {
     		return null;
     	}
-        return (PipeForward)pipeForwards.get(forward);
+        return pipeForwards.get(forward);
     }
-    
+
 	/**
 	 * Convenience method for building up log statements.
 	 * This method may be called from within the <code>doPipe()</code> method with the current <code>PipeLineSession</code>
@@ -344,7 +331,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * @return String with the name of the pipe and the message id of the current message.
 	 */
 	protected String getLogPrefix(PipeLineSession session){
-		  StringBuffer sb=new StringBuffer();
+		  StringBuilder sb = new StringBuilder();
 		  sb.append("Pipe ["+getName()+"] ");
 		  if (session!=null) {
 			  sb.append("msgId ["+session.getMessageId()+"] ");
@@ -360,7 +347,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * @see PipeForward
 	 */
 	public void registerForward(PipeForward forward){
-		PipeForward current=(PipeForward)pipeForwards.get(forward.getName());
+		PipeForward current = pipeForwards.get(forward.getName());
 		if (current==null){
 			pipeForwards.put(forward.getName(), forward);
 		} else {
@@ -374,7 +361,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		}
  	}
 
-	
+
 	/**
 	  * Perform necessary action to start the pipe. This method is executed
 	  * after the {@link #configure()} method, for eacht start and stop command of the
@@ -395,7 +382,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	  * For instance, closing JMS connections, dbms connections etc.
 	  */
 	 public void stop() {}
-    
+
 	 /**
 	  * The <code>toString()</code> method retrieves its value
 	  * by reflection, so overriding this method is mostly not
@@ -404,7 +391,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	  *
 	  **/
 
-  
+
 
     public String toString() {
 		return ToStringBuilder.reflectionToString(this);
@@ -432,7 +419,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	public void registerEvent(String description) {
 		if (eventHandler!=null) {
 			eventHandler.registerEvent(this,description);
-		}		
+		}
 	}
 	public void throwEvent(String event) {
 		if (eventHandler!=null) {
@@ -474,7 +461,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 
 	/**
-	 * Sets a threshold for the duration of message execution; 
+	 * Sets a threshold for the duration of message execution;
 	 * If the threshold is exceeded, the message is logged to be analyzed.
 	 */
 	public void setDurationThreshold(long maxDuration) {
@@ -516,7 +503,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return preserveInput;
 	}
 
-	
+
 	public void setNamespaceAware(boolean b) {
 		namespaceAware = b;
 	}

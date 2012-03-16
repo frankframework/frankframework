@@ -1,18 +1,17 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.2  2011-12-15 10:08:06  m00f069
+ * Revision 1.3  2012-03-16 15:35:43  m00f069
+ * Michiel added EsbSoapValidator and WsdlXmlValidator, made WSDL's available for all adapters and did a bugfix on XML Validator where it seems to be dependent on the order of specified XSD's
+ *
+ * Revision 1.2  2011/12/15 10:08:06  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added CVS log
  *
  */
 package nl.nn.adapterframework.soap;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLDecoder;
+import java.net.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -20,42 +19,27 @@ import java.util.zip.ZipOutputStream;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.*;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
 
 import org.apache.log4j.Logger;
 
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.*;
 import nl.nn.adapterframework.http.WebServiceListener;
+import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.pipes.XmlValidator;
-import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-
-import javanet.staxutils.IndentingXMLStreamWriter;
-import javanet.staxutils.XMLStreamEventWriter;
-import javanet.staxutils.XMLStreamUtils;
-import javanet.staxutils.events.AttributeEvent;
-import javanet.staxutils.events.StartElementEvent;
-import javanet.staxutils.helpers.StreamWriterDelegate;
+import nl.nn.adapterframework.util.*;
 
 
 /**
  *  Utility class to generate the WSDL. Straight-forwardly implemented using stax only.
+ *
+ *  An object of this class represents the WSDL associated with one IBIS pipeline.
  *
  *
  *  TODO http://cxf.547215.n5.nabble.com/ClassName-quot-is-already-defined-in-quot-during-compilation-after-code-generation-td4299849.html
  *
  *  TODO perhaps use wsdl4j or easywsdl to generate the WSDL more genericly (for easy switching between 1.1 and 2.0).
  *
- * @version Id
  * @author  Michiel Meeuwissen
  */
 class Wsdl  {
@@ -64,17 +48,22 @@ class Wsdl  {
      private static final String WSDL      = "http://schemas.xmlsoap.org/wsdl/";
      private static final String SOAP_WSDL = "http://schemas.xmlsoap.org/wsdl/soap/";
      private static final String SOAP_HTTP = "http://schemas.xmlsoap.org/soap/http";
-     static final String XSD               =  "http://www.w3.org/2001/XMLSchema"; //XMLConstants.W3C_XML_SCHEMA_NS_URI;
 
-     private static final String ENCODING  = "UTF-8";
 
-     private static final XMLInputFactory INPUT_FACTORY   = XMLInputFactory.newInstance();
-     private static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
-     private static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
+     private static final String SOAP_JMS  = "http://www.w3.org/2010/soapjms/";
+
+     static final         String XSD       =  XMLConstants.W3C_XML_SCHEMA_NS_URI;//"http://www.w3.org/2001/XMLSchema";
+
+
+     static final String ENCODING  = "UTF-8";
+
+     static final XMLInputFactory INPUT_FACTORY   = XMLInputFactory.newInstance();
+     static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
+     static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
 
      static {
-         INPUT_FACTORY.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE,        Boolean.valueOf(true));
-         OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.valueOf(true));
+         INPUT_FACTORY.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE,        Boolean.TRUE);
+         OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
      }
 
 
@@ -82,7 +71,7 @@ class Wsdl  {
      private final PipeLine pipeLine;
      private final String targetNamespace;
      private final String name;
-     Set/*<XSD>*/ xsds = null;
+     Set<XSD> xsds = null;
 
      private boolean recursiveXsds = false;
      private boolean includeXsds = false;
@@ -96,7 +85,7 @@ class Wsdl  {
           boolean indent) {
          indentWsdl = indent;
          this.targetNamespace = serviceName;
-         Adapter adapter = getAdapterByNamespaceUri(ibisManager, this.targetNamespace);
+         Adapter adapter = WsdlUtils.getAdapterByNamespaceUri(ibisManager, this.targetNamespace);
          if (adapter == null) {
              throw new IllegalArgumentException("No adapter with uri " + serviceName);
          }
@@ -110,22 +99,27 @@ class Wsdl  {
      Wsdl(PipeLine pipeLine,
           boolean indent) {
          indentWsdl = indent;
-         this.targetNamespace = getServerNameSpace(pipeLine.getAdapter());
+         this.targetNamespace = WsdlUtils.getServiceNameSpaceURI(pipeLine.getAdapter());
          if (this.targetNamespace == null) {
              throw new IllegalStateException("No targetnamespace found in " + pipeLine.getAdapter());
          }
          this.pipeLine = pipeLine;
-         this.name     = pipeLine.getAdapter().getName();
+         this.name     = this.pipeLine.getAdapter().getName();
          if (this.name == null) {
              throw new IllegalArgumentException("The adapter " + pipeLine.getAdapter().getName() + " has no name");
          }
-         if (pipeLine== null) {
-             throw new IllegalArgumentException("No adapter with uri " + this.targetNamespace);
-         }
+
      }
 
 
-     public void wsdl(OutputStream out, String servlet) throws XMLStreamException, IOException {
+     /**
+      * Writes the WSDL to an output stream
+      * @param out
+      * @param servlet  The servlet what is used as the web service (because this needs to be present in the WSDL)
+      * @throws XMLStreamException
+      * @throws IOException
+      */
+     public void wsdl(OutputStream out, String servlet) throws XMLStreamException, IOException, URISyntaxException {
          XMLStreamWriter w = createWriter(out);
 
          w.writeStartDocument(ENCODING, "1.0");
@@ -133,8 +127,7 @@ class Wsdl  {
          w.setPrefix("xsd", XSD);
          w.setPrefix("soap", SOAP_WSDL);
          w.setPrefix("ibis", getWsdlTargetNamespace());
-         for (Iterator iterator = getXSDs().iterator(); iterator.hasNext(); ) {
-             XSD xsd = (XSD) iterator.next();
+         for (XSD xsd : getXSDs()) {
              w.setPrefix(xsd.pref, xsd.nameSpace);
          }
          w.writeStartElement(WSDL, "definitions"); {
@@ -142,8 +135,7 @@ class Wsdl  {
              w.writeNamespace("xsd", XSD);
              w.writeNamespace("soap", SOAP_WSDL);
              w.writeNamespace("ibis", getWsdlTargetNamespace());
-             for (Iterator iterator = getXSDs().iterator(); iterator.hasNext(); ) {
-                 XSD xsd = (XSD) iterator.next();
+             for (XSD xsd : getXSDs()) {
                  w.writeNamespace(xsd.pref, xsd.nameSpace);
              }
              w.writeAttribute("targetNamespace", getWsdlTargetNamespace());
@@ -160,29 +152,32 @@ class Wsdl  {
          w.close();
      }
 
-     public String getName() {
-         return name;
 
-     }
-     public void zip(OutputStream stream, String servletName) throws IOException, XMLStreamException {
-
+     /**
+      * Generates a zip file (and writes it to the given outputstream), containing the WSDL and all referenced XSD's.
+      * @see {@link #wsdl(java.io.OutputStream, String)}
+      */
+     public void zip(OutputStream stream, String servletName) throws IOException, XMLStreamException, URISyntaxException {
          ZipOutputStream out = new ZipOutputStream(stream);
+
+         // First an entry for the WSDL itself:
          ZipEntry wsdlEntry = new ZipEntry(getName() + ".wsdl");
          out.putNextEntry(wsdlEntry);
          wsdl(out, servletName);
          out.closeEntry();
+
+         //And then all XSD's
          setRecursiveXsds(true);
          Set entries = new HashSet();
-         Map correctingNamespaces = new HashMap();
-         for (Iterator iterator = getXSDs().iterator(); iterator.hasNext(); ) {
-             Wsdl.XSD xsd = (Wsdl.XSD) iterator.next();
+         Map<String, String> correctingNamespaces = new HashMap<String, String>();
+         for (XSD xsd : getXSDs()) {
              String zipName = xsd.getBaseUrl() + xsd.getName();
              if (entries.add(zipName)) {
                  ZipEntry xsdEntry = new ZipEntry(zipName);
                  out.putNextEntry(xsdEntry);
                  XMLStreamWriter writer
-                     = Wsdl.createWriter(out, false);
-                 Wsdl.includeXSD(xsd, writer, correctingNamespaces, true);
+                     = WsdlUtils.createWriter(out, false);
+                 WsdlUtils.includeXSD(xsd, writer, correctingNamespaces, true);
                  out.closeEntry();
              } else {
                  LOG.warn("Duplicate xsds in " + this + " " + xsd + " " + getXSDs());
@@ -191,11 +186,10 @@ class Wsdl  {
          out.close();
      }
 
-     protected void documentation(XMLStreamWriter w) throws XMLStreamException {
-         w.writeStartElement(WSDL, "documentation");
-         w.writeCData(documentation);
-         w.writeEndElement();
+     public String getName() {
+         return name;
      }
+
 
      protected String getWsdlTargetNamespace() {
          if (targetNamespace.endsWith("/")) {
@@ -205,52 +199,13 @@ class Wsdl  {
          }
      }
 
-     static Adapter getAdapterByNamespaceUri(IbisManager ibisManager, String targetNamespace) {
-         Configuration configuration = ibisManager.getConfiguration();
-         Iterator i = configuration.getRegisteredAdapters().iterator();
-         while (i.hasNext()) {
-             IAdapter a = (IAdapter) i.next();
-             Iterator j = a.getReceiverIterator();
-             while (j.hasNext()) {
-                Object o = j.next();
-                 if (o instanceof ReceiverBase) {
-                     ReceiverBase r = (ReceiverBase) o;
-                     IListener l = r.getListener();
-                     if (l instanceof WebServiceListener) {
-                         WebServiceListener wsl = (WebServiceListener) l;
-                         if (wsl.getServiceNamespaceURI().equals(targetNamespace)) {
-                             return (Adapter) a;
-                         }
-                     }
-                 }
-             }
-         }
-         throw new IllegalStateException("No adapter found for " + targetNamespace);
-     }
 
-     String getServerNameSpace(IAdapter a) {
-         Iterator j = a.getReceiverIterator();
-         while (j.hasNext()) {
-             Object o = j.next();
-             if (o instanceof ReceiverBase) {
-                 ReceiverBase r = (ReceiverBase) o;
-                 IListener l = r.getListener();
-                 if (l instanceof WebServiceListener) {
-                     WebServiceListener wsl = (WebServiceListener) l;
-                     return wsl.getServiceNamespaceURI();
-                 }
-             }
-         }
-         return null;
-     }
-
-
-     private List parseSchema(String schema) throws MalformedURLException {
-         List result = new ArrayList();
+    private List<XSD> parseSchema(String schema) throws MalformedURLException, URISyntaxException {
+         List<XSD> result = new ArrayList<XSD>();
          if (schema != null) {
              String[] split =  schema.split("\\s+");
-             if (split.length % 2 != 0) throw new IllegalStateException("The schema must exist from an even number of string, but it is " + schema);
-             for (int i = 0; i < split.length; i+=2) {
+             if (split.length % 2 != 0) throw new IllegalStateException("The schema must exist from an even number of strings, but it is " + schema);
+             for (int i = 0; i < split.length; i += 2) {
                  result.add(getXSD(split[i], split[i + 1]));
              }
          }
@@ -258,24 +213,41 @@ class Wsdl  {
      }
 
 
-
-     Set getXSDs() throws IOException, XMLStreamException {
+     /**
+      * Returns a map: namespace -> Collection of all relevant XSD's
+      * @return
+      * @throws XMLStreamException
+      * @throws IOException
+      */
+     Map<String, Collection<XSD>> getMappedXSDs() throws XMLStreamException, IOException, URISyntaxException {
+         Map<String, Collection<XSD>> result = new HashMap<String, Collection<XSD>>();
+         for (XSD xsd : getXSDs()) {
+             Collection<XSD> col = result.get(xsd.nameSpace);
+             if (col == null) {
+                 col = new ArrayList<XSD>();
+                 result.put(xsd.nameSpace, col);
+             }
+             col.add(xsd);
+         }
+         return result;
+     }
+     Set<XSD> getXSDs() throws IOException, XMLStreamException, URISyntaxException {
          if (xsds == null) {
-             xsds = new TreeSet();
+             xsds = new TreeSet<XSD>();
              {
                  XmlValidator inputValidator = (XmlValidator) pipeLine.getInputValidator();
 
-                 String inputSchema = inputValidator.getSchema();
-                 if (inputSchema != null) {
-                     XSD x = getXSD(targetNamespace, inputSchema);
-                     if (recursiveXsds) {
-                         x.getImportXSDs(xsds);
-                     }
-                 }
-
                  if (inputValidator != null) {
-                     for (Iterator i = parseSchema(inputValidator.getSchemaLocation()).iterator(); i.hasNext();) {
-                         XSD x = (XSD) i.next();
+                     String inputSchema = inputValidator.getSchema();
+                     if (inputSchema != null) {
+                         XSD x = getXSD(targetNamespace, inputSchema);
+                         if (recursiveXsds) {
+                             x.getImportXSDs(xsds);
+                         }
+                     }
+
+
+                     for (XSD x : parseSchema(inputValidator.getSchemaLocation())) {
                          if (recursiveXsds) {
                              x.getImportXSDs(xsds);
                          }
@@ -295,9 +267,9 @@ class Wsdl  {
          }
          return xsds;
      }
-     protected XSD getXSD(String nameSpace) throws IOException, XMLStreamException {
-         for (Iterator iterator = getXSDs().iterator(); iterator.hasNext(); ) {
-             XSD xsd = (XSD) iterator.next();
+     protected XSD getXSD(String nameSpace) throws IOException, XMLStreamException, URISyntaxException {
+         if (nameSpace == null) throw new IllegalArgumentException("Cannot get an XSD for null namespace");
+         for (XSD xsd : getXSDs()) {
              if (xsd.nameSpace.equals(nameSpace)) {
                  return xsd;
              }
@@ -305,167 +277,89 @@ class Wsdl  {
          throw new IllegalArgumentException("No xsd for namespace " + nameSpace + " found");
      }
 
-     protected static final QName NAME = new QName(null, "name");
-     protected static final QName TNS = new QName(null, "targetNamespace");
-     protected static final QName ELFORMDEFAULT = new QName(null, "elementFormDefault");
-     protected static final QName SCHEMA  = new QName(XSD, "schema");
-     protected static final QName ELEMENT = new QName(XSD, "element");
-     protected static final QName IMPORT = new QName(XSD, "import");
-     protected static final QName INCLUDE = new QName(XSD, "include");
+     protected static final QName NAME           = new QName(null, "name");
+     protected static final QName TNS            = new QName(null, "targetNamespace");
+     protected static final QName ELFORMDEFAULT  = new QName(null, "elementFormDefault");
+     protected static final QName SCHEMA         = new QName(XSD,  "schema");
+     protected static final QName ELEMENT        = new QName(XSD,  "element");
+     protected static final QName IMPORT         = new QName(XSD,  "import");
+     protected static final QName INCLUDE        = new QName(XSD,  "include");
      protected static final QName SCHEMALOCATION = new QName(null, "schemaLocation");
-     protected static final QName NAMESPACE = new QName(null, "namespace");
-     protected static final QName XMLNS    = new QName(null, XMLConstants.XMLNS_ATTRIBUTE);
+     protected static final QName NAMESPACE      = new QName(null, "namespace");
+     protected static final QName XMLNS          = new QName(null, XMLConstants.XMLNS_ATTRIBUTE);
 
 
-     protected void types(XMLStreamWriter w) throws XMLStreamException, IOException {
+     /**
+      * Outputs a 'documentation' section of the WSDL
+      */
+     protected void documentation(XMLStreamWriter w) throws XMLStreamException {
+         w.writeStartElement(WSDL, "documentation");
+         w.writeCData(documentation);
+         w.writeEndElement();
+     }
+
+     /**
+      * Output the 'types' section of the WSDL
+      * @param w
+      * @throws XMLStreamException
+      * @throws IOException
+      */
+     protected void types(XMLStreamWriter w) throws XMLStreamException, IOException, URISyntaxException {
          w.writeStartElement(WSDL, "types");
-         Map correctingNamesSpaces = new HashMap();
-         for (Iterator iterator = getXSDs().iterator(); iterator.hasNext(); ) {
-             XSD xsd = (XSD) iterator.next();
-             if (includeXsds) {
-                 includeXSD(xsd, w, correctingNamesSpaces, false);
-             } else {
-                 xsincludeXSDs(xsd, w, correctingNamesSpaces);
+         Map<String, String> correctingNamesSpaces = new HashMap<String, String>();
+         if (includeXsds) {
+             for (XSD xsd : getXSDs()) {
+                 WsdlUtils.includeXSD(xsd, w, correctingNamesSpaces, false);
+             }
+         }  else {
+             for (Map.Entry<String, Collection<XSD>> xsd: getMappedXSDs().entrySet()) {
+                 WsdlUtils.xsincludeXSDs(xsd.getKey(), xsd.getValue(), w, correctingNamesSpaces);
              }
          }
          parsedXSDs = true;
          w.writeEndElement();
     }
 
-     static void xsincludeXSDs(final XSD xsd, final XMLStreamWriter w, final Map correctingNameSpaces) throws IOException, XMLStreamException {
-         w.writeStartElement(XSD, "schema");
-         w.writeAttribute("targetNamespace", xsd.nameSpace); {
-             w.writeEmptyElement(XSD, "include");
-             w.writeAttribute("schemaLocation", xsd.getBaseUrl() + xsd.getName());
+
+     /**
+      * Outputs the 'messages' section.
+      * @param w
+      * @throws XMLStreamException
+      * @throws IOException
+      */
+     protected void messages(XMLStreamWriter w) throws XMLStreamException, IOException, URISyntaxException {
+         message(w, "Header", getHeaderTags(), null);
+         message(w, "PipeLineInput", getInputTags(), targetNamespace);
+         XmlValidator outputValidator = (XmlValidator) pipeLine.getOutputValidator();
+         if (outputValidator == null) {
+             LOG.debug("The PipeLine " + pipeLine + " has no output validator, this is a oneway wsdl");
+         } else {
+             Collection<QName> out = getOutputTags();
+             message(w, "PipeLineOutput", out, null);//out.xsd.nameSpace);
          }
-         w.writeEndElement();
-         // includeing the XSD will also parse it, e.g. to determin the first tag
-         includeXSD(xsd, OUTPUT_FACTORY.createXMLStreamWriter(new OutputStream() {
-             public void write(int i) throws IOException {
-                 // /dev/null
-             }
-         }, ENCODING), correctingNameSpaces, true);
+         //message(w, "PipeLineFault", "error", "bla:bloe");
+
      }
 
+     protected void message(XMLStreamWriter w, String name, Collection<QName> tags, String nameSpace) throws XMLStreamException, IOException {
+         if (tags == null) throw new IllegalArgumentException("Tag cannot be null for " + nameSpace + " " + name);
 
-     static void includeXSD(final XSD xsd, XMLStreamWriter xmlStreamWriter, Map correctingNamespaces, final boolean standalone) throws IOException, XMLStreamException {
-         final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, correctingNamespaces));
-         InputStream in = xsd.url.openStream();
-
-         String xsdNamespace = xsd.nameSpace;
-         {
-             String correct = (String) correctingNamespaces.get(xsdNamespace);
-             if (correct != null) {
-                 xsdNamespace = correct;
-             }
-         }
-         if (in == null) throw new IllegalStateException("" + xsd + " not found");
-         XMLEventReader er = INPUT_FACTORY.createXMLEventReader(in, ENCODING);
-         String wrongNamespace = null;
-         while (er.hasNext()) {
-             XMLEvent e = er.nextEvent();
-             switch (e.getEventType()) {
-             case XMLStreamConstants.START_DOCUMENT:
-             case XMLStreamConstants.END_DOCUMENT:
-                 if (standalone) break;
-             case XMLStreamConstants.COMMENT:
-                 break;
-             case XMLStreamConstants.START_ELEMENT:
-                 StartElement el = e.asStartElement();
-                 if (el.getName().equals(SCHEMA)) {
-                     if (xsdNamespace == null) {
-                         xsdNamespace = el.getAttributeByName(TNS).getValue();
-                         String correct = (String) correctingNamespaces.get(xsdNamespace);
-                         if (correct != null) {
-                             xsdNamespace = correct;
-                         }
-                     }
-                     if (xsdNamespace != null) {
-                         StartElement ne =
-                             XMLStreamUtils.mergeAttributes(el,
-                                 Collections.singletonList(new AttributeEvent(TNS, xsdNamespace)).iterator(), EVENT_FACTORY);
-                         if (!ne.equals(e)) {
-                             List list = new ArrayList();
-                             list.add(new AttributeEvent(ELFORMDEFAULT, "qualified"));
-                             list.add(new AttributeEvent(XMLNS, xsdNamespace));
-                             Attribute targetNameSpace = el.getAttributeByName(TNS);
-                             e = XMLStreamUtils.mergeAttributes(ne,	list.iterator(), EVENT_FACTORY);
-                             if (targetNameSpace != null) {
-                                 String currentTarget = targetNameSpace.getValue();
-                                 if (! currentTarget.equals(xsdNamespace)) {
-                                     wrongNamespace = currentTarget;
-                                     if (!correctingNamespaces.containsKey(wrongNamespace)) {
-                                         correctingNamespaces.put(wrongNamespace, xsdNamespace);
-                                         LOG.warn(xsd.url + " Corrected " + el + " -> " + e);
-                                     }
-                                 }
-
-                             }
-                         }
-                     }
-                 } else if (el.getName().equals(IMPORT)) {
-                     Attribute schemaLocation = el.getAttributeByName(SCHEMALOCATION);
-                     if (schemaLocation != null) {
-                         String location = schemaLocation.getValue();
-                         String relativeTo = xsd.parentLocation;
-                         if (relativeTo.length() > 0 && location.startsWith(relativeTo)) {
-                             location = location.substring(relativeTo.length());
-                         }
-                         e =
-                             XMLStreamUtils.mergeAttributes(el,
-                                 Collections.singletonList(new AttributeEvent(SCHEMALOCATION, location)).iterator(), EVENT_FACTORY);
-                         if (LOG.isDebugEnabled()) {
-                             LOG.debug(xsd.url + " Corrected " + el + " -> " + e);
-                             LOG.debug(xsd.url + " Relative to : " + relativeTo + " -> " + e);
-                         }
-                     }
-                 } else if (el.getName().equals(ELEMENT)) {
-                     if (xsd.firstTag == null) {
-                         xsd.firstTag = el.getAttributeByName(NAME).getValue();
-                     }
-
-                 } else {
-                     if (wrongNamespace != null) {
-                         if (wrongNamespace.equals(el.getName().getNamespaceURI())) {
-                             StartElementEvent ne = new StartElementEvent(new QName(xsdNamespace, el.getName().getLocalPart(), el.getName().getPrefix()), el.getAttributes(), el.getNamespaces(), el.getNamespaceContext(), el.getLocation(), el.getSchemaType());
-                             e = ne;
-                         }
-                     }
+         if (!tags.isEmpty()) {
+             w.writeStartElement(WSDL, "message");
+             w.writeAttribute("name", name);
+             {
+                 for (QName tag : tags) {
+                     w.writeEmptyElement(WSDL, "part");
+                     w.writeAttribute("name", getIbisName(tag));
+                     String typ = tag.getPrefix() + ":" + tag.getLocalPart();
+                     w.writeAttribute("element", typ);
                  }
-                 break;
              }
-             streamEventWriter.add(e);
+             w.writeEndElement();
          }
-     }
-
-
-     protected void messages(XMLStreamWriter w) throws XMLStreamException, IOException {
-        message(w, "PipeLineInput", getInputTag().getRootTag(), targetNamespace);
-        XmlValidator outputValidator = (XmlValidator) pipeLine.getOutputValidator();
-        if (outputValidator == null) {
-            LOG.debug("The PipeLine " + pipeLine + " has no output validator, this is a oneway wsdl");
-        } else {
-            RootTag out = getOutputTag();
-            message(w, "PipeLineOutput", out.getRootTag(), out.xsd.nameSpace);
-        }
-        //message(w, "PipeLineFault", "error", "bla:bloe");
-
-    }
-
-     protected void message(XMLStreamWriter w, String name, String tag, String nameSpace) throws XMLStreamException, IOException {
-         if (tag == null) throw new IllegalArgumentException("Tag cannot be null for " + nameSpace + " " + name);
-         w.writeStartElement(WSDL, "message");
-         w.writeAttribute("name", name);
-         {
-             w.writeEmptyElement(WSDL, "part");
-             w.writeAttribute("name", tag);
-             String typ = getXSD(nameSpace).pref + ":" + tag;
-             w.writeAttribute("element", typ);
-         }
-         w.writeEndElement();
 
      }
-     protected void portType(XMLStreamWriter w) throws XMLStreamException, IOException {
+     protected void portType(XMLStreamWriter w) throws XMLStreamException, IOException, URISyntaxException {
          w.writeStartElement(WSDL, "portType");
          w.writeAttribute("name", "PipeLine"); {
              w.writeStartElement(WSDL, "operation");
@@ -473,7 +367,7 @@ class Wsdl  {
                  w.writeEmptyElement(WSDL, "input");
                  w.writeAttribute("message", "ibis:PipeLineInput");
 
-                 if (getOutputTag() != null) {
+                 if (getOutputTags() != null) {
                      w.writeEmptyElement(WSDL, "output");
                      w.writeAttribute("message", "ibis:PipeLineOutput");
                  }
@@ -490,20 +384,27 @@ class Wsdl  {
 
 
      protected String getSoapAction() {
-         try {
-             AppConstants appConstants = AppConstants.getInstance();
-             String sa = appConstants.getProperty("wsdl." + getName() + ".soapAction");
-             if (sa != null) return sa;
-             sa = appConstants.getProperty("wsdl.soapAction");
-             if (sa != null) return sa;
-         } catch (Throwable nic) {
-             LOG.warn(nic);
-
-         }
-         return "defaultAction";
+         AppConstants appConstants = AppConstants.getInstance();
+         String sa = appConstants.getProperty("wsdl." + getName() + ".soapAction");
+         if (sa != null) return sa;
+         sa = appConstants.getProperty("wsdl.soapAction");
+         if (sa != null) return sa;
+         return "${wsdl.soapAction}";
      }
 
-     protected void binding(XMLStreamWriter w) throws XMLStreamException, IOException {
+     protected void binding(XMLStreamWriter w) throws XMLStreamException, IOException, URISyntaxException {
+         for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+             if (listener instanceof WebServiceListener) {
+                 httpBinding(w);
+             } else if (listener instanceof JmsListener) {
+                 jmsBinding(w);
+             } else {
+                 w.writeComment("Unrecognized listener " + listener.getName());
+             }
+         }
+     }
+
+     protected void httpBinding(XMLStreamWriter w) throws XMLStreamException, IOException, URISyntaxException {
          w.writeStartElement(WSDL, "binding");
          w.writeAttribute("name", "SoapBinding");
          w.writeAttribute("type", "ibis:PipeLine"); {
@@ -518,17 +419,24 @@ class Wsdl  {
                  w.writeAttribute("style", "document");
                  w.writeAttribute("soapAction", getSoapAction());
 
+
                  w.writeStartElement(WSDL, "input"); {
-                     RootTag  input = getInputTag();
-                     w.writeEmptyElement(input.xsd.nameSpace, input.getRootTag());
+                     writeSoapHeader(w);
+                     Collection<QName>  inputTags = getInputTags();
+                     //w.writeEmptyElement(input.xsd.nameSpace, input.getRootTag());
+                     w.writeEmptyElement(SOAP_WSDL, "body");
+                     writeParts(w, inputTags);
                      w.writeAttribute("use", "literal");
                  }
                  w.writeEndElement();
 
-                 RootTag  outputTag = getOutputTag();
-                 if (outputTag != null) {
+                 Collection<QName> outputTags = getOutputTags();
+                 if (outputTags != null) {
                      w.writeStartElement(WSDL, "output"); {
-                         w.writeEmptyElement(outputTag.xsd.nameSpace, outputTag.getRootTag());
+                         writeSoapHeader(w);
+                         ///w.writeEmptyElement(outputTag.xsd.nameSpace, outputTag.getRootTag());
+                         w.writeEmptyElement(SOAP_WSDL, "body");
+                         writeParts(w, outputTags);
                          w.writeAttribute("use", "literal");
                      }
                      w.writeEndElement();
@@ -547,7 +455,49 @@ class Wsdl  {
          w.writeEndElement();
      }
 
+     protected void writeSoapHeader(XMLStreamWriter w) throws XMLStreamException, IOException, URISyntaxException {
+         Collection<QName>  headers = getHeaderTags();
+         if (! headers.isEmpty()) {
+             if (headers.size() > 1) {
+                 LOG.warn("Can only deal with one soap header. Taking only the first of " + headers);
+             }
+             w.writeEmptyElement(SOAP_WSDL, "header");
+             w.writeAttribute("part", getIbisName(headers.iterator().next()));
+             w.writeAttribute("use",     "literal");
+             w.writeAttribute("message", "ibis:Header");
+         }
+     }
+
+     protected void writeParts(XMLStreamWriter w, Collection<QName> tags) throws XMLStreamException {
+         StringBuilder builder = new StringBuilder();
+         for (QName outputTag : tags) {
+             if (builder.length() > 0) builder.append(" ");
+             builder.append(getIbisName(outputTag));
+         }
+         w.writeAttribute("parts", builder.toString());
+     }
+
+     protected String getIbisName(QName qname) {
+         return qname.getLocalPart();
+     }
+
+     protected void jmsBinding(XMLStreamWriter w) throws XMLStreamException, IOException {
+         w.writeComment("JMS Binding (TODO)");
+     }
+
      protected void service(XMLStreamWriter w, String servlet) throws XMLStreamException {
+         for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+             if (listener instanceof WebServiceListener) {
+                 httpService(w, servlet);
+             } else if (listener instanceof JmsListener) {
+                 jmsService(w);
+             } else {
+                 w.writeComment("Unrecognized listener " + listener);
+             }
+         }
+     }
+
+     protected void httpService(XMLStreamWriter w, String servlet) throws XMLStreamException {
          w.writeStartElement(WSDL, "service");
          w.writeAttribute("name", getName()); {
              w.writeStartElement(WSDL, "port");
@@ -563,36 +513,64 @@ class Wsdl  {
      }
 
 
+     protected void jmsService(XMLStreamWriter w) throws XMLStreamException {
+         w.writeComment("JMS service");
+     }
+
      protected PipeLine getPipeLine() {
          return pipeLine;
      }
 
-     protected RootTag getRootTag(XmlValidator xmlValidator, String defaultNamespace) throws IOException, XMLStreamException {
+     protected Collection<QName> getHeaderTags(XmlValidator xmlValidator) throws XMLStreamException, IOException, URISyntaxException {
+         if (xmlValidator instanceof SoapValidator) {
+             return withPrefixes(((SoapValidator) xmlValidator).getSoapHeaderTags());
+         } else {
+             return Collections.emptyList();
+         }
+     }
+     protected Collection<QName> getRootTags(XmlValidator xmlValidator, String defaultNamespace) throws IOException, XMLStreamException, URISyntaxException {
          if (xmlValidator == null) {
              throw new IllegalStateException("The adapter " + pipeLine + " has no validator");
-
          }
-         String tag = xmlValidator.getRoot();
-         List schemas = parseSchema(xmlValidator.getSchemaLocation());
-         String xmlns = schemas.size() > 0 ? ((XSD) schemas.get(0)).nameSpace : defaultNamespace;
-         if (xmlns == null) {
-             throw new IllegalStateException("No namespace found for " + xmlValidator);
+         if (xmlValidator instanceof SoapValidator) {
+             SoapValidator validator = (SoapValidator) xmlValidator;
+             return withPrefixes(validator.getSoapBodyTags());
+         } else {
+             if (defaultNamespace == null) {
+                 List<XSD> xsds = parseSchema(xmlValidator.getSchemaLocation());
+                 if (xsds.isEmpty()) {
+                     return Collections.emptyList();
+                 } else {
+                     return Collections.singletonList(xsds.get(0).getTag(xmlValidator.getRoot()));
+                 }
+             } else {
+                 XSD xsd = getXSD(defaultNamespace);
+                 return Collections.singletonList(xsd.getTag(xmlValidator.getRoot()));
+             }
          }
-         RootTag result = new RootTag(getXSD(xmlns), tag);
-         if (tag == null) {
-             LOG.warn("The validator " + xmlValidator + " has no root tag. I guess it is " + result.getRootTag());
+     }
+     protected Collection<QName> withPrefixes(Collection<QName> qnames) throws XMLStreamException, IOException, URISyntaxException {
+         List<QName> result = new ArrayList<QName>();
+         // we need the QName with the correct prefix
+         for (QName qname : qnames) {
+             result.add(getXSD(qname.getNamespaceURI()).getTag(qname.getLocalPart()));
          }
          return result;
      }
 
-     protected RootTag getInputTag() throws IOException, XMLStreamException {
-         return getRootTag((XmlValidator) getPipeLine().getInputValidator(), targetNamespace);
+
+     protected Collection<QName> getHeaderTags() throws IOException, XMLStreamException, URISyntaxException {
+         return getHeaderTags((XmlValidator) getPipeLine().getInputValidator());
      }
 
-     protected RootTag getOutputTag() throws IOException, XMLStreamException {
+     protected Collection<QName> getInputTags() throws IOException, XMLStreamException, URISyntaxException {
+         return getRootTags((XmlValidator) getPipeLine().getInputValidator(), targetNamespace);
+     }
+
+     protected Collection<QName> getOutputTags() throws IOException, XMLStreamException, URISyntaxException {
          XmlValidator outputValidator = (XmlValidator) getPipeLine().getOutputValidator();
          if (outputValidator != null) {
-             return getRootTag((XmlValidator) getPipeLine().getOutputValidator(), null);
+             return getRootTags((XmlValidator) getPipeLine().getOutputValidator(), null);
          } else {
              LOG.debug("Oneway");
              return null;
@@ -600,31 +578,23 @@ class Wsdl  {
      }
 
      private XMLStreamWriter createWriter(OutputStream out) throws XMLStreamException {
-         return createWriter(out, indentWsdl);
+         return WsdlUtils.createWriter(out, indentWsdl);
      }
 
-     static XMLStreamWriter createWriter(OutputStream out, boolean indentWsdl) throws XMLStreamException {
-         XMLStreamWriter w = OUTPUT_FACTORY.createXMLStreamWriter(out, ENCODING);
-         if (indentWsdl) {
-             IndentingXMLStreamWriter iw = new IndentingXMLStreamWriter(w);
-             iw.setIndent(" ");
-             w = iw;
+    private XSD getXSD(String ns, String resource) throws URISyntaxException {
+         URI url = ClassUtils.getResourceURL(resource).toURI();
+         if (url == null) {
+             throw new IllegalArgumentException("No such resource " + resource);
          }
-         return w;
-     }
-
-     private XSD getXSD(String ns, String resource) {
-         URL url = ClassUtils.getResourceURL(resource);
-         if (url == null) throw new IllegalArgumentException("No such resource " + resource);
-         for (Iterator i = xsds.iterator(); i.hasNext();) {
-             XSD xsd = (XSD) i.next();
+         for (XSD xsd : xsds) {
 
              if (xsd.nameSpace == null) {
                  if (xsd.url.equals(url)) {
                      return xsd;
                  }
              } else  {
-                 if (xsd.nameSpace.equals(ns)){
+                 if (xsd.nameSpace.equals(ns) && xsd.url.equals(url)){
+
                      return xsd;
                  }
              }
@@ -663,171 +633,30 @@ class Wsdl  {
          this.includeXsds = includeXsds;
      }
 
-     static class RootTag {
-         final XSD xsd;
-         private final String root;
-         RootTag(XSD xsd, String r) {
-             this.xsd = xsd;
-             this.root = r;
-         }
-         public String getRootTag() {
-             return root == null ? xsd.firstTag : root;
-         }
 
-     }
-     static class XSD implements Comparable {
+    /*
+        public void easywsdl(OutputStream out, String servlet) throws XMLStreamException, IOException, SchemaException, URISyntaxException {
+            Description description = WSDLFactory.newInstance().newDescription(AbsItfDescription.WSDLVersionConstants.WSDL11);
 
-         final String nameSpace;
-         final URL url;
-         final String pref;
-         String firstTag;
-         final String parentLocation;
-
-         XSD(String parentLocation, String nameSpace, URL resource, int prefixCount) {
-             this.parentLocation = parentLocation;
-             this.pref = "ns" + prefixCount;
-             this.nameSpace = nameSpace;
-             url = resource;
-             if (url == null) throw new IllegalArgumentException("No resource " + resource + " found");
-         }
-
-         //@Override
-         public boolean equals(Object o) {
-             if (o instanceof XSD) {
-                 XSD other = (XSD) o;
-                 return nameSpace.equals(other.nameSpace) && url.equals(other.url);
-             } else {
-                 return false;
-             }
-         }
-         //@Override
-         public int hashCode() {
-             return nameSpace.hashCode();
-         }
-
-         //@Override
-         public String toString() {
-             return nameSpace + " " + url;
-         }
-
-         //@Override
-         public int compareTo(Object o) {
-             if (o == null) return 1;
-             XSD x = (XSD) o;
-             int c = nameSpace != null ? nameSpace.compareTo(x.nameSpace  == null ? "" : x.nameSpace) : 0;
-             if (c != 0) return c;
-             return url.toExternalForm().compareTo(x.url.toExternalForm());
-
-         }
-         public String getBaseUrl() {
-             String u = url.toString();
-             String baseUrl;
-             if (url.getProtocol().equals("file")) {
-                 baseUrl = u.substring(Wsdl.class.getResource("/").toString().length());
-             } else {
-                 baseUrl = u.substring(u.indexOf("!/") + 2, u.length());
-
-             }
-             baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
-             return baseUrl;
-         }
-
-         public String getName() {
-             String u = url.toExternalForm();
-             int slash = u.lastIndexOf('/');
-             u = u.substring(slash + 1);
-             try {
-                 return URLDecoder.decode(u, "UTF-8");
-             } catch (UnsupportedEncodingException e) {
-                 // cannot happen, UTF-8 is supported
-                 return u;
-             }
-         }
-
-         public Set getImportXSDs(Set set) throws IOException, XMLStreamException {
-             if (set == null) set = new HashSet();
-             InputStream in = url.openStream();
-             if (in == null) return null;
-             XMLEventReader er = INPUT_FACTORY.createXMLEventReader(in, ENCODING);
-             while (er.hasNext()) {
-                 XMLEvent e = er.nextEvent();
-                 switch (e.getEventType()) {
-                 case XMLStreamConstants.START_ELEMENT:
-                     StartElement el = e.asStartElement();
-                     if (el.getName().equals(IMPORT) ||
-                         el.getName().equals(INCLUDE)
-                         ) {
-                         Attribute schemaLocation = el.getAttributeByName(SCHEMALOCATION);
-                         Attribute namespace  = el.getAttributeByName(NAMESPACE);
-                         XSD x = new XSD(getBaseUrl(),
-                             namespace == null ? null : namespace.getValue(),
-                             ClassUtils.getResourceURL(getBaseUrl() + schemaLocation.getValue()), 0);
-                         if (set.add(x)) {
-                             x.getImportXSDs(set);
-                         }
-                     }
-                     break;
-                 }
-             }
-             return set;
-         }
-
-     }
-
-     static class NamespaceCorrectingXMLStreamWriter extends StreamWriterDelegate {
-
-
-         private final Map map;
-
-         protected NamespaceCorrectingXMLStreamWriter(XMLStreamWriter out, Map map) {
-             super(out);
-             this.map = map;
-         }
-
-         //@Override
-         public void writeAttribute(String prefix, String namespaceURI, String localName, String value) throws XMLStreamException {
-             String correct = (String) map.get(namespaceURI);
-             if (correct != null) {
-                 namespaceURI = correct;
-             }
-             out.writeAttribute(prefix, namespaceURI, localName, value);
-         }
-
-         //@Override
-         public void writeNamespace(final String prefix, String namespaceURI) throws XMLStreamException {
-             String correct = (String) map.get(namespaceURI);
-             if (correct != null) {
-                 LOG.warn("Corrected namespace " + prefix + ":xmls=" + namespaceURI + " to " + prefix + ":" + correct);
-                 namespaceURI = correct;
-             }
-             out.writeNamespace(prefix, namespaceURI);
-
-         }
-
-     }
-     /*
-     public void easywsdl(OutputStream out, String servlet) throws XMLStreamException, IOException, SchemaException, URISyntaxException {
-         Description description = WSDLFactory.newInstance().newDescription(AbsItfDescription.WSDLVersionConstants.WSDL11);
-
-         SchemaFactory fact = SchemaFactory.newInstance();
-         Types t = description.getTypes();
-         for (XSD xsd : getXsds()) {
-             description.addNamespace(xsd.pref, xsd.nameSpace);
-             SchemaReader sr = fact.newSchemaReader();
-             Schema s = sr.read(xsd.url);
-             t.addSchema(s);
-         }
-         InterfaceType it = description.createInterface();
-         Operation o = it.createOperation();
-         Input i = o.createInput();
-         i.setName("IbisInput");
-         //i.
-         // s
-         t.addOperation(it.createOperation());
-         description.addInterface();
-         Binding binding = description.createBinding();
-         BindingOperation op = binding.createBindingOperation();
-         //description.addBinding(binding);
-     }
- */
+            SchemaFactory fact = SchemaFactory.newInstance();
+            Types t = description.getTypes();
+            for (XSD xsd : getXsds()) {
+                description.addNamespace(xsd.pref, xsd.nameSpace);
+                SchemaReader sr = fact.newSchemaReader();
+                Schema s = sr.read(xsd.url);
+                t.addSchema(s);
+            }
+            InterfaceType it = description.createInterface();
+            Operation o = it.createOperation();
+            Input i = o.createInput();
+            i.setName("IbisInput");
+            //i.
+            // s
+            t.addOperation(it.createOperation());
+            description.addInterface();
+            Binding binding = description.createBinding();
+            BindingOperation op = binding.createBindingOperation();
+            //description.addBinding(binding);
+        }
+    */
  }

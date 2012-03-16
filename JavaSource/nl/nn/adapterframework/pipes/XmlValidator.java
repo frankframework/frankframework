@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.33  2012-03-15 15:45:54  europe\m168309
+ * Revision 1.34  2012-03-16 15:35:44  m00f069
+ * Michiel added EsbSoapValidator and WsdlXmlValidator, made WSDL's available for all adapters and did a bugfix on XML Validator where it seems to be dependent on the order of specified XSD's
+ *
+ * Revision 1.33  2012/03/15 15:45:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added soapNamespace attribute
  *
  * Revision 1.32  2012/03/05 14:39:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -89,7 +92,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
+import javax.xml.namespace.QName;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -100,6 +103,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.XmlValidatorBase;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  *<code>Pipe</code> that validates the input message against a XML-Schema.
@@ -156,7 +161,7 @@ import nl.nn.adapterframework.util.XmlValidatorBase;
 public class XmlValidator extends FixedForwardPipe {
 	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
 
-	private XmlValidatorBase validator = new XmlValidatorBase();
+	private final XmlValidatorBase validator = new XmlValidatorBase();
 
 	private SoapWrapper soapWrapper = null;
 
@@ -169,6 +174,7 @@ public class XmlValidator extends FixedForwardPipe {
      * <li>when the parser does not accept setting the properties for validating</li>
      * </ul>
      */
+    @Override
     public void configure() throws ConfigurationException {
         super.configure();
 		soapWrapper = SoapWrapper.getInstance();
@@ -191,6 +197,7 @@ public class XmlValidator extends FixedForwardPipe {
 
       * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
       */
+     @Override
     public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
     	String inputStr = input.toString();
 
@@ -271,7 +278,7 @@ public class XmlValidator extends FixedForwardPipe {
      * <p>An example value would be "xml/xsd/GetPartyDetail.xsd"</p>
      * <p>The value of the schema attribute is only used if the schemaLocation
      * attribute and the noNamespaceSchemaLocation are not set</p>
-     * @see ClassUtils.getResource(Object,String)
+     * @see nl.nn.adapterframework.util.ClassUtils#getResourceURL
      */
     public void setSchema(String schema) {
         setNoNamespaceSchemaLocation(schema);
@@ -326,7 +333,7 @@ public class XmlValidator extends FixedForwardPipe {
 	 */
 	public void setSchemaSession(String schemaSessionKey) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix(null)+"attribute 'schemaSession' is deprecated. Please use 'schemaSessionKey' instead.";
+		String msg = getLogPrefix(null) + "attribute 'schemaSession' is deprecated. Please use 'schemaSessionKey' instead.";
 		configWarnings.add(log, msg);
 		setSchemaSessionKey(schemaSessionKey);
 	}
@@ -366,6 +373,14 @@ public class XmlValidator extends FixedForwardPipe {
 	public String getRoot() {
 		return validator.getRoot();
 	}
+
+    /**
+     * Not ready yet (namespace not yet correctly parsed)
+     *
+     */
+    public QName getRootTag() {
+        return new QName(getSchema()/* TODO*/, getRoot());
+    }
 
 	public void setValidateFile(boolean b) {
 		validator.setValidateFile(b);

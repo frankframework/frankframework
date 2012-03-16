@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.77  2012-02-09 13:38:41  m00f069
+ * Revision 1.78  2012-03-16 15:35:44  m00f069
+ * Michiel added EsbSoapValidator and WsdlXmlValidator, made WSDL's available for all adapters and did a bugfix on XML Validator where it seems to be dependent on the order of specified XSD's
+ *
+ * Revision 1.77  2012/02/09 13:38:41  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Fixed faceted error (Java facet 1.4 -> 1.5)
  *
  * Revision 1.76  2012/02/03 11:19:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -35,7 +38,7 @@
  * enabled to specfiy namespace prefixes to be used in XPath-expressions
  *
  * Revision 1.67  2010/04/27 15:03:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * optimized memory consumption of replaceNonValidXmlCharacters() 
+ * optimized memory consumption of replaceNonValidXmlCharacters()
  * and stripNonValidXmlCharacters()
  *
  * Revision 1.66  2009/12/11 13:09:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -223,7 +226,7 @@
  * added namespaced xpath evaluator
  *
  * Revision 1.9  2004/06/21 10:04:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added version of createXPathEvaluator() that allows to 
+ * added version of createXPathEvaluator() that allows to
  * set output-method to xml (instead of only text), and uses copy-of instead of
  * value-of
  *
@@ -249,43 +252,20 @@
 package nl.nn.adapterframework.util;
 
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.lang.reflect.Constructor;
+import java.io.*;
 import java.net.URL;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.*;
+import javax.xml.stream.XMLEventFactory;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.Namespace;
+import javax.xml.stream.events.StartElement;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
-import nl.nn.adapterframework.core.ListenerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -295,30 +275,21 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
+import org.w3c.dom.*;
+import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import nl.nn.adapterframework.core.ListenerException;
+
 /**
- * Some utilities for working with XML. 
+ * Some utilities for working with XML.
  *
  * @author  Johan Verrips
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.77 $ $Date: 2012-02-09 13:38:41 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.78 $ $Date: 2012-03-16 15:35:44 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -336,7 +307,7 @@ public class XmlUtils {
 	public final static String OPEN_FROM_URL = "url";
 	public final static String OPEN_FROM_RESOURCE = "resource";
 	public final static String OPEN_FROM_XML = "xml";
-	
+
 	private static Boolean namespaceAwareByDefault = null;
 	private static Boolean includeFieldDefinitionByDefault = null;
 	private static Boolean autoReload = null;
@@ -356,7 +327,7 @@ public class XmlUtils {
 	}
 
 	public static String makeSkipEmptyTagsXslt(boolean omitXmlDeclaration, boolean indent) {
-		return 	
+		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
 			+ "<xsl:strip-space elements=\"*\"/>"
@@ -371,7 +342,7 @@ public class XmlUtils {
 	}
 
 	public static String makeRemoveNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
-		return 	
+		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
 			+ "<xsl:template match=\"*\">"
@@ -391,7 +362,7 @@ public class XmlUtils {
 	}
 
 	public static String makeGetIbisContextXslt() {
-		return 	
+		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
 			+ "<xsl:output method=\"text\"/>"
 			+ "<xsl:template match=\"/\">"
@@ -407,7 +378,7 @@ public class XmlUtils {
 	}
 
 	public static String makeGetRootNamespaceXslt() {
-		return 	
+		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"text\"/>"
 			+ "<xsl:template match=\"*\">"
@@ -417,7 +388,7 @@ public class XmlUtils {
 	}
 
 	public static String makeAddRootNamespaceXslt(String namespace, boolean omitXmlDeclaration, boolean indent) {
-		return 	
+		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns=\""+namespace+"\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
 			+ "<xsl:template match=\"*\">"
@@ -466,7 +437,7 @@ public class XmlUtils {
 	static public void parseXml(ContentHandler handler, String source) throws IOException, SAXException {
 		parseXml(handler,new Variant(source).asXmlInputSource());
 	}
-	
+
 	static public void parseXml(ContentHandler handler, InputSource source) throws IOException, SAXException {
 		XMLReader parser;
 		parser = getParser();
@@ -499,11 +470,11 @@ public class XmlUtils {
 		}
 		return output;
 	}
-	
+
 	static public Document buildDomDocument(Reader in) throws DomBuilderException {
 		return buildDomDocument(in,isNamespaceAwareByDefault());
 	}
-	
+
 	static public Document buildDomDocument(Reader in, boolean namespaceAware)
 		throws DomBuilderException {
 			return buildDomDocument(in, namespaceAware, false);
@@ -516,7 +487,7 @@ public class XmlUtils {
 
 		DocumentBuilderFactory factory;
 		if (xslt2) {
-			factory = new net.sf.saxon.dom.DocumentBuilderFactoryImpl(); 
+			factory = new net.sf.saxon.dom.DocumentBuilderFactoryImpl();
 			if (!namespaceAware) {
 				log.warn("Saxon parser is always namespace aware");
 			}
@@ -627,7 +598,7 @@ public class XmlUtils {
 				try {
 					while (Character.isWhitespace(xmlString.charAt(endPos))) {
 						endPos++;
-					} 
+					}
 				} catch (IndexOutOfBoundsException e) {
 					log.debug("ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the xml declartion, and not any body");
 				}
@@ -646,7 +617,7 @@ public class XmlUtils {
 				try {
 					while (Character.isWhitespace(xmlString.charAt(endPos))) {
 						endPos++;
-					} 
+					}
 				} catch (IndexOutOfBoundsException e) {
 					log.debug("ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the DocType declartion, and not any body");
 				}
@@ -664,12 +635,12 @@ public class XmlUtils {
 
 	public static String readXml(byte[] source, int offset, int length, String defaultEncoding, boolean skipDeclaration) throws UnsupportedEncodingException {
 		String charset;
-		
+
 		charset=defaultEncoding;
 		if (StringUtils.isEmpty(charset)) {
 			charset=Misc.DEFAULT_INPUT_STREAM_ENCODING;
 		}
-		
+
 		String firstPart = new String(source,offset,length<100?length:100,charset);
 		if (StringUtils.isEmpty(firstPart)) {
 			return null;
@@ -678,27 +649,27 @@ public class XmlUtils {
 			int endPos = firstPart.indexOf("?>")+2;
 			if (endPos>0) {
 				String declaration=firstPart.substring(6,endPos-2);
-				log.debug("parsed declaration ["+declaration+"]");			
+				log.debug("parsed declaration ["+declaration+"]");
 				final String encodingTarget= "encoding=\"";
 				int encodingStart=declaration.indexOf(encodingTarget);
 				if (encodingStart>0) {
 					encodingStart+=encodingTarget.length();
-					log.debug("encoding-declaration ["+declaration.substring(encodingStart)+"]");			
+					log.debug("encoding-declaration ["+declaration.substring(encodingStart)+"]");
 					int encodingEnd=declaration.indexOf("\"",encodingStart);
 					if (encodingEnd>0) {
 						charset=declaration.substring(encodingStart,encodingEnd);
-						log.debug("parsed charset ["+charset+"]");			
+						log.debug("parsed charset ["+charset+"]");
 					} else {
-						log.warn("no end in encoding attribute in declaration ["+declaration+"]"); 
-					}					
+						log.warn("no end in encoding attribute in declaration ["+declaration+"]");
+					}
 				} else {
-					log.warn("no encoding attribute in declaration ["+declaration+"]"); 
-				} 
+					log.warn("no encoding attribute in declaration ["+declaration+"]");
+				}
 				if (skipDeclaration) {
 					try {
 						while (Character.isWhitespace(firstPart.charAt(endPos))) {
 							endPos++;
-						} 
+						}
 					} catch (IndexOutOfBoundsException e) {
 						log.debug("ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the xml declartion, and not any body");
 					}
@@ -729,7 +700,7 @@ public class XmlUtils {
 	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List params) throws TransformerConfigurationException {
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
-		
+
 		String namespaceClause="";
 		if (namespaceDefs!=null) {
 			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
@@ -745,22 +716,22 @@ public class XmlUtils {
 			}
 			log.debug("namespaceClause ["+namespaceClause+"]");
 		}
-		
-		
-		String copyMethod;	
+
+
+		String copyMethod;
 		if ("xml".equals(outputMethod)) {
 			copyMethod="copy-of";
 		} else {
 			copyMethod="value-of";
-		}			
-			
+		}
+
 		String paramsString = "";
 		if (params != null) {
 			for (Iterator it = params.iterator(); it.hasNext();) {
 				paramsString = paramsString + "<xsl:param name=\"" + it.next() + "\"/>";
 			}
 		}
-		String xsl = 
+		String xsl =
 			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
 			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
 			"<xsl:output method=\""+outputMethod+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
@@ -770,7 +741,7 @@ public class XmlUtils {
 			"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XPathExpression + "\"/>" +
 			"</xsl:template>" +
 			"</xsl:stylesheet>";
-	
+
 		return xsl;
 	}
 
@@ -787,12 +758,12 @@ public class XmlUtils {
 		throws TransformerConfigurationException {
 		return createTransformer(createXPathEvaluatorSource(XPathExpression));
 	}
-	
+
 	public static Transformer createXPathEvaluator(String namespaceDefs, String XPathExpression, String outputMethod)
 		throws TransformerConfigurationException {
 		return createTransformer(createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod));
 	}
-	
+
 	public static Transformer createXPathEvaluator(String XPathExpression, String outputMethod) throws TransformerConfigurationException {
 		return createXPathEvaluator(null, XPathExpression, outputMethod);
 	}
@@ -803,7 +774,7 @@ public class XmlUtils {
 	 */
 	public static Source stringToSource(String xmlString, boolean namespaceAware) throws DomBuilderException {
 		Document doc = XmlUtils.buildDomDocument(xmlString,namespaceAware);
-		return new DOMSource(doc); 
+		return new DOMSource(doc);
 	}
 
 	public static Source stringToSource(String xmlString) throws DomBuilderException {
@@ -878,7 +849,7 @@ public class XmlUtils {
 					log.debug("found constructor method ["+constructor.getName()+"]");
 					transformerFactory = (TransformerFactory)constructor.newInstance(null);
 					log.debug("invoked constructor to obtain transformer factory ["+transformerFactory.getClass().getName()+"]");
-				} 
+				}
 			} catch (Exception e) {
 				log.warn("Could not load TransformerFactory ["+transformerFactoryClassName+"]",e);
 			}
@@ -900,7 +871,7 @@ public class XmlUtils {
 			}
 		}
 	}
-	
+
 	/**
 	 * translates special characters to xml equivalents
 	 * like <b>&gt;</b> and <b>&amp;</b>
@@ -935,16 +906,16 @@ public class XmlUtils {
 		}
 		return encoded.toString();
 	}
-	
+
 	/**
 	 * Translates the five reserved XML characters (&lt; &gt; &amp; &quot; &apos;) to their normal selves
 	 */
 	public static String decodeChars(String string) {
 		StringBuffer decoded = new StringBuffer();
-		
+
 		boolean inEscape=false;
 		int escapeStartPos=0;
-		
+
 		for (int i = 0; i < string.length(); i++) {
 			char cur=string.charAt(i);
 			if (inEscape) {
@@ -973,7 +944,7 @@ public class XmlUtils {
 		}
 		return decoded.toString();
 	}
-	
+
 	/**
 	   * Conversion of special xml signs
 	   **/
@@ -989,7 +960,7 @@ public class XmlUtils {
 				return "&quot;";
 			case ('\'') :
 				// return "&apos;"; // apos does not work in Internet Explorer
-				return "&#39;"; 
+				return "&#39;";
 		}
 		return null;
 	}
@@ -1043,21 +1014,21 @@ public class XmlUtils {
 		else
 			return (char) ('A' + (digitValue - 10));
 	}
-	
+
 	/**
 	 * Method getChildTagAsBoolean.
 	 * Return the boolean-value of the first element with tag
 	 * <code>tag</code> in the DOM subtree <code>el</code>.
-	 * 
+	 *
 	 * <p>
 	 * To determine true or false, the value of the tag is compared case-
-	 * insensitive with the values <pre>true</pre>, <pre>yes</pre>, or 
+	 * insensitive with the values <pre>true</pre>, <pre>yes</pre>, or
 	 * <pre>on</pre>. If it matches, <code>true</code> is returned. If not,
 	 * <code>false</code> is returned.
-	 * 
+	 *
 	 * <p>
 	 * If the tag can not be found, <code>false</code> is returned.
-	 * 
+	 *
 	 * @param el            DOM subtree
 	 * @param tag           Name of tag to find
 	 *
@@ -1070,16 +1041,16 @@ public class XmlUtils {
 	 * Method getChildTagAsBoolean.
 	 * Return the boolean-value of the first element with tag
 	 * <code>tag</code> in the DOM subtree <code>el</code>.
-	 * 
+	 *
 	 * <p>
 	 * To determine true or false, the value of the tag is compared case-
-	 * insensitive with the values <pre>true</pre>, <pre>yes</pre>, or 
+	 * insensitive with the values <pre>true</pre>, <pre>yes</pre>, or
 	 * <pre>on</pre>. If it matches, <code>true</code> is returned. If not,
 	 * <code>false</code> is returned.
-	 * 
+	 *
 	 * <p>
 	 * If the tag can not be found, the default-value is returned.
-	 * 
+	 *
 	 * @param el            DOM subtree
 	 * @param tag           Name of tag to find
 	 * @param defaultValue  Default-value in case tag can not
@@ -1111,10 +1082,10 @@ public class XmlUtils {
 	 * Method getChildTagAsLong.
 	 * Return the long integer-value of the first element with tag
 	 * <code>tag</code> in the DOM subtree <code>el</code>.
-	 * 
+	 *
 	 * @param el            DOM subtree
 	 * @param tag           Name of tag to find
-	 * 
+	 *
 	 * @return long          The value found. Returns 0 if no
 	 *                       tag can be found, or if the tag
 	 *                       doesn't have an integer-value.
@@ -1126,7 +1097,7 @@ public class XmlUtils {
 	 * Method getChildTagAsLong.
 	 * Return the long integer-value of the first element with tag
 	 * <code>tag</code> in the DOM subtree <code>el</code>.
-	 * 
+	 *
 	 * @param el            DOM subtree
 	 * @param tag           Name of tag to find
 	 * @param defaultValue  Default-value in case tag can not
@@ -1158,7 +1129,7 @@ public class XmlUtils {
 	 * Method getChildTagAsString.
 	 * Return the value of the first element with tag
 	 * <code>tag</code> in the DOM subtree <code>el</code>.
-	 * 
+	 *
 	 * @param el            DOM subtree
 	 * @param tag           Name of tag to find
 	 *
@@ -1172,7 +1143,7 @@ public class XmlUtils {
 	 * Method getChildTagAsString.
 	 * Return the value of the first element with tag
 	 * <code>tag</code> in the DOM subtree <code>el</code>.
-	 * 
+	 *
 	 * @param el            DOM subtree
 	 * @param tag           Name of tag to find
 	 * @param defaultValue  Default-value in case tag can not
@@ -1199,13 +1170,13 @@ public class XmlUtils {
 	 * This method only looks at the direct children of the given node, and
 	 * doesn't descent deeper into the tree. If a '*' is passed as tag,
 	 * all elements are returned.
-	 * 
+	 *
 	 * @param el            Element where to get children from
 	 * @param tag           Tag to match. Use '*' to match all tags.
 	 * @return Collection  Collection containing all elements found. If
 	 *                      size() returns 0, then no matching elements
 	 *                      were found. All items in the collection can
-	 *                      be safely cast to type 
+	 *                      be safely cast to type
 	 *                      <code>org.w3c.dom.Element</code>.
 	 */
 	public static Collection getChildTags(Element el, String tag) {
@@ -1237,11 +1208,11 @@ public class XmlUtils {
 		return c;
 	}
 	/**
-	 * Method getFirstChildTag. Return the first child-node which is an element 
+	 * Method getFirstChildTag. Return the first child-node which is an element
 	 * with tagName equal to given tag.
 	 * This method only looks at the direct children of the given node, and
 	 * doesn't descent deeper into the tree.
-	 * 
+	 *
 	 * @param el       Element where to get children from
 	 * @param tag      Tag to match
 	 * @return Element The element found, or <code>null</code> if no match
@@ -1309,7 +1280,7 @@ public class XmlUtils {
 		} else {
 			int length = string.length();
 			if (log.isDebugEnabled()) log.debug("replacing non valid xml characters to ["+to+"] in string of length ["+length+"]");
-			
+
 			StringBuffer encoded = new StringBuffer(length);
 			for (int i = 0; i < length; i++) {
 				char c=string.charAt(i);
@@ -1336,9 +1307,9 @@ public class XmlUtils {
 		}
 		return encoded.toString();
 	}
-	
+
 	/**
-	 * sets all the parameters of the transformer using a Map with parameter values. 
+	 * sets all the parameters of the transformer using a Map with parameter values.
 	 */
 	public static void setTransformerParameters(Transformer t, Map parameters) {
 		t.clearParameters();
@@ -1347,18 +1318,18 @@ public class XmlUtils {
 		}
 		for (Iterator it=parameters.keySet().iterator(); it.hasNext();) {
 			String name=(String)it.next();
-			Object value = parameters.get(name); 
-					
+			Object value = parameters.get(name);
+
 			if (value != null) {
 				t.setParameter(name, value);
 				log.debug("setting parameter [" + name+ "] on transformer");
-			} 
+			}
 			else {
 				log.info("omitting setting of parameter ["+name+"] on transformer, as it has a null-value");
 			}
 		}
 	}
-	
+
 	public static String transformXml(Transformer t, Document d) throws TransformerException, IOException {
 		return transformXml(t, new DOMSource(d));
 	}
@@ -1374,7 +1345,7 @@ public class XmlUtils {
 		}
 	}
 
-	
+
 	public static String transformXml(Transformer t, Source s)
 		throws TransformerException, IOException {
 
@@ -1395,7 +1366,7 @@ public class XmlUtils {
 		}
 	}
 
-	
+
 	static public String resolveSchemaLocations(String locationAttribute) {
 		String result=null;
 		StringTokenizer st = new StringTokenizer(locationAttribute);
@@ -1433,7 +1404,7 @@ public class XmlUtils {
 		InputSource is = in.asXmlInputSource();
 
 		XmlFindingHandler xmlHandler = new XmlFindingHandler();
-		
+
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(true);
 		try {
@@ -1481,7 +1452,7 @@ public class XmlUtils {
 
 					XmlBuilder reason = new XmlBuilder("reason");
 					XmlBuilder detail;
-					
+
 					detail = new XmlBuilder("message");;
 					detail.setCdataValue(message);
 					reason.addSubElement(detail);
@@ -1493,20 +1464,20 @@ public class XmlUtils {
 					detail = new XmlBuilder("xpath");;
 					detail.setValue(xfh.getXpath());
 					reason.addSubElement(detail);
-					
-					xmlReasons.addSubElement(reason);	
+
+					xmlReasons.addSubElement(reason);
 				}
 			} catch (Throwable t) {
 				log.error("Exception handling errors",t);
-				
+
 				XmlBuilder reason = new XmlBuilder("reason");
 				XmlBuilder detail;
-					
+
 				detail = new XmlBuilder("message");;
 				detail.setCdataValue(t.getMessage());
 				reason.addSubElement(detail);
 
-				xmlReasons.addSubElement(reason);	
+				xmlReasons.addSubElement(reason);
 			}
 
 			if (StringUtils.isNotEmpty(location)) {
@@ -1519,7 +1490,7 @@ public class XmlUtils {
 				 reasons = reasons + "\n" + message;
 			 }
 		}
-		
+
 		public void addReason(Throwable t) {
 			String location=null;
 			if (t instanceof SAXParseException) {
@@ -1568,7 +1539,7 @@ public class XmlUtils {
 				log.debug("Give noNamespaceSchemaLocation to parser: " + schema.toExternalForm());
 				parser.setProperty("http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation", schema.toExternalForm());
 			}
-			if (StringUtils.isNotEmpty(root)) {    
+			if (StringUtils.isNotEmpty(root)) {
 				parser.setContentHandler(new XmlFindingHandler());
 			}
 
@@ -1591,21 +1562,21 @@ public class XmlUtils {
 		 	throw new ListenerException("parserError",e);
 		}
 
-		boolean illegalRoot = StringUtils.isNotEmpty(root) && 
+		boolean illegalRoot = StringUtils.isNotEmpty(root) &&
 							!((XmlFindingHandler)parser.getContentHandler()).getRootElementName().equals(root);
 		if (illegalRoot) {
 			String str = "got xml with root element ["+((XmlFindingHandler)parser.getContentHandler()).getRootElementName()+"] instead of ["+root+"]";
 			throw new ListenerException(str);
-		} 
+		}
 		boolean isValid = !(xeh.hasErrorOccured());
-		
-		if (!isValid) { 
+
+		if (!isValid) {
 			String mainReason = "got invalid xml according to schema [" + schema.toExternalForm() + "]";
 			throw new ListenerException(mainReason+": "+xeh.getXmlReasons());
 		}
 
 	}
-	
+
 	/*
 	 *This function does not operate with Xerces 1.4.1
 	 */
@@ -1665,12 +1636,12 @@ public class XmlUtils {
 
 		return result;
 	}
-	
+
 	public static String getVersionInfo() {
 		StringBuffer sb=new StringBuffer();
 		sb.append(version+SystemUtils.LINE_SEPARATOR);
 		sb.append("XML tool version info:"+SystemUtils.LINE_SEPARATOR);
-		
+
 		SAXParserFactory spFactory = SAXParserFactory.newInstance();
 		sb.append("SAXParserFactory-class ="+spFactory.getClass().getName()+SystemUtils.LINE_SEPARATOR);
 		DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
@@ -1686,7 +1657,7 @@ public class XmlUtils {
 		}  catch (Throwable t) {
 			sb.append("Xerces-Version not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
 		}
-			
+
 		try {
 			sb.append("Xalan-Version="+com.sun.org.apache.xalan.internal.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
 		}  catch (Throwable t) {
@@ -1814,4 +1785,55 @@ public class XmlUtils {
 			return null;
 		}
 	}
+    /**
+     * Like {@link javanet.staxutils.XMLStreamUtils#mergeAttributes} but it can also merge namespaces
+     * @param tag
+     * @param attrs
+     * @param nsps
+     * @return
+     */
+    public static StartElement mergeAttributes(StartElement tag,
+                                               Iterator<? extends Attribute> attrs,
+                                               Iterator<? extends Namespace> nsps,
+                                               XMLEventFactory factory) {
+
+        // create Attribute map
+        Map<QName, Attribute> attributes = new HashMap<QName, Attribute>();
+
+        // iterate through start tag's attributes
+        for (Iterator i = tag.getAttributes(); i.hasNext();) {
+            Attribute attr = (Attribute) i.next();
+            attributes.put(attr.getName(), attr);
+
+        }
+        if (attrs != null) {
+            // iterate through new attributes
+            while (attrs.hasNext()) {
+                Attribute attr = attrs.next();
+                attributes.put(attr.getName(), attr);
+            }
+        }
+
+        Map<QName, Namespace> namespaces = new HashMap<QName, Namespace>();
+        for (Iterator i = tag.getNamespaces(); i.hasNext();) {
+            Namespace ns = (Namespace) i.next();
+            namespaces.put(ns.getName(), ns);
+        }
+        if (nsps != null) {
+            while (nsps.hasNext()) {
+                Namespace ns = nsps.next();
+                namespaces.put(ns.getName(), ns);
+            }
+        }
+
+        factory.setLocation(tag.getLocation());
+
+        QName tagName = tag.getName();
+        return factory.createStartElement(tagName.getPrefix(),
+            tagName.getNamespaceURI(), tagName.getLocalPart(),
+            attributes.values().iterator(),
+            namespaces.values().iterator(),
+            tag.getNamespaceContext());
+
+    }
 }
