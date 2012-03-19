@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.34  2012-03-16 15:35:44  m00f069
+ * Revision 1.35  2012-03-19 11:03:20  europe\m168309
+ * fixed soapNamespace attribute function
+ *
+ * Revision 1.34  2012/03/16 15:35:44  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Michiel added EsbSoapValidator and WsdlXmlValidator, made WSDL's available for all adapters and did a bugfix on XML Validator where it seems to be dependent on the order of specified XSD's
  *
  * Revision 1.33  2012/03/15 15:45:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -93,6 +96,7 @@ package nl.nn.adapterframework.pipes;
 import java.util.StringTokenizer;
 
 import javax.xml.namespace.QName;
+import javax.xml.transform.TransformerConfigurationException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -100,7 +104,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.XmlValidatorBase;
 
@@ -163,9 +167,11 @@ public class XmlValidator extends FixedForwardPipe {
 
 	private final XmlValidatorBase validator = new XmlValidatorBase();
 
-	private SoapWrapper soapWrapper = null;
+	private TransformerPool transformerPoolExtractSoapBody;
+	private TransformerPool transformerPoolGetRootNamespace;
+	private TransformerPool transformerPoolRemoveNamespaces;
 
-    /**
+	/**
      * Configure the XmlValidator
      * @throws ConfigurationException when:
      * <ul><li>the schema cannot be found</li>
@@ -177,8 +183,29 @@ public class XmlValidator extends FixedForwardPipe {
     @Override
     public void configure() throws ConfigurationException {
         super.configure();
-		soapWrapper = SoapWrapper.getInstance();
 
+		String extractNamespaceDefs="soapenv="+getSoapNamespace();
+		String extractBodyXPath="/soapenv:Envelope/soapenv:Body/*";
+		try {
+			transformerPoolExtractSoapBody = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractBodyXPath,"xml"));
+		} catch (TransformerConfigurationException te) {
+			throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getSoapBody", te);
+		}
+
+		String getRootNamespace_xslt = XmlUtils.makeGetRootNamespaceXslt();
+		try {
+			transformerPoolGetRootNamespace = new TransformerPool(getRootNamespace_xslt,true);
+		} catch (TransformerConfigurationException te) {
+			throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getRootNamespace", te);
+		}
+
+		String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
+		try {
+			transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
+		} catch (TransformerConfigurationException te) {
+			throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
+		}
+        
 		if (!isThrowException()){
             if (findForward("failure")==null) throw new ConfigurationException(
             getLogPrefix(null)+ "must either set throwException true, or have a forward with name [failure]");
@@ -199,36 +226,10 @@ public class XmlValidator extends FixedForwardPipe {
       */
      @Override
     public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
-    	String inputStr = input.toString();
-
-    	if (XmlUtils.isWellFormed(inputStr, "Envelope") && XmlUtils.getRootNamespace(inputStr).equals(getSoapNamespace())) {
-			log.debug(getLogPrefix(session)+"message to validate is a SOAP message");
-	    	boolean extractSoapBody = true;
-	    	if (StringUtils.isNotEmpty(getSchemaLocation())) {
-				StringTokenizer st = new StringTokenizer(getSchemaLocation(),", \t\r\n\f");
-				while (st.hasMoreTokens() && extractSoapBody) {
-					if (st.nextToken().equals(getSoapNamespace())) {
-						extractSoapBody = false;
-					}
-				}
-	    	}
-	    	if (extractSoapBody) {
-				try {
-					log.debug(getLogPrefix(session)+"extract SOAP body for validation");
-					inputStr = soapWrapper.getBody(inputStr);
-					String inputRootNs = XmlUtils.getRootNamespace(inputStr);
-					if (StringUtils.isNotEmpty(inputRootNs) && StringUtils.isEmpty(getSchemaLocation())) {
-						log.debug(getLogPrefix(session)+"remove namespaces from extracted SOAP body");
-			    		inputStr = XmlUtils.removeNamespaces(inputStr);
-			    	}
-				} catch (Exception e) {
-					throw new PipeRunException(this,"cannot extract the SOAP body",e);
-				}
-	    	}
-    	}
+    	String messageToValidate = getMessageToValidate(input, session);
     	
 		try {
-			String resultEvent = validator.validate(inputStr, session, getLogPrefix(session));
+			String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session));
 			throwEvent(resultEvent);
 
 
@@ -254,6 +255,52 @@ public class XmlValidator extends FixedForwardPipe {
 		}
 
     }
+
+     private String getMessageToValidate(Object input, PipeLineSession session) throws PipeRunException {
+    	 String inputStr = input.toString();
+    	 if (XmlUtils.isWellFormed(inputStr, "Envelope")) {
+     		String inputRootNs;
+     		try {
+     			inputRootNs = transformerPoolGetRootNamespace.transform(inputStr,null);
+ 			} catch (Exception e) {
+ 				throw new PipeRunException(this,"cannot extract root namespace",e);
+ 			}
+      		if (inputRootNs.equals(getSoapNamespace())) {
+ 				log.debug(getLogPrefix(session)+"message to validate is a SOAP message");
+ 		    	boolean extractSoapBody = true;
+ 		    	if (StringUtils.isNotEmpty(getSchemaLocation())) {
+ 					StringTokenizer st = new StringTokenizer(getSchemaLocation(),", \t\r\n\f");
+ 					while (st.hasMoreTokens() && extractSoapBody) {
+ 						if (st.nextToken().equals(getSoapNamespace())) {
+ 							extractSoapBody = false;
+ 						}
+ 					}
+ 		    	}
+ 		    	if (extractSoapBody) {
+ 					log.debug(getLogPrefix(session)+"extract SOAP body for validation");
+ 					try {
+ 						inputStr = transformerPoolExtractSoapBody.transform(inputStr,null,true);
+ 					} catch (Exception e) {
+ 						throw new PipeRunException(this,"cannot extract SOAP body",e);
+ 					}
+ 		    		try {
+ 		    			inputRootNs = transformerPoolGetRootNamespace.transform(inputStr,null);
+ 					} catch (Exception e) {
+ 						throw new PipeRunException(this,"cannot extract root namespace",e);
+ 					}
+ 					if (StringUtils.isNotEmpty(inputRootNs) && StringUtils.isEmpty(getSchemaLocation())) {
+ 						log.debug(getLogPrefix(session)+"remove namespaces from extracted SOAP body");
+ 			    		try {
+ 				    		inputStr = transformerPoolRemoveNamespaces.transform(inputStr,null);
+ 						} catch (Exception e) {
+ 							throw new PipeRunException(this,"cannot remove namespaces",e);
+ 						}
+ 			    	}
+ 		    	}
+      		}
+    	 }
+    	 return inputStr;
+     }
 
     /**
      * Enable full schema grammar constraint checking, including
