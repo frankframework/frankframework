@@ -1,6 +1,9 @@
 /*
  * $Log: IbisSoapServlet.java,v $
- * Revision 1.3  2012-03-16 15:35:43  m00f069
+ * Revision 1.4  2012-03-19 15:07:22  m00f069
+ * Bugfix mangled file name of WSDL when adapter name contains a space
+ *
+ * Revision 1.3  2012/03/16 15:35:43  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Michiel added EsbSoapValidator and WsdlXmlValidator, made WSDL's available for all adapters and did a bugfix on XML Validator where it seems to be dependent on the order of specified XSD's
  *
  * Revision 1.2  2011/12/15 10:08:06  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -9,10 +12,10 @@
  */
  package nl.nn.adapterframework.soap;
 
- import java.io.IOException;
+import java.io.IOException;
 import java.io.Writer;
- import java.net.URISyntaxException;
- import java.util.HashMap;
+import java.net.URISyntaxException;
+import java.util.HashMap;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -25,9 +28,8 @@ import org.apache.log4j.Logger;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.util.*;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
  /**
@@ -42,7 +44,7 @@ public class IbisSoapServlet extends HttpServlet {
      private IbisManager ibisManager;
      private boolean caching = true;
 
-    //@Override
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         AppConstants appConstants = AppConstants.getInstance();
@@ -56,7 +58,7 @@ public class IbisSoapServlet extends HttpServlet {
     }
 
 
-    //@Override
+    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 
         if (caching) {
@@ -94,7 +96,7 @@ public class IbisSoapServlet extends HttpServlet {
          Adapter adapter = getAdapter(ibisManager, req.getPathInfo());
          Wsdl wsdl = new Wsdl(adapter.getPipeLine(), true);
          res.setHeader("Content-Disposition",
-             "inline;filename=" + wsdl.getName() + ".zip");
+             "inline;filename=\"" + wsdl.getName() + ".zip\"");
          String servlet = HttpUtils.getRequestURL(req).toString();
          servlet = servlet.substring(0, servlet.lastIndexOf(".")) + ".wsdl";
 
@@ -145,8 +147,7 @@ public class IbisSoapServlet extends HttpServlet {
                      ibisManager, listener, indent);
              }
 
-             res.setHeader("Content-Disposition", "inline;filename=" +
-                 wsdl.getName() + ".wsdl");
+             res.setHeader("Content-Disposition", "inline;filename=\"" +  wsdl.getName() + ".wsdl\"");
              wsdl.setIncludeXsds("true".equals(req.getParameter("includeXsds")));
              wsdl.wsdl(res.getOutputStream(), servlet);
          } catch (Exception e) {
@@ -170,7 +171,7 @@ public class IbisSoapServlet extends HttpServlet {
      /**
       * TODO Unused
       */
-    //@Override
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         try {
             res.setContentType("text/xml");
@@ -198,7 +199,7 @@ public class IbisSoapServlet extends HttpServlet {
 
 
         int count = 0;
-        for (Object a : ibisManager.getConfiguration().getRegisteredAdapters()) {
+        for (IAdapter a : ibisManager.getConfiguration().getRegisteredAdapters()) {
             count++;
             w.write("<li>");
             try {

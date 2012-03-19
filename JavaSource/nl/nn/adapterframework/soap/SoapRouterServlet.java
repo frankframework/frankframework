@@ -1,6 +1,9 @@
 /*
  * $Log: SoapRouterServlet.java,v $
- * Revision 1.4  2011-12-15 09:55:31  m00f069
+ * Revision 1.5  2012-03-19 15:07:22  m00f069
+ * Bugfix mangled file name of WSDL when adapter name contains a space
+ *
+ * Revision 1.4  2011/12/15 09:55:31  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added Ibis WSDL generator (created by Michiel)
  *
  * Revision 1.1  2006/04/12 16:16:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,13 +31,13 @@ public class SoapRouterServlet extends RPCRouterServlet {
 
     private final IbisSoapServlet ibisServlet = new IbisSoapServlet();
 
-    //@Override
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         ibisServlet.init(config);
     }
 
-    //@Override
+    @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         ibisServlet.doGet(req, res);
     }

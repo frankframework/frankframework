@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.43  2012-02-02 08:36:06  europe\m168309
+ * Revision 1.44  2012-03-19 15:07:22  m00f069
+ * Bugfix mangled file name of WSDL when adapter name contains a space
+ *
+ * Revision 1.43  2012/02/02 08:36:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * default transformer factory for JVM should be the class org.apache.xalan.processor.TransformerFactoryImpl
  *
  * Revision 1.42  2012/02/01 11:36:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -53,7 +56,7 @@
  *
  * Revision 1.27  2007/10/09 15:07:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * copy changes from Ibis-EJB:
- * added formerly static classe appConstants to config 
+ * added formerly static classe appConstants to config
  * delegate work to IbisManager
  *
  * Revision 1.26  2007/10/08 13:29:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -120,61 +123,48 @@
 package nl.nn.adapterframework.configuration;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import nl.nn.adapterframework.cache.IbisCacheManager;
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.scheduler.JobDef;
-import nl.nn.adapterframework.statistics.HasStatistics;
-import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
-import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 
+import nl.nn.adapterframework.cache.IbisCacheManager;
+import nl.nn.adapterframework.core.*;
+import nl.nn.adapterframework.scheduler.JobDef;
+import nl.nn.adapterframework.statistics.*;
+import nl.nn.adapterframework.util.*;
+
 /**
  * The Configuration is placeholder of all configuration objects. Besides that, it provides
  * functions for starting and stopping adapters as a facade.
- * 
+ *
  * @version Id
  * @author Johan Verrips
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-    protected Logger log=LogUtil.getLogger(this); 
-     
-    private Map adapterTable = new Hashtable();
-	private List adapters = new ArrayList();
+    protected Logger log=LogUtil.getLogger(this);
+
+    private Map<String, IAdapter> adapterTable = new Hashtable<String, IAdapter>();
+	private List<IAdapter> adapters = new ArrayList<IAdapter>();
 	private Map jobTable = new Hashtable();
     private List scheduledJobs = new ArrayList();
-    
+
     private URL configurationURL;
     private URL digesterRulesURL;
     private String configurationName = "";
     private boolean enableJMX=false;
     private StatisticsKeeperIterationHandler statisticsHandler=null;
-    
+
     private AppConstants appConstants;
-    
+
     private ConfigurationException configurationException=null;
-    
+
     private static Date statisticsMarkDateMain=new Date();
 	private static Date statisticsMarkDateDetails=statisticsMarkDateMain;
-    
+
     /**
      *Set JMX extensions as enabled or not. Default is that JMX extensions are NOT enabled.
      * @param enable
@@ -188,7 +178,7 @@ public class Configuration {
 	 * Are JMX extensions enabled?
      * @since 4.1.1
 	 * @return boolean
-	 */    
+	 */
     public boolean isEnableJMX(){
     	return enableJMX;
     }
@@ -210,40 +200,40 @@ public class Configuration {
 
 	public void dumpStatistics(int action) {
 		Date now=new Date();
-		boolean showDetails=(action==HasStatistics.STATISTICS_ACTION_FULL || 
+		boolean showDetails=(action==HasStatistics.STATISTICS_ACTION_FULL ||
 							 action==HasStatistics.STATISTICS_ACTION_MARK_FULL ||
 							 action==HasStatistics.STATISTICS_ACTION_RESET);
 		try {
 			if (statisticsHandler==null) {
-				statisticsHandler =new StatisticsKeeperLogger(); 
+				statisticsHandler =new StatisticsKeeperLogger();
 				statisticsHandler.configure();
 			}
-		
+
 //			StatisticsKeeperIterationHandlerCollection skihc = new StatisticsKeeperIterationHandlerCollection();
-//	
-//			StatisticsKeeperLogger skl =new StatisticsKeeperLogger(); 
+//
+//			StatisticsKeeperLogger skl =new StatisticsKeeperLogger();
 //			skl.configure();
 //			skihc.registerIterationHandler(skl);
-//			
+//
 //			StatisticsKeeperStore skih = new StatisticsKeeperStore();
 //			skih.setJmsRealm("lokaal");
 //			skih.configure();
 //			skihc.registerIterationHandler(skih);
-		
+
 			forEachStatisticsKeeper(statisticsHandler, now, statisticsMarkDateMain, showDetails ?statisticsMarkDateDetails : null, action);
 		} catch (Exception e) {
 			log.error("dumpStatistics() caught exception", e);
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_RESET || 
-			action==HasStatistics.STATISTICS_ACTION_MARK_MAIN || 
+		if (action==HasStatistics.STATISTICS_ACTION_RESET ||
+			action==HasStatistics.STATISTICS_ACTION_MARK_MAIN ||
 			action==HasStatistics.STATISTICS_ACTION_MARK_FULL) {
 				statisticsMarkDateMain=now;
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_RESET || 
+		if (action==HasStatistics.STATISTICS_ACTION_RESET ||
 			action==HasStatistics.STATISTICS_ACTION_MARK_FULL) {
 				statisticsMarkDateDetails=now;
 		}
-		
+
 	}
 
 
@@ -272,19 +262,20 @@ public class Configuration {
      * @return IAdapter
      */
     public IAdapter getRegisteredAdapter(String name) {
-        return (IAdapter) adapterTable.get(name);
+        return adapterTable.get(name);
     }
 	public IAdapter getRegisteredAdapter(int index) {
-		return (IAdapter) adapters.get(index);
+		return adapters.get(index);
 	}
 
-	public List getRegisteredAdapters() {
+	public List<IAdapter> getRegisteredAdapters() {
 		return adapters;
 	}
 
     //Returns a sorted list of registered adapter names as an <code>Iterator</code>
-    public Iterator getRegisteredAdapterNames() {
-        SortedSet sortedKeys = new TreeSet(adapterTable.keySet());
+    public Iterator<IAdapter> getRegisteredAdapterNames() {
+        // Why is the set copied?
+        SortedSet<IAdapter> sortedKeys = new TreeSet(adapterTable.keySet());
         return sortedKeys.iterator();
     }
     /**
@@ -314,10 +305,10 @@ public class Configuration {
 			log.info(i+") "+ adapter.getName()+ ": "	+ adapter.toString());
         }
     }
-    
+
     /**
      * Register an adapter with the configuration.  If JMX is {@link #setEnableJMX(boolean) enabled},
-     * the adapter will be visible and managable as an MBEAN. 
+     * the adapter will be visible and managable as an MBEAN.
      * @param adapter
      * @throws ConfigurationException
      */
@@ -325,7 +316,7 @@ public class Configuration {
     	if (adapter instanceof Adapter && !((Adapter)adapter).isActive()) {
     		log.debug("adapter [" + adapter.getName() + "] is not active, therefore not included in configuration");
     		return;
-    	} 
+    	}
         if (null != adapterTable.get(adapter.getName())) {
             throw new ConfigurationException("Adapter [" + adapter.getName() + "] already registered.");
         }
@@ -340,8 +331,8 @@ public class Configuration {
 
     }
     /**
-     * Register an {@link AdapterJob job} for scheduling at the configuration.
-     * The configuration will create an {@link AdapterJob AdapterJob} instance and a JobDetail with the
+     * Register an {@link JobDef job} for scheduling at the configuration.
+     * The configuration will create an {@link JobDef AdapterJob} instance and a JobDetail with the
      * information from the parameters, after checking the
      * parameters of the job. (basically, it checks wether the adapter and the
      * receiver are registered.
@@ -355,13 +346,13 @@ public class Configuration {
 		jobTable.put(jobdef.getName(), jobdef);
         scheduledJobs.add(jobdef);
     }
-    
+
 	public void registerStatisticsHandler(StatisticsKeeperIterationHandler handler) throws ConfigurationException {
-		log.debug("registerStatisticsHandler() registering ["+ClassUtils.nameOf(handler)+"]");		
+		log.debug("registerStatisticsHandler() registering ["+ClassUtils.nameOf(handler)+"]");
 		statisticsHandler=handler;
 		handler.configure();
 	}
-  
+
     public String getInstanceInfo() {
 		String instanceInfo=appConstants.getProperty("application.name")+" "+
 							appConstants.getProperty("application.version")+" "+
@@ -369,17 +360,17 @@ public class Configuration {
 							appConstants.getProperty("instance.version")+" ";
 		String buildId=	appConstants.getProperty("instance.build_id");
 		if (StringUtils.isNotEmpty(buildId)) {
-			instanceInfo+=" build "+buildId;						
+			instanceInfo+=" build "+buildId;
 		}
 		return instanceInfo;
     }
-    
+
     public String VersionInfo() {
-    	StringBuffer sb=new StringBuffer();
+    	StringBuilder sb = new StringBuilder();
     	sb.append(getInstanceInfo()+SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.util.XmlUtils.getVersionInfo());
     	return sb.toString();
-    	
+
     }
 
 	public void setConfigurationName(String name) {
@@ -405,7 +396,7 @@ public class Configuration {
 	public String getDigesterRulesFileName() {
 		return digesterRulesURL.getFile();
 	}
-   
+
 
 	public JobDef getScheduledJob(String name) {
 		return (JobDef) jobTable.get(name);
