@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.13  2012-03-16 15:35:44  m00f069
+ * Revision 1.14  2012-03-19 11:01:38  europe\m168309
+ * avoid log4j warning "No appenders could be found for logger"
+ *
+ * Revision 1.13  2012/03/16 15:35:44  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Michiel added EsbSoapValidator and WsdlXmlValidator, made WSDL's available for all adapters and did a bugfix on XML Validator where it seems to be dependent on the order of specified XSD's
  *
  * Revision 1.12  2011/12/15 09:55:31  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -112,10 +115,6 @@ import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME
  * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
  */
 public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
-
-    private static final Logger LOG = LogManager.getLogger(XmlValidatorBaseXerces26.class);
-
-
     private static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
     private static final XMLInputFactory INPUT_FACTORY   = XMLInputFactory.newInstance();
     private static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
@@ -563,21 +562,22 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
         }
     }
     private static class MyErrorHandler implements XMLErrorHandler {
+    	protected Logger log = LogUtil.getLogger(this);
         protected boolean throwOnError = true;
         public void warning(String domain, String key, XMLParseException e) throws XNIException {
-            LOG.debug(domain + "." + key + ":" + e.getMessage(), e);
+            log.debug(domain + "." + key + ":" + e.getMessage(), e);
         }
 
         public void error(String domain, String key, XMLParseException e) throws XNIException {
             if (throwOnError) {
                 throw new RetryException(e.getMessage());
             } else {
-                LOG.error(domain + "." + key + ":" + e.getMessage(), e);
+            	log.error(domain + "." + key + ":" + e.getMessage(), e);
             }
         }
 
         public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
-            LOG.error(domain + "." + key + ":" + e.getMessage(), e);
+        	log.error(domain + "." + key + ":" + e.getMessage(), e);
             throw new XNIException(e.getMessage());
         }
     }
