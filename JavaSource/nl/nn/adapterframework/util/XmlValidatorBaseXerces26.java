@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.14  2012-03-19 11:01:38  europe\m168309
+ * Revision 1.15  2012-03-27 10:08:40  europe\m168309
+ * in case of incorrect xsd log.error instead of throw exception
+ *
+ * Revision 1.14  2012/03/19 11:01:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * avoid log4j warning "No appenders could be found for logger"
  *
  * Revision 1.13  2012/03/16 15:35:44  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -570,7 +573,9 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 
         public void error(String domain, String key, XMLParseException e) throws XNIException {
             if (throwOnError) {
-                throw new RetryException(e.getMessage());
+            	// TODO: show errors as configuration warnings in the IBIS console main page
+                //throw new RetryException(e.getMessage());
+            	log.error(domain + "." + key + ":" + e.getMessage(), e);
             } else {
             	log.error(domain + "." + key + ":" + e.getMessage(), e);
             }
