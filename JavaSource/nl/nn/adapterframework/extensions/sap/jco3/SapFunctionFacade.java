@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.1  2012-02-06 14:33:04  m00f069
+ * Revision 1.2  2012-03-27 15:08:36  m00f069
+ * Fixed sending TABLES with function call
+ *
+ * Revision 1.1  2012/02/06 14:33:04  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
  *
  * Revision 1.20  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -89,12 +92,14 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.xml.sax.ContentHandler;
 
 import com.sap.conn.jco.JCoFunction;
 import com.sap.conn.jco.JCoFunctionTemplate;
 import com.sap.conn.jco.JCoMetaData;
 import com.sap.conn.jco.JCoParameterList;
 import com.sap.conn.jco.JCoStructure;
+import com.sap.conn.jco.JCoTable;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
  * <p><b>Configuration:</b>
@@ -118,7 +123,7 @@ import com.sap.conn.jco.JCoStructure;
  * @version Id
  */
 public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.1 $ $Date: 2012-02-06 14:33:04 $";
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.2 $ $Date: 2012-03-27 15:08:36 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -199,27 +204,50 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 			if (fieldIndex>0) {
 				params.setValue(message,fieldIndex-1);
 			} else {
+				JCoTable jcoTable = null;
 				JCoMetaData metaData = params.getMetaData();
 				for (int i = 0; i < metaData.getFieldCount(); i++) {
+					String xpath;
+					String outputMethod;
 					String paramName=params.getMetaData().getName(i);
-					TransformerPool tp = (TransformerPool)extractors.get(paramName);
+					if (params.getMetaData().getType(i) == JCoMetaData.TYPE_TABLE ) {
+						xpath = "/*/TABLES/"+paramName;
+						outputMethod = "xml";
+					} else {
+						xpath = "/*/INPUT/"+paramName;
+						outputMethod = "text";
+					}
+					TransformerPool tp = (TransformerPool)extractors.get(xpath);
 					if (tp==null) {
 						try {
 //							log.debug("creating evaluator for parameter ["+paramName+"]");
-							tp = new TransformerPool(XmlUtils.createXPathEvaluatorSource("/*/INPUT/"+paramName,"text"));
-							extractors.put(paramName,tp);
+							tp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(xpath,outputMethod));
+							extractors.put(xpath,tp);
 						} catch (Exception e) {
-							throw new SapException("exception creating Extractor for  ["+paramName+"]", e);
+							throw new SapException("exception creating Extractor for xpath ["+xpath+"]", e);
 						}
 					}
+					String xpathResult;
 					try {
-						String paramValue = tp.transform(message,null);
-						if (StringUtils.isNotEmpty(paramValue)) {
-//							log.debug("parameters ["+params.getName()+"] Xml ["+paramsXml+"]");
-							params.setValue(i, paramValue);
-						}
+						xpathResult = tp.transform(message,null);
 					} catch (Exception e) {
 						throw new SapException("exception extracting ["+paramName+"]", e);
+					}
+					if (StringUtils.isNotEmpty(xpathResult)) {
+//						log.debug("parameters ["+params.getName()+"] Xml ["+paramsXml+"]");
+						if (params.getMetaData().getType(i) == JCoMetaData.TYPE_TABLE ) {
+							jcoTable = params.getTable(i);
+							try {
+								TableDigester td = new TableDigester();
+								ContentHandler ch = new TableHandler(jcoTable);
+								XmlUtils.parseXml(ch,xpathResult);
+							} catch (Exception e) {
+								System.out.println("exception: " + e);
+								throw new SapException("exception parsing table ["+paramName+"]", e);
+							}
+						} else {
+							params.setValue(i, xpathResult);
+						}
 					}
 				}
 			}
