@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.2  2012-03-27 15:08:36  m00f069
+ * Revision 1.3  2012-03-28 16:41:51  m00f069
+ * Fixed sending TABLES in response to SAP too
+ *
+ * Revision 1.2  2012/03/27 15:08:36  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Fixed sending TABLES with function call
  *
  * Revision 1.1  2012/02/06 14:33:04  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -123,7 +126,7 @@ import com.sap.conn.jco.JCoTable;
  * @version Id
  */
 public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.2 $ $Date: 2012-03-27 15:08:36 $";
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.3 $ $Date: 2012-03-28 16:41:51 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -429,7 +432,8 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		//log.warn("SapFunctionFacade.message2FunctionResult, skipped setting of return table parameters");
 		if (replyFieldIndex<=0) {
 			log.debug("SapFunctionFacade.message2FunctionResult, setting table parameters");
-			setTables(function.getTableParameterList(), result);
+//			setTables(function.getTableParameterList(), result);
+			setParameters(function.getTableParameterList(),result, replyFieldIndex);
 		}
 	}
 	
