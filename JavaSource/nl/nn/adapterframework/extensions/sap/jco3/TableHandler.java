@@ -55,15 +55,11 @@ public class TableHandler extends DefaultHandler {
 	public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
 		if (parsedColumn) {
 			log.debug("setting column ["+localName+"] to value ["+columnValue+"]");//setting column [LABEL] to value [CALCULATIONDATE]
-//				table.setValue(columnValue.toString(),localName);
+			if (table.getMetaData().hasField(localName)) {
 				table.setValue(localName,columnValue.toString());
-//			if ("LABEL".equals(localName)) {
-//				table.setValue(0, columnValue.toString());
-//			} else if ("VALUE".equals(localName)) {
-//				table.setValue(1, columnValue.toString());
-//			} else {
-//				log.warn("Unknown localName ["+localName+"] with value ["+columnValue+"]");
-//			}
+			} else {
+				log.warn("Unknown element ["+localName+"] with value ["+columnValue+"]");
+			}
 			parsedColumn=false;
 		} else if (parsedItem){
 			parsedItem=false;
