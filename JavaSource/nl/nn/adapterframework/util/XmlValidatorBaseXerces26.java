@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.15  2012-03-27 10:08:40  europe\m168309
+ * Revision 1.16  2012-03-30 17:03:45  m00f069
+ * Michiel added JMS binding/service to WSDL generator, made WSDL validator work for Bis WSDL and made console show syntax problems for schema's used in XmlValidator
+ *
+ * Revision 1.15  2012/03/27 10:08:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * in case of incorrect xsd log.error instead of throw exception
  *
  * Revision 1.14  2012/03/19 11:01:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -52,17 +55,18 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.parsers.*;
 import org.apache.xerces.util.*;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.grammars.*;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.*;
 import org.xml.sax.*;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 
 import javanet.staxutils.XMLStreamUtils;
@@ -102,6 +106,7 @@ import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME
  * <tr><td>{@link #setRoot(String) root}</td><td>name of the root element</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValidateFile(boolean) validateFile}</td><td>when set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code></td><td>UTF-8</td></tr>
+ * <tr><td>{@link #setWarn(boolean) warn}</td><td>when set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)</td><td><code>true</code></td></tr>
  * </table>
  * <p><b>Exits:</b>
  * <table border="1">
@@ -159,6 +164,8 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 	private XMLGrammarPool globalGrammarPool = null;
 	private Map<String, XMLGrammarPool> grammarPools = null;
     private boolean addNamespaceToSchema = false;
+    private boolean warn = !"false".equals(AppConstants.getInstance().getProperty("xmlValidator.warn"));
+
 
 	private static final int MODE = 2;
 
@@ -222,6 +229,8 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
         preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
         preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
         MyErrorHandler errorHandler = new MyErrorHandler();
+        errorHandler.throwOnError = true;
+        errorHandler.warn = warn;
         preparser.setErrorHandler(errorHandler);
         if (singleSchema) {
 			preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(new Definition(null, schemas)));
@@ -229,7 +238,7 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 
             List<Definition> definitions = new ArrayList<Definition>();
             String[] schema = schemas.trim().split("\\s+");
-            for (int i = 0; i < schema.length; i+=2) {
+            for (int i = 0; i < schema.length; i += 2) {
                 definitions.add(new Definition(schema[i], schema[i + 1]));
             }
 
@@ -531,6 +540,10 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
         this.addNamespaceToSchema = addNamespaceToSchema;
     }
 
+    public void setWarn(boolean warn) {
+        this.warn = warn;
+    }
+
     private static class Definition {
         final String publicId;
         final String systemId;
@@ -559,30 +572,31 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
             return true;
         }
     }
+
     private static class RetryException extends XNIException {
         public RetryException(String s) {
             super(s);
         }
     }
+
     private static class MyErrorHandler implements XMLErrorHandler {
-    	protected Logger log = LogUtil.getLogger(this);
-        protected boolean throwOnError = true;
+        protected Logger log = LogUtil.getLogger(this);
+        protected boolean throwOnError = false;
+        protected boolean warn = true;
+
         public void warning(String domain, String key, XMLParseException e) throws XNIException {
-            log.debug(domain + "." + key + ":" + e.getMessage(), e);
+            if (warn) ConfigurationWarnings.getInstance().add(log, e.getMessage());
         }
 
         public void error(String domain, String key, XMLParseException e) throws XNIException {
             if (throwOnError) {
-            	// TODO: show errors as configuration warnings in the IBIS console main page
-                //throw new RetryException(e.getMessage());
-            	log.error(domain + "." + key + ":" + e.getMessage(), e);
-            } else {
-            	log.error(domain + "." + key + ":" + e.getMessage(), e);
+                throw new RetryException(e.getMessage());
             }
+            if (warn) ConfigurationWarnings.getInstance().add(log, e.getMessage());
         }
 
         public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
-        	log.error(domain + "." + key + ":" + e.getMessage(), e);
+            if (warn) ConfigurationWarnings.getInstance().add(log, e.getMessage());
             throw new XNIException(e.getMessage());
         }
     }

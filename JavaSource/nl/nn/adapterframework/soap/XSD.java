@@ -114,7 +114,7 @@ class XSD implements Comparable<XSD> {
         if (set == null) set = new HashSet();
         InputStream in = url.toURL().openStream();
         if (in == null) return null;
-        XMLEventReader er = Wsdl.INPUT_FACTORY.createXMLEventReader(in, Wsdl.ENCODING);
+        XMLEventReader er = WsdlUtils.INPUT_FACTORY.createXMLEventReader(in, WsdlUtils.ENCODING);
         while (er.hasNext()) {
             XMLEvent e = er.nextEvent();
             switch (e.getEventType()) {

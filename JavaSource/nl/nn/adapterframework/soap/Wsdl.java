@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.3  2012-03-16 15:35:43  m00f069
+ * Revision 1.4  2012-03-30 17:03:45  m00f069
+ * Michiel added JMS binding/service to WSDL generator, made WSDL validator work for Bis WSDL and made console show syntax problems for schema's used in XmlValidator
+ *
+ * Revision 1.3  2012/03/16 15:35:43  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Michiel added EsbSoapValidator and WsdlXmlValidator, made WSDL's available for all adapters and did a bugfix on XML Validator where it seems to be dependent on the order of specified XSD's
  *
  * Revision 1.2  2011/12/15 10:08:06  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -53,18 +56,6 @@ class Wsdl  {
      private static final String SOAP_JMS  = "http://www.w3.org/2010/soapjms/";
 
      static final         String XSD       =  XMLConstants.W3C_XML_SCHEMA_NS_URI;//"http://www.w3.org/2001/XMLSchema";
-
-
-     static final String ENCODING  = "UTF-8";
-
-     static final XMLInputFactory INPUT_FACTORY   = XMLInputFactory.newInstance();
-     static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
-     static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
-
-     static {
-         INPUT_FACTORY.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE,        Boolean.TRUE);
-         OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
-     }
 
 
      private final boolean indentWsdl;
@@ -120,12 +111,13 @@ class Wsdl  {
       * @throws IOException
       */
      public void wsdl(OutputStream out, String servlet) throws XMLStreamException, IOException, URISyntaxException {
-         XMLStreamWriter w = createWriter(out);
+         XMLStreamWriter w = WsdlUtils.createWriter(out, indentWsdl);
 
-         w.writeStartDocument(ENCODING, "1.0");
+         w.writeStartDocument(WsdlUtils.ENCODING, "1.0");
          w.setPrefix("wsdl", WSDL);
          w.setPrefix("xsd", XSD);
          w.setPrefix("soap", SOAP_WSDL);
+         w.setPrefix("jms", SOAP_JMS);
          w.setPrefix("ibis", getWsdlTargetNamespace());
          for (XSD xsd : getXSDs()) {
              w.setPrefix(xsd.pref, xsd.nameSpace);
@@ -397,9 +389,9 @@ class Wsdl  {
              if (listener instanceof WebServiceListener) {
                  httpBinding(w);
              } else if (listener instanceof JmsListener) {
-                 jmsBinding(w);
+                 jmsBinding(w, (JmsListener) listener);
              } else {
-                 w.writeComment("Unrecognized listener " + listener.getName());
+                 w.writeComment("Binding: Unrecognized listener " + listener.getClass() + ": " + listener.getName());
              }
          }
      }
@@ -411,49 +403,53 @@ class Wsdl  {
              w.writeEmptyElement(SOAP_WSDL, "binding");
              w.writeAttribute("transport", SOAP_HTTP);
              w.writeAttribute("style", "document");
-
-             w.writeStartElement(WSDL, "operation");
-             w.writeAttribute("name", "Process"); {
-
-                 w.writeEmptyElement(SOAP_WSDL, "operation");
-                 w.writeAttribute("style", "document");
-                 w.writeAttribute("soapAction", getSoapAction());
-
-
-                 w.writeStartElement(WSDL, "input"); {
-                     writeSoapHeader(w);
-                     Collection<QName>  inputTags = getInputTags();
-                     //w.writeEmptyElement(input.xsd.nameSpace, input.getRootTag());
-                     w.writeEmptyElement(SOAP_WSDL, "body");
-                     writeParts(w, inputTags);
-                     w.writeAttribute("use", "literal");
-                 }
-                 w.writeEndElement();
-
-                 Collection<QName> outputTags = getOutputTags();
-                 if (outputTags != null) {
-                     w.writeStartElement(WSDL, "output"); {
-                         writeSoapHeader(w);
-                         ///w.writeEmptyElement(outputTag.xsd.nameSpace, outputTag.getRootTag());
-                         w.writeEmptyElement(SOAP_WSDL, "body");
-                         writeParts(w, outputTags);
-                         w.writeAttribute("use", "literal");
-                     }
-                     w.writeEndElement();
-                 }
-
-                 /*
-                 w.writeStartElement(WSDL, "fault"); {
-                     w.writeEmptyElement(SOAP_WSDL, "error");
-                     w.writeAttribute("use", "literal");
-                 }
-                 w.writeEndElement();
-                 */
-             }
-             w.writeEndElement();
+             writeSoapOperation(w);
          }
          w.writeEndElement();
      }
+
+    protected void writeSoapOperation(XMLStreamWriter w) throws XMLStreamException, IOException, URISyntaxException {
+
+        w.writeStartElement(WSDL, "operation");
+        w.writeAttribute("name", "Process"); {
+
+            w.writeEmptyElement(SOAP_WSDL, "operation");
+            w.writeAttribute("style", "document");
+            w.writeAttribute("soapAction", getSoapAction());
+
+
+            w.writeStartElement(WSDL, "input"); {
+                writeSoapHeader(w);
+                Collection<QName>  inputTags = getInputTags();
+                //w.writeEmptyElement(input.xsd.nameSpace, input.getRootTag());
+                w.writeEmptyElement(SOAP_WSDL, "body");
+                writeParts(w, inputTags);
+                w.writeAttribute("use", "literal");
+            }
+            w.writeEndElement();
+
+            Collection<QName> outputTags = getOutputTags();
+            if (outputTags != null) {
+                w.writeStartElement(WSDL, "output"); {
+                    writeSoapHeader(w);
+                    ///w.writeEmptyElement(outputTag.xsd.nameSpace, outputTag.getRootTag());
+                    w.writeEmptyElement(SOAP_WSDL, "body");
+                    writeParts(w, outputTags);
+                    w.writeAttribute("use", "literal");
+                }
+                w.writeEndElement();
+            }
+
+            /*
+            w.writeStartElement(WSDL, "fault"); {
+                w.writeEmptyElement(SOAP_WSDL, "error");
+                w.writeAttribute("use", "literal");
+            }
+            w.writeEndElement();
+            */
+        }
+        w.writeEndElement();
+    }
 
      protected void writeSoapHeader(XMLStreamWriter w) throws XMLStreamException, IOException, URISyntaxException {
          Collection<QName>  headers = getHeaderTags();
@@ -481,8 +477,18 @@ class Wsdl  {
          return qname.getLocalPart();
      }
 
-     protected void jmsBinding(XMLStreamWriter w) throws XMLStreamException, IOException {
-         w.writeComment("JMS Binding (TODO)");
+     protected void jmsBinding(XMLStreamWriter w, JmsListener listener) throws XMLStreamException, IOException, URISyntaxException {
+         w.writeStartElement(WSDL, "binding");
+         w.writeAttribute("name", "SoapBinding");
+         w.writeAttribute("type", "ibis:PipeLine"); {
+             w.writeEmptyElement(SOAP_WSDL, "binding");
+             w.writeAttribute("style", "document");
+             w.writeAttribute("transport", SOAP_JMS);
+             w.writeEmptyElement(SOAP_JMS, "binding");
+             w.writeAttribute("messageFormat", "Text");
+             writeSoapOperation(w);
+         }
+         w.writeEndElement();
      }
 
      protected void service(XMLStreamWriter w, String servlet) throws XMLStreamException {
@@ -490,9 +496,9 @@ class Wsdl  {
              if (listener instanceof WebServiceListener) {
                  httpService(w, servlet);
              } else if (listener instanceof JmsListener) {
-                 jmsService(w);
+                 jmsService(w, (JmsListener) listener);
              } else {
-                 w.writeComment("Unrecognized listener " + listener);
+                 w.writeComment("Service: Unrecognized listener " + listener.getClass() + " " + listener);
              }
          }
      }
@@ -513,8 +519,27 @@ class Wsdl  {
      }
 
 
-     protected void jmsService(XMLStreamWriter w) throws XMLStreamException {
-         w.writeComment("JMS service");
+     protected void jmsService(XMLStreamWriter w, JmsListener listener) throws XMLStreamException {
+         w.writeStartElement(WSDL, "service");
+         w.writeAttribute("name", getName()); {
+             w.writeStartElement(WSDL, "port");
+             w.writeAttribute("name", "SoapJMS");
+             w.writeAttribute("binding", "ibis:SoapBinding"); {
+                 w.writeEmptyElement(SOAP_WSDL, "address");
+                 w.writeAttribute("location", listener.getDestinationName());
+                 w.writeStartElement(SOAP_JMS, "connectionFactory"); {
+                     w.writeCharacters("QueueConnectionFactory");
+                 }
+                 w.writeEndElement();
+                 w.writeStartElement(SOAP_JMS, "targetAddress");
+                 w.writeAttribute("destination", listener.getDestinationType()); {
+                     w.writeCharacters("TS." + getName());
+                 }
+                 w.writeEndElement();
+             }
+             w.writeEndElement();
+         }
+         w.writeEndElement();
      }
 
      protected PipeLine getPipeLine() {
@@ -577,9 +602,7 @@ class Wsdl  {
          }
      }
 
-     private XMLStreamWriter createWriter(OutputStream out) throws XMLStreamException {
-         return WsdlUtils.createWriter(out, indentWsdl);
-     }
+
 
     private XSD getXSD(String ns, String resource) throws URISyntaxException {
          URI url = ClassUtils.getResourceURL(resource).toURI();
@@ -659,4 +682,4 @@ class Wsdl  {
             //description.addBinding(binding);
         }
     */
- }
+}

@@ -1,8 +1,6 @@
 package nl.nn.adapterframework.soap;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 import javax.xml.namespace.QName;
@@ -15,11 +13,8 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.*;
 import nl.nn.adapterframework.http.WebServiceListener;
-import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.*;
 
 import javanet.staxutils.*;
 import javanet.staxutils.events.AttributeEvent;
@@ -32,6 +27,17 @@ public abstract class WsdlUtils {
 
 
     private static final Logger LOG = LogUtil.getLogger(WsdlUtils.class);
+    static final XMLInputFactory INPUT_FACTORY   = XMLInputFactory.newInstance();
+    static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
+    static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
+
+    static {
+        INPUT_FACTORY.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE,        Boolean.TRUE);
+        OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
+    }
+
+    static final String ENCODING  = "UTF-8";
+
 
     private WsdlUtils() {
         // this class has no instances
@@ -61,13 +67,17 @@ public abstract class WsdlUtils {
         }
         AppConstants appConstants = AppConstants.getInstance();
         String tns = appConstants.getProperty("wsdl.targetNamespace." + a.getName() + ".soapAction");
-        if (tns == null) tns = appConstants.getProperty("wsdl.targetNamespace.domain");
-        if (tns == null) tns = "${wsdl.targetNamespace.domain}";
+        if (tns == null) {
+            tns = appConstants.getProperty("wsdl.targetNamespace.domain");
+        }
+        if (tns == null) {
+            tns = "${wsdl.targetNamespace.domain}";
+        }
         return "http://" + tns + "/" + a.getName();
     }
 
     static XMLStreamWriter createWriter(OutputStream out, boolean indentWsdl) throws XMLStreamException {
-        XMLStreamWriter w = Wsdl.OUTPUT_FACTORY.createXMLStreamWriter(out, Wsdl.ENCODING);
+        XMLStreamWriter w = OUTPUT_FACTORY.createXMLStreamWriter(out, ENCODING);
         if (indentWsdl) {
             IndentingXMLStreamWriter iw = new IndentingXMLStreamWriter(w);
             iw.setIndent(" ");
@@ -117,12 +127,12 @@ public abstract class WsdlUtils {
 
                 // including the XSD with includeXSD will also parse it, e.g. to determin the first tag.
                 // We don't need to actually include it here, so we just throw away the result.
-                includeXSD(xsd, Wsdl.OUTPUT_FACTORY.createXMLStreamWriter(new OutputStream() {
+                includeXSD(xsd, OUTPUT_FACTORY.createXMLStreamWriter(new OutputStream() {
                     @Override
                     public void write(int i) throws IOException {
                         // /dev/null
                     }
-                }, Wsdl.ENCODING), correctingNameSpaces, true);
+                }, ENCODING), correctingNameSpaces, true);
             }
         }
         w.writeEndElement();
@@ -148,7 +158,7 @@ public abstract class WsdlUtils {
         String xsdNamespace = correct(correctingNamespaces, xsd.nameSpace);
 
         if (in == null) throw new IllegalStateException("" + xsd + " not found");
-        XMLEventReader er = Wsdl.INPUT_FACTORY.createXMLEventReader(in, Wsdl.ENCODING);
+        XMLEventReader er = INPUT_FACTORY.createXMLEventReader(in, ENCODING);
         String wrongNamespace = null;
         while (er.hasNext()) {
             XMLEvent e = er.nextEvent();
@@ -164,9 +174,12 @@ public abstract class WsdlUtils {
                     break;
                 case XMLStreamConstants.START_ELEMENT:
                     StartElement el = e.asStartElement();
-                    if (el.getName().equals(Wsdl.SCHEMA)) {
+                    if (Wsdl.SCHEMA.equals(el.getName())) {
                         if (xsdNamespace == null) {
-                            xsdNamespace = correct(correctingNamespaces, el.getAttributeByName(Wsdl.TNS).getValue());
+                            Attribute a = el.getAttributeByName(Wsdl.TNS);
+                            if (a != null) {
+                                xsdNamespace = correct(correctingNamespaces, a.getValue());
+                            }
                         }
                         if (xsdNamespace != null) {
                             StartElement ne =
@@ -175,9 +188,9 @@ public abstract class WsdlUtils {
                                         new AttributeEvent(Wsdl.TNS, xsdNamespace)
                                     ).iterator(),
                                     Arrays.asList(
-                                        Wsdl.EVENT_FACTORY.createNamespace(xsdNamespace)
+                                        EVENT_FACTORY.createNamespace(xsdNamespace)
                                     ).iterator(),
-                                    Wsdl.EVENT_FACTORY
+                                    EVENT_FACTORY
                                 );
 
                             if (!ne.equals(e)) {
@@ -186,7 +199,7 @@ public abstract class WsdlUtils {
                                 //list.add(
 
                                 Attribute targetNameSpace = el.getAttributeByName(Wsdl.TNS);
-                                e = XMLStreamUtils.mergeAttributes(ne, list.iterator(), Wsdl.EVENT_FACTORY);
+                                e = XMLStreamUtils.mergeAttributes(ne, list.iterator(), EVENT_FACTORY);
                                 if (targetNameSpace != null) {
                                     String currentTarget = targetNameSpace.getValue();
                                     if (! currentTarget.equals(xsdNamespace)) {
@@ -210,7 +223,7 @@ public abstract class WsdlUtils {
                             }
                             e =
                                 XMLStreamUtils.mergeAttributes(el,
-                                    Collections.singletonList(new AttributeEvent(Wsdl.SCHEMALOCATION, location)).iterator(), Wsdl.EVENT_FACTORY);
+                                    Collections.singletonList(new AttributeEvent(Wsdl.SCHEMALOCATION, location)).iterator(), EVENT_FACTORY);
                             if (LOG.isDebugEnabled()) {
                                 LOG.debug(xsd.url + " Corrected " + el + " -> " + e);
                                 LOG.debug(xsd.url + " Relative to : " + relativeTo + " -> " + e);

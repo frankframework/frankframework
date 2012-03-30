@@ -13,6 +13,7 @@ import javax.wsdl.xml.WSDLReader;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
@@ -28,6 +29,7 @@ import org.xml.sax.SAXException;
 import com.ibm.wsdl.extensions.schema.SchemaSerializer;
 
 import nl.nn.adapterframework.core.*;
+import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -38,8 +40,8 @@ public class WsdlXmlValidator extends FixedForwardPipe {
 
     private static final Logger LOG = LogManager.getLogger(WsdlXmlValidator.class);
 
-    private static final QName SCHEMA       = new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI,"schema","");
-    private static final Set<QName> SCHEMAS = new HashSet(Arrays.asList(
+    private static final QName SCHEMA       = new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "schema", "");
+    private static final Set<QName> SCHEMAS = new HashSet<QName>(Arrays.asList(
         SCHEMA,
         new QName("http://www.w3.org/2000/10/XMLSchema", "schema", "")));
 
@@ -75,9 +77,22 @@ public class WsdlXmlValidator extends FixedForwardPipe {
     private Definition def;
     private boolean throwException = false;
 
+    private boolean validateSoapEnvelope = true;
+
 
     public void setWsdl(String uri) throws IOException, WSDLException {
         def = getDefinition(ClassUtils.getResourceURL(uri));
+    }
+
+
+    public boolean isValidateSoapEnvelope() {
+        return validateSoapEnvelope;
+    }
+    /**
+     * You can disable validating the SOAP envelope. If for some reason that is possible and desirable.
+     */
+    public void setValidateSoapEnvelope(boolean validateSoapEnvelope) {
+        this.validateSoapEnvelope = validateSoapEnvelope;
     }
 
     @Override
@@ -102,9 +117,21 @@ public class WsdlXmlValidator extends FixedForwardPipe {
     }
 
     protected void pipe(String input) throws IOException, WSDLException, SAXException {
-        Schema inputSchema = getInputSchema();
-        if (inputSchema == null) throw new IllegalStateException("No input schema found on " + def);
-        validate(new StringReader(input), inputSchema);
+        final javax.xml.validation.Schema xsd;
+        if (validateSoapEnvelope) {
+            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            factory.setResourceResolver(getLSResourceResolver());
+            xsd = factory.newSchema(new Source[] {
+                new StreamSource(SoapValidator.class.getResourceAsStream(SoapValidator.SOAP_ENVELOPE_XSD)),
+                new DOMSource(getInputSchema().getElement())
+            });
+        } else {
+            Schema inputSchema = getInputSchema();
+            if (inputSchema == null) throw new IllegalStateException("No input schema found on " + def);
+            xsd = getSchema(inputSchema);
+        }
+
+        validate(new StringReader(input), xsd);
 
     }
 
@@ -117,36 +144,50 @@ public class WsdlXmlValidator extends FixedForwardPipe {
         return reader.readWSDL(url.toString(), source);
     }
 
-    protected void validate(
-        final Reader input,
-        final Schema wsdlSchema) throws WSDLException, IOException, SAXException {
+    protected void addNamespaces(Schema schema, Map<String, String> namespaces) {
+        for (Map.Entry<String,String> e : namespaces.entrySet()) {
+            String key = e.getKey().length() == 0 ? "xmlns" : ("xmlns:" + e.getKey());
+            if (schema.getElement().getAttribute(key).length() == 0) {
+                schema.getElement().setAttribute(key, e.getValue());
+            }
+        }
+    }
 
-        SchemaFactory factory = SchemaFactory.newInstance(wsdlSchema.getElementType().getNamespaceURI());
-        factory.setResourceResolver(new LSResourceResolver() {
+    protected LSResourceResolver getLSResourceResolver() {
+        return new LSResourceResolver() {
             //@Override // java 6
             public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
                 LSInput lsinput = DOM.createLSInput();
-                List<SchemaImport> schemas = (List) wsdlSchema.getImports().get(namespaceURI);
-                if (schemas == null) {
-                    throw new IllegalStateException("No schemas found for " + namespaceURI + " in " + wsdlSchema.getImports());
+                Schema schema = getSchema(namespaceURI);
+                if (schema == null) {
+                    throw new IllegalStateException("No schema referenced by " + namespaceURI);
                 }
-                SchemaImport schemaImport = schemas.get(0);
-                String nameSpace = schemaImport.getNamespaceURI();
-                schemaImport = getSchema(nameSpace);
-                if (schemaImport == null || schemaImport.getReferencedSchema() == null) {
-                    throw new IllegalStateException("No schema referenced by " + nameSpace);
-                }
+                addNamespaces(schema, def.getNamespaces());
 
                 try {
-                    lsinput.setCharacterStream(toReader(schemaImport.getReferencedSchema()));
+                    lsinput.setCharacterStream(toReader(schema));
                 } catch (WSDLException e) {
                     LOG.error(e.getMessage(), e);
                 }
                 return lsinput;
             }
-        });
-        javax.xml.validation.Schema xsd = factory.newSchema(new StreamSource(toReader(wsdlSchema)));
+        };
+    }
+
+    protected javax.xml.validation.Schema getSchema(Schema wsdlSchema) throws WSDLException, SAXException {
+        SchemaFactory factory = SchemaFactory.newInstance(wsdlSchema.getElementType().getNamespaceURI());
+        factory.setResourceResolver(getLSResourceResolver());
+        addNamespaces(wsdlSchema, def.getNamespaces());
+        return factory.newSchema(new StreamSource(toReader(wsdlSchema)));
+    }
+
+    protected void validate(
+        final Reader input,
+        final javax.xml.validation.Schema xsd) throws WSDLException, IOException, SAXException {
+
+
         Validator validator = xsd.newValidator();
+        validator.setResourceResolver(getLSResourceResolver());
         Source source = new StreamSource(input);
         validator.validate(source);
     }
@@ -213,20 +254,23 @@ public class WsdlXmlValidator extends FixedForwardPipe {
      * @OTODO This seems uncessarily cumbersome
      *
      */
-    protected SchemaImport getSchema(String nameSpace) {
+    protected Schema getSchema(final String nameSpace) {
         List types = def.getTypes().getExtensibilityElements();
         for (Iterator i = types.iterator(); i.hasNext();) {
             ExtensibilityElement type = (ExtensibilityElement) i.next();
             QName qn = type.getElementType();
             if (SCHEMA.equals(qn)) {
                 Schema schema = (Schema) type;
+                if (schema.getElement().getAttribute("targetNamespace").equals(nameSpace)) {
+                    return schema;
+                }
                 Map<String, List<SchemaImport>> imports = schema.getImports();
                 List<SchemaImport> si= (List) imports.get(nameSpace);
                 if (si != null) {
                     for (Iterator j = si.iterator(); j.hasNext();) {
                         SchemaImport s = (SchemaImport) j.next();
                         if (s.getReferencedSchema() != null) {
-                            return s;
+                            return s.getReferencedSchema();
                         }
                     }
                 }

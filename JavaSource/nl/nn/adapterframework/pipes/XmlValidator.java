@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.35  2012-03-19 11:03:20  europe\m168309
+ * Revision 1.36  2012-03-30 17:03:45  m00f069
+ * Michiel added JMS binding/service to WSDL generator, made WSDL validator work for Bis WSDL and made console show syntax problems for schema's used in XmlValidator
+ *
+ * Revision 1.35  2012/03/19 11:03:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed soapNamespace attribute function
  *
  * Revision 1.34  2012/03/16 15:35:44  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -147,6 +150,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setValidateFile(boolean) validateFile}</td><td>when set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code></td><td>UTF-8</td></tr>
  * <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>when the input message is a SOAP Message, the namespace of the SOAP Envelope. For input SOAP Messages the content of the SOAP Body is used for validation</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
+ * <tr><td>{@link #setWarn(boolean) warn}</td><td>when set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)</td><td><code>true</code></td></tr>
  * </table>
  * <p><b>Exits:</b>
  * <table border="1">
@@ -457,4 +461,9 @@ public class XmlValidator extends FixedForwardPipe {
 	public String getSoapNamespace() {
 		return soapNamespace;
 	}
+
+	public void setWarn(boolean warn) {
+		validator.setWarn(warn);
+	}
+
 }
