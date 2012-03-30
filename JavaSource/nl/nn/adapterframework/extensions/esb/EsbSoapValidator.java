@@ -10,6 +10,7 @@ import nl.nn.adapterframework.soap.SoapValidator;
 /**
  * This is a SoapValidator, but it presupposes ESB wrapping of the body.
  * @author Michiel Meeuwissen
+ * @author Jaco de Groot
  */
 public class EsbSoapValidator extends SoapValidator {
 
@@ -29,8 +30,8 @@ public class EsbSoapValidator extends SoapValidator {
     private Direction direction = null;
 
     @Override
-    public String getSchemaLocation() {
-        return GENERIC_HEADER_XMLNS + " " + GENERIC_HEADER_XSD + " " + super.getSchemaLocation();
+    public void setSchemaLocation(String schemaLocation) {
+        super.setSchemaLocation(GENERIC_HEADER_XMLNS + " " + GENERIC_HEADER_XSD + " " + schemaLocation);
     }
 
     @Override

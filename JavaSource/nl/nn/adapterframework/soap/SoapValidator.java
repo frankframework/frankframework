@@ -1,9 +1,6 @@
 package nl.nn.adapterframework.soap;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import javax.xml.namespace.QName;
 
@@ -14,8 +11,9 @@ import org.apache.log4j.Logger;
 import nl.nn.adapterframework.pipes.XmlValidator;
 
 /**
+ * XmlValidator that will automatically add the SOAP envelope XSD.
  * @author Michiel Meeuwissen
- * @TODO implement actual validation. For now this is only used for WSDL generation
+ * @author Jaco de Groot
  */
 public class SoapValidator extends XmlValidator {
 
@@ -28,12 +26,13 @@ public class SoapValidator extends XmlValidator {
     private String soapHeader = "";
 
     @Override
-    public String getSchemaLocation() {
-        return SOAP_ENVELOPE + " " + SOAP_ENVELOPE_XSD + " " + super.getSchemaLocation();
+    public void setSchemaLocation(String schemaLocation) {
+        super.setSchemaLocation(SOAP_ENVELOPE + " " + SOAP_ENVELOPE_XSD + " " + schemaLocation);
     }
+
     @Override
     public String getRoot() {
-        return "envelope";
+        return "Envelope";
     }
     @Override
     public void setRoot(String r) {
