@@ -1,6 +1,10 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.54  2012-03-16 10:37:09  m00f069
+ * Revision 1.55  2012-03-30 11:34:52  europe\m168309
+ * - added inputMessageParam and ignoreRedirects attributes
+ * - split getMethod() in getGetMethod() and getPostMethod()
+ *
+ * Revision 1.54  2012/03/16 10:37:09  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Unified use of allowSelfSignedCertificates property for ftp and http sender
  *
  * Revision 1.53  2012/03/15 16:53:59  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -245,20 +249,16 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
  * <tr><td>{@link #setStaleChecking(boolean) staleChecking}</td><td>controls whether connections checked to be stale, i.e. appear open, but are not.</td><td>true</td></tr>
  * <tr><td>{@link #setEncodeMessages(boolean) encodeMessages}</td><td>specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.</td><td>false</td></tr>
+ * <tr><td>{@link #setInputMessageParam(String) inputMessageParam}</td><td>(only used when <code>methodeType=POST</code>) name of the request-parameter which is used to put the input message in</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setIgnoreRedirects(boolean) ignoreRedirects}</td><td>when true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
  * <p>Any parameters present are appended to the request as request-parameters</p>
  * 
- * <p><b>Expected message format:</b></p>
- * <p>GET methods expect a message looking like this</p>
+ * <p><b>For GET methods it is also possible to put parameters in the input message:</b></p>
  * <pre>
  *   param_name=param_value&another_param_name=another_param_value
- * </pre>
- * <p>POST methods expect a message similar as GET, or looking like this</p>
- * <pre>
- *   param_name=param_value
- *   another_param_name=another_param_value
  * </pre>
  *
  * <p>
@@ -346,6 +346,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private String truststorePassword=null;
 	private String truststoreType="jks";
 	private String trustManagerAlgorithm=null;
+	private String inputMessageParam=null;
 	
 	private boolean allowSelfSignedCertificates = false;
 	private boolean verifyHostname=true;
@@ -353,6 +354,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private boolean followRedirects=true;
 	private boolean staleChecking=true;
 	private boolean encodeMessages=false;
+	private boolean ignoreRedirects=false;
 
 	protected Parameter urlParameter;
 	
@@ -534,7 +536,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		return parametersAppended;
 	}
 
-	protected HttpMethod getMethod(URI uri, String message, ParameterValueList parameters) throws SenderException {
+	protected HttpMethod getGetMethod(URI uri, String message, ParameterValueList parameters) throws SenderException {
 		try { 
 			boolean queryParametersAppended = false;
 			if (isEncodeMessages()) {
@@ -547,43 +549,52 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				queryParametersAppended = true;
 			}
 			
-			if (getMethodType().equals("GET")) {
-				if (parameters!=null) {
-					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters);
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
-				}
-				GetMethod result = new GetMethod(path+(parameters==null? message:""));
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+result.getQueryString()+"]");
-				return result;
-			} 
-			if (getMethodType().equals("POST")) {
-				PostMethod postMethod = new PostMethod(path.toString());
-				if (StringUtils.isNotEmpty(getContentType())) {
-					postMethod.setRequestHeader("Content-Type",getContentType());
-				}
-				if (parameters!=null) {
-					StringBuffer msg = new StringBuffer(message);
-					appendParameters(true,msg,parameters);
-					if (StringUtils.isEmpty(message) && msg.length()>1) {
-						message=msg.substring(1);
-					} else {
-						message=msg.toString();
-					}
-				}
-				postMethod.setRequestBody(message);
-			
-				return postMethod;
+			if (parameters!=null) {
+				queryParametersAppended = appendParameters(queryParametersAppended,path,parameters);
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
 			}
-			throw new SenderException("unknown methodtype ["+getMethodType()+"], must be either POST or GET");
+			GetMethod result = new GetMethod(path+(parameters==null? message:""));
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+result.getQueryString()+"]");
+			return result;
 		} catch (URIException e) {
 			throw new SenderException(getLogPrefix()+"cannot find path from url ["+getUrl()+"]", e);
 		}
 
 	}
+
+	protected PostMethod getPostMethod(URI uri, String message, ParameterValueList parameters) throws SenderException {
+		try {
+			PostMethod hmethod = new PostMethod(uri.getPath());
+			if (StringUtils.isNotEmpty(getInputMessageParam())) {
+				hmethod.addParameter(getInputMessageParam(),message);
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+getInputMessageParam()+"] with value ["+message+"]");
+			}
+			for(int i=0; i<parameters.size(); i++) {
+				ParameterValue pv = parameters.getParameterValue(i);
+				String name = pv.getDefinition().getName();
+				String value = pv.asStringValue("");
+				hmethod.addParameter(name,value);
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+			}
+			return hmethod;
+		} catch (URIException e) {
+			throw new SenderException(getLogPrefix()+"cannot find path from url ["+getUrl()+"]", e);
+		}
+	}
 	
 	public String extractResult(HttpMethod httpmethod) throws SenderException, IOException {
 		int statusCode = httpmethod.getStatusCode();
-		if (statusCode!=HttpServletResponse.SC_OK) {
+		boolean ok = false;
+		if (statusCode==HttpServletResponse.SC_OK) {
+			ok = true;
+		} else { 
+			if (isIgnoreRedirects()) {
+				if (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT) {
+					ok = true;
+				}
+			}
+		}
+		if (!ok) {
 			throw new SenderException(getLogPrefix()+"httpstatus "+statusCode+": "+httpmethod.getStatusText());
 		}
 		//return httpmethod.getResponseBodyAsString();
@@ -627,11 +638,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			} else {
 				uri=staticUri;
 			}
-			httpmethod=getMethod(uri, message, pvl);
-			if (!"POST".equals(getMethodType())) {
+
+			if ("POST".equals(getMethodType())) {
+				httpmethod=getPostMethod(uri, message, pvl);
+			} else {
+				httpmethod=getGetMethod(uri, message, pvl);
 				httpmethod.setFollowRedirects(isFollowRedirects());
 			}
-			
 	
 			int port = getPort(uri);
 		
@@ -948,4 +961,17 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		return allowSelfSignedCertificates;
 	}
 
+	public void setInputMessageParam(String inputMessageParam) {
+		this.inputMessageParam = inputMessageParam;
+	}
+	public String getInputMessageParam() {
+		return inputMessageParam;
+	}
+
+	public void setIgnoreRedirects(boolean b) {
+		ignoreRedirects = b;
+	}
+	public boolean isIgnoreRedirects() {
+		return ignoreRedirects;
+	}
 }
