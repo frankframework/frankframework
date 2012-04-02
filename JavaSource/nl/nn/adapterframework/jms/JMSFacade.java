@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.45  2011-11-30 13:51:51  europe\m168309
+ * Revision 1.46  2012-04-02 08:42:20  m00f069
+ * Added correlationIdToHex
+ *
+ * Revision 1.45  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -198,6 +201,7 @@ import com.ibm.mq.jms.MQQueue;
 	 To prevent this, settting <code>forceMQCompliancy</code> to MQ will inform
 	 MQ that the replyto queue is not JMS compliant. Setting <code>forceMQCompliancy</code>
 	 to "JMS" will cause that on mq the destination is identified as jms-compliant.</td><td>JMS</td></tr>
+ * <tr><td>{@link #setCorrelationIdToHex(boolean) correlationIdToHex}</td><td>Transform the value of the correlationId to a hexadecimal value if it starts with ID: (preserving the ID: part). Useful when sending messages to MQ which expects this value to be in hexadecimal format when it starts with ID:, otherwise generating an error: MQJMS1044: String is not a valid hexadecimal number</td><td>false</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to JMS server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -253,8 +257,9 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	//the MessageSelector will provide filter functionality, as specified
 	//javax.jms.Message.
     private String messageSelector=null;
-    
- 
+
+    private boolean correlationIdToHex=false;
+
 	public static int stringToDeliveryMode(String mode) {
 		if (MODE_PERSISTENT.equalsIgnoreCase(mode)) {
 			return DeliveryMode.PERSISTENT;
@@ -408,17 +413,24 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		}
 	}
 
-	   	
-	
 	public TextMessage createTextMessage(Session session, String correlationID, String message)
-	   throws javax.naming.NamingException, JMSException {
-	    TextMessage textMessage = null;
-	    textMessage = session.createTextMessage();
-	    if (null != correlationID) {
-	        textMessage.setJMSCorrelationID(correlationID);
-	    }
-	    textMessage.setText(message);
-	    return textMessage;
+			throws javax.naming.NamingException, JMSException {
+		TextMessage textMessage = null;
+		textMessage = session.createTextMessage();
+		if (null != correlationID) {
+			if (correlationIdToHex && correlationID.startsWith("ID:")) {
+				String hexCorrelationID = "ID:";
+				int i;
+				for (i=3;i<correlationID.length();i++) {
+					int c=correlationID.charAt(i);
+					hexCorrelationID+=Integer.toHexString(c);
+				};
+				correlationID = hexCorrelationID;
+			}
+			textMessage.setJMSCorrelationID(correlationID);
+		}
+		textMessage.setText(message);
+		return textMessage;
 	}
 
 	/**
@@ -987,6 +999,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return jmsTransacted;
 	}
 
+	public void setCorrelationIdToHex(boolean correlationIdToHex) {
+		this.correlationIdToHex = correlationIdToHex;
+	}
+
 	/**
 	 * Controls whether messages are send under transaction control.
 	 * If set <code>true</code>, messages are committed or rolled back under control of an XA-transaction.
@@ -1008,6 +1024,11 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	public long getMessageTimeToLive(){
 		return this.messageTimeToLive;
 	}
+
+	public boolean isCorrelationIdToHex() {
+		return correlationIdToHex;
+	}
+
 	/**
 	 * Indicates whether messages are send under transaction control.
 	 * @see #setTransacted(boolean)
