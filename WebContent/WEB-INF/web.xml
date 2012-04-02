@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+    <display-name>IBIS AdapterFramework</display-name>
+ 
+    <description>The IBIS AdapterFramework provides functionality to listen to some
+    event (e.g. a JMS message arrival) and perform some predefined actions. These actions
+    are configured in an XML file. On the event several actions, called pipes, grouped in
+    a pipeline, are fired.
+    </description>
+ 
+ 
+   <servlet>
+       <servlet-name>QuartzInitializer</servlet-name>
+       <display-name>Quartz Initializer Servlet</display-name>
+       <servlet-class>org.quartz.ee.servlet.QuartzInitializerServlet</servlet-class>
+       <load-on-startup>1</load-on-startup>
+     </servlet>
+ 
+ 
+    <!-- Configuration servlet.  -->
+    <servlet>
+        <servlet-name>ConfigurationServlet</servlet-name>
+        <display-name>Configuration Servlet</display-name>
+        <description>Initializes the configuration</description>
+        <servlet-class>nl.nn.adapterframework.webcontrol.ConfigurationServlet</servlet-class>
+        <init-param>
+            <param-name>autoStart</param-name>
+            <param-value>true</param-value>
+            <description>Indicates wether the adapters should automatically started</description>
+        </init-param>
+        <init-param>
+            <param-name>configuration</param-name>
+            <param-value>Configuration.xml</param-value>            
+            <description>Filename of the xml-file containing the configuration</description>
+        </init-param>
+        <init-param>
+            <param-name>digester-rules</param-name>
+            <param-value>digester-rules.xml</param-value>
+            <description>Filename of the xml-file containing the digesting information for the digester</description>
+        </init-param>
+        <load-on-startup>0</load-on-startup>
+    </servlet>
+
+  
+ 
+    <!-- SOAP servlets -->
+    <servlet>
+        <servlet-name>rpcrouter</servlet-name>
+        <display-name>Apache-SOAP RPC Router (modified: invalidates sessions)</display-name>
+        <servlet-class>nl.nn.adapterframework.soap.SoapRouterServlet</servlet-class>
+        <init-param>
+            <param-name>faultListener</param-name>
+            <param-value>org.apache.soap.server.DOMFaultListener</param-value>
+        </init-param>
+        <init-param>
+            <param-name>ConfigFile</param-name>
+            <!-- Apache SOAP 2.2: param-value van ConfigFile kan alleen in root, subdirectory wordt niet opgepikt -->
+            <param-value>soap.xml</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <servlet-name>messagerouter</servlet-name>
+        <display-name>Apache-SOAP Message Router</display-name>
+        <servlet-class>org.apache.soap.server.http.MessageRouterServlet</servlet-class>
+        <init-param>
+            <param-name>faultListener</param-name>
+            <param-value>org.apache.soap.server.DOMFaultListener</param-value>
+        </init-param>
+        <init-param>
+            <param-name>ConfigFile</param-name>
+            <!-- Apache SOAP 2.2: param-value van ConfigFile kan alleen in root, subdirectory wordt niet opgepikt -->
+            <param-value>soap.xml</param-value>
+        </init-param>
+    </servlet>
+    
+    
+    
+    <!-- Action Servlet Configuration -->
+    <servlet>
+        <servlet-name>action</servlet-name>
+        <display-name>Struts Action servlet</display-name>
+        <servlet-class>org.apache.struts.action.ActionServlet</servlet-class>
+        <init-param>
+            <param-name>application</param-name>
+            <param-value>ApplicationResources</param-value>
+        </init-param>
+        <init-param>
+            <param-name>config</param-name>
+            <param-value>/WEB-INF/struts-config.xml</param-value>
+        </init-param>
+        <init-param>
+            <param-name>debug</param-name>
+            <param-value>2</param-value>
+        </init-param>
+        <init-param>
+            <param-name>detail</param-name>
+            <param-value>2</param-value>
+        </init-param>
+        <init-param>
+            <param-name>validate</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+ 
+     <!-- Test Tool Servlet -->
+    <servlet>
+      <servlet-name>TestToolServlet</servlet-name>
+      <servlet-class>nl.nn.ibistesttool.Servlet</servlet-class>
+    </servlet>
+ 
+   <!-- AdapterFramework servlets -->
+    <servlet>
+        <servlet-name>FileViewerServlet</servlet-name>
+        <display-name>file viewer</display-name>
+        <servlet-class>
+            nl.nn.adapterframework.webcontrol.FileViewerServlet
+        </servlet-class>
+     </servlet>
+    <servlet>
+        <servlet-name>DumpIbisConsole</servlet-name>
+        <display-name>dump ibis console</display-name>
+        <servlet-class>
+            nl.nn.adapterframework.webcontrol.DumpIbisConsole
+        </servlet-class>
+     </servlet>
+    <servlet>
+        <servlet-name>Download</servlet-name>
+        <display-name>download</display-name>
+        <servlet-class>
+            nl.nn.adapterframework.webcontrol.Download
+        </servlet-class>
+     </servlet>
+    <servlet>
+        <servlet-name>HttpListener</servlet-name>
+        <display-name>HttpListener</display-name>
+        <servlet-class>nl.nn.adapterframework.http.HttpListenerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>RestListener</servlet-name>
+        <display-name>RestListener</display-name>
+        <servlet-class>nl.nn.adapterframework.http.RestListenerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FileViewerServlet</servlet-name>
+        <url-pattern>/FileViewerServlet</url-pattern>
+    </servlet-mapping>
+   <servlet-mapping>
+        <servlet-name>ConfigurationServlet</servlet-name>
+        <url-pattern>/ConfigurationServlet</url-pattern>
+   </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DumpIbisConsole</servlet-name>
+        <url-pattern>/DumpIbisConsole</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Download</servlet-name>
+        <url-pattern>/Download</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+    	<servlet-name>HttpListener</servlet-name>
+    	<url-pattern>/HttpListener</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+    	<servlet-name>RestListener</servlet-name>
+    	<url-pattern>/rest/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Action Servlet Mapping -->
+    <servlet-mapping>
+        <servlet-name>action</servlet-name>
+        <url-pattern>*.do</url-pattern>
+    </servlet-mapping>
+ 
+    <!-- SOAP Servlet mappings -->
+    <servlet-mapping>
+        <servlet-name>rpcrouter</servlet-name>
+        <url-pattern>/servlet/rpcrouter/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>messagerouter</servlet-name>
+        <url-pattern>/servlet/messagerouter</url-pattern>
+    </servlet-mapping>
+ 
+    <!-- Test Tool Servlet Mapping -->
+     <servlet-mapping>
+      <servlet-name>TestToolServlet</servlet-name>
+      <url-pattern>/testtool</url-pattern>
+    </servlet-mapping>
+ 
+   <!-- Welcome File List -->
+   <mime-mapping>
+   	<extension>svg</extension>
+   	<mime-type>image/svg+xml</mime-type>
+   </mime-mapping>
+    <welcome-file-list>
+     <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+    
+    <!-- Error pages -->
+    <error-page>
+       <exception-type>java.lang.Exception</exception-type>
+       <location>/jsp/errorPage.jsp</location>
+    </error-page>
+ 
+    <!-- Struts Tag Library Descriptors -->
+    <taglib>
+        <taglib-uri>/WEB-INF/struts-bean.tld</taglib-uri>
+        <taglib-location>/WEB-INF/struts-bean.tld</taglib-location>
+    </taglib>
+    <taglib>
+        <taglib-uri>/WEB-INF/struts-html.tld</taglib-uri>
+        <taglib-location>/WEB-INF/struts-html.tld</taglib-location>
+    </taglib>
+    <taglib>
+        <taglib-uri>/WEB-INF/struts-logic.tld</taglib-uri>
+        <taglib-location>/WEB-INF/struts-logic.tld</taglib-location>
+    </taglib>
+    <!-- XTAG library -->
+    <taglib>
+        <taglib-uri>http://jakarta.apache.org/taglibs/xtags-1.0</taglib-uri>
+        <taglib-location>/WEB-INF/xtags.tld</taglib-location>
+    </taglib>
+ 
+    <!-- security-constraint>
+        <display-name>ObserverAccess</display-name>
+        <web-resource-collection>
+            <web-resource-name>ObserverAccessResourceCollection</web-resource-name>
+            <description>collection of url's for observer access</description>
+            <url-pattern>/</url-pattern>
+            <url-pattern>/index.jsp</url-pattern>
+            <url-pattern>/showConfigurationStatus.do</url-pattern>
+            <url-pattern>/showConfiguration.do</url-pattern>
+            <url-pattern>/configHandler.do</url-pattern>
+            <url-pattern>/showAdapterStatistics.do</url-pattern>
+            <url-pattern>/showTracingConfiguration.do</url-pattern>
+            <url-pattern>/showLogging.do</url-pattern>
+            <url-pattern>/browseQueue.do</url-pattern>
+            <url-pattern>/browseQueueExecute.do</url-pattern>
+            <url-pattern>/browseJdbcTable.do</url-pattern>
+            <url-pattern>/showSchedulerStatus.do</url-pattern>
+            <url-pattern>/FileViewerServlet</url-pattern>
+            <url-pattern>/DumpIbisConsole</url-pattern>
+            <url-pattern>/showEnvironmentVariables.do</url-pattern>
+            <url-pattern>/browser.do</url-pattern>
+            <url-pattern>/showSecurityItems.do</url-pattern>
+            <url-pattern>/showMonitors.do</url-pattern>
+            <url-pattern>/showEvents.do</url-pattern>
+            <url-pattern>/editMonitor.do</url-pattern>
+            <url-pattern>/editTrigger.do</url-pattern>
+            <url-pattern>/showIbisstoreSummary.do</url-pattern>
+            <url-pattern>/Download</url-pattern>
+            <url-pattern>/testtool</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <description></description>
+            <role-name>IbisObserver</role-name>
+            <role-name>IbisAdmin</role-name>
+            <role-name>IbisDataAdmin</role-name>
+            <role-name>IbisTester</role-name>
+        </auth-constraint>
+        <user-data-constraint>
+        	<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+    <security-constraint>
+        <display-name>AdminAccess</display-name>
+        <web-resource-collection>
+            <web-resource-name>AdminAccessResourceCollection</web-resource-name>
+            <description>collection of url's for administrator access</description>
+            <url-pattern>/adapterHandler.do</url-pattern>
+            <url-pattern>/ConfigurationServlet</url-pattern>
+            <url-pattern>/alterTracingConfiguration.do</url-pattern>
+            <url-pattern>/tracingHandler.do</url-pattern>
+            <url-pattern>/alterTracingProperties.do</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+        	<description></description>
+        	<role-name>IbisAdmin</role-name>
+        	<role-name>IbisTester</role-name>
+        </auth-constraint>
+        <user-data-constraint>
+        	<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+    <security-constraint>
+        <display-name>DataAdminAccess</display-name>
+        <web-resource-collection>
+            <web-resource-name>DataAdminAccessResourceCollection</web-resource-name>
+            <description>collection of url's for data administrator access</description>
+            <url-pattern>/logHandler.do</url-pattern>
+            <url-pattern>/browserExecute.do</url-pattern>
+            <url-pattern>/schedulerHandler.do</url-pattern>
+            <url-pattern>/showMonitorsExecute.do</url-pattern>
+            <url-pattern>/editMonitorExecute.do</url-pattern>
+            <url-pattern>/editTriggerExecute.do</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+        	<description></description>
+        	<role-name>IbisAdmin</role-name>
+        	<role-name>IbisDataAdmin</role-name>
+        	<role-name>IbisTester</role-name>
+        </auth-constraint>
+        <user-data-constraint>
+        	<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+    <security-constraint>
+        <display-name>TesterAccess</display-name>
+        <web-resource-collection>
+            <web-resource-name>TesterAccessResourceCollection</web-resource-name>
+            <description>collection of url's for tester access</description>
+            <url-pattern>/sendJmsMessage.do</url-pattern>
+            <url-pattern>/sendJmsMessageExecute.do</url-pattern>
+            <url-pattern>/testPipeLine.do</url-pattern>
+            <url-pattern>/testPipeLineExecute.do</url-pattern>
+            <url-pattern>/testIfsaService.do</url-pattern>
+            <url-pattern>/testIfsaServiceExecute.do</url-pattern>
+            <url-pattern>/testService.do</url-pattern>
+            <url-pattern>/testServiceExecute.do</url-pattern>
+            <url-pattern>/executeJdbcQuery.do</url-pattern>
+            <url-pattern>/executeJdbcQueryExecute.do</url-pattern>
+            <url-pattern>/testtool</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <description></description>
+            <role-name>IbisTester</role-name>
+        </auth-constraint>
+        <user-data-constraint>
+        	<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+
+    <security-constraint>
+        <display-name>WebServiceAccess</display-name>
+        <web-resource-collection>
+            <web-resource-name>WebServiceAccessResourceCollection</web-resource-name>
+            <description>collection of url's for webservice access</description>
+             <url-pattern>/servlet/rpcrouter/*</url-pattern>
+             <url-pattern>/servlet/messagerouter</url-pattern>
+             <url-pattern>/HttpListener</url-pattern>
+             <url-pattern>/rest/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <description></description>
+            <role-name>IbisWebService</role-name>            
+            <role-name>IbisTester</role-name>
+        </auth-constraint>
+        <user-data-constraint>
+        	<transport-guarantee>NONE</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint -->
+
+    <login-config> 
+        <auth-method>BASIC</auth-method> 
+        <realm-name>Ibis</realm-name> 
+    </login-config> 
+    
+   
+    <security-role>
+        <description>user who can look in configurations, statistics and log files</description>
+        <role-name>IbisObserver</role-name>
+    </security-role>
+    <security-role>
+        <description>Administrator, can start and stop adapters and set schedules</description>
+        <role-name>IbisAdmin</role-name>
+    </security-role>
+    <security-role>
+        <description>can browse the error queue and resend or delete the messages in it</description>
+        <role-name>IbisDataAdmin</role-name>
+    </security-role>
+    <security-role>
+        <description>can send test messages</description>
+        <role-name>IbisTester</role-name>
+    </security-role>
+    <security-role>
+    	<description>can call Ibis WebServices</description>
+    	<role-name>IbisWebService</role-name>
+    </security-role>
+</web-app>

@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.1//EN"
+          "http://jakarta.apache.org/struts/dtds/struts-config_1_1.dtd">
+
+<!--
+     This is the Struts configuration file for the example application,
+     using the proposed new syntax.
+
+     NOTE:  You would only flesh out the details in the "form-bean"
+     declarations if you had a generator tool that used them to create
+     the corresponding Java classes for you.  Otherwise, you would
+     need only the "form-bean" element itself, with the corresponding
+     "name" and "type" attributes.
+-->
+<struts-config>
+    <!-- ========== Data Source Configuration =============================== -->
+    <!--
+ <data-sources>
+   
+  </data-sources>
+-->
+    <!-- ========== Form Bean Definitions =================================== -->
+    <form-beans>
+        <form-bean      name="sendJmsMessageForm"
+                        type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
+                        <form-property name="action"			type="java.lang.String"/>
+                        <form-property name="jmsRealm"			type="java.lang.String"/>
+                        <form-property name="jmsRealms"       	type="java.util.ArrayList"/>
+                        <form-property name="persistent"    	type="java.lang.Boolean"/>
+                        <form-property name="destinationName"   type="java.lang.String"/>
+                        <form-property name="destinationType"   type="java.lang.String"/>
+                        <form-property name="replyToName"    	type="java.lang.String"/>
+                        <form-property name="message"    		type="java.lang.String"/>
+                        <form-property name="file"    			type="org.apache.struts.upload.FormFile"/>
+        </form-bean>
+
+       <form-bean      name="testIfsaServiceForm"
+                        type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
+                        <form-property name="action"           	type="java.lang.String"/>
+                        <form-property name="applicationId"    	type="java.lang.String"/>
+                        <form-property name="serviceId"        	type="java.lang.String"/>
+                        <form-property name="messageProtocol"  	type="java.lang.String"/>
+                        <form-property name="messageProtocols"  type="java.util.ArrayList"/>
+                        <form-property name="message"       	type="java.lang.String"/>
+                        <form-property name="result"     		type="java.lang.String"/>
+                        <form-property name="state"     		type="java.lang.String"/>
+                        <form-property name="file"    			type="org.apache.struts.upload.FormFile"/>
+        </form-bean>
+
+        <form-bean      name="PipeLineTestForm"
+                        type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
+                        <form-property name="action" 			type="java.lang.String"/>
+                        <form-property name="adapters"			type="java.util.ArrayList"/>                                       
+                        <form-property name="adapterName"		type="java.lang.String"/>
+                        <form-property name="message"       	type="java.lang.String"/>
+                        <form-property name="result"     		type="java.lang.String"/>
+                        <form-property name="state"     		type="java.lang.String"/>
+                        <form-property name="file"    			type="org.apache.struts.upload.FormFile"/>
+        </form-bean>
+
+        <form-bean      name="ServiceTestForm"
+                        type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
+                        <form-property name="action" 			type="java.lang.String"/>
+                        <form-property name="services"			type="java.util.ArrayList"/>                                       
+                        <form-property name="serviceName"		type="java.lang.String"/>
+                        <form-property name="message"       	type="java.lang.String"/>
+                        <form-property name="result"     		type="java.lang.String"/>
+                        <form-property name="file"    			type="org.apache.struts.upload.FormFile"/>
+
+        </form-bean>
+ 
+       <form-bean name="browseQueueForm" type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
+                        <form-property name="action" 			type="java.lang.String"/>
+                        <form-property name="jmsRealm"			type="java.lang.String"/>
+                        <form-property name="jmsRealms"       	type="java.util.ArrayList"/>
+                        <form-property name="destinationName"   type="java.lang.String"/>
+                        <form-property name="storageType"   	type="java.lang.String"/>
+                        <form-property name="adapterName"  	 	type="java.lang.String"/>
+                        <form-property name="receiverName"   	type="java.lang.String"/>
+                        <form-property name="pipeName"   		type="java.lang.String"/>
+                        <form-property name="messageId"   		type="java.lang.String"/>
+                        <form-property name="numberOfMessages"  type="java.lang.String"/>
+                        <form-property name="destinationType"   type="java.lang.String"/>
+                        <form-property name="messages"       	type="java.lang.String"/>
+                        <form-property name="numberOfMessagesOnly" type="java.lang.Boolean"/>
+                        <form-property name="showPayload"    	type="java.lang.Boolean"/>
+                        <form-property name="maxMessages"    	type="java.lang.String"/>
+                        <form-property name="skipMessages"    	type="java.lang.String"/>
+                        <form-property name="insertedAfter"    	type="java.lang.String"/>
+                        <form-property name="insertedAfterClip" type="java.lang.String"/>
+                        <form-property name="typeMask"    		type="java.lang.String"/>
+                        <form-property name="hostMask"    		type="java.lang.String"/>
+                        <form-property name="currentIdMask"    	type="java.lang.String"/>
+                        <form-property name="messageIdMask"    	type="java.lang.String"/>
+                        <form-property name="correlationIdMask" type="java.lang.String"/>
+                        <form-property name="commentMask" 		type="java.lang.String"/>
+                        <form-property name="messageTextMask" 	type="java.lang.String"/>
+                        <form-property name="labelMask" 		type="java.lang.String"/>
+                        <form-property name="viewAs"    		type="java.lang.String"/>
+                        <form-property name="viewAsList"    	type="java.util.ArrayList"/>
+                        <form-property name="selected"			type="java.lang.String[]"/>                                       
+                        <form-property name="submit"    		type="java.lang.String"/>
+        </form-bean>
+
+        <form-bean      name="browseJdbcTableForm"
+                        type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
+                        <form-property name="action" 			type="java.lang.String"/>
+                        <form-property name="jmsRealm"			type="java.lang.String"/>
+                        <form-property name="jmsRealms"       	type="java.util.ArrayList"/>
+                        <form-property name="tableName"			type="java.lang.String"/>
+                        <form-property name="where"             type="java.lang.String"/>                       
+                        <form-property name="order"				type="java.lang.String"/>
+                        <form-property name="numberOfRowsOnly" 	type="java.lang.Boolean"/>
+                        <form-property name="rownumMin"			type="java.lang.Integer"/>
+                        <form-property name="rownumMax"			type="java.lang.Integer"/>
+
+        </form-bean>
+
+       <form-bean name="executeJdbcQueryForm" type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
+                        <form-property name="action" 			type="java.lang.String"/>
+                        <form-property name="jmsRealm"			type="java.lang.String"/>
+                        <form-property name="jmsRealms"       	type="java.util.ArrayList"/>
+                        <form-property name="queryType"			type="java.lang.String"/>
+                        <form-property name="queryTypes"       	type="java.util.ArrayList"/>
+                        <form-property name="resultType"		type="java.lang.String"/>
+                        <form-property name="resultTypes"       type="java.util.ArrayList"/>
+                        <form-property name="query"       		type="java.lang.String"/>
+                        <form-property name="result"     		type="java.lang.String"/>
+        </form-bean>
+        
+
+        <form-bean      name="ConfigurationPropertiesForm"
+                        type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
+                        <form-property name="logLevel" 			type="java.lang.String"/>
+                        <form-property name="logIntermediaryResults" type="java.lang.Boolean"/>                                       
+        </form-bean>
+
+        <form-bean      name="AlterTracingConfigurationForm"
+                        type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
+                        <form-property name="action" 			type="java.lang.String"/>
+                        <form-property name="adapterName"		type="java.lang.String"/>
+                        <form-property name="receiverName"		type="java.lang.String"/>
+                        <form-property name="pipeName"       	type="java.lang.String"/>
+                        <form-property name="beforeEvent" 		type="java.lang.Integer"/>
+                        <form-property name="afterEvent"    	type="java.lang.Integer"/>
+                        <form-property name="exceptionEvent"	type="java.lang.Integer"/>
+        </form-bean>
+
+        <form-bean      name="AlterTracingPropertiesForm"
+                        type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
+                        <form-property name="action" 			type="java.lang.String"/>
+                        <form-property name="properties"		type="java.lang.String"/>
+        </form-bean>
+
+        <form-bean      name="MonitorForm"
+                        type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
+                        <form-property name="action" 			type="java.lang.String"/>
+                        <form-property name="return" 			type="java.lang.String"/>
+                        <form-property name="index" 			type="java.lang.String"/>
+                        <form-property name="triggerIndex"		type="java.lang.String"/>
+                        <form-property name="monitorManager"	type="nl.nn.adapterframework.monitoring.MonitorManager"/>
+                        <form-property name="monitor"			type="nl.nn.adapterframework.monitoring.Monitor"/>
+                        <form-property name="trigger"			type="nl.nn.adapterframework.monitoring.Trigger"/>
+                        <form-property name="enabled" 			type="java.lang.Boolean"/>
+                        <form-property name="adapters"			type="java.util.List"/>
+                        <form-property name="selAdapters"		type="java.lang.String[]"/>
+                        <form-property name="sources"			type="java.util.List"/>
+                        <form-property name="selSources"		type="java.lang.String[]"/>
+                        <form-property name="eventCodes"		type="java.util.List"/>
+                        <form-property name="selDestinations"	type="java.lang.String[]"/>
+                        <form-property name="eventTypes"		type="java.util.List"/>
+                        <form-property name="severities"		type="java.util.List"/>
+                        <form-property name="triggerTypes"		type="java.util.List"/>
+                        <form-property name="configFile"    	type="org.apache.struts.upload.FormFile"/>
+        </form-bean>
+
+
+    
+    </form-beans>
+    <!-- ========== Global Forward Definitions ============================== -->
+    <global-forwards type="org.apache.struts.action.ActionForward">
+        <forward name="noconfig" path="/jsp/view.jsp?view=/jsp/noConfig.jsp"/>   
+        
+    </global-forwards>
+    <!-- ========== Action Mapping Definitions ============================== -->
+
+    <action-mappings>
+        <!-- Process a user logoff -->
+        
+        <action path="/showConfigurationStatus" 
+                type="nl.nn.adapterframework.webcontrol.action.ShowConfigurationStatus" 
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/showConfigurationStatus.jsp"/>
+        
+        </action>
+        <action path="/adapterHandler" 
+                type="nl.nn.adapterframework.webcontrol.action.AdapterHandler"
+                validate="false">
+            <forward name="success" path="/showConfigurationStatus.do" redirect="true" contextRelative="true"/>
+        
+        </action>
+        <action path="/showConfiguration" 
+                type="nl.nn.adapterframework.webcontrol.action.ShowConfiguration"
+                scope="session" 
+                name="ConfigurationPropertiesForm"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/showConfiguration.jsp"/>
+        
+        </action>
+        <action path="/configHandler" 
+                type="nl.nn.adapterframework.webcontrol.action.ConfigHandler"
+                validate="false">
+            <forward name="success" path="/showConfiguration.do" redirect="true" contextRelative="true"/>
+        </action>
+        <action path="/showMonitors" 
+                type="nl.nn.adapterframework.webcontrol.action.ShowMonitors"
+                scope="session" 
+                name="MonitorForm"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/showMonitors.jsp"/>
+        
+        </action>
+        <action path="/showMonitorExecute" 
+                type="nl.nn.adapterframework.webcontrol.action.ShowMonitorExecute"
+                scope="session" 
+                name="MonitorForm"
+                validate="false">
+            <forward name="success" path="/showMonitors.do" redirect="true" contextRelative="true"/>
+        
+        </action>
+       <action path="/editMonitor" 
+                type="nl.nn.adapterframework.webcontrol.action.EditMonitor"
+                scope="session" 
+                name="MonitorForm"
+                input="/jsp/view.jsp?view=/jsp/editMonitor.jsp"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/editMonitor.jsp" redirect="false" contextRelative="false"/>
+        </action>
+        <action path="/editMonitorExecute" 
+                type="nl.nn.adapterframework.webcontrol.action.EditMonitorExecute"
+                scope="session" 
+                name="MonitorForm"
+                input="/jsp/view.jsp?view=/jsp/editMonitor.jsp"
+                validate="false">
+            <forward name="self" 		 path="/editMonitor.do" />
+            <forward name="showmonitors" path="/showMonitors.do" />
+            <forward name="editmonitor"  path="/editMonitor.do"  />
+        </action>
+       <action path="/editTrigger" 
+                type="nl.nn.adapterframework.webcontrol.action.EditTrigger"
+                scope="session" 
+                name="MonitorForm"
+                input="/jsp/view.jsp?view=/jsp/editTrigger.jsp"
+                validate="false">
+            <forward name="success"      path="/jsp/view.jsp?view=/jsp/editTrigger.jsp" redirect="false" contextRelative="false"  />
+        </action>
+        <action path="/editTriggerExecute" 
+                type="nl.nn.adapterframework.webcontrol.action.EditTriggerExecute"
+                scope="session" 
+                name="MonitorForm"
+                input="/jsp/view.jsp?view=/jsp/editTrigger.jsp"
+                validate="false">
+            <forward name="self"         path="/editTrigger.do"  />
+            <forward name="showmonitors" path="/showMonitors.do" />
+            <forward name="editmonitor"  path="/editMonitor.do"  />
+        </action>
+        <action path="/showEvents" 
+                type="nl.nn.adapterframework.webcontrol.action.ShowEvents"
+                scope="session" 
+                name="MonitorForm"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/showEvents.jsp"/>
+        
+        </action>
+        <action path="/showAdapterStatistics" 
+                type="nl.nn.adapterframework.webcontrol.action.ShowAdapterStatistics"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/showAdapterStatistics.jsp"/>
+        
+        </action>
+        <action path="/showTracingConfiguration" 
+                type="nl.nn.adapterframework.webcontrol.action.ShowTracingConfiguration"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/showTracingConfiguration.jsp"/>
+        </action>
+        <action path="/alterTracingConfiguration" 
+                type="nl.nn.adapterframework.webcontrol.action.AlterTracingConfiguration"
+                scope="session" 
+                name="AlterTracingConfigurationForm"
+                input="/jsp/view.jsp?view=/jsp/alterTracingConfiguration.jsp"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/alterTracingConfiguration.jsp"/>
+        </action>
+        <action path="/alterTracingConfigurationExecute" 
+                type="nl.nn.adapterframework.webcontrol.action.AlterTracingConfigurationExecute"
+                scope="session" 
+                name="AlterTracingConfigurationForm"
+                input="/jsp/view.jsp?view=/jsp/alterTracingConfiguration.jsp"
+                validate="false">
+            <forward name="success" path="/showTracingConfiguration.do"/>
+        	<forward name="cancel" path="/showTracingConfiguration.do" />
+        </action>
+        <action path="/tracingHandler" 
+                type="nl.nn.adapterframework.webcontrol.action.TracingHandler"
+                validate="false">
+            <forward name="success" path="/showTracingConfiguration.do"/>
+        </action>
+        <action path="/alterTracingProperties" 
+                type="nl.nn.adapterframework.webcontrol.action.AlterTracingProperties"
+                scope="session" 
+                name="AlterTracingPropertiesForm"
+                input="/jsp/view.jsp?view=/jsp/alterTracingProperties.jsp"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/alterTracingProperties.jsp"/>
+        </action>
+        <action path="/alterTracingPropertiesExecute" 
+                type="nl.nn.adapterframework.webcontrol.action.AlterTracingPropertiesExecute"
+                scope="session" 
+                name="AlterTracingPropertiesForm"
+                input="/jsp/view.jsp?view=/jsp/alterTracingProperties.jsp"
+                validate="false">
+            <forward name="success" path="/showTracingConfiguration.do"/>
+        	<forward name="cancel" path="/showTracingConfiguration.do" />
+        </action>
+
+        <action path="/showLogging" 
+                type="nl.nn.adapterframework.webcontrol.action.ShowLogging"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/showLogging.jsp"/>
+        
+        </action>
+        
+        <action path="/sendJmsMessage" 
+                type="nl.nn.adapterframework.webcontrol.action.SendJmsMessage"
+                scope="session" 
+                name="sendJmsMessageForm"
+                input="/jsp/view.jsp?view=/jsp/sendJmsMessage.jsp"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/sendJmsMessage.jsp"/>
+        </action>
+        <action path="/sendJmsMessageExecute" 
+                type="nl.nn.adapterframework.webcontrol.action.SendJmsMessageExecute"
+                scope="session" 
+                name="sendJmsMessageForm"
+                input="/jsp/view.jsp?view=/jsp/sendJmsMessage.jsp"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/sendJmsMessage.jsp"/>
+        </action>
+
+        <action path="/testIfsaService" 
+                type="nl.nn.adapterframework.webcontrol.action.TestIfsaService"
+                scope="session" 
+                name="testIfsaServiceForm"
+                input="/jsp/view.jsp?view=/jsp/testIfsaService.jsp"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/testIfsaService.jsp"/>
+        </action>
+        <action path="/testIfsaServiceExecute" 
+                type="nl.nn.adapterframework.webcontrol.action.TestIfsaServiceExecute"
+                scope="session" 
+                name="testIfsaServiceForm"
+                input="/jsp/view.jsp?view=/jsp/testIfsaService.jsp"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/testIfsaService.jsp"/>
+        </action>
+
+        <action path="/testPipeLine" 
+                type="nl.nn.adapterframework.webcontrol.action.TestPipeLine"
+                scope="session" 
+                name="PipeLineTestForm"
+                input="/jsp/view.jsp?view=/jsp/testPipeLine.jsp"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/testPipeLine.jsp" redirect="false" contextRelative="false"/>
+        </action>
+        <action path="/testPipeLineExecute" 
+                type="nl.nn.adapterframework.webcontrol.action.TestPipeLineExecute"
+                scope="session" 
+                name="PipeLineTestForm"
+                input="/jsp/view.jsp?view=/jsp/testPipeLine.jsp"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/testPipeLine.jsp" redirect="false" contextRelative="false"/>
+        </action>
+        
+        <action path="/testService" 
+                type="nl.nn.adapterframework.webcontrol.action.TestService"
+                scope="session" 
+                name="ServiceTestForm"
+                input="/jsp/view.jsp?view=/jsp/testService.jsp"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/testService.jsp"/>
+        </action>
+        <action path="/testServiceExecute" 
+                type="nl.nn.adapterframework.webcontrol.action.TestServiceExecute"
+                scope="session" 
+                name="ServiceTestForm"
+                input="/jsp/view.jsp?view=/jsp/testService.jsp"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/testService.jsp"/>
+        </action>
+        
+		<action	path="/browseQueue" 
+       			type="nl.nn.adapterframework.webcontrol.action.BrowseQueue" 
+       			name="browseQueueForm" 
+       			scope="session" 
+       			validate="false" 
+       			input="/jsp/view.jsp?view=/jsp/browseQueue.jsp">
+        	<forward name="success" path="/jsp/view.jsp?view=/jsp/browseQueue.jsp" />
+        </action>
+        
+		<action path="/browseQueueExecute" 
+				type="nl.nn.adapterframework.webcontrol.action.BrowseQueueExecute" 
+				name="browseQueueForm" 
+				scope="session" 
+				validate="false" 
+				input="/jsp/view.jsp?view=/jsp/browseQueue.jsp">
+        	<forward name="success" path="/jsp/view.jsp?view=/jsp/queueContents.jsp" />
+        	<forward name="cancel" path="/showConfigurationStatus.do" />
+        </action>        
+   
+		<action path="/browser" 
+				type="nl.nn.adapterframework.webcontrol.action.Browse" 
+				validate="false" name="browseQueueForm" scope="session">
+        	<forward name="success" path="/jsp/view.jsp?view=/jsp/browse.jsp" />
+        	<forward name="cancel" path="/showConfigurationStatus.do" />
+        </action>        
+
+		<action path="/browserExecute" 
+				type="nl.nn.adapterframework.webcontrol.action.BrowseExecute" 
+				validate="false" name="browseQueueForm" scope="session">
+        	<forward name="success" path="/jsp/view.jsp?view=/jsp/browse.jsp" />
+        	<forward name="cancel" path="/showConfigurationStatus.do" />
+        </action>        
+
+		<action	path="/browseJdbcTable" 
+       			type="nl.nn.adapterframework.webcontrol.action.BrowseJdbcTable" 
+       			name="browseJdbcTableForm" 
+       			scope="session" 
+       			validate="false" 
+       			input="/jsp/view.jsp?view=/jsp/browseJdbcTable.jsp">
+        	<forward name="success" path="/jsp/view.jsp?view=/jsp/browseJdbcTable.jsp" />
+        </action>
+        
+		<action path="/browseJdbcTableExecute" 
+				type="nl.nn.adapterframework.webcontrol.action.BrowseJdbcTableExecute" 
+				name="browseJdbcTableForm" 
+				scope="session" 
+				validate="false" 
+				input="/jsp/view.jsp?view=/jsp/browseJdbcTable.jsp">
+        	<forward name="success" path="/jsp/view.jsp?view=/jsp/jdbcTableContents.jsp" />
+        	<forward name="cancel" path="/showConfigurationStatus.do" />
+        </action>        
+
+        <action path="/logHandler" 
+                type="nl.nn.adapterframework.webcontrol.action.LogHandler"
+                scope="session" 
+                name="ConfigurationPropertiesForm"
+                validate="false">
+            <forward name="success" path="/showConfigurationStatus.do" redirect="true"/>
+        </action>
+        <action path="/showSchedulerStatus" 
+                type="nl.nn.adapterframework.webcontrol.action.ShowSchedulerStatus"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/showSchedulerStatus.jsp"/>
+        </action>
+        <action path="/schedulerHandler" 
+                type="nl.nn.adapterframework.webcontrol.action.SchedulerHandler">
+            <forward name="success" path="/showSchedulerStatus.do" redirect="true"/>
+        </action>
+        <action path="/showEnvironmentVariables" 
+                type="nl.nn.adapterframework.webcontrol.action.ShowEnvironmentVariables" 
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/showEnvironmentVariables.jsp"/>
+        </action>
+        <action path="/showSecurityItems" 
+                type="nl.nn.adapterframework.webcontrol.action.ShowSecurityItems" 
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/showSecurityItems.jsp"/>
+        </action>
+
+        <action path="/executeJdbcQuery" 
+                type="nl.nn.adapterframework.webcontrol.action.ExecuteJdbcQuery"
+                scope="session" 
+                name="executeJdbcQueryForm"
+                input="/jsp/view.jsp?view=/jsp/executeJdbcQuery.jsp"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/executeJdbcQuery.jsp"/>
+        </action>
+        <action path="/executeJdbcQueryExecute" 
+                type="nl.nn.adapterframework.webcontrol.action.ExecuteJdbcQueryExecute"
+                scope="session" 
+                name="executeJdbcQueryForm"
+                input="/jsp/view.jsp?view=/jsp/executeJdbcQuery.jsp"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/executeJdbcQuery.jsp"/>
+        </action>
+        <action path="/showIbisstoreSummary" 
+                type="nl.nn.adapterframework.webcontrol.action.ShowIbisstoreSummary"
+                scope="session" 
+                name="executeJdbcQueryForm"
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/showIbisstoreSummary.jsp"/>
+        </action>
+
+
+
+    </action-mappings>
+    <!-- ========== Controller Configuration ================================ -->
+    <controller nocache="true" inputForward="true" />
+    <!-- ========== Message Resources Definitions =========================== -->
+    <message-resources parameter="ApplicationResources"/>
+    <!-- ========== Plug Ins Configuration ================================== -->
+<!--    <plug-in className="org.apache.struts.validator.ValidatorPlugIn">
+        <set-property property="pathnames" value="/WEB-INF/validator-rules.xml,
+                            /WEB-INF/validation.xml"/>
+    </plug-in>
+-->
+</struts-config>

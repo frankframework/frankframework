@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployedServices>
+<isd:service xmlns:isd="http://xml.apache.org/xml-soap/deployment" id="urn:service-dispatcher">
+             <isd:provider type="java" scope="Request" methods="dispatchRequest">
+                <isd:java class="nl.nn.adapterframework.receivers.ServiceDispatcherBean" static="true"/>
+             </isd:provider>
+             <isd:faultListener>org.apache.soap.server.DOMFaultListener</isd:faultListener>
+</isd:service>
+</deployedServices>

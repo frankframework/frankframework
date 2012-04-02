@@ -1,0 +1,42 @@
+BODY {	
+	background-repeat: repeat;
+}
+BODY.stub {	
+	background-image: url('images/stub.png');
+}
+BODY.dev {	
+		background-image: url('images/dev.png');
+}
+BODY.dev_as {	
+		background-image: url('images/dev-as.png');
+}
+BODY.dev_ep {	
+		background-image: url('images/dev-ep.png');
+}
+BODY.tst {	
+		background-image: url('images/tst.png');
+}
+BODY.tst_as {	
+		background-image: url('images/tst-as.png');
+}
+BODY.tst_ep {	
+		background-image: url('images/tst-ep.png');
+}
+BODY.acc {	
+		background-image: url('images/acc.png');
+}
+BODY.acc_as {	
+		background-image: url('images/acc-as.png');
+}
+BODY.acc_ep {	
+		background-image: url('images/acc-ep.png');
+}
+BODY.prd {	
+		background-image: url('images/prd.png');
+}
+BODY.prd_as {	
+		background-image: url('images/prd-as.png');
+}
+BODY.prd_ep {	
+		background-image: url('images/prd-ep.png');
+}

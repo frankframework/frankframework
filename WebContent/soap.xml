@@ -1,0 +1,16 @@
+<soapServer>
+
+    <!-- 
+	In order to get Apache SOAP working on BEA WebLogic 6.1, 
+	this file needs to be placed in the working-directory, 
+	i.e. the directory 'bea\wlserver6.1'. WebSphere and Tomcat
+	read it as expected from the war-file.
+	Apache SOAP expects this file as a 'File' rather than a resource,
+	therefore it cannot be read from the war-file.
+	Gerrit van Brakel, 2003-07-28
+    -->
+	
+	<configManager value="nl.nn.adapterframework.util.SoapConfigManager">
+		<option name="filename" value="/WEB-INF/DeployedServices.xml"/>
+	</configManager>
+</soapServer>

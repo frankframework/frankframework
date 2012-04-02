@@ -2,17 +2,17 @@
 	<!-- ================================================================== -->
 	<target name="jar" description="Create the jar file">
 		<property name="build.dir" value="C:/Temp/AdapterFramework/build"/>
-		<property name="lib_path" value="../IbisWar/WebContent/WEB-INF/lib"/>
+		<property name="lib_path" value="WebContent/WEB-INF/lib"/>
 		<delete dir="${build.dir}"/>
 		<mkdir dir="${build.dir}"/>
-		<property file="bin/AppConstants.properties" prefix="ac"/>
+		<property file="WebContent/WEB-INF/classes/AppConstants.properties" prefix="ac"/>
 		<propertyfile file="${build.dir}/IAF.properties">
 			<entry key="timestamp" type="date" pattern="yyyyMMdd-HHmm" value="now"/>
 		</propertyfile>
 		<property file="${build.dir}/IAF.properties" prefix="iaf"/>
 		<jar destfile="${build.dir}/AdapterFramework ${ac.application.version}.jar" duplicate="preserve">
 			<fileset dir="JavaSource"/>
-			<fileset dir="bin"/>
+			<fileset dir="WebContent/WEB-INF/classes"/>
 			<manifest>
 				<attribute name="Built-By" value="${user.name}"/>
 				<section name="nl/nn/adapterframework/">

@@ -1,0 +1,218 @@
+
+BODY {	
+	margin-left: 10px;
+	font-family: tahoma,verdana,arial,helvetica;
+	font-size: 11px;
+	background-color:#deffff;
+	overflow:auto;
+}
+
+td.utilmenu{height:24px;border:1px solid #0083d7;}
+
+td.utilmenu:hover{height:24px;border:1px solid;border-left-color:#3e9ade;
+border-bottom-color:#003399;border-right-color:#003399;border-top-color:#3e9ade;}
+
+.tabBar{background-color:#0083d7; border:2px solid;border-left-color:#3e9ade; 
+	border-bottom-color:#003399;border-right-color:#003399;border-top-color:#3e9ade;} 
+
+
+
+/* ---- does not work in IE 5.0  
+a.utilmenu{height:24px;border:1px solid #0083d7;}
+a.utilmenu:hover{height:24px;border:1px solid;border-left-color:#3e9ade;
+border-bottom-color:#003399;border-right-color:#003399;border-top-color:#3e9ade;}
+*/
+/* instead (for IE 5.0):*/
+a.utilmenu:hover{background-color:#3e9ade}
+
+a.triggeractionmenu{height:24px;border:1px solid #ffff99;}
+a.triggeractionmenu:hover{height:24px;border:1px solid;border-left-color:#ddd;
+border-bottom-color:#003399;border-right-color:#003399;border-top-color:#ddd;}
+
+
+
+a.jobactionmenu{height:24px;border:1px solid #99ccff;}
+a.jobactionmenu:hover{height:24px;border:1px solid;border-left-color:white;
+border-bottom-color:#003399;border-right-color:#003399;border-top-color:white;}
+
+/* the ApplicationName */
+.appName{color: #333366;}
+
+table.page {background-color: transparent}
+table.page td.pagePanel{background-color:#b4e2ff;border:1px solid #0083d7; padding: 20px; }
+table.borderedTable{border:1px solid #0083d7; font-size: 11px;}
+table.page td.breadCrumb {background-color:transparent; border:1px solid #0083d7; padding:5px; font-weight : bold; color:#333366;}
+table.page td.breadCrumb a:hover  {color:#333366; text-decoration: underline}
+table.page td.breadCrumb a:visited{color:#333366; text-decoration: underline}
+table.page td.breadCrumb a:link   {color:#333366; text-decoration: underline}
+
+div.filterresult{margin-bottom:3px;overflow:auto;position:relative;visibility:visible;display:block;}
+td{font:11px Tahoma,verdana,arial,helvetica;color:#000;}
+.contentBlock{background-color:#EDF4F7;padding:5 5 5 10px;color:#005D7E;}
+.blockHeader{color:#005D7E;font:bold 12px Tahoma;}
+.line{background-color:#0083d7;}
+.rowEven{background-color:#D9E7EC;}
+.colHeader{font:bold 11px Tahoma;letter-spacing:0;background-color:#0083d7;color: #b4e2ff;border:1px solid #333;}
+.subHeader{font:bold 11px Tahoma;letter-spacing:0;background-color:#0083d7;color: #b4e2ff;border:1px solid #333;}
+.line{background-color:#0083d7;}
+.filterRow{font:11px Tahoma;padding:2 2 2 2px; border:1px solid #0083d7}
+.receiverRow{font:11px Tahoma;padding:2 2 2 2px; border:1px solid #0083d7;}
+.messagesRow {font:11px Tahoma;padding:2 2 2 2px; border:1px solid #0083d7;background-color: #D9E7EC;}
+.button{font:11px Tahoma;border:1px solid #0083d7;}
+.caption {font:bold 11px Tahoma;letter-spacing:0;background-color:#0083d7;color: #b4e2ff;border:1px solid #333;}
+
+form{display:inline;}
+input{font:11px tahoma;color:#000;border:1px solid #0083d7; background-color:#ffffff;}
+input.radio{border:none;background-color:#b4e2ff;}
+input.radioEven{border:none;background-color:#b4e2ff;}
+input.checkbox{background-color:#b4e2ff;}
+input.search{width:155px;}
+input.normal{background-color:#ffffff;}
+input.date{width:75px;}
+input.delete{font:bold 11px verdana;color:#8D0022;border:1px solid #0083d7; background-color:#b4e2ff;width:40;letter-spacing:-1px;}
+input.submit{font:bold 11px verdana;color:#8D0022;border:1px solid #0083d7; background-color:#b4e2ff;width:125px;letter-spacing:-1px;}
+input.reset{font:bold 11px verdana;color:#8D0022;border:1px solid #0083d7; background-color:#b4e2ff;width:125px;letter-spacing:-1px;}
+input.cancel{font:bold 11px verdana;color:#8D0022;border:1px solid #0083d7; background-color:#b4e2ff;width:125px;letter-spacing:-1px;}
+input.textarea{font:11px tahoma;color:#000;border:1px solid #0083d7; background-color:#b4e2ff;}
+select{font:11px tahoma;}
+select.normal{background-color:#ffffff;}
+select.lists{width:175px;}
+select.cmslists{width:245px}
+select.dirlist{width:300px;}
+textarea.normal{width:450px;font:11px tahoma;color:#000;border:1px solid #0083d7; background-color:#ffffff;}
+
+
+TH {
+	font-family: tahoma,verdana,arial,helvetica;
+	font-size: 11px;
+	color:#0083d7;font:bold 12px;
+}
+
+A:link {
+	COLOR: black; TEXT-DECORATION: underline
+}
+A:visited {
+	COLOR: blue; TEXT-DECORATION: underline
+}
+A:hover {
+	COLOR: #005D7E;
+	TEXT-DECORATION: underline
+}
+
+H2 A:visited {
+	COLOR: #333366
+}
+H3 A:visited {
+	COLOR: #333366
+}
+A.clsIncCpyRt {
+	FONT-SIZE: 11px; COLOR: #000000
+}
+A.clsIncCpyRt:hover {
+	COLOR: #0028de
+}
+A.clsBackTop {
+	MARGIN-TOP: 10px; FONT-SIZE: 90%; MARGIN-BOTTOM: 0px; PADDING-BOTTOM: 0px; COLOR: black
+}
+A.clsBackTop:visited {
+	MARGIN-TOP: 10px; FONT-SIZE: 90%; MARGIN-BOTTOM: 0px; PADDING-BOTTOM: 0px; COLOR: black
+}
+A.clsBackTop:hover {
+	COLOR: blue
+}
+PRE {
+	PADDING-RIGHT: 5pt; MARGIN-TOP: 1em; PADDING-LEFT: 5pt; BACKGROUND: #eeeeee; MARGIN-BOTTOM: 1em; PADDING-BOTTOM: 5pt; MARGIN-LEFT: 0px; PADDING-TOP: 5pt
+}
+PRE.clsCode {
+	FONT-SIZE: 120%; FONT-FAMILY: 'courier new',courier,serif
+}
+H1 {
+	color: #333366;
+	MARGIN: 0px 0px 5px; FONT: bold 125% tahoma,verdana,arial,helvetica
+}
+H2 {	color: #AD0045;
+	MARGIN-TOP: 1em; MARGIN-BOTTOM: 0.5em; FONT: bold 125% tahoma,verdana,arial,helvetica
+}
+H5 {
+	MARGIN-BOTTOM: 0.5em; FONT: bold 11px tahoma,verdana,arial,helvetica
+}
+H6 {
+	MARGIN-BOTTOM: 0.5em; FONT: bold 100% tahoma,verdana,arial,helvetica
+}
+TABLE.clsInfoHeader {
+	FONT-FAMILY: tahoma,verdana,arial,helvetica,sans-serif;
+	COLOR: black;
+	PADDING-RIGHT: 2pt; PADDING-LEFT: 2pt;
+	FONT-SIZE:  11px
+}
+.clsInfoHeader a:hover {
+	color:red
+}
+.clsInfoHeader a:link {
+	color:black
+}
+.clsInfoHeader a:visited {
+	color:black
+}
+	
+TABLE.clsNavTbl {
+	font-family: tahoma,verdana,arial,helvetica;
+	font-size: 11px;
+	MARGIN-LEFT: 10px
+}
+TABLE.clsNavTbl TH {
+	FONT-SIZE: 11px;
+	FONT-FAMILY: tahoma,verdana,arial,helvetica,sans-serif
+}
+TABLE.clsNavTbl TD {
+	FONT-SIZE: 11px;
+	BACKGROUND-COLOR: white ;
+	FONT-FAMILY: tahoma,verdana,arial,helvetica,sans-serif
+}
+TABLE.clsNavTbl CAPTION {
+	COLOR: "#000080";
+	BACKGROUND-COLOR: #ddd;
+	PADDING-BOTTOM: 0px
+}
+
+TABLE.clsStd TH {
+	PADDING-RIGHT: 2px;
+	PADDING-LEFT: 2px;
+	PADDING-BOTTOM: 2px;
+	VERTICAL-ALIGN: top;
+	PADDING-TOP: 2px;
+	BACKGROUND-COLOR: #ddd;
+	TEXT-ALIGN: left
+}
+TABLE.clsStd TD {
+	PADDING-RIGHT: 2px;
+	PADDING-LEFT: 2px;
+	PADDING-BOTTOM: 2px;
+	VERTICAL-ALIGN: top;
+	PADDING-TOP: 2px;
+	BACKGROUND-COLOR: #eee
+}
+TABLE.clsStd CAPTION {
+	PADDING-RIGHT: 2px;
+	PADDING-LEFT: 2px;
+	PADDING-BOTTOM: 2px;
+	VERTICAL-ALIGN: top;
+	PADDING-TOP: 2px;
+	BACKGROUND-COLOR: #ddd
+}
+
+TABLE.clsParamVls {
+	PADDING-RIGHT: 2pt; PADDING-LEFT: 2pt
+}
+TABLE.clsParamVls TD {
+	PADDING-RIGHT: 2pt; PADDING-LEFT: 2pt
+}
+
+TABLE.fixedFont TD {
+	FONT-FAMILY: courier, sans-serif;
+	PADDING-RIGHT: 6 px;
+}
+
+.clsError {
+	LIST-STYLE-IMAGE: url(images/error.gif)
+}

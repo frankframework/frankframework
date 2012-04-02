@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.38  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.39  2012-04-02 11:58:38  m00f069
+ * Changed from Java project to Web project
+ *
+ * Revision 1.38  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -175,7 +178,7 @@ import org.xml.sax.SAXParseException;
  * @see Configuration
  */
 abstract public class ConfigurationDigester {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.38 $ $Date: 2011-11-30 13:51:56 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.39 $ $Date: 2012-04-02 11:58:38 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
@@ -236,15 +239,19 @@ abstract public class ConfigurationDigester {
 		}
 	}
 	
-    
-    public void digestConfiguration(Object stackTop, URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException {
+	
+	public void digestConfiguration(Object stackTop, URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException {
 		
 		if (digesterRulesURL==null) {
 			digesterRulesURL = ClassUtils.getResourceURL(stackTop, DIGESTER_RULES_DEFAULT);
 		}
-        if (configurationFileURL == null) {
-            configurationFileURL = ClassUtils.getResourceURL(stackTop, IbisManager.DFLT_CONFIGURATION);
-        }
+		if (configurationFileURL == null) {
+			configurationFileURL = ClassUtils.getResourceURL(stackTop, IbisManager.DFLT_CONFIGURATION);
+		}
+		if (configurationFileURL == null) {
+			configWarnings.add(log, "Could not find " + IbisManager.DFLT_CONFIGURATION);
+			return;
+		}
 		Digester digester = createDigester();
 		//digester.setUseContextClassLoader(true);
 
@@ -255,7 +262,7 @@ abstract public class ConfigurationDigester {
 		digester.push("URL", configurationFileURL);
 		try {
 			// digester-rules.xml bevat de rules voor het digesten
-            
+
 			FromXmlRuleSet ruleSet = new FromXmlRuleSet(digesterRulesURL);
 
 			digester.addRuleSet(ruleSet);

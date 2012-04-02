@@ -1,0 +1,48 @@
+<form-validation>
+   <global>
+      <!--
+      <constant>
+        <constant-name>zip</constant-name>
+        <constant-value>^\d{5}\d*$</constant-value>
+      </constant>         	   
+      -->
+   </global>
+   <formset>
+      <!--
+      <constant>
+        <constant-name>zip</constant-name>
+        <constant-value>^\d{5}(-\d{4})?$</constant-value>
+      </constant>         	   
+      -->
+      <!--      
+      <form    name="registrationForm">
+         <field    property="firstName"
+         	   depends="required">
+         	     <arg0 key="registrationForm.firstname.displayname"/>
+         </field>    
+         <field    property="lastName"
+         	   depends="required,mask">
+         	     <arg0 key="registrationForm.firstname.displayname"/>
+                     <var>
+                       <var-name>mask</var-name>
+                       <var-value>^[a-zA-Z]*$</var-value>
+                     </var>
+         </field>    
+      </form>
+      -->
+   </formset>   
+   <!--
+   <formset language="fr">
+      <form    name="registrationForm">
+         <field    property="lastName"
+         	   depends="required,mask">
+         	     <arg0 key="registrationForm.firstname.displayname"/>
+                     <var>
+                       <var-name>mask</var-name>
+                       <var-value>^\w+$</var-value>
+                     </var>
+         </field>    
+      </form>
+   </formset>   
+   -->
+</form-validation>

@@ -1,0 +1,57 @@
+<form-validation>
+
+<!--
+     This is a blank Validator form file with a commented examples.
+-->
+
+    <global>
+
+        <!-- An example global constant
+        <constant>
+            <constant-name>postalCode</constant-name>
+            <constant-value>^\d{5}\d*$</constant-value>
+        </constant>
+        end example-->
+
+    </global>
+
+    <formset>
+        <form name="logonForm">
+            <field
+                property="dbdriver"
+                depends="required">
+                    <arg0 key="logon.dbdriver"/>
+             </field>
+	 <field
+	    property="dbname"
+	    depends="required">
+	    <arg0 key="logon.dbname"/>
+	 </field>
+	</form>
+        
+        <form name="SqlExecuteForm">
+	    <field
+	       property="maxrows"
+	        depends="integer">
+	      <arg0 key="sqlexecute.maxrows"/>
+             </field>
+	    <field
+	       property="commentindicator"
+	        depends="required">
+	      <arg0 key="sqlexecute.commentindicator"/>
+             </field>
+	    <field
+	       property="commandseparator"
+	        depends="required">
+	      <arg0 key="sqlexecute.commandseperator"/>
+             </field>
+	    <field
+	       property="sqlcommand"
+	        depends="required">
+	      <arg0 key="sqlexecute.sqlcommand"/>
+             </field>  
+          </form>
+    </formset>
+
+
+</form-validation>

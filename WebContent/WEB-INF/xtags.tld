@@ -1,0 +1,555 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+
+<!DOCTYPE taglib PUBLIC "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN" "http://java.sun.com/j2ee/dtds/web-jsptaglibrary_1_1.dtd">
+<taglib>
+  <tlibversion>1.0</tlibversion>
+  <jspversion>1.1</jspversion>
+  <shortname>xtags</shortname>
+  <uri>http://jakarta.apache.org/taglibs/xtags-1.0</uri>
+  <info>XTags is a JSP tag library for working with XSLT and XPath.
+    XTags lets you navigate, process and style XML documents directly in JSP.
+  XTags makes heavy use of the XPath expression language.
+      For a good tutorial on XPath you could try the either the 
+      Zvon tutorial or the 
+      specification.
+  XTags is currently built on top of dom4j the 
+    flexible open source XML framework for the Java platform.
+    Though increasingly XTags will use a pluggable XPath engine to support
+    the travesal of DOM and Java Beans too.
+  To begin with you need to parse an XML document from somewhere.
+    You can parse a variety of sources of XML documents from local resources,
+    the output of JSP or external web services.
+  You can parse the body of the tag
+  
+    &lt;xtags:parse&gt;
+        &lt;root&gt;
+            &lt;child/&gt;
+        &lt;/root&gt;
+    &lt;/xtags:parse&gt;
+Or parse an absolute URL via the "url" attribute
+  
+    &lt;xtags:parse url="http://something.com"/&gt;
+You can parse a web app resource using an absolute URI relative to the web-app
+  context using the "uri" attribute
+  
+    &lt;xtags:parse uri="/data/foo.xml"/&gt;
+Or you can use a URI relative to the the current JSP file
+  
+    &lt;xtags:parse uri="foo.xml"/&gt;
+Then for more complex
+  requirements such as parsing the output of a piece of JSP, you can do the following (provided you are using a JSP 1.2 container)
+  
+    &lt;xtags:parse&gt;
+        &lt;jsp:include page="foo.jsp"/&gt;
+    &lt;/xtags:parse&gt;
+Until then you can use the IO tag library to make these requests such as
+  
+    &lt;xtags:parse&gt;
+        &lt;io:request url="/foo.jsp"/&gt;
+    &lt;/xtags:parse&gt;
+Though the above would result in a seperate HTTP request which would loose 
+  all page, request and session scope state. 
+  So if it must be in the same request the following should work
+  though care should be taken to avoid scripting variable clashes
+  
+    &lt;xtags:parse&gt;
+        &lt;%@ include file="/foo.jsp" %&gt;
+    &lt;/xtags:parse&gt;
+To parse the output of an XML-RPC (or SOAP) call, using the IO taglib
+  you could do the following.
+  
+    &lt;xtags:parse&gt;
+        &lt;io:xmlrpc url="/xmlrpc_echo.jsp"&gt;
+         &lt;io:pipe&gt;
+          &lt;methodCall&gt;
+             &lt;methodName&gt;examples.getStateName&lt;/methodName&gt;
+             &lt;params&gt;
+                &lt;param&gt;
+                   &lt;value&gt;&lt;i4&gt;41&lt;/i4&gt;&lt;/value&gt;
+                   &lt;/param&gt;
+                &lt;/params&gt;
+             &lt;/methodCall&gt;
+         &lt;/io:pipe&gt;
+        &lt;/io:xmlrpc&gt;
+
+    &lt;/xtags:parse&gt;
+Once you have a document parsed you can navigate around its structure using XPath
+    expressions in a similar manner to that used in XSLT.Loops are as follows (an optional variable id can be specified to define a
+  scriptlet expression inside the loop):-
+  
+  &lt;xtags:forEach select="expression"&gt;
+    ...
+  &lt;/xtags:forEach&gt;
+Simple conditional branching is:-
+  
+  &lt;xtags:if test="booeanExpression"&gt;
+    ...
+  &lt;/xtags:if&gt;
+More complex conditional branching is:-
+  
+  &lt;xtags:choose&gt;
+    &lt;xtags:when test="booeanExpression"&gt;
+      ...
+    &lt;/xtags:when&gt;
+    &lt;xtags:when test="booeanExpression2"&gt;
+      ...
+    &lt;/xtags:when&gt;
+    &lt;xtags:otherwise&gt;
+      ...
+    &lt;/xtags:otherwise&gt;
+  &lt;/xtags:choose&gt;
+Expression evaluation
+  
+  &lt;xtags:valueOf select="expression"/&gt;
+Defining scriptlet variables
+  
+  &lt;xtags:variable id="variableName" select="expression"/&gt;
+All these tags are very similar to their XSLT equivalents, so anyone who's
+  done XSLT before should find them familiar.
+  There's also an &lt;xtags:style&gt; tag which performs complete XSL transform 
+  in one tag.
+  Accessing JSP scopes from XPathXPath expressions can use variables with the syntax $foo.
+  XTags binds these variables to either page/request/session/application scope
+  attributes or request parameters which allows xtags to be used as a
+  conditional logic scripting language too - even without the existence of XML
+  documents.
+  A prefix can be used to denote the exact JSP scope from which a variable comes
+    from such as $request:foo to denote request scope.
+    There now follows a full breakdown of all the current JSP scopes
+  $foomaps to pageContext.findAttribute("foo")$page:foomaps to page scope$request:foomaps to request scope$session:foomaps to session scope$app:foomaps to application scope$param:foomaps to request.getParameter("foo")$initParam:foomaps to request.getInitParameter("foo")$cookie:foomaps to the cookie's value for name foo$header:foomaps to request.getHeader("foo") For example, the following JSP would branch logically based on the value of
+  the (say) request parameter "param":-
+  
+  &lt;xtags:choose&gt;
+    &lt;xtags:when test="$param='a'"&gt;
+      current param is 'a'
+    &lt;/xtags:when&gt;
+    &lt;xtags:when test="$param='b'"&gt;
+      current param is 'b'
+    &lt;/xtags:when&gt;
+    &lt;xtags:otherwise&gt;
+      no valid param selected
+    &lt;/xtags:otherwise&gt;
+  &lt;/xtags:choose&gt;
+
+  XTags even supports the &lt;xtags:stylesheet&gt; &lt;xtags:template&gt; and
+  &lt;xtags:applyTemplates&gt; tags from XSLT too though the body of a template must
+  be an Action object or a seperate JSP file.
+  </info>
+  <tag>
+    <name>style</name>
+    <tagclass>org.apache.taglibs.xtags.xslt.StyleTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>document</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>xml</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>xmlReader</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>xmlSource</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>xsl</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>xslReader</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>xslSource</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>result</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>writer</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>outputMethod</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>param</name>
+    <tagclass>org.apache.taglibs.xtags.xslt.ParamTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>name</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>value</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>parse</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.ParseTag</tagclass>
+    <teiclass>org.apache.taglibs.xtags.xpath.ParseTagExtraInfo</teiclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>id</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>uri</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>url</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>reader</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>validate</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>valueOf</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.ValueOfTag</tagclass>
+    <bodycontent>empty</bodycontent>
+    <attribute>
+      <name>select</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>context</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>forEach</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.ForEachTag</tagclass>
+    <teiclass>org.apache.taglibs.xtags.xpath.ForEachTagExtraInfo</teiclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>select</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>sort</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>distinct</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>ascending</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>context</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>id</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>type</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>choose</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.ChooseTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+  </tag>
+  <tag>
+    <name>when</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.WhenTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>test</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>context</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>otherwise</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.OtherwiseTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+  </tag>
+  <tag>
+    <name>break</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.BreakTag</tagclass>
+    <bodycontent>empty</bodycontent>
+  </tag>
+  <tag>
+    <name>if</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.IfTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>test</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>context</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>variable</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.VariableTag</tagclass>
+    <teiclass>org.apache.taglibs.xtags.xpath.VariableTagExtraInfo</teiclass>
+    <bodycontent>empty</bodycontent>
+    <attribute>
+      <name>id</name>
+      <required>true</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>type</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>select</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>context</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>stylesheet</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.StylesheetTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>context</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>template</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.TemplateTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>match</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>mode</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>avt</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>action</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>applyTemplates</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.ApplyTemplatesTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>select</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>mode</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>element</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.ElementTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>name</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>attribute</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.AttributeTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>name</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>output</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.OutputTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>method</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>indent</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>omitXmlDeclaration</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>copy</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.CopyTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>select</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>context</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>copyOf</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.CopyOfTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>select</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>context</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>context</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.ContextTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>select</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>context</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>remove</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.RemoveTag</tagclass>
+    <bodycontent>empty</bodycontent>
+    <attribute>
+      <name>select</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>add</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.AddTag</tagclass>
+    <bodycontent>jsp</bodycontent>
+    <attribute>
+      <name>before</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>after</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>replace</name>
+    <tagclass>org.apache.taglibs.xtags.xpath.ReplaceTag</tagclass>
+    <bodycontent>jsp</bodycontent>
+  </tag>
+</taglib>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
