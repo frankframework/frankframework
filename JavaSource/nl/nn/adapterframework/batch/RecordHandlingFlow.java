@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlingFlow.java,v $
- * Revision 1.16  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.17  2012-04-03 08:13:12  europe\m168309
+ * added ConfigurationException for openBlockBeforeLineNumber
+ *
+ * Revision 1.16  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -83,7 +86,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public final class RecordHandlingFlow {
-	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.16 $ $Date: 2011-11-30 13:51:56 $";
+	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.17 $ $Date: 2012-04-03 08:13:12 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String recordKey;
@@ -104,6 +107,10 @@ public final class RecordHandlingFlow {
 	private IResultHandler resultHandler;
 	
 	public void configure(IRecordHandlerManager manager, Map registeredManagers, Map registeredRecordHandlers, Map registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
+		if (getOpenBlockBeforeLineNumber()>0 && StringUtils.isEmpty(getOpenBlockBeforeLine())) {
+			    	throw new ConfigurationException("openBlockBeforeLine must be set when openBlockBeforeLineNumber > 0");
+			}
+
 		if (StringUtils.isNotEmpty(getRecordHandlerManagerRef()) &&
 		    !getRecordHandlerManagerRef().equals(manager.getName())) {
 		    	throw new ConfigurationException("recordHandlerManagerRef ["+getRecordHandlerManagerRef()+"] should be either equal to name of manager ["+manager.getName()+"], or left unspecified");
