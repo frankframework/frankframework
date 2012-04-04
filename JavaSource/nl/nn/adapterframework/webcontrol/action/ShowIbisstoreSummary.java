@@ -1,6 +1,9 @@
 /*
  * $Log: ShowIbisstoreSummary.java,v $
- * Revision 1.9  2011-11-30 13:51:46  europe\m168309
+ * Revision 1.10  2012-04-04 09:45:52  europe\m168309
+ * fixed empty result issue (caused in v4_12_a10)
+ *
+ * Revision 1.9  2011/11/30 13:51:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -72,7 +75,7 @@ import org.apache.struts.action.ActionMapping;
  */
 
 public class ShowIbisstoreSummary extends ActionBase {
-	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.9 $ $Date: 2011-11-30 13:51:46 $";
+	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.10 $ $Date: 2012-04-04 09:45:52 $";
 
 	public static final String SHOWIBISSTORECOOKIE="ShowIbisstoreSummaryCookieName";
 	public static final String SHOWIBISSTOREQUERYKEY="ibisstore.summary.query";
@@ -182,6 +185,9 @@ public class ShowIbisstoreSummary extends ActionBase {
 			try {
 				qs = new DirectQuerySender() {
 					protected String getResult(ResultSet resultset) throws JdbcException, SQLException, IOException {
+						return getResult(resultset,null,null);
+					}
+					protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
 						XmlBuilder result = new XmlBuilder("result");
 						String previousType=null;
 						XmlBuilder typeXml=null;
