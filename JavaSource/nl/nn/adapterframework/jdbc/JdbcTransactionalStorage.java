@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.57  2012-02-17 18:04:02  m00f069
+ * Revision 1.58  2012-04-04 09:05:15  europe\m168309
+ * split order for messageLog (DESC) and errorStorage (ASC)
+ *
+ * Revision 1.57  2012/02/17 18:04:02  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Use proxiedDataSources for JdbcIteratingPipeBase too
  * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
  *
@@ -379,7 +382,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private int retention = 30;
 	private String schemaOwner4Check=null;
 	
-	private String order=AppConstants.getInstance().getString("browse.messages.order","");
+	private String order;
+	private String messagesOrder=AppConstants.getInstance().getString("browse.messages.order","");
+	private String errorsOrder=AppConstants.getInstance().getString("browse.errors.order","");
    
 	protected static final int MAXIDLEN=100;		
 	protected static final int MAXCIDLEN=256;		
@@ -1687,7 +1692,19 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		order = string;
 	}
 	public String getOrder() {
-		return order;
+		if (StringUtils.isNotEmpty(order)) {
+			return order;
+		} else {
+			if (type.equalsIgnoreCase(TYPE_MESSAGELOG_PIPE) || type.equalsIgnoreCase(TYPE_MESSAGELOG_RECEIVER)) {
+				return messagesOrder;
+			} else {
+				if (type.equalsIgnoreCase(TYPE_ERRORSTORAGE)) {
+					return errorsOrder;
+				} else {
+					return order;
+				}
+			}
+		}
 	}
 
 	public void setBlobsCompressed(boolean b) {
