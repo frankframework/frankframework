@@ -8,19 +8,19 @@
 	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/com.ibm.ws.ast.st.runtime.runtimeTarget.v61/was.base.v61"/>
 	<classpathentry kind="src" path="JavaSource"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
-	<classpathentry kind="lib" path="sapjco3.jar"/>
-	<classpathentry kind="lib" path="sapidoc3.jar"/>
-	<classpathentry kind="lib" path="sapjco.jar"/>
-	<classpathentry kind="lib" path="sapidoc-1.0.1.jar"/>
-	<classpathentry kind="lib" path="sapidocjco-1.0.2.jar"/>
-	<classpathentry kind="lib" path="IFSACommon.jar"/>
-	<classpathentry kind="lib" path="ifsaj2ee.jar"/>
-	<classpathentry kind="lib" path="ifsajcil.jar"/>
-	<classpathentry kind="lib" path="ifsajmsXA-22.10.055(beta).jar"/>
-	<classpathentry kind="lib" path="IFSAProviderEJB.jar"/>
-	<classpathentry kind="lib" path="IFSARequestorEJB.jar"/>
-	<classpathentry kind="lib" path="jsse.jar"/>
-	<classpathentry kind="lib" path="mett-server.jar"/>
-	<classpathentry kind="lib" path="ojdbc14.jar"/>
+	<classpathentry kind="lib" path="lib/sapjco3.jar"/>
+	<classpathentry kind="lib" path="lib/sapidoc3.jar"/>
+	<classpathentry kind="lib" path="lib/sapjco.jar"/>
+	<classpathentry kind="lib" path="lib/sapidoc-1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/sapidocjco-1.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/IFSACommon.jar"/>
+	<classpathentry kind="lib" path="lib/ifsaj2ee.jar"/>
+	<classpathentry kind="lib" path="lib/ifsajcil.jar"/>
+	<classpathentry kind="lib" path="lib/ifsajmsXA-22.10.055(beta).jar"/>
+	<classpathentry kind="lib" path="lib/IFSAProviderEJB.jar"/>
+	<classpathentry kind="lib" path="lib/IFSARequestorEJB.jar"/>
+	<classpathentry kind="lib" path="lib/jsse.jar"/>
+	<classpathentry kind="lib" path="lib/mett-server.jar"/>
+	<classpathentry kind="lib" path="lib/ojdbc14.jar"/>
 	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
 </classpath>
