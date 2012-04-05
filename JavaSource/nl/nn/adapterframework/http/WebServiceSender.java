@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.41  2012-04-02 07:57:36  europe\m168309
+ * Revision 1.42  2012-04-05 07:30:29  europe\m168309
+ * reversed "HttpSender: split getMethod() in getGetMethod() and getPostMethod()"
+ *
+ * Revision 1.41  2012/04/02 07:57:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * HttpSender: split getMethod() in getGetMethod() and getPostMethod()
  *
  * Revision 1.40  2012/03/15 16:53:59  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -280,7 +283,7 @@ public class WebServiceSender extends HttpSender {
 			soapmsg = soapWrapper.signMessage(soapmsg,wsscf.getUsername(),wsscf.getPassword());
 		}
 
-		HttpMethod method = super.getGetMethod(uri, soapmsg,parameters);
+		HttpMethod method = super.getMethod(uri, soapmsg,parameters);
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"setting Content-Type and SOAPAction header ["+soapActionURI+"]");
 		method.addRequestHeader("SOAPAction",soapActionURI);
 		return method;
