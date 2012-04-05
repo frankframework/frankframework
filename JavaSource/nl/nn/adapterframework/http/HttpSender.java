@@ -1,6 +1,10 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.55  2012-03-30 11:34:52  europe\m168309
+ * Revision 1.56  2012-04-05 07:31:23  europe\m168309
+ * - reversed "HttpSender: split getMethod() in getGetMethod() and getPostMethod()"
+ * - added paramsInUrl attribute
+ *
+ * Revision 1.55  2012/03/30 11:34:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * - added inputMessageParam and ignoreRedirects attributes
  * - split getMethod() in getGetMethod() and getPostMethod()
  *
@@ -249,16 +253,23 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
  * <tr><td>{@link #setStaleChecking(boolean) staleChecking}</td><td>controls whether connections checked to be stale, i.e. appear open, but are not.</td><td>true</td></tr>
  * <tr><td>{@link #setEncodeMessages(boolean) encodeMessages}</td><td>specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.</td><td>false</td></tr>
- * <tr><td>{@link #setInputMessageParam(String) inputMessageParam}</td><td>(only used when <code>methodeType=POST</code>) name of the request-parameter which is used to put the input message in</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setParamsInUrl(boolean) paramsInUrl}</td><td>(only used when <code>methodeType=POST</code>) when true, request parameters are put in the url instead of in the request body</td><td>true</td></tr>
+ * <tr><td>{@link #setInputMessageParam(String) inputMessageParam}</td><td>(only used when <code>methodeType=POST</code> and <code>paramsInUrl=false</code>) name of the request parameter which is used to put the input message in</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIgnoreRedirects(boolean) ignoreRedirects}</td><td>when true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
  * <p>Any parameters present are appended to the request as request-parameters</p>
  * 
- * <p><b>For GET methods it is also possible to put parameters in the input message:</b></p>
+ * <p><b>Expected message format:</b></p>
+ * <p>GET methods expect a message looking like this</p>
  * <pre>
  *   param_name=param_value&another_param_name=another_param_value
+ * </pre>
+ * <p>POST methods expect a message similar as GET, or looking like this</p>
+ * <pre>
+ *   param_name=param_value
+ *   another_param_name=another_param_value
  * </pre>
  *
  * <p>
@@ -354,6 +365,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private boolean followRedirects=true;
 	private boolean staleChecking=true;
 	private boolean encodeMessages=false;
+	private boolean paramsInUrl=true;
 	private boolean ignoreRedirects=false;
 
 	protected Parameter urlParameter;
@@ -403,6 +415,16 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
+		
+		if (!getMethodType().equals("POST")) {
+			if (isParamsInUrl()) {
+				throw new ConfigurationException(getLogPrefix()+"paramsInUrl can only be set to true for methodType POST");
+			}
+			if (StringUtils.isNotEmpty(getInputMessageParam())) {
+				throw new ConfigurationException(getLogPrefix()+"inputMessageParam can only be set for methodType POST");
+			}
+		}
+		
 //		System.setProperty("javax.net.debug","all"); // normaal Java
 //		System.setProperty("javax.net.debug","true"); // IBM java
 		httpclient = new HttpClient();
@@ -536,7 +558,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		return parametersAppended;
 	}
 
-	protected HttpMethod getGetMethod(URI uri, String message, ParameterValueList parameters) throws SenderException {
+	protected HttpMethod getMethod(URI uri, String message, ParameterValueList parameters) throws SenderException {
 		try { 
 			boolean queryParametersAppended = false;
 			if (isEncodeMessages()) {
@@ -549,32 +571,55 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				queryParametersAppended = true;
 			}
 			
-			if (parameters!=null) {
-				queryParametersAppended = appendParameters(queryParametersAppended,path,parameters);
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
+			if (getMethodType().equals("GET")) {
+				if (parameters!=null) {
+					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters);
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
+				}
+				GetMethod result = new GetMethod(path+(parameters==null? message:""));
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+result.getQueryString()+"]");
+				return result;
+			} 
+			if (getMethodType().equals("POST")) {
+				PostMethod postMethod = new PostMethod(path.toString());
+				if (StringUtils.isNotEmpty(getContentType())) {
+					postMethod.setRequestHeader("Content-Type",getContentType());
+				}
+				if (parameters!=null) {
+					StringBuffer msg = new StringBuffer(message);
+					appendParameters(true,msg,parameters);
+					if (StringUtils.isEmpty(message) && msg.length()>1) {
+						message=msg.substring(1);
+					} else {
+						message=msg.toString();
+					}
+				}
+				postMethod.setRequestBody(message);
+			
+				return postMethod;
 			}
-			GetMethod result = new GetMethod(path+(parameters==null? message:""));
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+result.getQueryString()+"]");
-			return result;
+			throw new SenderException("unknown methodtype ["+getMethodType()+"], must be either POST or GET");
 		} catch (URIException e) {
 			throw new SenderException(getLogPrefix()+"cannot find path from url ["+getUrl()+"]", e);
 		}
 
 	}
 
-	protected PostMethod getPostMethod(URI uri, String message, ParameterValueList parameters) throws SenderException {
+	protected PostMethod getPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters) throws SenderException {
 		try {
 			PostMethod hmethod = new PostMethod(uri.getPath());
 			if (StringUtils.isNotEmpty(getInputMessageParam())) {
 				hmethod.addParameter(getInputMessageParam(),message);
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+getInputMessageParam()+"] with value ["+message+"]");
 			}
-			for(int i=0; i<parameters.size(); i++) {
-				ParameterValue pv = parameters.getParameterValue(i);
-				String name = pv.getDefinition().getName();
-				String value = pv.asStringValue("");
-				hmethod.addParameter(name,value);
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+			if (parameters!=null) {
+				for(int i=0; i<parameters.size(); i++) {
+					ParameterValue pv = parameters.getParameterValue(i);
+					String name = pv.getDefinition().getName();
+					String value = pv.asStringValue("");
+					hmethod.addParameter(name,value);
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+				}
 			}
 			return hmethod;
 		} catch (URIException e) {
@@ -639,13 +684,15 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				uri=staticUri;
 			}
 
-			if ("POST".equals(getMethodType())) {
-				httpmethod=getPostMethod(uri, message, pvl);
+			if (!isParamsInUrl()) {
+				httpmethod=getPostMethodWithParamsInBody(uri, message, pvl);
 			} else {
-				httpmethod=getGetMethod(uri, message, pvl);
-				httpmethod.setFollowRedirects(isFollowRedirects());
+				httpmethod=getMethod(uri, message, pvl);
+				if (!"POST".equals(getMethodType())) {
+					httpmethod.setFollowRedirects(isFollowRedirects());
+				}
 			}
-	
+
 			int port = getPort(uri);
 		
 			if (socketfactory!=null && "https".equals(uri.getScheme())) {
@@ -973,5 +1020,12 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public boolean isIgnoreRedirects() {
 		return ignoreRedirects;
+	}
+
+	public void setParamsInUrl(boolean b) {
+		paramsInUrl = b;
+	}
+	public boolean isParamsInUrl() {
+		return paramsInUrl;
 	}
 }
