@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.11  2012-02-15 08:10:10  europe\m168309
+ * Revision 1.12  2012-04-06 14:51:40  europe\m168309
+ * updated javadoc
+ *
+ * Revision 1.11  2012/02/15 08:10:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * avoid NPE
  *
  * Revision 1.10  2012/02/10 15:32:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -116,7 +119,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <table border="1">
  * <tr><th>element</th><th>level</th><th>value</th></tr>
  * <tr><td>MessageHeader</td><td>0</td><td>&nbsp;</td></tr>
- * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns="http://www.ing.com/CSP/XSD/General/Message_2"</td></tr>
+ * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns=$namespace</td></tr>
  * <tr><td>From</td><td>1</td><td>&nbsp;</td></tr>
  * <tr><td>Id</td><td>2</td><td>$fromId</td></tr>
  * <tr><td>HeaderFields</td><td>1</td><td>&nbsp;</td></tr>
@@ -129,6 +132,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <b>Parameters:</b>
  * <table border="1">
  * <tr><th>name</th><th>default</th></tr>
+ * <tr><td>namespace</td><td>"http://www.ing.com/CSP/XSD/General/Message_2"</td></tr>
  * <tr><td>fromId</td><td>property 'instance.name'</td></tr>
  * <tr><td>conversationId</td><td>if $paradigm equals 'Response' or 'Reply' then copied from the original (received) SOAP Header, else parameter pattern '{hostname}_{uid}'</td></tr>
  * <tr><td>messageId</td><td>parameter pattern '{hostname}_{uid}'</td></tr>
@@ -172,6 +176,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <b>Parameters:</b>
  * <table border="1">
  * <tr><th>name</th><th>default</th></tr>
+ * <tr><td>namespace</td><td>"http://www.ing.com/CSP/XSD/General/Message_2"</td></tr>
  * <tr><td>errorCode</td><td>&nbsp;</td></tr>
  * <tr><td>errorReason</td><td>&nbsp;</td></tr>
  * <tr><td>errorDetailCode</td><td>&nbsp;</td></tr>
@@ -189,7 +194,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><th>element</th><th>level</th><th>value</th></tr>
  * <tr><td>[Payload]</td><td>0</td><td>if $errorCode is empty then the complete payload will be copied and if not already existing a Result tag will be added<br/>else only the root tag will be copied</td></tr>
  * <tr><td>Result</td><td>1</td><td>this element will be the last child in the copied root tag (only applicable for $paradigm 'Response' and 'Reply'); if $errorCode is empty and a Result tag already exists then skip this element including its child elements</td></tr>
- * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns="http://www.ing.com/CSP/XSD/General/Message_2"</td></tr>
+ * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns=$namespace</td></tr>
  * <tr><td>Status</td><td>2</td><td>if $errorCode is empty then 'OK'</br>else 'ERROR'</td></tr>
  * <tr><td>ErrorList</td><td>2</td><td>if $errorCode is empty then skip this element including its child elements</td></tr>
  * <tr><td>Error</td><td>3</td><td>&nbsp;</td></tr>
