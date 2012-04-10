@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.24  2011-11-30 13:51:45  europe\m168309
+ * Revision 1.25  2012-04-10 07:50:18  europe\m168309
+ * truncate long adapter messages
+ *
+ * Revision 1.24  2011/11/30 13:51:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -83,6 +86,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -100,7 +104,9 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.24 $ $Date: 2011-11-30 13:51:45 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.25 $ $Date: 2012-04-10 07:50:18 $";
+
+	private int maxMessageSize = AppConstants.getInstance().getInt("adapter.message.max.size",0); 
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -305,7 +311,11 @@ public final class ShowConfigurationStatus extends ActionBase {
 			adapterXML.addSubElement(adapterMessages);
 			for (int t=0; t<adapter.getMessageKeeper().size(); t++) {
 				XmlBuilder adapterMessage=new XmlBuilder("adapterMessage");
-				adapterMessage.setValue(adapter.getMessageKeeper().getMessage(t).getMessageText(),true);
+				String msg = adapter.getMessageKeeper().getMessage(t).getMessageText();
+				if (maxMessageSize>0 && msg.length()>maxMessageSize) {
+					msg = msg.substring(0, maxMessageSize) + "...(" + (msg.length()-maxMessageSize) + " characters more)";
+				}
+				adapterMessage.setValue(msg,true);
 				adapterMessage.addAttribute("date", DateUtils.format(adapter.getMessageKeeper().getMessage(t).getMessageDate(), DateUtils.FORMAT_FULL_GENERIC));
 				adapterMessages.addSubElement(adapterMessage);
 			}
