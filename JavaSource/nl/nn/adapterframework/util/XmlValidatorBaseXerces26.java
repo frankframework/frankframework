@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.16  2012-03-30 17:03:45  m00f069
+ * Revision 1.17  2012-04-12 12:49:06  m00f069
+ * Use errorHandler.throwOnError = false on preparse single schema
+ *
+ * Revision 1.16  2012/03/30 17:03:45  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Michiel added JMS binding/service to WSDL generator, made WSDL validator work for Bis WSDL and made console show syntax problems for schema's used in XmlValidator
  *
  * Revision 1.15  2012/03/27 10:08:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -229,7 +232,6 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
         preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
         preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
         MyErrorHandler errorHandler = new MyErrorHandler();
-        errorHandler.throwOnError = true;
         errorHandler.warn = warn;
         preparser.setErrorHandler(errorHandler);
         if (singleSchema) {
@@ -244,6 +246,7 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 
             // Loop over the definitions until nothing changes
             // This makes sure that the _order_ is not important in the 'schemas'.
+            errorHandler.throwOnError = true;
             boolean changes;
             do {
                 changes = false;
