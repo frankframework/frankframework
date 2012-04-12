@@ -1,3 +1,9 @@
+/*
+ * $Log: EsbSoapValidator.java,v $
+ * Revision 1.3  2012-04-12 08:50:02  m00f069
+ * CommonMessageHeader.xsd namespace has changed (uri -> http)
+ *
+ */
 package nl.nn.adapterframework.extensions.esb;
 
 import java.util.Collection;
@@ -11,10 +17,11 @@ import nl.nn.adapterframework.soap.SoapValidator;
  * This is a SoapValidator, but it presupposes ESB wrapping of the body.
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
+ * @version Id
  */
 public class EsbSoapValidator extends SoapValidator {
 
-    public  static final String GENERIC_HEADER_XMLNS   = "uri://nn.nl/XSD/Generic/MessageHeader/1";
+    public  static final String GENERIC_HEADER_XMLNS   = "http://nn.nl/XSD/Generic/MessageHeader/1";
     public  static final QName  GENERIC_HEADER_TAG     = new QName(GENERIC_HEADER_XMLNS, "MessageHeader");
 
     private static final String GENERIC_HEADER_XSD     = "/xml/xsd/CommonMessageHeader.xsd";
