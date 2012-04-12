@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.22  2011-11-30 13:51:49  europe\m168309
+ * Revision 1.23  2012-04-12 09:01:26  m00f069
+ * Fix getResourceURL for getting XSD from IAF jar (which contains a space in filename)
+ *
+ * Revision 1.22  2011/11/30 13:51:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -81,9 +84,9 @@ import org.apache.log4j.Logger;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.22 $ $Date: 2011-11-30 13:51:49 $";
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.23 $ $Date: 2012-04-12 09:01:26 $";
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
-	
+
 	private static final boolean trace=false;
 
     /**
@@ -124,13 +127,13 @@ public class ClassUtils {
     public static InputStream getResourceAsStream(Class klass, String resource) throws  IOException {
 	    InputStream stream=null;
 	    URL url=getResourceURL(klass, resource);
-     
- 
+
+
 	     stream=url.openStream();
         return stream;
-         
+
     }
-    
+
 	static public URL getResourceURL(String resource) {
 		return getResourceURL(null,resource);
 	}
@@ -140,18 +143,18 @@ public class ClassUtils {
      * if not found with class.
 	 *
      * @deprecated Use getResourceURL(Object, resource) instead.
-     * 
+     *
      */
     static public URL getResourceURL(Class klass, String resource)
     {
-    	resource=Misc.replace(resource,"%20"," ");
+    	resource = Misc.replace(resource,"%20"," ");
         URL url = null;
-        
+
 		if (klass == null) {
 			klass = ClassUtils.class;
 		}
-        
-        // first try to get the resoure as a resource
+
+        // first try to get the resource as a resource
         url = klass.getResource(resource);
 		if (url == null) {
 			url = klass.getClassLoader().getResource(resource);
@@ -159,11 +162,11 @@ public class ClassUtils {
 		// then try to get it as a URL
 		if (url == null) {
 			try {
-				url = new URL(resource);
-			} catch(MalformedURLException e) {
-				log.debug("Could not find resource as URL ["+resource+"]: "+e.getMessage());
+				url = new URL(Misc.replace(resource," ","%20"));
+            } catch(MalformedURLException e) {
+				log.debug("Could not find resource as URL [" + resource + "]: "+e.getMessage());
 			}
-		}		
+        }
 		// then try to get it in java:comp/env
 		if (url == null && resource!=null && !resource.startsWith("java:comp/env/")) {
 			log.debug("cannot find URL for resource ["+resource+"], now trying [java:comp/env/"+resource+"] (e.g. for TomCat)");
@@ -173,7 +176,7 @@ public class ClassUtils {
 				url = klass.getClassLoader().getResource(altResource);
 			}
 		}
-		
+
         if (url==null)
           log.warn("cannot find URL for resource ["+resource+"]");
         else {
@@ -205,7 +208,7 @@ public class ClassUtils {
   /**
      * Get a resource-URL, first from Class then from ClassLoader
      * if not found with class.
-     * 
+     *
      */
     static public URL getResourceURL(Object obj, String resource)
     {
@@ -304,7 +307,7 @@ public class ClassUtils {
      return theObject;
 
   }
-  
+
 	/**
 	 * Creates a new instance from a class, while it looks for a constructor
 	 * that matches the parameters, and initializes the object (by calling the constructor)
@@ -322,7 +325,7 @@ public class ClassUtils {
 	        parameterClasses[i] = parameterObjects[i].getClass();
 	    return newInstance(className, parameterClasses, parameterObjects);
 	}
-	
+
     /**
      * Gets the absolute pathname of the class file
      * containing the specified class name, as prescribed
@@ -338,10 +341,10 @@ public class ClassUtils {
         }
         return path;
     }
- 
+
  	/**
- 	 * returns the classname of the object, without the pacakge name. 
- 	 */   
+ 	 * returns the classname of the object, without the pacakge name.
+ 	 */
 	public static String nameOf(Object o) {
 		if (o==null) {
 			return "<null>";
@@ -360,7 +363,7 @@ public class ClassUtils {
 	}
 	public static void invokeSetter(Object o, String name, Object value, Class clazz) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		Class argsTypes[] = { clazz };
-		Method setterMtd = o.getClass().getMethod(name, argsTypes ); 
+		Method setterMtd = o.getClass().getMethod(name, argsTypes );
 		Object args[] = { value };
 		setterMtd.invoke(o,args);
 	}
@@ -372,7 +375,7 @@ public class ClassUtils {
 		}
 	}
 	public static Object invokeGetter(Object o, String name, boolean forceAccess) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		Method getterMtd = o.getClass().getMethod(name, null ); 
+		Method getterMtd = o.getClass().getMethod(name, null );
 		if (forceAccess) {
 			getterMtd.setAccessible(true);
 		}
@@ -392,7 +395,7 @@ public class ClassUtils {
 	public static String invokeStringGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		return (String)invokeGetter(o,name);
 	}
-	
+
 	public static Object getFieldValueSafe(Object o, String name) {
 		try {
 			return getFieldValue(o,name);
@@ -455,7 +458,7 @@ public class ClassUtils {
 		}
 		result.append("\n");
 	}
-	
+
 	public static String debugObject(Object o) {
 		if (o==null) {
 			return null;
@@ -474,7 +477,7 @@ public class ClassUtils {
 		result.append("reflectionToString=["+reflectionToString(o,null)+"]\n");
 		return result.toString();
 	}
-	
+
 	public static String reflectionToString(final Object o, final String fieldnameEnd) {
 		String result=(new ReflectionToStringBuilder(o) {
 				protected boolean accept(Field f) {
