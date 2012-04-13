@@ -1,6 +1,9 @@
 /*
  * $Log: EsbJmsSender.java,v $
- * Revision 1.3  2012-01-06 13:29:51  europe\m168309
+ * Revision 1.4  2012-04-13 13:45:15  europe\m168309
+ * adjusted javadoc
+ *
+ * Revision 1.3  2012/01/06 13:29:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * don't override soapAction when set
  *
  * Revision 1.2  2012/01/05 10:25:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -35,7 +38,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setMessageTimeToLive(String) messageTimeToLive}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
  * <tr><td>{@link #setReplyTimeout(String) replyTimeout}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
  * <tr><td>{@link #setSynchronous(String) synchronous}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
- * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>if empty then derived from the element MessageHeader/To/Location in the SOAP header of the input message</td></tr>
+ * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>if empty then derived from the element MessageHeader/To/Location in the SOAP header of the input message (if $messagingLayer='P2P' then '$applicationName_$applicationFunction_$paradigm' else '$serviceName_$serviceContext_$serviceContextVersion_$operationName_$operationVersion_$paradigm')</td></tr>
  * </table></p>
  * 
  * @author  Peter Leeuwenburgh
