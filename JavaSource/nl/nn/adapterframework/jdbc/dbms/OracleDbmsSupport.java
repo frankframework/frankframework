@@ -1,6 +1,9 @@
 /*
  * $Log: OracleDbmsSupport.java,v $
- * Revision 1.6  2011-11-30 13:51:45  europe\m168309
+ * Revision 1.7  2012-04-17 11:51:14  europe\m168309
+ * The syntax "NOWAIT SKIP LOCKED" is not accepted in Oracle 11.2. The "NOWAIT" keyword and "SKIP LOCKED" keyword have become mutually exclusive. Remove the "NOWAIT" if you want to use "SKIP LOCKED".
+ *
+ * Revision 1.6  2011/11/30 13:51:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -107,7 +110,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 			 * http://www.ss64.com/ora/select.html
 			 * http://forums.oracle.com/forums/thread.jspa?threadID=664986
 			 */
-			return selectQuery+" FOR UPDATE NOWAIT SKIP LOCKED";
+			return selectQuery+" FOR UPDATE SKIP LOCKED";
 	}
 
 	public String provideIndexHintAfterFirstKeyword(String tableName, String indexName) {
