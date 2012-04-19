@@ -1,6 +1,9 @@
 /*
  * $Log: CommandSender.java,v $
- * Revision 1.10  2011-11-30 13:52:00  europe\m168309
+ * Revision 1.11  2012-04-19 16:15:58  m00f069
+ * Added default value in docs for commandWithArguments
+ *
+ * Revision 1.10  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -51,7 +54,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.CommandSender</td><td>&nbsp;</td></tr>
  * <tr><td>command</td><td>the command to execute. When not specified the input message is supposed to be the command</td><td>&nbsp;</td></tr>
- * <tr><td>commandWithArguments</td><td>whether the command is supposed to contain arguments or not. When the command contains arguments but is executed as a command without arguments you probably get an error=123</td><td>&nbsp;</td></tr>
+ * <tr><td>commandWithArguments</td><td>whether the command is supposed to contain arguments or not. When the command contains arguments but is executed as a command without arguments you probably get an error=123</td><td>false</td></tr>
  * <tr><td>timeOut</td><td>timeout in seconds. To disable the timeout and keep waiting until the process in completely finished, set this value to 0</td><td>0</td></tr>
  * </table>
  * </p>
