@@ -20,16 +20,16 @@
 				<section name="nl/nn/adapterframework/">
 					<attribute name="Specification-Title" value="${ac.application.name}"/>
 					<attribute name="Specification-Version" value="${ac.application.version}"/>
-					<attribute name="Specification-Vendor" value="ING Nederland / Divisie Intermediair / BPI"/>
+					<attribute name="Specification-Vendor" value="Nationale-Nederlanden"/>
 					<attribute name="Implementation-Title" value="nl.nn.adapterframework"/>
 					<attribute name="Implementation-Version" value="${ac.application.version}_${iaf.timestamp}"/> 
-					<attribute name="Implementation-Vendor" value="ING Nederland / Divisie Intermediair / BPI"/>
+					<attribute name="Implementation-Vendor" value="Nationale-Nederlanden"/>
 				</section>
 			</manifest>		
 		</jar>
 	</target>
 	<!-- ================================================================== -->
-	<target name="javadoc" description="Create the javadoc documentation" depends="init">
+	<target name="javadoc" description="Create the javadoc documentation">
 		<!--
 			Disable "extends RPCRouterServlet" in SoapRouterServlet as a
 			workaround for the following NPE when running javadoc:
