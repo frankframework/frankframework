@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.4  2012-04-23 14:41:09  m00f069
+ * Revision 1.5  2012-04-26 13:52:08  m00f069
+ * Parameters of JCoRecord.setValue have been switched between JCo2 and JCo3 (value,name -> name,value / value,index -> index,value)
+ *
+ * Revision 1.4  2012/04/23 14:41:09  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added support for JCoStructure
  *
  * Revision 1.3  2012/03/28 16:41:51  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -129,7 +132,7 @@ import com.sap.conn.jco.JCoTable;
  * @version Id
  */
 public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.4 $ $Date: 2012-04-23 14:41:09 $";
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.5 $ $Date: 2012-04-26 13:52:08 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -208,7 +211,7 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	static protected void setParameters(JCoParameterList params, String message, int fieldIndex) throws SapException {
 		if (params != null && StringUtils.isNotEmpty(message)) {
 			if (fieldIndex>0) {
-				params.setValue(message,fieldIndex-1);
+				params.setValue(fieldIndex-1,message);
 			} else {
 				JCoMetaData metaData = params.getMetaData();
 				for (int i = 0; i < metaData.getFieldCount(); i++) {
@@ -421,18 +424,18 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 				String value = pv.asStringValue("");
 				int slashPos=name.indexOf('/');
 				if (slashPos<0) {
-					input.setValue(value,name);
+					input.setValue(name,value);
 				} else {
 					String structName=name.substring(0,slashPos);
 					String elemName=name.substring(slashPos+1);
 					JCoStructure struct=input.getStructure(structName);
-					struct.setValue(value,elemName);
+					struct.setValue(elemName,value);
 				}
 			}
 		}
 		int correlationIdFieldIndex = findFieldIndex(input, getCorrelationIdFieldIndex(), getCorrelationIdFieldName());
 		if (correlationIdFieldIndex>0 && input!=null) {
-			input.setValue(correlationId, correlationIdFieldIndex-1);
+			input.setValue(correlationIdFieldIndex-1, correlationId);
 		}
 	}
 
