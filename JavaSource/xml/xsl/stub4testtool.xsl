@@ -12,7 +12,7 @@
 		- add the attribute returnFixedDate with value true to all pipe elements PutSystemDateInSession
 		- replace the value '{now,...,...}' of the attribute pattern in all param elements with the value '{fixeddate,...,...}'
 		- stub the pipe element FtpFileRetrieverPipe by a pipe element GenericMessageSendingPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
-		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements GenericMessageSendingPipe
+		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements GenericMessageSendingPipe and ForEachChildElementPipe
 	-->
 	<xsl:template match="/">
 		<xsl:apply-templates select="*|@*|comment()|processing-instruction()" />
@@ -179,7 +179,7 @@
 				</xsl:element>
 				<xsl:call-template name="disable" />
 			</xsl:when>
-			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.pipes.GenericMessageSendingPipe'">
+			<xsl:when test="name()='pipe' and (@className='nl.nn.adapterframework.pipes.GenericMessageSendingPipe' or @className='nl.nn.adapterframework.pipes.ForEachChildElementPipe')">
 				<xsl:element name="pipe">
 					<xsl:apply-templates select="@*" />
 					<xsl:attribute name="timeOutOnResult">[timeout]</xsl:attribute>
