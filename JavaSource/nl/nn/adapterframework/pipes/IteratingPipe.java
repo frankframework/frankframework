@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.24  2012-01-20 10:39:09  europe\m168309
+ * Revision 1.25  2012-04-26 11:52:23  europe\m168309
+ * fixed working of attributes timeOutOnResult and exceptionOnResult
+ *
+ * Revision 1.24  2012/01/20 10:39:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * StreamLineIteratorPipe: added endOfLineString attribute
  *
  * Revision 1.23  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -203,7 +206,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.24 $ $Date: 2012-01-20 10:39:09 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.25 $ $Date: 2012-04-26 11:52:23 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -322,6 +325,12 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 					itemResult = psender.sendMessage(correlationID, item, prc);
 				} else {
 					itemResult = sender.sendMessage(correlationID, item);
+				}
+				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(itemResult)) {
+					throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
+				}
+				if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(itemResult)) {
+					throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
 				}
 			} catch (SenderException e) {
 				if (isIgnoreExceptions()) {
