@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.98  2012-03-05 14:47:38  europe\m168309
+ * Revision 1.99  2012-05-04 09:42:35  m00f069
+ * Use PipeProcessors (to e.g. handle statistics) for Validators and Wrappers
+ *
+ * Revision 1.98  2012/03/05 14:47:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * changed order of validate and wrap
  *
  * Revision 1.97  2011/11/30 13:51:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -305,6 +308,7 @@ import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.processors.PipeLineProcessor;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.SizeStatisticsKeeper;
@@ -414,12 +418,17 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
     private String firstPipe;
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
-     
+
+	public final static String INPUT_VALIDATOR_NAME="- pipeline inputValidator";
+	public final static String OUTPUT_VALIDATOR_NAME="- pipeline outputValidator";
+	public final static String INPUT_WRAPPER_NAME="- pipeline inputWrapper";
+	public final static String OUTPUT_WRAPPER_NAME="- pipeline outputWrapper";
+
 	private IPipe inputValidator=null;
 	private IPipe outputValidator=null;
 	private IPipe inputWrapper=null;
 	private IPipe outputWrapper=null;
-     
+
 	private TransactionDefinition txDef=null;
     
     private Map pipesByName=new Hashtable();
@@ -463,13 +472,32 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		if (current!=null) {
 			throw new ConfigurationException("pipe ["+name+"] defined more then once");
 		}
-	    pipesByName.put(name, pipe);
-	    pipes.add(pipe);
-	    pipeStatistics.put(name, new StatisticsKeeper(name));
-	    if (pipe.getMaxThreads() > 0) {
-	        pipeWaitingStatistics.put(name, new StatisticsKeeper(name));
-	    }
-	    log.debug("added pipe [" + pipe.toString() + "]");
+		pipesByName.put(name, pipe);
+		pipes.add(pipe);
+		pipeStatistics.put(name, new StatisticsKeeper(name));
+		if (pipe instanceof MessageSendingPipe) {
+			MessageSendingPipe messageSendingPipe = (MessageSendingPipe)pipe;
+			if (messageSendingPipe.getInputValidator() != null) {
+				String subName = messageSendingPipe.getInputValidator().getName();
+				pipeStatistics.put(subName, new StatisticsKeeper(subName));
+			}
+			if (messageSendingPipe.getOutputValidator() != null) {
+				String subName = messageSendingPipe.getOutputValidator().getName();
+				pipeStatistics.put(subName, new StatisticsKeeper(subName));
+			}
+			if (messageSendingPipe.getInputWrapper() != null) {
+				String subName = messageSendingPipe.getInputWrapper().getName();
+				pipeStatistics.put(subName, new StatisticsKeeper(subName));
+			}
+			if (messageSendingPipe.getOutputWrapper() != null) {
+				String subName = messageSendingPipe.getOutputWrapper().getName();
+				pipeStatistics.put(subName, new StatisticsKeeper(subName));
+			}
+		}
+		if (pipe.getMaxThreads() > 0) {
+			pipeWaitingStatistics.put(name, new StatisticsKeeper(name));
+		}
+		log.debug("added pipe [" + pipe.toString() + "]");
 		if (!isForceFixedForwarding())
 		{
 			if (globalForwards.get(name) == null) {
@@ -592,7 +620,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getInputValidator().registerForward(pf);
-			getInputValidator().setName("- pipeline inputValidator");
+			getInputValidator().setName(INPUT_VALIDATOR_NAME);
 			if (getInputValidator() instanceof IExtendedPipe) {
 				((IExtendedPipe)getInputValidator()).configure(this);
 			} else {
@@ -605,7 +633,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getOutputValidator().registerForward(pf);
-			getOutputValidator().setName("- pipeline outputValidator");
+			getOutputValidator().setName(OUTPUT_VALIDATOR_NAME);
 			if (adapter!=null && getOutputValidator() instanceof IExtendedPipe) {
 				((IExtendedPipe)getOutputValidator()).configure(this);
 			} else {
@@ -619,7 +647,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getInputWrapper().registerForward(pf);
-			getInputWrapper().setName("- pipeline inputWrapper");
+			getInputWrapper().setName(INPUT_WRAPPER_NAME);
 			if (getInputWrapper() instanceof IExtendedPipe) {
 				((IExtendedPipe)getInputWrapper()).configure(this);
 			} else {
@@ -632,7 +660,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getOutputWrapper().registerForward(pf);
-			getOutputWrapper().setName("- pipeline outputWrapper");
+			getOutputWrapper().setName(OUTPUT_WRAPPER_NAME);
 			if (adapter!=null && getOutputWrapper() instanceof IExtendedPipe) {
 				((IExtendedPipe)getOutputWrapper()).configure(this);
 			} else {
@@ -677,6 +705,21 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		for(Iterator it=adapter.getPipeLine().getPipes().iterator();it.hasNext();) {
 			IPipe pipe = (IPipe)it.next();
 			handlePipeStat(pipe,pipeStatistics,pipeStatsData,hski, true, action);
+			if (pipe instanceof MessageSendingPipe) {
+				MessageSendingPipe messageSendingPipe = (MessageSendingPipe)pipe;
+				if (messageSendingPipe.getInputValidator() != null) {
+					handlePipeStat(messageSendingPipe.getInputValidator(),pipeStatistics,pipeStatsData,hski, true, action);
+				}
+				if (messageSendingPipe.getOutputValidator() != null) {
+					handlePipeStat(messageSendingPipe.getOutputValidator(),pipeStatistics,pipeStatsData,hski, true, action);
+				}
+				if (messageSendingPipe.getInputWrapper() != null) {
+					handlePipeStat(messageSendingPipe.getInputWrapper(),pipeStatistics,pipeStatsData,hski, true, action);
+				}
+				if (messageSendingPipe.getOutputWrapper() != null) {
+					handlePipeStat(messageSendingPipe.getOutputWrapper(),pipeStatistics,pipeStatsData,hski, true, action);
+				}
+			}
 		}
 		if (pipeWaitingStatistics.size()>0) {
 			Object waitStatsData = hski.openGroup(data,null,"waitStats");

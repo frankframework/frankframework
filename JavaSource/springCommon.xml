@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springCommon.xml,v $
-  Revision 1.22  2011-12-08 14:06:16  m00f069
+  Revision 1.23  2012-05-04 09:42:36  m00f069
+  Use PipeProcessors (to e.g. handle statistics) for Validators and Wrappers
+
+  Revision 1.22  2011/12/08 14:06:16  Jaco de Groot <jaco.de.groot@ibissource.org>
   Made Tomcat work with the Spring DataSourceTransactionManager which will use the jdbc/<ibis name lower case> by default (Spring Tomcat configuration doesn't need to be changed manually anymore) (replaced JOTM as it didn't really work).
 
   Revision 1.21  2011/11/30 13:51:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -195,56 +198,53 @@
 								class="nl.nn.adapterframework.processors.CorePipeLineProcessor"
 								autowire="byName"
 								scope="prototype"
+							/>
+						</property>
+					</bean>
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+	<bean
+		name="pipeProcessor,inputValidatorProcessor,outputValidatorProcessor,inputWrapperProcessor,outputWrapperProcessor"
+		class="nl.nn.adapterframework.processors.TracingEventsPipeProcessor"
+		autowire="byName"
+		scope="prototype"
+		>
+		<property name="pipeProcessor">
+			<bean
+				class="nl.nn.adapterframework.processors.InputOutputPipeProcessor"
+				autowire="byName"
+				scope="prototype"
+				>
+				<property name="pipeProcessor">
+					<bean
+						class="nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor"
+						autowire="byName"
+						scope="prototype"
+						>
+						<property name="pipeProcessor">
+							<bean
+								class="nl.nn.adapterframework.processors.TransactionAttributePipeProcessor"
+								autowire="byName"
+								scope="prototype"
 								>
-
-	<property name="pipeProcessor">
-		<bean
-			class="nl.nn.adapterframework.processors.TracingEventsPipeProcessor"
-			autowire="byName"
-			scope="prototype"
-			>
-			<property name="pipeProcessor">
-				<bean
-					class="nl.nn.adapterframework.processors.InputOutputPipeProcessor"
-					autowire="byName"
-					scope="prototype"
-					>
-					<property name="pipeProcessor">
-						<bean
-							class="nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor"
-							autowire="byName"
-							scope="prototype"
-							>
-							<property name="pipeProcessor">
-								<bean
-									class="nl.nn.adapterframework.processors.TransactionAttributePipeProcessor"
-									autowire="byName"
-									scope="prototype"
-									>
-									<property name="pipeProcessor">
-										<bean
-											class="nl.nn.adapterframework.processors.CheckMessageSizePipeProcessor"
-											autowire="byName"
-											scope="prototype"
-											>
-											<property name="pipeProcessor">
-												<bean
-													class="nl.nn.adapterframework.processors.CorePipeProcessor"
-													autowire="byName"
-													scope="prototype"
-												/>
-											</property>
-										</bean>
-									</property>
-								</bean>
-							</property>
-						</bean>
-					</property>
-				</bean>
-			</property>
-		</bean>
-	</property>
-
+								<property name="pipeProcessor">
+									<bean
+										class="nl.nn.adapterframework.processors.CheckMessageSizePipeProcessor"
+										autowire="byName"
+										scope="prototype"
+										>
+										<property name="pipeProcessor">
+											<bean
+												class="nl.nn.adapterframework.processors.CorePipeProcessor"
+												autowire="byName"
+												scope="prototype"
+											/>
+										</property>
+									</bean>
+								</property>
 							</bean>
 						</property>
 					</bean>
@@ -252,7 +252,7 @@
 			</bean>
 		</property>
 	</bean>
-    
+
 	<bean
 		name="senderWrapperProcessor"
 		class="nl.nn.adapterframework.processors.InputOutputSenderWrapperProcessor"
@@ -283,7 +283,7 @@
 		autowire="byName"
 		scope="prototype"
 	/>
-    
+
     <!-- Beans created from Configuration.xml, but prototyped here for
          extra dependencies which cannot be created otherwise.
          Bean names are prefixed with 'proto-' so that autowiring by

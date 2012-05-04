@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.78  2012-03-05 14:45:55  europe\m168309
+ * Revision 1.79  2012-05-04 09:42:36  m00f069
+ * Use PipeProcessors (to e.g. handle statistics) for Validators and Wrappers
+ *
+ * Revision 1.78  2012/03/05 14:45:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * changed order of validate and wrap
  *
  * Revision 1.77  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -256,6 +259,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.processors.ListenerProcessor;
+import nl.nn.adapterframework.processors.PipeProcessor;
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -399,27 +403,32 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private ICorrelatedPullingListener listener = null;
 	private ITransactionalStorage messageLog=null;
 
-	// private variables
 	private String returnString;
 	private TransformerPool auditTrailTp=null;
 	private TransformerPool correlationIDTp=null;
 	private String correlationIDSessionKey = null;
 	private TransformerPool labelTp=null;
 	private TransformerPool retryTp=null;
-     
+
+	public final static String INPUT_VALIDATOR_NAME_PREFIX="- ";
+	public final static String INPUT_VALIDATOR_NAME_SUFFIX=": validate input";
+	public final static String OUTPUT_VALIDATOR_NAME_PREFIX="- ";
+	public final static String OUTPUT_VALIDATOR_NAME_SUFFIX=": validate output";
+	public final static String INPUT_WRAPPER_NAME_PREFIX="- ";
+	public final static String INPUT_WRAPPER_NAME_SUFFIX=": wrap input";
+	public final static String OUTPUT_WRAPPER_NAME_PREFIX="- ";
+	public final static String OUTPUT_WRAPPER_NAME_SUFFIX=": wrap output";
+
 	private IPipe inputValidator=null;
 	private IPipe outputValidator=null;
-	private StatisticsKeeper inputValidatorStatistics=null;
-	private StatisticsKeeper outputValidatorStatistics=null;
 	private IPipe inputWrapper=null;
 	private IPipe outputWrapper=null;
-	private StatisticsKeeper inputWrapperStatistics=null;
-	private StatisticsKeeper outputWrapperStatistics=null;
 	
 	private boolean timeoutPending=false;
 
 	boolean checkMessageLog = AppConstants.getInstance().getBoolean("messageLog.check", false);
 
+	private PipeProcessor pipeProcessor;
 	private ListenerProcessor listenerProcessor;
 
 
@@ -565,49 +574,41 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getInputValidator().registerForward(pf);
-			getInputValidator().setName("inputValidator of "+getName());
 			if (getInputValidator() instanceof IExtendedPipe) {
 				((IExtendedPipe)getInputValidator()).configure(getPipeLine());
 			} else {
 				getInputValidator().configure();
 			}
-			inputValidatorStatistics=new StatisticsKeeper("- "+getName()+": validate input ");
 		}
 		if (getOutputValidator()!=null) {
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getOutputValidator().registerForward(pf);
-			getOutputValidator().setName("outputValidator of "+getName());
 			if (getOutputValidator() instanceof IExtendedPipe) {
 				((IExtendedPipe)getOutputValidator()).configure(getPipeLine());
 			} else {
 				getOutputValidator().configure();
 			}
-			outputValidatorStatistics=new StatisticsKeeper("- "+getName()+": validate output ");
 		}
 		if (getInputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getInputWrapper().registerForward(pf);
-			getInputWrapper().setName("inputWrapperr of "+getName());
 			if (getInputWrapper() instanceof IExtendedPipe) {
 				((IExtendedPipe)getInputWrapper()).configure(getPipeLine());
 			} else {
 				getInputWrapper().configure();
 			}
-			inputWrapperStatistics=new StatisticsKeeper("- "+getName()+": wrap input ");
 		}
 		if (getOutputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getOutputWrapper().registerForward(pf);
-			getOutputWrapper().setName("outputWrapper of "+getName());
 			if (getOutputWrapper() instanceof IExtendedPipe) {
 				((IExtendedPipe)getOutputWrapper()).configure(getPipeLine());
 			} else {
 				getOutputWrapper().configure();
 			}
-			outputWrapperStatistics=new StatisticsKeeper("- "+getName()+": wrap output ");
 		}
 
 		registerEvent(PIPE_TIMEOUT_MONITOR_EVENT);
@@ -619,37 +620,24 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	public PipeRunResult doPipe(Object input, PipeLineSession session)	throws PipeRunException {
 
 		String result = null;
+		String correlationID = session.getMessageId();
 
 		if (getInputWrapper()!=null) {
 			log.debug(getLogPrefix(session)+"wrapping input");
-			long wrapStartTime= System.currentTimeMillis();
-			try {
-				PipeRunResult wrapResult = getInputWrapper().doPipe(input,session);
-				if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
-					return wrapResult;
-				} else {
-					input = wrapResult.getResult();
-				}
-			} finally  {
-				long wrapEndTime = System.currentTimeMillis();
-				long wrapDuration = wrapEndTime - wrapStartTime;
-				inputWrapperStatistics.addValue(wrapDuration);
+			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), inputWrapper, correlationID, input, session);
+			if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
+				return wrapResult;
+			} else {
+				input = wrapResult.getResult();
 			}
 			log.debug(getLogPrefix(session)+"input after wrapping [" + input.toString() + "]");
 		}
 
 		if (getInputValidator()!=null) {
 			log.debug(getLogPrefix(session)+"validating input");
-			long validationStartTime= System.currentTimeMillis();
-			try {
-				PipeRunResult validationResult = getInputValidator().doPipe(input,session);
-				if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-					return validationResult;
-				}
-			} finally  {
-				long validationEndTime = System.currentTimeMillis();
-				long validationDuration = validationEndTime - validationStartTime;
-				inputValidatorStatistics.addValue(validationDuration);
+			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, correlationID, input, session);
+			if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
+				return validationResult;
 			}
 		}
 
@@ -684,8 +672,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		} else {
 			Map threadContext=new HashMap();
 			try {
-				String correlationID = session.getMessageId();
-	
 				String messageID = null;
 				// sendResult has a messageID for async senders, the result for sync senders
 				int retryInterval = getRetryMinInterval();
@@ -857,31 +843,18 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		if (getOutputValidator()!=null) {
 			log.debug(getLogPrefix(session)+"validating response");
 			long validationStartTime= System.currentTimeMillis();
-			try {
-				PipeRunResult validationResult = getOutputValidator().doPipe(result,session);
-				if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-					return validationResult;
-				}
-			} finally  {
-				long validationEndTime = System.currentTimeMillis();
-				long validationDuration = validationEndTime - validationStartTime;
-				outputValidatorStatistics.addValue(validationDuration);
+			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, correlationID, result,session);
+			if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
+				return validationResult;
 			}
 		}
 		if (getOutputWrapper()!=null) {
 			log.debug(getLogPrefix(session)+"wrapping response");
-			long wrapStartTime= System.currentTimeMillis();
-			try {
-				PipeRunResult wrapResult = getOutputWrapper().doPipe(result,session);
-				if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
-					return wrapResult;
-				} else {
-					result = wrapResult.getResult().toString();
-				}
-			} finally  {
-				long wrapEndTime = System.currentTimeMillis();
-				long wrapDuration = wrapEndTime - wrapStartTime;
-				outputWrapperStatistics.addValue(wrapDuration);
+			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, correlationID, result, session);
+			if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
+				return wrapResult;
+			} else {
+				result = wrapResult.getResult().toString();
 			}
 			log.debug(getLogPrefix(session)+"response after wrapping [" + result + "]");
 		}
@@ -997,32 +970,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
-		if (inputValidatorStatistics!=null) {
-			hski.handleStatisticsKeeper(data, inputValidatorStatistics);
-		}
-		if (getInputValidator()!=null && getInputValidator() instanceof HasStatistics) {
-			((HasStatistics)getInputValidator()).iterateOverStatistics(hski,data,action);
-		}
 		if (sender instanceof HasStatistics) {
 			((HasStatistics)sender).iterateOverStatistics(hski,data,action);
-		}
-		if (outputValidatorStatistics!=null) {
-			hski.handleStatisticsKeeper(data, outputValidatorStatistics);
-		}
-		if (getOutputValidator()!=null && getOutputValidator() instanceof HasStatistics) {
-			((HasStatistics)getOutputValidator()).iterateOverStatistics(hski,data,action);
-		}
-		if (inputWrapperStatistics!=null) {
-			hski.handleStatisticsKeeper(data, inputWrapperStatistics);
-		}
-		if (getInputWrapper()!=null && getInputWrapper() instanceof HasStatistics) {
-			((HasStatistics)getInputWrapper()).iterateOverStatistics(hski,data,action);
-		}
-		if (outputWrapperStatistics!=null) {
-			hski.handleStatisticsKeeper(data, outputWrapperStatistics);
-		}
-		if (getOutputWrapper()!=null && getOutputWrapper() instanceof HasStatistics) {
-			((HasStatistics)getOutputWrapper()).iterateOverStatistics(hski,data,action);
 		}
 	}
 
@@ -1172,6 +1121,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	
 	public void setInputValidator(IPipe inputValidator) {
 //		if (inputValidator.isActive()) {
+			inputValidator.setName(INPUT_VALIDATOR_NAME_PREFIX+getName()+INPUT_VALIDATOR_NAME_SUFFIX);
 			this.inputValidator = inputValidator;
 //		}
 	}
@@ -1181,6 +1131,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	public void setOutputValidator(IPipe outputValidator) {
 //		if (outputValidator.isActive()) {
+			outputValidator.setName(OUTPUT_VALIDATOR_NAME_PREFIX+getName()+OUTPUT_VALIDATOR_NAME_SUFFIX);
 			this.outputValidator = outputValidator;
 //		}
 	}
@@ -1189,6 +1140,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	public void setInputWrapper(IPipe inputWrapper) {
+		inputWrapper.setName(INPUT_WRAPPER_NAME_PREFIX+getName()+INPUT_WRAPPER_NAME_SUFFIX);
 		this.inputWrapper = inputWrapper;
 	}
 	public IPipe getInputWrapper() {
@@ -1196,6 +1148,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	public void setOutputWrapper(IPipe outputWrapper) {
+		outputWrapper.setName(OUTPUT_WRAPPER_NAME_PREFIX+getName()+OUTPUT_WRAPPER_NAME_SUFFIX);
 		this.outputWrapper = outputWrapper;
 	}
 	public IPipe getOutputWrapper() {
@@ -1243,6 +1196,10 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 	public String getExceptionOnResult() {
 		return exceptionOnResult;
+	}
+
+	public void setPipeProcessor(PipeProcessor pipeProcessor) {
+		this.pipeProcessor = pipeProcessor;
 	}
 
 	public void setListenerProcessor(ListenerProcessor listenerProcessor) {
