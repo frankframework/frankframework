@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.47  2012-04-26 10:57:02  m00f069
+ * Revision 1.48  2012-05-04 06:42:40  m00f069
+ * Added correlationIdToHexPrefix
+ *
+ * Revision 1.47  2012/04/26 10:57:02  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added "milliseconds" to javadoc/ibis description MessageTimeToLive
  *
  * Revision 1.46  2012/04/02 08:42:20  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -204,7 +207,8 @@ import com.ibm.mq.jms.MQQueue;
 	 To prevent this, settting <code>forceMQCompliancy</code> to MQ will inform
 	 MQ that the replyto queue is not JMS compliant. Setting <code>forceMQCompliancy</code>
 	 to "JMS" will cause that on mq the destination is identified as jms-compliant.</td><td>JMS</td></tr>
- * <tr><td>{@link #setCorrelationIdToHex(boolean) correlationIdToHex}</td><td>Transform the value of the correlationId to a hexadecimal value if it starts with ID: (preserving the ID: part). Useful when sending messages to MQ which expects this value to be in hexadecimal format when it starts with ID:, otherwise generating an error: MQJMS1044: String is not a valid hexadecimal number</td><td>false</td></tr>
+ * <tr><td>{@link #setCorrelationIdToHex(boolean) correlationIdToHex}</td><td>Transform the value of the correlationId to a hexadecimal value if it starts with ID: (preserving the ID: part). Useful when sending messages to MQ which expects this value to be in hexadecimal format when it starts with ID:, otherwise generating the error: MQJMS1044: String is not a valid hexadecimal number</td><td>false</td></tr>
+ * <tr><td>{@link #setCorrelationIdToHexPrefix(String) correlationIdToHexPrefix}</td><td>Prefix to check before executing correlationIdToHex. When empty all correlationId's are transformed, this is useful in case you want the entire correlationId to be transformed (for example when the receiving party doesn't allow characters like a colon to be present in the correlationId).</td><td>ID:</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to JMS server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -262,6 +266,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
     private String messageSelector=null;
 
     private boolean correlationIdToHex=false;
+    private String correlationIdToHexPrefix="ID:";
 
 	public static int stringToDeliveryMode(String mode) {
 		if (MODE_PERSISTENT.equalsIgnoreCase(mode)) {
@@ -421,10 +426,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		TextMessage textMessage = null;
 		textMessage = session.createTextMessage();
 		if (null != correlationID) {
-			if (correlationIdToHex && correlationID.startsWith("ID:")) {
-				String hexCorrelationID = "ID:";
+			if (correlationIdToHex && correlationID.startsWith(correlationIdToHexPrefix)) {
+				String hexCorrelationID = correlationIdToHexPrefix;
 				int i;
-				for (i=3;i<correlationID.length();i++) {
+				for (i=correlationIdToHexPrefix.length();i<correlationID.length();i++) {
 					int c=correlationID.charAt(i);
 					hexCorrelationID+=Integer.toHexString(c);
 				};
@@ -1004,6 +1009,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	public void setCorrelationIdToHex(boolean correlationIdToHex) {
 		this.correlationIdToHex = correlationIdToHex;
+	}
+
+	public void setCorrelationIdToHexPrefix(String correlationIdToHexPrefix) {
+		this.correlationIdToHexPrefix = correlationIdToHexPrefix;
 	}
 
 	/**
