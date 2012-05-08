@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapValidator.java,v $
- * Revision 1.3  2012-04-12 08:50:02  m00f069
+ * Revision 1.4  2012-05-08 15:55:38  m00f069
+ * Fix wrong namespace prefix in wsdl:part element.
+ *
+ * Revision 1.3  2012/04/12 08:50:02  Jaco de Groot <jaco.de.groot@ibissource.org>
  * CommonMessageHeader.xsd namespace has changed (uri -> http)
  *
  */
@@ -39,6 +42,10 @@ public class EsbSoapValidator extends SoapValidator {
     @Override
     public void setSchemaLocation(String schemaLocation) {
         super.setSchemaLocation(GENERIC_HEADER_XMLNS + " " + GENERIC_HEADER_XSD + " " + schemaLocation);
+    }
+
+    protected int getDefaultNamespaceIndex() {
+        return 2;
     }
 
     @Override

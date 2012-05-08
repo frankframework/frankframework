@@ -77,7 +77,7 @@ public class WsdlXmlValidator extends FixedForwardPipe {
     private Definition def;
     private boolean throwException = false;
 
-    private boolean validateSoapEnvelope = true;
+    private SoapValidator.SoapVersion validateSoapEnvelope = SoapValidator.SoapVersion.VERSION_1_1;
 
 
     public void setWsdl(String uri) throws IOException, WSDLException {
@@ -86,14 +86,22 @@ public class WsdlXmlValidator extends FixedForwardPipe {
 
 
     public boolean isValidateSoapEnvelope() {
-        return validateSoapEnvelope;
+        return validateSoapEnvelope != null;
     }
     /**
      * You can disable validating the SOAP envelope. If for some reason that is possible and desirable.
+     * @param validateSoapEnvelope false, true, 1.1 or 1.2
      */
-    public void setValidateSoapEnvelope(boolean validateSoapEnvelope) {
-        this.validateSoapEnvelope = validateSoapEnvelope;
+    public void setValidateSoapEnvelope(String validateSoapEnvelope) {
+        if (validateSoapEnvelope == null || "false".equals(validateSoapEnvelope)) {
+            this.validateSoapEnvelope = null;
+        } else if ("true".equals(validateSoapEnvelope)) {
+            this.validateSoapEnvelope = SoapValidator.SoapVersion.VERSION_1_2;
+        } else {
+            this.validateSoapEnvelope = SoapValidator.SoapVersion.fromAttribute(validateSoapEnvelope);
+        }
     }
+
 
     @Override
     public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
@@ -118,11 +126,11 @@ public class WsdlXmlValidator extends FixedForwardPipe {
 
     protected void pipe(String input) throws IOException, WSDLException, SAXException {
         final javax.xml.validation.Schema xsd;
-        if (validateSoapEnvelope) {
+        if (isValidateSoapEnvelope()) {
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             factory.setResourceResolver(getLSResourceResolver());
             xsd = factory.newSchema(new Source[] {
-                new StreamSource(SoapValidator.class.getResourceAsStream(SoapValidator.SOAP_ENVELOPE_XSD)),
+                new StreamSource(SoapValidator.class.getResourceAsStream(validateSoapEnvelope.xsd)),
                 new DOMSource(getInputSchema().getElement())
             });
         } else {
