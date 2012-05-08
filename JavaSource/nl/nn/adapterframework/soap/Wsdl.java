@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.4  2012-03-30 17:03:45  m00f069
+ * Revision 1.5  2012-05-08 15:53:59  m00f069
+ * Fix invalid chars in wsdl:service name.
+ *
+ * Revision 1.4  2012/03/30 17:03:45  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Michiel added JMS binding/service to WSDL generator, made WSDL validator work for Bis WSDL and made console show syntax problems for schema's used in XmlValidator
  *
  * Revision 1.3  2012/03/16 15:35:43  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -505,7 +508,7 @@ class Wsdl  {
 
      protected void httpService(XMLStreamWriter w, String servlet) throws XMLStreamException {
          w.writeStartElement(WSDL, "service");
-         w.writeAttribute("name", getName()); {
+         w.writeAttribute("name", WsdlUtils.getNCName(getName())); {
              w.writeStartElement(WSDL, "port");
              w.writeAttribute("name", "SoapHttp");
              w.writeAttribute("binding", "ibis:SoapBinding"); {
@@ -521,7 +524,7 @@ class Wsdl  {
 
      protected void jmsService(XMLStreamWriter w, JmsListener listener) throws XMLStreamException {
          w.writeStartElement(WSDL, "service");
-         w.writeAttribute("name", getName()); {
+         w.writeAttribute("name", WsdlUtils.getNCName(getName())); {
              w.writeStartElement(WSDL, "port");
              w.writeAttribute("name", "SoapJMS");
              w.writeAttribute("binding", "ibis:SoapBinding"); {

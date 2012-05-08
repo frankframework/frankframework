@@ -1,22 +1,33 @@
 package nl.nn.adapterframework.soap;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.*;
-import javax.xml.stream.events.*;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
 
 import org.apache.log4j.Logger;
+import org.apache.xml.utils.XMLChar;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.*;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.util.*;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 
-import javanet.staxutils.*;
+import javanet.staxutils.IndentingXMLStreamWriter;
+import javanet.staxutils.XMLStreamEventWriter;
+import javanet.staxutils.XMLStreamUtils;
 import javanet.staxutils.events.AttributeEvent;
 import javanet.staxutils.events.StartElementEvent;
 
@@ -265,5 +276,17 @@ public abstract class WsdlUtils {
     static <C> C correct(final Map<C, C> map, final C value) {
         C corrected = map.get(value);
         return corrected != null ? corrected : value;
+    }
+
+    static String getNCName(String name) {
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < name.length(); i++) {
+            if (i == 0) {
+                buf.append(XMLChar.isNCNameStart(name.charAt(i)) ? name.charAt(i) : '_');
+            } else {
+                buf.append(XMLChar.isNCName(name.charAt(i)) ? name.charAt(i) : '_');
+            }
+        }
+        return buf.toString();
     }
 }
