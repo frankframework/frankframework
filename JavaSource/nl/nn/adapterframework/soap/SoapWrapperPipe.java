@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapperPipe.java,v $
- * Revision 1.7  2012-02-28 13:26:56  europe\m168309
+ * Revision 1.8  2012-05-10 11:52:45  m00f069
+ * Resolve parameters only once
+ *
+ * Revision 1.7  2012/02/28 13:26:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added soapNamespace attribute
  *
  * Revision 1.6  2011/12/23 16:02:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -175,33 +178,27 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		String result;
 		try {
 			if ("wrap".equalsIgnoreCase(getDirection())) {
-				String soapHeader = null;
-				if (soapHeaderTp != null) {
-					ParameterResolutionContext prc = new ParameterResolutionContext("<dummy/>", session);
-					Map parameterValues = null;
-					if (getParameterList()!=null) {
-						parameterValues = prc.getValueMap(getParameterList());
-					}
-					soapHeader = soapHeaderTp.transform(prc.getInputSource(), parameterValues); 
-
-				} else {
-					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
-						soapHeader = (String) session.get(getSoapHeaderSessionKey());
-					}
-				}
-
 				String payload;
 				if (outputNamespaceTp != null) {
 					payload = outputNamespaceTp.transform(input.toString(), null, true);
 				} else {
 					payload = input.toString();
 				}
-				if (soapBodyTp != null) {
-					ParameterResolutionContext prc = new ParameterResolutionContext(payload, session);
-					Map parameterValues = null;
-					if (getParameterList()!=null) {
-						parameterValues = prc.getValueMap(getParameterList());
+				ParameterResolutionContext prc = null;
+				Map parameterValues = null;
+				if (getParameterList()!=null && (soapHeaderTp != null || soapBodyTp != null)) {
+					prc = new ParameterResolutionContext(payload, session);
+					parameterValues = prc.getValueMap(getParameterList());
+				}
+				String soapHeader = null;
+				if (soapHeaderTp != null) {
+					soapHeader = soapHeaderTp.transform(prc.getInputSource(), parameterValues); 
+				} else {
+					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
+						soapHeader = (String) session.get(getSoapHeaderSessionKey());
 					}
+				}
+				if (soapBodyTp != null) {
 					payload = soapBodyTp.transform(prc.getInputSource(), parameterValues); 
 				}
 				
