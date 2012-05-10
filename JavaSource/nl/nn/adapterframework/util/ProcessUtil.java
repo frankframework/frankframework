@@ -1,6 +1,9 @@
 /*
  * $Log: ProcessUtil.java,v $
- * Revision 1.8  2011-12-08 11:02:10  europe\m168309
+ * Revision 1.9  2012-05-10 10:41:37  m00f069
+ * Fixed javadoc: milliseconds -> seconds
+ *
+ * Revision 1.8  2011/12/08 11:02:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.7  2011/12/08 09:28:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -101,7 +104,7 @@ public class ProcessUtil {
 	/**
 	 * Execute a command as a process in the operating system.
 	 *  
-	 * @param timeout timeout in milliseconds, or 0 to wait indefinetely until the process ends
+	 * @param timeout timeout in seconds, or 0 to wait indefinetely until the process ends
 	 * @param command 
 	 * @return
 	 * @throws TimeOutException
