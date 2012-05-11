@@ -1,6 +1,11 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.5  2012-04-26 13:52:08  m00f069
+ * Revision 1.6  2012-05-11 17:28:15  m00f069
+ * Allow TYPE_TABLE in INPUT and OUTPUT
+ * Strickter mapping between INPUT, OUTPUT, TABLES elements in XML and ParameterList, JCoMetaData types
+ * Added some debug info
+ *
+ * Revision 1.5  2012/04/26 13:52:08  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Parameters of JCoRecord.setValue have been switched between JCo2 and JCo3 (value,name -> name,value / value,index -> index,value)
  *
  * Revision 1.4  2012/04/23 14:41:09  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -132,8 +137,8 @@ import com.sap.conn.jco.JCoTable;
  * @version Id
  */
 public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.5 $ $Date: 2012-04-26 13:52:08 $";
-	protected Logger log = LogUtil.getLogger(this);
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.6 $ $Date: 2012-05-11 17:28:15 $";
+	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
 
 	private String name;
 	private String sapSystemName;
@@ -208,63 +213,76 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 
 
 
-	static protected void setParameters(JCoParameterList params, String message, int fieldIndex) throws SapException {
+	static protected void setParameters(JCoParameterList params, String type, String message, int fieldIndex) throws SapException {
+		log.debug("Set parameters for parameters list of type '" + type + "'");
 		if (params != null && StringUtils.isNotEmpty(message)) {
 			if (fieldIndex>0) {
 				params.setValue(fieldIndex-1,message);
 			} else {
 				JCoMetaData metaData = params.getMetaData();
 				for (int i = 0; i < metaData.getFieldCount(); i++) {
-					String xpath;
-					String outputMethod;
+					String xpath=null;
+					String outputMethod=null;
 					String paramName=params.getMetaData().getName(i);
-					if (params.getMetaData().getType(i) == JCoMetaData.TYPE_TABLE) {
-						xpath = "/*/TABLES/"+paramName;
-						outputMethod = "xml";
-					} else if (params.getMetaData().getType(i) == JCoMetaData.TYPE_STRUCTURE) {
-						xpath = "/*/INPUT/"+paramName;
-						outputMethod = "xml";
-					} else {
-						xpath = "/*/INPUT/"+paramName;
-						outputMethod = "text";
-					}
-					TransformerPool tp = (TransformerPool)extractors.get(outputMethod+":"+xpath);
-					if (tp==null) {
-						try {
-							tp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(xpath,outputMethod));
-							extractors.put(outputMethod+":"+xpath,tp);
-						} catch (Exception e) {
-							throw new SapException("exception creating Extractor for xpath ["+xpath+"]", e);
+					log.debug("Set param '" + paramName + "' of type '" + params.getMetaData().getTypeAsString(i) + "'");
+					if (type.equals("TABLES")) {
+						if (params.getMetaData().getType(i) == JCoMetaData.TYPE_TABLE) {
+							xpath = "/*/"+type+"/"+paramName;
+							outputMethod = "xml";
+						}
+					} else if (type.equals("INPUT") || type.equals("OUTPUT")) {
+						if (params.getMetaData().getType(i) == JCoMetaData.TYPE_TABLE
+								|| params.getMetaData().getType(i) == JCoMetaData.TYPE_STRUCTURE) {
+							xpath = "/*/"+type+"/"+paramName;
+							outputMethod = "xml";
+						} else {
+							xpath = "/*/"+type+"/"+paramName;
+							outputMethod = "text";
 						}
 					}
-					String xpathResult;
-					try {
-						xpathResult = tp.transform(message,null);
-					} catch (Exception e) {
-						throw new SapException("exception extracting ["+paramName+"]", e);
-					}
-					if (StringUtils.isNotEmpty(xpathResult)) {
-						if (params.getMetaData().getType(i) == JCoMetaData.TYPE_TABLE) {
-							JCoTable jcoTable = params.getTable(i);
+					if (xpath != null) {
+						TransformerPool tp = (TransformerPool)extractors.get(outputMethod+":"+xpath);
+						if (tp==null) {
 							try {
-								ContentHandler ch = new TableHandler(jcoTable);
-								XmlUtils.parseXml(ch,xpathResult);
+								tp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(xpath,outputMethod));
+								extractors.put(outputMethod+":"+xpath,tp);
 							} catch (Exception e) {
-								System.out.println("exception: " + e);
-								throw new SapException("exception parsing table ["+paramName+"]", e);
+								throw new SapException("exception creating Extractor for xpath ["+xpath+"]", e);
 							}
-						} else if (params.getMetaData().getType(i) == JCoMetaData.TYPE_STRUCTURE) {
-							JCoStructure jcoStructure = params.getStructure(i);
-							try {
-								ContentHandler ch = new StructureHandler(jcoStructure);
-								XmlUtils.parseXml(ch,xpathResult);
-							} catch (Exception e) {
-								System.out.println("exception: " + e);
-								throw new SapException("exception parsing table ["+paramName+"]", e);
+						}
+						String xpathResult;
+						try {
+							xpathResult = tp.transform(message,null);
+						} catch (Exception e) {
+							throw new SapException("exception extracting ["+paramName+"]", e);
+						}
+						if (StringUtils.isNotEmpty(xpathResult)) {
+							if (params.getMetaData().getType(i) == JCoMetaData.TYPE_TABLE) {
+								JCoTable jcoTable = params.getTable(i);
+								try {
+									ContentHandler ch = new TableHandler(jcoTable);
+									XmlUtils.parseXml(ch,xpathResult);
+								} catch (Exception e) {
+									System.out.println("exception: " + e);
+									throw new SapException("exception parsing table ["+paramName+"]", e);
+								}
+							} else if (params.getMetaData().getType(i) == JCoMetaData.TYPE_STRUCTURE) {
+								JCoStructure jcoStructure = params.getStructure(i);
+								try {
+									ContentHandler ch = new StructureHandler(jcoStructure);
+									XmlUtils.parseXml(ch,xpathResult);
+								} catch (Exception e) {
+									System.out.println("exception: " + e);
+									throw new SapException("exception parsing table ["+paramName+"]", e);
+								}
+							} else {
+								params.setValue(i, xpathResult);
 							}
 						} else {
-							params.setValue(i, xpathResult);
+							log.debug("No result for xpath '" + xpath + "'");
 						}
+					} else {
+						log.debug("No xpath constructed");
 					}
 				}
 			}
@@ -413,9 +431,9 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	public void message2FunctionCall(JCoFunction function, String request, String correlationId, ParameterValueList pvl) throws SapException {
 		JCoParameterList input = function.getImportParameterList();
 		int requestFieldIndex = findFieldIndex(input, getRequestFieldIndex(), getRequestFieldName());
-		setParameters(input, request, requestFieldIndex);
+		setParameters(input, "INPUT", request, requestFieldIndex);
 		if (requestFieldIndex<=0) {
-			setParameters(function.getTableParameterList(),  request, 0);
+			setParameters(function.getTableParameterList(), "TABLES", request, 0);
 		}
 		if (pvl!=null) {
 			for (int i=0; i<pvl.size(); i++) {
@@ -442,12 +460,12 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	public void message2FunctionResult(JCoFunction function, String result) throws SapException {
 		JCoParameterList output = function.getExportParameterList();
 		int replyFieldIndex = findFieldIndex(output, getReplyFieldIndex(), getReplyFieldName());
-		setParameters(function.getExportParameterList(),result, replyFieldIndex);
+		setParameters(output, "OUTPUT", result, replyFieldIndex);
 		//log.warn("SapFunctionFacade.message2FunctionResult, skipped setting of return table parameters");
 		if (replyFieldIndex<=0) {
 			log.debug("SapFunctionFacade.message2FunctionResult, setting table parameters");
 //			setTables(function.getTableParameterList(), result);
-			setParameters(function.getTableParameterList(),result, replyFieldIndex);
+			setParameters(function.getTableParameterList(), "TABLES", result, replyFieldIndex);
 		}
 	}
 	
