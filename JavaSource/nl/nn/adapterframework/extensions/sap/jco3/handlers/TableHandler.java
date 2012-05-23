@@ -1,6 +1,9 @@
 /*
  * $Log: TableHandler.java,v $
- * Revision 1.1  2012-05-15 22:13:44  m00f069
+ * Revision 1.2  2012-05-23 16:10:20  m00f069
+ * Fixed javadoc
+ *
+ * Revision 1.1  2012/05/15 22:13:44  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Allow nesting of (different) types in SAP XML
  *
  */
@@ -10,14 +13,15 @@ import com.sap.conn.jco.JCoTable;
 
 /**
  * Handler for table xml elements like:
- * 
- * <INSOBJECTPARTNER> (table)
- *   <item> (row)
- *     <BANK_ID_OUT>123</BANK_ID_OUT> (column)
- *     <ZZSEQUENCE>1</ZZSEQUENCE>
+ * <pre>
+ * &lt;INSOBJECTPARTNER&gt; (table)
+ *   &lt;item&gt; (row)
+ *     &lt;BANK_ID_OUT&gt;123&lt;/BANK_ID_OUT&gt; (column)
+ *     &lt;ZZSEQUENCE&gt;1&lt;/ZZSEQUENCE&gt;
  *     STRUCTURE|TABLE
- *   </item>
- * </INSOBJECTPARTNER>
+ *   &lt;/item&gt;
+ * &lt;/INSOBJECTPARTNER&gt;
+ * </pre>
  * 
  * @author  Jaco de Groot
  * @since   5.0
