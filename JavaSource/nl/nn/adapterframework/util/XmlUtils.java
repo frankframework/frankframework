@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.78  2012-03-16 15:35:44  m00f069
+ * Revision 1.79  2012-05-29 13:31:22  europe\m168309
+ * changed WARN "Saxon parser is always namespace aware" to INFO
+ *
+ * Revision 1.78  2012/03/16 15:35:44  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Michiel added EsbSoapValidator and WsdlXmlValidator, made WSDL's available for all adapters and did a bugfix on XML Validator where it seems to be dependent on the order of specified XSD's
  *
  * Revision 1.77  2012/02/09 13:38:41  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -289,7 +292,7 @@ import nl.nn.adapterframework.core.ListenerException;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.78 $ $Date: 2012-03-16 15:35:44 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.79 $ $Date: 2012-05-29 13:31:22 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -489,7 +492,7 @@ public class XmlUtils {
 		if (xslt2) {
 			factory = new net.sf.saxon.dom.DocumentBuilderFactoryImpl();
 			if (!namespaceAware) {
-				log.warn("Saxon parser is always namespace aware");
+				log.info("Saxon parser is always namespace aware, so setting namespaceAware=false is ignored");
 			}
 		} else {
 			factory = DocumentBuilderFactory.newInstance();
