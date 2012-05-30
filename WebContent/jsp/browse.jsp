@@ -14,8 +14,7 @@
 
 <xtags:forEach select="messages">
 	<xtags:variable id="pageTitle" select="concat('Browse ',@storageType,' of ',@object)"/>
-	<xtags:element name="page">
-		<xtags:attribute name="title"><%=pageTitle%><xtags:valueOf select="@storageType"/> of <xtags:valueOf select="@object"/></xtags:attribute>
+	<page title="<%=pageTitle%>">
 
 <html:form action="/browserExecute.do" >
 	<html:hidden property="action"/>
@@ -166,7 +165,7 @@
 			</tbody>
 		</contentTable>
 </html:form>
-	</xtags:element>
+	</page>
 </xtags:forEach>
 
 
