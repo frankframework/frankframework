@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.8  2012-05-15 22:13:44  m00f069
+ * Revision 1.9  2012-05-31 10:27:55  m00f069
+ * Check whether SAP is expecting a reply before trying to parse XML
+ *
+ * Revision 1.8  2012/05/15 22:13:44  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Allow nesting of (different) types in SAP XML
  *
  * Revision 1.7  2012/05/14 09:54:59  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -142,7 +145,7 @@ import com.sap.conn.jco.JCoStructure;
  * @version Id
  */
 public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.8 $ $Date: 2012-05-15 22:13:44 $";
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.9 $ $Date: 2012-05-31 10:27:55 $";
 	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
 
 	private String name;
@@ -229,11 +232,13 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 				if (tableParameterList != null) {
 					parameterLists.add(tableParameterList);
 				}
-				Handler handler = Handler.getHandler(parameterLists, log);
-				try {
-					XmlUtils.parseXml(handler, message);
-				} catch (Exception e) {
-					throw new SapException("exception parsing message", e);
+				if (parameterLists.size() > 0) {
+					Handler handler = Handler.getHandler(parameterLists, log);
+					try {
+						XmlUtils.parseXml(handler, message);
+					} catch (Exception e) {
+						throw new SapException("exception parsing message", e);
+					}
 				}
 			}
 		}
