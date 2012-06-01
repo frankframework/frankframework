@@ -1,6 +1,9 @@
 /*
  * $Log: IRecordHandler.java,v $
- * Revision 1.12  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.13  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.12  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -41,7 +44,7 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
@@ -62,7 +65,7 @@ public interface IRecordHandler extends INamedObject {
 	 * @return List with String values for each inputfield
 	 * @throws Exception
 	 */
-	List parse(PipeLineSession session, String record) throws Exception;
+	List parse(IPipeLineSession session, String record) throws Exception;
 
 	/**
 	 * Perform an action on the array of fields.
@@ -70,9 +73,9 @@ public interface IRecordHandler extends INamedObject {
 	 * @return transformed result
 	 * @throws Exception
 	 */	
-	Object handleRecord(PipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception;
+	Object handleRecord(IPipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception;
 	
-	boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, List prevRecord, List curRecord) throws Exception;
+	boolean isNewRecordType(IPipeLineSession session, boolean equalRecordTypes, List prevRecord, List curRecord) throws Exception;
 	
 	public String getRecordType(List record);
 	

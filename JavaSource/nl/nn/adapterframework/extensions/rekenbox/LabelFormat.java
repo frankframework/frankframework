@@ -1,6 +1,9 @@
 /*
  * $Log: LabelFormat.java,v $
- * Revision 1.3  2011-11-30 13:52:03  europe\m168309
+ * Revision 1.4  2012-06-01 10:52:52  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.3  2011/11/30 13:52:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -54,37 +57,21 @@
  */
 package nl.nn.adapterframework.extensions.rekenbox;
 
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import java.io.StringReader;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.Variant;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.ClassUtils;
 
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.parsers.SAXParser;
-import org.xml.sax.SAXException;
+import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
-import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
-
-import java.util.Hashtable;
-import java.util.StringTokenizer;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
-import java.net.URL;
-
-import javax.xml.parsers.*;
-import org.w3c.dom.*;
-import org.xml.sax.*;
-import java.io.*;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
@@ -143,7 +130,7 @@ public class LabelFormat extends FixedForwardPipe {
 		super.configure();
 	}	
 	
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		try {
 			String result;
 			if (getDirection().equalsIgnoreCase(DIRECTION_XML2LABEL)) {

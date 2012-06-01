@@ -1,6 +1,9 @@
 /*
  * $Log: StreamLineIteratorPipe.java,v $
- * Revision 1.11  2012-01-20 10:39:09  europe\m168309
+ * Revision 1.12  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.11  2012/01/20 10:39:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * StreamLineIteratorPipe: added endOfLineString attribute
  *
  * Revision 1.10  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -42,7 +45,7 @@ import java.io.Reader;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.ReaderLineIterator;
 
@@ -110,11 +113,11 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * @version Id
  */
 public class StreamLineIteratorPipe extends IteratingPipe {
-	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.11 $ $Date: 2012-01-20 10:39:09 $";
+	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.12 $ $Date: 2012-06-01 10:52:49 $";
 
 	private String endOfLineString;
 	
-	protected Reader getReader(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	protected Reader getReader(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("input is null. Must supply stream as input");
 		}
@@ -125,7 +128,7 @@ public class StreamLineIteratorPipe extends IteratingPipe {
 		return reader;
 	}
 
-	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	protected IDataIterator getIterator(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		return new ReaderLineIterator(getReader(input,session, correlationID,threadContext));
 	}
 

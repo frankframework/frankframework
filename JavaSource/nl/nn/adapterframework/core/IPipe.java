@@ -1,6 +1,9 @@
 /*
  * $Log: IPipe.java,v $
- * Revision 1.6  2011-11-30 13:51:55  europe\m168309
+ * Revision 1.7  2012-06-01 10:52:52  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.6  2011/11/30 13:51:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.2  2011/10/19 14:56:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -37,7 +40,7 @@ void configure() throws ConfigurationException;
  * This is where the action takes place. Pipes may only throw a PipeRunException,
  * to be handled by the caller of this object.
  */
-PipeRunResult doPipe (Object input, PipeLineSession session) throws PipeRunException;
+PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunException;
 
 /**
  * Indicates the maximum number of treads that may call {@link #doPipe(Object, PipeLineSession) doPipe()} simultaneously.

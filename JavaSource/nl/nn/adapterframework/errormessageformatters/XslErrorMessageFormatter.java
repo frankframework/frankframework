@@ -1,6 +1,9 @@
 /*
  * $Log: XslErrorMessageFormatter.java,v $
- * Revision 1.10  2011-11-30 13:52:03  europe\m168309
+ * Revision 1.11  2012-06-01 10:52:57  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.10  2011/11/30 13:52:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -33,7 +36,7 @@ import javax.xml.transform.Transformer;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -66,7 +69,7 @@ import org.apache.commons.lang.StringUtils;
  * @author Johan Verrips IOS
  */
 public class XslErrorMessageFormatter extends ErrorMessageFormatter {
-	public static final String version = "$RCSfile: XslErrorMessageFormatter.java,v $ $Revision: 1.10 $ $Date: 2011-11-30 13:52:03 $";
+	public static final String version = "$RCSfile: XslErrorMessageFormatter.java,v $ $Revision: 1.11 $ $Date: 2012-06-01 10:52:57 $";
 
 	protected ParameterList paramList = null;
 
@@ -105,7 +108,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 					} catch (ConfigurationException e) {
 						log.error("exception while configuring parameters",e);
 					}
-						ParameterResolutionContext prc = new ParameterResolutionContext(message, new PipeLineSession());
+						ParameterResolutionContext prc = new ParameterResolutionContext(message, new PipeLineSessionBase());
 
 					Map parametervalues = null;
 					try {

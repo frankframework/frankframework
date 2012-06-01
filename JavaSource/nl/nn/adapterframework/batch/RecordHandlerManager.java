@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlerManager.java,v $
- * Revision 1.14  2012-01-27 13:35:27  europe\m168309
+ * Revision 1.15  2012-06-01 10:52:48  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.14  2012/01/27 13:35:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * replaced HashMap with LinkedHashMap to guarantee iteration order
  *
  * Revision 1.13  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -49,7 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -71,7 +74,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class RecordHandlerManager implements IRecordHandlerManager {
-	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.14 $ $Date: 2012-01-27 13:35:27 $";
+	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.15 $ $Date: 2012-06-01 10:52:48 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Map valueHandlersMap;
@@ -82,7 +85,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		this.valueHandlersMap = new LinkedHashMap();
 	}
 	
-	public IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String inputFilename) {
+	public IRecordHandlerManager getRecordFactoryUsingFilename(IPipeLineSession session, String inputFilename) {
 		return this;
 	}
 
@@ -113,7 +116,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		return valueHandlersMap;	
 	}
 	
-	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
+	public RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception {
 		return (RecordHandlingFlow)valueHandlersMap.get("*");
 	}
 

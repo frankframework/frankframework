@@ -1,6 +1,9 @@
 /*
  * $Log: CheckSemaphorePipeProcessor.java,v $
- * Revision 1.6  2011-11-30 13:51:53  europe\m168309
+ * Revision 1.7  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.6  2011/11/30 13:51:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -22,8 +25,8 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -38,7 +41,7 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 	private Map pipeThreadCounts=new Hashtable();
 
 	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe,
-			String messageId, Object message, PipeLineSession pipeLineSession
+			String messageId, Object message, IPipeLineSession pipeLineSession
 			) throws PipeRunException {
 		PipeRunResult pipeRunResult;
 		Semaphore s = getSemaphore(pipe);

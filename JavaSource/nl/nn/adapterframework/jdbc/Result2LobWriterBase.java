@@ -1,6 +1,9 @@
 /*
  * $Log: Result2LobWriterBase.java,v $
- * Revision 1.7  2012-02-17 18:04:02  m00f069
+ * Revision 1.8  2012-06-01 10:52:52  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.7  2012/02/17 18:04:02  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Use proxiedDataSources for JdbcIteratingPipeBase too
  * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
  *
@@ -35,7 +38,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.batch.ResultWriter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -73,7 +76,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @version Id
  */
 public abstract class Result2LobWriterBase extends ResultWriter {
-	public static final String version = "$RCSfile: Result2LobWriterBase.java,v $  $Revision: 1.7 $ $Date: 2012-02-17 18:04:02 $";
+	public static final String version = "$RCSfile: Result2LobWriterBase.java,v $  $Revision: 1.8 $ $Date: 2012-06-01 10:52:52 $";
 	
 	protected Map openStreams = Collections.synchronizedMap(new HashMap());
 	protected Map openConnections = Collections.synchronizedMap(new HashMap());
@@ -105,7 +108,7 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	protected abstract Writer getWriter   (IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
 	protected abstract void   updateLob   (IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
 	
-	protected Writer createWriter(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
+	protected Writer createWriter(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
 		querySender.sendMessage(streamId, streamId);
 		Connection conn=querySender.getConnection();
 		openConnections.put(streamId, conn);
@@ -118,7 +121,7 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 		return getWriter(dbmsSupport, lobHandle, rs);
 	}
 	
-	public Object finalizeResult(PipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
+	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
 		try {
 			return super.finalizeResult(session,streamId, error, prc);
 		} finally {

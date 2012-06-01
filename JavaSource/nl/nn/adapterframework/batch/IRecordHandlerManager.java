@@ -1,6 +1,9 @@
 /*
  * $Log: IRecordHandlerManager.java,v $
- * Revision 1.9  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.10  2012-06-01 10:52:48  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.9  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -32,7 +35,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 
 /**
  * Interface for handling a transformed record.
@@ -58,13 +61,13 @@ public interface IRecordHandlerManager extends INamedObject {
 	 * @return the RecordHandlingFlow element to be used to handle the record
 	 * @throws Exception
 	 */
-	RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception;
+	RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception;
 	
 	/**
 	 * @param filename
 	 * @return the IRecordHandlingManager to be used initially based on the name of the input file 
 	 */
-	IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String filename);
+	IRecordHandlerManager getRecordFactoryUsingFilename(IPipeLineSession session, String filename);
 	
 	/**
 	 * @param initialFactory inidicates if this manager is the initial manager

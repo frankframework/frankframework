@@ -1,6 +1,9 @@
 /*
  * $Log: CoolGenWrapperPipe.java,v $
- * Revision 1.7  2011-11-30 13:52:05  europe\m168309
+ * Revision 1.8  2012-06-01 10:52:59  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.7  2011/11/30 13:52:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -18,33 +21,31 @@
  */
 package nl.nn.adapterframework.extensions.coolgen;
 
-import java.net.URL;
-import java.io.StringWriter;
-import java.io.StringReader;
-import java.io.Writer;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.URL;
+
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
-import javax.xml.transform.Source;
-import java.beans.PropertyVetoException;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import nl.nn.coolgen.proxy.CoolGenXMLProxy;
-import nl.nn.coolgen.proxy.XmlProxyException;
-
-
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.coolgen.proxy.CoolGenXMLProxy;
+import nl.nn.coolgen.proxy.XmlProxyException;
 
 /**
  * Perform the call to a CoolGen proxy with pre- and post transformations.
@@ -72,7 +73,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @version Id
  */
 public class CoolGenWrapperPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: CoolGenWrapperPipe.java,v $ $Revision: 1.7 $ $Date: 2011-11-30 13:52:05 $";
+	public static final String version="$RCSfile: CoolGenWrapperPipe.java,v $ $Revision: 1.8 $ $Date: 2012-06-01 10:52:59 $";
 
     private String clientId;
     private String clientPassword;
@@ -241,7 +242,7 @@ public void createTransformers() throws ConfigurationException {
  * Transform the input (optionally), check the conformance to the schema (optionally),
  * call the required proxy, transform the output (optionally)
  */
-public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 
     Writer proxyResult;
     String proxypreProc = null;

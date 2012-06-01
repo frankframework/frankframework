@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapperPipe.java,v $
- * Revision 1.8  2012-05-10 11:52:45  m00f069
+ * Revision 1.9  2012-06-01 10:52:48  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.8  2012/05/10 11:52:45  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Resolve parameters only once
  *
  * Revision 1.7  2012/02/28 13:26:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -34,10 +37,8 @@ import java.util.Map;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -46,6 +47,8 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
@@ -174,7 +177,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String result;
 		try {
 			if ("wrap".equalsIgnoreCase(getDirection())) {

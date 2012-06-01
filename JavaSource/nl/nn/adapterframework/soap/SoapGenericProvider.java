@@ -1,6 +1,9 @@
 /*
  * $Log: SoapGenericProvider.java,v $
- * Revision 1.9  2012-02-06 13:18:20  l190409
+ * Revision 1.10  2012-06-01 10:52:48  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.9  2012/02/06 13:18:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved SOAP error logging
  *
  * Revision 1.8  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -41,9 +44,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-//import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
@@ -65,7 +67,7 @@ import org.apache.soap.util.Provider;
  * @author Gerrit van Brakel
  */
 public class SoapGenericProvider implements Provider {
-	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.9 $ $Date: 2012-02-06 13:18:20 $";
+	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.10 $ $Date: 2012-06-01 10:52:48 $";
 	protected Logger log=LogUtil.getLogger(this);
 	
 	private final String TARGET_OBJECT_URI_KEY = "TargetObjectNamespaceURI";
@@ -113,7 +115,7 @@ public class SoapGenericProvider implements Provider {
 			HttpServletRequest httpRequest=(HttpServletRequest) reqContext.getProperty(Constants.BAG_HTTPSERVLETREQUEST);
 			ISecurityHandler securityHandler = new HttpSecurityHandler(httpRequest);
 			Map messageContext= new HashMap();
-			messageContext.put(PipeLineSession.securityHandlerKey, securityHandler);
+			messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
 			String result=sd.dispatchRequest(targetObjectURI, null, message, messageContext);
 			//resContext.setRootPart( soapWrapper.putInEnvelope(result,null), Constants.HEADERVAL_CONTENT_TYPE_UTF8);
 			resContext.setRootPart( result, Constants.HEADERVAL_CONTENT_TYPE_UTF8);

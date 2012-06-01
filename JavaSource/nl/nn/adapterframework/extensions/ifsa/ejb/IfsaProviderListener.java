@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.7  2011-11-30 13:51:58  europe\m168309
+ * Revision 1.8  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.7  2011/11/30 13:51:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -68,12 +71,12 @@ import javax.jms.Session;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
 
 import com.ing.ifsa.api.ServiceRequest;
 import com.ing.ifsa.api.ServiceURI;
@@ -85,7 +88,7 @@ import com.ing.ifsa.api.ServiceURI;
  * @version Id
  */
 public class IfsaProviderListener extends IfsaEjbBase implements IPortConnectedListener {
-    public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.7 $ $Date: 2011-11-30 13:51:58 $";
+    public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.8 $ $Date: 2012-06-01 10:52:50 $";
     
     private IMessageHandler handler;
     private IbisExceptionListener exceptionListener;
@@ -197,7 +200,7 @@ public class IfsaProviderListener extends IfsaEjbBase implements IPortConnectedL
 
         }
         threadContext.put("id", id);
-        threadContext.put(PipeLineSession.technicalCorrelationIdKey, cid);
+        threadContext.put(IPipeLineSession.technicalCorrelationIdKey, cid);
         threadContext.put("timestamp", dTimeStamp);
         threadContext.put("replyTo", "none");
         threadContext.put("messageText", messageText);

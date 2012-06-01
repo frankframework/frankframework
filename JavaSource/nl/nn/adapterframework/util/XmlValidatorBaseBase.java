@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseBase.java,v $
- * Revision 1.6  2012-03-16 15:35:44  m00f069
+ * Revision 1.7  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.6  2012/03/16 15:35:44  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Michiel added EsbSoapValidator and WsdlXmlValidator, made WSDL's available for all adapters and did a bugfix on XML Validator where it seems to be dependent on the order of specified XSD's
  *
  * Revision 1.5  2011/12/08 10:57:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -27,8 +30,8 @@ import java.net.URL;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 
 import org.apache.commons.lang.StringUtils;
@@ -215,7 +218,7 @@ public abstract class XmlValidatorBaseBase {
 		}
     }
 
-	protected String handleFailures(XmlErrorHandler xeh, PipeLineSession session, String mainReason, String forwardName, String event, Throwable t) throws  XmlValidatorException {
+	protected String handleFailures(XmlErrorHandler xeh, IPipeLineSession session, String mainReason, String forwardName, String event, Throwable t) throws  XmlValidatorException {
 
 		String fullReasons=mainReason;
 		if (StringUtils.isNotEmpty(xeh.getReasons())) {
@@ -247,7 +250,7 @@ public abstract class XmlValidatorBaseBase {
 
       * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
       */
-    public abstract String validate(Object input, PipeLineSession session, String logPrefix) throws XmlValidatorException;
+    public abstract String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException;
 
     /**
      * Enable full schema grammar constraint checking, including
@@ -332,7 +335,7 @@ public abstract class XmlValidatorBaseBase {
 		this.schemaSessionKey = schemaSessionKey;
 	}
 
-	protected String getLogPrefix(PipeLineSession session){
+	protected String getLogPrefix(IPipeLineSession session){
 		  StringBuffer sb=new StringBuffer();
 		  sb.append(ClassUtils.nameOf(this)).append(' ');
 		  if (this instanceof INamedObject) {

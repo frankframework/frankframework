@@ -1,10 +1,23 @@
 package nl.nn.adapterframework.pipes;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import javax.wsdl.*;
+import javax.wsdl.Definition;
+import javax.wsdl.Operation;
+import javax.wsdl.Part;
+import javax.wsdl.PortType;
+import javax.wsdl.WSDLException;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.schema.Schema;
 import javax.wsdl.extensions.schema.SchemaImport;
@@ -18,19 +31,23 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.soap.SoapValidator;
+import nl.nn.adapterframework.util.ClassUtils;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.ls.*;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.ibm.wsdl.extensions.schema.SchemaSerializer;
-
-import nl.nn.adapterframework.core.*;
-import nl.nn.adapterframework.soap.SoapValidator;
-import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Wsdl based input validator. Given an WSDL, it validates input.
@@ -104,7 +121,7 @@ public class WsdlXmlValidator extends FixedForwardPipe {
 
 
     @Override
-    public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+    public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
         try {
             pipe((String) input);
             return new PipeRunResult(getForward(), input);

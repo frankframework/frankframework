@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.18  2011-11-30 13:52:03  europe\m168309
+ * Revision 1.19  2012-06-01 10:52:57  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.18  2011/11/30 13:52:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -60,19 +63,23 @@
 package nl.nn.adapterframework.parameters;
 
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.log4j.Logger;
+import org.xml.sax.SAXException;
  
 /**
  * Determines the parameter values of the specified parameter during runtime
@@ -81,11 +88,11 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.18 $ $Date: 2011-11-30 13:52:03 $";
+	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.19 $ $Date: 2012-06-01 10:52:57 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String input;
-	private PipeLineSession session;
+	private IPipeLineSession session;
 	private Source xmlSource;
 	private boolean namespaceAware;
 	private boolean xslt2;
@@ -95,27 +102,27 @@ public class ParameterResolutionContext {
 	 * @param input contains the input (xml formatted) message
 	 * @param session 
 	 */		
-	public ParameterResolutionContext(String input, PipeLineSession session, boolean namespaceAware, boolean xslt2) {
+	public ParameterResolutionContext(String input, IPipeLineSession session, boolean namespaceAware, boolean xslt2) {
 		this.input = input;
 		this.session = session;
 		this.namespaceAware = namespaceAware;
 		this.xslt2 = xslt2;
 	}
 
-	public ParameterResolutionContext(String input, PipeLineSession session, boolean namespaceAware) {
+	public ParameterResolutionContext(String input, IPipeLineSession session, boolean namespaceAware) {
 		this(input, session, namespaceAware, false);
 	}
 
-	public ParameterResolutionContext(String input, PipeLineSession session) {
+	public ParameterResolutionContext(String input, IPipeLineSession session) {
 		this(input, session, XmlUtils.isNamespaceAwareByDefault());
 	}
 
-	public ParameterResolutionContext(Source xmlSource, PipeLineSession session, boolean namespaceAware) {
+	public ParameterResolutionContext(Source xmlSource, IPipeLineSession session, boolean namespaceAware) {
 		this("", session, namespaceAware);
 		this.xmlSource=xmlSource;
 	}
 
-	public ParameterResolutionContext(Source xmlSource, PipeLineSession session) {
+	public ParameterResolutionContext(Source xmlSource, IPipeLineSession session) {
 		this(xmlSource, session, XmlUtils.isNamespaceAwareByDefault());
 	}
 
@@ -199,7 +206,7 @@ public class ParameterResolutionContext {
 	/**
 	 * @return hashtable with session variables
 	 */
-	public PipeLineSession getSession() {
+	public IPipeLineSession getSession() {
 		return session;
 	}
 
@@ -214,7 +221,7 @@ public class ParameterResolutionContext {
 	/**
 	 * @param session
 	 */
-	public void setSession(PipeLineSession session) {
+	public void setSession(IPipeLineSession session) {
 		this.session = session;
 	}
 

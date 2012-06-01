@@ -1,6 +1,9 @@
 /*
  * $Log: BatchTransformerPipeBase.java,v $
- * Revision 1.6  2012-02-17 18:04:02  m00f069
+ * Revision 1.7  2012-06-01 10:52:52  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.6  2012/02/17 18:04:02  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Use proxiedDataSources for JdbcIteratingPipeBase too
  * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
  *
@@ -34,7 +37,7 @@ import java.sql.ResultSet;
 
 import nl.nn.adapterframework.batch.StreamTransformerPipe;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
@@ -98,9 +101,9 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		
 	}
 
-	protected abstract Reader getReader(ResultSet rs, String charset, String streamId, PipeLineSession session) throws SenderException;
+	protected abstract Reader getReader(ResultSet rs, String charset, String streamId, IPipeLineSession session) throws SenderException;
 
-	protected BufferedReader getReader(String streamId, Object input, PipeLineSession session) throws PipeRunException {
+	protected BufferedReader getReader(String streamId, Object input, IPipeLineSession session) throws PipeRunException {
 		Connection connection = null;
 		try {
 			connection = querySender.getConnection();

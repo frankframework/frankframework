@@ -1,6 +1,9 @@
 /*
  * $Log: DomainTransformerPipe.java,v $
- * Revision 1.5  2012-02-17 18:04:59  m00f069
+ * Revision 1.6  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.5  2012/02/17 18:04:59  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Close connection too
  * Use proxiedDataSources
  *
@@ -28,7 +31,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -113,7 +116,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object invoer, PipeLineSession session)
+	public PipeRunResult doPipe(Object invoer, IPipeLineSession session)
 		throws PipeRunException {
 		Connection conn = null;
 		PreparedStatement stmt = null;

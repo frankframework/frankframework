@@ -1,6 +1,9 @@
 /*
  * $Log: RekenBoxCaller.java,v $
- * Revision 1.11  2011-11-30 13:52:03  europe\m168309
+ * Revision 1.12  2012-06-01 10:52:52  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.11  2011/11/30 13:52:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -38,15 +41,15 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.Misc;
+
+import org.apache.commons.lang.StringUtils;
 /**
  * Perform a call to a RekenBox.
  *
@@ -94,7 +97,7 @@ import nl.nn.adapterframework.util.Misc;
  * @version Id
  */
 public class RekenBoxCaller extends FixedForwardPipe {
-	public static final String version="$RCSfile: RekenBoxCaller.java,v $ $Revision: 1.11 $ $Date: 2011-11-30 13:52:03 $";
+	public static final String version="$RCSfile: RekenBoxCaller.java,v $ $Revision: 1.12 $ $Date: 2012-06-01 10:52:52 $";
 	
 	private String runPath="";
 	private String executableExtension="exe"; //bat, com or exe
@@ -160,7 +163,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	/**
 	 * positie 1 t/m 8 bepalen de naam van de executable, of tot aan de ':' (wat het eerst komt)
 	 */
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 	    if (!(input instanceof String))
 	        throw new PipeRunException(this, 
 	            getLogPrefix(session)+"expected java.lang.String, got [" + input.getClass().getName() + "], value ["+input+"]");

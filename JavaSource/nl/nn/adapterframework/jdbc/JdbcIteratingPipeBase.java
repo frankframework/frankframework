@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcIteratingPipeBase.java,v $
- * Revision 1.14  2012-02-17 18:04:02  m00f069
+ * Revision 1.15  2012-06-01 10:52:52  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.14  2012/02/17 18:04:02  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Use proxiedDataSources for JdbcIteratingPipeBase too
  * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
  *
@@ -63,7 +66,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -200,14 +203,14 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 		}
 	}
 
-	protected void iterateInput(Object input, PipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException {
+	protected void iterateInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException {
 		if (log.isDebugEnabled()) {log.debug(getLogPrefix(session)+"result set is empty, nothing to iterate over");}
 	}
 
 
 	protected abstract IDataIterator getIterator(Connection conn, ResultSet rs) throws SenderException; 
 
-	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	protected IDataIterator getIterator(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		Connection connection = null;
 		PreparedStatement statement=null;
 		ResultSet rs=null;

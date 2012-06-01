@@ -1,6 +1,9 @@
 /*
  * $Log: ZipWriter.java,v $
- * Revision 1.4  2011-11-30 13:51:57  europe\m168309
+ * Revision 1.5  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.4  2011/11/30 13:51:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -21,7 +24,7 @@ import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
@@ -48,11 +51,11 @@ public class ZipWriter {
 		zipoutput=new ZipOutputStream(resultStream);
 	}
 
-	public static ZipWriter getZipWriter(PipeLineSession session, String handlekey) {
+	public static ZipWriter getZipWriter(IPipeLineSession session, String handlekey) {
 		return (ZipWriter)session.get(handlekey);
 	}
 
-	public static ZipWriter createZipWriter(PipeLineSession session, String handlekey, OutputStream resultStream, boolean closeOnExit) {
+	public static ZipWriter createZipWriter(IPipeLineSession session, String handlekey, OutputStream resultStream, boolean closeOnExit) {
 		ZipWriter handle=new ZipWriter(resultStream,closeOnExit);
 		session.put(handlekey,handle);
 		if (handle.log.isDebugEnabled()) handle.log.debug(handle.getLogPrefix(handlekey)+"opened new zipstream");

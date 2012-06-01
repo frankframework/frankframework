@@ -1,6 +1,9 @@
 /*
  * $Log: PullingJmsListener.java,v $
- * Revision 1.12  2011-11-30 13:51:51  europe\m168309
+ * Revision 1.13  2012-06-01 10:52:48  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.12  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -119,10 +122,11 @@ import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPostboxListener;
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -199,7 +203,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.0.1
  */
 public class PullingJmsListener extends JmsListenerBase implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
-	public static final String version="$RCSfile: PullingJmsListener.java,v $ $Revision: 1.12 $ $Date: 2011-11-30 13:51:51 $";
+	public static final String version="$RCSfile: PullingJmsListener.java,v $ $Revision: 1.13 $ $Date: 2012-06-01 10:52:48 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
@@ -290,7 +294,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {
-		String cid = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
+		String cid = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PullingJmsListener.afterMessageProcessed()");
 	

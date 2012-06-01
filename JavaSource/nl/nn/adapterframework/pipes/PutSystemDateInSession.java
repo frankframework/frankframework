@@ -1,6 +1,9 @@
 /*
  * $Log: PutSystemDateInSession.java,v $
- * Revision 1.13  2011-11-30 13:51:50  europe\m168309
+ * Revision 1.14  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.13  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -42,17 +45,17 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationUtils;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-
-import java.util.Date;
-import java.util.TimeZone;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.util.DateUtils;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -78,7 +81,7 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.2c
  */
 public class PutSystemDateInSession extends FixedForwardPipe {
-	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.13 $ $Date: 2011-11-30 13:51:50 $";
+	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.14 $ $Date: 2012-06-01 10:52:50 $";
 
 	public final static String FIXEDDATETIME  ="2001-12-17 09:30:47";
 	public final static String FORMAT_FIXEDDATETIME  ="yyyy-MM-dd HH:mm:ss";
@@ -130,7 +133,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 
 	}
 
-	public PipeRunResult doPipe(Object input, PipeLineSession session)
+	public PipeRunResult doPipe(Object input, IPipeLineSession session)
 		throws PipeRunException {
 
 		String formattedDate;

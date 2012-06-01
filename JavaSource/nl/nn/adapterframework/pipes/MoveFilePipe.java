@@ -1,6 +1,9 @@
 /*
  * $Log: MoveFilePipe.java,v $
- * Revision 1.8  2012-02-13 14:31:51  europe\m168309
+ * Revision 1.9  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.8  2012/02/13 14:31:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * updated javadoc
  *
  * Revision 1.7  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -47,7 +50,7 @@ package nl.nn.adapterframework.pipes;
 import java.io.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.FileUtils;
@@ -80,7 +83,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class MoveFilePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.8 $ $Date: 2012-02-13 14:31:51 $";
+	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.9 $ $Date: 2012-06-01 10:52:49 $";
 
 	private String filename;
 	private String move2dir;
@@ -106,7 +109,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String orgFilename;
 		String dstFilename;
 

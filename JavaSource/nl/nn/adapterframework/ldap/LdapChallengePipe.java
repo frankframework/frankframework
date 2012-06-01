@@ -1,6 +1,9 @@
 /*
  * $Log: LdapChallengePipe.java,v $
- * Revision 1.11  2011-11-30 13:52:05  europe\m168309
+ * Revision 1.12  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.11  2011/11/30 13:52:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -38,8 +41,8 @@ package nl.nn.adapterframework.ldap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -80,7 +83,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapChallengePipe extends AbstractPipe {
-	public static String version = "$RCSfile: LdapChallengePipe.java,v $  $Revision: 1.11 $ $Date: 2011-11-30 13:52:05 $";
+	public static String version = "$RCSfile: LdapChallengePipe.java,v $  $Revision: 1.12 $ $Date: 2012-06-01 10:52:50 $";
 
 	private String ldapProviderURL=null;
 	private String initialContextFactoryName=null;
@@ -107,7 +110,7 @@ public class LdapChallengePipe extends AbstractPipe {
 	 * Checks to see if the supplied parameteres of the pipe can login to LDAP 
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object msg, PipeLineSession pls) throws PipeRunException {
+	public PipeRunResult doPipe(Object msg, IPipeLineSession pls) throws PipeRunException {
 
 		LdapSender ldapSender = new LdapSender();
 		
@@ -173,7 +176,7 @@ public class LdapChallengePipe extends AbstractPipe {
 		return new PipeRunResult(findForward("success"), msg);
 	}
 	
-	protected void handleError(LdapSender ldapSender, PipeLineSession pls, int code, String message) {
+	protected void handleError(LdapSender ldapSender, IPipeLineSession pls, int code, String message) {
 		Throwable t = new ConfigurationException(LdapSender.LDAP_ERROR_MAGIC_STRING+code+"-"+message+"]");
 		ldapSender.storeLdapException(t,pls);
 	}

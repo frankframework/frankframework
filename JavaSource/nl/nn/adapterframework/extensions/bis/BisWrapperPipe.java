@@ -1,6 +1,9 @@
 /*
  * $Log: BisWrapperPipe.java,v $
- * Revision 1.9  2012-01-24 11:33:23  europe\m168309
+ * Revision 1.10  2012-06-01 10:52:57  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.9  2012/01/24 11:33:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Deprecated ExtendedSoapWrapperPipe
  *
  * Revision 1.6  2011/09/22 08:54:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -33,13 +36,9 @@ import java.util.Date;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
@@ -50,6 +49,10 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.commons.lang.StringUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 /**
  * Pipe to wrap or unwrap a message conformable to the BIS (Business Integration Services) standard.
@@ -286,7 +289,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String result;
 		try {
 			if ("wrap".equalsIgnoreCase(getDirection())) {

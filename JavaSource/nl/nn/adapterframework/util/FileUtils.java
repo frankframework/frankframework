@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.26  2012-03-09 15:56:29  m00f069
+ * Revision 1.27  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.26  2012/03/09 15:56:29  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Use copy and delete in case renameTo doesn't work for moving files.
  * Don't sleep when no new move attempt is going to be made.
  *
@@ -93,8 +96,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -116,7 +119,7 @@ public class FileUtils {
 	/**
 	 * Construct a filename from a pattern and session variables. 
 	 */
-	public static String getFilename(ParameterList definedParameters, PipeLineSession session, String originalFilename, String filenamePattern) throws ParameterException {
+	public static String getFilename(ParameterList definedParameters, IPipeLineSession session, String originalFilename, String filenamePattern) throws ParameterException {
 		// no pattern defined, outputname = inputname
 		if (StringUtils.isEmpty(filenamePattern)) {
 			return originalFilename; 
@@ -165,7 +168,7 @@ public class FileUtils {
 		return filename;
 	}
 	
-	public static String getFilename(ParameterList definedParameters, PipeLineSession session, File originalFile, String filenamePattern) throws ParameterException {
+	public static String getFilename(ParameterList definedParameters, IPipeLineSession session, File originalFile, String filenamePattern) throws ParameterException {
 		if (originalFile == null)
 			return getFilename(definedParameters, session, "", filenamePattern);
 		return getFilename(definedParameters, session, originalFile.getName(), filenamePattern);

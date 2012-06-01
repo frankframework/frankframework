@@ -1,6 +1,9 @@
 /*
  * $Log: Result2Filewriter.java,v $
- * Revision 1.19  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.20  2012-06-01 10:52:48  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.19  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -66,7 +69,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -113,7 +116,7 @@ public class Result2Filewriter extends ResultWriter {
 		setOnCloseDocument("");
 	}
 	
-	protected Writer createWriter(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
+	protected Writer createWriter(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
 		log.debug("create writer ["+streamId+"]");
 		String outputFilename = FileUtils.getFilename(null, session, new File(streamId), getFilenamePattern());
 		File outputFile = new File(outputDirectory, outputFilename);
@@ -124,11 +127,11 @@ public class Result2Filewriter extends ResultWriter {
 		return new FileWriter(outputFile, false);
 	}
 
-	public void closeDocument(PipeLineSession session, String streamId, ParameterResolutionContext prc) {
+	public void closeDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) {
 		File outputFile = (File)openFiles.remove(streamId);
 	}
 
-	public Object finalizeResult(PipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
+	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
 		log.debug("finalizeResult ["+streamId+"]");
 		super.finalizeResult(session,streamId, error, prc);
 		super.closeDocument(session,streamId, prc);

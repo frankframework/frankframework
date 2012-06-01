@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.20  2011-12-20 12:11:53  l190409
+ * Revision 1.21  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.20  2011/12/20 12:11:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error handling
  *
  * Revision 1.19  2011/11/30 13:52:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -79,7 +82,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.FileUtils;
@@ -487,7 +490,7 @@ public class FtpSession {
 		}
 	}
 	
-	public String put(ParameterList params, PipeLineSession session, String message, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
+	public String put(ParameterList params, IPipeLineSession session, String message, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
 		if (messageIsContent) {
 			return _put(params, session, message, remoteDirectory, remoteFilenamePattern, closeAfterSend);
 		}
@@ -505,7 +508,7 @@ public class FtpSession {
 	 * @return name of the create remote file
 	 * @throws Exception
 	 */
-	private String _put(ParameterList params, PipeLineSession session, String contents, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
+	private String _put(ParameterList params, IPipeLineSession session, String contents, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
 		openClient(remoteDirectory);
 		
 		// get remote name
@@ -540,7 +543,7 @@ public class FtpSession {
 	 * @return list of remotely created files
 	 * @throws Exception
 	 */
-	private List _put(ParameterList params, PipeLineSession session, List filenames, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
+	private List _put(ParameterList params, IPipeLineSession session, List filenames, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
 		openClient(remoteDirectory);
 		
 		try {
@@ -615,7 +618,7 @@ public class FtpSession {
 		return FileUtils.getNamesFromList(result, ';');
 	}
 	
-	public String get(ParameterList params, PipeLineSession session, String localDirectory, String remoteDirectory, String filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
+	public String get(ParameterList params, IPipeLineSession session, String localDirectory, String remoteDirectory, String filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
 		if (messageIsContent) {
 			return _get(remoteDirectory, FileUtils.getListFromNames(filenames, ';'), closeAfterGet);
 		}
@@ -690,7 +693,7 @@ public class FtpSession {
 	 * @return ; seperated string with filenames of locally created files 
 	 * @throws Exception
 	 */
-	private List _get(ParameterList params, PipeLineSession session, String localDirectory, String remoteDirectory, List filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
+	private List _get(ParameterList params, IPipeLineSession session, String localDirectory, String remoteDirectory, List filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
 		openClient(remoteDirectory);
 		
 		try {

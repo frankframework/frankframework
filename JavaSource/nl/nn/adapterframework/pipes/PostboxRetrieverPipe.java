@@ -1,6 +1,9 @@
 /*
  * $Log: PostboxRetrieverPipe.java,v $
- * Revision 1.8  2011-11-30 13:51:50  europe\m168309
+ * Revision 1.9  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.8  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -36,7 +39,7 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -79,7 +82,7 @@ import nl.nn.adapterframework.core.PipeStartException;
  * @version Id
  */
 public class PostboxRetrieverPipe  extends FixedForwardPipe {
-	public static final String version = "$RCSfile: PostboxRetrieverPipe.java,v $ $Revision: 1.8 $ $Date: 2011-11-30 13:51:50 $";
+	public static final String version = "$RCSfile: PostboxRetrieverPipe.java,v $ $Revision: 1.9 $ $Date: 2012-06-01 10:52:49 $";
 
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";
@@ -118,7 +121,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (! (input instanceof String)) {
 			throw new PipeRunException(this, "String expected, got a [" + input.getClass().getName() + "]");
 		}

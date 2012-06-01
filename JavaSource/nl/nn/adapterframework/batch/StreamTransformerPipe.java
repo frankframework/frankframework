@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.28  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.29  2012-06-01 10:52:48  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.28  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -100,7 +103,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -161,20 +164,20 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	
 	private IInputStreamReaderFactory readerFactory=new InputStreamReaderFactory();
 
-	protected String getStreamId(Object input, PipeLineSession session) throws PipeRunException {
+	protected String getStreamId(Object input, IPipeLineSession session) throws PipeRunException {
 		return session.getMessageId();
 	}
 	
 	/*
 	 * obtain data inputstream.
 	 */
-	protected InputStream getInputStream(String streamId, Object input, PipeLineSession session) throws PipeRunException {
+	protected InputStream getInputStream(String streamId, Object input, IPipeLineSession session) throws PipeRunException {
 		return (InputStream)input;
 	}
 	/*
 	 * method called by doPipe to obtain reader.
 	 */
-	protected BufferedReader getReader(String streamId, Object input, PipeLineSession session) throws PipeRunException {
+	protected BufferedReader getReader(String streamId, Object input, IPipeLineSession session) throws PipeRunException {
 		try {
 			Reader reader=getReaderFactory().getReader(getInputStream(streamId, input,session),getCharset(),streamId,session);
 			if (reader instanceof BufferedReader) {
@@ -388,7 +391,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * 
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String streamId = getStreamId(input, session);
 		BufferedReader reader = getReader(streamId, input,session);
 		if (reader==null) {
@@ -410,7 +413,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(),transformationResult);
 	}
 
-	private List getBlockStack(PipeLineSession session, IResultHandler handler, String streamId, boolean create) {
+	private List getBlockStack(IPipeLineSession session, IResultHandler handler, String streamId, boolean create) {
 		String blockStackKey="blockStack for "+handler.getName();
 		List list = (List)session.get(blockStackKey);
 		if (list==null) {
@@ -422,11 +425,11 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return list;
 	}
 
-	private List getBlockStack(PipeLineSession session, IResultHandler handler, String streamId) throws SenderException {
+	private List getBlockStack(IPipeLineSession session, IResultHandler handler, String streamId) throws SenderException {
 		return getBlockStack(session, handler, streamId, false);
 	}
 
-	private boolean autoCloseBlocks(PipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName, ParameterResolutionContext prc) throws Exception {
+	private boolean autoCloseBlocks(IPipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName, ParameterResolutionContext prc) throws Exception {
 		List blockStack=getBlockStack(session,handler, streamId, true);
 		int blockLevel;
 		if (log.isDebugEnabled()) log.debug("searching block stack for open block ["+blockName+"] to perform autoclose");
@@ -450,7 +453,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		}
 	}
 
-	private void openBlock(PipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName, ParameterResolutionContext prc) throws Exception {
+	private void openBlock(IPipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName, ParameterResolutionContext prc) throws Exception {
 		if (StringUtils.isNotEmpty(blockName)) {
 			if (handler!=null) {
 				if (flow.isAutoCloseBlock()) {
@@ -466,7 +469,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			}
 		}
 	}
-	private void closeBlock(PipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName, String reason, ParameterResolutionContext prc) throws Exception {
+	private void closeBlock(IPipeLineSession session, IResultHandler handler, String streamId, RecordHandlingFlow flow, String blockName, String reason, ParameterResolutionContext prc) throws Exception {
 		if (StringUtils.isNotEmpty(blockName)) {
 			if (handler!=null) {
 				if (flow!=null && flow.isAutoCloseBlock()) {
@@ -492,7 +495,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		}
 	}
 
-	protected void closeAllBlocks(PipeLineSession session, String streamId, IResultHandler handler, ParameterResolutionContext prc) throws Exception {
+	protected void closeAllBlocks(IPipeLineSession session, String streamId, IResultHandler handler, ParameterResolutionContext prc) throws Exception {
 		if (handler!=null) {
 			List blockStack=getBlockStack(session, handler,streamId);
 			if (blockStack!=null) {
@@ -509,7 +512,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * Read all lines from the reader, treat every line as a record and transform 
 	 * it using the registered managers, record- and result handlers.
 	 */	
-	private Object transform(String streamId, BufferedReader reader, PipeLineSession session, ParameterResolutionContext prc) throws PipeRunException {
+	private Object transform(String streamId, BufferedReader reader, IPipeLineSession session, ParameterResolutionContext prc) throws PipeRunException {
 		String rawRecord = null;
 		int linenumber = 0;
 		int counter = 0;
@@ -622,13 +625,13 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		}
 	}
 
-	private void openDocument(PipeLineSession session, String inputFilename, ParameterResolutionContext prc) throws Exception {
+	private void openDocument(IPipeLineSession session, String inputFilename, ParameterResolutionContext prc) throws Exception {
 		for (Iterator it = registeredResultHandlers.values().iterator(); it.hasNext();) {
 			IResultHandler resultHandler = (IResultHandler)it.next();
 			resultHandler.openDocument(session, inputFilename, prc);
 		}
 	}
-	private void closeDocument(PipeLineSession session, String inputFilename, ParameterResolutionContext prc) {
+	private void closeDocument(IPipeLineSession session, String inputFilename, ParameterResolutionContext prc) {
 		for (Iterator it = registeredResultHandlers.values().iterator(); it.hasNext();) {
 			IResultHandler resultHandler = (IResultHandler)it.next();
 			resultHandler.closeDocument(session, inputFilename, prc);
@@ -639,7 +642,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * finalizeResult is called when all records in the input file are handled
 	 * and gives the resulthandlers a chance to finalize.
 	 */	
-	private Object finalizeResult(PipeLineSession session, String inputFilename, boolean error, ParameterResolutionContext prc) throws Exception {
+	private Object finalizeResult(IPipeLineSession session, String inputFilename, boolean error, ParameterResolutionContext prc) throws Exception {
 		// finalize result
 		List results = new ArrayList();
 		for (Iterator handlersIt = registeredResultHandlers.values().iterator(); handlersIt.hasNext();) {

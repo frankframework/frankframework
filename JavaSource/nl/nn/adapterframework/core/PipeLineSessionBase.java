@@ -1,6 +1,9 @@
 /*
- * $Log: PipeLineSession.java,v $
- * Revision 1.15  2011-11-30 13:51:55  europe\m168309
+ * $Log: PipeLineSessionBase.java,v $
+ * Revision 1.1  2012-06-01 10:52:52  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.15  2011/11/30 13:51:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -53,70 +56,39 @@ import org.apache.commons.lang.NotImplementedException;
 
 
 /**
- * The <code>PipeLineSession</code> is an object similar to
- * a <code>session</code> object in a web-application. It stores
- * data, so that the individual <i>pipes</i> may communicate with
- * one another.
- * <p>The object is cleared each time a new message is processed,
- * and the original message (as it arrived on the <code>PipeLine</code>
- * is stored in the key identified by <code>originalMessageKey</code>.
- * The messageId is stored under the key identified by <code>messageId</code>.
- * </p>
+ * Basic implementation of <code>IPipeLineSession</code>.
  * 
  * @version Id
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */
-public class PipeLineSession extends HashMap {
-	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.15 $ $Date: 2011-11-30 13:51:55 $";
+public class PipeLineSessionBase extends HashMap implements IPipeLineSession {
+	public static final String version="$RCSfile: PipeLineSessionBase.java,v $ $Revision: 1.1 $ $Date: 2012-06-01 10:52:52 $";
 
-	public static final String originalMessageKey="originalMessage";
-	public static final String messageIdKey="messageId";
-	public static final String businessCorrelationIdKey="cid";
-	public static final String technicalCorrelationIdKey="tcid";
-	public static final String tsReceivedKey="tsReceived";
-	public static final String tsSentKey="tsSent";
-	public static final String securityHandlerKey="securityHandler";
-//	private boolean transacted=false;
 	private ISecurityHandler securityHandler = null;
 
-	public PipeLineSession() {
+	public PipeLineSessionBase() {
 		super();
 	}
-	public PipeLineSession(int initialCapacity) {
+
+	public PipeLineSessionBase(int initialCapacity) {
 		super(initialCapacity);
 	}
-	public PipeLineSession(int initialCapacity, float loadFactor) {
+
+	public PipeLineSessionBase(int initialCapacity, float loadFactor) {
 		super(initialCapacity, loadFactor);
 	}
-	public PipeLineSession(Map t) {
+
+	public PipeLineSessionBase(Map t) {
 		super(t);
 	}
 
-	
-	/**
-	 * @return the messageId that was passed to the <code>PipeLine</code>
-	 */
 	public String getMessageId() {
 		return (String) get(messageIdKey);
 	}
-	/**
-	 * @return the message that was passed to the <code>PipeLine</code>
-	 */
+
 	public String getOriginalMessage() {
 		return (String) get(originalMessageKey);
-	}
-
-	/**
-	 * This method is exclusively to be called by the <code>PipeLine</code>.
-	 * It clears the contents of the session, and stores the message that was
-	 * passed to the <code>PipeLine</code> under the key <code>orininalMessageKey</code>
-	 * 
-	 */
-	public void set(String message, String messageId) {
-		// clear(); Dat moet niet meer!
-		put(originalMessageKey, message);
-	    put(messageIdKey, messageId);
 	}
 
 	/**
@@ -137,13 +109,11 @@ public class PipeLineSession extends HashMap {
 		}
 	}
 
-	/*
-	 * Sets securitHandler. SecurityHandler can also be set via key in PipeLineSession.
-	 */
 	public void setSecurityHandler(ISecurityHandler handler) {
 		securityHandler = handler;
 		put(securityHandlerKey,handler);
 	}
+
 	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
 		if (securityHandler==null) {
 			securityHandler=(ISecurityHandler)get(securityHandlerKey);
@@ -158,7 +128,7 @@ public class PipeLineSession extends HashMap {
 		ISecurityHandler handler = getSecurityHandler();
 		return handler.isUserInRole(role,this);
 	}
-	
+
 	public Principal getPrincipal() throws NotImplementedException {
 		ISecurityHandler handler = getSecurityHandler();
 		return handler.getPrincipal(this);

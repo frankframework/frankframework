@@ -1,6 +1,9 @@
 /*
  * $Log: CoreListenerProcessor.java,v $
- * Revision 1.4  2011-11-30 13:51:54  europe\m168309
+ * Revision 1.5  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.4  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -16,8 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -31,7 +34,7 @@ public class CoreListenerProcessor implements ListenerProcessor {
 	private Logger log = LogUtil.getLogger(this);
 
 	public String getMessage(ICorrelatedPullingListener listener,
-			String correlationID, PipeLineSession pipeLineSession
+			String correlationID, IPipeLineSession pipeLineSession
 			) throws ListenerException, TimeOutException {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix(listener, pipeLineSession)
@@ -59,7 +62,7 @@ public class CoreListenerProcessor implements ListenerProcessor {
 		return result;
 	}
 
-	protected String getLogPrefix(ICorrelatedPullingListener listener, PipeLineSession session){
+	protected String getLogPrefix(ICorrelatedPullingListener listener, IPipeLineSession session){
 		  StringBuffer sb=new StringBuffer();
 		  sb.append("Listener ["+listener.getName()+"] ");
 		  if (session!=null) {

@@ -1,6 +1,9 @@
 /*
  * $Log: TestPipeLineExecute.java,v $
- * Revision 1.21  2011-11-30 13:51:46  europe\m168309
+ * Revision 1.22  2012-06-01 10:52:59  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.21  2011/11/30 13:51:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -66,8 +69,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -97,7 +101,7 @@ import org.apache.struts.upload.FormFile;
  * @version Id
  */
 public final class TestPipeLineExecute extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.21 $ $Date: 2011-11-30 13:51:46 $";
+	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.22 $ $Date: 2012-06-01 10:52:59 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -216,7 +220,7 @@ public final class TestPipeLineExecute extends ActionBase {
 	}
 
 	private PipeLineResult processMessage(IAdapter adapter, String messageId, String message) {
-		PipeLineSession pls=new PipeLineSession();
+		IPipeLineSession pls=new PipeLineSessionBase();
 		Map ibisContexts = XmlUtils.getIbisContext(message);
 		String technicalCorrelationId = null;
 		if (ibisContexts!=null) {
@@ -227,7 +231,7 @@ public final class TestPipeLineExecute extends ActionBase {
 				if (log.isDebugEnabled()) {
 					contextDump = contextDump + "\n " + key + "=[" + value + "]";
 				}
-				if (key.equals(PipeLineSession.technicalCorrelationIdKey)) {
+				if (key.equals(IPipeLineSession.technicalCorrelationIdKey)) {
 					technicalCorrelationId = value;
 				} else {
 					pls.put(key, value);
@@ -238,7 +242,7 @@ public final class TestPipeLineExecute extends ActionBase {
 			}
 		}
 		Date now=new Date();
-		PipeLineSession.setListenerParameters(pls,messageId,technicalCorrelationId,now,now);
+		PipeLineSessionBase.setListenerParameters(pls,messageId,technicalCorrelationId,now,now);
 		return adapter.processMessage(messageId, message, pls);
 	}
 

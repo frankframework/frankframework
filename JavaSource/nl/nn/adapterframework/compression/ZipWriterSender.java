@@ -1,6 +1,9 @@
 /*
  * $Log: ZipWriterSender.java,v $
- * Revision 1.6  2011-11-30 13:51:57  europe\m168309
+ * Revision 1.7  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.6  2011/11/30 13:51:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -23,8 +26,8 @@ import java.io.UnsupportedEncodingException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -90,7 +93,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 			throw new SenderException("cannot determine filename and/or contents of zip entry",e);
 		}
 
-		PipeLineSession session = prc.getSession();
+		IPipeLineSession session = prc.getSession();
 		ZipWriter sessionData=ZipWriter.getZipWriter(session,getZipWriterHandle());
 		if (sessionData==null) {
 			throw new SenderException("zipWriterHandle in session key ["+getZipWriterHandle()+"] is not open");		

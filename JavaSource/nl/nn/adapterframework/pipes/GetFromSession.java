@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
@@ -50,7 +50,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * This is where the action takes place. Pipes may only throw a PipeRunException,
  * to be handled by the caller of this object.
  */
-public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 	Object result=session.get(getSessionKey());
 	
 	if (result==null) {

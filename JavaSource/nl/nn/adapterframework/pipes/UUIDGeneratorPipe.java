@@ -1,6 +1,9 @@
 /*
  * $Log: UUIDGeneratorPipe.java,v $
- * Revision 1.5  2011-11-30 13:51:50  europe\m168309
+ * Revision 1.6  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.5  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.2  2011/10/19 15:01:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -22,7 +25,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Misc;
@@ -73,7 +76,7 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, PipeLineSession session)
+	public PipeRunResult doPipe(Object input, IPipeLineSession session)
 		throws PipeRunException {
 
 		String result = null;

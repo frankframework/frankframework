@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.17  2012-04-12 12:49:06  m00f069
+ * Revision 1.18  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.17  2012/04/12 12:49:06  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Use errorHandler.throwOnError = false on preparse single schema
  *
  * Revision 1.16  2012/03/30 17:03:45  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -47,35 +50,64 @@
 package nl.nn.adapterframework.util;
 
 
-import java.io.*;
+import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.*;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.xerces.impl.Constants;
-import org.apache.xerces.parsers.*;
-import org.apache.xerces.util.*;
-import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.xni.parser.*;
-import org.xml.sax.*;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.PipeLineSession;
 
 import javanet.staxutils.XMLStreamUtils;
 import javanet.staxutils.events.AttributeEvent;
 
-import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventFactory;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLEventWriter;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.parsers.CachingParserPool;
+import org.apache.xerces.parsers.IntegratedParserConfiguration;
+import org.apache.xerces.parsers.SAXParser;
+import org.apache.xerces.parsers.XMLGrammarPreparser;
+import org.apache.xerces.util.ShadowedSymbolTable;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.SynchronizedSymbolTable;
+import org.apache.xerces.util.XMLGrammarPoolImpl;
+import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xni.parser.XMLParseException;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
 
 
 /**
@@ -340,7 +372,7 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 
       * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
       */
-    public String validate(Object input, PipeLineSession session, String logPrefix) throws XmlValidatorException {
+    public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException {
 
         Variant in = new Variant(input);
 

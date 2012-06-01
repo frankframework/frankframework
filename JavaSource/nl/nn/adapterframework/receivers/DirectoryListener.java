@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.19  2011-11-30 13:51:54  europe\m168309
+ * Revision 1.20  2012-06-01 10:52:59  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.19  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.2  2011/10/26 10:55:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -85,10 +88,11 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -229,7 +233,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	 * @return String with the name of the (renamed and moved) file
 	 * 
 	 */
-	protected String archiveFile(PipeLineSession session, File file) throws ListenerException {
+	protected String archiveFile(IPipeLineSession session, File file) throws ListenerException {
 		// Move file to new directory
 		String newFilename = null;
 		try {
@@ -276,7 +280,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 				throw new ListenerException("Could not get filetime from filename ["+filename+"]",e);
 			}
 		}
-		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
+		PipeLineSessionBase.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
 	/**
@@ -310,8 +314,8 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		}
 	}
 	
-	private PipeLineSession getSession(Map threadContext) {
-		PipeLineSession session = new PipeLineSession();
+	private IPipeLineSession getSession(Map threadContext) {
+		IPipeLineSession session = new PipeLineSessionBase();
 		if(threadContext != null)
 			session.putAll(threadContext);
 		return session;

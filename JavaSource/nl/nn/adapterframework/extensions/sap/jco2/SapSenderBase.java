@@ -1,6 +1,9 @@
 /*
  * $Log: SapSenderBase.java,v $
- * Revision 1.1  2012-02-06 14:33:05  m00f069
+ * Revision 1.2  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.1  2012/02/06 14:33:05  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
  *
  * Revision 1.5  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -22,8 +25,8 @@
 package nl.nn.adapterframework.extensions.sap.jco2;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.extensions.sap.jco2.tx.ClientFactoryUtils;
@@ -122,7 +125,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return getSapSystem(SapSystemName);
 	}
 
-	public JCO.Client getClient(PipeLineSession session, SapSystem sapSystem) throws SenderException, SapException {
+	public JCO.Client getClient(IPipeLineSession session, SapSystem sapSystem) throws SenderException, SapException {
 		JCO.Client result;
 		if (isSynchronous()) {
 			if (StringUtils.isNotEmpty(getLuwHandleSessionKey())) {

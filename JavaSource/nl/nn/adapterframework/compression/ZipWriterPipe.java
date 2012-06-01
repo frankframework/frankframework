@@ -1,6 +1,9 @@
 /*
  * $Log: ZipWriterPipe.java,v $
- * Revision 1.6  2011-11-30 13:51:57  europe\m168309
+ * Revision 1.7  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.6  2011/11/30 13:51:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -32,9 +35,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -140,11 +143,11 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	}
 
 	
-	protected ZipWriter getZipWriter(PipeLineSession session) {
+	protected ZipWriter getZipWriter(IPipeLineSession session) {
 		return ZipWriter.getZipWriter(session,getZipWriterHandle());
 	}
 
-	protected ZipWriter createZipWriter(PipeLineSession session, ParameterValueList pvl, Object input) throws PipeRunException {
+	protected ZipWriter createZipWriter(IPipeLineSession session, ParameterValueList pvl, Object input) throws PipeRunException {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"opening new zipstream");
 		OutputStream resultStream=null;
 		if (input==null) {
@@ -184,7 +187,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	}
 
 
-	protected void closeZipWriterHandle(PipeLineSession session, boolean mustFind) throws PipeRunException {
+	protected void closeZipWriterHandle(IPipeLineSession session, boolean mustFind) throws PipeRunException {
 		ZipWriter sessionData=getZipWriter(session);
 		if (sessionData==null) {
 			if (mustFind) {
@@ -202,7 +205,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		session.remove(getZipWriterHandle());
 	}
 	
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (ACTION_CLOSE.equals(getAction())) {
 			closeZipWriterHandle(session,true);
 			return new PipeRunResult(getForward(),input);
@@ -255,7 +258,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		}
 	}
 
-	protected String getLogPrefix(PipeLineSession session) {
+	protected String getLogPrefix(IPipeLineSession session) {
 		return super.getLogPrefix(session)+"action ["+getAction()+"] ";
 	}
 	

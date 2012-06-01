@@ -1,6 +1,9 @@
 /*
  * $Log: InputOutputPipeLineProcessor.java,v $
- * Revision 1.6  2011-11-30 13:51:54  europe\m168309
+ * Revision 1.7  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.6  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -18,9 +21,10 @@
  */
 package nl.nn.adapterframework.processors;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.Misc;
 
@@ -31,10 +35,10 @@ import nl.nn.adapterframework.util.Misc;
 public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
 	
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId,
-			String message, PipeLineSession pipeLineSession, String firstPipe
+			String message, IPipeLineSession pipeLineSession, String firstPipe
 			) throws PipeRunException {
 		if (pipeLineSession==null) {
-			pipeLineSession= new PipeLineSession();
+			pipeLineSession= new PipeLineSessionBase();
 		}
 		// reset the PipeLineSession and store the message and its id in the session
 		if (messageId==null) {
@@ -46,7 +50,8 @@ public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
 			throw new PipeRunException(null, "Pipeline of adapter ["+ pipeLine.getOwner().getName()+"] received null message");
 		}
 		// store message and messageId in the pipeLineSession
-		pipeLineSession.set(message, messageId);
+		pipeLineSession.put(IPipeLineSession.originalMessageKey, message);
+		pipeLineSession.put(IPipeLineSession.messageIdKey, messageId);
 		return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 	}
 

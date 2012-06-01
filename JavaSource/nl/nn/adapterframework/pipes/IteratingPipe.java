@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.25  2012-04-26 11:52:23  europe\m168309
+ * Revision 1.26  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.25  2012/04/26 11:52:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed working of attributes timeOutOnResult and exceptionOnResult
  *
  * Revision 1.24  2012/01/20 10:39:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -88,9 +91,9 @@ import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IDataIterator;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -206,7 +209,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.25 $ $Date: 2012-04-26 11:52:23 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.26 $ $Date: 2012-06-01 10:52:50 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -257,17 +260,17 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		}
 	}
 
-	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	protected IDataIterator getIterator(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		return null;
 	}
 
-	protected void iterateInput(Object input, PipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected void iterateInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		 throw new SenderException("Could not obtain iterator and no iterateInput method provided by class ["+ClassUtils.nameOf(this)+"]");
 	}
 
 	protected class ItemCallback {
 		
-		PipeLineSession session;
+		IPipeLineSession session;
 		String correlationID;
 		ISender sender; 
 		ISenderWithParameters psender=null;
@@ -276,7 +279,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		int count=0;
 		private Vector inputItems = new Vector();
 		
-		public ItemCallback(PipeLineSession session, String correlationID, ISender sender) {
+		public ItemCallback(IPipeLineSession session, String correlationID, ISender sender) {
 			this.session=session;
 			this.correlationID=correlationID;
 			this.sender=sender;
@@ -388,7 +391,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		}
 	}
 
-	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
+	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		boolean keepGoing = true;
 		IDataIterator it=null;

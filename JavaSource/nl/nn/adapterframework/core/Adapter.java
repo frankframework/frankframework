@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.65  2011-11-30 13:51:55  europe\m168309
+ * Revision 1.66  2012-06-01 10:52:51  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.65  2011/11/30 13:51:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.2  2011/10/19 14:56:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -649,7 +652,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 
-	public PipeLineResult processMessage(String messageId, String message, PipeLineSession pipeLineSession) {
+	public PipeLineResult processMessage(String messageId, String message, IPipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
 		try {
 			return processMessageWithExceptions(messageId, message, pipeLineSession);
@@ -682,7 +685,7 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 	
-	public PipeLineResult processMessageWithExceptions(String messageId, String message, PipeLineSession pipeLineSession) throws ListenerException {
+	public PipeLineResult processMessageWithExceptions(String messageId, String message, IPipeLineSession pipeLineSession) throws ListenerException {
 
 		PipeLineResult result = new PipeLineResult();
 

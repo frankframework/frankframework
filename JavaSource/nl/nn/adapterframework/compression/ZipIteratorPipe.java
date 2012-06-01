@@ -1,6 +1,9 @@
 /*
  * $Log: ZipIteratorPipe.java,v $
- * Revision 1.8  2011-12-08 13:01:59  europe\m168309
+ * Revision 1.9  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.8  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.7  2011/11/30 13:51:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -41,9 +44,10 @@ import java.util.zip.ZipInputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.pipes.IteratingPipe;
+import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -133,13 +137,13 @@ public class ZipIteratorPipe extends IteratingPipe {
 	private class ZipStreamIterator implements IDataIterator {
 		
 		ZipInputStream source; 
-		PipeLineSession session;
+		IPipeLineSession session;
 
 		boolean nextRead=false;
 		boolean currentOpen=false;
 		ZipEntry current;
 		
-		ZipStreamIterator(ZipInputStream source, PipeLineSession session) {
+		ZipStreamIterator(ZipInputStream source, IPipeLineSession session) {
 			super();
 			this.source=source;
 			this.session=session;
@@ -201,7 +205,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 		}
 	}
 	
-	protected ZipInputStream getZipInputStream(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	protected ZipInputStream getZipInputStream(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("input is null. Must supply String (Filename), File or InputStream as input");
 		}
@@ -231,7 +235,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 		return zipstream;
 	}
 	
-	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	protected IDataIterator getIterator(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		ZipInputStream source=getZipInputStream(input, session, correlationID, threadContext);
 		if (source==null) {
 			throw new SenderException(getLogPrefix(session)+"no ZipInputStream found");

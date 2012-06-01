@@ -1,6 +1,9 @@
 /*
  * $Log: HttpListenerServlet.java,v $
- * Revision 1.6  2011-11-30 13:52:00  europe\m168309
+ * Revision 1.7  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.6  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -31,9 +34,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -66,7 +69,7 @@ public class HttpListenerServlet extends HttpServlet {
 	public void invoke(String message, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		Map messageContext= new HashMap();
-		messageContext.put(PipeLineSession.securityHandlerKey, securityHandler);
+		messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
 		String service=request.getParameter(SERVICE_ID_PARAM);
 		Enumeration paramnames=request.getParameterNames();
 		while (paramnames.hasMoreElements()) {

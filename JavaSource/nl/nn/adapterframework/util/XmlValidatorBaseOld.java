@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseOld.java,v $
- * Revision 1.4  2011-12-08 10:57:41  europe\m168309
+ * Revision 1.5  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.4  2011/12/08 10:57:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.3  2011/11/30 13:51:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -22,7 +25,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 
 import org.apache.commons.lang.StringUtils;
@@ -79,7 +82,7 @@ public class XmlValidatorBaseOld extends XmlValidatorBaseBase {
 
       * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
       */
-    public String validate(Object input, PipeLineSession session, String logPrefix) throws XmlValidatorException {
+    public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException {
 
         Variant in = new Variant(input);
         

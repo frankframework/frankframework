@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.99  2012-05-04 09:42:35  m00f069
+ * Revision 1.100  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.99  2012/05/04 09:42:35  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Use PipeProcessors (to e.g. handle statistics) for Validators and Wrappers
  *
  * Revision 1.98  2012/03/05 14:47:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -780,7 +783,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	 * @return the result of the processing.
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
-	public PipeLineResult process(String messageId, String message, PipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeLineResult process(String messageId, String message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession, firstPipe);
 	}
 	

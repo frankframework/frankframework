@@ -1,6 +1,9 @@
 /*
  * $Log: SapLUWHandle.java,v $
- * Revision 1.1  2012-02-06 14:33:04  m00f069
+ * Revision 1.2  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.1  2012/02/06 14:33:04  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
  *
  * Revision 1.3  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -15,7 +18,7 @@
  */
 package nl.nn.adapterframework.extensions.sap.jco3;
 
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.extensions.sap.jco3.tx.RollbackException;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -47,7 +50,7 @@ public class SapLUWHandle {
 		this.destination = sapSystem.getDestination();
 	}
 
-	public static SapLUWHandle createHandle(PipeLineSession session, String sessionKey, SapSystem sapSystem, boolean useTid) throws JCoException {
+	public static SapLUWHandle createHandle(IPipeLineSession session, String sessionKey, SapSystem sapSystem, boolean useTid) throws JCoException {
 		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
 		if (result!=null) {
 			log.warn("LUWHandle already exists under key ["+sessionKey+"]");
@@ -58,12 +61,12 @@ public class SapLUWHandle {
 		return result;
 	}
 
-	public static SapLUWHandle retrieveHandle(PipeLineSession session, String sessionKey) {
+	public static SapLUWHandle retrieveHandle(IPipeLineSession session, String sessionKey) {
 		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
 		return result;
 	}
 
-	public static SapLUWHandle retrieveHandle(PipeLineSession session, String sessionKey, boolean create, SapSystem sapSystem, boolean useTid) throws JCoException {
+	public static SapLUWHandle retrieveHandle(IPipeLineSession session, String sessionKey, boolean create, SapSystem sapSystem, boolean useTid) throws JCoException {
 		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
 		if (result==null && create) {
 			return createHandle(session, sessionKey, sapSystem, useTid);
@@ -71,7 +74,7 @@ public class SapLUWHandle {
 		return result;
 	}
 
-	public static void releaseHandle(PipeLineSession session, String sessionKey) throws JCoException {
+	public static void releaseHandle(IPipeLineSession session, String sessionKey) throws JCoException {
 		SapLUWHandle handle=(SapLUWHandle)session.get(sessionKey);
 		if (handle==null) {
 			log.debug("no handle found under session key ["+sessionKey+"]");

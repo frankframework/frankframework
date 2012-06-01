@@ -1,6 +1,9 @@
 /*
  * $Log: ResultBlock2Sender.java,v $
- * Revision 1.12  2011-12-08 13:01:59  europe\m168309
+ * Revision 1.13  2012-06-01 10:52:48  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.12  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.11  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -44,9 +47,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -116,12 +119,12 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		levels.clear();
 	}
 
-	public void openDocument(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
+	public void openDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
 		counters.put(streamId,new Integer(0));
 		levels.put(streamId,new Integer(0));
 		super.openDocument(session, streamId, prc);
 	}
-	public void closeDocument(PipeLineSession session, String streamId, ParameterResolutionContext prc) {
+	public void closeDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) {
 		super.closeDocument(session,streamId, prc);
 		counters.remove(streamId);
 		levels.remove(streamId);
@@ -173,11 +176,11 @@ public class ResultBlock2Sender extends Result2StringWriter {
 
 
 
-	public void openBlock(PipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception {
+	public void openBlock(IPipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception {
 		super.openBlock(session,streamId,blockName, prc);
 		incLevel(streamId);
 	}
-	public void closeBlock(PipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception {
+	public void closeBlock(IPipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception {
 		super.closeBlock(session,streamId,blockName, prc);
 		int level=decLevel(streamId);
 		if (level==0) {

@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.102  2011-12-05 15:29:21  l190409
+ * Revision 1.103  2012-06-01 10:52:57  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.102  2011/12/05 15:29:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * warn if transactionality is not configured when it should
  *
  * Revision 1.101  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -446,8 +449,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -460,6 +463,7 @@ import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IPushingListener;
@@ -473,7 +477,7 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
@@ -753,8 +757,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		String comments;
 	}
     
-	private PipeLineSession createProcessingContext(String correlationId, Map threadContext, String messageId) {
-		PipeLineSession pipelineSession = new PipeLineSession();
+	private IPipeLineSession createProcessingContext(String correlationId, Map threadContext, String messageId) {
+		IPipeLineSession pipelineSession = new PipeLineSessionBase();
 		if (threadContext != null) {
 			pipelineSession.putAll(threadContext);
 			if (log.isDebugEnabled()) {
@@ -791,7 +795,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return hiddenString;
 	}
 
-	private void putSessionKeysIntoThreadContext(Map threadContext, PipeLineSession pipelineSession) {
+	private void putSessionKeysIntoThreadContext(Map threadContext, IPipeLineSession pipelineSession) {
 		if (StringUtils.isNotEmpty(getReturnedSessionKeys()) && threadContext != null) {
 			if (log.isDebugEnabled()) {
 				log.debug(getLogPrefix()+"setting returned session keys [" + getReturnedSessionKeys() + "]");
@@ -1224,12 +1228,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		Date tsReceived = null;
 		Date tsSent = null;
 		if (context!=null) {
-			tsReceived = (Date)context.get(PipeLineSession.tsReceivedKey);
-			tsSent = (Date)context.get(PipeLineSession.tsSentKey);
+			tsReceived = (Date)context.get(IPipeLineSession.tsReceivedKey);
+			tsSent = (Date)context.get(IPipeLineSession.tsSentKey);
 		} else {
 			context=new HashMap();
 		}
-		PipeLineSession.setListenerParameters(context, null, correlationId, tsReceived, tsSent);
+		PipeLineSessionBase.setListenerParameters(context, null, correlationId, tsReceived, tsSent);
 		return processMessageInAdapter(origin, message, message, null, correlationId, context, waitingTime, false);
 	}
 
@@ -1292,8 +1296,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			txStatus = txManager.getTransaction(TXNEW_CTRL);
 			try {	
 				if (msg instanceof Serializable) {
-					String correlationId = (String)threadContext.get(PipeLineSession.businessCorrelationIdKey);
-					String receivedDateStr = (String)threadContext.get(PipeLineSession.tsReceivedKey);
+					String correlationId = (String)threadContext.get(IPipeLineSession.businessCorrelationIdKey);
+					String receivedDateStr = (String)threadContext.get(IPipeLineSession.tsReceivedKey);
 					Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
 					errorStorage.deleteMessage(messageId);
 					errorStorage.storeMessage(messageId,correlationId,receivedDate,"after retry: "+e.getMessage(),null,(Serializable)msg);	
@@ -1360,7 +1364,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			}
 		}
 		log.info(getLogPrefix()+"messageId [" + messageId + "] technicalCorrelationId [" + technicalCorrelationId + "] businessCorrelationId [" + businessCorrelationId + "]");
-		threadContext.put(PipeLineSession.businessCorrelationIdKey, businessCorrelationId);       
+		threadContext.put(IPipeLineSession.businessCorrelationIdKey, businessCorrelationId);       
 		String label=null;
 		if (labelTp!=null) {
 			try {
@@ -1391,7 +1395,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		// count in processing statistics includes messages that are rolled back to input
 		startProcessingMessage(waitingDuration);
 		
-		PipeLineSession pipelineSession = null;
+		IPipeLineSession pipelineSession = null;
 		String errorMessage="";
 		boolean messageInError = false;
 		try {

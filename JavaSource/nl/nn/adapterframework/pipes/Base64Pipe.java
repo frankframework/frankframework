@@ -1,6 +1,9 @@
 /*
  * $Log: Base64Pipe.java,v $
- * Revision 1.9  2011-11-30 13:51:50  europe\m168309
+ * Revision 1.10  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.9  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -38,7 +41,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Misc;
@@ -106,7 +109,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		lineSeparatorArray=separator.getBytes();
 	}
 	
-	public PipeRunResult doPipe(Object invoer, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object invoer, IPipeLineSession session) throws PipeRunException {
 		Object result=null;
 		if (invoer!=null) {
 			if ("encode".equalsIgnoreCase(getDirection())) {

@@ -1,6 +1,9 @@
 /*
  * $Log: Adios2XmlPipe.java,v $
- * Revision 1.14  2011-11-30 13:52:03  europe\m168309
+ * Revision 1.15  2012-06-01 10:52:52  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.14  2011/11/30 13:52:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -43,33 +46,33 @@
  */
 package nl.nn.adapterframework.extensions.rekenbox;
 
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.Variant;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.ClassUtils;
-
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.parsers.SAXParser;
-import org.xml.sax.SAXException;
-import org.xml.sax.InputSource;
-import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
-
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
-import java.net.URL;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.Variant;
+import nl.nn.adapterframework.util.XmlBuilder;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Transforms between ascii-ADIOS and an XML representation of ADIOS.
@@ -118,7 +121,7 @@ import java.net.URL;
  * @version Id
  */
 public class Adios2XmlPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: Adios2XmlPipe.java,v $ $Revision: 1.14 $ $Date: 2011-11-30 13:52:03 $";
+	public static final String version = "$RCSfile: Adios2XmlPipe.java,v $ $Revision: 1.15 $ $Date: 2012-06-01 10:52:52 $";
 
 	private Hashtable rubriek2nummer;	 
 	private Hashtable record2nummer;
@@ -235,7 +238,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		initializeConversionTables();
 	}	
 	
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		Variant v = new Variant(input);
 		String result;
 	
@@ -362,14 +365,14 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 	}
 	
 	
-	public String findRekenbox(PipeLineSession session) {
+	public String findRekenbox(IPipeLineSession session) {
 	    if (getRekenboxSessionKey() != null) {
 	        return (String)session.get(getRekenboxSessionKey());
 	    }
 	    return getRekenbox();
 	}
 	
-	public String makeAdios(InputSource bericht, PipeLineSession session) throws PipeRunException {
+	public String makeAdios(InputSource bericht, IPipeLineSession session) throws PipeRunException {
 	
 	    try {
 	        // Parse the input
@@ -389,7 +392,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 	 * the most difficult format used is record[recordindex],label[index]:waarde;
 	 * mind the delimiters,where a record has or hasnot an indexnummer and a label likewise.
 	 */
-	public String makeXml(String s, PipeLineSession session) throws PipeRunException {
+	public String makeXml(String s, IPipeLineSession session) throws PipeRunException {
 
 		XmlBuilder bericht = new XmlBuilder("adios");
 		bericht.addAttribute("type", "rekenuitvoer");

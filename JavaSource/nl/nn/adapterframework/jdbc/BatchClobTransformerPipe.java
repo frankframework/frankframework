@@ -1,6 +1,9 @@
 /*
  * $Log: BatchClobTransformerPipe.java,v $
- * Revision 1.5  2011-11-30 13:51:43  europe\m168309
+ * Revision 1.6  2012-06-01 10:52:52  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.5  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -24,7 +27,7 @@ package nl.nn.adapterframework.jdbc;
 import java.io.Reader;
 import java.sql.ResultSet;
 
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 
 /**
@@ -68,7 +71,7 @@ import nl.nn.adapterframework.core.SenderException;
 public class BatchClobTransformerPipe extends BatchTransformerPipeBase {
 
 
-	protected Reader getReader(ResultSet rs, String charset, String streamId, PipeLineSession session) throws SenderException {
+	protected Reader getReader(ResultSet rs, String charset, String streamId, IPipeLineSession session) throws SenderException {
 		try {
 			return rs.getCharacterStream(1);
 		} catch (Exception e) {

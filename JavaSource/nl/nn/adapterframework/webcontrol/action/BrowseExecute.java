@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.18  2011-11-30 13:51:46  europe\m168309
+ * Revision 1.19  2012-06-01 10:52:59  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.18  2011/11/30 13:51:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -79,7 +82,7 @@ import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -102,7 +105,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.18 $ $Date: 2011-11-30 13:51:46 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.19 $ $Date: 2012-06-01 10:52:59 $";
     
     protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
@@ -226,7 +229,7 @@ public class BrowseExecute extends Browse {
 				String filename="msg_"+id+"_id["+msgId.replace(':','-')+"]"+"_mid["+msgMid.replace(':','-')+"]"+"_cid["+msgCid.replace(':','-')+"]";
 				ZipEntry zipEntry=new ZipEntry(filename+".txt");
 
-				String sentDateString=(String)context.get(PipeLineSession.tsSentKey);
+				String sentDateString=(String)context.get(IPipeLineSession.tsSentKey);
 				if (StringUtils.isNotEmpty(sentDateString)) {
 					try {
 						Date sentDate = DateUtils.parseToDate(sentDateString, DateUtils.FORMAT_FULL_GENERIC);

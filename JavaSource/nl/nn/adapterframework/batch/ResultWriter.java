@@ -1,6 +1,9 @@
 /*
  * $Log: ResultWriter.java,v $
- * Revision 1.12  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.13  2012-06-01 10:52:48  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.12  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -48,7 +51,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 import org.apache.commons.lang.StringUtils;
@@ -88,15 +91,15 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	
 	private Map openWriters = Collections.synchronizedMap(new HashMap());
 	
-	protected abstract Writer createWriter(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception;
+	protected abstract Writer createWriter(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception;
 
-	public void openDocument(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
+	public void openDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
 		super.openDocument(session, streamId, prc);
 		getWriter(session, streamId, true, prc);
 		write(session,streamId,replacePattern(getOnOpenDocument(),streamId), prc);
 	}
 
-	public void closeDocument(PipeLineSession session, String streamId, ParameterResolutionContext prc) {
+	public void closeDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) {
 		Writer w = (Writer)openWriters.remove(streamId);
 		if (w != null) {
 			try {
@@ -108,7 +111,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		super.closeDocument(session,streamId, prc);
 	}
 
-	public Object finalizeResult(PipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
+	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
 		log.debug("finalizeResult ["+streamId+"]");
 		write(session,streamId,replacePattern(getOnCloseDocument(),streamId), prc);
 		return null;
@@ -116,7 +119,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	
 
 	
-	public void handleResult(PipeLineSession session, String streamId, String recordKey, Object result, ParameterResolutionContext prc) throws Exception {
+	public void handleResult(IPipeLineSession session, String streamId, String recordKey, Object result, ParameterResolutionContext prc) throws Exception {
 		if (result instanceof String) {
 			write(session, streamId, (String)result, prc);
 		}
@@ -133,7 +136,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		}
 	}
 	
-	private void write(PipeLineSession session, String streamId, String line, ParameterResolutionContext prc) throws Exception {
+	private void write(IPipeLineSession session, String streamId, String line, ParameterResolutionContext prc) throws Exception {
 		if (line!=null) {
 			Writer w = getWriter(session, streamId, false, prc);
 			if (w==null) {
@@ -144,7 +147,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		}
 	}
 
-	private void write(PipeLineSession session, String streamId, String[] lines, ParameterResolutionContext prc) throws Exception {
+	private void write(IPipeLineSession session, String streamId, String[] lines, ParameterResolutionContext prc) throws Exception {
 		Writer w = getWriter(session, streamId, false, prc);
 		for (int i = 0; i < lines.length; i++) {
 			if (lines[i]!=null) {
@@ -154,14 +157,14 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		}
 	}
 	
-	public void openRecordType(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
+	public void openRecordType(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
 		Writer w = getWriter(session, streamId, false, prc);
 		if (w != null && ! StringUtils.isEmpty(getPrefix())) {
 			write(session, streamId, getPrefix(), prc);
 		}
 	}
 
-	public void closeRecordType(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
+	public void closeRecordType(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
 		Writer w = getWriter(session, streamId, false, prc);
 		if (w != null && ! StringUtils.isEmpty(getSuffix())) {
 			write(session, streamId, getSuffix(), prc);
@@ -180,15 +183,15 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		return result;   
 	}
 
-	public void openBlock(PipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception  {
+	public void openBlock(IPipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception  {
 		write(session,streamId, replacePattern(getOnOpenBlock(),blockName), prc);
 	}
-	public void closeBlock(PipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception {
+	public void closeBlock(IPipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception {
 		write(session,streamId, replacePattern(getOnCloseBlock(),blockName), prc);
 	}
 
 
-	protected Writer getWriter(PipeLineSession session, String streamId, boolean create, ParameterResolutionContext prc) throws Exception {
+	protected Writer getWriter(IPipeLineSession session, String streamId, boolean create, ParameterResolutionContext prc) throws Exception {
 		//log.debug("getWriter ["+streamId+"], create ["+create+"]");
 		Writer writer;
 		writer = (Writer)openWriters.get(streamId);

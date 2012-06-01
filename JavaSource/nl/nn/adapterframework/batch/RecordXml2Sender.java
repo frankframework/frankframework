@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXml2Sender.java,v $
- * Revision 1.17  2011-12-08 13:01:59  europe\m168309
+ * Revision 1.18  2012-06-01 10:52:48  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.17  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.16  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -55,9 +58,9 @@ package nl.nn.adapterframework.batch;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -93,7 +96,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @version Id
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.17 $ $Date: 2011-12-08 13:01:59 $";
+	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.18 $ $Date: 2012-06-01 10:52:48 $";
 
 	private ISender sender = null; 
 	
@@ -113,7 +116,7 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 		sender.close();		
 	}
 
-	public Object handleRecord(PipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
+	public Object handleRecord(IPipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
 		String xml = (String)super.handleRecord(session,parsedRecord,prc);
 		ISender sender = getSender();
 		if (sender instanceof ISenderWithParameters) {

@@ -1,6 +1,9 @@
 /*
  * $Log: SapLUWManager.java,v $
- * Revision 1.1  2012-02-06 14:33:05  m00f069
+ * Revision 1.2  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.1  2012/02/06 14:33:05  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
  *
  * Revision 1.4  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -20,9 +23,9 @@ package nl.nn.adapterframework.extensions.sap.jco2;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -55,7 +58,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHandler {
-	public static String version="$RCSfile: SapLUWManager.java,v $  $Revision: 1.1 $ $Date: 2012-02-06 14:33:05 $";
+	public static String version="$RCSfile: SapLUWManager.java,v $  $Revision: 1.2 $ $Date: 2012-06-01 10:52:50 $";
 
 	public static final String ACTION_BEGIN="begin";
 	public static final String ACTION_COMMIT="commit";
@@ -95,7 +98,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		}
 	}
 
-	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, PipeLineSession session) throws PipeRunException {
+	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, IPipeLineSession session) throws PipeRunException {
 		SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
 	}
 
@@ -113,7 +116,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	}
 
 
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {
 			SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey(),true,getSapSystem(),false).begin();
 		} else

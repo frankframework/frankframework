@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.36  2012-03-30 17:03:45  m00f069
+ * Revision 1.37  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.36  2012/03/30 17:03:45  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Michiel added JMS binding/service to WSDL generator, made WSDL validator work for Bis WSDL and made console show syntax problems for schema's used in XmlValidator
  *
  * Revision 1.35  2012/03/19 11:03:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -103,8 +106,8 @@ import javax.xml.transform.TransformerConfigurationException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -229,7 +232,7 @@ public class XmlValidator extends FixedForwardPipe {
       * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
       */
      @Override
-    public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+    public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
     	String messageToValidate = getMessageToValidate(input, session);
     	
 		try {
@@ -260,7 +263,7 @@ public class XmlValidator extends FixedForwardPipe {
 
     }
 
-     private String getMessageToValidate(Object input, PipeLineSession session) throws PipeRunException {
+     private String getMessageToValidate(Object input, IPipeLineSession session) throws PipeRunException {
     	 String inputStr = input.toString();
     	 if (XmlUtils.isWellFormed(inputStr, "Envelope")) {
      		String inputRootNs;

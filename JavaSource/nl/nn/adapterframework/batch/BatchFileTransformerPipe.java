@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.20  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.21  2012-06-01 10:52:48  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.20  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -47,7 +50,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -95,7 +98,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * @version Id
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.20 $ $Date: 2011-11-30 13:51:56 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.21 $ $Date: 2012-06-01 10:52:48 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;
@@ -103,10 +106,10 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	private boolean overwrite = false;
 	private boolean delete = false;
 
-	protected String getStreamId(Object input, PipeLineSession session) throws PipeRunException {
+	protected String getStreamId(Object input, IPipeLineSession session) throws PipeRunException {
 		return ((File)input).getName();
 	}
-	protected InputStream getInputStream(String streamId, Object input, PipeLineSession session) throws PipeRunException {
+	protected InputStream getInputStream(String streamId, Object input, IPipeLineSession session) throws PipeRunException {
 		try {
 			return new FileInputStream((File)input);
 		} catch (FileNotFoundException e) {
@@ -123,7 +126,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	 * 
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this,"got null input instead of String containing filename");
 		}

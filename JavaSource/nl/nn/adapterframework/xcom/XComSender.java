@@ -1,6 +1,9 @@
 /*
  * $Log: XComSender.java,v $
- * Revision 1.16  2011-12-08 09:12:09  europe\m168309
+ * Revision 1.17  2012-06-01 10:52:59  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.16  2011/12/08 09:12:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.15  2011/11/30 13:52:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -59,8 +62,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -101,7 +104,7 @@ import org.apache.commons.lang.StringUtils;
  * @author John Dekker
  */
 public class XComSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.16 $ $Date: 2011-12-08 09:12:09 $";
+	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.17 $ $Date: 2012-06-01 10:52:59 $";
 
 	private File workingDir;
 	private String name;
@@ -230,7 +233,7 @@ public class XComSender extends SenderWithParametersBase {
 		return message;
 	}
 	
-	private String getCommand(PipeLineSession session, File localFile, boolean inclPasswd) throws SenderException {
+	private String getCommand(IPipeLineSession session, File localFile, boolean inclPasswd) throws SenderException {
 		try {
 			StringBuffer sb = new StringBuffer();
 			

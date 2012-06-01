@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorSender.java,v $
- * Revision 1.11  2011-12-08 09:34:13  europe\m168309
+ * Revision 1.12  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.11  2011/12/08 09:34:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.10  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -36,8 +39,8 @@
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -105,7 +108,7 @@ public class XmlValidatorSender extends XmlValidatorBase implements ISenderWithP
 
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
-		PipeLineSession session=prc.getSession();
+		IPipeLineSession session=prc.getSession();
 		String fullReasons="tja";
 		try {
 			String resultEvent = validate(message, session, getLogPrefix());

@@ -1,6 +1,9 @@
 /*
  * $Log: PullingIfsaProviderListener.java,v $
- * Revision 1.7  2011-11-30 13:51:43  europe\m168309
+ * Revision 1.8  2012-06-01 10:52:56  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.7  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -167,10 +170,11 @@ import javax.jms.TextMessage;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.receivers.MessageWrapper;
@@ -387,8 +391,8 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 				originalRawMessage = (Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
-				String id = (String) threadContext.get(PipeLineSession.messageIdKey);
-				String cid = (String) threadContext.get(PipeLineSession.businessCorrelationIdKey);
+				String id = (String) threadContext.get(IPipeLineSession.messageIdKey);
+				String cid = (String) threadContext.get(IPipeLineSession.businessCorrelationIdKey);
 				log.warn(getLogPrefix()+"no original raw message found for messageId ["+id+"] correlationId ["+cid+"], cannot send result");
 			} else {
 				QueueSession session = getSession(threadContext);
@@ -553,7 +557,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 					
 		}
 	
-		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
+		PipeLineSessionBase.setListenerParameters(threadContext, id, cid, null, tsSent);
 	    threadContext.put("timestamp", tsSent);
 	    threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 	    threadContext.put("messageText", messageText);

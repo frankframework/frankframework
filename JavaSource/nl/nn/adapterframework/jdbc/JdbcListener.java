@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcListener.java,v $
- * Revision 1.15  2011-11-30 13:51:43  europe\m168309
+ * Revision 1.16  2012-06-01 10:52:56  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.15  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -62,7 +65,7 @@ import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.JtaUtil;
@@ -265,7 +268,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		} else {
 			id = (String)rawMessage;
 		}
-		PipeLineSession.setListenerParameters(context, id, id, null, null);
+		PipeLineSessionBase.setListenerParameters(context, id, id, null, null);
 		return id;
 	}
 

@@ -1,6 +1,9 @@
 /*
  * $Log: FileLineIteratorPipe.java,v $
- * Revision 1.8  2011-12-08 13:01:59  europe\m168309
+ * Revision 1.9  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.8  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.7  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -32,7 +35,7 @@ import java.io.FileReader;
 import java.io.Reader;
 import java.util.Map;
 
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -95,13 +98,13 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class FileLineIteratorPipe extends StreamLineIteratorPipe {
-	public static final String version = "$RCSfile: FileLineIteratorPipe.java,v $  $Revision: 1.8 $ $Date: 2011-12-08 13:01:59 $";
+	public static final String version = "$RCSfile: FileLineIteratorPipe.java,v $  $Revision: 1.9 $ $Date: 2012-06-01 10:52:49 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;
 
 	
-	protected Reader getReader(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+	protected Reader getReader(Object input, IPipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("got null input instead of String containing filename");
 		}
@@ -124,7 +127,7 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 	 * 
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this,"got null input instead of String containing filename");
 		}

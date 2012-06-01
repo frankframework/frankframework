@@ -1,6 +1,9 @@
 /*
  * $Log: IInputStreamReaderFactory.java,v $
- * Revision 1.3  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.4  2012-06-01 10:52:48  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.3  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -16,7 +19,7 @@ import java.io.InputStream;
 import java.io.Reader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 
 /**
@@ -31,5 +34,5 @@ public interface IInputStreamReaderFactory {
 	/**
 	 * Obtain a Reader that reads lines in the given characterset.
 	 */
-	Reader getReader(InputStream inputstream, String charset, String streamId, PipeLineSession session) throws SenderException;
+	Reader getReader(InputStream inputstream, String charset, String streamId, IPipeLineSession session) throws SenderException;
 }

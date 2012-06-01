@@ -1,6 +1,9 @@
 /*
  * $Log: FieldPositionRecordHandlerManager.java,v $
- * Revision 1.12  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.13  2012-06-01 10:52:48  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.12  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -38,7 +41,7 @@
 package nl.nn.adapterframework.batch;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -60,12 +63,12 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author John Dekker
  */
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FieldPositionRecordHandlerManager.java,v $  $Revision: 1.12 $ $Date: 2011-11-30 13:51:56 $";
+	public static final String version = "$RCSfile: FieldPositionRecordHandlerManager.java,v $  $Revision: 1.13 $ $Date: 2012-06-01 10:52:48 $";
 
 	private int fieldNr;
 	private String separator;
 	
-	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
+	public RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception {
 		int startNdx = -1, endNdx = -1;
 		int curField = 0;
 		while (curField++ != fieldNr) {

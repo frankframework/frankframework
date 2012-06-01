@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.42  2012-03-16 15:35:44  m00f069
+ * Revision 1.43  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.42  2012/03/16 15:35:44  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Michiel added EsbSoapValidator and WsdlXmlValidator, made WSDL's available for all adapters and did a bugfix on XML Validator where it seems to be dependent on the order of specified XSD's
  *
  * Revision 1.41  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -121,20 +124,36 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import java.util.*;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.HasTransactionAttribute;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IExtendedPipe;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.monitoring.EventHandler;
+import nl.nn.adapterframework.monitoring.EventThrowing;
+import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.util.JtaUtil;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.TracingEventNumbers;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.*;
-import nl.nn.adapterframework.monitoring.*;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.util.*;
 
 /**
  * Base class for {@link nl.nn.adapterframework.core.IPipe Pipe}.
@@ -295,7 +314,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * This is where the action takes place. Pipes may only throw a PipeRunException,
 	 * to be handled by the caller of this object.
 	 */
-	public PipeRunResult doPipe (Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunException {
 		return doPipe(input);
 	}
 
@@ -330,7 +349,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * from the <code>configure()</code>, <code>start()</code> and <code>stop()</code> methods.
 	 * @return String with the name of the pipe and the message id of the current message.
 	 */
-	protected String getLogPrefix(PipeLineSession session){
+	protected String getLogPrefix(IPipeLineSession session){
 		  StringBuilder sb = new StringBuilder();
 		  sb.append("Pipe ["+getName()+"] ");
 		  if (session!=null) {

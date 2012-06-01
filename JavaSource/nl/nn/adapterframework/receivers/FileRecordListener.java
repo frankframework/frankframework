@@ -1,6 +1,9 @@
 /*
  * $Log: FileRecordListener.java,v $
- * Revision 1.14  2011-11-30 13:51:54  europe\m168309
+ * Revision 1.15  2012-06-01 10:52:57  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.14  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -46,11 +49,12 @@ import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -83,7 +87,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class FileRecordListener implements IPullingListener, INamedObject {
-	public static final String version="$RCSfile: FileRecordListener.java,v $ $Revision: 1.14 $ $Date: 2011-11-30 13:51:54 $";
+	public static final String version="$RCSfile: FileRecordListener.java,v $ $Revision: 1.15 $ $Date: 2012-06-01 10:52:57 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -100,7 +104,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 
 	public void afterMessageProcessed(PipeLineResult processResult,	Object rawMessage, Map threadContext)
 		throws ListenerException {
-		String tcid = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
+		String tcid = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
 		if (sender != null) {
 			if (processResult.getState().equalsIgnoreCase("success")) {
 				try {
@@ -272,7 +276,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	 */
 	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		String correlationId = inputFileName + "-" + recordNo;
-		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
+		PipeLineSessionBase.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
 	/**

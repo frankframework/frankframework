@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.79  2012-05-04 09:42:36  m00f069
+ * Revision 1.80  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.79  2012/05/04 09:42:36  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Use PipeProcessors (to e.g. handle statistics) for Validators and Wrappers
  *
  * Revision 1.78  2012/03/05 14:45:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -240,13 +243,13 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -262,7 +265,6 @@ import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.processors.PipeProcessor;
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
-import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -617,7 +619,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	
-	public PipeRunResult doPipe(Object input, PipeLineSession session)	throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session)	throws PipeRunException {
 
 		String result = null;
 		String correlationID = session.getMessageId();
@@ -871,7 +873,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return validResult;
 	}
 
-	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException, InterruptedException {
+	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException, InterruptedException {
 		String sendResult = sendTextMessage(input, session, correlationID, getSender(), threadContext);
 		if (Thread.currentThread().isInterrupted()) {
 			throw new InterruptedException();
@@ -885,7 +887,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return sendResult;
 	}
 	
-	protected String sendTextMessage(Object input, PipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
+	protected String sendTextMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
 		if (input!=null && !(input instanceof String)) {
 			throw new SenderException("String expected, got a [" + input.getClass().getName() + "]");
 		}
@@ -898,7 +900,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return sender.sendMessage(correlationID, (String) input);
 	}
 
-	public int increaseRetryIntervalAndWait(PipeLineSession session, int retryInterval, String description) throws InterruptedException {
+	public int increaseRetryIntervalAndWait(IPipeLineSession session, int retryInterval, String description) throws InterruptedException {
 		long currentInterval;
 		synchronized (this) {
 			if (retryInterval < getRetryMinInterval()) {

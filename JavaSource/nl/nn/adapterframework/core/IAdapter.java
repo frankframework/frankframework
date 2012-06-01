@@ -1,6 +1,9 @@
 /*
  * $Log: IAdapter.java,v $
- * Revision 1.18  2011-11-30 13:51:55  europe\m168309
+ * Revision 1.19  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.18  2011/11/30 13:51:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -85,8 +88,8 @@ public interface IAdapter extends IManagable {
 	public MessageKeeper getMessageKeeper();
 	public IReceiver getReceiverByName(String receiverName);
 	public Iterator getReceiverIterator();
-	public PipeLineResult processMessage(String messageId, String message, PipeLineSession pipeLineSession);
-	public PipeLineResult processMessageWithExceptions(String messageId, String message, PipeLineSession pipeLineSession) throws ListenerException;
+	public PipeLineResult processMessage(String messageId, String message, IPipeLineSession pipeLineSession);
+	public PipeLineResult processMessageWithExceptions(String messageId, String message, IPipeLineSession pipeLineSession) throws ListenerException;
 
   	public void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
   	public void setName(String name);

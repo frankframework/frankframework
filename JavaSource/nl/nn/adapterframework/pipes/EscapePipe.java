@@ -1,6 +1,9 @@
 /*
  * $Log: EscapePipe.java,v $
- * Revision 1.3  2011-11-30 13:51:51  europe\m168309
+ * Revision 1.4  2012-06-01 10:52:50  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.3  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.3  2011/11/10 15:48:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -19,7 +22,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -83,7 +86,7 @@ public class EscapePipe extends FixedForwardPipe {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, PipeLineSession session)
+	public PipeRunResult doPipe(Object input, IPipeLineSession session)
 		throws PipeRunException {
 
 		String string = input.toString();

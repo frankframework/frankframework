@@ -1,6 +1,9 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.20  2011-12-05 15:30:43  l190409
+ * Revision 1.21  2012-06-01 10:52:57  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.20  2011/12/05 15:30:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow for check that transactionality is configured, warn if not
  *
  * Revision 1.19  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -76,10 +79,10 @@ import javax.jms.Session;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IListenerConnector;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JmsListener;
@@ -346,7 +349,7 @@ public class FxfListener extends JmsListener implements IBulkDataListener, ITran
 					throw new ListenerException(e);
 				}
 			} else {
-				String cid     = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
+				String cid     = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
 				Trigger trigger=(Trigger)threadContext.get(TRIGGER_SESSION_KEY);
 				String processedMsg=FxfUtil.makeProcessedGetFileMessage(trigger.getTransporthandle());
 				Session session= (Session) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); 

@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractRecordHandler.java,v $
- * Revision 1.17  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.18  2012-06-01 10:52:48  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.17  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -62,8 +65,8 @@ import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -134,7 +137,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return inputFields.size();
 	}
 	
-	public List parse(PipeLineSession session, String record) {
+	public List parse(IPipeLineSession session, String record) {
 		if (inputFields.size() > 0) {
 			return parseUsingInputFields(record);
 		}
@@ -220,7 +223,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return result;
 	}
 	
-	public boolean isNewRecordType(PipeLineSession session, boolean equalRecordHandlers, List prevRecord, List curRecord) {
+	public boolean isNewRecordType(IPipeLineSession session, boolean equalRecordHandlers, List prevRecord, List curRecord) {
 		if (getRecordIdentifyingFieldList().size() == 0) {
 			log.debug("isNewRecordType(): no RecordIdentifyingFields specified, so returning false");
 			return false;

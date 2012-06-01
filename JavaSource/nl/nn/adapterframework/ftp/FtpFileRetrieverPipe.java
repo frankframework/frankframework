@@ -1,6 +1,9 @@
 /*
  * $Log: FtpFileRetrieverPipe.java,v $
- * Revision 1.15  2011-11-30 13:52:04  europe\m168309
+ * Revision 1.16  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.15  2011/11/30 13:52:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -49,8 +52,8 @@
 package nl.nn.adapterframework.ftp;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
@@ -156,7 +159,7 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String orgFilename = (String)input;
 		try {
 			boolean close = ! deleteAfterGet;

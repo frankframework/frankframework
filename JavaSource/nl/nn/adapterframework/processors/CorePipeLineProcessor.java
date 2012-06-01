@@ -1,6 +1,9 @@
 /*
  * $Log: CorePipeLineProcessor.java,v $
- * Revision 1.9  2012-05-04 09:42:35  m00f069
+ * Revision 1.10  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.9  2012/05/04 09:42:35  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Use PipeProcessors (to e.g. handle statistics) for Validators and Wrappers
  *
  * Revision 1.8  2012/03/05 14:46:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -37,11 +40,11 @@ import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -63,7 +66,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		this.pipeProcessor = pipeProcessor;
 	}
 	
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// Object is the object that is passed to and returned from Pipes
 		Object object = (Object) message;
 		PipeRunResult pipeRunResult;

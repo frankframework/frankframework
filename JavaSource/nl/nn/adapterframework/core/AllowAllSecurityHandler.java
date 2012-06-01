@@ -1,6 +1,9 @@
 /*
  * $Log: AllowAllSecurityHandler.java,v $
- * Revision 1.3  2011-11-30 13:51:55  europe\m168309
+ * Revision 1.4  2012-06-01 10:52:52  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.3  2011/11/30 13:51:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -24,13 +27,13 @@ import org.apache.commons.lang.NotImplementedException;
  * @version Id
  */
 public class AllowAllSecurityHandler implements ISecurityHandler {
-	public static final String version = "$RCSfile: AllowAllSecurityHandler.java,v $ $Revision: 1.3 $ $Date: 2011-11-30 13:51:55 $";
+	public static final String version = "$RCSfile: AllowAllSecurityHandler.java,v $ $Revision: 1.4 $ $Date: 2012-06-01 10:52:52 $";
 
-	public boolean isUserInRole(String role, PipeLineSession session) {
+	public boolean isUserInRole(String role, IPipeLineSession session) {
 		return true;
 	}
 
-	public Principal getPrincipal(PipeLineSession session) throws NotImplementedException {
+	public Principal getPrincipal(IPipeLineSession session) throws NotImplementedException {
 		throw new NotImplementedException("no default user available");
 	}
 

@@ -1,6 +1,9 @@
 /*
  * $Log: FixedPositionRecordHandlerManager.java,v $
- * Revision 1.15  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.16  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.15  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -49,7 +52,7 @@ package nl.nn.adapterframework.batch;
 import java.util.Iterator;
 import java.util.Map;
 
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 
 /**
  * Manager that decides the handlers based on the content of a field in the specified 
@@ -70,12 +73,12 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @author John Dekker
  */
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.15 $ $Date: 2011-11-30 13:51:56 $";
+	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.16 $ $Date: 2012-06-01 10:52:49 $";
 
 	private int startPosition;
 	private int endPosition=-1;
 	
-	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
+	public RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception {
 		String value = null;
 		if (startPosition >= record.length()) {
 			throw new Exception("Record size is smaller then the specified position of the recordtype within the record");

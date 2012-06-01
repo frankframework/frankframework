@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.27  2011-12-08 13:01:59  europe\m168309
+ * Revision 1.28  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.27  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.26  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -72,7 +75,7 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -149,10 +152,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Gerrit van Brakel
  * @since 4.6.1
  * 
- * $Id: ForEachChildElementPipe.java,v 1.27 2011-12-08 13:01:59 europe\m168309 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.28 2012-06-01 10:52:49 m00f069 Exp $
  */
 public class ForEachChildElementPipe extends IteratingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.27 $ $Date: 2011-12-08 13:01:59 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.28 $ $Date: 2012-06-01 10:52:49 $";
 
 	private String elementXPathExpression=null;
 	private boolean processFile=false;
@@ -300,7 +303,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 	}
 
 
-	protected void iterateInput(Object input, PipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected void iterateInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		Reader reader=null;
 		try {
 			if (input instanceof Reader) {

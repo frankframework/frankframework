@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.32  2012-02-20 13:30:58  m00f069
+ * Revision 1.33  2012-06-01 10:52:49  m00f069
+ * Created IPipeLineSession (making it easier to write a debugger around it)
+ *
+ * Revision 1.32  2012/02/20 13:30:58  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added attribute charset to FilePipe
  *
  * Revision 1.31  2012/02/13 09:14:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -102,7 +105,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Dir2Xml;
@@ -227,7 +230,7 @@ public class FilePipe extends FixedForwardPipe {
 	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		try {
 			byte[] inValue = null;
 			if (input instanceof byte[]) {
@@ -260,7 +263,7 @@ public class FilePipe extends FixedForwardPipe {
 		 * transform the in and return the result
 		 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)
 		 */
-		byte[] go(byte[] in, PipeLineSession session) throws Exception;
+		byte[] go(byte[] in, IPipeLineSession session) throws Exception;
 	}
 	
 	/**
@@ -268,7 +271,7 @@ public class FilePipe extends FixedForwardPipe {
 	 */
 	private class Encoder implements TransformerAction {
 		public void configure() {}
-		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
+		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
 			return Base64.encodeBase64(in);
 		}
 	}
@@ -278,12 +281,12 @@ public class FilePipe extends FixedForwardPipe {
 	 */
 	private class Decoder implements TransformerAction {
 		public void configure() {}
-		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
+		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
 			return Base64.decodeBase64(in == null ? null : new String(in));
 		}
 	}
 
-	private File createFile(PipeLineSession session) throws IOException {
+	private File createFile(IPipeLineSession session) throws IOException {
 		File tmpFile;
 			
 		String name = fileName;
@@ -323,7 +326,7 @@ public class FilePipe extends FixedForwardPipe {
 				}
 			}
 		}
-		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
+		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
 			File tmpFile=createFile(session);
 
 			if (!tmpFile.getParentFile().exists()) {
@@ -368,7 +371,7 @@ public class FilePipe extends FixedForwardPipe {
 				}
 			}
 		}
-		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
+		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
 			File tmpFile=createFile(session);
 			FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), false);
 			fos.close();
@@ -402,7 +405,7 @@ public class FilePipe extends FixedForwardPipe {
 				}
 			}
 		}
-		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
+		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
 			File file;
 			 
 			String name = (String)session.get(fileNameSessionKey);;
@@ -445,7 +448,7 @@ public class FilePipe extends FixedForwardPipe {
 			}
 			
 		}
-		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
+		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
 			File file;
 			
 			/* take filename from 
@@ -503,7 +506,7 @@ public class FilePipe extends FixedForwardPipe {
 			}
 		}
 
-		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
+		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
 			String name = fileName;
 			
 			if (StringUtils.isEmpty(name)) { 
