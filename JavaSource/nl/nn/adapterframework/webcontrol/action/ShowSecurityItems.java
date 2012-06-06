@@ -1,6 +1,9 @@
 /*
  * $Log: ShowSecurityItems.java,v $
- * Revision 1.9  2011-11-30 13:51:46  europe\m168309
+ * Revision 1.10  2012-06-06 13:12:49  europe\m168309
+ * fixed bug empty Role in Security Role Bindings
+ *
+ * Revision 1.9  2011/11/30 13:51:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -91,7 +94,7 @@ import org.w3c.dom.Element;
  */
 
 public final class ShowSecurityItems extends ActionBase {
-	public static final String version = "$RCSfile: ShowSecurityItems.java,v $ $Revision: 1.9 $ $Date: 2011-11-30 13:51:46 $";
+	public static final String version = "$RCSfile: ShowSecurityItems.java,v $ $Revision: 1.10 $ $Date: 2012-06-06 13:12:49 $";
 	public static final String AUTHALIAS_XSLT = "xml/xsl/authAlias.xsl";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -297,6 +300,7 @@ public final class ShowSecurityItems extends ActionBase {
 				appDDString = Misc.getApplicationDeploymentDescriptor(appName);
 				appDDString = XmlUtils.skipXmlDeclaration(appDDString);
 				appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
+				appDDString = XmlUtils.removeNamespaces(appDDString);
 			} catch (IOException e) {
 				appDDString = "*** ERROR ***";
 			}
