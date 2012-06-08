@@ -45,7 +45,7 @@
 				alt="test a ServiceListener">
 			</imagelink>
 			<imagelink
-				href="jsp/ServiceDispatcher_Service.jsp"
+				href="servlet/rpcrouter"
 				type="wsdl"
 				alt="retrieve WSDL">
 			</imagelink>
