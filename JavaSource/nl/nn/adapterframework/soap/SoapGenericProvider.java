@@ -1,6 +1,9 @@
 /*
  * $Log: SoapGenericProvider.java,v $
- * Revision 1.10  2012-06-01 10:52:48  m00f069
+ * Revision 1.11  2012-06-11 13:10:01  m00f069
+ * Log incoming SOAP message on debug level
+ *
+ * Revision 1.10  2012/06/01 10:52:48  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.9  2012/02/06 13:18:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -67,7 +70,7 @@ import org.apache.soap.util.Provider;
  * @author Gerrit van Brakel
  */
 public class SoapGenericProvider implements Provider {
-	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.10 $ $Date: 2012-06-01 10:52:48 $";
+	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.11 $ $Date: 2012-06-11 13:10:01 $";
 	protected Logger log=LogUtil.getLogger(this);
 	
 	private final String TARGET_OBJECT_URI_KEY = "TargetObjectNamespaceURI";
@@ -79,6 +82,11 @@ public class SoapGenericProvider implements Provider {
 		throws SOAPException {
 		if (log.isDebugEnabled()){
 			log.debug("Locate: dd=["+dd+"]+ targetObjectURI=[" +targetObjectURI+"]");
+			try {
+				log.debug("Incoming SOAP message: " + reqContext.getBodyPart(0).getContent().toString());
+			} catch (Exception e) {
+				log.debug("Could not log SOAP message", e);
+			}
 		}
 		if (sd==null) {
 			sd= ServiceDispatcher.getInstance();
