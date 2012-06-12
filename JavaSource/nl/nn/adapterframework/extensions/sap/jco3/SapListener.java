@@ -1,6 +1,9 @@
 /*
  * $Log: SapListener.java,v $
- * Revision 1.1  2012-02-06 14:33:04  m00f069
+ * Revision 1.2  2012-06-12 15:08:29  m00f069
+ * Implement JCoQueuedIDocHandler
+ *
+ * Revision 1.1  2012/02/06 14:33:04  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
  *
  * Revision 1.14  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -88,6 +91,7 @@ import com.sap.conn.idoc.jco.JCoIDocHandler;
 import com.sap.conn.idoc.jco.JCoIDocHandlerFactory;
 import com.sap.conn.idoc.jco.JCoIDocServer;
 import com.sap.conn.idoc.jco.JCoIDocServerContext;
+import com.sap.conn.idoc.jco.JCoQueuedIDocHandler;
 import com.sap.conn.jco.AbapClassException;
 import com.sap.conn.jco.AbapException;
 import com.sap.conn.jco.JCoException;
@@ -135,8 +139,8 @@ import com.sap.conn.jco.server.JCoServerTIDHandler;
  * @version Id
  * @see   http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm
  */
-public class SapListener extends SapFunctionFacade implements IPushingListener, JCoServerFunctionHandler, JCoServerTIDHandler, JCoIDocHandlerFactory, JCoIDocHandler, JCoServerExceptionListener, JCoServerErrorListener, ServerDataProvider {
-	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.1 $ $Date: 2012-02-06 14:33:04 $";
+public class SapListener extends SapFunctionFacade implements IPushingListener, JCoServerFunctionHandler, JCoServerTIDHandler, JCoIDocHandlerFactory, JCoIDocHandler, JCoQueuedIDocHandler, JCoServerExceptionListener, JCoServerErrorListener, ServerDataProvider {
+	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.2 $ $Date: 2012-06-12 15:08:29 $";
 
 	private String progid;	 // progid of the RFC-destination
 	private String connectionCount = "2"; // used in SAP examples
@@ -272,6 +276,10 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 				throw new JCoRuntimeException(JCoException.JCO_ERROR_APPLICATION_EXCEPTION, "IbisException", t.getMessage());
 			}
 		}
+	}
+
+	public void handleRequest(JCoIDocServerContext serverCtx, IDocDocumentList documentList) {
+		handleRequest(serverCtx, documentList);
 	}
 
 	/**
