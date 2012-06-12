@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.79  2012-05-29 13:31:22  europe\m168309
+ * Revision 1.80  2012-06-12 15:12:45  m00f069
+ * Removed unused constructor
+ *
+ * Revision 1.79  2012/05/29 13:31:22  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * changed WARN "Saxon parser is always namespace aware" to INFO
  *
  * Revision 1.78  2012/03/16 15:35:44  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -292,7 +295,7 @@ import nl.nn.adapterframework.core.ListenerException;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.79 $ $Date: 2012-05-29 13:31:22 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.80 $ $Date: 2012-06-12 15:12:45 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -324,10 +327,6 @@ public class XmlUtils {
 			+ "<xsl:template match=\"@*|*|processing-instruction()|comment()\">"
 			+ "<xsl:copy><xsl:apply-templates select=\"*|@*|text()|processing-instruction()|comment()\" />"
 			+ "</xsl:copy></xsl:template></xsl:stylesheet>";
-
-	public XmlUtils() {
-		super();
-	}
 
 	public static String makeSkipEmptyTagsXslt(boolean omitXmlDeclaration, boolean indent) {
 		return
