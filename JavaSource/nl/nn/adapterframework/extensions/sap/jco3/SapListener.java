@@ -1,6 +1,10 @@
 /*
  * $Log: SapListener.java,v $
- * Revision 1.2  2012-06-12 15:08:29  m00f069
+ * Revision 1.3  2012-06-14 14:13:49  m00f069
+ * Bugfix recursive call in JCoQueuedIDocHandler implementation
+ * Ignore pipeline reply for IDoc in afterMessageProcessed
+ *
+ * Revision 1.2  2012/06/12 15:08:29  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Implement JCoQueuedIDocHandler
  *
  * Revision 1.1  2012/02/06 14:33:04  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -140,7 +144,7 @@ import com.sap.conn.jco.server.JCoServerTIDHandler;
  * @see   http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, JCoServerFunctionHandler, JCoServerTIDHandler, JCoIDocHandlerFactory, JCoIDocHandler, JCoQueuedIDocHandler, JCoServerExceptionListener, JCoServerErrorListener, ServerDataProvider {
-	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.2 $ $Date: 2012-06-12 15:08:29 $";
+	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.3 $ $Date: 2012-06-14 14:13:49 $";
 
 	private String progid;	 // progid of the RFC-destination
 	private String connectionCount = "2"; // used in SAP examples
@@ -244,7 +248,9 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map threadContext) throws ListenerException {
 		try {
 			log.debug("SapListener.afterMessageProcessed");
-			message2FunctionResult((JCoFunction) rawMessage, processResult.getResult());
+			if (rawMessage instanceof JCoFunction) {
+				message2FunctionResult((JCoFunction) rawMessage, processResult.getResult());
+			}
 		} catch (SapException e) {
 			throw new ListenerException(e);
 		}
@@ -278,8 +284,8 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		}
 	}
 
-	public void handleRequest(JCoIDocServerContext serverCtx, IDocDocumentList documentList) {
-		handleRequest(serverCtx, documentList);
+	public void handleRequest(JCoIDocServerContext idocServerCtx, IDocDocumentList documentList) {
+		handleRequest(idocServerCtx.getJCoServerContext(), documentList);
 	}
 
 	/**
