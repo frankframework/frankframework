@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.25  2012-04-10 07:50:18  europe\m168309
+ * Revision 1.26  2012-06-14 14:07:22  europe\m168309
+ * ShowConfigurationStatus: added facility to enable count for messageLog and errorStore
+ *
+ * Revision 1.25  2012/04/10 07:50:18  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * truncate long adapter messages
  *
  * Revision 1.24  2011/11/30 13:51:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -104,9 +107,11 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.25 $ $Date: 2012-04-10 07:50:18 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.26 $ $Date: 2012-06-14 14:07:22 $";
 
 	private int maxMessageSize = AppConstants.getInstance().getInt("adapter.message.max.size",0); 
+	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
+	private boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -222,7 +227,11 @@ public final class ShowConfigurationStatus extends ActionBase {
 						receiverXML.addAttribute("hasErrorStorage", ""+(ts!=null));
 						if (ts!=null) {
 							try {
-								receiverXML.addAttribute("errorStorageCount", ts.getMessageCount());
+								if (showCountErrorStore) {
+									receiverXML.addAttribute("errorStorageCount", ts.getMessageCount());
+								} else {
+									receiverXML.addAttribute("errorStorageCount", "?");
+								}
 							} catch (Exception e) {
 								log.warn(e);
 								receiverXML.addAttribute("errorStorageCount", "error");
@@ -232,7 +241,11 @@ public final class ShowConfigurationStatus extends ActionBase {
 						receiverXML.addAttribute("hasMessageLog", ""+(ts!=null));
 						if (ts!=null) {
 							try {
-								receiverXML.addAttribute("messageLogCount", ts.getMessageCount());
+								if (showCountMessageLog) {
+									receiverXML.addAttribute("messageLogCount", ts.getMessageCount());
+								} else {
+									receiverXML.addAttribute("messageLogCount", "?");
+								}
 							} catch (Exception e) {
 								log.warn(e);
 								receiverXML.addAttribute("messageLogCount", "error");
@@ -290,7 +303,11 @@ public final class ShowConfigurationStatus extends ActionBase {
 						pipeElem.addAttribute("hasMessageLog","true");
 						String messageLogCount;
 						try {
-							messageLogCount=""+messageLog.getMessageCount();
+							if (showCountMessageLog) {
+								messageLogCount=""+messageLog.getMessageCount();
+							} else {
+								messageLogCount="?";
+							}
 						} catch (Exception e) {
 							log.warn(e);
 							messageLogCount="error";
