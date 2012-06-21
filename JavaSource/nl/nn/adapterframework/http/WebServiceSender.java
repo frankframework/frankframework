@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.42  2012-04-05 07:30:29  europe\m168309
+ * Revision 1.43  2012-06-21 15:52:41  m00f069
+ * Restored logging of SOAP message on debug level
+ *
+ * Revision 1.42  2012/04/05 07:30:29  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * reversed "HttpSender: split getMethod() in getGetMethod() and getPostMethod()"
  *
  * Revision 1.41  2012/04/02 07:57:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -282,6 +285,7 @@ public class WebServiceSender extends HttpSender {
 		if (wsscf!=null) {
 			soapmsg = soapWrapper.signMessage(soapmsg,wsscf.getUsername(),wsscf.getPassword());
 		}
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
 
 		HttpMethod method = super.getMethod(uri, soapmsg,parameters);
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"setting Content-Type and SOAPAction header ["+soapActionURI+"]");
