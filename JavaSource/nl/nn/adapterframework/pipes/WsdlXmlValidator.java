@@ -1,3 +1,10 @@
+/*
+ * $Log: WsdlXmlValidator.java,v $
+ * Revision 1.5  2012-07-02 08:39:08  m00f069
+ * Added note about WebSphere versions
+ * Added CVS log
+ *
+ */
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
@@ -50,7 +57,9 @@ import org.xml.sax.SAXException;
 import com.ibm.wsdl.extensions.schema.SchemaSerializer;
 
 /**
- * Wsdl based input validator. Given an WSDL, it validates input.
+ * Wsdl based input validator. Given an WSDL, it validates input. Note: Doesn't
+ * work/compile with WebSphere 6.1, with WebSphere 7.0 it does.
+ * 
  * @author Michiel Meeuwissen
  */
 public class WsdlXmlValidator extends FixedForwardPipe {
