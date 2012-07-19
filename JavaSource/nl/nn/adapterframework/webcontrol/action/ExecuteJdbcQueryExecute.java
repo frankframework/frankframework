@@ -1,6 +1,9 @@
 /*
  * $Log: ExecuteJdbcQueryExecute.java,v $
- * Revision 1.6  2011-11-30 13:51:46  europe\m168309
+ * Revision 1.7  2012-07-19 12:16:12  europe\m168309
+ * workaround to avoid http error 500 on WAS (line separators in query cookie)
+ *
+ * Revision 1.6  2011/11/30 13:51:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -36,6 +39,7 @@ import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -49,7 +53,7 @@ import org.apache.struts.action.DynaActionForm;
  * @version Id 
  */
 public final class ExecuteJdbcQueryExecute extends ActionBase {
-	public static final String version = "$RCSfile: ExecuteJdbcQueryExecute.java,v $ $Revision: 1.6 $ $Date: 2011-11-30 13:51:46 $";
+	public static final String version = "$RCSfile: ExecuteJdbcQueryExecute.java,v $ $Revision: 1.7 $ $Date: 2012-07-19 12:16:12 $";
 	public static final String DB2XML_XSLT="xml/xsl/dbxml2csv.xslt";
 
 	public ActionForward execute(
@@ -115,7 +119,9 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		cookieValue += " "; //separator
 		cookieValue += "resultType=\"" + form_resultType + "\"";
 		cookieValue += " "; //separator
-		cookieValue += "query=\"" + form_query + "\"";
+		//TODO: fix workaround to avoid http error 500 on WAS (line separators in query cookie)
+		String fq = Misc.replace(form_query, System.getProperty("line.separator"), " ");
+		cookieValue += "query=\"" + fq + "\"";
 		Cookie execJdbcCookie =
 			new Cookie(
 				AppConstants.getInstance().getProperty(
