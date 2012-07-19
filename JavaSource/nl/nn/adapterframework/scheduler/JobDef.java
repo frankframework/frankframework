@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.21  2011-12-08 11:15:50  europe\m168309
+ * Revision 1.22  2012-07-19 15:06:53  europe\m168309
+ * added MSSQL queries in method cleanupDatabase
+ *
+ * Revision 1.21  2011/12/08 11:15:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.20  2011/11/30 13:51:42  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -69,6 +72,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
+import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -666,8 +670,16 @@ public class JobDef {
 		for (Iterator iter = lockers.iterator(); iter.hasNext();) {
 			String jmsRealmName = (String) iter.next();
 			setJmsRealm(jmsRealmName);
-			String deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+			DirectQuerySender qs = new DirectQuerySender();
+			qs.setJmsRealm(jmsRealmName);
+			String deleteQuery;
+			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
+				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < CONVERT(datetime, '" + formattedDate + "', 120)";
+			} else {
+				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+			}
 			setQuery(deleteQuery);
+			qs = null;
 			executeQueryJob();
 		}
 
@@ -699,8 +711,16 @@ public class JobDef {
 		for (Iterator iter = messageLogs.iterator(); iter.hasNext();) {
 			MessageLogObject mlo = (MessageLogObject) iter.next();
 			setJmsRealm(mlo.getJmsRealmName());
-			String deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE TYPE IN ('" + JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "') AND " + mlo.getExpiryDateField() + " < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+			DirectQuerySender qs = new DirectQuerySender();
+			qs.setJmsRealm(mlo.getJmsRealmName());
+			String deleteQuery;
+			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
+				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE TYPE IN ('" + JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "') AND " + mlo.getExpiryDateField() + " < CONVERT(datetime, '" + formattedDate + "', 120)";
+			} else {
+				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE TYPE IN ('" + JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "') AND " + mlo.getExpiryDateField() + " < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+			}
 			setQuery(deleteQuery);
+			qs = null;
 			executeQueryJob();
 		}
 	}
