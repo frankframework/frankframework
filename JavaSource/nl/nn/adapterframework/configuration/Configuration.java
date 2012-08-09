@@ -1,6 +1,10 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.44  2012-03-19 15:07:22  m00f069
+ * Revision 1.45  2012-08-09 12:04:33  m00f069
+ * Replaced jaxb-xalan-1.5.jar because of memory leak with IbisXalan.jar which is manually compiled with different package names to still be able to prevent WebSphere Xalan version to be used.
+ * Made it possible to use IbisXalan.jar for Tomcat too (don't use javax.xml.transform.TransformerFactory system property and use a manually compiled IbisXtags.jar to prevent problems when this system property is set by other application in the same JVM (e.g. an older Ibis)).
+ *
+ * Revision 1.44  2012/03/19 15:07:22  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Bugfix mangled file name of WSDL when adapter name contains a space
  *
  * Revision 1.43  2012/02/02 08:36:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -250,9 +254,6 @@ public class Configuration {
 
     }
     protected void init() {
-		//Default XSLT processor 1.0, not XSLT 2.0 processor (net.sf.saxon.TransformerFactoryImpl)
-		//System.setProperty("javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl");
-		System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
 		log.info(VersionInfo());
     }
 

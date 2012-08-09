@@ -3,16 +3,31 @@ package nl.nn.adapterframework.soap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javanet.staxutils.IndentingXMLStreamWriter;
+import javanet.staxutils.XMLStreamEventWriter;
+import javanet.staxutils.XMLStreamUtils;
+import javanet.staxutils.events.AttributeEvent;
+import javanet.staxutils.events.StartElementEvent;
 
 import javax.xml.namespace.QName;
-import javax.xml.stream.*;
+import javax.xml.stream.XMLEventFactory;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
-
-import org.apache.log4j.Logger;
-import org.apache.xml.utils.XMLChar;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -25,11 +40,8 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import javanet.staxutils.IndentingXMLStreamWriter;
-import javanet.staxutils.XMLStreamEventWriter;
-import javanet.staxutils.XMLStreamUtils;
-import javanet.staxutils.events.AttributeEvent;
-import javanet.staxutils.events.StartElementEvent;
+import org.apache.log4j.Logger;
+import org.apache.xerces.util.XMLChar;
 
 /**
  * @author Michiel Meeuwissen

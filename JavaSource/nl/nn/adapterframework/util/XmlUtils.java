@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.80  2012-06-12 15:12:45  m00f069
+ * Revision 1.81  2012-08-09 12:04:34  m00f069
+ * Replaced jaxb-xalan-1.5.jar because of memory leak with IbisXalan.jar which is manually compiled with different package names to still be able to prevent WebSphere Xalan version to be used.
+ * Made it possible to use IbisXalan.jar for Tomcat too (don't use javax.xml.transform.TransformerFactory system property and use a manually compiled IbisXtags.jar to prevent problems when this system property is set by other application in the same JVM (e.g. an older Ibis)).
+ *
+ * Revision 1.80  2012/06/12 15:12:45  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed unused constructor
  *
  * Revision 1.79  2012/05/29 13:31:22  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -258,20 +262,48 @@
 package nl.nn.adapterframework.util;
 
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.URL;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.xml.namespace.QName;
-import javax.xml.parsers.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+
+import nl.nn.adapterframework.core.ListenerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -281,12 +313,21 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
-import org.w3c.dom.*;
-import org.xml.sax.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
-
-import nl.nn.adapterframework.core.ListenerException;
 
 /**
  * Some utilities for working with XML.
@@ -295,14 +336,13 @@ import nl.nn.adapterframework.core.ListenerException;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.80 $ $Date: 2012-06-12 15:12:45 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.81 $ $Date: 2012-08-09 12:04:34 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
 	static final String JAXP_SCHEMA_SOURCE =   "http://java.sun.com/xml/jaxp/properties/schemaSource";
 
-	//public static final String TRANSFORMERFACTORY_KEY = "xslt.transformerFactory";
 	public static final String NAMESPACE_AWARE_BY_DEFAULT_KEY = "xml.namespaceAware.default";
 	public static final String AUTO_RELOAD_KEY = "xslt.auto.reload";
 	public static final String XSLT_BUFFERSIZE_KEY = "xslt.bufsize";
@@ -318,7 +358,6 @@ public class XmlUtils {
 	private static Boolean includeFieldDefinitionByDefault = null;
 	private static Boolean autoReload = null;
 	private static Integer buffersize=null;
-	//private static TransformerFactory transformerFactory=null;
 
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
@@ -840,37 +879,13 @@ public class XmlUtils {
 	}
 
 	public static synchronized TransformerFactory getTransformerFactory(boolean xslt2) {
-		/*
-		if (transformerFactory==null) {
-			String transformerFactoryClassName = AppConstants.getInstance().getProperty(TRANSFORMERFACTORY_KEY,null);
-			try {
-				if (StringUtils.isNotEmpty(transformerFactoryClassName)) {
-					Class transformerFactoryClass = XmlUtils.class.forName(transformerFactoryClassName);
-					log.debug("loaded transformerFactoryClass ["+transformerFactoryClass.getName()+"]");
-					Constructor constructor = transformerFactoryClass.getConstructor(null);
-					log.debug("found constructor method ["+constructor.getName()+"]");
-					transformerFactory = (TransformerFactory)constructor.newInstance(null);
-					log.debug("invoked constructor to obtain transformer factory ["+transformerFactory.getClass().getName()+"]");
-				}
-			} catch (Exception e) {
-				log.warn("Could not load TransformerFactory ["+transformerFactoryClassName+"]",e);
-			}
-			if (transformerFactory==null) {
-				transformerFactory = TransformerFactory.newInstance();
-				log.debug("no explicit TransformerFactory configured, now instantiated class ["+transformerFactory.getClass().getName()+"]");
-			}
-		}
-		*/
 		if (xslt2) {
 			return new net.sf.saxon.TransformerFactoryImpl();
 		} else {
-			String javaVendor = System.getProperty("java.vendor");
-			String javaVersion = System.getProperty("java.version");
-			if (javaVendor.indexOf("IBM") >= 0 && javaVersion.compareTo("1.5") >= 0) {
-				return new com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl();
-			} else {
-				return TransformerFactory.newInstance();
-			}
+			// Use a Xalan version with different package names to prevent the
+			// WebSphere Xalan version being used and prevent differences
+			// in XML transformations between WebSphere 5 and WebSphere 6.
+			return new nl.nn.org.apache.xalan.processor.TransformerFactoryImpl();
 		}
 	}
 
@@ -1661,7 +1676,7 @@ public class XmlUtils {
 		}
 
 		try {
-			sb.append("Xalan-Version="+com.sun.org.apache.xalan.internal.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
+			sb.append("Xalan-Version="+nl.nn.org.apache.xalan.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
 		}  catch (Throwable t) {
 			sb.append("Xalan-Version not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
 		}
