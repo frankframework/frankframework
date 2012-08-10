@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.25  2012-03-14 11:23:39  europe\m168309
+ * Revision 1.26  2012-08-10 11:29:11  m00f069
+ * Use ErrorListener on transformer to detect and throw exceptions which were thrown directly by older Xalan version.
+ *
+ * Revision 1.25  2012/03/14 11:23:39  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * use getTransformerFactory() from XmlUtils instead of own code
  *
  * Revision 1.24  2012/02/03 11:19:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -88,6 +91,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -116,7 +120,7 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.25 $ $Date: 2012-03-14 11:23:39 $";
+	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.26 $ $Date: 2012-08-10 11:29:11 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerFactory tFactory;
@@ -300,15 +304,14 @@ public class TransformerPool {
 	}
 
 
-    protected synchronized Transformer createTransformer() throws TransformerConfigurationException {
-    	
+	protected synchronized Transformer createTransformer() throws TransformerConfigurationException {
 		Transformer t = templates.newTransformer();
-
 		if (t==null) {
 			throw new TransformerConfigurationException("cannot instantiate transformer");
 		}
-    	return t;
-    }
+		t.setErrorListener(new TransformerErrorListener());
+		return t;
+	}
 
 	public String transform(Document d, Map parameters)	throws TransformerException, IOException {
 		return transform(new DOMSource(d),parameters);
@@ -323,22 +326,35 @@ public class TransformerPool {
 	}
 
 	public String transform(Source s, Map parameters) throws TransformerException, IOException {
-		Transformer transformer = getTransformer();
+		return transform(s, null, parameters);
+	}
 
-		try {	
-			XmlUtils.setTransformerParameters(transformer, parameters);
-			return XmlUtils.transformXml(transformer, s);
-		} 
-		catch (TransformerException te) {
-			invalidateTransformerNoThrow(transformer);
-			throw te;
-		} 
-		catch (IOException ioe) {
-			invalidateTransformerNoThrow(transformer);
-			throw ioe;
+	public String transform(Source s, Result r, Map parameters) throws TransformerException, IOException {
+		Transformer transformer = getTransformer();
+		try {
+			if (r == null) {
+				XmlUtils.setTransformerParameters(transformer, parameters);
+				return XmlUtils.transformXml(transformer, s);
+			} else {
+				XmlUtils.setTransformerParameters(transformer, parameters);
+				transformer.transform(s,r);
+			}
+		} catch (TransformerException te) {
+			((TransformerErrorListener)transformer.getErrorListener()).setFatalTransformerException(te);
+		} catch (IOException ioe) {
+			((TransformerErrorListener)transformer.getErrorListener()).setFatalIOException(ioe);
 		} 
 		finally {
 			if (transformer != null) {
+				TransformerErrorListener transformerErrorListener = (TransformerErrorListener)transformer.getErrorListener();
+				if (transformerErrorListener.getFatalTransformerException() != null) {
+					invalidateTransformerNoThrow(transformer);
+					throw transformerErrorListener.getFatalTransformerException();
+				}
+				if (transformerErrorListener.getFatalIOException() != null) {
+					invalidateTransformerNoThrow(transformer);
+					throw transformerErrorListener.getFatalIOException();
+				}
 				try {
 					releaseTransformer(transformer);
 				} catch(Exception e) {
@@ -346,29 +362,47 @@ public class TransformerPool {
 				};
 			}
 		}
+		return null;
 	}
 
-	public void transform(Source s, Result r, Map parameters) throws TransformerException {
-		Transformer transformer = getTransformer();
+	private class TransformerErrorListener implements ErrorListener {
+		private TransformerException fatalTransformerException;
+		private IOException fatalIOException;
 
-		try {	
-			XmlUtils.setTransformerParameters(transformer, parameters);
-			transformer.transform(s,r);
-		} 
-		catch (TransformerException te) {
-			invalidateTransformerNoThrow(transformer);
-			throw te;
-		} 
-		finally {
-			if (transformer != null) {
-				try {
-					releaseTransformer(transformer);
-				} catch(Exception e) {
-					log.warn("Exception returning transformer to pool",e);
-				};
-			}
+		TransformerErrorListener() {
+		}
+
+		public void error(TransformerException transformerException)
+				throws TransformerException {
+			log.warn("Nonfatal transformation error: " + transformerException.getMessage());
+		}
+
+		public void fatalError(TransformerException transformerException)
+				throws TransformerException {
+			this.setFatalTransformerException(transformerException);
+		}
+
+		public void warning(TransformerException transformerException)
+				throws TransformerException {
+			log.warn("Nonfatal transformation warning: " + transformerException.getMessage());
+		}
+
+		public void setFatalTransformerException(
+				TransformerException fatalTransformerException) {
+			this.fatalTransformerException = fatalTransformerException;
+		}
+
+		public TransformerException getFatalTransformerException() {
+			return fatalTransformerException;
+		}
+
+		public void setFatalIOException(IOException fatalIOException) {
+			this.fatalIOException = fatalIOException;
+		}
+
+		public IOException getFatalIOException() {
+			return fatalIOException;
 		}
 	}
-
 
 }
