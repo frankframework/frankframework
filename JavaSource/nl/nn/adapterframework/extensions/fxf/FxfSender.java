@@ -1,6 +1,9 @@
 /*
  * $Log: FxfSender.java,v $
- * Revision 1.17  2011-11-30 13:51:51  europe\m168309
+ * Revision 1.18  2012-08-15 08:08:20  m00f069
+ * Implemented FxF3 listener as a wrapper and FxF3 cleanup mechanism
+ *
+ * Revision 1.17  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -74,7 +77,10 @@ import nl.nn.adapterframework.util.ProcessUtil;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Sender for transferring files using the FxF protocol. Assumes sender input is local filename.
+ * Sender for transferring files using the FxF protocol version 1 and 2. For FxF
+ * protocol version 3 see the {@link FxfWrapperPipe FxfWrapperPipe}. Assumes
+ * sender input is local filename.
+ * 
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>

@@ -1,6 +1,9 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.21  2012-06-01 10:52:57  m00f069
+ * Revision 1.22  2012-08-15 08:08:20  m00f069
+ * Implemented FxF3 listener as a wrapper and FxF3 cleanup mechanism
+ *
+ * Revision 1.21  2012/06/01 10:52:57  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.20  2011/12/05 15:30:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -95,7 +98,10 @@ import org.apache.commons.lang.StringUtils;
 
 
 /**
- * Listener for files transferred using the FxF protocol. The message handed to the pipeline is the local filename.
+ * Listener for files transferred using the FxF protocol version 1 and 2. For
+ * FxF protocol version 3 see the {@link FxfWrapperPipe FxfWrapperPipe}. The
+ * message handed to the pipeline is the local filename.
+ * 
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
