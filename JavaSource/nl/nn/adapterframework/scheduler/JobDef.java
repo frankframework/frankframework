@@ -1,6 +1,10 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.23  2012-08-15 08:08:20  m00f069
+ * Revision 1.24  2012-08-17 14:34:15  m00f069
+ * Extended FxfWrapperPipe for sending files
+ * Implemented FxfXmlValidator
+ *
+ * Revision 1.23  2012/08/15 08:08:20  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Implemented FxF3 listener as a wrapper and FxF3 cleanup mechanism
  *
  * Revision 1.22  2012/07/19 15:06:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -516,7 +520,7 @@ public class JobDef {
 			// nothing special for now
 		} else 
 		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPFXF)) {
-			fxfDir = FxfWrapperPipe.configureFxfDir(false);
+			fxfDir = AppConstants.getInstance().getResolvedProperty("fxf.dir");
 			String retention = AppConstants.getInstance().getProperty("fxf.retention");
 			if (retention != null) {
 				try {

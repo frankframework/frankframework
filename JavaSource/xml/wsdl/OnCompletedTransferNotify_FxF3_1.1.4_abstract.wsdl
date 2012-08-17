@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Created by TIBCO WSDL-->
+<wsdl:definitions xmlns:tns="urn:amx:BU-FM_HR_GroupApps/FxF3.OnCompletedTransferNotify" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:ns0="http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" name="OnCompletedTransferNotify.FileTransfer.SC_1.0.3_service_OnCompletedTransferNotify_Interface_1_OnCompletedTransferNotify_Interface_1" targetNamespace="urn:amx:BU-FM_HR_GroupApps/FxF3.OnCompletedTransferNotify">
+    <wsdl:types>
+        <xs:schema xmlns="http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1" elementFormDefault="qualified" attributeFormDefault="unqualified">
+            <xs:element name="OnCompletedTransferNotify_Action">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="TransferFlowId" type="xs:string"/>
+                        <xs:element name="UserData" type="xs:string"/>
+                        <xs:element name="ClientFilename" type="xs:string"/>
+                        <xs:element name="ServerFilename" type="xs:string"/>
+                        <xs:element name="LocalTransactionID" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:schema>
+    </wsdl:types>
+    <wsdl:message name="OnCompletedTransferNotify_1_Action">
+        <wsdl:part name="body" element="ns0:OnCompletedTransferNotify_Action"/>
+    </wsdl:message>
+    <wsdl:portType name="OnCompletedTransferNotify_Interface_1">
+        <wsdl:operation name="OnCompletedTransferNotify_1">
+            <wsdl:input message="tns:OnCompletedTransferNotify_1_Action"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="Transfer.FileTransfer.OnCompletedTransferNotify" type="tns:OnCompletedTransferNotify_Interface_1">
+        <soap:binding style="document" transport="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS"/>
+        <jms:binding messageFormat="text"/>
+        <wsdl:operation name="OnCompletedTransferNotify_1">
+            <wsdl:documentation/>
+            <soap:operation style="document" soapAction="OnCompletedTransferNotify_1"/>
+            <wsdl:input>
+                <soap:body use="literal" parts="body"/>
+            </wsdl:input>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="OnCompletedTransferNotify.FileTransfer.SC_1.0.3_service_OnCompletedTransferNotify_Interface_1_OnCompletedTransferNotify_Interface_1">
+        <wsdl:port name="Transfer.FileTransfer.OnCompletedTransferNotify" binding="tns:Transfer.FileTransfer.OnCompletedTransferNotify">
+            <soap:address location=""/>
+            <jms:connectionFactory>TLNHP_Queue_ConnectionFactory</jms:connectionFactory>
+            <!--The element targetAddress value (P2P.Infrastructure.TIBCOMFT.OnCompletedTransferNotify.Action) is the jndi name of the destination. Please replace this with physical destination name at the service consumption point.-->
+            <jms:targetAddress destination="queue">P2P.Infrastructure.TIBCOMFT.OnCompletedTransferNotify.Action</jms:targetAddress>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

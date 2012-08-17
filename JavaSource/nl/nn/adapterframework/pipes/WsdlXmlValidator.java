@@ -1,6 +1,10 @@
 /*
  * $Log: WsdlXmlValidator.java,v $
- * Revision 1.5  2012-07-02 08:39:08  m00f069
+ * Revision 1.6  2012-08-17 14:34:15  m00f069
+ * Extended FxfWrapperPipe for sending files
+ * Implemented FxfXmlValidator
+ *
+ * Revision 1.5  2012/07/02 08:39:08  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added note about WebSphere versions
  * Added CVS log
  *
@@ -38,6 +42,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -106,9 +111,19 @@ public class WsdlXmlValidator extends FixedForwardPipe {
     private SoapValidator.SoapVersion validateSoapEnvelope = SoapValidator.SoapVersion.VERSION_1_1;
 
 
-    public void setWsdl(String uri) throws IOException, WSDLException {
-        def = getDefinition(ClassUtils.getResourceURL(uri));
-    }
+	public void setWsdl(String uri) throws ConfigurationException {
+		URL url = ClassUtils.getResourceURL(uri);
+		if (url == null) {
+			throw new ConfigurationException("Could not find WSDL: " + uri);
+		}
+		try {
+			def = getDefinition(url);
+		} catch (WSDLException e) {
+			throw new ConfigurationException("WSDLException reading WSDL from '" + url + "'", e);
+		} catch (IOException e) {
+			throw new ConfigurationException("IOException reading WSDL from '" + url + "'", e);
+		}
+	}
 
 
     public boolean isValidateSoapEnvelope() {

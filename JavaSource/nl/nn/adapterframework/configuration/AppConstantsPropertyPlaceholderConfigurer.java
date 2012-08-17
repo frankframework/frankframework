@@ -7,15 +7,24 @@ import nl.nn.adapterframework.util.AppConstants;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
 /**
+ * Make AppConstants properties available to the Spring configuration.
+ * 
  * @author Jaco de Groot
  */
 public class AppConstantsPropertyPlaceholderConfigurer
 		extends PropertyPlaceholderConfigurer {
+	protected AppConstants appConstants;
 
 	protected void convertProperties(Properties props) {
-		super.convertProperties(props); 
-		props.putAll(AppConstants.getInstance());
-		props.put("instance.name.lc", props.getProperty("instance.name").toLowerCase());
+		props.putAll(appConstants);
+	}
+
+	public AppConstants getAppConstants() {
+		return appConstants;
+	}
+
+	public void setAppConstants(AppConstants appConstants) {
+		this.appConstants = appConstants;
 	}
 
 }

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springCommon.xml,v $
-  Revision 1.23  2012-05-04 09:42:36  m00f069
+  Revision 1.24  2012-08-17 14:34:15  m00f069
+  Extended FxfWrapperPipe for sending files
+  Implemented FxfXmlValidator
+
+  Revision 1.23  2012/05/04 09:42:36  Jaco de Groot <jaco.de.groot@ibissource.org>
   Use PipeProcessors (to e.g. handle statistics) for Validators and Wrappers
 
   Revision 1.22  2011/12/08 14:06:16  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -99,14 +103,17 @@
 		"
 	>
 
-    <!-- Make Ibis properties available as ${property.name} to the Spring
-         configuration. For the instance.name a special lower case variant
-         instance.name.lc is also available. -->
-    <bean class="nl.nn.adapterframework.configuration.AppConstantsPropertyPlaceholderConfigurer">
-        <!-- Ignore unresolvable placeholders to give other (custom) property
-             placeholder configurers a change to resolve them. -->
-        <property name="ignoreUnresolvablePlaceholders" value="true"/>
-    </bean>
+	<bean class="nl.nn.adapterframework.configuration.AppConstantsPropertyPlaceholderConfigurer" autowire="byName">
+		<property name="ignoreUnresolvablePlaceholders" value="true"/>
+	</bean>
+
+	<bean class="nl.nn.adapterframework.configuration.LowerCasePropertyPlaceholderConfigurer" autowire="byName">
+		<property name="ignoreUnresolvablePlaceholders" value="true"/>
+	</bean>
+
+	<bean class="nl.nn.adapterframework.extensions.fxf.FxfPropertyPlaceholderConfigurer" autowire="byName">
+		<property name="ignoreUnresolvablePlaceholders" value="true"/>
+	</bean>
 
     <!-- IBIS Beans -->
     <bean name="configuration" class="nl.nn.adapterframework.configuration.Configuration"

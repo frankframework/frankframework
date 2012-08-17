@@ -1,12 +1,18 @@
 /*
  * $Log: FxfWrapperPipe.java,v $
- * Revision 1.1  2012-08-15 08:08:20  m00f069
+ * Revision 1.2  2012-08-17 14:34:15  m00f069
+ * Extended FxfWrapperPipe for sending files
+ * Implemented FxfXmlValidator
+ *
+ * Revision 1.1  2012/08/15 08:08:20  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Implemented FxF3 listener as a wrapper and FxF3 cleanup mechanism
  *
  */
 package nl.nn.adapterframework.extensions.fxf;
 
 import java.io.File;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -16,6 +22,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * FxF wrapper to be used with FxF3. When receiving files (direction=unwrap)
@@ -23,11 +30,26 @@ import nl.nn.adapterframework.util.TransformerPool;
  * ESB SOAP message. When sending files (direction=wrap) input should be a local
  * filename which will be wrapped into an ESB SOAP message.
  * 
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.extensions.fxf.FxfListener</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
+ * <tr><td>{@link #setFlowId(String) flowId}</td><td>The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline.</td><td></td></tr>
+ * <tr><td>{@link #setTransformFilename(String) transformFilename}</td><td>When true and direction=wrap the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine.</td><td>true</td></tr>
+ * </table>
+ * 
  * @author Jaco de Groot
  * @version Id
  */
 public class FxfWrapperPipe extends EsbSoapWrapperPipe {
+	private AppConstants appConstants;
+	private String instanceName;
+	private String instanceNameLowerCase;
 	private String fxfDir;
+	private String flowId;
+	private String environment;
+	private boolean transformFilename = true;
 	private TransformerPool transferFlowIdTp = null;
 	private TransformerPool clientFilenameTp = null;
 	private String soapBodySessionKey = "soapBody";
@@ -41,9 +63,32 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		setRemoveOutputNamespaces(true);
 		super.configure();
 		if ("wrap".equalsIgnoreCase(getDirection())) {
-			// TODO Implement for sending FxF files
+			instanceName = appConstants.getResolvedProperty("instance.name");
+			if (StringUtils.isEmpty(instanceName)) {
+				throw new ConfigurationException("instance.name not available");
+			}
+			instanceNameLowerCase = appConstants.getResolvedProperty("instance.name.lc");
+			if (StringUtils.isEmpty(instanceNameLowerCase)) {
+				throw new ConfigurationException("instance.name.lc not available");
+			}
+			environment = appConstants.getResolvedProperty("otap.stage");
+			if (StringUtils.isEmpty(environment) || environment.length() < 1) {
+				throw new ConfigurationException("otap.stage not available");
+			}
+			environment = environment.substring(0, 1);
+			if (StringUtils.isEmpty(getFlowId())) {
+				throw new ConfigurationException("attribute flowId must be specified");
+			} else if (getFlowId().length() < 3) {
+				throw new ConfigurationException("attribute flowId too short");
+			}
 		} else {
-			fxfDir = configureFxfDir(true);
+			if (!StringUtils.isEmpty(getFlowId())) {
+				throw new ConfigurationException("attribute flowId must not be specified");
+			}
+			fxfDir = appConstants.getResolvedProperty("fxf.dir");
+			if (fxfDir == null) {
+				throw new ConfigurationException("property fxf.dir has not been initialised");
+			}
 			transferFlowIdTp = TransformerPool.configureTransformer0(
 					getLogPrefix(null), null,
 					"/OnCompletedTransferNotify_Action/TransferFlowId", null,
@@ -53,28 +98,6 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 					"/OnCompletedTransferNotify_Action/ClientFilename", null,
 					"text", false, getParameterList(), true);
 		}
-	}
-
-	public static String configureFxfDir(boolean fxfDirMandatory) throws ConfigurationException {
-		String fxfDir = AppConstants.getInstance().getProperty("fxf.dir");
-		if (fxfDir == null) {
-			// Use default location, see was.policy too
-			fxfDir = System.getProperty("APPSERVER_ROOT_DIR");
-			if (fxfDir != null) {
-				fxfDir = fxfDir + File.separator + "fxf-work";
-			} else {
-				if (fxfDirMandatory) {
-					throw new ConfigurationException("Could not determine FxF directory");
-				}
-			}
-		}
-		if (!new File(fxfDir).isDirectory()) {
-			if (fxfDirMandatory) {
-				throw new ConfigurationException("Could not find FxF directory: " + fxfDir);
-			}
-			fxfDir = null;
-		}
-		return fxfDir;
 	}
 
 	public void start() throws PipeStartException {
@@ -107,8 +130,34 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if ("wrap".equalsIgnoreCase(getDirection())) {
-			// TODO Implement for sending FxF files
-			return super.doPipe(input, session);
+			XmlBuilder xmlStartTransfer_Action = new XmlBuilder("StartTransfer_Action");
+			xmlStartTransfer_Action.addAttribute("xmlns", "http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/1");
+			XmlBuilder xmlTransferDetails = new XmlBuilder("TransferDetails");
+			xmlStartTransfer_Action.addSubElement(xmlTransferDetails);
+			XmlBuilder xmlSenderApplication = new XmlBuilder("SenderApplication");
+			xmlSenderApplication.setValue(instanceName);
+			xmlTransferDetails.addSubElement(xmlSenderApplication);
+			XmlBuilder xmlRecipientApplication = new XmlBuilder("RecipientApplication");
+			xmlTransferDetails.addSubElement(xmlRecipientApplication);
+			XmlBuilder xmlFilename = new XmlBuilder("Filename");
+			if (input != null) {
+				String filename = input.toString();
+				if (isTransformFilename()) {
+					String filenameOnIufState = "/opt/data/FXF/"
+							+ instanceNameLowerCase + "/" + getFlowId()
+							+ "/out/" + new File(filename).getName();
+					xmlFilename.setValue(filenameOnIufState);
+				} else {
+					xmlFilename.setValue(filename);
+				}
+			}
+			xmlTransferDetails.addSubElement(xmlFilename);
+			XmlBuilder xmlTransferFlowId = new XmlBuilder("TransferFlowId");
+			String transferFlowId = getFlowId().substring(0, 2) + environment
+					+ getFlowId().substring(3);
+			xmlTransferFlowId.setValue(transferFlowId);
+			xmlTransferDetails.addSubElement(xmlTransferFlowId);
+			return super.doPipe(xmlStartTransfer_Action.toXML(), session);
 		} else {
 			String soapBody = (String)super.doPipe(input, session).getResult();
 			session.put(getSoapBodySessionKey(), soapBody);
@@ -133,6 +182,30 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 							+ new File(clientFilename).getName();
 			return new PipeRunResult(getForward(), result);
 		}
+	}
+
+	public AppConstants getAppConstants() {
+		return appConstants;
+	}
+
+	public void setAppConstants(AppConstants appConstants) {
+		this.appConstants = appConstants;
+	}
+
+	public String getFlowId() {
+		return flowId;
+	}
+
+	public void setFlowId(String flowId) {
+		this.flowId = flowId;
+	}
+
+	public boolean isTransformFilename() {
+		return transformFilename;
+	}
+
+	public void setTransformFilename(boolean transformFilename) {
+		this.transformFilename = transformFilename;
 	}
 
 	public String getSoapBodySessionKey() {
