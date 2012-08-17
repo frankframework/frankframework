@@ -1,6 +1,9 @@
 /*
  * $Log: FxfWrapperPipe.java,v $
- * Revision 1.2  2012-08-17 14:34:15  m00f069
+ * Revision 1.3  2012-08-17 15:46:44  m00f069
+ * Added some documentation
+ *
+ * Revision 1.2  2012/08/17 14:34:15  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Extended FxfWrapperPipe for sending files
  * Implemented FxfXmlValidator
  *
@@ -28,7 +31,13 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * FxF wrapper to be used with FxF3. When receiving files (direction=unwrap)
  * the message handed to the pipeline is the local filename extracted from an
  * ESB SOAP message. When sending files (direction=wrap) input should be a local
- * filename which will be wrapped into an ESB SOAP message.
+ * filename which will be wrapped into an ESB SOAP message. Please note: When
+ * writing files which need to be send through FxF they should be written to
+ * ${fxf.dir}/NNX00000/out. The property ${fxf.dir} will automatically be
+ * available on the OTAP environment (define it in StageSpecifics_LOC.properties
+ * only). Replace NNX00000 with the specific flowId and generate a unique
+ * filename (files will automatically be cleaned after 30 days or any other
+ * value specified by ${fxf.retention}).
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
