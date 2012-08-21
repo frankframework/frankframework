@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.100  2012-06-01 10:52:50  m00f069
+ * Revision 1.101  2012-08-21 15:51:36  m00f069
+ * Show duration statistics of sender message log too.
+ *
+ * Revision 1.100  2012/06/01 10:52:50  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.99  2012/05/04 09:42:35  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -496,6 +499,10 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 				String subName = messageSendingPipe.getOutputWrapper().getName();
 				pipeStatistics.put(subName, new StatisticsKeeper(subName));
 			}
+			if (messageSendingPipe.getMessageLog() != null) {
+				String subName = messageSendingPipe.getMessageLog().getName();
+				pipeStatistics.put(subName, new StatisticsKeeper(subName));
+			}
 		}
 		if (pipe.getMaxThreads() > 0) {
 			pipeWaitingStatistics.put(name, new StatisticsKeeper(name));
@@ -722,6 +729,9 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 				if (messageSendingPipe.getOutputWrapper() != null) {
 					handlePipeStat(messageSendingPipe.getOutputWrapper(),pipeStatistics,pipeStatsData,hski, true, action);
 				}
+				if (messageSendingPipe.getMessageLog() != null) {
+					handlePipeStat(messageSendingPipe.getMessageLog(),pipeStatistics,pipeStatsData,hski, true, action);
+				}
 			}
 		}
 		if (pipeWaitingStatistics.size()>0) {
@@ -741,7 +751,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		hski.closeGroup(sizeStatsData);
 	}
 
-	private void handlePipeStat(IPipe pipe, Map pipelineStatistics, Object pipeStatsData, StatisticsKeeperIterationHandler handler, boolean deep, int action) throws SenderException {
+	private void handlePipeStat(INamedObject pipe, Map pipelineStatistics, Object pipeStatsData, StatisticsKeeperIterationHandler handler, boolean deep, int action) throws SenderException {
 		if (pipe==null) {
 			return;
 		}
@@ -753,7 +763,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	}
 
 	
-	public StatisticsKeeper getPipeStatistics(IPipe pipe){
+	public StatisticsKeeper getPipeStatistics(INamedObject pipe){
 		return (StatisticsKeeper)pipeStatistics.get(pipe.getName());
 	}
 	public StatisticsKeeper getPipeWaitingStatistics(IPipe pipe){

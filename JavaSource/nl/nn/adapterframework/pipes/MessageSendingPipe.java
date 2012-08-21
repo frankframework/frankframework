@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.80  2012-06-01 10:52:49  m00f069
+ * Revision 1.81  2012-08-21 15:51:35  m00f069
+ * Show duration statistics of sender message log too.
+ *
+ * Revision 1.80  2012/06/01 10:52:49  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.79  2012/05/04 09:42:36  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -265,6 +268,7 @@ import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.processors.PipeProcessor;
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -420,6 +424,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	public final static String INPUT_WRAPPER_NAME_SUFFIX=": wrap input";
 	public final static String OUTPUT_WRAPPER_NAME_PREFIX="- ";
 	public final static String OUTPUT_WRAPPER_NAME_SUFFIX=": wrap output";
+	public final static String MESSAGE_LOG_NAME_PREFIX="- ";
+	public final static String MESSAGE_LOG_NAME_SUFFIX=": message log";
 
 	private IPipe inputValidator=null;
 	private IPipe outputValidator=null;
@@ -739,6 +745,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 				ITransactionalStorage messageLog = getMessageLog();
 				if (messageLog!=null) {
+					long messageLogStartTime= System.currentTimeMillis();
 					String messageTrail="no audit trail";
 					if (auditTrailTp!=null) {
 						messageTrail=auditTrailTp.transform((String)input,null);
@@ -768,6 +775,10 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					} else {
 						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,(String)input);
 					}
+					long messageLogEndTime = System.currentTimeMillis();
+					long messageLogDuration = messageLogEndTime - messageLogStartTime;
+					StatisticsKeeper sk = getPipeLine().getPipeStatistics(messageLog);
+					sk.addValue(messageLogDuration);
 				}
 
 				if (sender instanceof MailSender) {
@@ -999,7 +1010,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	protected void setMessageLog(ITransactionalStorage messageLog) {
 		if (messageLog.isActive()) {
 			this.messageLog = messageLog;
-			messageLog.setName("messageLog of ["+getName()+"]");
+			messageLog.setName(MESSAGE_LOG_NAME_PREFIX+getName()+MESSAGE_LOG_NAME_SUFFIX);
 			if (StringUtils.isEmpty(messageLog.getSlotId())) {
 				messageLog.setSlotId(getName());
 			}
