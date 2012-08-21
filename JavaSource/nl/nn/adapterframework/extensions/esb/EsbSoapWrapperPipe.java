@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.12  2012-04-06 14:51:40  europe\m168309
+ * Revision 1.13  2012-08-21 10:01:20  m00f069
+ * Set destination parameter with default value when wrapping FxF message
+ *
+ * Revision 1.12  2012/04/06 14:51:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * updated javadoc
  *
  * Revision 1.11  2012/02/15 08:10:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -238,30 +241,30 @@ import nl.nn.adapterframework.util.AppConstants;
  * @author Peter Leeuwenburgh
  */
 public class EsbSoapWrapperPipe extends SoapWrapperPipe {
-	private final static String BUSINESSDOMAIN = "businessDomain";
-	private final static String SERVICENAME = "serviceName";
-	private final static String SERVICECONTEXT = "serviceContext";
-	private final static String SERVICECONTEXTVERSION = "serviceContextVersion";
-	private final static String OPERATIONNAME = "operationName";
-	private final static String OPERATIONVERSION = "operationVersion";
-	private final static String PARADIGM = "paradigm";
-	private final static String APPLICATIONNAME = "applicationName";
-	private final static String APPLICATIONFUNCTION = "applicationFunction";
-	private final static String MESSAGINGLAYER = "messagingLayer";
-	private final static String SERVICELAYER = "serviceLayer";
-	private final static String DESTINATION = "destination";
-	private final static String FROMID= "fromId";
-	private final static String CPAID = "cpaId";
-	private final static String CONVERSATIONID = "conversationId";
-	private final static String MESSAGEID = "messageId";
-	private final static String CORRELATIONID = "correlationId";
-	private final static String EXTERNALREFTOMESSAGEID = "externalRefToMessageId";
-	private final static String TIMESTAMP = "timestamp";
+	protected final static String BUSINESSDOMAIN = "businessDomain";
+	protected final static String SERVICENAME = "serviceName";
+	protected final static String SERVICECONTEXT = "serviceContext";
+	protected final static String SERVICECONTEXTVERSION = "serviceContextVersion";
+	protected final static String OPERATIONNAME = "operationName";
+	protected final static String OPERATIONVERSION = "operationVersion";
+	protected final static String PARADIGM = "paradigm";
+	protected final static String APPLICATIONNAME = "applicationName";
+	protected final static String APPLICATIONFUNCTION = "applicationFunction";
+	protected final static String MESSAGINGLAYER = "messagingLayer";
+	protected final static String SERVICELAYER = "serviceLayer";
+	protected final static String DESTINATION = "destination";
+	protected final static String FROMID= "fromId";
+	protected final static String CPAID = "cpaId";
+	protected final static String CONVERSATIONID = "conversationId";
+	protected final static String MESSAGEID = "messageId";
+	protected final static String CORRELATIONID = "correlationId";
+	protected final static String EXTERNALREFTOMESSAGEID = "externalRefToMessageId";
+	protected final static String TIMESTAMP = "timestamp";
 
-	private final static String MODE_I2T = "i2t";
-	private final static String MODE_REG = "reg";
-	private final static String MODE_BIS = "bis";
-	private final static String SOAPHEADER = "soapHeader";
+	protected final static String MODE_I2T = "i2t";
+	protected final static String MODE_REG = "reg";
+	protected final static String MODE_BIS = "bis";
+	protected final static String SOAPHEADER = "soapHeader";
 
 	private String mode = MODE_REG;
 	private boolean addOutputNamespace = false;

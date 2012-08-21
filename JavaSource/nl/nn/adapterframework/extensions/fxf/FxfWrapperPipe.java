@@ -1,6 +1,9 @@
 /*
  * $Log: FxfWrapperPipe.java,v $
- * Revision 1.3  2012-08-17 15:46:44  m00f069
+ * Revision 1.4  2012-08-21 10:01:20  m00f069
+ * Set destination parameter with default value when wrapping FxF message
+ *
+ * Revision 1.3  2012/08/17 15:46:44  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added some documentation
  *
  * Revision 1.2  2012/08/17 14:34:15  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -23,6 +26,8 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -70,6 +75,16 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 
 	public void configure() throws ConfigurationException {
 		setRemoveOutputNamespaces(true);
+		if ("wrap".equalsIgnoreCase(getDirection())) {
+			ParameterList parameterList = getParameterList();
+			Parameter parameter = parameterList.findParameter(DESTINATION);
+			if (parameter == null) {
+				parameter = new Parameter();
+				parameter.setName(DESTINATION);
+				parameter.setValue("ESB.Infrastructure.US.Transfer.FileTransfer.1.StartTransfer.1.Action");
+				parameterList.add(parameter);
+			}
+		}
 		super.configure();
 		if ("wrap".equalsIgnoreCase(getDirection())) {
 			instanceName = appConstants.getResolvedProperty("instance.name");
