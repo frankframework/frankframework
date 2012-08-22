@@ -29,7 +29,10 @@
 		</jar>
 	</target>
 	<!-- ================================================================== -->
-	<target name="javadoc" description="Create the javadoc documentation" depends="init">
+	<target name="javadoc" description="Create the javadoc documentation">
+		<property name="javadoc.dir" value="${build.dir}/api"/>
+		<delete dir="${javadoc.dir}"/>
+		<mkdir dir="${javadoc.dir}"/>
 		<!--
 			Disable "extends RPCRouterServlet" in SoapRouterServlet as a
 			workaround for the following NPE when running javadoc:
@@ -44,7 +47,7 @@
 		<replace file="JavaSource/nl/nn/adapterframework/soap/SoapRouterServlet.java" token="super.doPost(req,res);" value="/*super.doPost(req,res);*/"/>
 		<javadoc
 			sourcepath="JavaSource"
-			destdir="${build.dir}/api"
+			destdir="${javadoc.dir}"
 			windowtitle="${ac.application.name} v${ac.application.version} Developer Documentation"
 			use="true"
 			author="true"
