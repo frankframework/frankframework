@@ -1,7 +1,7 @@
 /*
- * $Log: XmlValidatorBaseBase.java,v $
- * Revision 1.7  2012-06-01 10:52:50  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
+ * $Log: AbstractXmlValidator.java,v $
+ * Revision 1.1  2012-08-23 11:57:43  m00f069
+ * Updates from Michiel
  *
  * Revision 1.6  2012/03/16 15:35:44  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Michiel added EsbSoapValidator and WsdlXmlValidator, made WSDL's available for all adapters and did a bugfix on XML Validator where it seems to be dependent on the order of specified XSD's
@@ -25,21 +25,22 @@
 package nl.nn.adapterframework.util;
 
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.core.PipeRunException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
+import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLParseException;
+import org.xml.sax.*;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.*;
 
 /**
  * baseclass for validating input message against a XML-Schema.
@@ -65,7 +66,7 @@ import org.xml.sax.XMLReader;
  * @version Id
  * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
  */
-public abstract class XmlValidatorBaseBase {
+public abstract class AbstractXmlValidator {
 	protected Logger log = LogUtil.getLogger(this);
 
 	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
@@ -83,6 +84,18 @@ public abstract class XmlValidatorBaseBase {
 	private String root = null;
 	private boolean validateFile=false;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+    protected boolean needsInit = true;
+    protected String logPrefix = "";
+    protected boolean addNamespaceToSchema = false;
+
+    public boolean isAddNamespaceToSchema() {
+        return addNamespaceToSchema;
+    }
+
+    public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
+        this.addNamespaceToSchema = addNamespaceToSchema;
+    }
+
 
     public class XmlErrorHandler implements ErrorHandler {
         private boolean errorOccured = false;
@@ -174,7 +187,7 @@ public abstract class XmlValidatorBaseBase {
 	   }
     }
 
-    protected class XmlValidatorException extends IbisException {
+    public static class XmlValidatorException extends IbisException {
     	XmlValidatorException(String cause, Throwable t) {
     		super(cause,t);
     	}
@@ -192,30 +205,37 @@ public abstract class XmlValidatorBaseBase {
      * </ul>
      */
     public void configure(String logPrefix) throws ConfigurationException {
-		if ((StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
-			 StringUtils.isNotEmpty(getSchemaLocation())) &&
-			StringUtils.isNotEmpty(getSchemaSessionKey())) {
-				throw new ConfigurationException(logPrefix + "cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
-		}
-        if (StringUtils.isNotEmpty(getSchemaLocation())) {
-        	String resolvedLocations = XmlUtils.resolveSchemaLocations(getSchemaLocation());
-        	log.info(logPrefix + "resolved schemaLocation ["+getSchemaLocation()+"] to ["+resolvedLocations+"]");
-        	setSchemaLocation(resolvedLocations);
+        this.logPrefix = logPrefix;
+    }
+
+    protected void init() throws ConfigurationException {
+        if (needsInit) {
+            if ((StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
+                StringUtils.isNotEmpty(getSchemaLocation())) &&
+                StringUtils.isNotEmpty(getSchemaSessionKey())) {
+                throw new ConfigurationException(logPrefix + "cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
+            }
+            if (StringUtils.isNotEmpty(getSchemaLocation())) {
+                String resolvedLocations = XmlUtils.resolveSchemaLocations(getSchemaLocation());
+                log.info(logPrefix + "resolved schemaLocation [" + getSchemaLocation() + "] to [" + resolvedLocations + "]");
+                setSchemaLocation(resolvedLocations);
+            }
+            if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
+                URL url = ClassUtils.getResourceURL(this, getNoNamespaceSchemaLocation());
+                if (url == null) {
+                    throw new ConfigurationException(logPrefix + "could not find schema at ["+getNoNamespaceSchemaLocation()+"]");
+                }
+                String resolvedLocation =url.toExternalForm();
+                log.info(logPrefix + "resolved noNamespaceSchemaLocation to [" + resolvedLocation+"]");
+                setNoNamespaceSchemaLocation(resolvedLocation);
+            }
+            if (StringUtils.isEmpty(getNoNamespaceSchemaLocation()) &&
+                StringUtils.isEmpty(getSchemaLocation()) &&
+                StringUtils.isEmpty(getSchemaSessionKey())) {
+                throw new ConfigurationException(logPrefix + "must have either schemaSessionKey, schemaLocation or noNamespaceSchemaLocation");
+            }
+            needsInit = false;
         }
-		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
-			URL url = ClassUtils.getResourceURL(this, getNoNamespaceSchemaLocation());
-			if (url==null) {
-				throw new ConfigurationException(logPrefix+"could not find schema at ["+getNoNamespaceSchemaLocation()+"]");
-			}
-			String resolvedLocation =url.toExternalForm();
-			log.info(logPrefix + "resolved noNamespaceSchemaLocation to [" + resolvedLocation+"]");
-			setNoNamespaceSchemaLocation(resolvedLocation);
-		}
-		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation()) &&
-			StringUtils.isEmpty(getSchemaLocation()) &&
-			StringUtils.isEmpty(getSchemaSessionKey())) {
-				throw new ConfigurationException(logPrefix+"must have either schemaSessionKey, schemaLocation or noNamespaceSchemaLocation");
-		}
     }
 
 	protected String handleFailures(XmlErrorHandler xeh, IPipeLineSession session, String mainReason, String forwardName, String event, Throwable t) throws  XmlValidatorException {
@@ -246,7 +266,7 @@ public abstract class XmlValidatorBaseBase {
      /**
       * Validate the XML string
       * @param input a String
-      * @param session a {@link nl.nn.adapterframework.core.PipeLineSession Pipelinesession}
+      * @param session a {@link nl.nn.adapterframework.core.IPipeLineSession Pipelinesession}
 
       * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
       */
@@ -262,6 +282,7 @@ public abstract class XmlValidatorBaseBase {
      */
     public void setFullSchemaChecking(boolean fullSchemaChecking) {
         this.fullSchemaChecking = fullSchemaChecking;
+        this.needsInit = true;
     }
 	public boolean isFullSchemaChecking() {
 		return fullSchemaChecking;
@@ -279,6 +300,7 @@ public abstract class XmlValidatorBaseBase {
      */
     public void setSchema(String schema) {
         setNoNamespaceSchemaLocation(schema);
+        this.needsInit = true;
     }
 	public String getSchema() {
 		return getNoNamespaceSchemaLocation();
@@ -299,6 +321,7 @@ public abstract class XmlValidatorBaseBase {
      */
     public void setSchemaLocation(String schemaLocation) {
         this.schemaLocation = schemaLocation;
+        this.needsInit = true;
     }
 	public String getSchemaLocation() {
 		return schemaLocation;
@@ -310,6 +333,7 @@ public abstract class XmlValidatorBaseBase {
      */
     public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
         this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
+        this.needsInit = true;
     }
 	public String getNoNamespaceSchemaLocation() {
 		return noNamespaceSchemaLocation;
@@ -333,16 +357,17 @@ public abstract class XmlValidatorBaseBase {
 		String msg = "attribute 'schemaSession' is deprecated. Please use 'schemaSessionKey' instead.";
 		configWarnings.add(log, msg);
 		this.schemaSessionKey = schemaSessionKey;
+        this.needsInit = true;
 	}
 
 	protected String getLogPrefix(IPipeLineSession session){
-		  StringBuffer sb=new StringBuffer();
+		  StringBuilder sb = new StringBuilder();
 		  sb.append(ClassUtils.nameOf(this)).append(' ');
 		  if (this instanceof INamedObject) {
-			  sb.append("["+((INamedObject)this).getName()+"] ");
+			  sb.append("[").append(((INamedObject)this).getName()).append("] ");
 		  }
-		  if (session!=null) {
-			  sb.append("msgId [" + session.getMessageId() + "] ");
+		  if (session != null) {
+			  sb.append("msgId [").append(session.getMessageId()).append("] ");
 		  }
 		  return sb.toString();
 	}
@@ -395,5 +420,55 @@ public abstract class XmlValidatorBaseBase {
 	public String getCharset() {
 		return charset;
 	}
+    protected InputSource getInputSource(Object input) throws XmlValidatorException {
+        Variant in = new Variant(input);
+        final InputSource is;
+        if (isValidateFile()) {
+            try {
+                is = new InputSource(new InputStreamReader(new FileInputStream(in.asString()), getCharset()));
+            } catch (FileNotFoundException e) {
+                throw new XmlValidatorException("could not find file [" + in.asString() + "]", e);
+            } catch (UnsupportedEncodingException e) {
+                throw new XmlValidatorException("could not use charset [" + getCharset() + "]", e);
+            }
+        } else {
+            is = in.asXmlInputSource();
+        }
+        return is;
 
+    }
+
+    protected static class RetryException extends XNIException {
+        public RetryException(String s) {
+            super(s);
+        }
+    }
+
+    public static class UnknownNamespaceException extends RuntimeException {
+        public UnknownNamespaceException(String s) {
+            super(s);
+        }
+    }
+
+    protected static class MyErrorHandler implements XMLErrorHandler {
+        protected Logger log = LogUtil.getLogger(this);
+        protected boolean throwOnError = false;
+        protected boolean warn = true;
+
+        public void warning(String domain, String key, XMLParseException e) throws XNIException {
+            if (warn) ConfigurationWarnings.getInstance().add(log, e.getMessage());
+        }
+
+        public void error(String domain, String key, XMLParseException e) throws XNIException {
+            if (throwOnError) {
+                throw new RetryException(e.getMessage());
+            }
+            if (warn) ConfigurationWarnings.getInstance().add(log, e.getMessage());
+        }
+
+        public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
+            if (warn) ConfigurationWarnings.getInstance().add(log, e.getMessage());
+            throw new XNIException(e.getMessage());
+        }
+    }
 }

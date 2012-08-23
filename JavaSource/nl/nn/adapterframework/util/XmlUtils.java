@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.81  2012-08-09 12:04:34  m00f069
+ * Revision 1.82  2012-08-23 11:57:43  m00f069
+ * Updates from Michiel
+ *
+ * Revision 1.81  2012/08/09 12:04:34  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Replaced jaxb-xalan-1.5.jar because of memory leak with IbisXalan.jar which is manually compiled with different package names to still be able to prevent WebSphere Xalan version to be used.
  * Made it possible to use IbisXalan.jar for Tomcat too (don't use javax.xml.transform.TransformerFactory system property and use a manually compiled IbisXtags.jar to prevent problems when this system property is set by other application in the same JVM (e.g. an older Ibis)).
  *
@@ -262,48 +265,22 @@
 package nl.nn.adapterframework.util;
 
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
+import java.io.*;
 import java.net.URL;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
 import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.*;
 import javax.xml.stream.XMLEventFactory;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
-import nl.nn.adapterframework.core.ListenerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -313,21 +290,12 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
+import org.w3c.dom.*;
+import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
+
+import nl.nn.adapterframework.core.ListenerException;
 
 /**
  * Some utilities for working with XML.
@@ -336,7 +304,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.81 $ $Date: 2012-08-09 12:04:34 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.82 $ $Date: 2012-08-23 11:57:43 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -367,6 +335,13 @@ public class XmlUtils {
 			+ "<xsl:copy><xsl:apply-templates select=\"*|@*|text()|processing-instruction()|comment()\" />"
 			+ "</xsl:copy></xsl:template></xsl:stylesheet>";
 
+    static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
+    static final XMLInputFactory INPUT_FACTORY   = XMLInputFactory.newInstance();
+    static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
+
+    public XmlUtils() {
+		super();
+	}
 	public static String makeSkipEmptyTagsXslt(boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
@@ -486,7 +461,7 @@ public class XmlUtils {
 		parser.parse(source);
 	}
 
-	static private XMLReader getParser() throws SAXException  {
+	static private XMLReader getParser() throws SAXException {
 		XMLReader parser = null;
 		parser = XMLReaderFactory.createXMLReader();
 		return parser;
@@ -566,7 +541,7 @@ public class XmlUtils {
 	}
 
 	public static Document buildDomDocument(String s, boolean namespaceAware) throws DomBuilderException {
-		return (buildDomDocument(s,namespaceAware,false));
+		return buildDomDocument(s, namespaceAware, false);
 	}
 
 	public static Document buildDomDocument(String s, boolean namespaceAware, boolean xslt2) throws DomBuilderException {
@@ -574,7 +549,7 @@ public class XmlUtils {
 			throw new DomBuilderException("input is null");
 		}
 		StringReader sr = new StringReader(s);
-		return (buildDomDocument(sr,namespaceAware,xslt2));
+		return buildDomDocument(sr, namespaceAware, xslt2);
 	}
 
 	/**
@@ -604,7 +579,7 @@ public class XmlUtils {
 	/**
 	 * Convert an XML string to a Document, then return the root-element
 	 */
-	public static Element buildElement(String s, boolean namespaceAware) throws DomBuilderException {
+	public static org.w3c.dom.Element buildElement(String s, boolean namespaceAware) throws DomBuilderException {
 		return buildDomDocument(s,namespaceAware).getDocumentElement();
 	}
 
@@ -613,12 +588,12 @@ public class XmlUtils {
 	 */
 	public static Node buildNode(String s, boolean namespaceAware) throws DomBuilderException {
 		log.debug("buildNode() ["+s+"],["+namespaceAware+"]");
-		return (Node) buildElement(s,namespaceAware);
+		return buildElement(s,namespaceAware);
 	}
 
 	public static Node buildNode(String s) throws DomBuilderException {
 		log.debug("buildNode() ["+s+"]");
-		return (Node) buildElement(s,isNamespaceAwareByDefault());
+		return buildElement(s,isNamespaceAwareByDefault());
 	}
 
 
@@ -633,9 +608,9 @@ public class XmlUtils {
 
 
 	public static String skipXmlDeclaration(String xmlString) {
-		if (xmlString!=null && xmlString.startsWith("<?xml")) {
+		if (xmlString != null && xmlString.startsWith("<?xml")) {
 			int endPos = xmlString.indexOf("?>")+2;
-			if (endPos>0) {
+			if (endPos > 0) {
 				try {
 					while (Character.isWhitespace(xmlString.charAt(endPos))) {
 						endPos++;
@@ -679,7 +654,7 @@ public class XmlUtils {
 
 		charset=defaultEncoding;
 		if (StringUtils.isEmpty(charset)) {
-			charset=Misc.DEFAULT_INPUT_STREAM_ENCODING;
+			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 
 		String firstPart = new String(source,offset,length<100?length:100,charset);
@@ -742,28 +717,28 @@ public class XmlUtils {
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
 
-		String namespaceClause="";
-		if (namespaceDefs!=null) {
+		String namespaceClause = "";
+		if (namespaceDefs != null) {
 			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
 			while (st1.hasMoreTokens()) {
-				String namespaceDef=st1.nextToken();
-				log.debug("namespaceDef ["+namespaceDef+"]");
-				int separatorPos=namespaceDef.indexOf('=');
-				if (separatorPos<1) {
-					throw new TransformerConfigurationException("cannot parse namespace definition from string ["+namespaceDef+"]");
+				String namespaceDef = st1.nextToken();
+				log.debug("namespaceDef [" + namespaceDef + "]");
+				int separatorPos = namespaceDef.indexOf('=');
+				if (separatorPos < 1) {
+					throw new TransformerConfigurationException("cannot parse namespace definition from string [" + namespaceDef + "]");
 				} else {
-					namespaceClause+=" xmlns:"+namespaceDef.substring(0,separatorPos)+"=\""+namespaceDef.substring(separatorPos+1)+"\"";
+					namespaceClause += " xmlns:" + namespaceDef.substring(0, separatorPos) + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"";
 				}
 			}
-			log.debug("namespaceClause ["+namespaceClause+"]");
+			log.debug("namespaceClause [" + namespaceClause + "]");
 		}
 
 
-		String copyMethod;
+        final String copyMethod;
 		if ("xml".equals(outputMethod)) {
-			copyMethod="copy-of";
+			copyMethod = "copy-of";
 		} else {
-			copyMethod="value-of";
+			copyMethod = "value-of";
 		}
 
 		String paramsString = "";
@@ -814,7 +789,7 @@ public class XmlUtils {
 	 * The source may be used multiple times.
 	 */
 	public static Source stringToSource(String xmlString, boolean namespaceAware) throws DomBuilderException {
-		Document doc = XmlUtils.buildDomDocument(xmlString,namespaceAware);
+		Document doc = XmlUtils.buildDomDocument(xmlString, namespaceAware);
 		return new DOMSource(doc);
 	}
 
@@ -911,7 +886,7 @@ public class XmlUtils {
 		if (length<=0) {
 			return "";
 		}
-		StringBuffer encoded = new StringBuffer(length);
+		StringBuilder encoded = new StringBuilder(length);
 		String escape;
 		for (int i = 0; i < length; i++) {
 			char c=chars[offset+i];
@@ -928,17 +903,17 @@ public class XmlUtils {
 	 * Translates the five reserved XML characters (&lt; &gt; &amp; &quot; &apos;) to their normal selves
 	 */
 	public static String decodeChars(String string) {
-		StringBuffer decoded = new StringBuffer();
+		StringBuilder decoded = new StringBuilder();
 
-		boolean inEscape=false;
-		int escapeStartPos=0;
+		boolean inEscape = false;
+		int escapeStartPos = 0;
 
 		for (int i = 0; i < string.length(); i++) {
 			char cur=string.charAt(i);
 			if (inEscape) {
 				if ( cur == ';') {
-					inEscape=false;
-					String escapedString=string.substring(escapeStartPos,i+1);
+					inEscape = false;
+					String escapedString = string.substring(escapeStartPos, i + 1);
 					char unEscape = unEscapeString(escapedString);
 					if (unEscape == 0x0) {
 						decoded.append(escapedString);
@@ -949,8 +924,8 @@ public class XmlUtils {
 				}
 			} else {
 				if (cur == '&') {
-					inEscape=true;
-					escapeStartPos=i;
+					inEscape = true;
+					escapeStartPos = i;
 				} else {
 					decoded.append(cur);
 				}
@@ -1003,7 +978,7 @@ public class XmlUtils {
 
 	static public String encodeURL(String url) {
 		String mark = "-_.!~*'()\"";
-		StringBuffer encodedUrl = new StringBuffer();
+		StringBuilder encodedUrl = new StringBuilder();
 		int len = url.length();
 		for (int i = 0; i < len; i++) {
 			char c = url.charAt(i);
@@ -1256,7 +1231,7 @@ public class XmlUtils {
 		return getStringValue(el, true);
 	}
 	static public String getStringValue(Element el, boolean trimWhitespace) {
-		StringBuffer sb = new StringBuffer(1024);
+		StringBuilder sb = new StringBuilder(1024);
 		String str;
 
 		NodeList nl = el.getChildNodes();
@@ -1298,7 +1273,7 @@ public class XmlUtils {
 			int length = string.length();
 			if (log.isDebugEnabled()) log.debug("replacing non valid xml characters to ["+to+"] in string of length ["+length+"]");
 
-			StringBuffer encoded = new StringBuffer(length);
+			StringBuilder encoded = new StringBuilder(length);
 			for (int i = 0; i < length; i++) {
 				char c=string.charAt(i);
 				if (isPrintableUnicodeChar(c)) {
@@ -1315,7 +1290,7 @@ public class XmlUtils {
 		int length = string.length();
 		if (log.isDebugEnabled()) log.debug("stripping non valid xml characters in string of length ["+length+"]");
 
-		StringBuffer encoded = new StringBuffer(length);
+		StringBuilder encoded = new StringBuilder(length);
 		for (int i = 0; i < length; i++) {
 			char c=string.charAt(i);
 			if (isPrintableUnicodeChar(c)) {
@@ -1655,36 +1630,36 @@ public class XmlUtils {
 	}
 
 	public static String getVersionInfo() {
-		StringBuffer sb=new StringBuffer();
-		sb.append(version+SystemUtils.LINE_SEPARATOR);
-		sb.append("XML tool version info:"+SystemUtils.LINE_SEPARATOR);
+		StringBuilder sb = new StringBuilder();
+		sb.append(version).append(SystemUtils.LINE_SEPARATOR);
+		sb.append("XML tool version info:").append(SystemUtils.LINE_SEPARATOR);
 
 		SAXParserFactory spFactory = SAXParserFactory.newInstance();
-		sb.append("SAXParserFactory-class ="+spFactory.getClass().getName()+SystemUtils.LINE_SEPARATOR);
+		sb.append("SAXParserFactory-class =").append(spFactory.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
 		DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-		sb.append("DocumentBuilderFactory-class ="+domFactory.getClass().getName()+SystemUtils.LINE_SEPARATOR);
+		sb.append("DocumentBuilderFactory-class =").append(domFactory.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
 
 		TransformerFactory tFactory = getTransformerFactory();
-		sb.append("TransformerFactory-class ="+tFactory.getClass().getName()+SystemUtils.LINE_SEPARATOR);
+		sb.append("TransformerFactory-class =").append(tFactory.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
 
-		sb.append("Apache-XML tool version info:"+SystemUtils.LINE_SEPARATOR);
+		sb.append("Apache-XML tool version info:").append(SystemUtils.LINE_SEPARATOR);
 
 		try {
-			sb.append("Xerces-Version="+org.apache.xerces.impl.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
+			sb.append("Xerces-Version=").append(org.apache.xerces.impl.Version.getVersion()).append(SystemUtils.LINE_SEPARATOR);
 		}  catch (Throwable t) {
-			sb.append("Xerces-Version not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
+			sb.append("Xerces-Version not found (").append(t.getClass().getName()).append(": ").append(t.getMessage()).append(")").append(SystemUtils.LINE_SEPARATOR);
 		}
 
 		try {
-			sb.append("Xalan-Version="+nl.nn.org.apache.xalan.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
+ 			sb.append("Xalan-Version=" + nl.nn.org.apache.xalan.Version.getVersion() + SystemUtils.LINE_SEPARATOR);
 		}  catch (Throwable t) {
-			sb.append("Xalan-Version not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
+			sb.append("Xalan-Version not found (").append(t.getClass().getName()).append(": ").append(t.getMessage()).append(")").append(SystemUtils.LINE_SEPARATOR);
 		}
 
 		try {
 //			sb.append("XmlCommons-Version="+org.apache.xmlcommons.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
 		}  catch (Throwable t) {
-			sb.append("XmlCommons-Version not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
+			sb.append("XmlCommons-Version not found (").append(t.getClass().getName()).append(": ").append(t.getMessage()).append(")").append(SystemUtils.LINE_SEPARATOR);
 		}
 
 		return sb.toString();
@@ -1797,7 +1772,7 @@ public class XmlUtils {
 			StringReader sr = new StringReader(input);
 			InputSource src = new InputSource(sr);
 			Document doc = factory.newDocumentBuilder().parse(src);
-			return nodeToString((Node)doc);
+			return nodeToString(doc);
 		} catch (Exception e) {
 			return null;
 		}

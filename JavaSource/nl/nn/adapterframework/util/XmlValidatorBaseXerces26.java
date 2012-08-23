@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.18  2012-06-01 10:52:50  m00f069
+ * Revision 1.19  2012-08-23 11:57:43  m00f069
+ * Updates from Michiel
+ *
+ * Revision 1.18  2012/06/01 10:52:50  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.17  2012/04/12 12:49:06  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -50,44 +53,17 @@
 package nl.nn.adapterframework.util;
 
 
-import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javanet.staxutils.XMLStreamUtils;
-import javanet.staxutils.events.AttributeEvent;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLEventFactory;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLEventWriter;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.parsers.CachingParserPool;
 import org.apache.xerces.parsers.IntegratedParserConfiguration;
 import org.apache.xerces.parsers.SAXParser;
@@ -96,18 +72,18 @@ import org.apache.xerces.util.ShadowedSymbolTable;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SynchronizedSymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
-import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
+import org.xml.sax.ext.DefaultHandler2;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+
+import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME;
 
 
 /**
@@ -157,11 +133,7 @@ import org.xml.sax.XMLReader;
  * @version Id
  * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
  */
-public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
-    private static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
-    private static final XMLInputFactory INPUT_FACTORY   = XMLInputFactory.newInstance();
-    private static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
-
+public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
     /** Property identifier: symbol table. */
     public static final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
 
@@ -186,72 +158,83 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
     protected static final String REASON_INVALID    = "failure";
     protected static final String REASON_WRONG_ROOT = "illegalRoot";
 
+   // What are these?
+    private static Map<String, SymbolTable> symbolTables = null;
+    private static Map<String, XMLGrammarPool> grammarPools = null;
 
-	private String globalSchema = null;
+    // WTF
+	private String            globalSchema     = null;
 	private CachingParserPool globalParserPool;
-	private Map<String, CachingParserPool> parserPools;
+    private SymbolTable       globalSymbolTable = null;
+    private XMLGrammarPool    globalGrammarPool = null;
 
-	private XMLParserConfiguration globalParserConfig = null;
-	private Map<String, XMLParserConfiguration> parserConfigurations;
+    private Map<String, CachingParserPool>      parserPools;
+	private XMLParserConfiguration              globalParserConfig = null;
+    private Map<String, XMLParserConfiguration> parserConfigurations;
 
-	private SymbolTable globalSymbolTable = null;
-	private Map<String, SymbolTable> symbolTables = null;
-	private XMLGrammarPool globalGrammarPool = null;
-	private Map<String, XMLGrammarPool> grammarPools = null;
-    private boolean addNamespaceToSchema = false;
+    private Map<String, Grammar>                grammars = new HashMap<String, Grammar>(); /* xmlns -> Grammar */
+
+
     private boolean warn = !"false".equals(AppConstants.getInstance().getProperty("xmlValidator.warn"));
 
 
 	private static final int MODE = 2;
 
+
+
     @Override
-	public void configure(String logPrefix) throws ConfigurationException {
-		super.configure(logPrefix);
-		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
-			StringUtils.isNotEmpty(getSchemaLocation())) {
-			globalSchema = getSchemaLocation();
-			if (StringUtils.isEmpty(globalSchema)) {
-				globalSchema = getNoNamespaceSchemaLocation();
-			}
-			try {
-				switch (MODE) {
-				case 0:
-					globalParserPool = createParserPool(globalSchema, StringUtils.isEmpty(getSchemaLocation()));
-					break;
-				case 1:
-					globalParserConfig = createParserConfiguration(globalSchema, StringUtils.isEmpty(getSchemaLocation()));
-					break;
-				case 2:
-					globalSymbolTable = createSymbolTable();
-					globalGrammarPool = createGrammarPool(globalSymbolTable, globalSchema, StringUtils.isEmpty(getSchemaLocation()));
-					break;
-				}
-			} catch (XmlValidatorException e) {
-				throw new ConfigurationException(e);
-			} catch (Exception e) {
-				throw new ConfigurationException("cannot compile schema for [" + globalSchema + "]", e);
-			}
-		} else {
-			switch (MODE) {
-			case 0:
-				parserPools = new ConcurrentHashMap<String, CachingParserPool>();
-				break;
-			case 1:
-				parserConfigurations = new ConcurrentHashMap<String, XMLParserConfiguration>();
-				break;
-			case 2:
-				symbolTables = new ConcurrentHashMap<String, SymbolTable>();
-				grammarPools = new ConcurrentHashMap<String, XMLGrammarPool>();
-				break;
-			}
-		}
-	}
+    protected void init() throws ConfigurationException {
+        if (needsInit) {
+            super.init();
+            if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
+                StringUtils.isNotEmpty(getSchemaLocation())) {
+                globalSchema = getSchemaLocation();
+                if (StringUtils.isEmpty(globalSchema)) {
+                    globalSchema = getNoNamespaceSchemaLocation();
+                }
+                try {
+                    switch (MODE) {
+                        case 0:
+                            globalParserPool = createParserPool(globalSchema, StringUtils.isEmpty(getSchemaLocation()));
+                            break;
+                        case 1:
+                            globalParserConfig = createParserConfiguration(globalSchema, StringUtils.isEmpty(getSchemaLocation()));
+                            break;
+                        case 2:
+                            globalSymbolTable = createSymbolTable();
+                            globalGrammarPool = createGrammarPool(globalSymbolTable, globalSchema, StringUtils.isEmpty(getSchemaLocation()));
+                            break;
+                    }
+                } catch (XmlValidatorException e) {
+                    throw new ConfigurationException(e);
+                } catch (Exception e) {
+                    throw new ConfigurationException("cannot compile schema for [" + globalSchema + "]", e);
+                }
+            } else {
+                switch (MODE) {
+                    case 0:
+                        parserPools = new ConcurrentHashMap<String, CachingParserPool>();
+                        break;
+                    case 1:
+                        parserConfigurations = new ConcurrentHashMap<String, XMLParserConfiguration>();
+                        break;
+                    case 2:
+                        symbolTables = new ConcurrentHashMap<String, SymbolTable>();
+                        grammarPools = new ConcurrentHashMap<String, XMLGrammarPool>();
+                        break;
+                }
+            }
+        }
+
+    }
 
 
 	private SymbolTable createSymbolTable() {
 		SymbolTable sym = new SymbolTable(BIG_PRIME);
 		return sym;
 	}
+
+
 
 	private XMLGrammarPool createGrammarPool(SymbolTable sym, String schemas, boolean singleSchema) throws XmlValidatorException, XMLStreamException, IOException {
 		XMLGrammarPreparser preparser = new XMLGrammarPreparser(sym);
@@ -267,7 +250,7 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
         errorHandler.warn = warn;
         preparser.setErrorHandler(errorHandler);
         if (singleSchema) {
-			preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(new Definition(null, schemas)));
+			addGrammar(schemas, preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(new Definition(null, schemas))));
 		} else {
 
             List<Definition> definitions = new ArrayList<Definition>();
@@ -285,7 +268,7 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
                 for (Iterator<Definition> i = definitions.iterator(); i.hasNext();) {
                     Definition def = i.next();
                     try {
-                        preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(def));
+                        addGrammar(def.publicId, preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(def)));
                         changes = true;
                         i.remove();
                     } catch (RetryException e) {
@@ -296,12 +279,31 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
             // loop the remaining ones, they seem to be unresolvable, so let the exception go then
             errorHandler.throwOnError = false;
             for (Definition def : definitions) {
-                preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(def));
+                addGrammar(def.publicId, preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(def)));
             }
         }
 		grammarPool.lockPool();
 		return grammarPool;
 	}
+
+    private void addGrammar(String namespace, Grammar grammar) {
+        String schema = grammar.getGrammarDescription().getNamespace();
+        grammars.put(schema, grammar);
+        if (! namespace.equals(schema)) {
+            log.warn("Found namespace " + schema + " for " + grammar + " is not equals to the namespace in the grammar itself " + namespace);
+            grammars.put(namespace, grammar);
+        }
+        log.debug("Found " + schema + ":" + grammar);
+        if (grammar instanceof SchemaGrammar) {
+            List imported = ((SchemaGrammar) grammar).getImportedGrammars();
+            if (imported != null) {
+                for (Object g : imported) {
+                    Grammar gr = (Grammar)g;
+                    addGrammar(gr.getGrammarDescription().getNamespace(), gr);
+                }
+            }
+        }
+    }
 
 	private CachingParserPool createParserPool(String schemas, boolean singleSchema) throws XmlValidatorException, XMLStreamException, IOException {
 		SymbolTable sym = new SymbolTable(BIG_PRIME);
@@ -340,7 +342,7 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 	private  XMLParserConfiguration getParserConfiguration(String schemas, boolean singleSchema) throws XmlValidatorException, XMLStreamException, IOException {
 		XMLParserConfiguration result = parserConfigurations.get(schemas);
 		if (result == null) {
-			result = createParserConfiguration(schemas,singleSchema);
+			result = createParserConfiguration(schemas, singleSchema);
 			parserConfigurations.put(schemas, result);
 		}
 		return result;
@@ -368,13 +370,17 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
       * Validate the XML string
       * @param input a String
       * @param session a {@link nl.nn.adapterframework.core.PipeLineSession Pipelinesession}
-      * @return MonitorEvent declared in{@link XmlValidatorBaseBase}
+      * @return MonitorEvent declared in{@link AbstractXmlValidator}
 
       * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
       */
+    @Override
     public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException {
-
-        Variant in = new Variant(input);
+        try {
+            init();
+        } catch (ConfigurationException e) {
+            throw new XmlValidatorException(e.getMessage(), e);
+        }
 
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			log.debug(logPrefix+ "removing contents of sessionKey ["+getReasonSessionKey()+ "]");
@@ -459,18 +465,7 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 			throw new XmlValidatorException(logPrefix + "error configuring the parser", e);
 		}
 
-		InputSource is;
-		if (isValidateFile()) {
-			try {
-				is = new InputSource(new InputStreamReader(new FileInputStream(in.asString()),getCharset()));
-			} catch (FileNotFoundException e) {
-				throw new XmlValidatorException("could not find file ["+in.asString()+"]",e);
-			} catch (UnsupportedEncodingException e) {
-				throw new XmlValidatorException("could not use charset ["+getCharset()+"]",e);
-			}
-		} else {
-			is = in.asXmlInputSource();
-		}
+        InputSource is = getInputSource(input);
 
         try {
             parser.parse(is);
@@ -482,16 +477,16 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
         	String parsedRootElementName=((XmlFindingHandler)parser.getContentHandler()).getRootElementName();
     		boolean illegalRoot = !getRoot().equals(parsedRootElementName);
 			if (illegalRoot) {
-				String str = "got xml with root element ["+parsedRootElementName+"] instead of ["+getRoot()+"]";
-				xeh.addReason(str,"");
-				return handleFailures(xeh,session,"",REASON_WRONG_ROOT, XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT, null);
+				String str = "got xml with root element [" + parsedRootElementName + "] instead of [" + getRoot() + "]";
+				xeh.addReason(str, "");
+				return handleFailures(xeh, session, "", REASON_WRONG_ROOT, XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT, null);
 			}
         }
 		boolean isValid = !(xeh.hasErrorOccured());
 
 		if (!isValid) {
 			String mainReason = logPrefix + "got invalid xml according to schema [" + schema + "]";
-			return handleFailures(xeh,session,mainReason,REASON_INVALID, XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
+			return handleFailures(xeh, session, mainReason, REASON_INVALID, XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
         }
 		return XML_VALIDATOR_VALID_MONITOR_EVENT;
     }
@@ -516,8 +511,18 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
         return parser;
     }
 
-    private XMLReader getParser(SymbolTable symbolTable, XMLGrammarPool grammarpool) throws  SAXException {
-    	XMLReader parser = new SAXParser(new ShadowedSymbolTable(symbolTable),grammarpool);
+    private XMLReader getParser(final SymbolTable symbolTable, final XMLGrammarPool grammarPool) throws  SAXException {
+    	XMLReader parser = new SAXParser(new ShadowedSymbolTable(symbolTable), grammarPool);
+        parser.setContentHandler(new DefaultHandler2() {
+            @Override
+            public void startPrefixMapping(String prefix, String namespace) throws SAXException {
+                grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
+                Grammar grammar = grammars.get(namespace);
+                if (grammar == null) {
+                    throw new UnknownNamespaceException("Unknown namespace " + namespace);
+                }
+            }
+        });
     	parser.setFeature(NAMESPACES_FEATURE_ID, true);
     	parser.setFeature(VALIDATION_FEATURE_ID, true);
     	parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
@@ -525,59 +530,19 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
         return parser;
     }
 
-    private static final String XSD = "http://www.w3.org/2001/XMLSchema";
-    protected static final QName SCHEMA = new QName(XSD, "schema");
-    protected static final QName TNS = new QName(null, "targetNamespace");
-    protected static final QName ELFORMDEFAULT = new QName(null, "elementFormDefault");
-
     private XMLInputSource stringToXIS(Definition def) throws IOException, XMLStreamException {
-        if (addNamespaceToSchema) {
-            XMLEventReader reader = INPUT_FACTORY.createXMLEventReader(new URL(def.systemId).openStream(), "UTF-8");
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream(); // using a copy-thread, it would be possible to avoid this buffer too.
-            XMLEventWriter writer = OUTPUT_FACTORY.createXMLEventWriter(buffer, "UTF-8");
-
-            while (reader.hasNext()) {
-                XMLEvent e = reader.nextEvent();
-                if (e.isStartElement()) {
-                    StartElement el = e.asStartElement();
-                    if (el.getName().equals(SCHEMA)) {
-                        if (def.publicId == null) {
-                            log.warn("No publicId for " + def.systemId);
-                        } else {
-                            StartElement ne =
-                                XMLStreamUtils.mergeAttributes(el,
-                                    Collections.singletonList(new AttributeEvent(TNS, def.publicId)).iterator(), EVENT_FACTORY);
-                            if (!ne.equals(e)) {
-                                e = XMLStreamUtils.mergeAttributes(ne,
-                                    Collections.singletonList(new AttributeEvent(ELFORMDEFAULT, "qualified")).iterator(), EVENT_FACTORY);
-                                log.warn(def.systemId + " Corrected " + el + " -> " + e);
-
-                            }
-                        }
-                    }
-                }
-                writer.add(e);
-            }
-            writer.close();
-            InputStream input = new ByteArrayInputStream(buffer.toByteArray());
-
+        if (isAddNamespaceToSchema()) {
+            InputStream input = XsdUtils.targetNameSpaceAdding(new URL(def.systemId).openStream(), def.publicId);
             return new XMLInputSource(def.publicId, def.systemId, null, input, "UTF-8");
         } else {
             return new XMLInputSource(def.publicId, def.systemId, null);
         }
     }
 
-    public boolean isAddNamespaceToSchema() {
-        return addNamespaceToSchema;
-    }
-
-    public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
-        this.addNamespaceToSchema = addNamespaceToSchema;
-    }
-
     public void setWarn(boolean warn) {
         this.warn = warn;
     }
+
 
     private static class Definition {
         final String publicId;
@@ -607,32 +572,5 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
             return true;
         }
     }
-
-    private static class RetryException extends XNIException {
-        public RetryException(String s) {
-            super(s);
-        }
-    }
-
-    private static class MyErrorHandler implements XMLErrorHandler {
-        protected Logger log = LogUtil.getLogger(this);
-        protected boolean throwOnError = false;
-        protected boolean warn = true;
-
-        public void warning(String domain, String key, XMLParseException e) throws XNIException {
-            if (warn) ConfigurationWarnings.getInstance().add(log, e.getMessage());
-        }
-
-        public void error(String domain, String key, XMLParseException e) throws XNIException {
-            if (throwOnError) {
-                throw new RetryException(e.getMessage());
-            }
-            if (warn) ConfigurationWarnings.getInstance().add(log, e.getMessage());
-        }
-
-        public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
-            if (warn) ConfigurationWarnings.getInstance().add(log, e.getMessage());
-            throw new XNIException(e.getMessage());
-        }
-    }
 }
+

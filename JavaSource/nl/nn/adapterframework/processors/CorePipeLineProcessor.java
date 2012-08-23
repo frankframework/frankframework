@@ -1,6 +1,9 @@
 /*
  * $Log: CorePipeLineProcessor.java,v $
- * Revision 1.10  2012-06-01 10:52:49  m00f069
+ * Revision 1.11  2012-08-23 11:57:44  m00f069
+ * Updates from Michiel
+ *
+ * Revision 1.10  2012/06/01 10:52:49  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.9  2012/05/04 09:42:35  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -65,14 +68,14 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	public void setPipeProcessor(PipeProcessor pipeProcessor) {
 		this.pipeProcessor = pipeProcessor;
 	}
-	
+
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// Object is the object that is passed to and returned from Pipes
 		Object object = (Object) message;
 		PipeRunResult pipeRunResult;
-		// the PipeLineResult 
-		PipeLineResult pipeLineResult=new PipeLineResult();   
-		
+		// the PipeLineResult
+		PipeLineResult pipeLineResult=new PipeLineResult();
+
 		// ready indicates wether the pipeline processing is complete
 		boolean ready=false;
 
@@ -88,7 +91,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				PipeForward validationForward=validationResult.getPipeForward();
 				if (validationForward.getPath()==null) {
 					throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of inputValidator has emtpy forward path");
-				}	
+				}
 				log.warn("setting first pipe to ["+validationForward.getPath()+"] due to validation fault");
 				inputValidateError = true;
 				pipeToRun = pipeLine.getPipe(validationForward.getPath());
@@ -107,7 +110,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					PipeForward wrapForward=wrapResult.getPipeForward();
 					if (wrapForward.getPath()==null) {
 						throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"] of inputWrapper has emtpy forward path");
-					}	
+					}
 					log.warn("setting first pipe to ["+wrapForward.getPath()+"] due to wrap fault");
 					pipeToRun = pipeLine.getPipe(wrapForward.getPath());
 					if (pipeToRun==null) {
@@ -122,7 +125,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		}
 
 		pipeLine.getRequestSizeStats().addValue(message.length());
-		
+
 		if (pipeLine.isStoreOriginalMessageWithoutNamespaces()) {
 			if (XmlUtils.isWellFormed(message)) {
 				String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,true);
@@ -145,24 +148,24 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				pipeLineSession.put("originalMessageWithoutNamespaces", message);
 			}
 		}
-	
+
 		boolean outputValidated=false;
-		try {    
+		try {
 			while (!ready){
-				
+
 				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, object, pipeLineSession);
 				object=pipeRunResult.getResult();
-	
+
 				if (object!=null && object instanceof String) {
 					StatisticsKeeper sizeStat = pipeLine.getPipeSizeStatistics(pipeToRun);
 					if (sizeStat!=null) {
 						sizeStat.addValue(((String)object).length());
 					}
 				}
-				
+
 				PipeForward pipeForward=pipeRunResult.getPipeForward();
-	
-	                
+
+
 				if (pipeForward==null){
 					throw new PipeRunException(pipeToRun, "Pipeline of ["+pipeLine.getOwner().getName()+"] received result from pipe ["+pipeToRun.getName()+"] without a pipeForward");
 				}
@@ -171,8 +174,8 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				if ((null==nextPath) || (nextPath.length()==0)){
 					throw new PipeRunException(pipeToRun, "Pipeline of ["+pipeLine.getOwner().getName()+"] got an path that equals null or has a zero-length value from pipe ["+pipeToRun.getName()+"]. Check the configuration, probably forwards are not defined for this pipe.");
 				}
-	
-				PipeLineExit plExit=(PipeLineExit)pipeLine.getPipeLineExits().get(nextPath);
+
+				PipeLineExit plExit= pipeLine.getPipeLineExits().get(nextPath);
 				if (null!=plExit){
 					boolean outputWrapError = false;
 					IPipe outputWrapper = pipeLine.getOutputWrapper();
@@ -183,7 +186,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 							PipeForward wrapForward=wrapResult.getPipeForward();
 							if (wrapForward.getPath()==null) {
 								throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"] of outputWrapper has emtpy forward path");
-							}	
+							}
 							log.warn("setting next pipe to ["+wrapForward.getPath()+"] due to wrap fault");
 							outputWrapError = true;
 							pipeToRun = pipeLine.getPipe(wrapForward.getPath());
@@ -207,7 +210,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 								PipeForward validationForward=validationResult.getPipeForward();
 								if (validationForward.getPath()==null) {
 									throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of outputValidator has emtpy forward path");
-								}	
+								}
 								log.warn("setting next pipe to ["+validationForward.getPath()+"] due to validation fault");
 								pipeToRun = pipeLine.getPipe(validationForward.getPath());
 								if (pipeToRun==null) {
@@ -228,7 +231,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						pipeLineResult.setState(state);
 						if (object!=null) {
 							pipeLineResult.setResult(object.toString());
-						} else { 
+						} else {
 							pipeLineResult.setResult(null);
 						}
 						ready=true;
@@ -245,7 +248,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			}
 		} finally {
 			for (int i=0; i<pipeLine.getExitHandlers().size(); i++) {
-				IPipeLineExitHandler exitHandler = (IPipeLineExitHandler)pipeLine.getExitHandlers().get(i);
+				IPipeLineExitHandler exitHandler = pipeLine.getExitHandlers().get(i);
 				try {
 					if (log.isDebugEnabled()) log.debug("processing ExitHandler ["+exitHandler.getName()+"]");
 					exitHandler.atEndOfPipeLine(messageId,pipeLineResult,pipeLineSession);

@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.43  2012-06-01 10:52:50  m00f069
+ * Revision 1.44  2012-08-23 11:57:44  m00f069
+ * Updates from Michiel
+ *
+ * Revision 1.43  2012/06/01 10:52:50  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.42  2012/03/16 15:35:44  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -276,7 +279,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 				if (forward!=null) {
 					String path=forward.getPath();
 					if (path!=null) {
-						PipeLineExit plExit=(PipeLineExit)pipeline.getPipeLineExits().get(path);
+						PipeLineExit plExit= pipeline.getPipeLineExits().get(path);
 						if (plExit==null){
 							if (pipeline.getPipe(path)==null){
 								ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();

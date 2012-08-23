@@ -9,6 +9,7 @@ import javanet.staxutils.helpers.StreamWriterDelegate;
 
 /**
  * This writer simply filters an other writer. It copies everything, except it maps 'wrong' namespaces to correct ones.
+ * @author Michiel Meeuwissen
  */
 class NamespaceCorrectingXMLStreamWriter extends StreamWriterDelegate {
     private final Map<String, String> map;

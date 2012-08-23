@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.39  2012-04-02 11:58:38  m00f069
+ * Revision 1.40  2012-08-23 11:57:44  m00f069
+ * Updates from Michiel
+ *
+ * Revision 1.39  2012/04/02 11:58:38  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Changed from Java project to Web project
  *
  * Revision 1.38  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -168,23 +171,23 @@ import org.xml.sax.SAXParseException;
 ]&gt;
 
 &lt;IOS-Adaptering configurationName="AdapterFramework (v4.0) configuratie voor GIJuice"&gt;
-	
+
 &Y04;
 
-&lt;/IOS-Adaptering&gt;	
+&lt;/IOS-Adaptering&gt;
 </pre></code>
  * @version Id
  * @author Johan Verrips
  * @see Configuration
  */
 abstract public class ConfigurationDigester {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.39 $ $Date: 2012-04-02 11:58:38 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.40 $ $Date: 2012-08-23 11:57:44 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
 	//private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
 	private static final String DIGESTER_RULES_DEFAULT      = "digester-rules.xml";
-	
+
 	private static final String CONFIGURATION_VALIDATION_KEY = "validate.configuration";
 	private static final String CONFIGURATION_STUB4TESTTOOL_KEY = "stub4testtool.configuration";
 
@@ -193,15 +196,15 @@ abstract public class ConfigurationDigester {
 
 	private String configurationFile=null;
 	private String digesterRulesFile=DIGESTER_RULES_DEFAULT;
-    
+
 	private Configuration configuration;
-	
+
 	String lastResolvedEntity=null;
 
     /**
      * This method is runtime implemented by Spring Framework to
      * return a Digester instance created from the Spring Context
-     * 
+     *
      */
     abstract protected Digester createDigester();
 
@@ -219,29 +222,29 @@ abstract public class ConfigurationDigester {
 			throw(exception);
 		}
 	}
-	
+
 	public class NameTrackingEntityResolver implements EntityResolver {
 
 		EntityResolver resolver;
-		
+
 		NameTrackingEntityResolver(EntityResolver resolver) {
 			super();
-			this.resolver=resolver;
+			this.resolver = resolver;
 		}
 
 		public InputSource resolveEntity(String publicID, String systemID) throws SAXException, IOException {
 			if (StringUtils.isNotEmpty(systemID)) {
-				lastResolvedEntity=systemID;
-			} else { 
-				lastResolvedEntity=publicID;
+				lastResolvedEntity = systemID;
+			} else {
+				lastResolvedEntity = publicID;
 			}
 			return resolver.resolveEntity(publicID,systemID);
 		}
 	}
-	
-	
+
+
 	public void digestConfiguration(Object stackTop, URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException {
-		
+
 		if (digesterRulesURL==null) {
 			digesterRulesURL = ClassUtils.getResourceURL(stackTop, DIGESTER_RULES_DEFAULT);
 		}
@@ -256,7 +259,7 @@ abstract public class ConfigurationDigester {
 		//digester.setUseContextClassLoader(true);
 
 		digester.setEntityResolver(new NameTrackingEntityResolver(digester.getEntityResolver()));
-		
+
 		// push config on the stack
 		digester.push(stackTop);
 		digester.push("URL", configurationFileURL);
@@ -266,9 +269,9 @@ abstract public class ConfigurationDigester {
 			FromXmlRuleSet ruleSet = new FromXmlRuleSet(digesterRulesURL);
 
 			digester.addRuleSet(ruleSet);
-			
-			Rule attributeChecker=new AttributeCheckingRule(); 
-			
+
+			Rule attributeChecker = new AttributeCheckingRule();
+
 			digester.addRule("*/jmsRealms", attributeChecker);
 			digester.addRule("*/jmsRealm", attributeChecker);
 			digester.addRule("*/sapSystem", attributeChecker);
@@ -313,13 +316,13 @@ abstract public class ConfigurationDigester {
 //
 //			Variant var=new Variant(resolvedConfig);
 //			InputSource is=var.asXmlInputSource();
-				
-			boolean validation=AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY,false);
+
+			boolean validation=AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY, false);
 			if (validation) {
 				digester.setValidating(true);
 				digester.setNamespaceAware(true);
 				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
-				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource","AdapterFramework.xsd");
+				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource",   "AdapterFramework.xsd");
 				XmlErrorHandler xeh = new XmlErrorHandler();
 				digester.setErrorHandler(xeh);
 			}
@@ -327,7 +330,7 @@ abstract public class ConfigurationDigester {
 			fillConfigWarnDefaultValueExceptions(configurationFileURL);
 
 			String lineSeparator = SystemUtils.LINE_SEPARATOR;
-			if (null==lineSeparator) lineSeparator = "\n";
+			if (null == lineSeparator) lineSeparator = "\n";
 			String configString = Misc.resourceToString(configurationFileURL, lineSeparator, false);
 			configString = XmlUtils.identityTransform(configString);
 			configString = StringResolver.substVars(configString, AppConstants.getInstance());
@@ -336,19 +339,19 @@ abstract public class ConfigurationDigester {
 
 			if (ConfigurationUtils.stubConfiguration()) {
 				configString = ConfigurationUtils.getStubbedConfiguration(configString);
-			}			
+			}
 
 			digester.parse(new StringReader(configString));
 		} catch (Throwable t) {
-			// wrap exception to be sure it gets rendered via the IbisException-renderer
-			String currentElementName=digester.getCurrentElementName();
-			ConfigurationException e = new ConfigurationException("error during unmarshalling configuration from file ["+configurationFileURL +
-			"] with digester-rules-file ["+digesterRulesURL+"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
-			if (configuration!=null) {
+            // wrap exception to be sure it gets rendered via the IbisException-renderer
+			String currentElementName = digester.getCurrentElementName();
+            ConfigurationException e = new ConfigurationException("error during unmarshalling configuration from file [" + configurationFileURL +
+                "] with digester-rules-file ["+digesterRulesURL+"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
+            if (configuration != null) {
 				configuration.setConfigurationException(e);
 			}
 			log.error(e);
-			throw (e);
+			throw e;
 		}
 	}
 
@@ -394,17 +397,17 @@ abstract public class ConfigurationDigester {
 		}
 		digestConfiguration(stackTop, digesterRules, includedConfigUrl);
 	}
-	
+
 	public Configuration unmarshalConfiguration() throws ConfigurationException
 	{
 		return unmarshalConfiguration(getDigesterRules(), getConfigurationFile());
 	}
-	
+
     public Configuration unmarshalConfiguration(String digesterRulesFile, String configurationFile) throws ConfigurationException
     {
 		return unmarshalConfiguration(ClassUtils.getResourceURL(this, digesterRulesFile), ClassUtils.getResourceURL(this, configurationFile));
     }
-    
+
     public Configuration unmarshalConfiguration(URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException{
         configuration.setDigesterRulesURL(digesterRulesURL);
         configuration.setConfigurationURL(configurationFileURL);
@@ -414,8 +417,8 @@ abstract public class ConfigurationDigester {
         log.info("************** Configuration completed **************");
 		return configuration;
     }
-    
-    
+
+
 	public void setConfigurationFile(String string) {
 		configurationFile = string;
 	}

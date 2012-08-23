@@ -1,6 +1,9 @@
 /*
  * $Log: IbisSoapServlet.java,v $
- * Revision 1.4  2012-03-19 15:07:22  m00f069
+ * Revision 1.5  2012-08-23 11:57:43  m00f069
+ * Updates from Michiel
+ *
+ * Revision 1.4  2012/03/19 15:07:22  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Bugfix mangled file name of WSDL when adapter name contains a space
  *
  * Revision 1.3  2012/03/16 15:35:43  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -17,6 +20,7 @@ import java.io.Writer;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 
+import javax.naming.NamingException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
@@ -84,6 +88,8 @@ public class IbisSoapServlet extends HttpServlet {
                 throw new ServletException(e);
             } catch (URISyntaxException e) {
                 throw new ServletException(e);
+            } catch (NamingException e) {
+                throw new ServletException(e);
             }
         } else {
             res.setContentType("text/html; charset=UTF-8");
@@ -91,7 +97,7 @@ public class IbisSoapServlet extends HttpServlet {
         }
     }
 
-     private void zip(HttpServletRequest req, HttpServletResponse res) throws IOException, XMLStreamException, URISyntaxException {
+     private void zip(HttpServletRequest req, HttpServletResponse res) throws IOException, XMLStreamException, URISyntaxException, NamingException {
 
          Adapter adapter = getAdapter(ibisManager, req.getPathInfo());
          Wsdl wsdl = new Wsdl(adapter.getPipeLine(), true);

@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseOld.java,v $
- * Revision 1.5  2012-06-01 10:52:50  m00f069
+ * Revision 1.6  2012-08-23 11:57:43  m00f069
+ * Updates from Michiel
+ *
+ * Revision 1.5  2012/06/01 10:52:50  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.4  2011/12/08 10:57:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -73,7 +76,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
  */
-public class XmlValidatorBaseOld extends XmlValidatorBaseBase {
+public class XmlValidatorBaseOld extends AbstractXmlValidator {
 
 	/**
       * Validate the XML string
@@ -85,7 +88,7 @@ public class XmlValidatorBaseOld extends XmlValidatorBaseBase {
     public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException {
 
         Variant in = new Variant(input);
-        
+
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			log.debug(logPrefix+ "removing contents of sessionKey ["+getReasonSessionKey()+ "]");
 			session.remove(getReasonSessionKey());
@@ -101,7 +104,7 @@ public class XmlValidatorBaseOld extends XmlValidatorBaseBase {
 		String noNamespaceSchemaLocation = getNoNamespaceSchemaLocation();
 
         // Do filename to URL translation if schemaLocation and
-        // noNamespaceSchemaLocation are not set. 
+        // noNamespaceSchemaLocation are not set.
         if (schemaLocation == null && noNamespaceSchemaLocation == null) {
    			// now look for the new session way
    			String schemaToBeUsed = getSchemaSessionKey();
@@ -110,12 +113,12 @@ public class XmlValidatorBaseOld extends XmlValidatorBaseBase {
    			} else {
    				throw new XmlValidatorException(logPrefix+ "cannot retrieve xsd from session variable [" + getSchemaSessionKey() + "]");
     		}
-    
+
     		URL url = ClassUtils.getResourceURL(this, noNamespaceSchemaLocation);
     		if (url == null) {
     			throw new XmlValidatorException(logPrefix+ "cannot retrieve [" + noNamespaceSchemaLocation + "]");
     		}
-    
+
 			noNamespaceSchemaLocation = url.toExternalForm();
         }
 
@@ -155,16 +158,16 @@ public class XmlValidatorBaseOld extends XmlValidatorBaseBase {
 			return handleFailures(xeh,session,"", "parserError", XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, e);
         }
 
-		boolean illegalRoot = StringUtils.isNotEmpty(getRoot()) && 
+		boolean illegalRoot = StringUtils.isNotEmpty(getRoot()) &&
 							!((XmlFindingHandler)parser.getContentHandler()).getRootElementName().equals(getRoot());
 		if (illegalRoot) {
 			String str = "got xml with root element ["+((XmlFindingHandler)parser.getContentHandler()).getRootElementName()+"] instead of ["+getRoot()+"]";
 			xeh.addReason(str,"");
 			return handleFailures(xeh,session,"","illegalRoot", XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT, null);
-		} 
+		}
 		boolean isValid = !(xeh.hasErrorOccured());
-		
-		if (!isValid) { 
+
+		if (!isValid) {
 			String mainReason = logPrefix + "got invalid xml according to schema [" + Misc.concatStrings(schemaLocation," ",noNamespaceSchemaLocation) + "]";
 			return handleFailures(xeh,session,mainReason,"failure", XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
         }
@@ -192,11 +195,11 @@ public class XmlValidatorBaseOld extends XmlValidatorBaseBase {
         if (isFullSchemaChecking()) {
             parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true);
         }
-        if (StringUtils.isNotEmpty(getRoot()) || StringUtils.isNotEmpty(getXmlReasonSessionKey())) {    
+        if (StringUtils.isNotEmpty(getRoot()) || StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
         	parser.setContentHandler(new XmlFindingHandler());
         }
         return parser;
     }
-    
+
 
 }

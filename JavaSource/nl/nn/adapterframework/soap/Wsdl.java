@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.5  2012-05-08 15:53:59  m00f069
+ * Revision 1.6  2012-08-23 11:57:43  m00f069
+ * Updates from Michiel
+ *
+ * Revision 1.5  2012/05/08 15:53:59  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Fix invalid chars in wsdl:service name.
  *
  * Revision 1.4  2012/03/30 17:03:45  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -17,23 +20,35 @@ package nl.nn.adapterframework.soap;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-import javax.xml.stream.*;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.*;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.pipes.XmlValidator;
-import nl.nn.adapterframework.util.*;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 
 /**
@@ -54,6 +69,7 @@ class Wsdl  {
      private static final String WSDL      = "http://schemas.xmlsoap.org/wsdl/";
      private static final String SOAP_WSDL = "http://schemas.xmlsoap.org/wsdl/soap/";
      private static final String SOAP_HTTP = "http://schemas.xmlsoap.org/soap/http";
+     private static final String JNDI     =  "http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi";
 
 
      private static final String SOAP_JMS  = "http://www.w3.org/2010/soapjms/";
@@ -78,8 +94,8 @@ class Wsdl  {
           String serviceName,
           boolean indent) {
          indentWsdl = indent;
-         this.targetNamespace = serviceName;
-         Adapter adapter = WsdlUtils.getAdapterByNamespaceUri(ibisManager, this.targetNamespace);
+         this.targetNamespace = WsdlUtils.validUri(serviceName);
+         Adapter adapter = WsdlUtils.getAdapterByNamespaceUri(ibisManager, serviceName);
          if (adapter == null) {
              throw new IllegalArgumentException("No adapter with uri " + serviceName);
          }
@@ -93,7 +109,7 @@ class Wsdl  {
      Wsdl(PipeLine pipeLine,
           boolean indent) {
          indentWsdl = indent;
-         this.targetNamespace = WsdlUtils.getServiceNameSpaceURI(pipeLine.getAdapter());
+         this.targetNamespace = WsdlUtils.validUri(WsdlUtils.getServiceNameSpaceURI(pipeLine.getAdapter()));
          if (this.targetNamespace == null) {
              throw new IllegalStateException("No targetnamespace found in " + pipeLine.getAdapter());
          }
@@ -113,14 +129,17 @@ class Wsdl  {
       * @throws XMLStreamException
       * @throws IOException
       */
-     public void wsdl(OutputStream out, String servlet) throws XMLStreamException, IOException, URISyntaxException {
+     public void wsdl(OutputStream out, String servlet) throws XMLStreamException, IOException, URISyntaxException, NamingException {
          XMLStreamWriter w = WsdlUtils.createWriter(out, indentWsdl);
 
          w.writeStartDocument(WsdlUtils.ENCODING, "1.0");
          w.setPrefix("wsdl", WSDL);
-         w.setPrefix("xsd", XSD);
+         w.setPrefix("xsd",  XSD);
          w.setPrefix("soap", SOAP_WSDL);
-         w.setPrefix("jms", SOAP_JMS);
+         w.setPrefix("jms",  SOAP_JMS);
+         if (needsJndiNamespace()) {
+             w.setPrefix("jndi", JNDI);
+         }
          w.setPrefix("ibis", getWsdlTargetNamespace());
          for (XSD xsd : getXSDs()) {
              w.setPrefix(xsd.pref, xsd.nameSpace);
@@ -129,6 +148,9 @@ class Wsdl  {
              w.writeNamespace("wsdl", WSDL);
              w.writeNamespace("xsd", XSD);
              w.writeNamespace("soap", SOAP_WSDL);
+             if (needsJndiNamespace()) {
+                 w.writeNamespace("jndi", JNDI);
+             }
              w.writeNamespace("ibis", getWsdlTargetNamespace());
              for (XSD xsd : getXSDs()) {
                  w.writeNamespace(xsd.pref, xsd.nameSpace);
@@ -147,12 +169,11 @@ class Wsdl  {
          w.close();
      }
 
-
-     /**
+    /**
       * Generates a zip file (and writes it to the given outputstream), containing the WSDL and all referenced XSD's.
       * @see {@link #wsdl(java.io.OutputStream, String)}
       */
-     public void zip(OutputStream stream, String servletName) throws IOException, XMLStreamException, URISyntaxException {
+     public void zip(OutputStream stream, String servletName) throws IOException, XMLStreamException, URISyntaxException, NamingException {
          ZipOutputStream out = new ZipOutputStream(stream);
 
          // First an entry for the WSDL itself:
@@ -163,15 +184,14 @@ class Wsdl  {
 
          //And then all XSD's
          setRecursiveXsds(true);
-         Set entries = new HashSet();
+         Set<String> entries = new HashSet<String>();
          Map<String, String> correctingNamespaces = new HashMap<String, String>();
          for (XSD xsd : getXSDs()) {
              String zipName = xsd.getBaseUrl() + xsd.getName();
              if (entries.add(zipName)) {
                  ZipEntry xsdEntry = new ZipEntry(zipName);
                  out.putNextEntry(xsdEntry);
-                 XMLStreamWriter writer
-                     = WsdlUtils.createWriter(out, false);
+                 XMLStreamWriter writer = WsdlUtils.createWriter(out, false);
                  WsdlUtils.includeXSD(xsd, writer, correctingNamespaces, true);
                  out.closeEntry();
              } else {
@@ -269,7 +289,7 @@ class Wsdl  {
                  return xsd;
              }
          }
-         throw new IllegalArgumentException("No xsd for namespace " + nameSpace + " found");
+         throw new IllegalArgumentException("No xsd for namespace '" + nameSpace + "' found (known are " + getXSDs() + ")");
      }
 
      protected static final QName NAME           = new QName(null, "name");
@@ -379,6 +399,11 @@ class Wsdl  {
 
 
      protected String getSoapAction() {
+         EsbSoapWrapperPipe esbSoapWrapperPipe = getEsbSoapWrapper();
+         if (esbSoapWrapperPipe != null) {
+             // Feature #1001
+             return esbSoapWrapperPipe.getServiceName() + "_" + esbSoapWrapperPipe.getServiceContext() + "_" + esbSoapWrapperPipe.getOperationName() + "_" + esbSoapWrapperPipe.getOperationVersion();
+         }
          AppConstants appConstants = AppConstants.getInstance();
          String sa = appConstants.getProperty("wsdl." + getName() + ".soapAction");
          if (sa != null) return sa;
@@ -386,6 +411,14 @@ class Wsdl  {
          if (sa != null) return sa;
          return "${wsdl.soapAction}";
      }
+
+    private EsbSoapWrapperPipe getEsbSoapWrapper() {
+        IPipe inputValidator = pipeLine.getOutputWrapper();
+        if (inputValidator instanceof  EsbSoapWrapperPipe) {
+            return (EsbSoapWrapperPipe) inputValidator;
+        }
+        return null;
+    }
 
      protected void binding(XMLStreamWriter w) throws XMLStreamException, IOException, URISyntaxException {
          for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
@@ -494,7 +527,7 @@ class Wsdl  {
          w.writeEndElement();
      }
 
-     protected void service(XMLStreamWriter w, String servlet) throws XMLStreamException {
+     protected void service(XMLStreamWriter w, String servlet) throws XMLStreamException, NamingException {
          for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
              if (listener instanceof WebServiceListener) {
                  httpService(w, servlet);
@@ -505,6 +538,15 @@ class Wsdl  {
              }
          }
      }
+
+    protected boolean needsJndiNamespace() {
+        for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+            if (listener instanceof JmsListener) {
+                return true;
+            }
+        }
+        return false;
+    }
 
      protected void httpService(XMLStreamWriter w, String servlet) throws XMLStreamException {
          w.writeStartElement(WSDL, "service");
@@ -522,21 +564,55 @@ class Wsdl  {
      }
 
 
-     protected void jmsService(XMLStreamWriter w, JmsListener listener) throws XMLStreamException {
+     protected void jmsService(XMLStreamWriter w, JmsListener listener) throws XMLStreamException, NamingException {
          w.writeStartElement(WSDL, "service");
          w.writeAttribute("name", WsdlUtils.getNCName(getName())); {
              w.writeStartElement(WSDL, "port");
              w.writeAttribute("name", "SoapJMS");
              w.writeAttribute("binding", "ibis:SoapBinding"); {
                  w.writeEmptyElement(SOAP_WSDL, "address");
-                 w.writeAttribute("location", listener.getDestinationName());
+                 String destinationName = listener.getDestinationName();
+                 if (destinationName != null) {
+                     w.writeAttribute("location", destinationName);
+                 } else {
+
+                 }
+                 writeJndiContext(w);
+
+                 w.writeComment("TODO: Queue name could be obtained via jndi?");
                  w.writeStartElement(SOAP_JMS, "connectionFactory"); {
+                     // the queue could be obtained via JNDI?
                      w.writeCharacters("QueueConnectionFactory");
                  }
                  w.writeEndElement();
                  w.writeStartElement(SOAP_JMS, "targetAddress");
-                 w.writeAttribute("destination", listener.getDestinationType()); {
-                     w.writeCharacters("TS." + getName());
+                 String destinationType = listener.getDestinationType();
+                 if (destinationType != null) {
+                     w.writeAttribute("destination", destinationType);
+                 }
+                 {
+                     String destination;
+                     EsbSoapWrapperPipe esbSoapWrapperPipe = getEsbSoapWrapper();
+                     // Feature #1001 http://projecten.dynasol.nl/issues/show/1001
+                     if (esbSoapWrapperPipe == null) {
+                         destination = "TS." + getName();
+                     } else {
+                         destination = esbSoapWrapperPipe.getDestination();
+                         if (destination == null) {
+                             destination =
+                                 esbSoapWrapperPipe.getMessagingLayer() +  '.'  +
+                                     esbSoapWrapperPipe.getBusinessDomain() + '.' +
+                                     esbSoapWrapperPipe.getServiceLayer() + '.' +
+                                     esbSoapWrapperPipe.getServiceName() + '.' +
+                                     esbSoapWrapperPipe.getServiceContext() + '.' +
+                                     esbSoapWrapperPipe.getServiceContextVersion() + '.' +
+                                     esbSoapWrapperPipe.getOperationName() + '.' +
+                                     esbSoapWrapperPipe.getOperationVersion() + '.' +
+                                     esbSoapWrapperPipe.getParadigm();
+                         }
+                     }
+                     w.writeCharacters(destination);
+
                  }
                  w.writeEndElement();
              }
@@ -545,6 +621,23 @@ class Wsdl  {
          w.writeEndElement();
      }
 
+    protected void writeJndiContext(XMLStreamWriter w) throws XMLStreamException, NamingException {
+        // TODO
+        Context ctx = new InitialContext();
+        w.writeStartElement(JNDI, "context"); {
+            w.writeComment("TODO: untested");
+            Map<?, ?> environment = ctx.getEnvironment(); // I have no idea
+            for (Map.Entry<?, ?> entry : environment.entrySet()) {
+                w.writeStartElement(JNDI, "property"); {
+                    w.writeAttribute("name", entry.getKey().toString());
+                    w.writeAttribute("type", entry.getValue().getClass().toString());
+                }
+                w.writeCharacters(entry.getValue().toString());
+                w.writeEndElement();
+            }
+        }
+        w.writeEndElement();
+    }
      protected PipeLine getPipeLine() {
          return pipeLine;
      }
@@ -620,7 +713,6 @@ class Wsdl  {
                  }
              } else  {
                  if (xsd.nameSpace.equals(ns) && xsd.url.equals(url)){
-
                      return xsd;
                  }
              }

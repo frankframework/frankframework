@@ -96,7 +96,9 @@ public abstract class WsdlUtils {
         if (tns == null) {
             tns = "${wsdl.targetNamespace.domain}";
         }
-        return "http://" + tns + "/" + a.getName();
+        String result = "http://" + tns + "/" + a.getName();
+        LOG.warn("No WebServiceListener found in " + a.getName() + " to get a service namespace URI from. Falling back to " + result + "");
+        return result;
     }
 
     static XMLStreamWriter createWriter(OutputStream out, boolean indentWsdl) throws XMLStreamException {
@@ -286,8 +288,7 @@ public abstract class WsdlUtils {
      * Uses a Map to 'correct' values. If there is no corresponding key in the map, the value itself will simply be returned, otherwise the corrected value which is the value in the map.
      */
     static <C> C correct(final Map<C, C> map, final C value) {
-        C corrected = map.get(value);
-        return corrected != null ? corrected : value;
+        return map.containsKey(value)  ? map.get(value) : value;
     }
 
     static String getNCName(String name) {
@@ -300,5 +301,9 @@ public abstract class WsdlUtils {
             }
         }
         return buf.toString();
+    }
+
+    static String validUri(String uri) {
+        return uri == null ? null : uri.replaceAll(" ", "_");
     }
 }

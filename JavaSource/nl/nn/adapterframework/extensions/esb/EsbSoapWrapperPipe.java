@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.13  2012-08-21 10:01:20  m00f069
+ * Revision 1.14  2012-08-23 11:57:43  m00f069
+ * Updates from Michiel
+ *
+ * Revision 1.13  2012/08/21 10:01:20  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Set destination parameter with default value when wrapping FxF message
  *
  * Revision 1.12  2012/04/06 14:51:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -57,7 +60,7 @@ import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * Extension to SoapWrapperPipe for separate modes.
- * 
+ *
  * <p><b>Configuration </b><i>(where deviating from SoapWrapperPipe)</i><b>:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -261,21 +264,22 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	protected final static String EXTERNALREFTOMESSAGEID = "externalRefToMessageId";
 	protected final static String TIMESTAMP = "timestamp";
 
-	protected final static String MODE_I2T = "i2t";
-	protected final static String MODE_REG = "reg";
-	protected final static String MODE_BIS = "bis";
-	protected final static String SOAPHEADER = "soapHeader";
 
-	private String mode = MODE_REG;
+
+    public static enum Mode  {
+        I2T,
+        REG,
+        BIS
+    }
+
+	private final static String SOAPHEADER = "soapHeader";
+
+
+	private Mode mode = Mode.REG;
 	private boolean addOutputNamespace = false;
 
+    @Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getMode())) {
-			throw new ConfigurationException(getLogPrefix(null) + "mode must be set");
-		}
-		if (!getMode().equalsIgnoreCase(MODE_I2T) && !getMode().equalsIgnoreCase(MODE_REG) && !getMode().equalsIgnoreCase(MODE_BIS)) {
-			throw new ConfigurationException(getLogPrefix(null)+"illegal value for mode ["+getMode()+"], must be '"+MODE_I2T+"', '"+MODE_REG+"' or '"+MODE_BIS+"'");
-		}
 		if ("unwrap".equalsIgnoreCase(getDirection())) {
 			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
 				setSoapHeaderSessionKey(SOAPHEADER);
@@ -283,41 +287,81 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		}
 		if ("wrap".equalsIgnoreCase(getDirection())) {
 			if (StringUtils.isEmpty(getSoapHeaderStyleSheet())) {
-				if (getMode().equalsIgnoreCase(MODE_BIS)) {
+				if (mode == Mode.BIS) {
 					setSoapHeaderStyleSheet("/xml/xsl/esb/bisSoapHeader.xsl");
 				} else {
 					setSoapHeaderStyleSheet("/xml/xsl/esb/soapHeader.xsl");
 				}
 			}
 			if (StringUtils.isEmpty(getSoapBodyStyleSheet())) {
-				if (getMode().equalsIgnoreCase(MODE_REG)) { 
+				if (mode == Mode.REG) {
 					setSoapBodyStyleSheet("/xml/xsl/esb/soapBody.xsl");
-				} else if (getMode().equalsIgnoreCase(MODE_BIS)) {
+                } else if (mode == Mode.BIS) {
 					setSoapBodyStyleSheet("/xml/xsl/esb/bisSoapBody.xsl");
 				}
 			}
 			stripDestination();
 			if (isAddOutputNamespace()) {
-				String ons = "http://nn.nl/XSD";
-				ParameterList parameterList = getParameterList();
-				Parameter p = parameterList.findParameter(BUSINESSDOMAIN);
-				ons = ons + "/" + ((p!=null) ? p.getValue() : "");
-				p = parameterList.findParameter(SERVICENAME);
-				ons = ons + "/" + ((p!=null) ? p.getValue() : "");
-				p = parameterList.findParameter(SERVICECONTEXT);
-				ons = ons + "/" + ((p!=null) ? p.getValue() : "");
-				p = parameterList.findParameter(SERVICECONTEXTVERSION);
-				ons = ons + "/" + ((p!=null) ? p.getValue() : "");
-				p = parameterList.findParameter(OPERATIONNAME);
-				ons = ons + "/" + ((p!=null) ? p.getValue() : "");
-				p = parameterList.findParameter(OPERATIONVERSION);
-				ons = ons + "/" + ((p!=null) ? p.getValue() : "");
+				String ons =
+                    "http://nn.nl/XSD" +
+                    "/" + getBusinessDomain() +
+                    "/" + getServiceName() +
+                    "/" + getServiceContext() +
+                    "/" + getServiceContextVersion() +
+                    "/" + getOperationName() +
+                    "/" + getOperationVersion();
 				setOutputNamespace(ons);
 			}
 			addParameters();
 		}
 		super.configure();
 	}
+
+    private String getParameterValue(String key) {
+        Parameter p = getParameterList().findParameter(key);
+        return p != null ? p.getValue() : "";
+    }
+
+    public String getBusinessDomain() {
+        return getParameterValue(BUSINESSDOMAIN);
+    }
+
+    public String getServiceName() {
+        return getParameterValue(SERVICENAME);
+    }
+
+    public String getServiceContext() {
+        return getParameterValue(SERVICECONTEXT);
+    }
+
+    public String getServiceContextVersion() {
+        return getParameterValue(SERVICECONTEXTVERSION);
+    }
+
+    public String getOperationName() {
+        return getParameterValue(OPERATIONNAME);
+    }
+
+    public String getOperationVersion() {
+        return getParameterValue(OPERATIONVERSION);
+    }
+
+    public String getDestination() {
+        Parameter p = getParameterList().findParameter(DESTINATION);
+        return p == null ? null : p.getValue();
+    }
+
+    public String getMessagingLayer() {
+        return getParameterValue(MESSAGINGLAYER);
+    }
+
+    public String getServiceLayer() {
+        return getParameterValue(SERVICELAYER);
+    }
+
+    public String getParadigm() {
+        return getParameterValue(PARADIGM);
+    }
 
 	private void stripDestination() {
 		ParameterList parameterList = getParameterList();
@@ -400,7 +444,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			p.setValue(AppConstants.getInstance().getProperty("instance.name", ""));
 			addParameter(p);
 		}
-		if (!getMode().equalsIgnoreCase(MODE_BIS)) {
+		if (mode != Mode.BIS) {
 			if (parameterList.findParameter(CPAID)==null) {
 				p = new Parameter();
 				p.setName(CPAID);
@@ -432,7 +476,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			p.setPattern("{hostname}_{uid}");
 			addParameter(p);
 		}
-		if (getMode().equalsIgnoreCase(MODE_BIS)) {
+		if (mode == Mode.BIS) {
 			if (parameterList.findParameter(EXTERNALREFTOMESSAGEID)==null) {
 				p = new Parameter();
 				p.setName(EXTERNALREFTOMESSAGEID);
@@ -458,13 +502,12 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			addParameter(p);
 		}
 	}
-
 	public void setMode(String string) {
-		mode = string;
+		mode = Mode.valueOf(string.toUpperCase());
 	}
 
 	public String getMode() {
-		return mode;
+		return mode.toString();
 	}
 
 	public void setAddOutputNamespace(boolean b) {

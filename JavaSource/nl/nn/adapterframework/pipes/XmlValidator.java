@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.37  2012-06-01 10:52:49  m00f069
+ * Revision 1.38  2012-08-23 11:57:44  m00f069
+ * Updates from Michiel
+ *
+ * Revision 1.37  2012/06/01 10:52:49  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.36  2012/03/30 17:03:45  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -104,75 +107,79 @@ import java.util.StringTokenizer;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerConfigurationException;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.XmlValidatorBase;
+import nl.nn.adapterframework.soap.SoapValidator;
+import nl.nn.adapterframework.util.*;
 
-import org.apache.commons.lang.StringUtils;
 
 /**
- *<code>Pipe</code> that validates the input message against a XML-Schema.
- *
- * <p><b>Notice:</b> this implementation relies on Xerces and is rather
- * version-sensitive. It relies on the validation features of it. You should test the proper
- * working of this pipe extensively on your deployment platform.</p>
- * <p>The XmlValidator relies on the properties for <code>external-schemaLocation</code> and
- * <code>external-noNamespaceSchemaLocation</code>. In
- * Xerces-J-2.4.0 there came a bug-fix for these features, so a previous version was erroneous.<br/>
- * Xerces-j-2.2.1 included a fix on this, so before this version there were problems too (the features did not work).<br/>
- * Therefore: old versions of
- * Xerses on your container may not be able to set the necessary properties, or
- * accept the properties but not do the actual validation! This functionality should
- * work (it does! with Xerces-J-2.6.0 anyway), but testing is necessary!</p>
- * <p><i>Careful 1: test this on your deployment environment</i></p>
- * <p><i>Careful 2: beware of behaviour differences between different JDKs: JDK 1.4 works much better than JDK 1.3</i></p>
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XmlValidator</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
- * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSchema(String) schema}</td><td>The filename of the schema on the classpath. See doc on the method. (effectively the same as noNamespaceSchemaLocation)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNoNamespaceSchemaLocation(String) noNamespaceSchemaLocation}</td><td>A URI reference as a hint as to the location of a schema document with no target namespace. See doc on the method.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSchemaLocation(String) schemaLocation}</td><td>Pairs of URI references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name). See doc on the method.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSchemaSessionKey(String) schemaSessionKey}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFullSchemaChecking(boolean) fullSchemaChecking}</td><td>Perform addional memory intensive checks</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>Should the XmlValidator throw a PipeRunException on a validation error (if not, a forward with name "failure" should be defined.</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setReasonSessionKey(String) reasonSessionKey}</td><td>if set: key of session variable to store reasons of mis-validation in</td><td>none</td></tr>
- * <tr><td>{@link #setXmlReasonSessionKey(String) xmlReasonSessionKey}</td><td>like <code>reasonSessionKey</code> but stores reasons in xml format and more extensive</td><td>none</td></tr>
- * <tr><td>{@link #setRoot(String) root}</td><td>name of the root element</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setValidateFile(boolean) validateFile}</td><td>when set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code></td><td>UTF-8</td></tr>
- * <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>when the input message is a SOAP Message, the namespace of the SOAP Envelope. For input SOAP Messages the content of the SOAP Body is used for validation</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
- * <tr><td>{@link #setWarn(boolean) warn}</td><td>when set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)</td><td><code>true</code></td></tr>
- * </table>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>
- * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
- * <tr><td>"illegalRoot"</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
- * <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
- * </table>
- * <br>
- * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
- * @version Id
- * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
- */
+*<code>Pipe</code> that validates the input message against a XML-Schema.
+*
+* <p><b>Notice:</b> this implementation relies on Xerces and is rather
+* version-sensitive. It relies on the validation features of it. You should test the proper
+* working of this pipe extensively on your deployment platform.</p>
+* <p>The XmlValidator relies on the properties for <code>external-schemaLocation</code> and
+* <code>external-noNamespaceSchemaLocation</code>. In
+* Xerces-J-2.4.0 there came a bug-fix for these features, so a previous version was erroneous.<br/>
+* Xerces-j-2.2.1 included a fix on this, so before this version there were problems too (the features did not work).<br/>
+* Therefore: old versions of
+* Xerses on your container may not be able to set the necessary properties, or
+* accept the properties but not do the actual validation! This functionality should
+* work (it does! with Xerces-J-2.6.0 anyway), but testing is necessary!</p>
+* <p><i>Careful 1: test this on your deployment environment</i></p>
+* <p><i>Careful 2: beware of behaviour differences between different JDKs: JDK 1.4 works much better than JDK 1.3</i></p>
+* <p><b>Configuration:</b>
+* <table border="1">
+* <tr><th>attributes</th><th>description</th><th>default</th></tr>
+* <tr><td>className</td><td>nl.nn.adapterframework.pipes.XmlValidator</td><td>&nbsp;</td></tr>
+* <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
+* <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+* <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
+* <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
+* <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
+* <tr><td>{@link #setSchema(String) schema}</td><td>The filename of the schema on the classpath. See doc on the method. (effectively the same as noNamespaceSchemaLocation)</td><td>&nbsp;</td></tr>
+* <tr><td>{@link #setNoNamespaceSchemaLocation(String) noNamespaceSchemaLocation}</td><td>A URI reference as a hint as to the location of a schema document with no target namespace. See doc on the method.</td><td>&nbsp;</td></tr>
+* <tr><td>{@link #setSchemaLocation(String) schemaLocation}</td><td>Pairs of URI references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name). See doc on the method.</td><td>&nbsp;</td></tr>
+* <tr><td>{@link #setSchemaSessionKey(String) schemaSessionKey}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+* <tr><td>{@link #setFullSchemaChecking(boolean) fullSchemaChecking}</td><td>Perform addional memory intensive checks</td><td><code>false</code></td></tr>
+* <tr><td>{@link #setThrowException(boolean) throwException}</td><td>Should the XmlValidator throw a PipeRunException on a validation error (if not, a forward with name "failure" should be defined.</td><td><code>false</code></td></tr>
+* <tr><td>{@link #setReasonSessionKey(String) reasonSessionKey}</td><td>if set: key of session variable to store reasons of mis-validation in</td><td>none</td></tr>
+* <tr><td>{@link #setXmlReasonSessionKey(String) xmlReasonSessionKey}</td><td>like <code>reasonSessionKey</code> but stores reasons in xml format and more extensive</td><td>none</td></tr>
+* <tr><td>{@link #setRoot(String) root}</td><td>name of the root element</td><td>&nbsp;</td></tr>
+* <tr><td>{@link #setValidateFile(boolean) validateFile}</td><td>when set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated</td><td><code>false</code></td></tr>
+* <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code></td><td>UTF-8</td></tr>
+* <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>when the input message is a SOAP Message, the namespace of the SOAP Envelope. For input SOAP Messages the content of the SOAP Body is used for validation</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
+* <tr><td>{@link #setWarn(boolean) warn}</td><td>when set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)</td><td><code>true</code></td></tr>
+* </table>
+* <p><b>Exits:</b>
+* <table border="1">
+* <tr><th>state</th><th>condition</th></tr>
+* <tr><td>"success"</td><td>default</td></tr>
+* <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>
+* <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
+* <tr><td>"illegalRoot"</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
+* <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
+* </table>
+* <br>
+* N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
+* @version Id
+* @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
+*/
 public class XmlValidator extends FixedForwardPipe {
-	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
 
-	private final XmlValidatorBase validator = new XmlValidatorBase();
+    protected Logger log = LogUtil.getLogger(this);
+
+    private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
+
+	private AbstractXmlValidator validator = new XmlValidatorBase();
 
 	private TransformerPool transformerPoolExtractSoapBody;
 	private TransformerPool transformerPoolGetRootNamespace;
@@ -191,17 +198,17 @@ public class XmlValidator extends FixedForwardPipe {
     public void configure() throws ConfigurationException {
         super.configure();
 
-		String extractNamespaceDefs="soapenv="+getSoapNamespace();
-		String extractBodyXPath="/soapenv:Envelope/soapenv:Body/*";
+		String extractNamespaceDefs = "soapenv=" + getSoapNamespace();
+		String extractBodyXPath     = "/soapenv:Envelope/soapenv:Body/*";
 		try {
-			transformerPoolExtractSoapBody = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractBodyXPath,"xml"));
+			transformerPoolExtractSoapBody = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, "xml"));
 		} catch (TransformerConfigurationException te) {
 			throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getSoapBody", te);
 		}
 
 		String getRootNamespace_xslt = XmlUtils.makeGetRootNamespaceXslt();
 		try {
-			transformerPoolGetRootNamespace = new TransformerPool(getRootNamespace_xslt,true);
+			transformerPoolGetRootNamespace = new TransformerPool(getRootNamespace_xslt, true);
 		} catch (TransformerConfigurationException te) {
 			throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getRootNamespace", te);
 		}
@@ -212,7 +219,7 @@ public class XmlValidator extends FixedForwardPipe {
 		} catch (TransformerConfigurationException te) {
 			throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
 		}
-        
+
 		if (!isThrowException()){
             if (findForward("failure")==null) throw new ConfigurationException(
             getLogPrefix(null)+ "must either set throwException true, or have a forward with name [failure]");
@@ -227,48 +234,50 @@ public class XmlValidator extends FixedForwardPipe {
      /**
       * Validate the XML string
       * @param input a String
-      * @param session a {@link nl.nn.adapterframework.core.PipeLineSession Pipelinesession}
+      * @param session a {@link nl.nn.adapterframework.core.IPipeLineSession Pipelinesession}
 
       * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
       */
      @Override
     public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-    	String messageToValidate = getMessageToValidate(input, session);
-    	
-		try {
-			String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session));
-			throwEvent(resultEvent);
 
-
-			if (XmlValidatorBase.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
-				return new PipeRunResult(getForward(), input);
-			}
-			PipeForward forward=null;
-			if (XmlValidatorBase.XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT.equals(resultEvent)) {
-				forward=findForward("illegalRoot");
-			} else
-			if (XmlValidatorBase.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT.equals(resultEvent)) {
-				forward=findForward("parserError");
-			}
-			if (forward==null) {
-				forward = findForward("failure");
-			}
-			if (forward==null) {
-				throw new PipeRunException(this, "not implemented: should get reason from validator");
-			}
+         String messageToValidate = getMessageToValidate(input, session);
+         try {
+            PipeForward forward = validate(messageToValidate, session);
 			return new PipeRunResult(forward, input);
 		} catch (Exception e) {
-			throw new PipeRunException(this,getLogPrefix(session),e);
+			throw new PipeRunException(this, getLogPrefix(session), e);
 		}
 
+     }
+    protected PipeForward validate(String messageToValidate, IPipeLineSession session) throws AbstractXmlValidator.XmlValidatorException, PipeRunException {
+        String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session));
+        throwEvent(resultEvent);
+        if (XmlValidatorBase.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
+            return getForward();
+        }
+        PipeForward forward = null;
+        if (XmlValidatorBase.XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT.equals(resultEvent)) {
+            forward = findForward("illegalRoot");
+        } else if (XmlValidatorBase.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT.equals(resultEvent)) {
+            forward = findForward("parserError");
+        }
+        if (forward == null) {
+            forward = findForward("failure");
+        }
+        if (forward == null) {
+            throw new PipeRunException(this, "not implemented: should get reason from validator");
+        }
+        return forward;
     }
 
+    @Deprecated
      private String getMessageToValidate(Object input, IPipeLineSession session) throws PipeRunException {
     	 String inputStr = input.toString();
     	 if (XmlUtils.isWellFormed(inputStr, "Envelope")) {
      		String inputRootNs;
      		try {
-     			inputRootNs = transformerPoolGetRootNamespace.transform(inputStr,null);
+     			inputRootNs = transformerPoolGetRootNamespace.transform(inputStr, null);
  			} catch (Exception e) {
  				throw new PipeRunException(this,"cannot extract root namespace",e);
  			}
@@ -450,6 +459,10 @@ public class XmlValidator extends FixedForwardPipe {
 		return  validator.getCharset();
 	}
 
+    public void setImplementation(Class<AbstractXmlValidator> clazz) throws IllegalAccessException, InstantiationException {
+        validator = clazz.newInstance();
+    }
+
     public boolean isAddNamespaceToSchema() {
         return validator.isAddNamespaceToSchema();
     }
@@ -458,15 +471,23 @@ public class XmlValidator extends FixedForwardPipe {
         validator.setAddNamespaceToSchema(addNamespaceToSchema);
     }
 
+    @Deprecated
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
-	}
+        ConfigurationWarnings.getInstance().add(log, "Using XmlValidator for Soap validation is deprecated. Please use " + SoapValidator.class.getName());
+
+    }
+    @Deprecated
 	public String getSoapNamespace() {
 		return soapNamespace;
 	}
 
 	public void setWarn(boolean warn) {
-		validator.setWarn(warn);
-	}
+        if (validator instanceof XmlValidatorBase) {
+            ((XmlValidatorBase) validator).setWarn(warn);
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
 
 }

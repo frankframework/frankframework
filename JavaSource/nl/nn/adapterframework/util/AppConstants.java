@@ -1,6 +1,9 @@
 /*
  * $Log: AppConstants.java,v $
- * Revision 1.21  2011-11-30 13:51:49  europe\m168309
+ * Revision 1.22  2012-08-23 11:57:43  m00f069
+ * Updates from Michiel
+ *
+ * Revision 1.21  2011/11/30 13:51:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -119,30 +122,30 @@ import org.apache.log4j.Logger;
 		<td>Jndi setting: password</td>
 		<td>String</td>
 		<td>not specified</td>
-	</tr>	
+	</tr>
 	<tr>
 		<td>environment.entries.factory.url.pkgs</td>
 		<td>Jndi setting: package prefixes to use when loading in URL context factories</td>
 		<td>String</td>
 		<td>not specified</td>
-	</tr>	
+	</tr>
 	</table>
 <p></p>
  * @version Id
 
  * @author Johan Verrips
- * 
+ *
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.21 $ $Date: 2011-11-30 13:51:49 $";
+	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.22 $ $Date: 2012-08-23 11:57:43 $";
 	private Logger log = LogUtil.getLogger(this);
-	
+
 	public final static String propertiesFileName="AppConstants.properties";
 	private static AppConstants self=null;
 	private String additionalPropertiesFileKey="ADDITIONAL.PROPERTIES.FILE";
-	
+
     private VariableExpander variableExpander;
-    
+
 	private AppConstants() {
 		super();
 		load();
@@ -162,12 +165,12 @@ public final class AppConstants extends Properties implements Serializable{
 	/**
 	   Very similar to <code>System.getProperty</code> except
 	   that the {@link SecurityException} is hidden.
-    
+
 	   @param key The key to search for.
 	   @param def The default value to return.
 	   @return the string value of the system property, or the default
 	   value if there is no property with that key.
-    
+
 	   @since 1.1 */
 	private String getSystemProperty(String key) {
 		try {
@@ -187,7 +190,7 @@ public final class AppConstants extends Properties implements Serializable{
         String value = null;
         value=getSystemProperty(key); // first try custom properties
         if (value==null) {
-			value = getProperty(key); // then try DeploymentSpecifics and appConstants 
+			value = getProperty(key); // then try DeploymentSpecifics and appConstants
         }
 		if (value != null) {
 			try {
@@ -196,7 +199,7 @@ public final class AppConstants extends Properties implements Serializable{
 					if (!value.equals(result)){
 						log.debug("resolved key ["+key+"], value ["+value+"] to ["+result+"]");
 					}
-	        
+
 				}
 				return result;
 			} catch (IllegalArgumentException e) {
@@ -242,9 +245,9 @@ public final class AppConstants extends Properties implements Serializable{
 	            String principal = getString("environment.entries.security.principal", null);
 	            String credentials =   getString("environment.entries.security.credentials", null);
 	            String urlPkgPrefixes =   getString("environment.entries.factory.url.pkgs", null);
-	
+
 	            InitialContext context;
-	
+
 	            Hashtable env = new Hashtable();
 	            if (StringUtils.isNotEmpty(factory))
 	                env.put(Context.INITIAL_CONTEXT_FACTORY, factory);
@@ -256,12 +259,12 @@ public final class AppConstants extends Properties implements Serializable{
 	                env.put(Context.SECURITY_PRINCIPAL, principal);
 	            if (StringUtils.isNotEmpty(credentials))
 	                env.put(Context.SECURITY_CREDENTIALS, credentials);
-	                
+
 	            if (env.size() > 0)
 	                context = new InitialContext(env);
 	            else
 	                context = new InitialContext();
-	 
+
 	             NamingEnumeration nEnumeration =
 	                context.listBindings(
 	                    getString("environment.entries.bindingname", "java:comp/env"));
@@ -277,19 +280,19 @@ public final class AppConstants extends Properties implements Serializable{
 	    }
 	}
 	/**
-	 * Load the contents of a propertiesfile. 
-	 * <p>Optionally, this may be a comma-seperated list of files to load, e.g. 
+	 * Load the contents of a propertiesfile.
+	 * <p>Optionally, this may be a comma-seperated list of files to load, e.g.
 	 * <code><pre>log4j.properties,deploymentspecifics.properties</pre></code>
 	 * which will cause both files to be loaded. Trimming of the filename will take place,
 	 * so you may also specify <code><pre>log4j.properties, deploymentspecifics.properties</pre></code>
 	 * </p>
 	 */
 	public synchronized void load(String filename) {
-	
+
 	    StringTokenizer tokenizer = new StringTokenizer(filename, ",");
-	     
+
 	    while (tokenizer.hasMoreTokens()) {
-	        String theFilename=((String) (tokenizer.nextToken())).trim();
+	        String theFilename= tokenizer.nextToken().trim();
 	        try {
 				if (StringResolver.needsResolution(theFilename)) {
 					Properties props = Misc.getEnvironmentVariables();
@@ -297,7 +300,7 @@ public final class AppConstants extends Properties implements Serializable{
 					theFilename = StringResolver.substVars(theFilename, props);
 				}
 	            URL url = ClassUtils.getResourceURL(this, theFilename);
-	
+
 				if (url==null) {
 					log.debug("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
 				} else {
@@ -329,10 +332,10 @@ public final class AppConstants extends Properties implements Serializable{
 		XmlBuilder xmlh=new XmlBuilder("applicationConstants");
 		XmlBuilder xml=new XmlBuilder("properties");
 		xmlh.addSubElement(xml);
-		
+
 		while (enumeration.hasMoreElements()){
 			String propName=(String)enumeration.nextElement();
-			
+
 			XmlBuilder p=new XmlBuilder("property");
 			p.addAttribute("name", propName);
 			if (resolve) {
@@ -344,7 +347,7 @@ public final class AppConstants extends Properties implements Serializable{
 		}
 		return xmlh.toXML();
 	}
- 
+
 	/**
 	 * Gets a <code>String</code> value
 	 * Uses the {@link #getResolvedProperty(String)} method.
@@ -370,7 +373,7 @@ public final class AppConstants extends Properties implements Serializable{
 	 public boolean getBoolean(String key, boolean dfault) {
 		 String ob = this.getResolvedProperty(key);
 		 if (ob == null)return dfault;
-         
+
 		 return ob.equalsIgnoreCase("true");
 	 }
 
@@ -401,7 +404,7 @@ public final class AppConstants extends Properties implements Serializable{
 		 if (ob == null)return dfault;
 		 return Long.parseLong(ob);
 	 }
-     
+
 	/**
 	 * Gets a <code>double</code> value
 	 * Uses the {@link #getResolvedProperty(String)} method.
@@ -415,9 +418,9 @@ public final class AppConstants extends Properties implements Serializable{
 		 return Double.parseDouble(ob);
 	 }
 
-  
+
 	/*
-	 *	The variableExpander is set from the SpringContext. 
+	 *	The variableExpander is set from the SpringContext.
 	 */
     public void setVariableExpander(VariableExpander expander) {
         variableExpander = expander;

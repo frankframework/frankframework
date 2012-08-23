@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapperPipe.java,v $
- * Revision 1.9  2012-06-01 10:52:48  m00f069
+ * Revision 1.10  2012-08-23 11:57:43  m00f069
+ * Updates from Michiel
+ *
+ * Revision 1.9  2012/06/01 10:52:48  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.8  2012/05/10 11:52:45  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -37,6 +40,8 @@ import java.util.Map;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -48,21 +53,19 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.lang.StringUtils;
-
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
- * 
+ *
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
  * <tr><td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td><td>
- * <table> 
+ * <table>
  * <tr><td><code>direction=unwrap</code></td><td>name of the session key to store the content of the SOAP Header from the request in</td></tr>
  * <tr><td><code>direction=wrap</code></td><td>name of the session key to retrieve the content of the SOAP Header for the response from. If the attribute soapHeaderStyleSheet is not empty, the attribute soapHeaderStyleSheet precedes this attribute</td></tr>
- * </table> 
+ * </table>
  * </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setEncodingStyle(String) encodingStyle}</td><td>the encodingStyle to be set in the SOAP Header</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceNamespace(String) serviceNamespace}</td><td>the namespace of the message sent. Identifies the service to be called. May be overriden by an actual namespace setting in the message to be sent</td><td>&nbsp;</td></tr>
@@ -71,7 +74,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setRemoveOutputNamespaces(boolean) removeOutputNamespaces}</td><td>(only used when <code>direction=unwrap</code>) when <code>true</code>, namespaces (and prefixes) in the content of the SOAP Body are removed</td><td>false</td></tr>
  * <tr><td>{@link #setOutputNamespace(String) outputNamespace}</td><td>(only used when <code>direction=wrap</code>) when not empty, this namespace is added to the root element in the SOAP Body</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>(only used when <code>direction=wrap</code>) namespace of the SOAP Envelope</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
- * <table> 
+ * <table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr>
@@ -105,6 +108,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	private TransformerPool removeOutputNamespacesTp = null;
 	private TransformerPool outputNamespaceTp = null;
 
+    @Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		soapWrapper = SoapWrapper.getInstance();
@@ -129,6 +133,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		}
 	}
 
+    @Override
 	public void start() throws PipeStartException {
 		super.start();
 		if (soapHeaderTp != null) {
@@ -160,7 +165,8 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 			}
 		}
 	}
-	
+
+    @Override
 	public void stop() {
 		super.stop();
 		if (soapHeaderTp != null) {
@@ -177,6 +183,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		}
 	}
 
+    @Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String result;
 		try {
@@ -195,16 +202,16 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 				}
 				String soapHeader = null;
 				if (soapHeaderTp != null) {
-					soapHeader = soapHeaderTp.transform(prc.getInputSource(), parameterValues); 
+					soapHeader = soapHeaderTp.transform(prc.getInputSource(), parameterValues);
 				} else {
 					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 						soapHeader = (String) session.get(getSoapHeaderSessionKey());
 					}
 				}
 				if (soapBodyTp != null) {
-					payload = soapBodyTp.transform(prc.getInputSource(), parameterValues); 
+					payload = soapBodyTp.transform(prc.getInputSource(), parameterValues);
 				}
-				
+
 				result = wrapMessage(payload, soapHeader);
 			} else {
 				result = unwrapMessage(input.toString());

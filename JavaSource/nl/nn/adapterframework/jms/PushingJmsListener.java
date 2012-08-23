@@ -1,6 +1,9 @@
 /*
  * $Log: PushingJmsListener.java,v $
- * Revision 1.23  2012-06-01 10:52:48  m00f069
+ * Revision 1.24  2012-08-23 11:57:43  m00f069
+ * Updates from Michiel
+ *
+ * Revision 1.23  2012/06/01 10:52:48  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.22  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -165,41 +168,41 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  *</p><p><b>Using transactions</b><br/>
  * This version of the <code>JmsListener</code> supports distributed transactions using the XA-protocol.
- * No special action is required to have the listener join the transaction. 
- * 
+ * No special action is required to have the listener join the transaction.
+ *
  *</p><p><b>Using jmsTransacted and acknowledgement</b><br/>
  * If jmsTransacted is set <code>true</code>, it should ensure that a message is received and processed on
- * a both or nothing basis. IBIS will commit the the message, otherwise perform rollback. However, using 
- * jmsTransacted, IBIS does not bring transactions within the adapters under transaction control, 
- * compromising the idea of atomic transactions. In the roll-back situation messages sent to other 
- * destinations within the Pipeline are NOT rolled back if jmsTransacted is set <code>true</code>! In 
- * the failure situation the message is therefore completely processed, and the roll back does not mean 
- * that the processing is rolled back! To obtain the correct (transactional) behaviour, set 
+ * a both or nothing basis. IBIS will commit the the message, otherwise perform rollback. However, using
+ * jmsTransacted, IBIS does not bring transactions within the adapters under transaction control,
+ * compromising the idea of atomic transactions. In the roll-back situation messages sent to other
+ * destinations within the Pipeline are NOT rolled back if jmsTransacted is set <code>true</code>! In
+ * the failure situation the message is therefore completely processed, and the roll back does not mean
+ * that the processing is rolled back! To obtain the correct (transactional) behaviour, set
  * <code>transacted</code>="true" for the enclosing Receiver. Do not use jmsTransacted for any new situation.
- * 
+ *
  *<p>
  * Setting {@link #setAcknowledgeMode(String) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
  * the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
  * when the state of the Adapter equals the defined state for committing (specified by {@link #setCommitOnState(String) listener.commitOnState}).
  * The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
- * delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages. 
- * In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode, 
+ * delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages.
+ * In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode,
  * since a session has lower overhead in trying to prevent duplicate messages.
  * </p>
- * <p>The setting for {@link #setAcknowledgeMode(String) listener.acknowledgeMode} will only be processed if 
- * the setting for {@link #setTransacted(boolean) listener.transacted} as well as for 
+ * <p>The setting for {@link #setAcknowledgeMode(String) listener.acknowledgeMode} will only be processed if
+ * the setting for {@link #setTransacted(boolean) listener.transacted} as well as for
  * {@link #setJmsTransacted(boolean) listener.jmsTransacted} is false.</p>
- * 
+ *
  * <p>If {@link #setUseReplyTo(boolean) useReplyTo} is set and a replyTo-destination is
  * specified in the message, the JmsListener sends the result of the processing
  * in the pipeline to this destination. Otherwise the result is sent using the (optionally)
  * specified {@link #setSender(ISender) Sender}, that in turn sends the message to
  * whatever it is configured to.</p>
- * 
+ *
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
  * <code>javax.jms.TextMessage</code>s <br/><br/>
  * </p>
- * 
+ *
  * @author  Tim van der Leeuw
  * @since   4.8
  * @version Id
@@ -207,31 +210,31 @@ import org.apache.commons.lang.StringUtils;
 public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount {
 
 	private String listenerPort;
-	private String cacheMode; 
-    
+	private String cacheMode;
+
     private IListenerConnector jmsConnector;
     private IMessageHandler handler;
     private IReceiver receiver;
     private IbisExceptionListener exceptionListener;
-    
-    
 
+
+    @Override
     public void configure() throws ConfigurationException {
         super.configure();
         if (jmsConnector==null) {
         	throw new ConfigurationException(getLogPrefix()+" has no jmsConnector. It should be configured via springContext.xml");
         }
 		if (StringUtils.isNotEmpty(getCacheMode())) {
-			if (!getCacheMode().equals("CACHE_NONE") && 
-				!getCacheMode().equals("CACHE_CONNECTION") && 
-				!getCacheMode().equals("CACHE_SESSION") && 
+			if (!getCacheMode().equals("CACHE_NONE") &&
+				!getCacheMode().equals("CACHE_CONNECTION") &&
+				!getCacheMode().equals("CACHE_SESSION") &&
 				!getCacheMode().equals("CACHE_CONSUMER")) {
 					throw new ConfigurationException(getLogPrefix()+"cacheMode ["+getCacheMode()+"] must be one of CACHE_NONE, CACHE_CONNECTION, CACHE_SESSION or CACHE_CONSUMER");
 				}
 		}
-		Destination destination=null;
+		Destination destination;
         try {
-			destination=getDestination();
+			destination = getDestination();
 		} catch (Exception e) {
 			throw new ConfigurationException(getLogPrefix()+"could not get Destination",e);
 		}
@@ -242,11 +245,13 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
     }
 
+    @Override
     public void open() throws ListenerException {
         super.open();
         jmsConnector.start();
     }
 
+    @Override
     public void close() throws ListenerException {
         try {
             jmsConnector.stop();
@@ -255,7 +260,6 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
             throw new ListenerException(ex);
         }
     }
- 
 
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {
 		String cid     = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
@@ -281,21 +285,21 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 						}
 					}
 				}
-				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority()); 
+				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority());
 			} else {
 				if (getSender()==null) {
 					log.info("["+getName()+"] has no sender, not sending the result.");
 				} else {
 					if (log.isDebugEnabled()) {
 						log.debug(
-							"["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination" 
+							"["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination"
 							+ "sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
 					getSender().sendMessage(cid, plr.getResult());
 				}
 			}
-        
-        	if (plr!=null && isJmsTransacted() && StringUtils.isNotEmpty(getCommitOnState()) && 
+
+        	if (plr!=null && isJmsTransacted() && StringUtils.isNotEmpty(getCommitOnState()) &&
 	        		!getCommitOnState().equals(plr.getState())) {
 	        	if (session==null) {
 					log.error(getLogPrefix()+"session is null, cannot roll back session");
@@ -312,10 +316,10 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			}
 		}
 	}
-  
-    
-    
-	public void setJmsConnector(IListenerConnector configurator) {
+
+
+
+    public void setJmsConnector(IListenerConnector configurator) {
 		jmsConnector = configurator;
 	}
     public IListenerConnector getJmsConnector() {
@@ -344,12 +348,12 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
     /**
      * Name of the WebSphere listener port that this JMS Listener binds to. Optional.
-     * 
-     * This property is only used in EJB Deployment mode and has no effect otherwise. 
+     *
+     * This property is only used in EJB Deployment mode and has no effect otherwise.
      * If it is not set in EJB Deployment Mode, then the listener port name is
      * constructed by the {@link nl.nn.adapterframework.ejb.EjbListenerPortConnector} from
      * the Listener name, Adapter name and the Receiver name.
-     * 
+     *
      * @param listenerPort Name of the listener port, as configured in the application
      * server.
      */
@@ -358,12 +362,12 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
     }
 	/**
 	 * Name of the WebSphere listener port that this JMS Listener binds to. Optional.
-	 * 
-	 * This property is only used in EJB Deployment mode and has no effect otherwise. 
+	 *
+	 * This property is only used in EJB Deployment mode and has no effect otherwise.
 	 * If it is not set in EJB Deployment Mode, then the listener port name is
 	 * constructed by the {@link nl.nn.adapterframework.ejb.EjbListenerPortConnector} from
 	 * the Listener name, Adapter name and the Receiver name.
-	 * 
+	 *
 	 * @return The name of the WebSphere Listener Port, as configured in the
 	 * application server.
 	 */
@@ -371,7 +375,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		return listenerPort;
 	}
 
-    
+
     public void setReceiver(IReceiver receiver) {
         this.receiver = receiver;
     }
@@ -390,7 +394,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	public boolean isThreadCountReadable() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
-			
+
 			return tcc.isThreadCountReadable();
 		}
 		return false;
@@ -399,7 +403,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	public boolean isThreadCountControllable() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
-			
+
 			return tcc.isThreadCountControllable();
 		}
 		return false;
@@ -408,7 +412,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	public int getCurrentThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
-			
+
 			return tcc.getCurrentThreadCount();
 		}
 		return -1;
@@ -417,7 +421,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	public int getMaxThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
-			
+
 			return tcc.getMaxThreadCount();
 		}
 		return -1;
@@ -426,7 +430,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	public void increaseThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
-			
+
 			tcc.increaseThreadCount();
 		}
 	}
@@ -434,7 +438,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	public void decreaseThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
-			
+
 			tcc.decreaseThreadCount();
 		}
 	}
