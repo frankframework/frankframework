@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.26  2012-06-01 10:52:50  m00f069
+ * Revision 1.27  2012-08-29 12:53:50  europe\m168309
+ * added startPosition, endPosition, linePrefix and lineSuffix attributes
+ *
+ * Revision 1.26  2012/06/01 10:52:50  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.25  2012/04/26 11:52:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -162,6 +165,10 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setBlockSize(int) blockSize}</td><td>controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.</td><td>0 (one line at a time, no prefix of suffix)</td></tr>
  * <tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr>
  * <tr><td>{@link #setBlockSuffix(String) blockSuffix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.</td><td>&lt;/block&gt;</td></tr>
+ * <tr><td>{@link #setStartPosition(int) startPosition}</td><td>When <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); all sequenced lines with the same key are put in one block and send to the sender</td><td>-1</td></tr>
+ * <tr><td>{@link #setEndPosition(int) endPosition}</td><td>When <code>endPosition &gt;= startPosition</code>, this field contains the end position of the key in the current record</td><td>-1</td></tr>
+ * <tr><td>{@link #setLinePrefix(String) linePrefix}</td><td>this string is inserted at the start of each line</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLineSuffix(String) lineSuffix}</td><td>this string is inserted at the end of each line</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setItemNoSessionKey(String) itemNoSessionKey}</td><td>key of session variable to store number of item processed.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAddInputToResult(boolean) addInputToResult}</td><td>when <code>true</code> the input is added to the result in an input element</td><td>false</td></tr>
  * <tr><td>{@link #setRemoveDuplicates(boolean) removeDuplicates}</td><td>when <code>true</code> duplicate input elements are removed</td><td>false</td></tr>
@@ -209,7 +216,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.26 $ $Date: 2012-06-01 10:52:50 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.27 $ $Date: 2012-08-29 12:53:50 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -230,6 +237,11 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	private String blockPrefix="<block>";
 	private String blockSuffix="</block>";
 	private int blockSize=0;
+	private String linePrefix="";
+	private String lineSuffix="";
+
+	private int startPosition=-1;
+	private int endPosition=-1;
 
 	protected TransformerPool msgTransformerPool;
 	private TransformerPool stopConditionTp=null;
@@ -401,7 +413,8 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 			if (it==null) {
 				iterateInput(input,session,correlationID, threadContext, callback);
 			} else {
-				while (keepGoing && it.hasNext()) {
+				String nextItemStored = null;
+				while (keepGoing && (it.hasNext() || nextItemStored!=null)) {
 					if (Thread.currentThread().isInterrupted()) {
 						throw new TimeOutException("Thread has been interrupted");
 					}
@@ -410,14 +423,54 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 						items.append(getBlockPrefix());
 						for (int i=0; i<getBlockSize() && it.hasNext(); i++) {
 							String item = (String)it.next();
+							items.append(getLinePrefix());
 							items.append(item);
+							items.append(getLineSuffix());
 						}
 						items.append(getBlockSuffix());
  						keepGoing = callback.handleItem(items.toString()); 
 						
 					} else {
-						String item = getItem(it);
-						keepGoing = callback.handleItem(item); 
+						if (getStartPosition()>=0 && getEndPosition()>getStartPosition()) {
+							items.append(getBlockPrefix());
+							String keyPreviousItem = null;
+							boolean sameKey = true;
+							while (sameKey && (it.hasNext() || nextItemStored!=null)) {
+								String item;
+								if (nextItemStored==null) {
+									item = (String)it.next();
+								} else {
+									item = nextItemStored;
+									nextItemStored = null;
+								}
+								String key;
+								if (getEndPosition() >= item.length()) {
+									key = item.substring(getStartPosition());
+								}
+								else {
+									key = item.substring(getStartPosition(), getEndPosition());
+								}
+								if (keyPreviousItem==null || key.equals(keyPreviousItem)) {
+									items.append(getLinePrefix());
+									items.append(item);
+									items.append(getLineSuffix());
+									if (keyPreviousItem==null) {
+										keyPreviousItem = key;
+									}
+								} else {
+									sameKey = false;
+									nextItemStored = item;
+								}
+							}
+							items.append(getBlockSuffix());
+	 						keepGoing = callback.handleItem(items.toString()); 
+						} else {
+							String item = getItem(it);
+							items.append(getLinePrefix());
+							items.append(item);
+							items.append(getLineSuffix());
+							keepGoing = callback.handleItem(item); 
+						}
 					}
 				}
 			}
@@ -532,11 +585,25 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return blockPrefix;
 	}
 
+	public void setLinePrefix(String string) {
+		linePrefix = string;
+	}
+	public String getLinePrefix() {
+		return linePrefix;
+	}
+
 	public void setBlockSuffix(String string) {
 		blockSuffix = string;
 	}
 	public String getBlockSuffix() {
 		return blockSuffix;
+	}
+
+	public void setLineSuffix(String string) {
+		lineSuffix = string;
+	}
+	public String getLineSuffix() {
+		return lineSuffix;
 	}
 
 	public void setBlockSize(int i) {
@@ -572,5 +639,18 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	}
 	protected boolean isCloseIteratorOnExit() {
 		return closeIteratorOnExit;
+	}
+	public void setStartPosition(int i) {
+		startPosition = i;
+	}
+	public int getStartPosition() {
+		return startPosition;
+	}
+
+	public void setEndPosition(int i) {
+		endPosition = i;
+	}
+	public int getEndPosition() {
+		return endPosition;
 	}
 }
