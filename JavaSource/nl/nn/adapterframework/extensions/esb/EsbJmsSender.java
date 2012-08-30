@@ -1,6 +1,9 @@
 /*
  * $Log: EsbJmsSender.java,v $
- * Revision 1.4  2012-04-13 13:45:15  europe\m168309
+ * Revision 1.5  2012-08-30 14:02:39  europe\m168309
+ * *** empty log message ***
+ *
+ * Revision 1.4  2012/04/13 13:45:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted javadoc
  *
  * Revision 1.3  2012/01/06 13:29:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -67,7 +70,7 @@ public class EsbJmsSender extends JmsSender {
 				throw new ConfigurationException(getLogPrefix() + "replyToName [" + getReplyTo() + "] must not be set for messageProtocol [" + getMessageProtocol() + "]");
 			}
 		}
-		if (StringUtils.isNotEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
+		if (StringUtils.isEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
 			Parameter p = new Parameter();
 			p.setName("SoapAction");
 			p.setStyleSheetName("/xml/xsl/esb/soapAction.xsl");
