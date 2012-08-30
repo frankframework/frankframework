@@ -1,6 +1,9 @@
 /*
  * $Log: EsbJmsSender.java,v $
- * Revision 1.5  2012-08-30 14:02:39  europe\m168309
+ * Revision 1.6  2012-08-30 14:08:24  europe\m168309
+ * bugfix for soapAction attribute
+ *
+ * Revision 1.5  2012/08/30 14:02:39  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.4  2012/04/13 13:45:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -75,9 +78,6 @@ public class EsbJmsSender extends JmsSender {
 			p.setName("SoapAction");
 			p.setStyleSheetName("/xml/xsl/esb/soapAction.xsl");
 			p.setRemoveNamespaces(true);
-			if (StringUtils.isNotEmpty(getSoapAction())) {
-				p.setDefaultValue(getSoapAction());
-			}
 			addParameter(p);
 		}
 		super.configure();
