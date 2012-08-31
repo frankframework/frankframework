@@ -34,7 +34,7 @@
 					<xsl:variable name="operationName" select="substring-before($toLoc7,$dot)"/>
 					<xsl:variable name="toLoc8" select="substring-after($toLoc7,$dot)"/>
 					<xsl:variable name="operationVersion" select="substring-before($toLoc8,$dot)"/>
-					<xsl:value-of select="concat($serviceName,$us,$serviceContext,$us,$serviceContextVersion,$us,$operationName,$us,$operationVersion)"/>
+					<xsl:value-of select="concat($operationName,$us,$operationVersion)"/>
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:if>

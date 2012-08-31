@@ -1,6 +1,9 @@
 /*
  * $Log: EsbJmsSender.java,v $
- * Revision 1.6  2012-08-30 14:08:24  europe\m168309
+ * Revision 1.7  2012-08-31 13:54:04  europe\m168309
+ * changed derivation for soapAction attribute
+ *
+ * Revision 1.6  2012/08/30 14:08:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * bugfix for soapAction attribute
  *
  * Revision 1.5  2012/08/30 14:02:39  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -44,7 +47,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setMessageTimeToLive(String) messageTimeToLive}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
  * <tr><td>{@link #setReplyTimeout(String) replyTimeout}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
  * <tr><td>{@link #setSynchronous(String) synchronous}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
- * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>if empty then derived from the element MessageHeader/To/Location in the SOAP header of the input message (if $messagingLayer='P2P' then '$applicationName_$applicationFunction_$paradigm' else '$serviceName_$serviceContext_$serviceContextVersion_$operationName_$operationVersion_$paradigm')</td></tr>
+ * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>if empty then derived from the element MessageHeader/To/Location in the SOAP header of the input message (if $messagingLayer='P2P' then '$applicationName_$applicationFunction' else '$operationName_$operationVersion)</td></tr>
  * </table></p>
  * 
  * @author  Peter Leeuwenburgh
