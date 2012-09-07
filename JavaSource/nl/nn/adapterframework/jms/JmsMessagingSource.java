@@ -1,6 +1,16 @@
 /*
  * $Log: JmsMessagingSource.java,v $
- * Revision 1.4  2011-11-30 13:51:51  europe\m168309
+ * Revision 1.5  2012-09-07 13:15:17  m00f069
+ * Messaging related changes:
+ * - Use CACHE_CONSUMER by default for ESB RR
+ * - Don't use JMSXDeliveryCount to determine whether message has already been processed
+ * - Added maxDeliveries
+ * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+ * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+ * - Some cleaning along the way like making some synchronized statements unnecessary
+ * - Made BTM and ActiveMQ work for testing purposes
+ *
+ * Revision 1.4  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -31,10 +41,13 @@ import java.util.Map;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.Session;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.util.ClassUtils;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * {@link MessagingSource} for JMS connections.
@@ -44,19 +57,48 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @version Id
  */
 public class JmsMessagingSource extends MessagingSource {
+	String jndiContextPrefix;
 	
-	public JmsMessagingSource(String connectionFactoryName, Context context, ConnectionFactory connectionFactory, Map messagingSourceMap, String authAlias) {
-		super(connectionFactoryName, context, connectionFactory, messagingSourceMap, authAlias);
+	public JmsMessagingSource(String connectionFactoryName,
+			String jndiContextPrefix, Context context,
+			ConnectionFactory connectionFactory, Map messagingSourceMap,
+			String authAlias, boolean createDestination, boolean useJms102) {
+		super(connectionFactoryName, context,
+				connectionFactory, messagingSourceMap, authAlias,
+				createDestination, useJms102);
+		this.jndiContextPrefix = jndiContextPrefix;
 	}
 	
 	public Destination lookupDestination(String destinationName) throws JmsException, NamingException {
 		Destination dest=null;
-		dest=(Destination) getContext().lookup(destinationName);
+		if (createDestination()) {
+			Session session = null;
+			log.debug(getLogPrefix() + "looking up destination by creating it [" + destinationName + "]");
+			try {
+				session = createSession(false,Session.AUTO_ACKNOWLEDGE);
+				dest = session.createQueue(destinationName);
+			} catch (Exception e) {
+				throw new JmsException("cannot create destination", e);
+			} finally {
+				releaseSession(session);
+			}
+		} else {
+			String prefixedDestinationName = getJndiContextPrefix() + destinationName;
+			log.debug(getLogPrefix() + "looking up destination [" + prefixedDestinationName + "]");
+			if (StringUtils.isNotEmpty(getJndiContextPrefix())) {
+				log.debug(getLogPrefix() + "using JNDI context prefix [" + getJndiContextPrefix() + "]");
+			}
+			dest = (Destination)getContext().lookup(prefixedDestinationName);
+		}
 		return dest;
 	}
 
 	protected ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 		return (ConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(),"wrapped");
 	}
-	
+
+	private String getJndiContextPrefix() {
+		return jndiContextPrefix;
+	}
+
 }

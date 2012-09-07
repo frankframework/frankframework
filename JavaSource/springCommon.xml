@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springCommon.xml,v $
-  Revision 1.24  2012-08-17 14:34:15  m00f069
+  Revision 1.25  2012-09-07 13:15:16  m00f069
+  Messaging related changes:
+  - Use CACHE_CONSUMER by default for ESB RR
+  - Don't use JMSXDeliveryCount to determine whether message has already been processed
+  - Added maxDeliveries
+  - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+  - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+  - Some cleaning along the way like making some synchronized statements unnecessary
+  - Made BTM and ActiveMQ work for testing purposes
+
+  Revision 1.24  2012/08/17 14:34:15  Jaco de Groot <jaco.de.groot@ibissource.org>
   Extended FxfWrapperPipe for sending files
   Implemented FxfXmlValidator
 
@@ -103,17 +113,32 @@
 		"
 	>
 
-	<bean class="nl.nn.adapterframework.configuration.AppConstantsPropertyPlaceholderConfigurer" autowire="byName">
-		<property name="ignoreUnresolvablePlaceholders" value="true"/>
+	<bean
+		name="appConstantsPropertyPlaceholderConfigurer"
+		class="nl.nn.adapterframework.configuration.AppConstantsPropertyPlaceholderConfigurer"
+		autowire="byName"
+	/>
+
+	<bean
+		name="lowerCasePropertyPlaceholderConfigurer"
+		class="nl.nn.adapterframework.configuration.LowerCasePropertyPlaceholderConfigurer"
+		autowire="byName"
+	/>
+
+	<bean
+		name="jndiContextPrefixPropertyPlaceholderConfigurer"
+		class="nl.nn.adapterframework.configuration.OverwritePropertyPlaceholderConfigurer"
+		autowire="byName"
+		>
+		<property name="propertyName" value="jndiContextPrefix"/>
+		<property name="propertyValue" value=""/>
 	</bean>
 
-	<bean class="nl.nn.adapterframework.configuration.LowerCasePropertyPlaceholderConfigurer" autowire="byName">
-		<property name="ignoreUnresolvablePlaceholders" value="true"/>
-	</bean>
-
-	<bean class="nl.nn.adapterframework.extensions.fxf.FxfPropertyPlaceholderConfigurer" autowire="byName">
-		<property name="ignoreUnresolvablePlaceholders" value="true"/>
-	</bean>
+	<bean
+		name="fxfPropertyPlaceholderConfigurer"
+		class="nl.nn.adapterframework.extensions.fxf.FxfPropertyPlaceholderConfigurer"
+		autowire="byName"
+	/>
 
     <!-- IBIS Beans -->
     <bean name="configuration" class="nl.nn.adapterframework.configuration.Configuration"
@@ -161,7 +186,7 @@
 
     <bean name="proto-jmsRealm" class="nl.nn.adapterframework.jms.JmsRealm"
         autowire="byName" scope="prototype">
-    	<property name="jndiContextPrefix"><ref bean="appServerJndiContextPrefix" /></property>
+    	<property name="jndiContextPrefix" value="${jndiContextPrefix}"/>
     </bean>
     
     <bean name="listenerContainer" class="nl.nn.adapterframework.receivers.PullingListenerContainer"
@@ -351,6 +376,14 @@
 
     <bean name="proto-cache" class="nl.nn.adapterframework.cache.EhCache"
         autowire="byName" scope="prototype">
+    </bean>
+
+    <bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor"
+        scope="singleton">
+    </bean>
+
+    <bean name="messageListenerClassName" class="java.lang.String">
+        <constructor-arg value="org.springframework.jms.listener.DefaultMessageListenerContainer"/>
     </bean>
 
 	<bean id="dbmsSupportFactoryDefault" class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory" 

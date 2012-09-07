@@ -1,6 +1,16 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.103  2012-06-01 10:52:57  m00f069
+ * Revision 1.104  2012-09-07 13:15:17  m00f069
+ * Messaging related changes:
+ * - Use CACHE_CONSUMER by default for ESB RR
+ * - Don't use JMSXDeliveryCount to determine whether message has already been processed
+ * - Added maxDeliveries
+ * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+ * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+ * - Some cleaning along the way like making some synchronized statements unnecessary
+ * - Made BTM and ActiveMQ work for testing purposes
+ *
+ * Revision 1.103  2012/06/01 10:52:57  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.102  2011/12/05 15:29:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -548,6 +558,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * 											      <tr><td>T1</td>  <td>error</td></tr>
  *  </table></td><td>Supports</td></tr>
  * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to receive and process a message.</td><td><code>0</code> (use system default)</code></td></tr>
+ * <tr><td>{@link #setMaxDeliveries(int) maxDeliveries}</td><td>The maximum delivery count after which to stop processing the message. When -1 the delivery count is ignored</td><td>5</td></tr>
  * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a processing attempt is retried after an exception is caught or rollback is experienced (only applicable for transacted receivers). If maxRetries &lt; 0 the number of attempts is infinite</td><td>1</td></tr>
  * <tr><td>{@link #setCheckForDuplicates(boolean) checkForDuplicates}</td><td>if set to <code>true</code>, each message is checked for presence in the message log. If already present, it is not processed again. (only required for non XA compatible messaging). Requires messagelog!</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setPollInterval(int) pollInterval}</td><td>The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. (only for polling listeners, not for e.g. IFSA, JMS, WebService or JavaListeners)</td><td>10</td></tr>
@@ -699,8 +710,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private ISender sender=null; // answer-sender
 	private ITransactionalStorage messageLog=null;
 	
+	private int maxDeliveries=5;
 	private int maxRetries=1;
-    
+
 	//private boolean transacted=false;
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 
@@ -1155,6 +1167,31 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		log.debug(getLogPrefix()+"finishes processing message");
 	}
 
+	private void moveInProcessToErrorAndDoPostProcessing(String messageId, String correlationId, Object rawMessage, String message, Map threadContext, ProcessResultCacheItem prci, String comments) throws ListenerException {
+		Date rcvDate;
+		if (prci!=null) {
+			comments+="; "+prci.comments;
+			rcvDate=prci.receiveDate;
+		} else {
+			rcvDate=new Date();
+		}
+		if (isTransacted() || (getErrorStorage() != null && (!isCheckForDuplicates() || !getErrorStorage().containsMessageId(messageId)))) {
+			moveInProcessToError(messageId, correlationId, message, rcvDate, comments, rawMessage, TXREQUIRED);
+		}
+		PipeLineResult plr = new PipeLineResult();
+		String result="<error>"+XmlUtils.encodeChars(comments)+"</error>";
+		plr.setResult(result);
+		plr.setState("ERROR");
+		if (getSender()!=null) {
+			// TODO correlationId should be technical correlationID!
+			String sendMsg = sendResultToSender(correlationId, result);
+			if (sendMsg != null) {
+				log.warn("problem sending result:"+sendMsg);
+			}
+		}
+		getListener().afterMessageProcessed(plr, rawMessage, threadContext);
+	}
+
 	private void moveInProcessToError(String originalMessageId, String correlationId, String message, Date receivedDate, String comments, Object rawMessage, TransactionDefinition txDef) {
 	
 		throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
@@ -1374,9 +1411,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				log.warn(getLogPrefix()+"could not extract label: ("+ClassUtils.nameOf(e)+") "+e.getMessage());
 			}
 		}
-		if (checkTryCount(messageId, retry, rawMessage, message, threadContext, businessCorrelationId)) {
+		if (hasProblematicHistory(messageId, retry, rawMessage, message, threadContext, businessCorrelationId)) {
 			if (!isTransacted()) {
-				log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which is already stored in error storage or messagelog; aborting processing");
+				log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which has a problematic history; aborting processing");
  			}
 			numRejected.increase();
 			return result;
@@ -1599,73 +1636,49 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 
 	/*
-	 * returns true if message is already processed
+	 * returns true if message should not be processed
 	 */
-	private boolean checkTryCount(String messageId, boolean retry, Object rawMessage, String message, Map threadContext, String correlationId) throws ListenerException {
+	private boolean hasProblematicHistory(String messageId, boolean retry, Object rawMessage, String message, Map threadContext, String correlationId) throws ListenerException {
 		if (!retry) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"checking try count for messageId ["+messageId+"]");
- //			if (isTransacted()) {
- 				int deliveryCount=-1;
- 				if (getListener() instanceof IKnowsDeliveryCount) {
-					deliveryCount = ((IKnowsDeliveryCount)getListener()).getDeliveryCount(rawMessage);
- 				}
-				ProcessResultCacheItem prci = getCachedProcessResult(messageId);
-				if (prci==null) {
-					if (deliveryCount<=1) {
-						resetRetryInterval();
-						return false;
+			ProcessResultCacheItem prci = getCachedProcessResult(messageId);
+			if (prci==null) {
+				if (getMaxDeliveries()!=-1) {
+					int deliveryCount=-1;
+					if (getListener() instanceof IKnowsDeliveryCount) {
+						deliveryCount = ((IKnowsDeliveryCount)getListener()).getDeliveryCount(rawMessage);
 					}
-				} else {
-					if (deliveryCount<1) {
-						deliveryCount=prci.tryCount+1;
+					if (deliveryCount>1) {
+						log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has delivery count ["+(deliveryCount)+"]");
+					}
+					if (deliveryCount>getMaxDeliveries()) {
+						warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been delivered ["+deliveryCount+"] times, will not process; maxDeliveries=["+getMaxDeliveries()+"]");
+						String comments="too many deliveries";
+						increaseRetryIntervalAndWait(null,getLogPrefix()+"received message with messageId ["+messageId+"] too many times ["+deliveryCount+"]; maxDeliveries=["+getMaxDeliveries()+"]");
+						moveInProcessToErrorAndDoPostProcessing(messageId, correlationId, rawMessage, message, threadContext, prci, comments);
+						return true;
 					}
 				}
-
+				resetRetryInterval();
+				return false;
+			} else {
 				if (getMaxRetries()<0) {
-					increaseRetryIntervalAndWait(null,getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+(deliveryCount-1)+"] times; maxRetries=["+getMaxRetries()+"]");
+					increaseRetryIntervalAndWait(null,getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+prci.tryCount+"] times; maxRetries=["+getMaxRetries()+"]");
 					return false;
 				}
-				if (deliveryCount<=getMaxRetries()+1) {
-					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+(deliveryCount-1)+"] times, will try again; maxRetries=["+getMaxRetries()+"]");
+				if (prci.tryCount<=getMaxRetries()) {
+					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+prci.tryCount+"] times, will try again; maxRetries=["+getMaxRetries()+"]");
 					resetRetryInterval();
 					return false;
 				}
-				warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+(deliveryCount-1)+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
-				if (deliveryCount>getMaxRetries()+2) {
-					increaseRetryIntervalAndWait(null,getLogPrefix()+"saw message with messageId ["+messageId+"] too many times ["+deliveryCount+"]; maxRetries=["+getMaxRetries()+"]");
-				}
+				warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+prci.tryCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
 				String comments="too many retries";
-				Date rcvDate;
-				if (prci!=null) {
-					comments+="; "+prci.comments;
-					rcvDate=prci.receiveDate;
-				} else {
-					rcvDate=new Date();
+				if (prci.tryCount>getMaxRetries()+1) {
+					increaseRetryIntervalAndWait(null,getLogPrefix()+"saw message with messageId ["+messageId+"] too many times ["+prci.tryCount+"]; maxRetries=["+getMaxRetries()+"]");
 				}
-				if (isTransacted() || (getErrorStorage() != null && (!isCheckForDuplicates() || !getErrorStorage().containsMessageId(messageId)))) {
-					moveInProcessToError(messageId, correlationId, message, rcvDate, comments, rawMessage, TXREQUIRED);
-				}
-				PipeLineResult plr = new PipeLineResult();
-				String result="<error>"+XmlUtils.encodeChars(comments)+"</error>";
-				plr.setResult(result);
-				plr.setState("ERROR");
-				if (getSender()!=null) {
-					// TODO correlationId should be technical correlationID!
-					String sendMsg = sendResultToSender(correlationId, result);
-					if (sendMsg != null) {
-						log.warn("problem sending result:"+sendMsg);
-					}
-				}
-				getListener().afterMessageProcessed(plr, rawMessage, threadContext);
+				moveInProcessToErrorAndDoPostProcessing(messageId, correlationId, rawMessage, message, threadContext, prci, comments);
 				return true;
-//			} else {
-//				if (isMessageIdInPoisonCache(messageId)) {
-//					return true;
-//				}
-//				if (getErrorStorage() != null && getErrorStorage().containsMessageId(messageId)) {
-//					return true;
-//				}
-//			}
+			}
 		} 
 		if (isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId)) {
 			return true;
@@ -1678,7 +1691,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * queue and put to the error-storage.
 	 * 
 	 * <p>
-	 * In the former case, the current transaction is marked rollback-onle.
+	 * In the former case, the current transaction is marked rollback-only.
 	 * </p>
 	 * <p>
 	 * In the latter case, the message is also moved to the error-storage and
@@ -2265,6 +2278,14 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 
 
+
+	public int getMaxDeliveries() {
+		return maxDeliveries;
+	}
+
+	public void setMaxDeliveries(int i) {
+		maxDeliveries = i;
+	}
 
 	public int getMaxRetries() {
 		return maxRetries;

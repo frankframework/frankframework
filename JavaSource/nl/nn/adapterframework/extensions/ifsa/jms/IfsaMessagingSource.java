@@ -1,6 +1,16 @@
 /*
  * $Log: IfsaMessagingSource.java,v $
- * Revision 1.6  2011-11-30 13:51:44  europe\m168309
+ * Revision 1.7  2012-09-07 13:15:16  m00f069
+ * Messaging related changes:
+ * - Use CACHE_CONSUMER by default for ESB RR
+ * - Don't use JMSXDeliveryCount to determine whether message has already been processed
+ * - Added maxDeliveries
+ * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+ * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+ * - Some cleaning along the way like making some synchronized statements unnecessary
+ * - Made BTM and ActiveMQ work for testing purposes
+ *
+ * Revision 1.6  2011/11/30 13:51:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -110,7 +120,7 @@ public class IfsaMessagingSource extends MessagingSource {
 	private boolean xaEnabled;
 	
 	public IfsaMessagingSource(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, Map messagingSourceMap, boolean preJms22Api, boolean xaEnabled) {
-		super(applicationId,context,connectionFactory,messagingSourceMap,null);
+		super(applicationId,context,connectionFactory,messagingSourceMap,null,false,true);
 		this.preJms22Api=preJms22Api;
 		this.xaEnabled=xaEnabled;
 		log.debug("created new IfsaMessagingSource for ["+applicationId+"] context ["+context+"] connectionfactory ["+connectionFactory+"]");

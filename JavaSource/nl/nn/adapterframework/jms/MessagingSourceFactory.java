@@ -1,6 +1,16 @@
 /*
  * $Log: MessagingSourceFactory.java,v $
- * Revision 1.3  2011-11-30 13:51:51  europe\m168309
+ * Revision 1.4  2012-09-07 13:15:17  m00f069
+ * Messaging related changes:
+ * - Use CACHE_CONSUMER by default for ESB RR
+ * - Don't use JMSXDeliveryCount to determine whether message has already been processed
+ * - Added maxDeliveries
+ * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+ * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+ * - Some cleaning along the way like making some synchronized statements unnecessary
+ * - Made BTM and ActiveMQ work for testing purposes
+ *
+ * Revision 1.3  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -61,19 +71,19 @@ public abstract class MessagingSourceFactory  {
 
 	protected abstract Map getMessagingSourceMap();
 	protected abstract Context createContext() throws NamingException;
-	protected abstract ConnectionFactory createConnectionFactory(Context context, String id) throws IbisException, NamingException;
+	protected abstract ConnectionFactory createConnectionFactory(Context context, String id, boolean createDestination, boolean useJms102) throws IbisException, NamingException;
 	
-	protected MessagingSource createMessagingSource(String id, String authAlias) throws IbisException {
+	protected MessagingSource createMessagingSource(String id, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
 		Context context = getContext();
-		ConnectionFactory connectionFactory = getConnectionFactory(context, id); 
-		return new MessagingSource(id, context, connectionFactory, getMessagingSourceMap(), authAlias);
+		ConnectionFactory connectionFactory = getConnectionFactory(context, id, createDestination, useJms102); 
+		return new MessagingSource(id, context, connectionFactory, getMessagingSourceMap(), authAlias, createDestination, useJms102);
 	}
 	
-	public synchronized MessagingSource getMessagingSource(String id, String authAlias) throws IbisException {
+	public synchronized MessagingSource getMessagingSource(String id, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
 		Map messagingSourceMap = getMessagingSourceMap();
 		MessagingSource result = (MessagingSource)messagingSourceMap.get(id);
 		if (result == null) {
-			result = createMessagingSource(id, authAlias);
+			result = createMessagingSource(id, authAlias, createDestination, useJms102);
 			log.debug("created new MessagingSource-object for ["+id+"]");
 		}
 		result.increaseReferences();
@@ -88,9 +98,9 @@ public abstract class MessagingSourceFactory  {
 		}
 	}
 
-	protected ConnectionFactory getConnectionFactory(Context context, String id) throws IbisException {
+	protected ConnectionFactory getConnectionFactory(Context context, String id, boolean createDestination, boolean useJms102) throws IbisException {
 		try {
-			return createConnectionFactory(context, id);
+			return createConnectionFactory(context, id, createDestination, useJms102);
 		} catch (Throwable t) {
 			throw new IbisException("could not obtain connectionFactory ["+id+"]", t);
 		}

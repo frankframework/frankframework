@@ -1,6 +1,16 @@
 /*
  * $Log: EsbJmsListener.java,v $
- * Revision 1.3  2012-02-09 10:40:41  europe\m168309
+ * Revision 1.4  2012-09-07 13:15:17  m00f069
+ * Messaging related changes:
+ * - Use CACHE_CONSUMER by default for ESB RR
+ * - Don't use JMSXDeliveryCount to determine whether message has already been processed
+ * - Added maxDeliveries
+ * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+ * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+ * - Some cleaning along the way like making some synchronized statements unnecessary
+ * - Made BTM and ActiveMQ work for testing purposes
+ *
+ * Revision 1.3  2012/02/09 10:40:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * bugfix: wrong Destination class was used
  *
  * Revision 1.2  2012/01/05 10:25:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -18,6 +28,7 @@ import java.util.Map;
 import javax.jms.Destination;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.jms.JmsListener;
@@ -44,6 +55,7 @@ import nl.nn.adapterframework.jms.JmsListener;
 public class EsbJmsListener extends JmsListener {
 	private final static String REQUEST_REPLY = "RR";
 	private final static String FIRE_AND_FORGET = "FF";
+	private final static String CACHE_CONSUMER = "CACHE_CONSUMER";
 
 	private String messageProtocol = null;
 
@@ -56,6 +68,11 @@ public class EsbJmsListener extends JmsListener {
 		}
 		if (getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY)) {
 			setForceMessageIdAsCorrelationId(true);
+			if (CACHE_CONSUMER.equals(getCacheMode())) {
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				configWarnings.add(log, "attribute [cacheMode] already has a default value [" + CACHE_CONSUMER + "]");
+			}
+			setCacheMode("CACHE_CONSUMER");
 		} else {
 			setUseReplyTo(false);
 		}

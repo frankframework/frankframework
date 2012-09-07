@@ -1,6 +1,16 @@
 /*
  * $Log: PullingJmsListener.java,v $
- * Revision 1.13  2012-06-01 10:52:48  m00f069
+ * Revision 1.14  2012-09-07 13:15:17  m00f069
+ * Messaging related changes:
+ * - Use CACHE_CONSUMER by default for ESB RR
+ * - Don't use JMSXDeliveryCount to determine whether message has already been processed
+ * - Added maxDeliveries
+ * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+ * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+ * - Some cleaning along the way like making some synchronized statements unnecessary
+ * - Made BTM and ActiveMQ work for testing purposes
+ *
+ * Revision 1.13  2012/06/01 10:52:48  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.12  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -203,7 +213,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.0.1
  */
 public class PullingJmsListener extends JmsListenerBase implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
-	public static final String version="$RCSfile: PullingJmsListener.java,v $ $Revision: 1.13 $ $Date: 2012-06-01 10:52:48 $";
+	public static final String version="$RCSfile: PullingJmsListener.java,v $ $Revision: 1.14 $ $Date: 2012-09-07 13:15:17 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
@@ -344,8 +354,10 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					getSender().sendMessage(cid, plr.getResult());
 				}
 			}
-	        
-			// handle transaction details
+
+			// TODO Do we still need this? Should we rollback too? See
+			// PushingJmsListener.afterMessageProcessed() too (which does a
+			// rollback, but no commit).
 			if (!isTransacted()) {
 				if (isJmsTransacted()) {
 					// the following if transacted using transacted sessions, instead of XA-enabled sessions.

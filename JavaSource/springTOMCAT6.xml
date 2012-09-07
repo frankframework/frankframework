@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springTOMCAT6.xml,v $
-  Revision 1.6  2011-12-08 14:06:16  m00f069
+  Revision 1.7  2012-09-07 13:15:16  m00f069
+  Messaging related changes:
+  - Use CACHE_CONSUMER by default for ESB RR
+  - Don't use JMSXDeliveryCount to determine whether message has already been processed
+  - Added maxDeliveries
+  - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+  - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+  - Some cleaning along the way like making some synchronized statements unnecessary
+  - Made BTM and ActiveMQ work for testing purposes
+
+  Revision 1.6  2011/12/08 14:06:16  Jaco de Groot <jaco.de.groot@ibissource.org>
   Made Tomcat work with the Spring DataSourceTransactionManager which will use the jdbc/<ibis name lower case> by default (Spring Tomcat configuration doesn't need to be changed manually anymore) (replaced JOTM as it didn't really work).
 
   Revision 1.5  2011/11/30 13:51:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -66,17 +76,5 @@
             </map>
         </constructor-arg>
     </bean>
-     
-    <!-- Replace with whatever TaskExecutor implementation suits best -->
-    <bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor"
-        scope="singleton">
-    </bean>
-    
-    <bean id="messageListenerClassName" class="java.lang.String">
-        <constructor-arg value="org.springframework.jms.listener.DefaultMessageListenerContainer102"/>
-    </bean>
 
-    <bean name="appServerJndiContextPrefix" class="java.lang.String">
-        <constructor-arg value="java:comp/env/"/>
-    </bean>
 </beans>

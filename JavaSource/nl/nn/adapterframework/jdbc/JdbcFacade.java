@@ -1,6 +1,16 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.44  2012-01-13 13:33:32  m00f069
+ * Revision 1.45  2012-09-07 13:15:17  m00f069
+ * Messaging related changes:
+ * - Use CACHE_CONSUMER by default for ESB RR
+ * - Don't use JMSXDeliveryCount to determine whether message has already been processed
+ * - Added maxDeliveries
+ * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+ * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+ * - Some cleaning along the way like making some synchronized statements unnecessary
+ * - Made BTM and ActiveMQ work for testing purposes
+ *
+ * Revision 1.44  2012/01/13 13:33:32  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Always use jndi context prefixed for datasource name (otherwise useless exceptions are thrown in JBoss)
  *
  * Revision 1.43  2011/12/08 14:06:16  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -219,18 +229,18 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				}
 				try {
 					datasource =(DataSource) getContext().lookup( prefixedDsName );
-					if (datasource==null) {
-						throw new JdbcException("Could not find Datasource ["+prefixedDsName+"]");
-					}
-					String dsinfo=getDatasourceInfo();
-					if (dsinfo==null) {
-						dsinfo=datasource.toString();
-					}
-					log.info(getLogPrefix()+"looked up Datasource ["+prefixedDsName+"]: ["+dsinfo+"]");
 				} catch (NamingException e) {
 					throw new JdbcException("Could not find Datasource ["+prefixedDsName+"]", e);
 				}
 			}
+			if (datasource==null) {
+				throw new JdbcException("Could not find Datasource ["+dsName+"]");
+			}
+			String dsinfo=getDatasourceInfo();
+			if (dsinfo==null) {
+				dsinfo=datasource.toString();
+			}
+			log.info(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+dsinfo+"]");
 		}
 		return datasource;
 	}

@@ -1,6 +1,16 @@
 /*
  * $Log: MessagingSource.java,v $
- * Revision 1.4  2011-11-30 13:51:51  europe\m168309
+ * Revision 1.5  2012-09-07 13:15:17  m00f069
+ * Messaging related changes:
+ * - Use CACHE_CONSUMER by default for ESB RR
+ * - Don't use JMSXDeliveryCount to determine whether message has already been processed
+ * - Added maxDeliveries
+ * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+ * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+ * - Some cleaning along the way like making some synchronized statements unnecessary
+ * - Made BTM and ActiveMQ work for testing purposes
+ *
+ * Revision 1.4  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -112,14 +122,12 @@ public class MessagingSource  {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private int referenceCount;
-	private final static String CONNECTIONS_ARE_POOLED_KEY="jms.connectionsArePooled";
-	private static Boolean connectionsArePooledStore=null; 
-	private final static String SESSIONS_ARE_POOLED_KEY="jms.sessionsArePooled";
-	private static Boolean sessionsArePooledStore=null; 
-	private final static String USE_SINGLE_DYNAMIC_REPLY_QUEUE_KEY="jms.useSingleDynamicReplyQueue";
-	private static Boolean useSingleDynamicReplyQueueStore=null; 
-	private final static String CLEANUP_ON_CLOSE_KEY="jms.cleanUpOnClose";
-	private static Boolean cleanUpOnClose=null; 
+	private boolean connectionsArePooledStore = AppConstants.getInstance().getBoolean("jms.connectionsArePooled", false);
+	private boolean sessionsArePooledStore = AppConstants.getInstance().getBoolean("jms.sessionsArePooled", false);
+	private boolean useSingleDynamicReplyQueueStore = AppConstants.getInstance().getBoolean("jms.useSingleDynamicReplyQueue", true);
+	private boolean cleanUpOnClose = AppConstants.getInstance().getBoolean("jms.cleanUpOnClose", true);
+	private boolean createDestination;
+	private boolean useJms102;
 
 	private String authAlias;
 
@@ -137,7 +145,9 @@ public class MessagingSource  {
 
 	private Queue globalDynamicReplyQueue = null;
 	
-	protected MessagingSource(String id, Context context, ConnectionFactory connectionFactory, Map siblingMap, String authAlias) {
+	protected MessagingSource(String id, Context context,
+			ConnectionFactory connectionFactory, Map siblingMap,
+			String authAlias, boolean createDestination, boolean useJms102) {
 		super();
 		referenceCount=0;
 		this.id=id;
@@ -145,10 +155,12 @@ public class MessagingSource  {
 		this.connectionFactory=connectionFactory;
 		this.siblingMap=siblingMap;
 		siblingMap.put(id, this);
+		this.authAlias=authAlias;
+		this.createDestination=createDestination;
+		this.useJms102=useJms102;
 		if (connectionsArePooled()) {
 			connectionTable = new Hashtable();
 		}
-		this.authAlias=authAlias;
 		log.debug(getLogPrefix()+"set id ["+id+"] context ["+context+"] connectionFactory ["+connectionFactory+"] authAlias ["+authAlias+"]");
 	}
 		
@@ -208,13 +220,22 @@ public class MessagingSource  {
 		return getConnectionFactory();
 	}
 
-	public String getPhysicalName() {
+	public String getPhysicalName() { 
 		String result="";
 		try {
 			ConnectionFactory qcf = getConnectionFactoryDelegate();
-			Object managedConnectionFacory = ClassUtils.invokeGetter(qcf,"getManagedConnectionFactory",true);
+			Object managedConnectionFacory;
+			try {
+				managedConnectionFacory = ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
+			} catch (Exception e) {
+				// In case of BTM.
+				managedConnectionFacory = ClassUtils.invokeGetter(qcf, "getResource", true);
+			}
 			result+=ClassUtils.reflectionToString(managedConnectionFacory, "perties"); //catches properties as well as Properties... 
 			// result+=ClassUtils.reflectionToString(qcf, "factory");
+			if (result.contains("activemq")) {
+				result += "[" + ClassUtils.invokeGetter(managedConnectionFacory,"getBrokerURL",true) + "]";
+			}
 		} catch (Exception e) {
 			result+= ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() "+ClassUtils.nameOf(e)+": "+e.getMessage();
 		}
@@ -225,16 +246,24 @@ public class MessagingSource  {
 		if (StringUtils.isNotEmpty(authAlias)) {
 			CredentialFactory cf = new CredentialFactory(authAlias,null,null);
 			if (log.isDebugEnabled()) log.debug("using userId ["+cf.getUsername()+"] to create Connection");
-			if (connectionFactory instanceof QueueConnectionFactory) {
-				return ((QueueConnectionFactory)connectionFactory).createQueueConnection(cf.getUsername(),cf.getPassword());
+			if (useJms102()) {
+				if (connectionFactory instanceof QueueConnectionFactory) {
+					return ((QueueConnectionFactory)connectionFactory).createQueueConnection(cf.getUsername(),cf.getPassword());
+				} else {
+					return ((TopicConnectionFactory)connectionFactory).createTopicConnection(cf.getUsername(),cf.getPassword());
+				}
 			} else {
-				return ((TopicConnectionFactory)connectionFactory).createTopicConnection(cf.getUsername(),cf.getPassword());
+				return connectionFactory.createConnection(cf.getUsername(),cf.getPassword());
 			}
 		}
-		if (connectionFactory instanceof QueueConnectionFactory) {
-			return ((QueueConnectionFactory)connectionFactory).createQueueConnection();
+		if (useJms102()) {
+			if (connectionFactory instanceof QueueConnectionFactory) {
+				return ((QueueConnectionFactory)connectionFactory).createQueueConnection();
+			} else {
+				return ((TopicConnectionFactory)connectionFactory).createTopicConnection();
+			}
 		} else {
-			return ((TopicConnectionFactory)connectionFactory).createTopicConnection();
+			return connectionFactory.createConnection();
 		}
 	}
 	
@@ -285,10 +314,14 @@ public class MessagingSource  {
 		try {
 			// do not log, as this may happen very often
 //			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"creating Session, openSessionCount before ["+openSessionCount.getValue()+"]");
-			if (connection instanceof QueueConnection) {
-				session = ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
+			if (useJms102()) {
+				if (connection instanceof QueueConnection) {
+					session = ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
+				} else {
+					session = ((TopicConnection)connection).createTopicSession(transacted, acknowledgeMode);
+				}
 			} else {
-				session = ((TopicConnection)connection).createTopicSession(transacted, acknowledgeMode);
+				session = connection.createSession(transacted, acknowledgeMode);
 			}
 			openSessionCount.increase();
 			if (connectionsArePooled()) {
@@ -326,42 +359,32 @@ public class MessagingSource  {
 		}
 	}
 
-	protected synchronized boolean connectionsArePooled() {
-		if (connectionsArePooledStore==null) {
-			boolean pooled=AppConstants.getInstance().getBoolean(CONNECTIONS_ARE_POOLED_KEY, false);
-			connectionsArePooledStore = new Boolean(pooled);
-		}
-		return connectionsArePooledStore.booleanValue();
+	protected boolean connectionsArePooled() {
+		return connectionsArePooledStore;
 	}
 
-	public synchronized boolean sessionsArePooled() {
-		if (sessionsArePooledStore==null) {
-			boolean pooled=AppConstants.getInstance().getBoolean(SESSIONS_ARE_POOLED_KEY, false);
-			sessionsArePooledStore = new Boolean(pooled);
-		}
-		return sessionsArePooledStore.booleanValue();
+	public boolean sessionsArePooled() {
+		return sessionsArePooledStore;
 	}
 
-	protected synchronized boolean useSingleDynamicReplyQueue() {
+	protected boolean useSingleDynamicReplyQueue() {
 		if (connectionsArePooled()) {
 			return false; // dynamic reply queues are connection-based.
 		}
-		if (useSingleDynamicReplyQueueStore==null) {
-			boolean useSingleQueue=AppConstants.getInstance().getBoolean(USE_SINGLE_DYNAMIC_REPLY_QUEUE_KEY, true);
-			useSingleDynamicReplyQueueStore = new Boolean(useSingleQueue);
-		}
-		return useSingleDynamicReplyQueueStore.booleanValue();
+		return useSingleDynamicReplyQueueStore;
 	}
 
-
-	public synchronized boolean cleanUpOnClose() {
-		if (cleanUpOnClose==null) {
-			boolean cleanup=AppConstants.getInstance().getBoolean(CLEANUP_ON_CLOSE_KEY, true);
-			cleanUpOnClose = new Boolean(cleanup);
-		}
-		return cleanUpOnClose.booleanValue();
+	public boolean cleanUpOnClose() {
+		return cleanUpOnClose;
 	}
 
+	public boolean createDestination() {
+		return createDestination;
+	}
+
+	public boolean useJms102() {
+		return useJms102;
+	}
 
 	private void deleteDynamicQueue(Queue queue) throws IfsaException {
 		if (queue!=null) {

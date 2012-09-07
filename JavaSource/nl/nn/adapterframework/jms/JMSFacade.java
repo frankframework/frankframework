@@ -1,6 +1,16 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.49  2012-08-23 11:57:43  m00f069
+ * Revision 1.50  2012-09-07 13:15:17  m00f069
+ * Messaging related changes:
+ * - Use CACHE_CONSUMER by default for ESB RR
+ * - Don't use JMSXDeliveryCount to determine whether message has already been processed
+ * - Added maxDeliveries
+ * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+ * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+ * - Some cleaning along the way like making some synchronized statements unnecessary
+ * - Made BTM and ActiveMQ work for testing purposes
+ *
+ * Revision 1.49  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates from Michiel
  *
  * Revision 1.48  2012/05/04 06:42:40  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -151,6 +161,7 @@ package nl.nn.adapterframework.jms;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -177,6 +188,7 @@ import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DomBuilderException;
 
 import org.apache.commons.lang.StringUtils;
@@ -228,6 +240,9 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	private String name;
 
+	private boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", false);
+	private boolean useJms102 = AppConstants.getInstance().getBoolean("jms.useJms102", false);
+
 	private boolean transacted = false;
 	private boolean jmsTransacted = false;
 	private String subscriberType = "DURABLE"; // DURABLE or TRANSIENT
@@ -244,7 +259,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
     protected MessagingSource messagingSource;
     private Destination destination;
 
-
+    private Map<String, ConnectionFactory> proxiedConnectionFactories;
 
     //<code>forceMQCompliancy</code> is used to perform MQ specific replying.
     //If the MQ destination is not a JMS receiver, format errors occur.
@@ -298,6 +313,18 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return "["+getName()+"] ";
 	}
 
+	public boolean useJms102() {
+		return useJms102;
+	}
+
+	public void setProxiedConnectionFactories(Map<String, ConnectionFactory> proxiedConnectionFactories) {
+		this.proxiedConnectionFactories = proxiedConnectionFactories;
+	}
+
+	public Map<String, ConnectionFactory> getProxiedConnectionFactories() {
+		return proxiedConnectionFactories;
+	}
+
 	public String getConnectionFactoryName() throws JmsException {
 		String result = useTopicFunctions ? getTopicConnectionFactoryName() : getQueueConnectionFactoryName();
 		if (StringUtils.isEmpty(result)) {
@@ -317,7 +344,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * Override this method in descender classes.
 	 */
 	protected MessagingSourceFactory getMessagingSourceFactory() {
-		return new JmsMessagingSourceFactory();
+		return new JmsMessagingSourceFactory(this);
 	}
 
 	protected MessagingSource getMessagingSource() throws JmsException {
@@ -334,7 +361,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
                     try {
                         String connectionFactoryName = getConnectionFactoryName();
                         log.debug("creating MessagingSource");
-						messagingSource = messagingSourceFactory.getMessagingSource(getJndiContextPrefix()+connectionFactoryName,getAuthAlias());
+						messagingSource = messagingSourceFactory.getMessagingSource(connectionFactoryName,getAuthAlias(), createDestination, useJms102);
                     } catch (IbisException e) {
                         if (e instanceof JmsException) {
                                 throw (JmsException)e;
@@ -446,16 +473,16 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	/**
 	 * Enforces the setting of <code>forceMQCompliancy</code><br/>.
-	 * this method has to be called prior to creating a <code>QueueSender</code>
+	 * this method has to be called prior to creating a <code>MessageProducer</code>
 	 */
- 	private void enforceMQCompliancy(Queue queue) throws JMSException {
+ 	private void enforceMQCompliancy(Destination destination) throws JMSException {
  		if (forceTargetClientMQ) {
-			((MQQueue)queue).setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ);
-			if (log.isDebugEnabled()) log.debug("["+name+"] MQ Compliancy for queue ["+queue.toString()+"] set to NONJMS");
+			((MQQueue)destination).setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ);
+			if (log.isDebugEnabled()) log.debug("["+name+"] MQ Compliancy for queue ["+destination.toString()+"] set to NONJMS");
  		} else {
 			if (forceTargetClientJMS) {
-				((MQQueue)queue).setTargetClient(JMSC.MQJMS_CLIENT_JMS_COMPLIANT);
-				if (log.isDebugEnabled()) log.debug("MQ Compliancy for queue ["+queue.toString()+"] set to JMS");
+				((MQQueue)destination).setTargetClient(JMSC.MQJMS_CLIENT_JMS_COMPLIANT);
+				if (log.isDebugEnabled()) log.debug("MQ Compliancy for queue ["+destination.toString()+"] set to JMS");
 			}
  		}
     }
@@ -492,7 +519,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
      */
 
     public Destination getDestination(String destinationName) throws JmsException, NamingException {
-    	return getJmsMessagingSource().lookupDestination(getJndiContextPrefix()+destinationName);
+    	return getJmsMessagingSource().lookupDestination(destinationName);
     }
 
 	/**
@@ -526,10 +553,19 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @throws JMSException
 	 */
 	public MessageConsumer getMessageConsumer(Session session, Destination destination, String selector) throws NamingException, JMSException {
-			if (useTopicFunctions)
+		if (useTopicFunctions) {
+			if (useJms102()) {
 				return getTopicSubscriber((TopicSession)session, (Topic)destination, selector);
-			else
+			} else {
+				return getTopicSubscriber(session, (Topic)destination, selector);
+			}
+		} else {
+			if (useJms102()) {
 				return getQueueReceiver((QueueSession)session, (Queue)destination, selector);
+			} else {
+				return session.createConsumer(destination, selector);
+			}
+		}
 	}
 	/**
 	 * Create a MessageConsumer, on a specific session and for a specific destination.
@@ -545,23 +581,23 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return getMessageConsumer(session, destination, getMessageSelector());
 	}
 
-    /**
-     * gets a sender. if topicName is used the <code>getTopicPublisher()</code>
-     * is used, otherwise the <code>getQueueSender()</code>
-     */
-    public MessageProducer getMessageProducer(Session session, Destination destination)
-        throws NamingException, JMSException {
-
+	public MessageProducer getMessageProducer(Session session,
+			Destination destination) throws NamingException, JMSException {
 		MessageProducer mp;
-        if (useTopicFunctions) {
-			mp = getTopicPublisher((TopicSession)session, (Topic)destination);
-        } else {
-			mp = getQueueSender((QueueSession)session, (Queue)destination);
-        }
+		if (useJms102()) {
+			if (useTopicFunctions) {
+				mp = getTopicPublisher((TopicSession)session, (Topic)destination);
+			} else {
+				mp = getQueueSender((QueueSession)session, (Queue)destination);
+			}
+		} else {
+			enforceMQCompliancy(destination);
+			mp = session.createProducer(destination);
+		}
 		if (getMessageTimeToLive()>0)
 			mp.setTimeToLive(getMessageTimeToLive());
-        return mp;
-    }
+		return mp;
+	}
 
 	public String getPhysicalDestinationName() {
 
@@ -589,7 +625,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		}
 	    return result;
 	}
-
     /**
      *  Gets a queueReceiver
      * @see javax.jms.QueueReceiver
@@ -636,20 +671,36 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	    return topicSubscriber;
 	}
 
+	private MessageConsumer getTopicSubscriber(Session session, Topic topic, String selector) throws NamingException, JMSException {
+		MessageConsumer messageConsumer;
+		if (subscriberType.equalsIgnoreCase("DURABLE")) {
+			messageConsumer = session.createDurableSubscriber(topic, destinationName, selector, false);
+			if (log.isDebugEnabled()) log.debug("[" + name  + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+		} else {
+			messageConsumer = session.createConsumer(topic, selector, false);
+			if (log.isDebugEnabled()) log.debug("[" + name + "] got transient subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+		}
+		return messageConsumer;
+	}
+
 
 
 	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority) throws NamingException, JMSException, SenderException {
 		TextMessage msg = createTextMessage(session, correlationId, message);
 		MessageProducer mp;
-
-		if ((session instanceof TopicSession) && (dest instanceof Topic)) {
-			mp = getTopicPublisher((TopicSession)session, (Topic)dest);
-		} else {
-			if ((session instanceof QueueSession) && (dest instanceof Queue)) {
-				mp = getQueueSender((QueueSession)session, (Queue)dest);
+		if (useJms102()) {
+			if ((session instanceof TopicSession) && (dest instanceof Topic)) {
+				mp = getTopicPublisher((TopicSession)session, (Topic)dest);
 			} else {
-				throw new SenderException("classes of Session ["+session.getClass().getName()+"] and Destination ["+dest.getClass().getName()+"] do not match (Queue vs Topic)");
+				if ((session instanceof QueueSession) && (dest instanceof Queue)) {
+					mp = getQueueSender((QueueSession)session, (Queue)dest);
+				} else {
+					throw new SenderException("classes of Session ["+session.getClass().getName()+"] and Destination ["+dest.getClass().getName()+"] do not match (Queue vs Topic)");
+				}
 			}
+		} else {
+			enforceMQCompliancy(destination);
+			mp = session.createProducer(destination);
 		}
 		if (messageType!=null) {
 			msg.setJMSType(messageType);
@@ -681,15 +732,18 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @throws JMSException
 	 */
 	public String send(MessageProducer messageProducer, Message message)
-	    throws NamingException, JMSException {
-
-	    if (messageProducer instanceof TopicPublisher) {
-	         ((TopicPublisher) messageProducer).publish(message);
-	    } else {
-	         ((QueueSender) messageProducer).send(message);
+			throws NamingException, JMSException {
+		if (useJms102()) {
+			if (messageProducer instanceof TopicPublisher) {
+				((TopicPublisher) messageProducer).publish(message);
+			} else {
+				((QueueSender) messageProducer).send(message);
+			}
+			return message.getJMSMessageID();
+		} else {
+			messageProducer.send(message);
+			return message.getJMSMessageID();
 		}
-
-	    return message.getJMSMessageID();
 	}
 	/**
 	 * Send a message
@@ -701,12 +755,20 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @throws JMSException
 	 */
 	public String send(Session session, Destination dest, Message message)
-	    throws NamingException, JMSException {
-
-	    if (dest instanceof Topic)
-	        return sendByTopic((TopicSession)session, (Topic)dest, message);
-	    else
-	        return sendByQueue((QueueSession)session, (Queue)dest, message);
+			throws NamingException, JMSException {
+		if (useJms102()) {
+			if (dest instanceof Topic) {
+				return sendByTopic((TopicSession)session, (Topic)dest, message);
+			} else {
+				return sendByQueue((QueueSession)session, (Queue)dest, message);
+			}
+		} else {
+			enforceMQCompliancy(destination);
+			MessageProducer mp = session.createProducer(destination);
+			mp.send(message);
+			mp.close();
+			return message.getJMSMessageID();
+		}
 	}
 	/**
 	 * Send a message to a Destination of type Queue.

@@ -1,6 +1,16 @@
 /*
  * $Log: IbisContext.java,v $
- * Revision 1.10  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.11  2012-09-07 13:15:17  m00f069
+ * Messaging related changes:
+ * - Use CACHE_CONSUMER by default for ESB RR
+ * - Don't use JMSXDeliveryCount to determine whether message has already been processed
+ * - Added maxDeliveries
+ * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+ * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+ * - Some cleaning along the way like making some synchronized statements unnecessary
+ * - Made BTM and ActiveMQ work for testing purposes
+ *
+ * Revision 1.10  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -72,6 +82,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.JdkVersion;
 
@@ -173,12 +184,7 @@ public class IbisContext {
 	}
 	
 	public void destroyConfig() {
-		// Clean up the Spring Bean Factory and reference to it, since that can
-		// cause the garbage-collector to never finalize the Bean Factory.
-		// Singleton Beans in the Bean Factory are explicitly destroyed,
-		// to ensure that they release their resources.
-		// applicationContext.destroySingletons();
-		applicationContext = null;
+		((ConfigurableApplicationContext)applicationContext).close();
 	}
 
 //	public Object getAutoWiredObject(Class clazz) throws ConfigurationException {

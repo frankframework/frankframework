@@ -1,6 +1,16 @@
 /*
  * $Log: PushingJmsListener.java,v $
- * Revision 1.24  2012-08-23 11:57:43  m00f069
+ * Revision 1.25  2012-09-07 13:15:17  m00f069
+ * Messaging related changes:
+ * - Use CACHE_CONSUMER by default for ESB RR
+ * - Don't use JMSXDeliveryCount to determine whether message has already been processed
+ * - Added maxDeliveries
+ * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+ * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+ * - Some cleaning along the way like making some synchronized statements unnecessary
+ * - Made BTM and ActiveMQ work for testing purposes
+ *
+ * Revision 1.24  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates from Michiel
  *
  * Revision 1.23  2012/06/01 10:52:48  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -299,15 +309,19 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 				}
 			}
 
-        	if (plr!=null && isJmsTransacted() && StringUtils.isNotEmpty(getCommitOnState()) &&
-	        		!getCommitOnState().equals(plr.getState())) {
-	        	if (session==null) {
+			// TODO Do we still need this? Should we commit too? See
+			// PullingJmsListener.afterMessageProcessed() too (which does a
+			// commit, but no rollback).
+			if (plr!=null && !isTransacted() && isJmsTransacted()
+					&& StringUtils.isNotEmpty(getCommitOnState())
+					&& !getCommitOnState().equals(plr.getState())) {
+				if (session==null) {
 					log.error(getLogPrefix()+"session is null, cannot roll back session");
-	        	} else {
+				} else {
 					log.warn(getLogPrefix()+"got exit state ["+plr.getState()+"], rolling back session");
 					session.rollback();
-	        	}
-        	}
+				}
+			}
 		} catch (Exception e) {
 			if (e instanceof ListenerException) {
 				throw (ListenerException)e;
@@ -446,6 +460,10 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	public int getDeliveryCount(Object rawMessage) {
 		try {
 			Message message=(Message)rawMessage;
+			// Note: Tibco doesn't set the JMSXDeliveryCount for messages
+			// delivered for the first time (when JMSRedelivered is set to
+			// false). Hence when set is has a value of 2 or higher. When not
+			// set a NumberFormatException is thrown.
 			int value = message.getIntProperty("JMSXDeliveryCount");
 			if (log.isDebugEnabled()) log.debug("determined delivery count ["+value+"]");
 			return value;

@@ -1,6 +1,16 @@
 /*
  * $Log: JmsMessagingSourceFactory.java,v $
- * Revision 1.5  2011-12-05 15:33:13  l190409
+ * Revision 1.6  2012-09-07 13:15:17  m00f069
+ * Messaging related changes:
+ * - Use CACHE_CONSUMER by default for ESB RR
+ * - Don't use JMSXDeliveryCount to determine whether message has already been processed
+ * - Added maxDeliveries
+ * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+ * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+ * - Some cleaning along the way like making some synchronized statements unnecessary
+ * - Made BTM and ActiveMQ work for testing purposes
+ *
+ * Revision 1.5  2011/12/05 15:33:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * JMS 1.03 compatibilty restored
  *
  * Revision 1.4  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -36,6 +46,7 @@ import java.util.Map;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.ConnectionMetaData;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
@@ -46,6 +57,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.core.IbisException;
+
+import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -59,35 +72,108 @@ import nl.nn.adapterframework.core.IbisException;
  * @since   4.4
  */
 public class JmsMessagingSourceFactory extends MessagingSourceFactory {
-
 	static private Map jmsMessagingSourceMap = new HashMap();
-	
+	private JMSFacade jmsFacade;
+
+	public JmsMessagingSourceFactory(JMSFacade jmsFacade) {
+		this.jmsFacade = jmsFacade;
+	}
+
 	protected Map getMessagingSourceMap() {
 		return jmsMessagingSourceMap;
 	}
 
-	protected MessagingSource createMessagingSource(String jmsConnectionFactoryName, String authAlias) throws IbisException {
+	protected MessagingSource createMessagingSource(String jmsConnectionFactoryName, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
 		Context context = getContext();
-		ConnectionFactory connectionFactory = getConnectionFactory(context, jmsConnectionFactoryName); 
-		return new JmsMessagingSource(jmsConnectionFactoryName, context, connectionFactory, getMessagingSourceMap(), authAlias);
+		ConnectionFactory connectionFactory = getConnectionFactory(context, jmsConnectionFactoryName, createDestination, useJms102); 
+		return new JmsMessagingSource(jmsConnectionFactoryName, jmsFacade.getJndiContextPrefix(), context, connectionFactory, getMessagingSourceMap(), authAlias, createDestination, useJms102);
 	}
 
 	protected Context createContext() throws NamingException {
 		return (Context) new InitialContext();
 	}
 
-	protected ConnectionFactory createConnectionFactory(Context context, String cfName) throws IbisException, NamingException {
-		ConnectionFactory connectionFactory = (ConnectionFactory) getContext().lookup(cfName);
+	protected ConnectionFactory createConnectionFactory(Context context, String cfName, boolean createDestination, boolean useJms102) throws IbisException {
+		ConnectionFactory connectionFactory;
+		if (jmsFacade.getProxiedConnectionFactories() != null
+				&& jmsFacade.getProxiedConnectionFactories().containsKey(cfName)) {
+			log.debug(jmsFacade.getLogPrefix()+"looking up proxied connection factory ["+cfName+"]");
+			connectionFactory = jmsFacade.getProxiedConnectionFactories().get(cfName);
+		} else {
+			String prefixedCfName=jmsFacade.getJndiContextPrefix()+cfName;
+			log.debug(jmsFacade.getLogPrefix()+"looking up connection factory ["+prefixedCfName+"]");
+			if (StringUtils.isNotEmpty(jmsFacade.getJndiContextPrefix())) {
+				log.debug(jmsFacade.getLogPrefix()+"using JNDI context prefix ["+jmsFacade.getJndiContextPrefix()+"]");
+			}
+			try {
+				connectionFactory = (ConnectionFactory)getContext().lookup(prefixedCfName);
+			} catch (NamingException e) {
+				throw new JmsException("Could not find connection factory ["+prefixedCfName+"]", e);
+			}
+		}
+		if (connectionFactory == null) {
+			throw new JmsException("Could not find connection factory ["+cfName+"]");
+		}
 		// wrap ConnectionFactory, to work around bug in JMSQueueConnectionFactoryHandle in combination with Spring
 		// see http://forum.springsource.org/archive/index.php/t-43700.html
-		if (connectionFactory instanceof QueueConnectionFactory) {
-			connectionFactory = new QueueConnectionFactoryWrapper((QueueConnectionFactory)connectionFactory);
-		} else if (connectionFactory instanceof TopicConnectionFactory) {
-			connectionFactory = new TopicConnectionFactoryWrapper((TopicConnectionFactory)connectionFactory);
+		if (jmsFacade.useJms102()) {
+			if (connectionFactory instanceof QueueConnectionFactory) {
+				connectionFactory = new QueueConnectionFactoryWrapper((QueueConnectionFactory)connectionFactory);
+			} else if (connectionFactory instanceof TopicConnectionFactory) {
+				connectionFactory = new TopicConnectionFactoryWrapper((TopicConnectionFactory)connectionFactory);
+			}
+		} else {
+			connectionFactory = new ConnectionFactoryWrapper(connectionFactory);
 		}
+		String connectionFactoryInfo = getConnectionFactoryInfo(connectionFactory);
+		if (connectionFactoryInfo==null) {
+			connectionFactoryInfo = connectionFactory.toString();
+		}
+		log.info(jmsFacade.getLogPrefix()+"looked up connection factory ["+cfName+"]: ["+connectionFactoryInfo+"]");
 		return connectionFactory;
 	}
-	
+
+	public String getConnectionFactoryInfo(ConnectionFactory connectionFactory) {
+		String info=null;
+		Connection connection = null;
+		try {
+			connection = connectionFactory.createConnection();
+			ConnectionMetaData metaData = connection.getMetaData();
+			info = "jms provider name [" + metaData.getJMSProviderName()
+					+ "] jms provider version [" + metaData.getProviderVersion()
+					+ "] jms version [" + metaData.getJMSVersion()
+					+ "]";
+		} catch (JMSException e) {
+			log.warn("Exception determining connection factory info",e);
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (JMSException e1) {
+					log.warn("Exception closing connection for metadata", e1);
+				}
+			}
+		}
+		return info;
+	}
+
+	private class ConnectionFactoryWrapper implements ConnectionFactory {
+		private ConnectionFactory wrapped;
+
+		public ConnectionFactoryWrapper(ConnectionFactory connectionFactory) {
+			super();
+			wrapped=connectionFactory;
+		}
+
+		public Connection createConnection() throws JMSException {
+			return wrapped.createConnection();
+		}
+
+		public Connection createConnection(String arg0, String arg1) throws JMSException {
+			return wrapped.createConnection(arg0,arg1);
+		}
+	}
+
 	private class QueueConnectionFactoryWrapper implements QueueConnectionFactory {
 		private QueueConnectionFactory wrapped;
 
@@ -111,7 +197,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		public Connection createConnection(String arg0, String arg1) throws JMSException {
 			return createQueueConnection(arg0, arg1);
 		}
-}
+	}
 
 	private class TopicConnectionFactoryWrapper implements TopicConnectionFactory {
 		private TopicConnectionFactory wrapped;
@@ -136,6 +222,5 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		public Connection createConnection(String arg0, String arg1) throws JMSException {
 			return createTopicConnection(arg0, arg1);
 		}
-}
-
+	}
 }

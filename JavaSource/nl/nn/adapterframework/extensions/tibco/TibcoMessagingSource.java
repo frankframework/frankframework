@@ -1,6 +1,16 @@
 /*
  * $Log: TibcoMessagingSource.java,v $
- * Revision 1.3  2011-11-30 13:51:58  europe\m168309
+ * Revision 1.4  2012-09-07 13:15:16  m00f069
+ * Messaging related changes:
+ * - Use CACHE_CONSUMER by default for ESB RR
+ * - Don't use JMSXDeliveryCount to determine whether message has already been processed
+ * - Added maxDeliveries
+ * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+ * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+ * - Some cleaning along the way like making some synchronized statements unnecessary
+ * - Made BTM and ActiveMQ work for testing purposes
+ *
+ * Revision 1.3  2011/11/30 13:51:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -32,8 +42,9 @@ import javax.jms.Session;
 import javax.jms.TopicSession;
 import javax.naming.Context;
 
-import nl.nn.adapterframework.jms.JmsMessagingSource;
 import nl.nn.adapterframework.jms.JmsException;
+import nl.nn.adapterframework.jms.JmsMessagingSource;
+import nl.nn.adapterframework.jms.MessagingSource;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -51,7 +62,7 @@ public class TibcoMessagingSource extends JmsMessagingSource {
 	private TibjmsConnectionFactory connectionFactory;
 	
 	public TibcoMessagingSource(String connectionFactoryName, Context context, ConnectionFactory connectionFactory, Map messagingSourceMap, String authAlias) {
-		super(connectionFactoryName, context, connectionFactory, messagingSourceMap, authAlias);
+		super(connectionFactoryName, "", context, connectionFactory, messagingSourceMap, authAlias, false, true);
 		this.connectionFactory=(TibjmsConnectionFactory)connectionFactory;
 	}
 

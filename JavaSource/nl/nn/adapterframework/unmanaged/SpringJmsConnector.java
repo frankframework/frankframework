@@ -1,6 +1,16 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.24  2011-11-30 13:52:01  europe\m168309
+ * Revision 1.25  2012-09-07 13:15:17  m00f069
+ * Messaging related changes:
+ * - Use CACHE_CONSUMER by default for ESB RR
+ * - Don't use JMSXDeliveryCount to determine whether message has already been processed
+ * - Added maxDeliveries
+ * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
+ * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
+ * - Some cleaning along the way like making some synchronized statements unnecessary
+ * - Made BTM and ActiveMQ work for testing purposes
+ *
+ * Revision 1.24  2011/11/30 13:52:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -151,7 +161,6 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
  
 	private TransactionDefinition TX = null;
-	int retryInterval=5;
 
 	final Counter threadsProcessing = new Counter(0);
     
@@ -286,7 +295,6 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 //				if (log.isDebugEnabled()) log.debug("transaction status before: "+JtaUtil.displayTransactionStatus());
 				getReceiver().processRawMessage(listener, message, threadContext);
 //				if (log.isDebugEnabled()) log.debug("transaction status after: "+JtaUtil.displayTransactionStatus());
-				getReceiver().resetRetryInterval();
 			} catch (ListenerException e) {
 				getReceiver().increaseRetryIntervalAndWait(e,getLogPrefix());
 				if (txStatus!=null) {
