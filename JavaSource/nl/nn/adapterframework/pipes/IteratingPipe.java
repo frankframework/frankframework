@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.27  2012-08-29 12:53:50  europe\m168309
+ * Revision 1.28  2012-09-13 13:16:32  m00f069
+ *  Use StringBuffer to collect results for better performance
+ *
+ * Revision 1.27  2012/08/29 12:53:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added startPosition, endPosition, linePrefix and lineSuffix attributes
  *
  * Revision 1.26  2012/06/01 10:52:50  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -216,7 +219,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.27 $ $Date: 2012-08-29 12:53:50 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.28 $ $Date: 2012-09-13 13:16:32 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -287,7 +290,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		ISender sender; 
 		ISenderWithParameters psender=null;
 		
-		private String results="";
+		private StringBuffer results = new StringBuffer();
 		int count=0;
 		private Vector inputItems = new Vector();
 		
@@ -374,7 +377,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 						itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(item):item)+"</input>";
 					}
 					itemResult = "<result item=\"" + count + "\">\n"+itemInput+itemResult+"\n</result>";
-					results += itemResult+"\n";
+					results.append(itemResult+"\n");
 				}
 
 				if (getStopConditionTp()!=null) {
@@ -395,7 +398,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 				throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
 			}
 		}
-		public String getResults() {
+		public StringBuffer getResults() {
 			return results;
 		}
 		public int getCount() {
@@ -476,7 +479,10 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 			}
 			String results = "";
 			if (isCollectResults()) {
-				results = "<results count=\""+callback.getCount()+"\">\n"+callback.getResults()+"</results>";
+				StringBuffer callbackResults = callback.getResults();
+				callbackResults.insert(0, "<results count=\""+callback.getCount()+"\">\n");
+				callbackResults.append("</results>");
+				results = callbackResults.toString();
 			} else {
 				results = "<results count=\""+callback.getCount()+"\"/>";
 			}
