@@ -1,6 +1,13 @@
 /*
  * $Log: AbstractXmlValidator.java,v $
- * Revision 1.1  2012-08-23 11:57:43  m00f069
+ * Revision 1.2  2012-09-13 08:25:17  m00f069
+ * - Throw exception when XSD doesn't exist (to prevent adapter from starting).
+ * - Ignore warning schema_reference.4: Failed to read schema document 'http://www.w3.org/2001/xml.xsd'.
+ * - Made SoapValidator use 1.1 XSD only by default (using two generates the warning s4s-elt-invalid-content.1: The content of 'reasontext' is invalid. Element 'attribute' is invalid, misplaced, or occurs too often.).
+ * - Introduced xmlValidator.lazyInit property.
+ * - Don't lazy init by default (restored old behaviour).
+ *
+ * Revision 1.1  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates from Michiel
  *
  * Revision 1.6  2012/03/16 15:35:44  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -85,6 +92,8 @@ public abstract class AbstractXmlValidator {
 	private boolean validateFile=false;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
     protected boolean needsInit = true;
+    protected boolean lazyInit = AppConstants.getInstance().getBoolean("xmlValidator.lazyInit", false);
+
     protected String logPrefix = "";
     protected boolean addNamespaceToSchema = false;
 
@@ -206,6 +215,9 @@ public abstract class AbstractXmlValidator {
      */
     public void configure(String logPrefix) throws ConfigurationException {
         this.logPrefix = logPrefix;
+        if (!lazyInit) {
+            init();
+        }
     }
 
     protected void init() throws ConfigurationException {
@@ -450,25 +462,41 @@ public abstract class AbstractXmlValidator {
         }
     }
 
-    protected static class MyErrorHandler implements XMLErrorHandler {
-        protected Logger log = LogUtil.getLogger(this);
-        protected boolean throwOnError = false;
-        protected boolean warn = true;
+	protected static class MyErrorHandler implements XMLErrorHandler {
+		protected Logger log = LogUtil.getLogger(this);
+		protected boolean throwRetryException = false;
+		protected boolean warn = true;
 
-        public void warning(String domain, String key, XMLParseException e) throws XNIException {
-            if (warn) ConfigurationWarnings.getInstance().add(log, e.getMessage());
-        }
+		public void warning(String domain, String key, XMLParseException e) throws XNIException {
+			// The schema location http://www.w3.org/2001/xml.xsd is a special
+			// case which we ignore. It's used in envelope-1.2.xsd and
+			// soap-1.2.xsd.
+			if (warn && !(e.getMessage() != null
+					&& e.getMessage().startsWith("schema_reference.4: Failed to read schema document 'http://www.w3.org/2001/xml.xsd'"))) {
+				ConfigurationWarnings.getInstance().add(log, e.getMessage());
+			}
+		}
 
-        public void error(String domain, String key, XMLParseException e) throws XNIException {
-            if (throwOnError) {
-                throw new RetryException(e.getMessage());
-            }
-            if (warn) ConfigurationWarnings.getInstance().add(log, e.getMessage());
-        }
+		public void error(String domain, String key, XMLParseException e) throws XNIException {
+			// In case the XSD doesn't exist throw an exception to prevent the
+			// the adapter from starting.
+			if (e.getMessage() != null
+					&& e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
+				throw e;
+			}
+			if (throwRetryException) {
+				throw new RetryException(e.getMessage());
+			}
+			if (warn) {
+				ConfigurationWarnings.getInstance().add(log, e.getMessage());
+			}
+		}
 
-        public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
-            if (warn) ConfigurationWarnings.getInstance().add(log, e.getMessage());
-            throw new XNIException(e.getMessage());
-        }
-    }
+		public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
+			if (warn) {
+				ConfigurationWarnings.getInstance().add(log, e.getMessage());
+			}
+			throw new XNIException(e.getMessage());
+		}
+	}
 }

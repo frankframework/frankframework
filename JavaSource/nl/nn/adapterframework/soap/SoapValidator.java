@@ -23,7 +23,7 @@ public class SoapValidator extends XmlValidator {
     private String soapBody   = "";
     private String soapHeader = "";
 
-    private SoapVersion[] versions = SoapVersion.values();
+    private SoapVersion[] versions = new SoapVersion[] {SoapVersion.fromAttribute("1.1")};
 
     private String setSchemaLocation = "";
 

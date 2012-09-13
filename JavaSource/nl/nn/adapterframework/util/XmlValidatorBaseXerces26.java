@@ -1,6 +1,13 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.19  2012-08-23 11:57:43  m00f069
+ * Revision 1.20  2012-09-13 08:25:17  m00f069
+ * - Throw exception when XSD doesn't exist (to prevent adapter from starting).
+ * - Ignore warning schema_reference.4: Failed to read schema document 'http://www.w3.org/2001/xml.xsd'.
+ * - Made SoapValidator use 1.1 XSD only by default (using two generates the warning s4s-elt-invalid-content.1: The content of 'reasontext' is invalid. Element 'attribute' is invalid, misplaced, or occurs too often.).
+ * - Introduced xmlValidator.lazyInit property.
+ * - Don't lazy init by default (restored old behaviour).
+ *
+ * Revision 1.19  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates from Michiel
  *
  * Revision 1.18  2012/06/01 10:52:50  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -174,9 +181,7 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
 
     private Map<String, Grammar>                grammars = new HashMap<String, Grammar>(); /* xmlns -> Grammar */
 
-
-    private boolean warn = !"false".equals(AppConstants.getInstance().getProperty("xmlValidator.warn"));
-
+    private boolean warn = AppConstants.getInstance().getBoolean("xmlValidator.warn", true);
 
 	private static final int MODE = 2;
 
@@ -261,7 +266,7 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
 
             // Loop over the definitions until nothing changes
             // This makes sure that the _order_ is not important in the 'schemas'.
-            errorHandler.throwOnError = true;
+            errorHandler.throwRetryException = true;
             boolean changes;
             do {
                 changes = false;
@@ -277,7 +282,7 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
                 }
             } while (changes);
             // loop the remaining ones, they seem to be unresolvable, so let the exception go then
-            errorHandler.throwOnError = false;
+            errorHandler.throwRetryException = false;
             for (Definition def : definitions) {
                 addGrammar(def.publicId, preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(def)));
             }
