@@ -1,3 +1,9 @@
+/*
+ * $Log: SoapValidator.java,v $
+ * Revision 1.6  2012-09-14 13:35:48  m00f069
+ * Added CVS log
+ *
+ */
 package nl.nn.adapterframework.soap;
 
 import java.util.*;
