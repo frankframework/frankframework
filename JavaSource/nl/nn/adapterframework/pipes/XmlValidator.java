@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.38  2012-08-23 11:57:44  m00f069
+ * Revision 1.39  2012-09-14 13:35:31  m00f069
+ * Call deprecated getMessageToValidate only when deprecated soapNamespace has been set
+ *
+ * Revision 1.38  2012/08/23 11:57:44  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates from Michiel
  *
  * Revision 1.37  2012/06/01 10:52:49  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -240,8 +243,12 @@ public class XmlValidator extends FixedForwardPipe {
       */
      @Override
     public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-
-         String messageToValidate = getMessageToValidate(input, session);
+         String messageToValidate;
+         if (StringUtils.isNotEmpty(getSoapNamespace())) {
+             messageToValidate = getMessageToValidate(input, session);
+         } else {
+             messageToValidate = input.toString();
+         }
          try {
             PipeForward forward = validate(messageToValidate, session);
 			return new PipeRunResult(forward, input);
