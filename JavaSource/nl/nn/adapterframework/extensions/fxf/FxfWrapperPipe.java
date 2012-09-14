@@ -1,6 +1,9 @@
 /*
  * $Log: FxfWrapperPipe.java,v $
- * Revision 1.5  2012-09-05 09:00:16  m00f069
+ * Revision 1.6  2012-09-14 07:18:12  m00f069
+ * Reverting last change of removal of Ibis name from transferFlowId, shouldn't be send by FxF after all.
+ *
+ * Revision 1.5  2012/09/05 09:00:16  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Remove Ibis name from transferFlowId when determining flowId
  *
  * Revision 1.4  2012/08/21 10:01:20  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -198,7 +201,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			} catch (Throwable t) {
 				throw new PipeRunException(this, getLogPrefix(session) + " Unexpected exception during (un)wrapping ", t);
 			}
-			String flowId = transferFlowId.substring(0, 2) + "X" + transferFlowId.substring(3, transferFlowId.indexOf('-'));
+			String flowId = transferFlowId.substring(0, 2) + "X" + transferFlowId.substring(3);
 			session.put(getFlowIdSessionKey(), flowId);
 			session.put(getFxfDirSessionKey(), fxfDir);
 			// Transform the filename as it is known locally on the IUF state
