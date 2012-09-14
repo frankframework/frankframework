@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapValidator.java,v $
- * Revision 1.5  2012-08-23 11:57:43  m00f069
+ * Revision 1.6  2012-09-14 13:32:29  m00f069
+ * Typo in setSoapHeader parameter name
+ *
+ * Revision 1.5  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates from Michiel
  *
  * Revision 1.4  2012/05/08 15:55:38  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -72,7 +75,7 @@ public class EsbSoapValidator extends SoapValidator {
     }
 
     @Override
-    public void setSoapHeader(String bodyTags) {
+    public void setSoapHeader(String soapHeader) {
         throw new IllegalArgumentException("Esb soap is unmodifiable, it is: " + getSoapHeaderTags());
     }
 
