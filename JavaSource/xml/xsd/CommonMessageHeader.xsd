@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<!-- 2012-04-10 # v0.1.0 # DINN # Initial version -->
+<!-- 2012-07-02 # v0.1.1 # Peter Leeuwenburgh # bugfix for Text element -->
 <xsd:schema xmlns="http://nn.nl/XSD/Generic/MessageHeader/1"
 	 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	 targetNamespace="http://nn.nl/XSD/Generic/MessageHeader/1"
@@ -431,13 +432,17 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="TextType">
-		<xsd:attribute name="language" type="xsd:string">
-			<xsd:annotation>
-				<xsd:documentation>
-					Detailing the language of the error based on ISO 639-1 Code.
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="language" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>
+							Detailing the language of the error based on ISO 639-1 Code.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
 	</xsd:complexType>
 	<xsd:simpleType name="StatusType">
 		<xsd:annotation>
