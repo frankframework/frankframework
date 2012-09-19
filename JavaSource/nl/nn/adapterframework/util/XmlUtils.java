@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.83  2012-09-19 09:49:58  m00f069
+ * Revision 1.84  2012-09-19 21:40:37  m00f069
+ * Added ignoreUnknownNamespaces attribute
+ *
+ * Revision 1.83  2012/09/19 09:49:58  Jaco de Groot <jaco.de.groot@ibissource.org>
  * - Set reasonSessionKey to "failureReason" and xmlReasonSessionKey to "xmlFailureReason" by default
  * - Fixed check on unknown namspace in case root attribute or xmlReasonSessionKey is set
  * - Fill reasonSessionKey with a message when an exception is thrown by parser instead of the ErrorHandler being called
@@ -272,23 +275,8 @@
 package nl.nn.adapterframework.util;
 
 
-import java.io.*;
-import java.net.URL;
-import java.util.*;
-
-import javax.xml.namespace.QName;
-import javax.xml.parsers.*;
-import javax.xml.stream.XMLEventFactory;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.Namespace;
-import javax.xml.stream.events.StartElement;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ListenerException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.exception.NestableException;
@@ -302,7 +290,21 @@ import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import nl.nn.adapterframework.core.ListenerException;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.*;
+import javax.xml.stream.XMLEventFactory;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.Namespace;
+import javax.xml.stream.events.StartElement;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.*;
+import java.net.URL;
+import java.util.*;
 
 /**
  * Some utilities for working with XML.
@@ -311,7 +313,7 @@ import nl.nn.adapterframework.core.ListenerException;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.83 $ $Date: 2012-09-19 09:49:58 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.84 $ $Date: 2012-09-19 21:40:37 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -342,11 +344,19 @@ public class XmlUtils {
 			+ "<xsl:copy><xsl:apply-templates select=\"*|@*|text()|processing-instruction()|comment()\" />"
 			+ "</xsl:copy></xsl:template></xsl:stylesheet>";
 
-    static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
+    public static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
     static final XMLInputFactory INPUT_FACTORY   = XMLInputFactory.newInstance();
     static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
+	public static final XMLInputFactory NAMESPACE_AWARE_INPUT_FACTORY = XMLInputFactory.newInstance();
+	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY = XMLOutputFactory.newInstance();
 
-    public XmlUtils() {
+	static {
+		XmlUtils.NAMESPACE_AWARE_INPUT_FACTORY.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);
+		XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
+	}
+
+
+	public XmlUtils() {
 		super();
 	}
 	public static String makeSkipEmptyTagsXslt(boolean omitXmlDeclaration, boolean indent) {
@@ -1366,31 +1376,28 @@ public class XmlUtils {
 	}
 
 
-	static public String resolveSchemaLocations(String locationAttribute) {
-		String result=null;
+	static public String resolveSchemaLocations(String locationAttribute) throws ConfigurationException {
+		StringBuilder result = new StringBuilder();
 		StringTokenizer st = new StringTokenizer(locationAttribute);
 		while (st.hasMoreTokens()) {
-			if (result==null) {
-				result="";
-			} else {
-				result+=" ";
+			if (result.length() > 0) {
+				result.append(' ');
 			}
 			String namespace=st.nextToken();
-			result += namespace+" ";
+			result.append(namespace).append(' ');
 			if (st.hasMoreTokens()) {
 				String location=st.nextToken();
 				URL url = ClassUtils.getResourceURL(XmlUtils.class, location);
-				if (url!=null) {
-					result+=url.toExternalForm();
+				if (url != null) {
+					result.append(url.toExternalForm());
 				} else {
-					log.warn("could not resolve location ["+location+"] for namespace ["+namespace+"] to URL");
-					result+=location;
+					throw new ConfigurationException("could not resolve location [" + location + "] for namespace ["+namespace+"] to URL");
 				}
 			} else {
 				log.warn("no location for namespace ["+namespace+"]");
 			}
 		}
-		return result;
+		return result.toString();
 	}
 
 
@@ -1402,11 +1409,14 @@ public class XmlUtils {
 		Variant in = new Variant(input);
 		InputSource is = in.asXmlInputSource();
 
-		List<String> path = new ArrayList<String>();
-		path.add(root);
-		Set<List<String>> singleLeafValidations = new HashSet<List<String>>();
-		singleLeafValidations.add(path);
-		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(null, singleLeafValidations);
+		Set<List<String>> singleLeafValidations = null;
+		if (StringUtils.isNotEmpty(root)) {
+			List<String> path = new ArrayList<String>();
+			path.add(root);
+			singleLeafValidations = new HashSet<List<String>>();
+			singleLeafValidations.add(path);
+		}
+		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(null, singleLeafValidations, true);
 
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(true);
@@ -1431,32 +1441,31 @@ public class XmlUtils {
 	}
 
 	public static void assertValidToSchema(InputSource src, URL schema, boolean namespaceAware, String root) throws ListenerException {
-		XMLReader parser=null;
+		XMLReader parser;
 		XmlValidatorErrorHandler xeh;
 		try {
 			parser = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
 			parser.setFeature("http://xml.org/sax/features/validation", true);
 			parser.setFeature("http://xml.org/sax/features/namespaces", true);
 			parser.setFeature("http://apache.org/xml/features/validation/schema", true);
+			Boolean ignoreUnknownNamespaces;
 			if (namespaceAware) {
 				log.debug("Give schemaLocation to parser: " + schema.toExternalForm());
 				parser.setProperty("http://apache.org/xml/properties/schema/external-schemaLocation", schema.toExternalForm());
+				ignoreUnknownNamespaces = false;
 			} else {
 				log.debug("Give noNamespaceSchemaLocation to parser: " + schema.toExternalForm());
 				parser.setProperty("http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation", schema.toExternalForm());
+				ignoreUnknownNamespaces = true;
 			}
+			Set<List<String>> singleLeafValidations = null;
 			if (StringUtils.isNotEmpty(root)) {
 				List<String> path = new ArrayList<String>();
 				path.add(root);
-				Set<List<String>> singleLeafValidations = new HashSet<List<String>>();
+				singleLeafValidations = new HashSet<List<String>>();
 				singleLeafValidations.add(path);
-				XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(null, singleLeafValidations);
-				parser.setContentHandler(new XmlValidatorContentHandler(null, singleLeafValidations));
 			}
-
-			if (parser==null) {
-				throw new ListenerException("could not obtain parser");
-			}
+			parser.setContentHandler(new XmlValidatorContentHandler(null, singleLeafValidations, ignoreUnknownNamespaces));
 			xeh = new XmlValidatorErrorHandler(parser);
 			parser.setErrorHandler(xeh);
 		} catch (SAXNotRecognizedException e) {

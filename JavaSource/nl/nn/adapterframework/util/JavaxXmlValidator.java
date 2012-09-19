@@ -1,11 +1,13 @@
 package nl.nn.adapterframework.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import org.apache.log4j.Logger;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSResourceResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
@@ -15,12 +17,12 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-
-import org.apache.log4j.Logger;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import nl.nn.adapterframework.core.IPipeLineSession;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Straightforward XML-validation based on javax.validation. This is work in programs.
@@ -65,15 +67,35 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
         }
         try {
             Validator validator = xsd.newValidator();
-            //validator.setResourceResolver(resourceResolver);
-            //validator.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
-            validator.validate(source);
+			validator.setResourceResolver(new LSResourceResolver() {
+				public LSInput resolveResource(String s, String s1, String s2, String s3, String s4) {
+					System.out.println("--");
+					return null;//To change body of implemented methods Settings | File Templates.
+				}
+			});
+			validator.setErrorHandler(new ErrorHandler() {
+				public void warning(SAXParseException e) throws SAXException {
+					System.out.println("--");
+				}
+
+				public void error(SAXParseException e) throws SAXException {
+					System.out.println("--");
+					//To change body of implemented methods Settings | File Templates.
+				}
+
+				public void fatalError(SAXParseException e) throws SAXException {
+					System.out.println("--");
+					//To change body of implemented methods Settings | File Templates.
+				}
+			});
+            validator.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
+			validator.validate(source);
         } catch (SAXException e) {
             throw new XmlValidatorException(e.getMessage());
         } catch (IOException e) {
             throw new XmlValidatorException(e.getMessage(), e);
-        }
-        return XML_VALIDATOR_VALID_MONITOR_EVENT;
+		}
+		return XML_VALIDATOR_VALID_MONITOR_EVENT;
     }
 
     @Override
@@ -91,8 +113,15 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
     protected Schema getSchemaObject() throws SAXException, IOException, XMLStreamException {
         if (schema == null) {
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+			factory.setResourceResolver(new LSResourceResolver() {
+				public LSInput resolveResource(String s, String s1, String s2, String s3, String s4) {
+					System.out.println("--");
+					return null;//To change body of implemented methods Settings | File Templates.
+				}
+			});
             Collection<Source> sources = getSchemaSources().values();
             schema = factory.newSchema(sources.toArray(new Source[sources.size()]));
+
         }
         return schema;
     }

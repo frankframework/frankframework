@@ -10,6 +10,7 @@ import javax.xml.stream.*;
 import javax.xml.stream.events.*;
 
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * The representation of a XSD in a WSDL.
@@ -114,7 +115,7 @@ class XSD implements Comparable<XSD> {
         if (set == null) set = new HashSet();
         InputStream in = url.toURL().openStream();
         if (in == null) return null;
-        XMLEventReader er = WsdlUtils.INPUT_FACTORY.createXMLEventReader(in, WsdlUtils.ENCODING);
+        XMLEventReader er = XmlUtils.NAMESPACE_AWARE_INPUT_FACTORY.createXMLEventReader(in, WsdlUtils.ENCODING);
         while (er.hasNext()) {
             XMLEvent e = er.nextEvent();
             switch (e.getEventType()) {

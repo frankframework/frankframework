@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractXmlValidator.java,v $
- * Revision 1.3  2012-09-19 09:49:58  m00f069
+ * Revision 1.4  2012-09-19 21:40:37  m00f069
+ * Added ignoreUnknownNamespaces attribute
+ *
+ * Revision 1.3  2012/09/19 09:49:58  Jaco de Groot <jaco.de.groot@ibissource.org>
  * - Set reasonSessionKey to "failureReason" and xmlReasonSessionKey to "xmlFailureReason" by default
  * - Fixed check on unknown namspace in case root attribute or xmlReasonSessionKey is set
  * - Fill reasonSessionKey with a message when an exception is thrown by parser instead of the ErrorHandler being called
@@ -110,6 +113,7 @@ public abstract class AbstractXmlValidator {
 
     protected String logPrefix = "";
     protected boolean addNamespaceToSchema = false;
+	protected Boolean ignoreUnknownNamespaces;
 
     public boolean isAddNamespaceToSchema() {
         return addNamespaceToSchema;
@@ -372,7 +376,23 @@ public abstract class AbstractXmlValidator {
 		singleLeafValidations.add(path);
 	}
 
-    protected static class RetryException extends XNIException {
+	public void setIgnoreUnknownNamespaces(boolean b) {
+		this.ignoreUnknownNamespaces = b;
+	}
+
+	public boolean getIgnoreUnknownNamespaces() {
+		if (ignoreUnknownNamespaces == null) {
+			if (StringUtils.isEmpty(getSchemaLocation())) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return ignoreUnknownNamespaces;
+		}
+	}
+
+	protected static class RetryException extends XNIException {
         public RetryException(String s) {
             super(s);
         }

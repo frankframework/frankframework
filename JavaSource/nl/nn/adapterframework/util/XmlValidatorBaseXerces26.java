@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.21  2012-09-19 09:49:58  m00f069
+ * Revision 1.22  2012-09-19 21:40:37  m00f069
+ * Added ignoreUnknownNamespaces attribute
+ *
+ * Revision 1.21  2012/09/19 09:49:58  Jaco de Groot <jaco.de.groot@ibissource.org>
  * - Set reasonSessionKey to "failureReason" and xmlReasonSessionKey to "xmlFailureReason" by default
  * - Fixed check on unknown namspace in case root attribute or xmlReasonSessionKey is set
  * - Fill reasonSessionKey with a message when an exception is thrown by parser instead of the ErrorHandler being called
@@ -289,31 +292,6 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
         }
     }
 
-	private CachingParserPool createParserPool(String schemas, boolean singleSchema) throws XmlValidatorException, XMLStreamException, IOException {
-		SymbolTable sym = new SymbolTable(BIG_PRIME);
-		XMLGrammarPool grammarPool = createGrammarPool(sym, schemas, singleSchema);
-		CachingParserPool parserPool;
-
-		parserPool = new CachingParserPool(sym,grammarPool);
-		//parserPool.setShadowSymbolTable(true);
-
-        return parserPool;
-	}
-
-	private XMLParserConfiguration createParserConfiguration(String schemas, boolean singleSchema) throws XmlValidatorException, XMLStreamException, IOException {
-		SymbolTable sym = createSymbolTable();
-		XMLGrammarPool grammarPool = createGrammarPool(sym, schemas, singleSchema);
-
-		XMLParserConfiguration parserConfiguration = new IntegratedParserConfiguration(new SynchronizedSymbolTable(sym), new CachingParserPool.SynchronizedGrammarPool(grammarPool));
-
-        parserConfiguration.setFeature(NAMESPACES_FEATURE_ID, true);
-        parserConfiguration.setFeature(VALIDATION_FEATURE_ID, true);
-        parserConfiguration.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
-        parserConfiguration.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
-
-        return parserConfiguration;
-	}
-
 	private SymbolTable getSymbolTable(String schemas) throws XmlValidatorException {
 		SymbolTable result = symbolTables.get(schemas);
 		if (result == null) {
@@ -359,8 +337,6 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
 		}
 
 		String schema = globalSchema;
-		CachingParserPool parserPool = globalParserPool;
-		XMLParserConfiguration parserConfig = globalParserConfig;
 		SymbolTable symbolTable = globalSymbolTable;
 		XMLGrammarPool grammarPool = globalGrammarPool;
 		if (schema == null) {
@@ -392,7 +368,7 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
 
 		XmlValidatorErrorHandler xeh;
 
-		XMLReader parser = null;
+		XMLReader parser;
 		try {
 			parser = getParser(symbolTable, grammarPool);
 			if (parser == null) {
@@ -427,7 +403,7 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
 
     private XMLReader getParser(final SymbolTable symbolTable, final XMLGrammarPool grammarPool) throws  SAXException {
     	XMLReader parser = new SAXParser(new ShadowedSymbolTable(symbolTable), grammarPool);
-    	parser.setContentHandler(new XmlValidatorContentHandler(grammars, singleLeafValidations));
+    	parser.setContentHandler(new XmlValidatorContentHandler(grammars, singleLeafValidations, getIgnoreUnknownNamespaces()));
     	parser.setFeature(NAMESPACES_FEATURE_ID, true);
     	parser.setFeature(VALIDATION_FEATURE_ID, true);
     	parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);

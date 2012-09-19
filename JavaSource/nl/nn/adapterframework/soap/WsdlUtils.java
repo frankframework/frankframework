@@ -1,34 +1,10 @@
 package nl.nn.adapterframework.soap;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import javanet.staxutils.IndentingXMLStreamWriter;
 import javanet.staxutils.XMLStreamEventWriter;
 import javanet.staxutils.XMLStreamUtils;
 import javanet.staxutils.events.AttributeEvent;
 import javanet.staxutils.events.StartElementEvent;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLEventFactory;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
-
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
@@ -39,9 +15,18 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.log4j.Logger;
 import org.apache.xerces.util.XMLChar;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.*;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.*;
 
 /**
  * @author Michiel Meeuwissen
@@ -50,14 +35,7 @@ public abstract class WsdlUtils {
 
 
     private static final Logger LOG = LogUtil.getLogger(WsdlUtils.class);
-    static final XMLInputFactory INPUT_FACTORY   = XMLInputFactory.newInstance();
-    static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
-    static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
 
-    static {
-        INPUT_FACTORY.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE,        Boolean.TRUE);
-        OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
-    }
 
     static final String ENCODING  = "UTF-8";
 
@@ -102,7 +80,7 @@ public abstract class WsdlUtils {
     }
 
     static XMLStreamWriter createWriter(OutputStream out, boolean indentWsdl) throws XMLStreamException {
-        XMLStreamWriter w = OUTPUT_FACTORY.createXMLStreamWriter(out, ENCODING);
+        XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(out, ENCODING);
         if (indentWsdl) {
             IndentingXMLStreamWriter iw = new IndentingXMLStreamWriter(w);
             iw.setIndent(" ");
@@ -152,7 +130,7 @@ public abstract class WsdlUtils {
 
                 // including the XSD with includeXSD will also parse it, e.g. to determin the first tag.
                 // We don't need to actually include it here, so we just throw away the result.
-                includeXSD(xsd, OUTPUT_FACTORY.createXMLStreamWriter(new OutputStream() {
+                includeXSD(xsd, XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(new OutputStream() {
                     @Override
                     public void write(int i) throws IOException {
                         // /dev/null
@@ -183,7 +161,7 @@ public abstract class WsdlUtils {
         String xsdNamespace = correct(correctingNamespaces, xsd.nameSpace);
 
         if (in == null) throw new IllegalStateException("" + xsd + " not found");
-        XMLEventReader er = INPUT_FACTORY.createXMLEventReader(in, ENCODING);
+        XMLEventReader er = XmlUtils.NAMESPACE_AWARE_INPUT_FACTORY.createXMLEventReader(in, ENCODING);
         String wrongNamespace = null;
         while (er.hasNext()) {
             XMLEvent e = er.nextEvent();
@@ -213,9 +191,9 @@ public abstract class WsdlUtils {
                                         new AttributeEvent(Wsdl.TNS, xsdNamespace)
                                     ).iterator(),
                                     Arrays.asList(
-                                        EVENT_FACTORY.createNamespace(xsdNamespace)
+											XmlUtils.EVENT_FACTORY.createNamespace(xsdNamespace)
                                     ).iterator(),
-                                    EVENT_FACTORY
+                                    XmlUtils.EVENT_FACTORY
                                 );
 
                             if (!ne.equals(e)) {
@@ -224,7 +202,7 @@ public abstract class WsdlUtils {
                                 //list.add(
 
                                 Attribute targetNameSpace = el.getAttributeByName(Wsdl.TNS);
-                                e = XMLStreamUtils.mergeAttributes(ne, list.iterator(), EVENT_FACTORY);
+                                e = XMLStreamUtils.mergeAttributes(ne, list.iterator(), XmlUtils.EVENT_FACTORY);
                                 if (targetNameSpace != null) {
                                     String currentTarget = targetNameSpace.getValue();
                                     if (! currentTarget.equals(xsdNamespace)) {
@@ -248,7 +226,7 @@ public abstract class WsdlUtils {
                             }
                             e =
                                 XMLStreamUtils.mergeAttributes(el,
-                                    Collections.singletonList(new AttributeEvent(Wsdl.SCHEMALOCATION, location)).iterator(), EVENT_FACTORY);
+                                    Collections.singletonList(new AttributeEvent(Wsdl.SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
                             if (LOG.isDebugEnabled()) {
                                 LOG.debug(xsd.url + " Corrected " + el + " -> " + e);
                                 LOG.debug(xsd.url + " Relative to : " + relativeTo + " -> " + e);

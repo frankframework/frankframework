@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.40  2012-09-19 09:49:58  m00f069
+ * Revision 1.41  2012-09-19 21:40:37  m00f069
+ * Added ignoreUnknownNamespaces attribute
+ *
+ * Revision 1.40  2012/09/19 09:49:58  Jaco de Groot <jaco.de.groot@ibissource.org>
  * - Set reasonSessionKey to "failureReason" and xmlReasonSessionKey to "xmlFailureReason" by default
  * - Fixed check on unknown namspace in case root attribute or xmlReasonSessionKey is set
  * - Fill reasonSessionKey with a message when an exception is thrown by parser instead of the ErrorHandler being called
@@ -167,6 +170,7 @@ import nl.nn.adapterframework.util.*;
 * <tr><td>{@link #setValidateFile(boolean) validateFile}</td><td>when set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated</td><td><code>false</code></td></tr>
 * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code></td><td>UTF-8</td></tr>
 * <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>when the input message is a SOAP Message, the namespace of the SOAP Envelope. For input SOAP Messages the content of the SOAP Body is used for validation</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
+* <tr><td>{@link #setIgnoreUnknownNamespaces(boolean) ignoreUnknownNamespaces}</td><td>ignore namespaces in the input message which are unknown</td><td>false when schemaLocation is used, true otherwise</td></tr>
 * <tr><td>{@link #setWarn(boolean) warn}</td><td>when set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)</td><td><code>true</code></td></tr>
 * </table>
 * <p><b>Exits:</b>
@@ -504,4 +508,11 @@ public class XmlValidator extends FixedForwardPipe {
         }
     }
 
+	public void setIgnoreUnknownNamespaces(boolean ignoreUnknownNamespaces) {
+		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
+	}
+
+	public boolean getIgnoreUnknownNamespaces() {
+		return validator.getIgnoreUnknownNamespaces();
+	}
 }
