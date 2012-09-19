@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.55  2012-01-10 10:48:22  europe\m168309
+ * Revision 1.56  2012-09-19 21:48:04  m00f069
+ * Added link method CORRELATIONID_FROM_MESSAGE to the jms sender
+ *
+ * Revision 1.55  2012/01/10 10:48:22  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * modified logging
  *
  * Revision 1.54  2012/01/05 10:00:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -187,7 +190,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>when <code>true</code>, the sender operates in RR mode: the a reply is expected, either on the queue specified in 'replyToName', or on a dynamically generated temporary queue</td><td>false</td></tr>
- * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>(Only used when synchronous="true" and and replyToName is set) Eithter 'MESSAGEID' or 'CORRELATIONID'. Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requires the sender to have set the correlationID at the time of sending.</td><td>MESSAGEID</td></tr>
+ * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>(Only used when synchronous="true" and and replyToName is set) Eithter 'CORRELATIONID', 'CORRELATIONID_FROM_MESSAGE' or 'MESSAGEID'. Indicates wether the server uses the correlationID from the pipeline, the correlationID from the message or the messageID in the correlationID field of the reply. This requires the sender to have set the correlationID at the time of sending.</td><td>MESSAGEID</td></tr>
  * <tr><td>{@link #setReplyToName(String) replyToName}</td><td>Name of the queue the reply is expected on. This value is send in the JmsReplyTo-header with the message.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReplyTimeout(int) replyTimeout}</td><td>maximum time in ms to wait for a reply. 0 means no timeout. (Only for synchronous=true)</td><td>5000</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as delivery mode. You probably want to use that.</td><td>&nbsp;</td></tr>
@@ -376,6 +379,8 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 				if (replyToName != null) {
 					if ("CORRELATIONID".equalsIgnoreCase(getLinkMethod())) {
 						replyCorrelationId=correlationID;
+					} else if ("CORRELATIONID_FROM_MESSAGE".equalsIgnoreCase(getLinkMethod())) {
+						replyCorrelationId=msg.getJMSCorrelationID();
 					} else {
 						replyCorrelationId=msg.getJMSMessageID();
 					}
