@@ -1,21 +1,31 @@
 /*
  * $Log: SoapValidator.java,v $
- * Revision 1.6  2012-09-14 13:35:48  m00f069
+ * Revision 1.7  2012-09-19 09:49:58  m00f069
+ * - Set reasonSessionKey to "failureReason" and xmlReasonSessionKey to "xmlFailureReason" by default
+ * - Fixed check on unknown namspace in case root attribute or xmlReasonSessionKey is set
+ * - Fill reasonSessionKey with a message when an exception is thrown by parser instead of the ErrorHandler being called
+ * - Added/fixed check on element of soapBody and soapHeader
+ * - Cleaned XML validation code a little (e.g. moved internal XmlErrorHandler class (double code in two classes) to an external class, removed MODE variable and related code)
+ *
+ * Revision 1.6  2012/09/14 13:35:48  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added CVS log
  *
  */
 package nl.nn.adapterframework.soap;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import javax.xml.namespace.QName;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.pipes.XmlValidator;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.pipes.XmlValidator;
 
 /**
  * XmlValidator that will automatically add the SOAP envelope XSD.
@@ -38,7 +48,20 @@ public class SoapValidator extends XmlValidator {
     public void configure() throws ConfigurationException {
         super.configure();
         this.setSchemaLocation(setSchemaLocation);
-
+        if (StringUtils.isNotEmpty(soapBody)) {
+            List<String> path = new ArrayList<String>();
+            path.add("Envelope");
+            path.add("Body");
+            path.add(soapBody);
+            validator.addSingleLeafValidation(path);
+        }
+        if (StringUtils.isNotEmpty(soapHeader)) {
+            List<String> path = new ArrayList<String>();
+            path.add("Envelope");
+            path.add("Header");
+            path.add(soapHeader);
+            validator.addSingleLeafValidation(path);
+        }
     }
 
     @Override

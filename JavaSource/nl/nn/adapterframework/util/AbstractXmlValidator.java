@@ -1,6 +1,13 @@
 /*
  * $Log: AbstractXmlValidator.java,v $
- * Revision 1.2  2012-09-13 08:25:17  m00f069
+ * Revision 1.3  2012-09-19 09:49:58  m00f069
+ * - Set reasonSessionKey to "failureReason" and xmlReasonSessionKey to "xmlFailureReason" by default
+ * - Fixed check on unknown namspace in case root attribute or xmlReasonSessionKey is set
+ * - Fill reasonSessionKey with a message when an exception is thrown by parser instead of the ErrorHandler being called
+ * - Added/fixed check on element of soapBody and soapHeader
+ * - Cleaned XML validation code a little (e.g. moved internal XmlErrorHandler class (double code in two classes) to an external class, removed MODE variable and related code)
+ *
+ * Revision 1.2  2012/09/13 08:25:17  Jaco de Groot <jaco.de.groot@ibissource.org>
  * - Throw exception when XSD doesn't exist (to prevent adapter from starting).
  * - Ignore warning schema_reference.4: Failed to read schema document 'http://www.w3.org/2001/xml.xsd'.
  * - Made SoapValidator use 1.1 XSD only by default (using two generates the warning s4s-elt-invalid-content.1: The content of 'reasontext' is invalid. Element 'attribute' is invalid, misplaced, or occurs too often.).
@@ -37,17 +44,23 @@ import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLParseException;
-import org.xml.sax.*;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.*;
+import org.xml.sax.InputSource;
 
 /**
  * baseclass for validating input message against a XML-Schema.
@@ -86,9 +99,10 @@ public abstract class AbstractXmlValidator {
 	private String schemaSessionKey = null;
     private boolean throwException = false;
     private boolean fullSchemaChecking = false;
-	private String reasonSessionKey = null;
-	private String xmlReasonSessionKey = null;
+	private String reasonSessionKey = "failureReason";
+	private String xmlReasonSessionKey = "xmlFailureReason";
 	private String root = null;
+	protected Set<List<String>> singleLeafValidations = null;
 	private boolean validateFile=false;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
     protected boolean needsInit = true;
@@ -105,105 +119,6 @@ public abstract class AbstractXmlValidator {
         this.addNamespaceToSchema = addNamespaceToSchema;
     }
 
-
-    public class XmlErrorHandler implements ErrorHandler {
-        private boolean errorOccured = false;
-        private String reasons;
-		private XMLReader parser;
-		private XmlBuilder xmlReasons = new XmlBuilder("reasons");
-
-
-		public XmlErrorHandler(XMLReader parser) {
-			this.parser = parser;
-		}
-
-		public void addReason(String message, String location) {
-			try {
-				ContentHandler ch = parser.getContentHandler();
-				if (ch!=null && ch instanceof XmlFindingHandler) {
-					XmlFindingHandler xfh = (XmlFindingHandler)ch;
-
-					XmlBuilder reason = new XmlBuilder("reason");
-					XmlBuilder detail;
-
-					detail = new XmlBuilder("message");;
-					detail.setCdataValue(message);
-					reason.addSubElement(detail);
-
-					detail = new XmlBuilder("elementName");;
-					detail.setValue(xfh.getElementName());
-					reason.addSubElement(detail);
-
-					detail = new XmlBuilder("xpath");;
-					detail.setValue(xfh.getXpath());
-					reason.addSubElement(detail);
-
-					xmlReasons.addSubElement(reason);
-				}
-			} catch (Throwable t) {
-				log.error(getLogPrefix(null)+"Exception handling errors",t);
-
-				XmlBuilder reason = new XmlBuilder("reason");
-				XmlBuilder detail;
-
-				detail = new XmlBuilder("message");;
-				detail.setCdataValue(t.getMessage());
-				reason.addSubElement(detail);
-
-				xmlReasons.addSubElement(reason);
-			}
-
-			if (StringUtils.isNotEmpty(location)) {
-				message = location + ": " + message;
-			}
-			errorOccured = true;
-			if (reasons == null) {
-				 reasons = message;
-			 } else {
-				 reasons = reasons + "\n" + message;
-			 }
-		}
-
-		public void addReason(Throwable t) {
-			String location=null;
-			if (t instanceof SAXParseException) {
-				SAXParseException spe = (SAXParseException)t;
-				location = "at ("+spe.getLineNumber()+ ","+spe.getColumnNumber()+")";
-			}
-			addReason(t.getMessage(),location);
-		}
-
-		public void warning(SAXParseException exception) {
-			addReason(exception);
-		}
-        public void error(SAXParseException exception) {
-        	addReason(exception);
-        }
-        public void fatalError(SAXParseException exception) {
-			addReason(exception);
-        }
-
-        public boolean hasErrorOccured() {
-            return errorOccured;
-        }
-
-         public String getReasons() {
-            return reasons;
-        }
-
-		public String getXmlReasons() {
-		   return xmlReasons.toXML();
-	   }
-    }
-
-    public static class XmlValidatorException extends IbisException {
-    	XmlValidatorException(String cause, Throwable t) {
-    		super(cause,t);
-    	}
-    	XmlValidatorException(String cause) {
-    		super(cause);
-    	}
-    }
     /**
      * Configure the XmlValidator
      * @throws ConfigurationException when:
@@ -250,16 +165,14 @@ public abstract class AbstractXmlValidator {
         }
     }
 
-	protected String handleFailures(XmlErrorHandler xeh, IPipeLineSession session, String mainReason, String forwardName, String event, Throwable t) throws  XmlValidatorException {
-
-		String fullReasons=mainReason;
-		if (StringUtils.isNotEmpty(xeh.getReasons())) {
-			if (StringUtils.isNotEmpty(mainReason)) {
-				fullReasons+=":\n"+xeh.getReasons();
-			} else {
-				fullReasons=xeh.getReasons();
-			}
+	protected String handleFailures(XmlValidatorErrorHandler xeh, IPipeLineSession session, String mainReason, String event, Throwable t) throws  XmlValidatorException {
+		if (StringUtils.isNotEmpty(mainReason)) {
+			xeh.addReason(mainReason, null);
 		}
+		if (t != null) {
+			xeh.addReason(t);
+		}
+		String fullReasons = xeh.getReasons();
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			log.debug(getLogPrefix(session)+"storing reasons under sessionKey ["+getReasonSessionKey()+"]");
 			session.put(getReasonSessionKey(),fullReasons);
@@ -414,6 +327,9 @@ public abstract class AbstractXmlValidator {
 
 	public void setRoot(String root) {
 		this.root = root;
+		List<String> path = new ArrayList<String>();
+		path.add(root);
+		addSingleLeafValidation(path);
 	}
 	public String getRoot() {
 		return root;
@@ -447,17 +363,17 @@ public abstract class AbstractXmlValidator {
             is = in.asXmlInputSource();
         }
         return is;
-
     }
+
+	public void addSingleLeafValidation(List<String> path) {
+		if (singleLeafValidations == null) {
+			singleLeafValidations = new HashSet<List<String>>();
+		}
+		singleLeafValidations.add(path);
+	}
 
     protected static class RetryException extends XNIException {
         public RetryException(String s) {
-            super(s);
-        }
-    }
-
-    public static class UnknownNamespaceException extends RuntimeException {
-        public UnknownNamespaceException(String s) {
             super(s);
         }
     }

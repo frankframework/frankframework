@@ -1,6 +1,13 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.82  2012-08-23 11:57:43  m00f069
+ * Revision 1.83  2012-09-19 09:49:58  m00f069
+ * - Set reasonSessionKey to "failureReason" and xmlReasonSessionKey to "xmlFailureReason" by default
+ * - Fixed check on unknown namspace in case root attribute or xmlReasonSessionKey is set
+ * - Fill reasonSessionKey with a message when an exception is thrown by parser instead of the ErrorHandler being called
+ * - Added/fixed check on element of soapBody and soapHeader
+ * - Cleaned XML validation code a little (e.g. moved internal XmlErrorHandler class (double code in two classes) to an external class, removed MODE variable and related code)
+ *
+ * Revision 1.82  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates from Michiel
  *
  * Revision 1.81  2012/08/09 12:04:34  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -304,7 +311,7 @@ import nl.nn.adapterframework.core.ListenerException;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.82 $ $Date: 2012-08-23 11:57:43 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.83 $ $Date: 2012-09-19 09:49:58 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1395,7 +1402,11 @@ public class XmlUtils {
 		Variant in = new Variant(input);
 		InputSource is = in.asXmlInputSource();
 
-		XmlFindingHandler xmlHandler = new XmlFindingHandler();
+		List<String> path = new ArrayList<String>();
+		path.add(root);
+		Set<List<String>> singleLeafValidations = new HashSet<List<String>>();
+		singleLeafValidations.add(path);
+		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(null, singleLeafValidations);
 
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(true);
@@ -1404,12 +1415,6 @@ public class XmlUtils {
 			saxParser.parse(is, xmlHandler);
 		} catch (Exception e) {
 			return false;
-		}
-
-		if (root != null) {
-			String tagRoot = xmlHandler.getRootElementName();
-			if (!tagRoot.equals(root))
-				return false;
 		}
 
 		return true;
@@ -1425,100 +1430,9 @@ public class XmlUtils {
 		assertValidToSchema(is,url,namespaceAware,root);
 	}
 
-
-	public static class XmlErrorHandler implements ErrorHandler {
-		private boolean errorOccured = false;
-		private String reasons;
-		private XMLReader parser;
-		private XmlBuilder xmlReasons = new XmlBuilder("reasons");
-
-		public XmlErrorHandler(XMLReader parser) {
-			this.parser = parser;
-		}
-
-		public void addReason(String message, String location) {
-			try {
-				ContentHandler ch = parser.getContentHandler();
-				if (ch!=null && ch instanceof XmlFindingHandler) {
-					XmlFindingHandler xfh = (XmlFindingHandler)ch;
-
-					XmlBuilder reason = new XmlBuilder("reason");
-					XmlBuilder detail;
-
-					detail = new XmlBuilder("message");;
-					detail.setCdataValue(message);
-					reason.addSubElement(detail);
-
-					detail = new XmlBuilder("elementName");;
-					detail.setValue(xfh.getElementName());
-					reason.addSubElement(detail);
-
-					detail = new XmlBuilder("xpath");;
-					detail.setValue(xfh.getXpath());
-					reason.addSubElement(detail);
-
-					xmlReasons.addSubElement(reason);
-				}
-			} catch (Throwable t) {
-				log.error("Exception handling errors",t);
-
-				XmlBuilder reason = new XmlBuilder("reason");
-				XmlBuilder detail;
-
-				detail = new XmlBuilder("message");;
-				detail.setCdataValue(t.getMessage());
-				reason.addSubElement(detail);
-
-				xmlReasons.addSubElement(reason);
-			}
-
-			if (StringUtils.isNotEmpty(location)) {
-				message = location + ": " + message;
-			}
-			errorOccured = true;
-			if (reasons == null) {
-				 reasons = message;
-			 } else {
-				 reasons = reasons + "\n" + message;
-			 }
-		}
-
-		public void addReason(Throwable t) {
-			String location=null;
-			if (t instanceof SAXParseException) {
-				SAXParseException spe = (SAXParseException)t;
-				location = "at ("+spe.getLineNumber()+ ","+spe.getColumnNumber()+")";
-			}
-			addReason(t.getMessage(),location);
-		}
-
-		public void warning(SAXParseException exception) {
-			addReason(exception);
-		}
-		public void error(SAXParseException exception) {
-			addReason(exception);
-		}
-		public void fatalError(SAXParseException exception) {
-			addReason(exception);
-		}
-
-		public boolean hasErrorOccured() {
-			return errorOccured;
-		}
-
-		 public String getReasons() {
-			return reasons;
-		}
-
-		public String getXmlReasons() {
-		   return xmlReasons.toXML();
-	   }
-	}
-
-
 	public static void assertValidToSchema(InputSource src, URL schema, boolean namespaceAware, String root) throws ListenerException {
 		XMLReader parser=null;
-		XmlErrorHandler xeh;
+		XmlValidatorErrorHandler xeh;
 		try {
 			parser = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
 			parser.setFeature("http://xml.org/sax/features/validation", true);
@@ -1532,13 +1446,18 @@ public class XmlUtils {
 				parser.setProperty("http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation", schema.toExternalForm());
 			}
 			if (StringUtils.isNotEmpty(root)) {
-				parser.setContentHandler(new XmlFindingHandler());
+				List<String> path = new ArrayList<String>();
+				path.add(root);
+				Set<List<String>> singleLeafValidations = new HashSet<List<String>>();
+				singleLeafValidations.add(path);
+				XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(null, singleLeafValidations);
+				parser.setContentHandler(new XmlValidatorContentHandler(null, singleLeafValidations));
 			}
 
 			if (parser==null) {
 				throw new ListenerException("could not obtain parser");
 			}
-			xeh = new XmlErrorHandler(parser);
+			xeh = new XmlValidatorErrorHandler(parser);
 			parser.setErrorHandler(xeh);
 		} catch (SAXNotRecognizedException e) {
 			throw new ListenerException("parser does not recognize necessary feature", e);
@@ -1552,13 +1471,6 @@ public class XmlUtils {
 			parser.parse(src);
 		 } catch (Exception e) {
 		 	throw new ListenerException("parserError",e);
-		}
-
-		boolean illegalRoot = StringUtils.isNotEmpty(root) &&
-							!((XmlFindingHandler)parser.getContentHandler()).getRootElementName().equals(root);
-		if (illegalRoot) {
-			String str = "got xml with root element ["+((XmlFindingHandler)parser.getContentHandler()).getRootElementName()+"] instead of ["+root+"]";
-			throw new ListenerException(str);
 		}
 		boolean isValid = !(xeh.hasErrorOccured());
 

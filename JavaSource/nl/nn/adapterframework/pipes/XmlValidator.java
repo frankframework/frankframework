@@ -1,6 +1,13 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.39  2012-09-14 13:35:31  m00f069
+ * Revision 1.40  2012-09-19 09:49:58  m00f069
+ * - Set reasonSessionKey to "failureReason" and xmlReasonSessionKey to "xmlFailureReason" by default
+ * - Fixed check on unknown namspace in case root attribute or xmlReasonSessionKey is set
+ * - Fill reasonSessionKey with a message when an exception is thrown by parser instead of the ErrorHandler being called
+ * - Added/fixed check on element of soapBody and soapHeader
+ * - Cleaned XML validation code a little (e.g. moved internal XmlErrorHandler class (double code in two classes) to an external class, removed MODE variable and related code)
+ *
+ * Revision 1.39  2012/09/14 13:35:31  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Call deprecated getMessageToValidate only when deprecated soapNamespace has been set
  *
  * Revision 1.38  2012/08/23 11:57:44  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -182,7 +189,7 @@ public class XmlValidator extends FixedForwardPipe {
 
     private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
 
-	private AbstractXmlValidator validator = new XmlValidatorBase();
+	protected AbstractXmlValidator validator = new XmlValidatorBase();
 
 	private TransformerPool transformerPoolExtractSoapBody;
 	private TransformerPool transformerPoolGetRootNamespace;
@@ -257,7 +264,7 @@ public class XmlValidator extends FixedForwardPipe {
 		}
 
      }
-    protected PipeForward validate(String messageToValidate, IPipeLineSession session) throws AbstractXmlValidator.XmlValidatorException, PipeRunException {
+    protected PipeForward validate(String messageToValidate, IPipeLineSession session) throws XmlValidatorException, PipeRunException {
         String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session));
         throwEvent(resultEvent);
         if (XmlValidatorBase.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {

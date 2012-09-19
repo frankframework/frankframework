@@ -1,6 +1,13 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.20  2012-09-13 08:25:17  m00f069
+ * Revision 1.21  2012-09-19 09:49:58  m00f069
+ * - Set reasonSessionKey to "failureReason" and xmlReasonSessionKey to "xmlFailureReason" by default
+ * - Fixed check on unknown namspace in case root attribute or xmlReasonSessionKey is set
+ * - Fill reasonSessionKey with a message when an exception is thrown by parser instead of the ErrorHandler being called
+ * - Added/fixed check on element of soapBody and soapHeader
+ * - Cleaned XML validation code a little (e.g. moved internal XmlErrorHandler class (double code in two classes) to an external class, removed MODE variable and related code)
+ *
+ * Revision 1.20  2012/09/13 08:25:17  Jaco de Groot <jaco.de.groot@ibissource.org>
  * - Throw exception when XSD doesn't exist (to prevent adapter from starting).
  * - Ignore warning schema_reference.4: Failed to read schema document 'http://www.w3.org/2001/xml.xsd'.
  * - Made SoapValidator use 1.1 XSD only by default (using two generates the warning s4s-elt-invalid-content.1: The content of 'reasontext' is invalid. Element 'attribute' is invalid, misplaced, or occurs too often.).
@@ -161,10 +168,6 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
     /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
     protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
 
-    protected static final String REASON_ERROR      = "parserError";
-    protected static final String REASON_INVALID    = "failure";
-    protected static final String REASON_WRONG_ROOT = "illegalRoot";
-
    // What are these?
     private static Map<String, SymbolTable> symbolTables = null;
     private static Map<String, XMLGrammarPool> grammarPools = null;
@@ -183,10 +186,6 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
 
     private boolean warn = AppConstants.getInstance().getBoolean("xmlValidator.warn", true);
 
-	private static final int MODE = 2;
-
-
-
     @Override
     protected void init() throws ConfigurationException {
         if (needsInit) {
@@ -198,36 +197,16 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
                     globalSchema = getNoNamespaceSchemaLocation();
                 }
                 try {
-                    switch (MODE) {
-                        case 0:
-                            globalParserPool = createParserPool(globalSchema, StringUtils.isEmpty(getSchemaLocation()));
-                            break;
-                        case 1:
-                            globalParserConfig = createParserConfiguration(globalSchema, StringUtils.isEmpty(getSchemaLocation()));
-                            break;
-                        case 2:
-                            globalSymbolTable = createSymbolTable();
-                            globalGrammarPool = createGrammarPool(globalSymbolTable, globalSchema, StringUtils.isEmpty(getSchemaLocation()));
-                            break;
-                    }
+                    globalSymbolTable = createSymbolTable();
+                    globalGrammarPool = createGrammarPool(globalSymbolTable, globalSchema, StringUtils.isEmpty(getSchemaLocation()));
                 } catch (XmlValidatorException e) {
                     throw new ConfigurationException(e);
                 } catch (Exception e) {
                     throw new ConfigurationException("cannot compile schema for [" + globalSchema + "]", e);
                 }
             } else {
-                switch (MODE) {
-                    case 0:
-                        parserPools = new ConcurrentHashMap<String, CachingParserPool>();
-                        break;
-                    case 1:
-                        parserConfigurations = new ConcurrentHashMap<String, XMLParserConfiguration>();
-                        break;
-                    case 2:
-                        symbolTables = new ConcurrentHashMap<String, SymbolTable>();
-                        grammarPools = new ConcurrentHashMap<String, XMLGrammarPool>();
-                        break;
-                }
+                symbolTables = new ConcurrentHashMap<String, SymbolTable>();
+                grammarPools = new ConcurrentHashMap<String, XMLGrammarPool>();
             }
         }
 
@@ -335,24 +314,6 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
         return parserConfiguration;
 	}
 
-
-	private  CachingParserPool getParserPool(String schemas, boolean singleSchema) throws XmlValidatorException, XMLStreamException, IOException {
-		CachingParserPool result = parserPools.get(schemas);
-		if (result==null) {
-			result = createParserPool(schemas,singleSchema);
-			parserPools.put(schemas, result);
-		}
-		return result;
-	}
-	private  XMLParserConfiguration getParserConfiguration(String schemas, boolean singleSchema) throws XmlValidatorException, XMLStreamException, IOException {
-		XMLParserConfiguration result = parserConfigurations.get(schemas);
-		if (result == null) {
-			result = createParserConfiguration(schemas, singleSchema);
-			parserConfigurations.put(schemas, result);
-		}
-		return result;
-	}
-
 	private SymbolTable getSymbolTable(String schemas) throws XmlValidatorException {
 		SymbolTable result = symbolTables.get(schemas);
 		if (result == null) {
@@ -419,18 +380,8 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
 			log.info(logPrefix + "resolved noNamespaceSchemaLocation [" + schemaLocation + "] to [" + resolvedLocation + "]");
 
             try {
-                switch (MODE) {
-                case 0:
-                    parserPool = getParserPool(resolvedLocation, true);
-                    break;
-                case 1:
-                    parserConfig = getParserConfiguration(resolvedLocation, true);
-                    break;
-                case 2:
-                    symbolTable = getSymbolTable(resolvedLocation);
-                    grammarPool = getGrammarPool(symbolTable, resolvedLocation, true);
-                    break;
-                }
+                symbolTable = getSymbolTable(resolvedLocation);
+                grammarPool = getGrammarPool(symbolTable, resolvedLocation, true);
             } catch (IOException e) {
                 throw new XmlValidatorException(e.getMessage(), e);
             } catch (XMLStreamException e) {
@@ -439,29 +390,16 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
             schema = schemaLocation;
         }
 
-		XmlErrorHandler xeh;
+		XmlValidatorErrorHandler xeh;
 
 		XMLReader parser = null;
 		try {
-			switch (MODE) {
-			case 0:
-				parser = getParser(parserPool);
-				break;
-			case 1:
-				parser = getParser(parserConfig);
-				break;
-			case 2:
-				parser = getParser(symbolTable, grammarPool);
-				break;
-			}
+			parser = getParser(symbolTable, grammarPool);
 			if (parser == null) {
 				throw new XmlValidatorException(logPrefix +  "could not obtain parser");
 			}
-	        if (StringUtils.isNotEmpty(getRoot()) || StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
-	        	parser.setContentHandler(new XmlFindingHandler());
-	        }
-			xeh = new XmlErrorHandler(parser);
-            parser.setErrorHandler(xeh);
+			xeh = new XmlValidatorErrorHandler(parser);
+			parser.setErrorHandler(xeh);
 		} catch (SAXNotRecognizedException e) {
 			throw new XmlValidatorException(logPrefix + "parser does not recognize necessary feature", e);
 		} catch (SAXNotSupportedException e) {
@@ -475,59 +413,21 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
         try {
             parser.parse(is);
          } catch (Exception e) {
-			return handleFailures(xeh,session,"", REASON_ERROR, XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, e);
+			return handleFailures(xeh,session,"", XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, e);
         }
 
-        if (StringUtils.isNotEmpty(getRoot())) {
-        	String parsedRootElementName=((XmlFindingHandler)parser.getContentHandler()).getRootElementName();
-    		boolean illegalRoot = !getRoot().equals(parsedRootElementName);
-			if (illegalRoot) {
-				String str = "got xml with root element [" + parsedRootElementName + "] instead of [" + getRoot() + "]";
-				xeh.addReason(str, "");
-				return handleFailures(xeh, session, "", REASON_WRONG_ROOT, XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT, null);
-			}
-        }
 		boolean isValid = !(xeh.hasErrorOccured());
 
 		if (!isValid) {
 			String mainReason = logPrefix + "got invalid xml according to schema [" + schema + "]";
-			return handleFailures(xeh, session, mainReason, REASON_INVALID, XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
+			return handleFailures(xeh, session, mainReason, XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
         }
 		return XML_VALIDATOR_VALID_MONITOR_EVENT;
     }
 
-
-    /**
-     * Get a configured parser.
-     */
-    private XMLReader getParser(CachingParserPool parserPool) throws SAXException {
-
-    	XMLReader parser = parserPool.createSAXParser();
-    	parser.setFeature(NAMESPACES_FEATURE_ID, true);
-    	parser.setFeature(VALIDATION_FEATURE_ID, true);
-    	parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
-    	parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
-        return parser;
-    }
-
-    private XMLReader getParser(XMLParserConfiguration parserConfiguration) throws SAXException {
-
-    	XMLReader parser = new SAXParser(parserConfiguration);
-        return parser;
-    }
-
     private XMLReader getParser(final SymbolTable symbolTable, final XMLGrammarPool grammarPool) throws  SAXException {
     	XMLReader parser = new SAXParser(new ShadowedSymbolTable(symbolTable), grammarPool);
-        parser.setContentHandler(new DefaultHandler2() {
-            @Override
-            public void startPrefixMapping(String prefix, String namespace) throws SAXException {
-                grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
-                Grammar grammar = grammars.get(namespace);
-                if (grammar == null) {
-                    throw new UnknownNamespaceException("Unknown namespace " + namespace);
-                }
-            }
-        });
+    	parser.setContentHandler(new XmlValidatorContentHandler(grammars, singleLeafValidations));
     	parser.setFeature(NAMESPACES_FEATURE_ID, true);
     	parser.setFeature(VALIDATION_FEATURE_ID, true);
     	parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
