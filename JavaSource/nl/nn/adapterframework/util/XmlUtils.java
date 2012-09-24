@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.84  2012-09-19 21:40:37  m00f069
+ * Revision 1.85  2012-09-24 18:16:04  m00f069
+ * Don't resolve external entities in DOCTYPE
+ *
+ * Revision 1.84  2012/09/19 21:40:37  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ignoreUnknownNamespaces attribute
  *
  * Revision 1.83  2012/09/19 09:49:58  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -275,8 +278,56 @@
 package nl.nn.adapterframework.util;
 
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.XMLEventFactory;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.Namespace;
+import javax.xml.stream.events.StartElement;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.exception.NestableException;
@@ -285,26 +336,20 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
-import org.w3c.dom.*;
-import org.xml.sax.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
-
-import javax.xml.namespace.QName;
-import javax.xml.parsers.*;
-import javax.xml.stream.XMLEventFactory;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.Namespace;
-import javax.xml.stream.events.StartElement;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-import java.io.*;
-import java.net.URL;
-import java.util.*;
 
 /**
  * Some utilities for working with XML.
@@ -313,7 +358,7 @@ import java.util.*;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.84 $ $Date: 2012-09-19 21:40:37 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.85 $ $Date: 2012-09-24 18:16:04 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -510,10 +555,11 @@ public class XmlUtils {
 
 	static public Document buildDomDocument(Reader in, boolean namespaceAware)
 		throws DomBuilderException {
-			return buildDomDocument(in, namespaceAware, false);
+			return buildDomDocument(in, namespaceAware, false, false);
 		}
 
-	static public Document buildDomDocument(Reader in, boolean namespaceAware, boolean xslt2)
+	static public Document buildDomDocument(Reader in, boolean namespaceAware,
+			boolean xslt2, boolean resolveExternalEntities)
 		throws DomBuilderException {
 		Document document;
 		InputSource src;
@@ -530,6 +576,9 @@ public class XmlUtils {
 		}
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
+			if (!resolveExternalEntities) {
+				builder.setEntityResolver(new XmlExternalEntityResolver());
+			}
 			src = new InputSource(in);
 			document = builder.parse(src);
 		} catch (SAXParseException e) {
@@ -561,12 +610,19 @@ public class XmlUtils {
 		return buildDomDocument(s, namespaceAware, false);
 	}
 
-	public static Document buildDomDocument(String s, boolean namespaceAware, boolean xslt2) throws DomBuilderException {
+	public static Document buildDomDocument(String s, boolean namespaceAware,
+			boolean xslt2) throws DomBuilderException {
+		return buildDomDocument(s, namespaceAware, false, false);
+	}
+
+	public static Document buildDomDocument(String s, boolean namespaceAware,
+			boolean xslt2, boolean resolveExternalEntities)
+			throws DomBuilderException {
 		if (StringUtils.isEmpty(s)) {
 			throw new DomBuilderException("input is null");
 		}
 		StringReader sr = new StringReader(s);
-		return buildDomDocument(sr, namespaceAware, xslt2);
+		return buildDomDocument(sr, namespaceAware, xslt2, resolveExternalEntities);
 	}
 
 	/**
@@ -814,19 +870,43 @@ public class XmlUtils {
 		return stringToSource(xmlString,isNamespaceAwareByDefault());
 	}
 
-	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware) throws DomBuilderException {
-		if (namespaceAware) {
-			StringReader sr = new StringReader(xmlString);
-			return new StreamSource(sr);
-		} else {
-			return stringToSource(xmlString, false);
+	public static Source stringToSourceForSingleUse(String xmlString)
+			throws DomBuilderException {
+		return stringToSourceForSingleUse(xmlString,
+				isNamespaceAwareByDefault());
+	}
+
+	public static Source stringToSourceForSingleUse(String xmlString,
+			boolean namespaceAware) throws DomBuilderException {
+		return stringToSourceForSingleUse(xmlString, namespaceAware, false);
+	}
+
+	public static SAXSource stringToSourceForSingleUse(String xmlString,
+			boolean namespaceAware, boolean resolveExternalEntities)
+			throws DomBuilderException {
+		return stringToSAXSource(xmlString, namespaceAware, false);
+	}
+
+	public static SAXSource stringToSAXSource(String xmlString,
+			boolean namespaceAware, boolean resolveExternalEntities)
+			throws DomBuilderException {
+		Variant in = new Variant(xmlString);
+		InputSource is = in.asXmlInputSource();
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setNamespaceAware(namespaceAware);
+		try {
+			XMLReader xmlReader = factory.newSAXParser().getXMLReader();
+			if (!resolveExternalEntities) {
+				xmlReader.setEntityResolver(new XmlExternalEntityResolver());
+			}
+			return new SAXSource(xmlReader, is);
+		} catch (Exception e) {
+			// TODO Use DomBuilderException as the stringToSource and calling
+			// methods use them a lot. Rename DomBuilderException to
+			// SourceBuilderException?
+			throw new DomBuilderException(e);
 		}
 	}
-
-	public static Source stringToSourceForSingleUse(String xmlString) throws DomBuilderException {
-		return stringToSourceForSingleUse(xmlString,isNamespaceAwareByDefault());
-	}
-
 
 	public static synchronized Transformer createTransformer(String xsltString)
 		throws TransformerConfigurationException {
@@ -1406,9 +1486,6 @@ public class XmlUtils {
 	}
 
 	static public boolean isWellFormed(String input, String root) {
-		Variant in = new Variant(input);
-		InputSource is = in.asXmlInputSource();
-
 		Set<List<String>> singleLeafValidations = null;
 		if (StringUtils.isNotEmpty(root)) {
 			List<String> path = new ArrayList<String>();
@@ -1417,12 +1494,11 @@ public class XmlUtils {
 			singleLeafValidations.add(path);
 		}
 		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(null, singleLeafValidations, true);
-
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		factory.setNamespaceAware(true);
 		try {
-			SAXParser saxParser = factory.newSAXParser();
-			saxParser.parse(is, xmlHandler);
+			SAXSource saxSource = stringToSAXSource(input, true, false);
+			XMLReader xmlReader = saxSource.getXMLReader();
+			xmlReader.setContentHandler(xmlHandler);
+			xmlReader.parse(saxSource.getInputSource());
 		} catch (Exception e) {
 			return false;
 		}
