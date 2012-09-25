@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.85  2012-09-24 18:16:04  m00f069
+ * Revision 1.86  2012-09-25 13:11:36  m00f069
+ * Use namespaceAware=true for active.xsl and stub4testtool.xsl now we are using SAXSource otherwise a NullPointerException seems to occur during transformation.
+ *
+ * Revision 1.85  2012/09/24 18:16:04  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Don't resolve external entities in DOCTYPE
  *
  * Revision 1.84  2012/09/19 21:40:37  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -358,7 +361,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.85 $ $Date: 2012-09-24 18:16:04 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.86 $ $Date: 2012-09-25 13:11:36 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1424,8 +1427,11 @@ public class XmlUtils {
 	}
 
 	public static String transformXml(Transformer t, String s) throws TransformerException, IOException, DomBuilderException {
-//		log.debug("transforming under the assumption that source document may contain namespaces (therefore using DOMSource)");
-		return transformXml(t, stringToSourceForSingleUse(s));
+		return transformXml(t, s, isNamespaceAwareByDefault());
+	}
+
+	public static String transformXml(Transformer t, String s, boolean namespaceAware) throws TransformerException, IOException, DomBuilderException {
+		return transformXml(t, stringToSourceForSingleUse(s, namespaceAware));
 	}
 
 	public static void transformXml(Transformer t, String s, Result result) throws TransformerException, IOException, DomBuilderException {

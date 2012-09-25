@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationUtils.java,v $
- * Revision 1.5  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.6  2012-09-25 13:11:36  m00f069
+ * Use namespaceAware=true for active.xsl and stub4testtool.xsl now we are using SAXSource otherwise a NullPointerException seems to occur during transformation.
+ *
+ * Revision 1.5  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -52,7 +55,11 @@ public class ConfigurationUtils {
 		}
 		try {
 			Transformer active_transformer = XmlUtils.createTransformer(active_xsltSource);
-			return XmlUtils.transformXml(active_transformer, originalConfig);
+			// Use namespaceAware=true, otherwise for some reason the
+			// transformation isn't working with a SAXSource, in system out it
+			// generates:
+			// jar:file: ... .jar!/xml/xsl/active.xsl; Line #34; Column #13; java.lang.NullPointerException
+			return XmlUtils.transformXml(active_transformer, originalConfig, true);
 		} catch (IOException e) {
 			throw new ConfigurationException("cannot retrieve [" + active_xslt + "]", e);
 		} catch (TransformerConfigurationException tce) {
@@ -71,7 +78,11 @@ public class ConfigurationUtils {
 		}
 		try {
 			Transformer active_transformer = XmlUtils.createTransformer(stub4testtool_xsltSource);
-			return XmlUtils.transformXml(active_transformer, originalConfig);
+			// Use namespaceAware=true, otherwise for some reason the
+			// transformation isn't working with a SAXSource, in system out it
+			// generates:
+			// jar:file: ... .jar!/xml/xsl/stub4testtool.xsl; Line #210; Column #13; java.lang.NullPointerException
+			return XmlUtils.transformXml(active_transformer, originalConfig, true);
 		} catch (IOException e) {
 			throw new ConfigurationException("cannot retrieve [" + stub4testtool_xslt + "]", e);
 		} catch (TransformerConfigurationException tce) {
