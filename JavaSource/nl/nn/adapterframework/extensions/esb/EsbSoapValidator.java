@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapValidator.java,v $
- * Revision 1.6  2012-09-14 13:32:29  m00f069
+ * Revision 1.7  2012-09-26 12:41:05  m00f069
+ * Bugfix in WSDL generator: Wrong prefix being used in element attribute of PipeLineInput and PipeLineOutput message part when using EsbSoapValidator.
+ *
+ * Revision 1.6  2012/09/14 13:32:29  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Typo in setSoapHeader parameter name
  *
  * Revision 1.5  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -15,10 +18,13 @@
  */
 package nl.nn.adapterframework.extensions.esb;
 
-import java.util.*;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.soap.SoapValidator;
 
 /**
@@ -62,6 +68,11 @@ public class EsbSoapValidator extends SoapValidator {
     private EsbSoapWrapperPipe.Mode mode = EsbSoapWrapperPipe.Mode.REG;
     private String explicitSchemaLocation = null;
 
+    @Override
+    public void configure() throws ConfigurationException {
+        super.setSoapHeader(GENERIC_HEADER.get(mode).tag.getLocalPart());
+        super.configure();
+    }
 
     @Override
     public void setSchemaLocation(String schemaLocation) {
@@ -70,18 +81,8 @@ public class EsbSoapValidator extends SoapValidator {
     }
 
     @Override
-    protected int getDefaultNamespaceIndex() {
-        return super.getDefaultNamespaceIndex() + 1;
-    }
-
-    @Override
     public void setSoapHeader(String soapHeader) {
-        throw new IllegalArgumentException("Esb soap is unmodifiable, it is: " + getSoapHeaderTags());
-    }
-
-    @Override
-    public Collection<QName> getSoapHeaderTags() {
-        return Collections.singleton(GENERIC_HEADER.get(mode).tag);
+        throw new IllegalArgumentException("Esb soap is unmodifiable, it is: " + getSoapHeader());
     }
 
     public String getDirection() {

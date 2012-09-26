@@ -1,6 +1,9 @@
 /*
  * $Log: SoapValidator.java,v $
- * Revision 1.7  2012-09-19 09:49:58  m00f069
+ * Revision 1.8  2012-09-26 12:41:05  m00f069
+ * Bugfix in WSDL generator: Wrong prefix being used in element attribute of PipeLineInput and PipeLineOutput message part when using EsbSoapValidator.
+ *
+ * Revision 1.7  2012/09/19 09:49:58  Jaco de Groot <jaco.de.groot@ibissource.org>
  * - Set reasonSessionKey to "failureReason" and xmlReasonSessionKey to "xmlFailureReason" by default
  * - Fixed check on unknown namspace in case root attribute or xmlReasonSessionKey is set
  * - Fill reasonSessionKey with a message when an exception is thrown by parser instead of the ErrorHandler being called
@@ -89,57 +92,21 @@ public class SoapValidator extends XmlValidator {
         setSchemaLocation(setSchemaLocation);
     }
 
-    public Collection<QName> getSoapBodyTags() {
-        return Collections.unmodifiableCollection(parseQNameList(soapBody));
-    }
-
     public void setSoapBody(String soapBody) {
         this.soapBody = soapBody;
     }
-    public Collection<QName> getSoapHeaderTags() {
-        return Collections.unmodifiableCollection(parseQNameList(soapHeader));
-    }
 
+    public String getSoapBody() {
+        return soapBody;
+    }
 
     public void setSoapHeader(String soapHeader) {
         this.soapHeader = soapHeader;
     }
 
-    protected int getDefaultNamespaceIndex() {
-        return versions.length;
+    public String getSoapHeader() {
+        return soapHeader;
     }
-
-    protected String getDefaultNamespace() {
-        if (StringUtils.isNotBlank(getSchemaLocation())) {
-            String[] schemas = getSchemaLocation().split("\\s+");
-            if (schemas.length > getDefaultNamespaceIndex() * 2) {
-                return schemas[getDefaultNamespaceIndex() * 2];
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-
-    protected Collection<QName> parseQNameList(String s) {
-
-        List<QName> result = new ArrayList<QName>();
-        if (StringUtils.isNotBlank(s)) {
-            for(String qname : s.split("\\s+")) {
-                if (! qname.startsWith("{")) {
-                    String xmlns = getDefaultNamespace();
-                    if (xmlns != null) {
-                        LOG.info("no namespace found for " + qname  + " taking default " + xmlns);
-                        qname = '{' + xmlns + '}' + qname;
-                    }
-                }
-                result.add(QName.valueOf(qname));
-            }
-        }
-        return result;
-    }
-
 
     public static enum SoapVersion {
 

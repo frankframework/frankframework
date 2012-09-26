@@ -1,10 +1,32 @@
 package nl.nn.adapterframework.soap;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import javanet.staxutils.IndentingXMLStreamWriter;
 import javanet.staxutils.XMLStreamEventWriter;
 import javanet.staxutils.XMLStreamUtils;
 import javanet.staxutils.events.AttributeEvent;
 import javanet.staxutils.events.StartElementEvent;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.EndElement;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
@@ -15,18 +37,9 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
+
 import org.apache.log4j.Logger;
 import org.apache.xerces.util.XMLChar;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.*;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.*;
 
 /**
  * @author Michiel Meeuwissen
@@ -163,6 +176,7 @@ public abstract class WsdlUtils {
         if (in == null) throw new IllegalStateException("" + xsd + " not found");
         XMLEventReader er = XmlUtils.NAMESPACE_AWARE_INPUT_FACTORY.createXMLEventReader(in, ENCODING);
         String wrongNamespace = null;
+        int elementDepth = 0;
         while (er.hasNext()) {
             XMLEvent e = er.nextEvent();
             switch (e.getEventType()) {
@@ -176,6 +190,7 @@ public abstract class WsdlUtils {
                 case XMLStreamConstants.COMMENT:
                     break;
                 case XMLStreamConstants.START_ELEMENT:
+                    elementDepth++;
                     StartElement el = e.asStartElement();
                     if (Wsdl.SCHEMA.equals(el.getName())) {
                         if (xsdNamespace == null) {
@@ -233,10 +248,9 @@ public abstract class WsdlUtils {
                             }
                         }
                     } else if (el.getName().equals(Wsdl.ELEMENT)) {
-                        if (xsd.firstTag == null) {
-                            xsd.firstTag = el.getAttributeByName(Wsdl.NAME).getValue();
+                        if (elementDepth == 2) {
+                            xsd.rootTags.add(el.getAttributeByName(Wsdl.NAME).getValue());
                         }
-
                     } else {
                         if (wrongNamespace != null) {
                             if (wrongNamespace.equals(el.getName().getNamespaceURI())) {
@@ -253,6 +267,9 @@ public abstract class WsdlUtils {
                             }
                         }
                     }
+                    break;
+                case XMLStreamConstants.END_ELEMENT:
+                    elementDepth--;
                     break;
                 default:
                     // simply copy

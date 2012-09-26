@@ -1,13 +1,24 @@
 package nl.nn.adapterframework.soap;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
-import javax.xml.stream.*;
-import javax.xml.stream.events.*;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
 
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -23,7 +34,7 @@ class XSD implements Comparable<XSD> {
     final String nameSpace;
     final URI url;
     final String pref;
-    String firstTag;
+    List<String> rootTags = new ArrayList<String>();
     final String parentLocation;
 
     XSD(String parentLocation, String nameSpace, URI resource, int prefixCount) {
@@ -63,7 +74,6 @@ class XSD implements Comparable<XSD> {
     }
 
     public QName getTag(String tag) {
-        if (tag == null) tag = firstTag;
         return new QName(nameSpace, tag, pref);
     }
 
