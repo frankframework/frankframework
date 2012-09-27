@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.8  2012-09-27 13:44:31  m00f069
+ * Revision 1.9  2012-09-27 14:28:59  m00f069
+ * Better error message / adapter name when constructor throws exception.
+ *
+ * Revision 1.8  2012/09/27 13:44:31  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates in generating wsdl namespace, wsdl input message name, wsdl output message name, wsdl port type name and wsdl operation name in case of EsbSoap
  *
  * Revision 1.7  2012/09/26 12:41:05  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -127,11 +130,11 @@ class Wsdl {
         indentWsdl = indent;
         this.name = this.pipeLine.getAdapter().getName();
         if (this.name == null) {
-            throw new IllegalArgumentException("The adapter " + pipeLine.getAdapter().getName() + " has no name");
+            throw new IllegalArgumentException("The adapter '" + pipeLine.getAdapter() + "' has no name");
         }
         inputValidator = (XmlValidator)pipeLine.getInputValidator();
         if (inputValidator == null) {
-            throw new IllegalStateException("The adapter " + pipeLine + " has no input validator");
+            throw new IllegalStateException("The adapter '" + getName() + "' has no input validator");
         }
         AppConstants appConstants = AppConstants.getInstance();
         String tns = appConstants.getResolvedProperty("wsdl." + getName() + ".targetNamespace");
