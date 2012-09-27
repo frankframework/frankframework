@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.50  2012-09-07 13:15:17  m00f069
+ * Revision 1.51  2012-09-27 13:44:31  m00f069
+ * Updates in generating wsdl namespace, wsdl input message name, wsdl output message name, wsdl port type name and wsdl operation name in case of EsbSoap
+ *
+ * Revision 1.50  2012/09/07 13:15:17  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Messaging related changes:
  * - Use CACHE_CONSUMER by default for ESB RR
  * - Don't use JMSXDeliveryCount to determine whether message has already been processed
@@ -599,22 +602,24 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return mp;
 	}
 
-	public String getPhysicalDestinationName() {
-
-	    String result = null;
-
+	public String getPhysicalDestinationShortName() {
+		String result = null;
 		try {
-            Destination d = getDestination();
-		    if (d != null) {
-	            if (useTopicFunctions)
-	                result = ((Topic) d).getTopicName();
-	            else
-	                result = ((Queue) d).getQueueName();
-		    }
-	    } catch (Exception je) {
-	        log.warn("[" + name + "] got exception in getPhysicalDestinationName", je);
-	    }
-	    result=getDestinationType()+"("+getDestinationName()+") ["+result+"]";
+			Destination d = getDestination();
+			if (d != null) {
+				if (useTopicFunctions)
+					result = ((Topic) d).getTopicName();
+				else
+					result = ((Queue) d).getQueueName();
+			}
+		} catch (Exception e) {
+			log.warn("[" + name + "] got exception in getPhysicalDestinationShortName", e);
+		}
+		return result;
+	}
+
+	public String getPhysicalDestinationName() {
+		String result = getDestinationType()+"("+getDestinationName()+") ["+getPhysicalDestinationShortName()+"]";
 		if (StringUtils.isNotEmpty(getMessageSelector())) {
 			result+=" selector ["+getMessageSelector()+"]";
 		}
@@ -623,8 +628,9 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		} catch (JmsException e) {
 			log.warn("[" + name + "] got exception in messagingSource.getPhysicalName", e);
 		}
-	    return result;
+		return result;
 	}
+
     /**
      *  Gets a queueReceiver
      * @see javax.jms.QueueReceiver

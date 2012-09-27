@@ -70,28 +70,6 @@ public abstract class WsdlUtils {
         return result;
     }
 
-    static String getServiceNameSpaceURI(IAdapter a) {
-        for(IListener l : getListeners(a)) {
-            if (l instanceof WebServiceListener) {
-                String tns = ((WebServiceListener) l).getServiceNamespaceURI();
-                if (tns != null) {
-                    return tns;
-                }
-            }
-        }
-        AppConstants appConstants = AppConstants.getInstance();
-        String tns = appConstants.getProperty("wsdl.targetNamespace." + a.getName() + ".soapAction");
-        if (tns == null) {
-            tns = appConstants.getProperty("wsdl.targetNamespace.domain");
-        }
-        if (tns == null) {
-            tns = "${wsdl.targetNamespace.domain}";
-        }
-        String result = "http://" + tns + "/" + a.getName();
-        LOG.warn("No WebServiceListener found in " + a.getName() + " to get a service namespace URI from. Falling back to " + result + "");
-        return result;
-    }
-
     static XMLStreamWriter createWriter(OutputStream out, boolean indentWsdl) throws XMLStreamException {
         XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(out, ENCODING);
         if (indentWsdl) {
@@ -100,27 +78,6 @@ public abstract class WsdlUtils {
             w = iw;
         }
         return w;
-    }
-
-    /**
-     * A utility method to find the Adapter by namespace.
-     * @TODO This is not very related to WSDL, and perhaps can move to a more generic utility class.
-     * @param ibisManager
-     * @param targetNamespace
-     * @return
-           */
-    static Adapter getAdapterByNamespaceUri(IbisManager ibisManager, String targetNamespace) {
-        Configuration configuration = ibisManager.getConfiguration();
-        Iterator i = configuration.getRegisteredAdapters().iterator();
-        while (i.hasNext()) {
-            IAdapter a = (IAdapter) i.next();
-
-            String nameSpace = getServiceNameSpaceURI(a);
-            if (nameSpace != null && nameSpace.equals(targetNamespace)) {
-                return (Adapter) a;
-            }
-        }
-        throw new IllegalStateException("No adapter found for " + targetNamespace);
     }
 
     /**

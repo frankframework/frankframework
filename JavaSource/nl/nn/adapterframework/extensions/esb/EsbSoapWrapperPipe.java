@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.14  2012-08-23 11:57:43  m00f069
+ * Revision 1.15  2012-09-27 13:44:31  m00f069
+ * Updates in generating wsdl namespace, wsdl input message name, wsdl output message name, wsdl port type name and wsdl operation name in case of EsbSoap
+ *
+ * Revision 1.14  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates from Michiel
  *
  * Revision 1.13  2012/08/21 10:01:20  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -244,6 +247,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * @author Peter Leeuwenburgh
  */
 public class EsbSoapWrapperPipe extends SoapWrapperPipe {
+	protected final static String OUTPUTNAMESPACEBASEURI = "http://nn.nl/XSD";
 	protected final static String BUSINESSDOMAIN = "businessDomain";
 	protected final static String SERVICENAME = "serviceName";
 	protected final static String SERVICECONTEXT = "serviceContext";
@@ -296,20 +300,19 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			if (StringUtils.isEmpty(getSoapBodyStyleSheet())) {
 				if (mode == Mode.REG) {
 					setSoapBodyStyleSheet("/xml/xsl/esb/soapBody.xsl");
-                } else if (mode == Mode.BIS) {
+				} else if (mode == Mode.BIS) {
 					setSoapBodyStyleSheet("/xml/xsl/esb/bisSoapBody.xsl");
 				}
 			}
 			stripDestination();
 			if (isAddOutputNamespace()) {
-				String ons =
-                    "http://nn.nl/XSD" +
-                    "/" + getBusinessDomain() +
-                    "/" + getServiceName() +
-                    "/" + getServiceContext() +
-                    "/" + getServiceContextVersion() +
-                    "/" + getOperationName() +
-                    "/" + getOperationVersion();
+				String ons = getOutputNamespaceBaseUri() +
+						"/" + getBusinessDomain() +
+						"/" + getServiceName() +
+						"/" + getServiceContext() +
+						"/" + getServiceContextVersion() +
+						"/" + getOperationName() +
+						"/" + getOperationVersion();
 				setOutputNamespace(ons);
 			}
 			addParameters();
@@ -320,6 +323,10 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
     private String getParameterValue(String key) {
         Parameter p = getParameterList().findParameter(key);
         return p != null ? p.getValue() : "";
+    }
+
+    public String getOutputNamespaceBaseUri() {
+        return OUTPUTNAMESPACEBASEURI;
     }
 
     public String getBusinessDomain() {
@@ -517,4 +524,14 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	public boolean isAddOutputNamespace() {
 		return addOutputNamespace;
 	}
+
+	public static boolean isValidNamespace(String namespace) {
+		if (namespace != null && namespace.startsWith(OUTPUTNAMESPACEBASEURI)
+				&& namespace.split("/").length == 10) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 }

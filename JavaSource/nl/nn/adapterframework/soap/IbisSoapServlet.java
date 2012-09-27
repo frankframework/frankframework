@@ -1,6 +1,9 @@
 /*
  * $Log: IbisSoapServlet.java,v $
- * Revision 1.5  2012-08-23 11:57:43  m00f069
+ * Revision 1.6  2012-09-27 13:44:31  m00f069
+ * Updates in generating wsdl namespace, wsdl input message name, wsdl output message name, wsdl port type name and wsdl operation name in case of EsbSoap
+ *
+ * Revision 1.5  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates from Michiel
  *
  * Revision 1.4  2012/03/19 15:07:22  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -137,22 +140,14 @@ public class IbisSoapServlet extends HttpServlet {
      private void wsdl(HttpServletRequest req, HttpServletResponse res) throws ServletException {
          String servlet = HttpUtils.getRequestURL(req).toString();
          try {
-
              boolean indent = "true".equals(req.getParameter("indent"));
-             String listener = req.getParameter("listener");
              Wsdl wsdl;
-             if (listener == null) {
-                 Adapter a = getAdapter(ibisManager, req.getPathInfo());
-                 if (a ==  null) {
-                     res.sendError(HttpServletResponse.SC_NOT_FOUND);
-                     return;
-                 }
-                 wsdl = new Wsdl(a.getPipeLine(), indent);
-             } else {
-                 wsdl = new Wsdl(
-                     ibisManager, listener, indent);
+             Adapter a = getAdapter(ibisManager, req.getPathInfo());
+             if (a ==  null) {
+                 res.sendError(HttpServletResponse.SC_NOT_FOUND);
+                 return;
              }
-
+             wsdl = new Wsdl(a.getPipeLine(), indent);
              res.setHeader("Content-Disposition", "inline;filename=\"" +  wsdl.getName() + ".wsdl\"");
              wsdl.setIncludeXsds("true".equals(req.getParameter("includeXsds")));
              wsdl.wsdl(res.getOutputStream(), servlet);
