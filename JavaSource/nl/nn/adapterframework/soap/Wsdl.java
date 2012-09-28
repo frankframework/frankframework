@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.9  2012-09-27 14:28:59  m00f069
+ * Revision 1.10  2012-09-28 14:39:47  m00f069
+ * Bugfix WSLD target namespace for ESB Soap, part XSD should be WSDL
+ *
+ * Revision 1.9  2012/09/27 14:28:59  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Better error message / adapter name when constructor throws exception.
  *
  * Revision 1.8  2012/09/27 13:44:31  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -92,6 +95,8 @@ class Wsdl {
 
     protected static final String XSD      = XMLConstants.W3C_XML_SCHEMA_NS_URI;//"http://www.w3.org/2001/XMLSchema";
 
+    protected static final String ESB_SOAP_TNS_BASE_URI = "http://nn.nl/WSDL";
+
     protected static final QName NAME           = new QName(null, "name");
     protected static final QName TNS            = new QName(null, "targetNamespace");
     protected static final QName ELFORMDEFAULT  = new QName(null, "elementFormDefault");
@@ -145,7 +150,7 @@ class Wsdl {
             EsbSoapWrapperPipe inputWrapper = getEsbSoapInputWrapper();
             EsbSoapWrapperPipe outputWrapper = getEsbSoapOutputWrapper();
             if (outputWrapper != null) {
-                tns = outputWrapper.getOutputNamespaceBaseUri() + "/"
+                tns = ESB_SOAP_TNS_BASE_URI + "/"
                         + outputWrapper.getBusinessDomain() + "/"
                         + outputWrapper.getServiceName() + "/"
                         + outputWrapper.getServiceContext() + "/"
@@ -155,8 +160,10 @@ class Wsdl {
                 initEsbSoap(outputWrapper.getParadigm());
             } else if (inputWrapper != null
                     && EsbSoapWrapperPipe.isValidNamespace(getFirstNamespaceFromSchemaLocation(inputValidator))) {
-                // One-way
+                // One-way (output wrapper not present)
                 tns = getFirstNamespaceFromSchemaLocation(inputValidator);
+                tns = tns.substring(EsbSoapWrapperPipe.getOutputNamespaceBaseUri().length());
+                tns = ESB_SOAP_TNS_BASE_URI + tns;
                 int i = tns.lastIndexOf('/');
                 esbSoapOperationName = tns.substring(i + 1);
                 tns = tns.substring(0, i);

@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.15  2012-09-27 13:44:31  m00f069
+ * Revision 1.16  2012-09-28 14:39:47  m00f069
+ * Bugfix WSLD target namespace for ESB Soap, part XSD should be WSDL
+ *
+ * Revision 1.15  2012/09/27 13:44:31  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates in generating wsdl namespace, wsdl input message name, wsdl output message name, wsdl port type name and wsdl operation name in case of EsbSoap
  *
  * Revision 1.14  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -325,7 +328,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
         return p != null ? p.getValue() : "";
     }
 
-    public String getOutputNamespaceBaseUri() {
+    public static String getOutputNamespaceBaseUri() {
         return OUTPUTNAMESPACEBASEURI;
     }
 
@@ -526,7 +529,8 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	}
 
 	public static boolean isValidNamespace(String namespace) {
-		if (namespace != null && namespace.startsWith(OUTPUTNAMESPACEBASEURI)
+		if (namespace != null
+				&& namespace.startsWith(getOutputNamespaceBaseUri())
 				&& namespace.split("/").length == 10) {
 			return true;
 		} else {
