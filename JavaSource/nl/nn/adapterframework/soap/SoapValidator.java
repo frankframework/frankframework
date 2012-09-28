@@ -1,6 +1,9 @@
 /*
  * $Log: SoapValidator.java,v $
- * Revision 1.8  2012-09-26 12:41:05  m00f069
+ * Revision 1.9  2012-09-28 14:40:15  m00f069
+ * Bugfix WSDL target namespace for one-way ESB Soap (when getting it from the namespace of the first XSD)
+ *
+ * Revision 1.8  2012/09/26 12:41:05  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Bugfix in WSDL generator: Wrong prefix being used in element attribute of PipeLineInput and PipeLineOutput message part when using EsbSoapValidator.
  *
  * Revision 1.7  2012/09/19 09:49:58  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -69,7 +72,7 @@ public class SoapValidator extends XmlValidator {
 
     @Override
     public void setSchemaLocation(String schemaLocation) {
-        super.setSchemaLocation(StringUtils.join(versions, " ") + (schemaLocation.length() > 0 ? " "  : "") + schemaLocation);
+        super.setSchemaLocation(schemaLocation + (schemaLocation.length() > 0 ? " "  : "") + StringUtils.join(versions, " "));
         setSchemaLocation = schemaLocation;
     }
 
