@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.22  2012-09-19 21:40:37  m00f069
+ * Revision 1.23  2012-09-28 13:51:49  m00f069
+ * Restored illegalRoot forward and XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT with new check on root implementation.
+ *
+ * Revision 1.22  2012/09/19 21:40:37  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ignoreUnknownNamespaces attribute
  *
  * Revision 1.21  2012/09/19 09:49:58  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -70,37 +73,43 @@
 package nl.nn.adapterframework.util;
 
 
+import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.stream.XMLStreamException;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.util.XmlValidatorContentHandler.IllegalRootElementException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.parsers.CachingParserPool;
-import org.apache.xerces.parsers.IntegratedParserConfiguration;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.XMLGrammarPreparser;
 import org.apache.xerces.util.ShadowedSymbolTable;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.SynchronizedSymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
-import org.xml.sax.*;
-import org.xml.sax.ext.DefaultHandler2;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-
-import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
 
 
 /**
@@ -384,13 +393,19 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
 			throw new XmlValidatorException(logPrefix + "error configuring the parser", e);
 		}
 
-        InputSource is = getInputSource(input);
+		InputSource is = getInputSource(input);
 
-        try {
-            parser.parse(is);
-         } catch (Exception e) {
-			return handleFailures(xeh,session,"", XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, e);
-        }
+		try {
+			parser.parse(is);
+		} catch (Exception e) {
+			String event;
+			if (e instanceof IllegalRootElementException) {
+				event = XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT;
+			} else {
+				event = XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT;
+			}
+			return handleFailures(xeh,session,"", event, e);
+		}
 
 		boolean isValid = !(xeh.hasErrorOccured());
 
