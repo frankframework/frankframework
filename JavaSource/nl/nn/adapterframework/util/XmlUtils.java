@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.86  2012-09-25 13:11:36  m00f069
+ * Revision 1.87  2012-09-28 08:25:56  m00f069
+ * Restored old behaviour of returning a DOMSource for single use when namespaceAware=false
+ *
+ * Revision 1.86  2012/09/25 13:11:36  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Use namespaceAware=true for active.xsl and stub4testtool.xsl now we are using SAXSource otherwise a NullPointerException seems to occur during transformation.
  *
  * Revision 1.85  2012/09/24 18:16:04  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -361,7 +364,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.86 $ $Date: 2012-09-25 13:11:36 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.87 $ $Date: 2012-09-28 08:25:56 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -884,10 +887,14 @@ public class XmlUtils {
 		return stringToSourceForSingleUse(xmlString, namespaceAware, false);
 	}
 
-	public static SAXSource stringToSourceForSingleUse(String xmlString,
+	public static Source stringToSourceForSingleUse(String xmlString,
 			boolean namespaceAware, boolean resolveExternalEntities)
 			throws DomBuilderException {
-		return stringToSAXSource(xmlString, namespaceAware, false);
+		if (namespaceAware) {
+			return stringToSAXSource(xmlString, namespaceAware, false);
+		} else {
+			return stringToSource(xmlString, false);
+		}
 	}
 
 	public static SAXSource stringToSAXSource(String xmlString,
