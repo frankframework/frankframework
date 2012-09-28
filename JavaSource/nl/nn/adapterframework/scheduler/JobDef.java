@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.24  2012-08-17 14:34:15  m00f069
+ * Revision 1.25  2012-09-28 14:14:16  m00f069
+ * Bugfix default value of FxF retention and getting FxF retention value from properties.
+ *
+ * Revision 1.24  2012/08/17 14:34:15  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Extended FxfWrapperPipe for sending files
  * Implemented FxfXmlValidator
  *
@@ -439,7 +442,7 @@ public class JobDef {
 	private String jobGroup=AppConstants.getInstance().getString("scheduler.defaultJobGroup", "DEFAULT");
 
 	private String fxfDir;
-	private long fxfRetention = 30 * 24 * 60 * 60 * 1000;
+	private long fxfRetention = 30L * 24L * 60L * 60L * 1000L;
 
 	private class MessageLogObject {
 		private String jmsRealmName;
@@ -521,7 +524,7 @@ public class JobDef {
 		} else 
 		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPFXF)) {
 			fxfDir = AppConstants.getInstance().getResolvedProperty("fxf.dir");
-			String retention = AppConstants.getInstance().getProperty("fxf.retention");
+			String retention = AppConstants.getInstance().getResolvedProperty("fxf.retention");
 			if (retention != null) {
 				try {
 					fxfRetention = Long.parseLong(retention);
