@@ -1,6 +1,10 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.22  2012-08-15 08:08:20  m00f069
+ * Revision 1.23  2012-10-01 07:59:29  m00f069
+ * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
+ * Cleaned XML validation code and documentation a bit.
+ *
+ * Revision 1.22  2012/08/15 08:08:20  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Implemented FxF3 listener as a wrapper and FxF3 cleanup mechanism
  *
  * Revision 1.21  2012/06/01 10:52:57  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -275,10 +279,16 @@ public class FxfListener extends JmsListener implements IBulkDataListener, ITran
 				throw new ListenerException(e);
 			}
 		} else {
-			if (StringUtils.isNotEmpty(getXmlSchema())) {
-				log.debug("asserting FXF trigger message ["+message+"] to schema ["+getXmlSchema()+"]");
-				XmlUtils.assertValidToSchema(message,getXmlSchema(),false,"FXF");
-			}
+// Validation code has changed quite a bit. Method assertValidToSchema should be
+// changed accordingly (and/or use an instance of AbstractXmlValidator). As
+// assertValidToSchema is only used by this class and FxF 2 is almost out of
+// use, no test scenario's are available and it isn't likely FxF 2 will start
+// sending invalid messages after being in production for quite some time we
+// disable schema validation.
+//			if (StringUtils.isNotEmpty(getXmlSchema())) {
+//				log.debug("asserting FXF trigger message ["+message+"] to schema ["+getXmlSchema()+"]");
+//				XmlUtils.assertValidToSchema(message,getXmlSchema(),false,"FXF");
+//			}
 			Trigger trigger = FxfUtil.parseTrigger(message);
 			if (context!=null) {
 				context.put(TRIGGER_SESSION_KEY,trigger);

@@ -1,6 +1,10 @@
 /*
  * $Log: XmlValidatorErrorHandler.java,v $
- * Revision 1.1  2012-09-19 09:49:58  m00f069
+ * Revision 1.2  2012-10-01 07:59:29  m00f069
+ * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
+ * Cleaned XML validation code and documentation a bit.
+ *
+ * Revision 1.1  2012/09/19 09:49:58  Jaco de Groot <jaco.de.groot@ibissource.org>
  * - Set reasonSessionKey to "failureReason" and xmlReasonSessionKey to "xmlFailureReason" by default
  * - Fixed check on unknown namspace in case root attribute or xmlReasonSessionKey is set
  * - Fill reasonSessionKey with a message when an exception is thrown by parser instead of the ErrorHandler being called
@@ -12,67 +16,60 @@ package nl.nn.adapterframework.util;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
 
 public class XmlValidatorErrorHandler implements ErrorHandler {
 	private Logger log = LogUtil.getLogger(this);
 	private boolean errorOccured = false;
 	private String reasons;
-	private XMLReader parser;
+	private final XmlValidatorContentHandler xmlValidatorContentHandler;
 	private XmlBuilder xmlReasons = new XmlBuilder("reasons");
 
 
-	public XmlValidatorErrorHandler(XMLReader parser) {
-		this.parser = parser;
+	public XmlValidatorErrorHandler(
+			XmlValidatorContentHandler xmlValidatorContentHandler,
+			String mainMessage) {
+		this.xmlValidatorContentHandler = xmlValidatorContentHandler;
+		XmlBuilder message = new XmlBuilder("message");;
+		message.setValue(mainMessage);
+		xmlReasons.addSubElement(message);
+		reasons = mainMessage + ":";
 	}
 
 	public void addReason(String message, String location) {
-		try {
-			ContentHandler ch = parser.getContentHandler();
-			XmlValidatorContentHandler xvch = (XmlValidatorContentHandler)ch;
+		String xpath = xmlValidatorContentHandler.getXpath();
 
-			XmlBuilder reason = new XmlBuilder("reason");
-			XmlBuilder detail;
+		XmlBuilder reason = new XmlBuilder("reason");
+		XmlBuilder detail;
 
-			detail = new XmlBuilder("message");;
-			detail.setValue(message);
-			reason.addSubElement(detail);
+		detail = new XmlBuilder("xpath");;
+		detail.setValue(xpath);
+		reason.addSubElement(detail);
 
-			detail = new XmlBuilder("elementName");;
-			detail.setValue(xvch.getElementName());
-			reason.addSubElement(detail);
+		detail = new XmlBuilder("location");;
+		detail.setValue(location);
+		reason.addSubElement(detail);
 
-			detail = new XmlBuilder("xpath");;
-			detail.setValue(xvch.getXpath());
-			reason.addSubElement(detail);
+		detail = new XmlBuilder("message");;
+		detail.setValue(message);
+		reason.addSubElement(detail);
 
-			xmlReasons.addSubElement(reason);
-		} catch (Throwable t) {
-			log.error("Exception handling errors",t);
-
-			XmlBuilder reason = new XmlBuilder("reason");
-			XmlBuilder detail;
-
-			detail = new XmlBuilder("message");;
-			detail.setCdataValue(t.getMessage());
-			reason.addSubElement(detail);
-
-			xmlReasons.addSubElement(reason);
-		}
+		xmlReasons.addSubElement(reason);
 
 		if (StringUtils.isNotEmpty(location)) {
 			message = location + ": " + message;
 		}
+		message = xpath + ": " + message;
+
 		errorOccured = true;
+
 		if (reasons == null) {
-			 reasons = message;
-		 } else {
-			 reasons = reasons + "\n" + message;
-		 }
+			reasons = message;
+		} else {
+			reasons = reasons + "\n" + message;
+		}
 	}
 
 	public void addReason(Throwable t) {

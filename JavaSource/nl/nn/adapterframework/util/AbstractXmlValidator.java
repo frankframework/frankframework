@@ -1,6 +1,10 @@
 /*
  * $Log: AbstractXmlValidator.java,v $
- * Revision 1.4  2012-09-19 21:40:37  m00f069
+ * Revision 1.5  2012-10-01 07:59:29  m00f069
+ * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
+ * Cleaned XML validation code and documentation a bit.
+ *
+ * Revision 1.4  2012/09/19 21:40:37  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ignoreUnknownNamespaces attribute
  *
  * Revision 1.3  2012/09/19 09:49:58  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -64,6 +68,7 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLParseException;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXParseException;
 
 /**
  * baseclass for validating input message against a XML-Schema.
@@ -108,12 +113,14 @@ public abstract class AbstractXmlValidator {
 	protected Set<List<String>> singleLeafValidations = null;
 	private boolean validateFile=false;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	protected boolean warn = AppConstants.getInstance().getBoolean("xmlValidator.warn", true);
     protected boolean needsInit = true;
     protected boolean lazyInit = AppConstants.getInstance().getBoolean("xmlValidator.lazyInit", false);
 
     protected String logPrefix = "";
     protected boolean addNamespaceToSchema = false;
 	protected Boolean ignoreUnknownNamespaces;
+	protected String mainFailureMessage;
 
     public boolean isAddNamespaceToSchema() {
         return addNamespaceToSchema;
@@ -169,21 +176,23 @@ public abstract class AbstractXmlValidator {
         }
     }
 
-	protected String handleFailures(XmlValidatorErrorHandler xeh, IPipeLineSession session, String mainReason, String event, Throwable t) throws  XmlValidatorException {
-		if (StringUtils.isNotEmpty(mainReason)) {
-			xeh.addReason(mainReason, null);
+	protected String handleFailures(
+			XmlValidatorErrorHandler xmlValidatorErrorHandler,
+			IPipeLineSession session, String event, Throwable t)
+					throws  XmlValidatorException {
+		// A SAXParseException will already be reported by the parser to the
+		// XmlValidatorErrorHandler through the ErrorHandler interface.
+		if (t != null && !(t instanceof SAXParseException)) {
+			xmlValidatorErrorHandler.addReason(t);
 		}
-		if (t != null) {
-			xeh.addReason(t);
-		}
-		String fullReasons = xeh.getReasons();
+		String fullReasons = xmlValidatorErrorHandler.getReasons();
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			log.debug(getLogPrefix(session)+"storing reasons under sessionKey ["+getReasonSessionKey()+"]");
 			session.put(getReasonSessionKey(),fullReasons);
 		}
 		if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
 			log.debug(getLogPrefix(session)+"storing reasons (in xml format) under sessionKey ["+getXmlReasonSessionKey()+"]");
-			session.put(getXmlReasonSessionKey(),xeh.getXmlReasons());
+			session.put(getXmlReasonSessionKey(),xmlValidatorErrorHandler.getXmlReasons());
 		}
 		if (isThrowException()) {
 			throw new XmlValidatorException(fullReasons, t);
@@ -352,6 +361,11 @@ public abstract class AbstractXmlValidator {
 	public String getCharset() {
 		return charset;
 	}
+
+	public void setWarn(boolean warn) {
+		this.warn = warn;
+	}
+
     protected InputSource getInputSource(Object input) throws XmlValidatorException {
         Variant in = new Variant(input);
         final InputSource is;
@@ -390,6 +404,10 @@ public abstract class AbstractXmlValidator {
 		} else {
 			return ignoreUnknownNamespaces;
 		}
+	}
+
+	public void setMainFailureMessage(String mainFailureMessage) {
+		this.mainFailureMessage = mainFailureMessage;
 	}
 
 	protected static class RetryException extends XNIException {

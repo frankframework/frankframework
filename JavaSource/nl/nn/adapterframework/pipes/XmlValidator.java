@@ -1,6 +1,10 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.41  2012-09-19 21:40:37  m00f069
+ * Revision 1.42  2012-10-01 07:59:29  m00f069
+ * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
+ * Cleaned XML validation code and documentation a bit.
+ *
+ * Revision 1.41  2012/09/19 21:40:37  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ignoreUnknownNamespaces attribute
  *
  * Revision 1.40  2012/09/19 09:49:58  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -136,19 +140,6 @@ import nl.nn.adapterframework.util.*;
 /**
 *<code>Pipe</code> that validates the input message against a XML-Schema.
 *
-* <p><b>Notice:</b> this implementation relies on Xerces and is rather
-* version-sensitive. It relies on the validation features of it. You should test the proper
-* working of this pipe extensively on your deployment platform.</p>
-* <p>The XmlValidator relies on the properties for <code>external-schemaLocation</code> and
-* <code>external-noNamespaceSchemaLocation</code>. In
-* Xerces-J-2.4.0 there came a bug-fix for these features, so a previous version was erroneous.<br/>
-* Xerces-j-2.2.1 included a fix on this, so before this version there were problems too (the features did not work).<br/>
-* Therefore: old versions of
-* Xerses on your container may not be able to set the necessary properties, or
-* accept the properties but not do the actual validation! This functionality should
-* work (it does! with Xerces-J-2.6.0 anyway), but testing is necessary!</p>
-* <p><i>Careful 1: test this on your deployment environment</i></p>
-* <p><i>Careful 2: beware of behaviour differences between different JDKs: JDK 1.4 works much better than JDK 1.3</i></p>
 * <p><b>Configuration:</b>
 * <table border="1">
 * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -193,7 +184,9 @@ public class XmlValidator extends FixedForwardPipe {
 
     private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
 
-	protected AbstractXmlValidator validator = new XmlValidatorBase();
+	protected String mainFailureMessageSchemaLocation;
+
+	protected AbstractXmlValidator validator = new XercesXmlValidator();
 
 	private TransformerPool transformerPoolExtractSoapBody;
 	private TransformerPool transformerPoolGetRootNamespace;
@@ -238,11 +231,13 @@ public class XmlValidator extends FixedForwardPipe {
             if (findForward("failure")==null) throw new ConfigurationException(
             getLogPrefix(null)+ "must either set throwException true, or have a forward with name [failure]");
         }
+		validator.setMainFailureMessage("Validation using "
+				+ getClass().getSimpleName() + " with '"
+				+ mainFailureMessageSchemaLocation + "' failed");
 		validator.configure(getLogPrefix(null));
-		registerEvent(XmlValidatorBase.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
-		registerEvent(XmlValidatorBase.XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT);
-		registerEvent(XmlValidatorBase.XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);
-		registerEvent(XmlValidatorBase.XML_VALIDATOR_VALID_MONITOR_EVENT);
+		registerEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
+		registerEvent(AbstractXmlValidator.XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);
+		registerEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
     }
 
      /**
@@ -271,13 +266,13 @@ public class XmlValidator extends FixedForwardPipe {
     protected PipeForward validate(String messageToValidate, IPipeLineSession session) throws XmlValidatorException, PipeRunException {
         String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session));
         throwEvent(resultEvent);
-        if (XmlValidatorBase.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
+        if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
             return getForward();
         }
         PipeForward forward = null;
-        if (XmlValidatorBase.XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT.equals(resultEvent)) {
+        if (AbstractXmlValidator.XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT.equals(resultEvent)) {
             forward = findForward("illegalRoot");
-        } else if (XmlValidatorBase.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT.equals(resultEvent)) {
+        } else if (AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT.equals(resultEvent)) {
             forward = findForward("parserError");
         }
         if (forward == null) {
@@ -368,33 +363,37 @@ public class XmlValidator extends FixedForwardPipe {
 		return getNoNamespaceSchemaLocation();
 	}
 
-    /**
-     * <p>Pairs of URI references (one for the namespace name, and one for a
-     * hint as to the location of a schema document defining names for that
-     * namespace name).</p>
-     * <p> The syntax is the same as for schemaLocation attributes
-     * in instance documents: e.g, "http://www.example.com file%20name.xsd".</p>
-     * <p>The user can specify more than one XML Schema in the list.</p>
-     * <p><b>Note</b> that spaces are considered separators for this attributed.
-     * This means that, for example, spaces in filenames should be escaped to %20.
-     * </p>
-     *
-     * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
-     */
-    public void setSchemaLocation(String schemaLocation) {
-    	validator.setSchemaLocation(schemaLocation);
-    }
+	/**
+	 * <p>Pairs of URI references (one for the namespace name, and one for a
+	 * hint as to the location of a schema document defining names for that
+	 * namespace name).</p>
+	 * <p> The syntax is the same as for schemaLocation attributes
+	 * in instance documents: e.g, "http://www.example.com file%20name.xsd".</p>
+	 * <p>The user can specify more than one XML Schema in the list.</p>
+	 * <p><b>Note</b> that spaces are considered separators for this attributed.
+	 * This means that, for example, spaces in filenames should be escaped to %20.
+	 * </p>
+	 *
+	 * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
+	 */
+	public void setSchemaLocation(String schemaLocation) {
+		mainFailureMessageSchemaLocation = schemaLocation;
+		validator.setSchemaLocation(schemaLocation);
+	}
+
 	public String getSchemaLocation() {
 		return validator.getSchemaLocation();
 	}
 
-    /**
-     * <p>A URI reference as a hint as to the location of a schema document with
-     * no target namespace.</p>
-     */
-    public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
-    	validator.setNoNamespaceSchemaLocation(noNamespaceSchemaLocation);
-    }
+	/**
+	 * <p>A URI reference as a hint as to the location of a schema document with
+	 * no target namespace.</p>
+	 */
+	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
+		mainFailureMessageSchemaLocation = noNamespaceSchemaLocation;
+		validator.setNoNamespaceSchemaLocation(noNamespaceSchemaLocation);
+	}
+
 	public String getNoNamespaceSchemaLocation() {
 		return validator.getNoNamespaceSchemaLocation();
 	}
@@ -501,8 +500,8 @@ public class XmlValidator extends FixedForwardPipe {
 	}
 
 	public void setWarn(boolean warn) {
-        if (validator instanceof XmlValidatorBase) {
-            ((XmlValidatorBase) validator).setWarn(warn);
+        if (validator instanceof AbstractXmlValidator) {
+            ((AbstractXmlValidator) validator).setWarn(warn);
         } else {
             throw new UnsupportedOperationException();
         }

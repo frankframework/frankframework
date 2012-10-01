@@ -1,6 +1,10 @@
 /*
- * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.23  2012-09-28 13:51:49  m00f069
+ * $Log: XercesXmlValidator.java,v $
+ * Revision 1.1  2012-10-01 07:59:29  m00f069
+ * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
+ * Cleaned XML validation code and documentation a bit.
+ *
+ * Revision 1.23  2012/09/28 13:51:49  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Restored illegalRoot forward and XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT with new check on root implementation.
  *
  * Revision 1.22  2012/09/19 21:40:37  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -89,12 +93,10 @@ import javax.xml.stream.XMLStreamException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.util.XmlValidatorContentHandler.IllegalRootElementException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
-import org.apache.xerces.parsers.CachingParserPool;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.XMLGrammarPreparser;
 import org.apache.xerces.util.ShadowedSymbolTable;
@@ -104,30 +106,15 @@ import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 
 /**
- * baseclass for validating input message against a XML-Schema.
+ * Xerces based XML validator.
  *
- * <p><b>Notice:</b> this implementation relies on Xerces and is rather
- * version-sensitive. It relies on the validation features of it. You should test the proper
- * working of this pipe extensively on your deployment platform.</p>
- * <p>The XmlValidator relies on the properties for <code>external-schemaLocation</code> and
- * <code>external-noNamespaceSchemaLocation</code>. In
- * Xerces-J-2.4.0 there came a bug-fix for these features, so a previous version was erroneous.<br/>
- * Xerces-j-2.2.1 included a fix on this, so before this version there were problems too (the features did not work).<br/>
- * Therefore: old versions of
- * Xerses on your container may not be able to set the necessary properties, or
- * accept the properties but not do the actual validation! This functionality should
- * work (it does! with Xerces-J-2.6.0 anyway), but testing is necessary!</p>
- * <p><i>Careful 1: test this on your deployment environment</i></p>
- * <p><i>Careful 2: beware of behaviour differences between different JDKs: JDK 1.4 works much better than JDK 1.3</i></p>
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -159,7 +146,7 @@ import org.xml.sax.XMLReader;
  * @version Id
  * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
  */
-public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
+public class XercesXmlValidator extends AbstractXmlValidator {
     /** Property identifier: symbol table. */
     public static final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
 
@@ -180,23 +167,14 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
     /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
     protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
 
-   // What are these?
     private static Map<String, SymbolTable> symbolTables = null;
     private static Map<String, XMLGrammarPool> grammarPools = null;
 
-    // WTF
 	private String            globalSchema     = null;
-	private CachingParserPool globalParserPool;
     private SymbolTable       globalSymbolTable = null;
     private XMLGrammarPool    globalGrammarPool = null;
 
-    private Map<String, CachingParserPool>      parserPools;
-	private XMLParserConfiguration              globalParserConfig = null;
-    private Map<String, XMLParserConfiguration> parserConfigurations;
-
     private Map<String, Grammar>                grammars = new HashMap<String, Grammar>(); /* xmlns -> Grammar */
-
-    private boolean warn = AppConstants.getInstance().getBoolean("xmlValidator.warn", true);
 
     @Override
     protected void init() throws ConfigurationException {
@@ -375,22 +353,26 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
             schema = schemaLocation;
         }
 
-		XmlValidatorErrorHandler xeh;
-
-		XMLReader parser;
+		XmlValidatorContentHandler xmlValidatorContentHandler =
+				new XmlValidatorContentHandler(grammars, singleLeafValidations,
+						getIgnoreUnknownNamespaces());
+		XmlValidatorErrorHandler xmlValidatorErrorHandler =
+				new XmlValidatorErrorHandler(xmlValidatorContentHandler,
+						mainFailureMessage);
+		xmlValidatorContentHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
+		XMLReader parser = new SAXParser(new ShadowedSymbolTable(symbolTable),
+				grammarPool);
+		parser.setErrorHandler(xmlValidatorErrorHandler);
+		parser.setContentHandler(xmlValidatorContentHandler);
 		try {
-			parser = getParser(symbolTable, grammarPool);
-			if (parser == null) {
-				throw new XmlValidatorException(logPrefix +  "could not obtain parser");
-			}
-			xeh = new XmlValidatorErrorHandler(parser);
-			parser.setErrorHandler(xeh);
+			parser.setFeature(NAMESPACES_FEATURE_ID, true);
+			parser.setFeature(VALIDATION_FEATURE_ID, true);
+			parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
+			parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
 		} catch (SAXNotRecognizedException e) {
 			throw new XmlValidatorException(logPrefix + "parser does not recognize necessary feature", e);
 		} catch (SAXNotSupportedException e) {
 			throw new XmlValidatorException(logPrefix + "parser does not support necessary feature", e);
-		} catch (SAXException e) {
-			throw new XmlValidatorException(logPrefix + "error configuring the parser", e);
 		}
 
 		InputSource is = getInputSource(input);
@@ -398,33 +380,16 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
 		try {
 			parser.parse(is);
 		} catch (Exception e) {
-			String event;
-			if (e instanceof IllegalRootElementException) {
-				event = XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT;
-			} else {
-				event = XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT;
-			}
-			return handleFailures(xeh,session,"", event, e);
+			return handleFailures(xmlValidatorErrorHandler,
+					session, XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, e);
 		}
 
-		boolean isValid = !(xeh.hasErrorOccured());
-
-		if (!isValid) {
-			String mainReason = logPrefix + "got invalid xml according to schema [" + schema + "]";
-			return handleFailures(xeh, session, mainReason, XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
-        }
+		if (xmlValidatorErrorHandler.hasErrorOccured()) {
+			return handleFailures(xmlValidatorErrorHandler, session,
+					XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
+		}
 		return XML_VALIDATOR_VALID_MONITOR_EVENT;
-    }
-
-    private XMLReader getParser(final SymbolTable symbolTable, final XMLGrammarPool grammarPool) throws  SAXException {
-    	XMLReader parser = new SAXParser(new ShadowedSymbolTable(symbolTable), grammarPool);
-    	parser.setContentHandler(new XmlValidatorContentHandler(grammars, singleLeafValidations, getIgnoreUnknownNamespaces()));
-    	parser.setFeature(NAMESPACES_FEATURE_ID, true);
-    	parser.setFeature(VALIDATION_FEATURE_ID, true);
-    	parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
-    	parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
-        return parser;
-    }
+	}
 
     private XMLInputSource stringToXIS(Definition def) throws IOException, XMLStreamException {
         if (isAddNamespaceToSchema()) {
@@ -433,10 +398,6 @@ public class XmlValidatorBaseXerces26 extends AbstractXmlValidator {
         } else {
             return new XMLInputSource(def.publicId, def.systemId, null);
         }
-    }
-
-    public void setWarn(boolean warn) {
-        this.warn = warn;
     }
 
 

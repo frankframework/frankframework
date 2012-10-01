@@ -1,6 +1,10 @@
 /*
  * $Log: XmlValidatorContentHandler.java,v $
- * Revision 1.3  2012-09-28 13:51:49  m00f069
+ * Revision 1.4  2012-10-01 07:59:29  m00f069
+ * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
+ * Cleaned XML validation code and documentation a bit.
+ *
+ * Revision 1.3  2012/09/28 13:51:49  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Restored illegalRoot forward and XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT with new check on root implementation.
  *
  * Revision 1.2  2012/09/19 21:40:37  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -32,15 +36,17 @@ import java.util.*;
  * @author Jaco de Groot
  */
 public class XmlValidatorContentHandler extends DefaultHandler2 {
+	private static final int MAX_NAMESPACE_WARNINGS = 5;
 
 	// state
-	public String elementName = null;
 	private int level = -1;
 	private List<String> elements = new ArrayList<String>();
 
 	private final Map<String, Grammar> grammarsValidation;
 	private final Set<List<String>> rootValidations;
 	private final boolean ignoreUnknownNamespaces;
+	private XmlValidatorErrorHandler xmlValidatorErrorHandler;
+	private int namespaceWarnings = 0;
 
 	/**
 	 * 
@@ -58,6 +64,11 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		this.ignoreUnknownNamespaces = ignoreUnknownNamespaces;
 	}
 
+	public void setXmlValidatorErrorHandler(
+			XmlValidatorErrorHandler xmlValidatorErrorHandler) {
+		this.xmlValidatorErrorHandler = xmlValidatorErrorHandler;
+	}
+
 	@Override
 	public void startElement(String namespaceURI, String lName, String qName,
 			Attributes attrs) throws SAXException {
@@ -67,16 +78,18 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 				if (path.size() == i + 1
 						&& elements.equals(path.subList(0, i))
 						&& !path.get(i).equals(lName)) {
-					throw new IllegalRootElementException(
-							"Illegal root element '" + lName + "' at '"
-							+ getXpath() + "', expecting element '"
-							+ path.get(i) + "'.");
+					String message = "Illegal root element '" + lName
+							+ "'. Root element '" + path.get(i) + "' expected.";
+					if (xmlValidatorErrorHandler != null) {
+						xmlValidatorErrorHandler.addReason(message, null);
+					} else {
+						throw new IllegalRootElementException(message);
+					}
 				}
 			}
 		}
 		level++;
 		elements.add(lName);
-		elementName = lName;
 		if (StringUtils.isNotEmpty(namespaceURI)) {
 			checkNamespaceExistance(namespaceURI);
 		}
@@ -94,17 +107,25 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		// nop
 	}
 
-	protected void checkNamespaceExistance(String namespace) throws UnknownNamespaceException {
-		if (grammarsValidation != null) {
+	protected void checkNamespaceExistance(String namespace)
+			throws UnknownNamespaceException {
+		if (!ignoreUnknownNamespaces && grammarsValidation != null
+				&& namespaceWarnings <= MAX_NAMESPACE_WARNINGS) {
 			Grammar grammar = grammarsValidation.get(namespace);
-			if (grammar == null && !ignoreUnknownNamespaces) {
-				throw new UnknownNamespaceException("Unknown namespace " + namespace);
+			if (grammar == null) {
+				String message = "Unknown namespace " + namespace;
+				namespaceWarnings++;
+				if (namespaceWarnings > MAX_NAMESPACE_WARNINGS) {
+					message = message
+							+ " (maximum number of namespace warnings reached)";
+				}
+				if (xmlValidatorErrorHandler != null) {
+					xmlValidatorErrorHandler.addReason(message, null);
+				} else {
+					throw new UnknownNamespaceException(message);
+				}
 			}
 		}
-	}
-
-	public String getElementName() {
-		return elementName;
 	}
 
 	public String getXpath() {

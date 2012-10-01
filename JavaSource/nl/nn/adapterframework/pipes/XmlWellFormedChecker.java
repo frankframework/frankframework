@@ -1,6 +1,10 @@
 /*
  * $Log: XmlWellFormedChecker.java,v $
- * Revision 1.7  2012-06-01 10:52:49  m00f069
+ * Revision 1.8  2012-10-01 07:59:29  m00f069
+ * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
+ * Cleaned XML validation code and documentation a bit.
+ *
+ * Revision 1.7  2012/06/01 10:52:49  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.6  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -29,8 +33,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.util.AbstractXmlValidator;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.XmlValidatorBase;
 
 /**
  *<code>Pipe</code> that checks the well-formedness of the input message.
@@ -60,17 +64,17 @@ public class XmlWellFormedChecker extends FixedForwardPipe {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		registerEvent(XmlValidatorBase.XML_VALIDATOR_VALID_MONITOR_EVENT);
-		registerEvent(XmlValidatorBase.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
+		registerEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
+		registerEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
 	}
 
 
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) {
 		if (XmlUtils.isWellFormed(input.toString(), getRoot())) {
-			throwEvent(XmlValidatorBase.XML_VALIDATOR_VALID_MONITOR_EVENT);
+			throwEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
 			return new PipeRunResult(getForward(), input);
 		}
-		throwEvent(XmlValidatorBase.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
+		throwEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
 		PipeForward forward = findForward("parserError");
 		if (forward==null) {
 			forward = findForward("failure");

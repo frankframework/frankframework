@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.87  2012-09-28 08:25:56  m00f069
+ * Revision 1.88  2012-10-01 07:59:29  m00f069
+ * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
+ * Cleaned XML validation code and documentation a bit.
+ *
+ * Revision 1.87  2012/09/28 08:25:56  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Restored old behaviour of returning a DOMSource for single use when namespaceAware=false
  *
  * Revision 1.86  2012/09/25 13:11:36  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -364,7 +368,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.87 $ $Date: 2012-09-28 08:25:56 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.88 $ $Date: 2012-10-01 07:59:29 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1506,7 +1510,8 @@ public class XmlUtils {
 			singleLeafValidations = new HashSet<List<String>>();
 			singleLeafValidations.add(path);
 		}
-		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(null, singleLeafValidations, true);
+		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(
+				null, singleLeafValidations, true);
 		try {
 			SAXSource saxSource = stringToSAXSource(input, true, false);
 			XMLReader xmlReader = saxSource.getXMLReader();
@@ -1515,102 +1520,9 @@ public class XmlUtils {
 		} catch (Exception e) {
 			return false;
 		}
-
 		return true;
 	}
 
-	public static void assertValidToSchema(String srcText, String schemaResource, boolean namespaceAware, String root) throws ListenerException {
-		Variant in = new Variant(srcText);
-		InputSource is = in.asXmlInputSource();
-		URL url = ClassUtils.getResourceURL(schemaResource);
-		if (url == null) {
-			throw new ListenerException("cannot retrieve schema [" + schemaResource + "]");
-		}
-		assertValidToSchema(is,url,namespaceAware,root);
-	}
-
-	public static void assertValidToSchema(InputSource src, URL schema, boolean namespaceAware, String root) throws ListenerException {
-		XMLReader parser;
-		XmlValidatorErrorHandler xeh;
-		try {
-			parser = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
-			parser.setFeature("http://xml.org/sax/features/validation", true);
-			parser.setFeature("http://xml.org/sax/features/namespaces", true);
-			parser.setFeature("http://apache.org/xml/features/validation/schema", true);
-			Boolean ignoreUnknownNamespaces;
-			if (namespaceAware) {
-				log.debug("Give schemaLocation to parser: " + schema.toExternalForm());
-				parser.setProperty("http://apache.org/xml/properties/schema/external-schemaLocation", schema.toExternalForm());
-				ignoreUnknownNamespaces = false;
-			} else {
-				log.debug("Give noNamespaceSchemaLocation to parser: " + schema.toExternalForm());
-				parser.setProperty("http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation", schema.toExternalForm());
-				ignoreUnknownNamespaces = true;
-			}
-			Set<List<String>> singleLeafValidations = null;
-			if (StringUtils.isNotEmpty(root)) {
-				List<String> path = new ArrayList<String>();
-				path.add(root);
-				singleLeafValidations = new HashSet<List<String>>();
-				singleLeafValidations.add(path);
-			}
-			parser.setContentHandler(new XmlValidatorContentHandler(null, singleLeafValidations, ignoreUnknownNamespaces));
-			xeh = new XmlValidatorErrorHandler(parser);
-			parser.setErrorHandler(xeh);
-		} catch (SAXNotRecognizedException e) {
-			throw new ListenerException("parser does not recognize necessary feature", e);
-		} catch (SAXNotSupportedException e) {
-			throw new ListenerException("parser does not support necessary feature", e);
-		} catch (SAXException e) {
-			throw new ListenerException("error configuring the parser", e);
-		}
-
-		try {
-			parser.parse(src);
-		 } catch (Exception e) {
-		 	throw new ListenerException("parserError",e);
-		}
-		boolean isValid = !(xeh.hasErrorOccured());
-
-		if (!isValid) {
-			String mainReason = "got invalid xml according to schema [" + schema.toExternalForm() + "]";
-			throw new ListenerException(mainReason+": "+xeh.getXmlReasons());
-		}
-
-	}
-
-	/*
-	 *This function does not operate with Xerces 1.4.1
-	 */
-
-	static public boolean ValidateToSchema(InputSource src, URL schema)
-		throws NestableException {
-
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		factory.setNamespaceAware(true);
-		factory.setValidating(true);
-
-		SAXParser saxParser;
-		try {
-			saxParser = factory.newSAXParser();
-			saxParser.setProperty(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
-			saxParser.setProperty(JAXP_SCHEMA_SOURCE, schema.openStream());
-
-		} catch (ParserConfigurationException e) {
-			throw new NestableException(e);
-		} catch (SAXException e) {
-			throw new NestableException(e);
-		} catch (IOException e) {
-			throw new NestableException(e);
-		}
-		try {
-			saxParser.parse(src, new DefaultHandler());
-			return true;
-		} catch (Exception e) {
-			log.warn(e);
-		}
-		return false;
-	}
 	/**
 	 * Performs an Identity-transform, with resolving entities with the content files in the classpath
 	 * @param input

@@ -1,6 +1,10 @@
 /*
  * $Log: XmlValidatorSender.java,v $
- * Revision 1.12  2012-06-01 10:52:50  m00f069
+ * Revision 1.13  2012-10-01 07:59:29  m00f069
+ * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
+ * Cleaned XML validation code and documentation a bit.
+ *
+ * Revision 1.12  2012/06/01 10:52:50  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.11  2011/12/08 09:34:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -45,25 +49,13 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.XmlValidatorBase;
+import nl.nn.adapterframework.util.AbstractXmlValidator;
+import nl.nn.adapterframework.util.XercesXmlValidator;
 
 
 /**
  *<code>Sender</code> that validates the input message against a XML-Schema.
  *
- * <p><b>Notice:</b> this implementation relies on Xerces and is rather
- * version-sensitive. It relies on the validation features of it. You should test the proper
- * working of this pipe extensively on your deployment platform.</p>
- * <p>The XmlValidator relies on the properties for <code>external-schemaLocation</code> and
- * <code>external-noNamespaceSchemaLocation</code>. In
- * Xerces-J-2.4.0 there came a bug-fix for these features, so a previous version was erroneous.<br/>
- * Xerces-j-2.2.1 included a fix on this, so before this version there were problems too (the features did not work).<br/>
- * Therefore: old versions of
- * Xerses on your container may not be able to set the necessary properties, or
- * accept the properties but not do the actual validation! This functionality should
- * work (it does! with Xerces-J-2.6.0 anyway), but testing is necessary!</p>
- * <p><i>Careful 1: test this on your deployment environment</i></p>
- * <p><i>Careful 2: beware of behaviour differences between different JDKs: JDK 1.4 works much better than JDK 1.3</i></p>
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -87,7 +79,7 @@ import nl.nn.adapterframework.util.XmlValidatorBase;
  * @since  
  * @version Id
  */
-public class XmlValidatorSender extends XmlValidatorBase implements ISenderWithParameters {
+public class XmlValidatorSender extends XercesXmlValidator implements ISenderWithParameters {
 
 	private String name;
 	
@@ -113,7 +105,7 @@ public class XmlValidatorSender extends XmlValidatorBase implements ISenderWithP
 		try {
 			String resultEvent = validate(message, session, getLogPrefix());
 			
-			if (XmlValidatorBase.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
+			if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
 				return message;
 			}
 			fullReasons = resultEvent; // TODO: find real fullReasons

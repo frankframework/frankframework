@@ -1,6 +1,10 @@
 /*
  * $Log: EsbSoapValidator.java,v $
- * Revision 1.8  2012-09-28 14:40:15  m00f069
+ * Revision 1.9  2012-10-01 07:59:29  m00f069
+ * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
+ * Cleaned XML validation code and documentation a bit.
+ *
+ * Revision 1.8  2012/09/28 14:40:15  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Bugfix WSDL target namespace for one-way ESB Soap (when getting it from the namespace of the first XSD)
  *
  * Revision 1.7  2012/09/26 12:41:05  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -81,6 +85,7 @@ public class EsbSoapValidator extends SoapValidator {
     public void setSchemaLocation(String schemaLocation) {
         super.setSchemaLocation(schemaLocation + " " + GENERIC_HEADER.get(mode).xmlns + " " + GENERIC_HEADER.get(mode).xsd);
         explicitSchemaLocation = schemaLocation;
+        mainFailureMessageSchemaLocation = schemaLocation;
     }
 
     @Override
