@@ -1,6 +1,9 @@
 /*
  * $Log: IbisSoapServlet.java,v $
- * Revision 1.6  2012-09-27 13:44:31  m00f069
+ * Revision 1.7  2012-10-01 15:23:44  m00f069
+ * Strip schemaLocation from xsd import in case of generated WSDL with inline XSD's.
+ *
+ * Revision 1.6  2012/09/27 13:44:31  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates in generating wsdl namespace, wsdl input message name, wsdl output message name, wsdl port type name and wsdl operation name in case of EsbSoap
  *
  * Revision 1.5  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -127,7 +130,7 @@ public class IbisSoapServlet extends HttpServlet {
                  try {
                      XMLStreamWriter writer
                          = WsdlUtils.createWriter(res.getOutputStream(), false);
-                     WsdlUtils.includeXSD(xs, writer, new HashMap<String, String>(), false);
+                     WsdlUtils.includeXSD(xs, writer, new HashMap<String, String>(), false, false);
                  } catch (XMLStreamException e) {
                      throw new ServletException(e);
                  }

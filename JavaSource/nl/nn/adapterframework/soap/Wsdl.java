@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.10  2012-09-28 14:39:47  m00f069
+ * Revision 1.11  2012-10-01 15:23:44  m00f069
+ * Strip schemaLocation from xsd import in case of generated WSDL with inline XSD's.
+ *
+ * Revision 1.10  2012/09/28 14:39:47  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Bugfix WSLD target namespace for ESB Soap, part XSD should be WSDL
  *
  * Revision 1.9  2012/09/27 14:28:59  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -285,7 +288,7 @@ class Wsdl {
                 ZipEntry xsdEntry = new ZipEntry(zipName);
                 out.putNextEntry(xsdEntry);
                 XMLStreamWriter writer = WsdlUtils.createWriter(out, false);
-                WsdlUtils.includeXSD(xsd, writer, correctingNamespaces, true);
+                WsdlUtils.includeXSD(xsd, writer, correctingNamespaces, true, false);
                 out.closeEntry();
             } else {
                 LOG.warn("Duplicate xsds in " + this + " " + xsd + " " + getXSDs());
@@ -400,7 +403,7 @@ class Wsdl {
         Map<String, String> correctingNamesSpaces = new HashMap<String, String>();
         if (includeXsds) {
             for (XSD xsd : getXSDs()) {
-                WsdlUtils.includeXSD(xsd, w, correctingNamesSpaces, false);
+                WsdlUtils.includeXSD(xsd, w, correctingNamesSpaces, false, true);
             }
         }  else {
             for (Map.Entry<String, Collection<XSD>> xsd: getMappedXSDs().entrySet()) {

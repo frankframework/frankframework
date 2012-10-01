@@ -23,18 +23,12 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -105,7 +99,7 @@ public abstract class WsdlUtils {
                     public void write(int i) throws IOException {
                         // /dev/null
                     }
-                }, ENCODING), correctingNameSpaces, true);
+                }, ENCODING), correctingNameSpaces, true, false);
             }
         }
         w.writeEndElement();
@@ -119,11 +113,23 @@ public abstract class WsdlUtils {
      * @param xsd
      * @param xmlStreamWriter
      * @param correctingNamespaces
-     * @param standalone           When standalone the start and end document contants are ignored.
+     * @param standalone
+     * When standalone the start and end document contants are ignored.
+     * @param stripSchemaLocationFromImport
+     * Useful when generating a WSDL which should contain all XSD's inline
+     * (without includes or imports). The XSD might have an import with
+     * schemaLocation to make it valid on it's own, when
+     * stripSchemaLocationFromImport is true it will be removed. TODO Extend
+     * this functionality to check whether an XSD with the namespace mentioned
+     * by the import is already available in the WSDL or planned to be added
+     * and when it isn't add it to the list of XSD's to add to the WSDL.
      * @throws java.io.IOException
      * @throws javax.xml.stream.XMLStreamException
      */
-    static void includeXSD(final XSD xsd, XMLStreamWriter xmlStreamWriter, Map<String, String> correctingNamespaces, final boolean standalone) throws IOException, XMLStreamException {
+    static void includeXSD(final XSD xsd, XMLStreamWriter xmlStreamWriter,
+            Map<String, String> correctingNamespaces, final boolean standalone,
+            boolean stripSchemaLocationFromImport)
+                    throws IOException, XMLStreamException {
         final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(
             new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, correctingNamespaces));
         InputStream in = xsd.url.toURL().openStream();
@@ -163,7 +169,7 @@ public abstract class WsdlUtils {
                                         new AttributeEvent(Wsdl.TNS, xsdNamespace)
                                     ).iterator(),
                                     Arrays.asList(
-											XmlUtils.EVENT_FACTORY.createNamespace(xsdNamespace)
+                                            XmlUtils.EVENT_FACTORY.createNamespace(xsdNamespace)
                                     ).iterator(),
                                     XmlUtils.EVENT_FACTORY
                                 );
@@ -191,17 +197,35 @@ public abstract class WsdlUtils {
                     } else if (el.getName().equals(Wsdl.IMPORT)) {
                         Attribute schemaLocation = el.getAttributeByName(Wsdl.SCHEMALOCATION);
                         if (schemaLocation != null) {
-                            String location = schemaLocation.getValue();
-                            String relativeTo = xsd.parentLocation;
-                            if (relativeTo.length() > 0 && location.startsWith(relativeTo)) {
-                                location = location.substring(relativeTo.length());
-                            }
-                            e =
-                                XMLStreamUtils.mergeAttributes(el,
-                                    Collections.singletonList(new AttributeEvent(Wsdl.SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug(xsd.url + " Corrected " + el + " -> " + e);
-                                LOG.debug(xsd.url + " Relative to : " + relativeTo + " -> " + e);
+                            if (stripSchemaLocationFromImport) {
+                                List<Attribute> attributes = new ArrayList<Attribute>();
+                                Iterator<Attribute> iterator = el.getAttributes();
+                                while (iterator.hasNext()) {
+                                    Attribute a = iterator.next();
+                                    if (!Wsdl.SCHEMALOCATION.equals(a.getName())) {
+                                        attributes.add(a);
+                                    }
+                                }
+                                e = new StartElementEvent(
+                                        el.getName(),
+                                        attributes.iterator(),
+                                        el.getNamespaces(),
+                                        el.getNamespaceContext(),
+                                        el.getLocation(),
+                                        el.getSchemaType());
+                            } else {
+                                String location = schemaLocation.getValue();
+                                String relativeTo = xsd.parentLocation;
+                                if (relativeTo.length() > 0 && location.startsWith(relativeTo)) {
+                                    location = location.substring(relativeTo.length());
+                                }
+                                e =
+                                    XMLStreamUtils.mergeAttributes(el,
+                                        Collections.singletonList(new AttributeEvent(Wsdl.SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug(xsd.url + " Corrected " + el + " -> " + e);
+                                    LOG.debug(xsd.url + " Relative to : " + relativeTo + " -> " + e);
+                                }
                             }
                         }
                     } else if (el.getName().equals(Wsdl.ELEMENT)) {
