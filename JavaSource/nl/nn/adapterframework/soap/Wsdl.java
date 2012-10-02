@@ -1,6 +1,10 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.11  2012-10-01 15:23:44  m00f069
+ * Revision 1.12  2012-10-02 16:12:14  m00f069
+ * Bugfix for one-way WSDL (switched esbSoapOperationName and esbSoapOperationVersion).
+ * Log a warning in case paradigm could not be extracted from the soap body.
+ *
+ * Revision 1.11  2012/10/01 15:23:44  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Strip schemaLocation from xsd import in case of generated WSDL with inline XSD's.
  *
  * Revision 1.10  2012/09/28 14:39:47  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -168,10 +172,10 @@ class Wsdl {
                 tns = tns.substring(EsbSoapWrapperPipe.getOutputNamespaceBaseUri().length());
                 tns = ESB_SOAP_TNS_BASE_URI + tns;
                 int i = tns.lastIndexOf('/');
-                esbSoapOperationName = tns.substring(i + 1);
+                esbSoapOperationVersion = tns.substring(i + 1);
                 tns = tns.substring(0, i);
                 i = tns.substring(0, i).lastIndexOf('/');
-                esbSoapOperationVersion = tns.substring(i + 1);
+                esbSoapOperationName = tns.substring(i + 1);
                 tns = tns.substring(0, i);
                 initEsbSoap(null);
             } else {
@@ -198,21 +202,26 @@ class Wsdl {
         this.targetNamespace = WsdlUtils.validUri(tns);
     }
 
-    protected void initEsbSoap(String paradigm) {
+    protected void initEsbSoap(String outputParadigm) {
+        String inputParadigm = null;
         if (inputValidator instanceof SoapValidator) {
             String soapBody = ((SoapValidator)inputValidator).getSoapBody();
             if (soapBody != null) {
                 int i = soapBody.lastIndexOf('_');
                 if (i != -1) {
-                    wsdlInputMessageName = esbSoapOperationName
-                            + "_" + esbSoapOperationVersion
-                            + "_" + soapBody.substring(i + 1);
+                    inputParadigm = soapBody.substring(i + 1);
                 }
             }
         }
-        if (paradigm != null) {
+        if (inputParadigm != null) {
+            wsdlInputMessageName = esbSoapOperationName + "_"
+                + esbSoapOperationVersion + "_" + inputParadigm;
+        } else {
+            LOG.warn("Could not extract paradigm from soapBody attribute of inputValidator");
+        }
+        if (outputParadigm != null) {
             wsdlOutputMessageName = esbSoapOperationName + "_"
-                + esbSoapOperationVersion + "_" + paradigm;
+                + esbSoapOperationVersion + "_" + outputParadigm;
         }
         wsdlPortTypeName = esbSoapOperationName + "_Interface_" + esbSoapOperationVersion;
         wsdlOperationName = esbSoapOperationName + "_" + esbSoapOperationVersion;
