@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.16  2012-09-28 14:39:47  m00f069
+ * Revision 1.17  2012-10-03 14:26:17  m00f069
+ * Added extra checks to isValidNamespace
+ *
+ * Revision 1.16  2012/09/28 14:39:47  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Bugfix WSLD target namespace for ESB Soap, part XSD should be WSDL
  *
  * Revision 1.15  2012/09/27 13:44:31  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -530,12 +533,22 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 
 	public static boolean isValidNamespace(String namespace) {
 		if (namespace != null
-				&& namespace.startsWith(getOutputNamespaceBaseUri())
-				&& namespace.split("/").length == 10) {
-			return true;
-		} else {
-			return false;
+				&& namespace.startsWith(getOutputNamespaceBaseUri())) {
+			String[] split = namespace.split("/");
+			if (split.length == 10) {
+				for (int i = 0; i < split.length; i++) {
+					if (i == 1) {
+						if (split[i].length() != 0) {
+							return false;
+						}
+					} else if (split[i].length() == 0) {
+						return false;
+					}
+				}
+				return true;
+			}
 		}
+		return false;
 	}
 
 }
