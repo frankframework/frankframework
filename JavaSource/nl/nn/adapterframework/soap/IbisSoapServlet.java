@@ -1,6 +1,9 @@
 /*
  * $Log: IbisSoapServlet.java,v $
- * Revision 1.7  2012-10-01 15:23:44  m00f069
+ * Revision 1.8  2012-10-03 14:30:46  m00f069
+ * Different filename for ESB Soap WSDL
+ *
+ * Revision 1.7  2012/10/01 15:23:44  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Strip schemaLocation from xsd import in case of generated WSDL with inline XSD's.
  *
  * Revision 1.6  2012/09/27 13:44:31  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -108,7 +111,7 @@ public class IbisSoapServlet extends HttpServlet {
          Adapter adapter = getAdapter(ibisManager, req.getPathInfo());
          Wsdl wsdl = new Wsdl(adapter.getPipeLine(), true);
          res.setHeader("Content-Disposition",
-             "inline;filename=\"" + wsdl.getName() + ".zip\"");
+             "inline;filename=\"" + wsdl.getFilename() + ".zip\"");
          String servlet = HttpUtils.getRequestURL(req).toString();
          servlet = servlet.substring(0, servlet.lastIndexOf(".")) + ".wsdl";
 
@@ -151,7 +154,7 @@ public class IbisSoapServlet extends HttpServlet {
                  return;
              }
              wsdl = new Wsdl(a.getPipeLine(), indent);
-             res.setHeader("Content-Disposition", "inline;filename=\"" +  wsdl.getName() + ".wsdl\"");
+             res.setHeader("Content-Disposition", "inline;filename=\"" +  wsdl.getFilename() + ".wsdl\"");
              wsdl.setIncludeXsds("true".equals(req.getParameter("includeXsds")));
              wsdl.wsdl(res.getOutputStream(), servlet);
          } catch (Exception e) {
