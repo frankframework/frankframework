@@ -1,6 +1,10 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.12  2012-10-02 16:12:14  m00f069
+ * Revision 1.13  2012-10-03 12:22:41  m00f069
+ * Different transport uri, jndi properties and connectionFactory for ESB Soap.
+ * Fill targetAddress with a value when running locally.
+ *
+ * Revision 1.12  2012/10/02 16:12:14  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Bugfix for one-way WSDL (switched esbSoapOperationName and esbSoapOperationVersion).
  * Log a warning in case paradigm could not be extracted from the soap body.
  *
@@ -39,9 +43,11 @@ package nl.nn.adapterframework.soap;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,8 +61,6 @@ import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -93,15 +97,13 @@ import org.apache.log4j.Logger;
 class Wsdl {
     private static final Logger LOG = LogUtil.getLogger(Wsdl.class);
 
-    private static final  String WSDL      = "http://schemas.xmlsoap.org/wsdl/";
-    private static final  String SOAP_WSDL = "http://schemas.xmlsoap.org/wsdl/soap/";
-    private static final  String SOAP_HTTP = "http://schemas.xmlsoap.org/soap/http";
-    private static final  String JNDI      = "http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi";
-
-    private static final  String SOAP_JMS  = "http://www.w3.org/2010/soapjms/";
-
-    protected static final String XSD      = XMLConstants.W3C_XML_SCHEMA_NS_URI;//"http://www.w3.org/2001/XMLSchema";
-
+    protected static final String XSD                   = XMLConstants.W3C_XML_SCHEMA_NS_URI;//"http://www.w3.org/2001/XMLSchema";
+    protected static final String WSDL                  = "http://schemas.xmlsoap.org/wsdl/";
+    protected static final String SOAP_WSDL             = "http://schemas.xmlsoap.org/wsdl/soap/";
+    protected static final String SOAP_HTTP             = "http://schemas.xmlsoap.org/soap/http";
+    protected static final String SOAP_JMS              = "http://www.w3.org/2010/soapjms/";
+    protected static final String ESB_SOAP_JMS          = "http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS";
+    protected static final String ESB_SOAP_JNDI         = "http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi";
     protected static final String ESB_SOAP_TNS_BASE_URI = "http://nn.nl/WSDL";
 
     protected static final QName NAME           = new QName(null, "name");
@@ -132,6 +134,7 @@ class Wsdl {
     private String wsdlPortTypeName = "PipeLine";
     private String wsdlOperationName = "Process";
 
+    private boolean esbSoap = false;
     private String esbSoapOperationName;
     private String esbSoapOperationVersion;
 
@@ -203,6 +206,7 @@ class Wsdl {
     }
 
     protected void initEsbSoap(String outputParadigm) {
+        esbSoap = true;
         String inputParadigm = null;
         if (inputValidator instanceof SoapValidator) {
             String soapBody = ((SoapValidator)inputValidator).getSoapBody();
@@ -242,8 +246,8 @@ class Wsdl {
         w.setPrefix("xsd",  XSD);
         w.setPrefix("soap", SOAP_WSDL);
         w.setPrefix("jms",  SOAP_JMS);
-        if (needsJndiNamespace()) {
-            w.setPrefix("jndi", JNDI);
+        if (esbSoap) {
+            w.setPrefix("jndi", ESB_SOAP_JNDI);
         }
         w.setPrefix("ibis", getTargetNamespace());
         for (XSD xsd : getXSDs()) {
@@ -253,8 +257,8 @@ class Wsdl {
             w.writeNamespace("wsdl", WSDL);
             w.writeNamespace("xsd",  XSD);
             w.writeNamespace("soap", SOAP_WSDL);
-            if (needsJndiNamespace()) {
-                w.writeNamespace("jndi", JNDI);
+            if (esbSoap) {
+                w.writeNamespace("jndi", ESB_SOAP_JNDI);
             }
             w.writeNamespace("ibis", getTargetNamespace());
             for (XSD xsd : getXSDs()) {
@@ -609,7 +613,11 @@ class Wsdl {
         w.writeAttribute("type", "ibis:" + wsdlPortTypeName); {
             w.writeEmptyElement(SOAP_WSDL, "binding");
             w.writeAttribute("style", "document");
-            w.writeAttribute("transport", SOAP_JMS);
+            if (esbSoap) {
+                w.writeAttribute("transport", ESB_SOAP_JMS);
+            } else {
+                w.writeAttribute("transport", SOAP_JMS);
+            }
             w.writeEmptyElement(SOAP_JMS, "binding");
             w.writeAttribute("messageFormat", "Text");
             writeSoapOperation(w);
@@ -629,15 +637,6 @@ class Wsdl {
         }
     }
 
-    protected boolean needsJndiNamespace() {
-        for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
-            if (listener instanceof JmsListener) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     protected void httpService(XMLStreamWriter w, String servlet) throws XMLStreamException {
         w.writeStartElement(WSDL, "service");
         w.writeAttribute("name", WsdlUtils.getNCName(getName())); {
@@ -653,10 +652,14 @@ class Wsdl {
         w.writeEndElement();
     }
 
-
     protected void jmsService(XMLStreamWriter w, JmsListener listener) throws XMLStreamException, NamingException {
         w.writeStartElement(WSDL, "service");
         w.writeAttribute("name", WsdlUtils.getNCName(getName())); {
+            if (!esbSoap) {
+                // Per example of https://docs.jboss.org/author/display/JBWS/SOAP+over+JMS
+                w.writeStartElement(SOAP_JMS, "jndiConnectionFactoryName");
+                w.writeCharacters(listener.getQueueConnectionFactoryName());
+            }
             w.writeStartElement(WSDL, "port");
             w.writeAttribute("name", "SoapJMS");
             w.writeAttribute("binding", "ibis:SoapBinding"); {
@@ -665,36 +668,65 @@ class Wsdl {
                 if (destinationName != null) {
                     w.writeAttribute("location", destinationName);
                 }
-                writeJndiContext(w);
-                w.writeStartElement(SOAP_JMS, "connectionFactory"); {
-                    w.writeCharacters("QueueConnectionFactory");
+                if (esbSoap) {
+                    writeEsbSoapJndiContext(w, listener);
+                    w.writeStartElement(SOAP_JMS, "connectionFactory"); {
+                        w.writeCharacters("externalJndiName-for-"
+                                + listener.getQueueConnectionFactoryName()
+                                + "-on-"
+                                + AppConstants.getInstance().getResolvedProperty("otap.stage"));
+                        w.writeEndElement();
+                    }
+                    w.writeStartElement(SOAP_JMS, "targetAddress"); {
+                        String destinationType = listener.getDestinationType();
+                        if (destinationType != null) {
+                            w.writeAttribute("destination", destinationType);
+                        }
+                        String queueName = listener.getPhysicalDestinationShortName();
+                        if (queueName == null) {
+                            queueName = "queueName-for-"
+                                    + listener.getDestinationName() + "-on-"
+                                    + AppConstants.getInstance().getResolvedProperty("otap.stage");
+                        }
+                        w.writeCharacters(queueName);
+                        w.writeEndElement();
+                    }
                 }
-                w.writeEndElement();
-                w.writeStartElement(SOAP_JMS, "targetAddress");
-                String destinationType = listener.getDestinationType();
-                if (destinationType != null) {
-                    w.writeAttribute("destination", destinationType);
-                }
-                w.writeCharacters(listener.getPhysicalDestinationShortName());
-                w.writeEndElement();
             }
             w.writeEndElement();
         }
         w.writeEndElement();
     }
 
-    protected void writeJndiContext(XMLStreamWriter w) throws XMLStreamException, NamingException {
-        // TODO
-        Context ctx = new InitialContext();
-        w.writeStartElement(JNDI, "context"); {
-            // TODO untested
-            Map<?, ?> environment = ctx.getEnvironment(); // I have no idea
-            for (Map.Entry<?, ?> entry : environment.entrySet()) {
-                w.writeStartElement(JNDI, "property"); {
-                    w.writeAttribute("name", entry.getKey().toString());
-                    w.writeAttribute("type", entry.getValue().getClass().toString());
+    protected void writeEsbSoapJndiContext(XMLStreamWriter w, JmsListener listener) throws XMLStreamException, NamingException {
+        w.writeStartElement(ESB_SOAP_JNDI, "context"); {
+            w.writeStartElement(ESB_SOAP_JNDI, "property"); {
+                w.writeAttribute("name", "java.naming.factory.initial");
+                w.writeAttribute("type", "java.lang.String");
+                w.writeCharacters("com.tibco.tibjms.naming.TibjmsInitialContextFactory");
+                w.writeEndElement();
+            }
+            w.writeStartElement(ESB_SOAP_JNDI, "property"); {
+                w.writeAttribute("name", "java.naming.provider.url");
+                w.writeAttribute("type", "java.lang.String");
+                String qcf = "";
+                String stage = "";
+                try {
+                    qcf = URLEncoder.encode(
+                            listener.getQueueConnectionFactoryName(), "UTF-8");
+                    stage = URLEncoder.encode(
+                            AppConstants.getInstance().getResolvedProperty("otap.stage"),
+                            "UTF-8");
+                } catch (UnsupportedEncodingException e) {
                 }
-                w.writeCharacters(entry.getValue().toString());
+                w.writeCharacters("tibjmsnaming://host-for-" + qcf + "-on-"
+                        + stage + ":37222");
+                w.writeEndElement();
+            }
+            w.writeStartElement(ESB_SOAP_JNDI, "property"); {
+                w.writeAttribute("name", "java.naming.factory.object");
+                w.writeAttribute("type", "java.lang.String");
+                w.writeCharacters("com.tibco.tibjms.custom.CustomObjectFactory");
                 w.writeEndElement();
             }
         }
