@@ -1,6 +1,11 @@
 /*
  * $Log: IbisSoapServlet.java,v $
- * Revision 1.8  2012-10-03 14:30:46  m00f069
+ * Revision 1.9  2012-10-04 11:28:57  m00f069
+ * Fixed ESB Soap namespace
+ * Added location (url) of WSDL generation to the WSDL documentation
+ * Show warning add the bottom of the WSDL (if any) instead of Ibis logging
+ *
+ * Revision 1.8  2012/10/03 14:30:46  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Different filename for ESB Soap WSDL
  *
  * Revision 1.7  2012/10/01 15:23:44  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -32,17 +37,21 @@ import java.util.HashMap;
 import javax.naming.NamingException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.*;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpUtils;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-
-import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.util.*;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
  /**
@@ -52,8 +61,6 @@ import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
  * @author  Michiel Meeuwissen
  */
 public class IbisSoapServlet extends HttpServlet {
-     private static final Logger LOG = LogUtil.getLogger(IbisSoapServlet.class);
-
      private IbisManager ibisManager;
      private boolean caching = true;
 
@@ -109,7 +116,8 @@ public class IbisSoapServlet extends HttpServlet {
      private void zip(HttpServletRequest req, HttpServletResponse res) throws IOException, XMLStreamException, URISyntaxException, NamingException {
 
          Adapter adapter = getAdapter(ibisManager, req.getPathInfo());
-         Wsdl wsdl = new Wsdl(adapter.getPipeLine(), true);
+         String documentation = getDocumentation(req);
+         Wsdl wsdl = new Wsdl(adapter.getPipeLine(), true, documentation);
          res.setHeader("Content-Disposition",
              "inline;filename=\"" + wsdl.getFilename() + ".zip\"");
          String servlet = HttpUtils.getRequestURL(req).toString();
@@ -153,7 +161,7 @@ public class IbisSoapServlet extends HttpServlet {
                  res.sendError(HttpServletResponse.SC_NOT_FOUND);
                  return;
              }
-             wsdl = new Wsdl(a.getPipeLine(), indent);
+             wsdl = new Wsdl(a.getPipeLine(), indent, getDocumentation(req));
              res.setHeader("Content-Disposition", "inline;filename=\"" +  wsdl.getFilename() + ".wsdl\"");
              wsdl.setIncludeXsds("true".equals(req.getParameter("includeXsds")));
              wsdl.wsdl(res.getOutputStream(), servlet);
@@ -175,6 +183,11 @@ public class IbisSoapServlet extends HttpServlet {
          pathInfo = pathInfo.substring(0, dot);
          return (Adapter) ibisManager.getConfiguration().getRegisteredAdapter(pathInfo);
      }
+
+     protected String getDocumentation(HttpServletRequest req) {
+         return "Generated at " + req.getRequestURL() + " on " + DateUtils.getIsoTimeStamp();
+     }
+
      /**
       * TODO Unused
       */
@@ -212,7 +225,7 @@ public class IbisSoapServlet extends HttpServlet {
             try {
                 Adapter adapter = (Adapter) a;
                 Wsdl wsdl = new Wsdl(adapter.getPipeLine(),
-                    false);
+                    false, getDocumentation(req));
                 String url =
                     req.getContextPath() +
                         req.getServletPath() +
