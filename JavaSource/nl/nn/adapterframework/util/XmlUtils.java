@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.88  2012-10-01 07:59:29  m00f069
+ * Revision 1.89  2012-10-08 12:10:52  europe\m168309
+ * added method makeChangeRootXslt()
+ *
+ * Revision 1.88  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
  * Cleaned XML validation code and documentation a bit.
  *
@@ -368,7 +371,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.88 $ $Date: 2012-10-01 07:59:29 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.89 $ $Date: 2012-10-08 12:10:52 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -486,6 +489,21 @@ public class XmlUtils {
 			+ "</xsl:template>"
 			+ "<xsl:template match=\"@*\">"
 			+ "<xsl:copy-of select=\".\"/>"
+			+ "</xsl:template>"
+			+ "</xsl:stylesheet>";
+	}
+
+	public static String makeChangeRootXslt(String root, boolean omitXmlDeclaration, boolean indent) {
+		return
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
+			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
+			+ "<xsl:template match=\"/*\">"
+			+ "<xsl:element name=\""+root+"\" namespace=\"{namespace-uri()}\">"
+			+ "<xsl:for-each select=\"@*\">"
+			+ "<xsl:attribute name=\"{name()}\"><xsl:value-of select=\".\"/></xsl:attribute>"
+			+ "</xsl:for-each>"
+			+ "<xsl:copy-of select=\"*\"/>"
+			+ "</xsl:element>"
 			+ "</xsl:template>"
 			+ "</xsl:stylesheet>";
 	}
