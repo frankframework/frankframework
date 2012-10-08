@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapperPipe.java,v $
- * Revision 1.10  2012-08-23 11:57:43  m00f069
+ * Revision 1.11  2012-10-08 12:14:44  europe\m168309
+ * added root attribute
+ *
+ * Revision 1.10  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates from Michiel
  *
  * Revision 1.9  2012/06/01 10:52:48  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -74,6 +77,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setRemoveOutputNamespaces(boolean) removeOutputNamespaces}</td><td>(only used when <code>direction=unwrap</code>) when <code>true</code>, namespaces (and prefixes) in the content of the SOAP Body are removed</td><td>false</td></tr>
  * <tr><td>{@link #setOutputNamespace(String) outputNamespace}</td><td>(only used when <code>direction=wrap</code>) when not empty, this namespace is added to the root element in the SOAP Body</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>(only used when <code>direction=wrap</code>) namespace of the SOAP Envelope</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
+ * <tr><td>{@link #setRoot(String) root}</td><td>when not empty, the root element in the SOAP Body is changed to this value</td><td>&nbsp;</td></tr>
  * <table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -100,6 +104,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	private boolean removeOutputNamespaces = false;
 	private String outputNamespace = null;
 	private String soapNamespace = null;
+	private String root = null;
 
 	private SoapWrapper soapWrapper = null;
 
@@ -107,6 +112,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	private TransformerPool soapBodyTp = null;
 	private TransformerPool removeOutputNamespacesTp = null;
 	private TransformerPool outputNamespaceTp = null;
+	private TransformerPool rootTp = null;
 
     @Override
 	public void configure() throws ConfigurationException {
@@ -127,6 +133,10 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 			if (StringUtils.isNotEmpty(getOutputNamespace())) {
 				String outputNamespace_xslt = XmlUtils.makeAddRootNamespaceXslt(getOutputNamespace(), true, false);
 				outputNamespaceTp = new TransformerPool(outputNamespace_xslt);
+			}
+			if (StringUtils.isNotEmpty(getRoot())) {
+				String root_xslt = XmlUtils.makeChangeRootXslt(getRoot(), true, false);
+				rootTp = new TransformerPool(root_xslt);
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer", e);
@@ -164,6 +174,13 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 				throw new PipeStartException(getLogPrefix(null)+"cannot start Output Namespace TransformerPool", e);
 			}
 		}
+		if (rootTp != null) {
+			try {
+				rootTp.open();
+			} catch (Exception e) {
+				throw new PipeStartException(getLogPrefix(null)+"cannot start Root TransformerPool", e);
+			}
+		}
 	}
 
     @Override
@@ -181,6 +198,9 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		if (outputNamespaceTp != null) {
 			outputNamespaceTp.close();
 		}
+		if (rootTp != null) {
+			rootTp.close();
+		}
 	}
 
     @Override
@@ -188,11 +208,12 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		String result;
 		try {
 			if ("wrap".equalsIgnoreCase(getDirection())) {
-				String payload;
+				String payload = input.toString();
+				if (rootTp != null) {
+					payload = rootTp.transform(payload, null, true);
+				}
 				if (outputNamespaceTp != null) {
-					payload = outputNamespaceTp.transform(input.toString(), null, true);
-				} else {
-					payload = input.toString();
+					payload = outputNamespaceTp.transform(payload, null, true);
 				}
 				ParameterResolutionContext prc = null;
 				Map parameterValues = null;
@@ -227,6 +248,9 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 				}
 				if (removeOutputNamespacesTp != null) {
 					result = removeOutputNamespacesTp.transform(result, null, true);
+				}
+				if (rootTp != null) {
+					result = rootTp.transform(result, null, true);
 				}
 			}
 		} catch (Throwable t) {
@@ -304,5 +328,12 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	}
 	public String getSoapNamespace() {
 		return soapNamespace;
+	}
+
+	public void setRoot(String string) {
+		root = string;
+	}
+	public String getRoot() {
+		return root;
 	}
 }
