@@ -1,6 +1,9 @@
 /*
  * $Log: Locker.java,v $
- * Revision 1.5  2011-11-30 13:51:42  europe\m168309
+ * Revision 1.1  2012-10-10 10:19:37  m00f069
+ * Made it possible to use Locker on Pipe level too
+ *
+ * Revision 1.5  2011/11/30 13:51:42  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -17,7 +20,7 @@
  * Introduction of Locker (child element of Job)
  *
  */
-package nl.nn.adapterframework.scheduler;
+package nl.nn.adapterframework.util;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -28,7 +31,6 @@ import java.util.Calendar;
 import java.util.Date;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.util.Misc;
@@ -36,7 +38,7 @@ import nl.nn.adapterframework.util.Misc;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Locker of scheduler jobs.
+ * Locker of scheduler jobs and pipes.
  *
  * Tries to set a lock (by inserting a record in the database table IbisLock) and only if this is done
  * successfully the job is executed.
@@ -49,6 +51,9 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setDateFormatSuffix(String) dateFormatSuffix}</td><td>format for date which is added after <code>objectId</code> (e.g. yyyyMMdd to be sure the job is executed only once a day)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRetention(int) retention}</td><td>the time (for type=P in days and for type=T in hours) to keep the record in the database before making it eligible for deletion by a cleanup process</td><td>30 days (type=P), 4 hours (type=T)</td></tr>
+ * <tr><td>{@link #setNumRetries(int) numRetries}</td><td>the number of times an attempt should be made to acquire a lock, after this many times an exception is thrown when no lock could be acquired, when -1 the number of retries is unlimited</td><td>0</td></tr>
+ * <tr><td>{@link #setFirstDelay(int) firstDelay}</td><td>the time in ms to wait before the first attempt to acquire a lock is made, this may be 0 but keep in mind that the other thread or Ibis instance will propably not get much change to acquire a lock when another message is already waiting for the thread having the current lock in which case it will probably acquire a new lock soon after releasing the current lock</td><td>10000</td></tr>
+ * <tr><td>{@link #setRetryDelay(int) retryDelay}</td><td>the time in ms to wait before another attempt to acquire a lock is made</td><td>10000</td></tr>
  * </table>
  * </p>
  * 
@@ -86,6 +91,9 @@ public class Locker extends JdbcFacade {
 	private String insertQuery = "INSERT INTO ibisLock (objectId, type, host, creationDate, expiryDate) VALUES (?, ?, ?, ?, ?)";
 	private String deleteQuery = "DELETE FROM ibisLock WHERE objectId=?";
 	private SimpleDateFormat formatter;
+	private int numRetries = 0;
+	private int firstDelay = 10000;
+	private int retryDelay = 10000;
 
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getObjectId())) {
@@ -110,70 +118,74 @@ public class Locker extends JdbcFacade {
 		}
 	}
 
-	protected String lock() throws SenderException{
-		Date date = new Date();
-		String objectIdWithSuffix = getObjectId();
-		if (StringUtils.isNotEmpty(getDateFormatSuffix())) {
-			String formattedDate = formatter.format(date);
-			objectIdWithSuffix = objectIdWithSuffix.concat(formattedDate);
-		}
-
-		log.debug("preparing to set lock [" + objectIdWithSuffix + "]");
-
-		Connection conn;
-		try {
+	public String lock() throws JdbcException, SQLException, InterruptedException {
+		String objectIdWithSuffix = null;
+		int r = -1;
+		while (objectIdWithSuffix == null && (numRetries == -1 || r < numRetries)) {
+			r++;
+			if (r == 0 && firstDelay > 0) {
+				Thread.sleep(firstDelay);
+			}
+			if (r > 0) {
+				Thread.sleep(retryDelay);
+			}
+			Date date = new Date();
+			objectIdWithSuffix = getObjectId();
+			if (StringUtils.isNotEmpty(getDateFormatSuffix())) {
+				String formattedDate = formatter.format(date);
+				objectIdWithSuffix = objectIdWithSuffix.concat(formattedDate);
+			}
+			log.debug("preparing to set lock [" + objectIdWithSuffix + "]");
+			Connection conn;
 			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new SenderException(e);
-		}
-		try {
-			PreparedStatement stmt = conn.prepareStatement(insertQuery);			
-			stmt.clearParameters();
-			stmt.setString(1,objectIdWithSuffix);
-			stmt.setString(2,getType());
-			stmt.setString(3,Misc.getHostname());
-			stmt.setTimestamp(4, new Timestamp(date.getTime()));
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(date);
-			if (getType().equalsIgnoreCase("T")) {
-				cal.add(Calendar.HOUR_OF_DAY, getRetention());
-			} else {
-				cal.add(Calendar.DAY_OF_MONTH, getRetention());
-			}
-			stmt.setTimestamp(5, new Timestamp(cal.getTime().getTime()));
-			stmt.executeUpdate();
-			log.debug("lock ["+objectIdWithSuffix+"] set");
-			return objectIdWithSuffix;
-		} catch (SQLException e) {
-			log.debug(getLogPrefix()+"error executing query ["+insertQuery+"] (as part of locker)", e);
-			return null;
-		} finally {
 			try {
-				conn.close();
+				PreparedStatement stmt = conn.prepareStatement(insertQuery);			
+				stmt.clearParameters();
+				stmt.setString(1,objectIdWithSuffix);
+				stmt.setString(2,getType());
+				stmt.setString(3,Misc.getHostname());
+				stmt.setTimestamp(4, new Timestamp(date.getTime()));
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(date);
+				if (getType().equalsIgnoreCase("T")) {
+					cal.add(Calendar.HOUR_OF_DAY, getRetention());
+				} else {
+					cal.add(Calendar.DAY_OF_MONTH, getRetention());
+				}
+				stmt.setTimestamp(5, new Timestamp(cal.getTime().getTime()));
+				stmt.executeUpdate();
+				log.debug("lock ["+objectIdWithSuffix+"] set");
 			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
+				log.debug(getLogPrefix()+"error executing query ["+insertQuery+"] (as part of locker)", e);
+				if (numRetries == -1 || r < numRetries) {
+					log.debug(getLogPrefix()+"will try again");
+					objectIdWithSuffix = null;
+				} else {
+					throw e;
+				}
+			} finally {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					log.error("error closing JdbcConnection", e);
+				}
 			}
 		}
+		return objectIdWithSuffix;
 	}
 
-	protected void unlock(String objectIdWithSuffix) throws SenderException{
+	public void unlock(String objectIdWithSuffix) throws JdbcException, SQLException {
 		if (getType().equalsIgnoreCase("T")) {
 			log.debug("preparing to remove lock [" + objectIdWithSuffix + "]");
 
 			Connection conn;
-			try {
-				conn = getConnection();
-			} catch (JdbcException e) {
-				throw new SenderException(e);
-			}
+			conn = getConnection();
 			try {
 				PreparedStatement stmt = conn.prepareStatement(deleteQuery);			
 				stmt.clearParameters();
 				stmt.setString(1,objectIdWithSuffix);
 				stmt.executeUpdate();
 				log.debug("lock ["+objectIdWithSuffix+"] removed");
-			} catch (SQLException e) {
-				log.debug(getLogPrefix()+"error executing query ["+deleteQuery+"] (as part of locker)", e);
 			} finally {
 				try {
 					conn.close();
@@ -225,5 +237,29 @@ public class Locker extends JdbcFacade {
 
 	public int getRetention() {
 		return retention;
+	}
+
+	public int getNumRetries() {
+		return numRetries;
+	}
+
+	public void setNumRetries(int numRetries) {
+		this.numRetries = numRetries;
+	}
+
+	public int getFirstDelay() {
+		return firstDelay;
+	}
+
+	public void setFirstDelay(int firstDelay) {
+		this.firstDelay = firstDelay;
+	}
+
+	public int getRetryDelay() {
+		return retryDelay;
+	}
+
+	public void setRetryDelay(int retryDelay) {
+		this.retryDelay = retryDelay;
 	}
 }

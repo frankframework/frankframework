@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.45  2012-08-09 12:04:33  m00f069
+ * Revision 1.46  2012-10-10 10:19:37  m00f069
+ * Made it possible to use Locker on Pipe level too
+ *
+ * Revision 1.45  2012/08/09 12:04:33  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Replaced jaxb-xalan-1.5.jar because of memory leak with IbisXalan.jar which is manually compiled with different package names to still be able to prevent WebSphere Xalan version to be used.
  * Made it possible to use IbisXalan.jar for Tomcat too (don't use javax.xml.transform.TransformerFactory system property and use a manually compiled IbisXtags.jar to prevent problems when this system property is set by other application in the same JVM (e.g. an older Ibis)).
  *
@@ -154,7 +157,7 @@ public class Configuration {
     private Map<String, IAdapter> adapterTable = new Hashtable<String, IAdapter>();
 	private List<IAdapter> adapters = new ArrayList<IAdapter>();
 	private Map jobTable = new Hashtable();
-    private List scheduledJobs = new ArrayList();
+    private List<JobDef> scheduledJobs = new ArrayList<JobDef>();
 
     private URL configurationURL;
     private URL digesterRulesURL;
@@ -407,7 +410,7 @@ public class Configuration {
 	}
 
 
-	public List getScheduledJobs() {
+	public List<JobDef> getScheduledJobs() {
 		return scheduledJobs;
 	}
 

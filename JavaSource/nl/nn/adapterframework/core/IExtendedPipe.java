@@ -1,6 +1,9 @@
 /*
  * $Log: IExtendedPipe.java,v $
- * Revision 1.11  2011-11-30 13:51:55  europe\m168309
+ * Revision 1.12  2012-10-10 10:19:37  m00f069
+ * Made it possible to use Locker on Pipe level too
+ *
+ * Revision 1.11  2011/11/30 13:51:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -38,6 +41,7 @@
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.Locker;
 
 /**
  * extra attributes to do logging and use sessionvariables.
@@ -51,6 +55,13 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * <tr><td>{@link #setGetInputFromFixedValue(String) getInputFromFixedValue}</td><td>when set, this fixed value is taken as input, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
+ * </table>
+ * </p>
+ * 
+ * <p>
+ * <table border="1">
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>{@link nl.nn.adapterframework.scheduler.Locker locker}</td><td>optional: the pipe will only be executed if a lock could be set successfully</td></tr>
  * </table>
  * </p>
  * 
@@ -95,6 +106,9 @@ public interface IExtendedPipe extends IPipe {
 
 	public void setPreserveInput(boolean preserveInput);
 	public boolean isPreserveInput();
+
+	public void setLocker(Locker locker);
+	public Locker getLocker();
 
 	/**
 	 * Register an event for flexible monitoring.

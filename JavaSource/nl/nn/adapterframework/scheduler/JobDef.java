@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.25  2012-09-28 14:14:16  m00f069
+ * Revision 1.26  2012-10-10 10:19:37  m00f069
+ * Made it possible to use Locker on Pipe level too
+ *
+ * Revision 1.25  2012/09/28 14:14:16  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Bugfix default value of FxF retention and getting FxF retention value from properties.
  *
  * Revision 1.24  2012/08/17 14:34:15  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -76,12 +79,13 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
@@ -91,6 +95,7 @@ import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
+import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
@@ -687,19 +692,37 @@ public class JobDef {
 
 		Configuration config = ibisManager.getConfiguration();
 
-		List lockers = new ArrayList();
-		List scheduledJobs = config.getScheduledJobs();
-		for (Iterator iter = scheduledJobs.iterator(); iter.hasNext();) {
-			JobDef jobdef = (JobDef) iter.next();
+		List<String> jmsRealmNames = new ArrayList<String>();
+		List<JobDef> scheduledJobs = config.getScheduledJobs();
+		for (JobDef jobdef : config.getScheduledJobs()) {
 			if (jobdef.getLocker()!=null) {
 				String jmsRealmName = jobdef.getLocker().getJmsRealName();
-				if (!lockers.contains(jmsRealmName)) {
-					lockers.add(jmsRealmName);
+				if (!jmsRealmNames.contains(jmsRealmName)) {
+					jmsRealmNames.add(jmsRealmName);
 				}
 			}
 		}
 
-		for (Iterator iter = lockers.iterator(); iter.hasNext();) {
+		for (IAdapter adapter : config.getRegisteredAdapters()) {
+			if (adapter instanceof Adapter) {
+				PipeLine pipeLine = ((Adapter)adapter).getPipeLine();
+				if (pipeLine != null) {
+					for (IPipe pipe : pipeLine.getPipes()) {
+						if (pipe instanceof IExtendedPipe) {
+							IExtendedPipe extendedPipe = (IExtendedPipe)pipe;
+							if (extendedPipe.getLocker() != null) {
+								String jmsRealmName = extendedPipe.getLocker().getJmsRealName();
+								if (!jmsRealmNames.contains(jmsRealmName)) {
+									jmsRealmNames.add(jmsRealmName);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		for (Iterator iter = jmsRealmNames.iterator(); iter.hasNext();) {
 			String jmsRealmName = (String) iter.next();
 			setJmsRealm(jmsRealmName);
 			DirectQuerySender qs = new DirectQuerySender();

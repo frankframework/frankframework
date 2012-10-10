@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.44  2012-08-23 11:57:44  m00f069
+ * Revision 1.45  2012-10-10 10:19:37  m00f069
+ * Made it possible to use Locker on Pipe level too
+ *
+ * Revision 1.44  2012/08/23 11:57:44  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates from Michiel
  *
  * Revision 1.43  2012/06/01 10:52:50  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -149,6 +152,7 @@ import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.JtaUtil;
+import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TracingEventNumbers;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -216,6 +220,14 @@ import org.springframework.transaction.TransactionDefinition;
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Pipe resulted in an exception</td><td>-1 (disabled)</td></tr>
  * </table>
  * </p>
+ * 
+ * <p>
+ * <table border="1">
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>{@link nl.nn.adapterframework.scheduler.Locker locker}</td><td>optional: the pipe will only be executed if a lock could be set successfully</td></tr>
+ * </table>
+ * </p>
+ * 
  * @version Id
  * @author     Johan Verrips / Gerrit van Brakel
  *
@@ -238,6 +250,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
 	private boolean sizeStatistics=false;
+	private Locker locker;
 
 	// METT event numbers
 	private int beforeEvent=-1;
@@ -290,6 +303,10 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 					}
 				}
 			}
+		}
+
+		if (getLocker() != null) {
+			getLocker().configure();
 		}
 
 		eventHandler = MonitorManager.getEventHandler();
@@ -597,6 +614,13 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 	public void setSizeStatistics(boolean sizeStatistics) {
 		this.sizeStatistics = sizeStatistics;
+	}
+
+	public void setLocker(Locker locker) {
+		this.locker = locker;
+	}
+	public Locker getLocker() {
+		return locker;
 	}
 
 }

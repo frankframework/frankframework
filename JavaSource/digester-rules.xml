@@ -1,5 +1,5 @@
 <digester-rules>
-	<!-- $Id: digester-rules.xml,v 1.16 2011-11-30 13:51:44 europe\m168309 Exp $ -->
+	<!-- $Id: digester-rules.xml,v 1.17 2012-10-10 10:20:40 m00f069 Exp $ -->
     
     <!-- Objects created using a factory-create-rule are created via the Spring Beans Factory. 
          Objects created using an object-create-rule are created directly by the Apache Digester,
@@ -153,8 +153,9 @@
         <set-properties-rule/>
         <set-next-rule methodname="registerScheduledJob"/>
     </pattern>
+
     <pattern value="*/locker">
-        <object-create-rule classname="nl.nn.adapterframework.scheduler.Locker"/>
+        <object-create-rule classname="nl.nn.adapterframework.util.Locker"/>
         <set-properties-rule/>
         <set-next-rule methodname="setLocker"/>
     </pattern>
