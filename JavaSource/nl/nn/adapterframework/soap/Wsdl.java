@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.15  2012-10-04 11:28:57  m00f069
+ * Revision 1.16  2012-10-10 09:43:53  m00f069
+ * Added comment on ESB_SOAP_JMS
+ *
+ * Revision 1.15  2012/10/04 11:28:57  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Fixed ESB Soap namespace
  * Added location (url) of WSDL generation to the WSDL documentation
  * Show warning add the bottom of the WSDL (if any) instead of Ibis logging
@@ -105,7 +108,7 @@ class Wsdl {
     protected static final String SOAP_WSDL             = "http://schemas.xmlsoap.org/wsdl/soap/";
     protected static final String SOAP_HTTP             = "http://schemas.xmlsoap.org/soap/http";
     protected static final String SOAP_JMS              = "http://www.w3.org/2010/soapjms/";
-    protected static final String ESB_SOAP_JMS          = "http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS";
+    protected static final String ESB_SOAP_JMS          = "http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS";//Tibco BW will not detect the transport when SOAP_JMS is being used instead
     protected static final String ESB_SOAP_JNDI         = "http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi";
     protected static final String ESB_SOAP_TNS_BASE_URI = "http://nn.nl/WSDL";
 
