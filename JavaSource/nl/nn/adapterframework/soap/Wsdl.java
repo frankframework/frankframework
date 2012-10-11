@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.18  2012-10-11 09:45:58  m00f069
+ * Revision 1.19  2012-10-11 10:01:58  m00f069
+ * Use concrete filename with WebServiceListener too
+ *
+ * Revision 1.18  2012/10/11 09:45:58  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added WSDL filename to WSDL documentation
  *
  * Revision 1.17  2012/10/11 09:10:43  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -214,7 +217,8 @@ class Wsdl {
                 }
                 String wsdlType = "abstract";
                 for(IListener l : WsdlUtils.getListeners(pipeLine.getAdapter())) {
-                    if (l instanceof JmsListener) {
+                    if (l instanceof WebServiceListener
+                            || l instanceof JmsListener) {
                         wsdlType = "concrete";
                     }
                 }
