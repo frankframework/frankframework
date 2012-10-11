@@ -1,6 +1,9 @@
 /*
  * $Log: IbisSoapServlet.java,v $
- * Revision 1.9  2012-10-04 11:28:57  m00f069
+ * Revision 1.10  2012-10-11 09:45:58  m00f069
+ * Added WSDL filename to WSDL documentation
+ *
+ * Revision 1.9  2012/10/04 11:28:57  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Fixed ESB Soap namespace
  * Added location (url) of WSDL generation to the WSDL documentation
  * Show warning add the bottom of the WSDL (if any) instead of Ibis logging
@@ -86,7 +89,7 @@ public class IbisSoapServlet extends HttpServlet {
             res.setDateHeader("Expires", System.currentTimeMillis() + 3600000L);
         }
         String pi = req.getPathInfo();
-        if ((pi != null && pi.endsWith(".wsdl")) || req.getParameter("listener") != null) {
+        if ((pi != null && pi.endsWith(getWsdlExtention())) || req.getParameter("listener") != null) {
             res.setContentType("application/xml");
             wsdl(req, res);
         } else if (pi != null && pi.endsWith(".xsd")) {
@@ -116,12 +119,12 @@ public class IbisSoapServlet extends HttpServlet {
      private void zip(HttpServletRequest req, HttpServletResponse res) throws IOException, XMLStreamException, URISyntaxException, NamingException {
 
          Adapter adapter = getAdapter(ibisManager, req.getPathInfo());
-         String documentation = getDocumentation(req);
-         Wsdl wsdl = new Wsdl(adapter.getPipeLine(), true, documentation);
+         Wsdl wsdl = new Wsdl(adapter.getPipeLine(), true);
+         setDocumentation(wsdl, req);
          res.setHeader("Content-Disposition",
              "inline;filename=\"" + wsdl.getFilename() + ".zip\"");
          String servlet = HttpUtils.getRequestURL(req).toString();
-         servlet = servlet.substring(0, servlet.lastIndexOf(".")) + ".wsdl";
+         servlet = servlet.substring(0, servlet.lastIndexOf(".")) + getWsdlExtention();
 
          wsdl.zip(res.getOutputStream(), servlet);
 
@@ -161,7 +164,8 @@ public class IbisSoapServlet extends HttpServlet {
                  res.sendError(HttpServletResponse.SC_NOT_FOUND);
                  return;
              }
-             wsdl = new Wsdl(a.getPipeLine(), indent, getDocumentation(req));
+             wsdl = new Wsdl(a.getPipeLine(), indent);
+             setDocumentation(wsdl, req);
              res.setHeader("Content-Disposition", "inline;filename=\"" +  wsdl.getFilename() + ".wsdl\"");
              wsdl.setIncludeXsds("true".equals(req.getParameter("includeXsds")));
              wsdl.wsdl(res.getOutputStream(), servlet);
@@ -184,9 +188,15 @@ public class IbisSoapServlet extends HttpServlet {
          return (Adapter) ibisManager.getConfiguration().getRegisteredAdapter(pathInfo);
      }
 
-     protected String getDocumentation(HttpServletRequest req) {
-         return "Generated at " + req.getRequestURL() + " on " + DateUtils.getIsoTimeStamp();
-     }
+	protected static void setDocumentation(Wsdl wsdl, HttpServletRequest req) {
+		wsdl.setDocumentation("Generated at " + req.getRequestURL()
+				+ " as " + wsdl.getFilename() + getWsdlExtention()
+				+ " on " + DateUtils.getIsoTimeStamp() + ".");
+	}
+
+	protected static String getWsdlExtention() {
+		return ".wsdl";
+	}
 
      /**
       * TODO Unused
@@ -224,12 +234,12 @@ public class IbisSoapServlet extends HttpServlet {
             w.write("<li>");
             try {
                 Adapter adapter = (Adapter) a;
-                Wsdl wsdl = new Wsdl(adapter.getPipeLine(),
-                    false, getDocumentation(req));
+                Wsdl wsdl = new Wsdl(adapter.getPipeLine(), false);
+                setDocumentation(wsdl, req);
                 String url =
                     req.getContextPath() +
                         req.getServletPath() +
-                        "/" + wsdl.getName() + ".wsdl" +
+                        "/" + wsdl.getName() + getWsdlExtention() +
                         "?indent=true";
 
                 w.write("<a href='" + url + "'>" + wsdl.getName() + "</a>");
@@ -237,7 +247,7 @@ public class IbisSoapServlet extends HttpServlet {
                 String includeXsds  =
                     req.getContextPath() +
                         req.getServletPath() +
-                        "/" + wsdl.getName() + ".wsdl" +
+                        "/" + wsdl.getName() + getWsdlExtention() +
                         "?indent=true&amp;includeXsds=true";
 
                 w.write(" (<a href='" + includeXsds + "'>with xsds</a>)");

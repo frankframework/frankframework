@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.17  2012-10-11 09:10:43  m00f069
+ * Revision 1.18  2012-10-11 09:45:58  m00f069
+ * Added WSDL filename to WSDL documentation
+ *
+ * Revision 1.17  2012/10/11 09:10:43  Jaco de Groot <jaco.de.groot@ibissource.org>
  * To lower case on targetAddress destination (QUEUE -> queue)
  *
  * Revision 1.16  2012/10/10 09:43:53  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -156,7 +159,7 @@ class Wsdl {
 
     private List<String> warnings = new ArrayList<String>();
 
-    Wsdl(PipeLine pipeLine, boolean indent, String documentation) {
+    Wsdl(PipeLine pipeLine, boolean indent) {
         this.pipeLine = pipeLine;
         this.indentWsdl = indent;
         this.documentation = documentation;
