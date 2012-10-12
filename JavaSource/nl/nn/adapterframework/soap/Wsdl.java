@@ -1,6 +1,10 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.19  2012-10-11 10:01:58  m00f069
+ * Revision 1.20  2012-10-12 09:55:17  m00f069
+ * Some extra checks on configuration at WSDL listing time to prevent the user from being disappointed at WSDL generation time.
+ * Handle retrieval of XSD's from outputValidator the same as for inputValidator (check on usage of schema instead of schemaLocation attribute and usage of recursiveXsds)
+ *
+ * Revision 1.19  2012/10/11 10:01:58  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Use concrete filename with WebServiceListener too
  *
  * Revision 1.18  2012/10/11 09:45:58  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -138,6 +142,7 @@ class Wsdl {
     private final boolean indentWsdl;
     private final PipeLine pipeLine;
     private final XmlValidator inputValidator;
+    private final XmlValidator outputValidator;
     private String webServiceListenerNamespace;
 
     private boolean recursiveXsds = false;
@@ -174,6 +179,7 @@ class Wsdl {
         if (inputValidator == null) {
             throw new IllegalStateException("The adapter '" + getName() + "' has no input validator");
         }
+        outputValidator = (XmlValidator)pipeLine.getOutputValidator();
         AppConstants appConstants = AppConstants.getInstance();
         String tns = appConstants.getResolvedProperty("wsdl." + getName() + ".targetNamespace");
         if (tns == null) {
@@ -280,6 +286,16 @@ class Wsdl {
             filename = name;
         }
         this.targetNamespace = WsdlUtils.validUri(tns);
+        try {
+            // Check on IllegalStateException which might occur while generating
+            // the WSDL and throw them now to prevent the user from being
+            // disappointed at WSDL generation time.
+            getXSDs(true);
+        } catch(Exception e) {
+            if (e instanceof IllegalStateException) {
+                throw (IllegalStateException)e;
+            }
+        }
     }
 
     /**
@@ -303,7 +319,7 @@ class Wsdl {
             w.setPrefix("jms",  SOAP_JMS);
         }
         w.setPrefix("ibis", getTargetNamespace());
-        for (XSD xsd : getXSDs()) {
+        for (XSD xsd : getXSDs(false)) {
             w.setPrefix(xsd.pref, xsd.nameSpace);
         }
         w.writeStartElement(WSDL, "definitions"); {
@@ -314,7 +330,7 @@ class Wsdl {
                 w.writeNamespace("jndi", ESB_SOAP_JNDI);
             }
             w.writeNamespace("ibis", getTargetNamespace());
-            for (XSD xsd : getXSDs()) {
+            for (XSD xsd : getXSDs(false)) {
                 w.writeNamespace(xsd.pref, xsd.nameSpace);
             }
             w.writeAttribute("targetNamespace", getTargetNamespace());
@@ -349,7 +365,7 @@ class Wsdl {
         setRecursiveXsds(true);
         Set<String> entries = new HashSet<String>();
         Map<String, String> correctingNamespaces = new HashMap<String, String>();
-        for (XSD xsd : getXSDs()) {
+        for (XSD xsd : getXSDs(false)) {
             String zipName = xsd.getBaseUrl() + xsd.getName();
             if (entries.add(zipName)) {
                 ZipEntry xsdEntry = new ZipEntry(zipName);
@@ -358,7 +374,7 @@ class Wsdl {
                 WsdlUtils.includeXSD(xsd, writer, correctingNamespaces, true, false);
                 out.closeEntry();
             } else {
-                warn("Duplicate xsds in " + this + " " + xsd + " " + getXSDs());
+                warn("Duplicate xsds in " + this + " " + xsd + " " + getXSDs(false));
             }
         }
         out.close();
@@ -376,19 +392,6 @@ class Wsdl {
         return targetNamespace;
     }
 
-    private List<XSD> parseSchema(String schemaLocation) throws MalformedURLException, URISyntaxException {
-        List<XSD> result = new ArrayList<XSD>();
-        if (schemaLocation != null) {
-            String[] split =  schemaLocation.split("\\s+");
-            if (split.length % 2 != 0) throw new IllegalStateException("The schema must exist from an even number of strings, but it is " + schemaLocation);
-            for (int i = 0; i < split.length; i += 2) {
-                result.add(getXSD(split[i], split[i + 1]));
-            }
-        }
-        return result;
-    }
-
-
     /**
      * Returns a map: namespace -> Collection of all relevant XSD's
      * @return
@@ -397,7 +400,7 @@ class Wsdl {
      */
     Map<String, Collection<XSD>> getMappedXSDs() throws XMLStreamException, IOException, URISyntaxException {
         Map<String, Collection<XSD>> result = new HashMap<String, Collection<XSD>>();
-        for (XSD xsd : getXSDs()) {
+        for (XSD xsd : getXSDs(false)) {
             Collection<XSD> col = result.get(xsd.nameSpace);
             if (col == null) {
                 col = new ArrayList<XSD>();
@@ -407,52 +410,63 @@ class Wsdl {
         }
         return result;
     }
-    Set<XSD> getXSDs() throws IOException, XMLStreamException, URISyntaxException {
+
+    Set<XSD> getXSDs(boolean checkSchemaLocationOnly) throws IOException, XMLStreamException, URISyntaxException {
         if (xsds == null) {
-            xsds = new TreeSet<XSD>();
-            String inputSchema = inputValidator.getSchema();
-            if (inputSchema != null) {
-                // In case of a WebServiceListener using soap=true it might be
-                // valid to use the schema attribute (in which case the schema
-                // doesn't have a namespace) as the WebServiceListener will
-                // remove the soap envelop and body element before it is
-                // validated. In this case we use the serviceNamespaceURI from
-                // the WebServiceListener as the namespace for the schema.
-                if (webServiceListenerNamespace != null) {
-                    XSD x = getXSD(webServiceListenerNamespace, inputSchema);
-                    if (recursiveXsds) {
-                        x.getImportXSDs(xsds);
-                    }
-                } else {
-                    throw new IllegalStateException("The adapter " + pipeLine + " has an input validator using the schema attribute but a namespace is required");
-                }
+            if (!checkSchemaLocationOnly) {
+                xsds = new TreeSet<XSD>();
             }
-            for (XSD x : parseSchema(inputValidator.getSchemaLocation())) {
-                if (recursiveXsds) {
-                    x.getImportXSDs(xsds);
-                }
-            }
-            XmlValidator outputValidator = (XmlValidator) pipeLine.getOutputValidator();
+            getXSDs(inputValidator, checkSchemaLocationOnly);
             if (outputValidator != null) {
-                String outputSchema = outputValidator.getSchema();
-                if (outputSchema != null) {
-                    getXSD(null, outputSchema);
-                }
-                parseSchema(outputValidator.getSchemaLocation());
+                getXSDs(outputValidator, checkSchemaLocationOnly);
             }
         }
         return xsds;
     }
-    protected XSD getXSD(String nameSpace) throws IOException, XMLStreamException, URISyntaxException {
-        if (nameSpace == null) throw new IllegalArgumentException("Cannot get an XSD for null namespace");
-        for (XSD xsd : getXSDs()) {
-            if (xsd.nameSpace.equals(nameSpace)) {
-                return xsd;
+
+    protected void getXSDs(XmlValidator xmlValidator, boolean checkSchemaLocationOnly) throws IOException, XMLStreamException, URISyntaxException {
+        String inputSchema = xmlValidator.getSchema();
+        if (inputSchema != null) {
+            // In case of a WebServiceListener using soap=true it might be
+            // valid to use the schema attribute (in which case the schema
+            // doesn't have a namespace) as the WebServiceListener will
+            // remove the soap envelop and body element before it is
+            // validated. In this case we use the serviceNamespaceURI from
+            // the WebServiceListener as the namespace for the schema.
+            if (webServiceListenerNamespace != null) {
+                if (!checkSchemaLocationOnly) {
+                    XSD x = getXSD(webServiceListenerNamespace, inputSchema);
+                    if (recursiveXsds) {
+                        x.getImportXSDs(xsds);
+                    }
+                }
+            } else {
+                throw new IllegalStateException("The adapter " + pipeLine + " has a validator using the schema attribute but a namespace is required");
             }
         }
-        throw new IllegalArgumentException("No xsd for namespace '" + nameSpace + "' found (known are " + getXSDs() + ")");
+        for (XSD x : getXSDs(xmlValidator.getSchemaLocation(),
+                checkSchemaLocationOnly)) {
+            if (recursiveXsds) {
+                x.getImportXSDs(xsds);
+            }
+        }
     }
 
+    private List<XSD> getXSDs(String schemaLocation,
+            boolean checkSchemaLocationOnly)
+            throws MalformedURLException, URISyntaxException {
+        List<XSD> result = new ArrayList<XSD>();
+        if (schemaLocation != null) {
+            String[] split =  schemaLocation.trim().split("\\s+");
+            if (split.length % 2 != 0) throw new IllegalStateException("The schema must exist from an even number of strings, but it is " + schemaLocation);
+            if (!checkSchemaLocationOnly) {
+                for (int i = 0; i < split.length; i += 2) {
+                    result.add(getXSD(split[i], split[i + 1]));
+                }
+            }
+        }
+        return result;
+    }
 
     /**
      * Outputs a 'documentation' section of the WSDL
@@ -475,7 +489,7 @@ class Wsdl {
         w.writeStartElement(WSDL, "types");
         Map<String, String> correctingNamesSpaces = new HashMap<String, String>();
         if (includeXsds) {
-            for (XSD xsd : getXSDs()) {
+            for (XSD xsd : getXSDs(false)) {
                 WsdlUtils.includeXSD(xsd, w, correctingNamesSpaces, false, true);
             }
         }  else {
@@ -861,7 +875,7 @@ class Wsdl {
     protected String getFirstNamespaceFromSchemaLocation(XmlValidator inputValidator) {
         String schemaLocation = inputValidator.getSchemaLocation();
         if (schemaLocation != null) {
-            String[] split =  schemaLocation.split("\\s+");
+            String[] split =  schemaLocation.trim().split("\\s+");
             if (split.length > 0) {
                 return split[0];
             }
