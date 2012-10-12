@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.20  2012-10-12 09:55:17  m00f069
+ * Revision 1.21  2012-10-12 13:07:47  m00f069
+ * Removed "Unrecognized listener" comment from WSDL (when no useful listener found WSDL is marked abstract)
+ *
+ * Revision 1.20  2012/10/12 09:55:17  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Some extra checks on configuration at WSDL listing time to prevent the user from being disappointed at WSDL generation time.
  * Handle retrieval of XSD's from outputValidator the same as for inputValidator (check on usage of schema instead of schemaLocation attribute and usage of recursiveXsds)
  *
@@ -594,8 +597,6 @@ class Wsdl {
                 httpBinding(w);
             } else if (listener instanceof JmsListener) {
                 jmsBinding(w, (JmsListener) listener);
-            } else {
-                w.writeComment("Binding: Unrecognized listener " + listener.getClass() + ": " + listener.getName());
             }
         }
     }
@@ -705,8 +706,6 @@ class Wsdl {
                 httpService(w, servlet);
             } else if (listener instanceof JmsListener) {
                 jmsService(w, (JmsListener) listener);
-            } else {
-                w.writeComment("Service: Unrecognized listener " + listener.getClass() + " " + listener);
             }
         }
     }
