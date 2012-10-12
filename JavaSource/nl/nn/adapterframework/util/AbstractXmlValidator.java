@@ -1,6 +1,10 @@
 /*
  * $Log: AbstractXmlValidator.java,v $
- * Revision 1.5  2012-10-01 07:59:29  m00f069
+ * Revision 1.6  2012-10-12 16:17:17  m00f069
+ * Made (Esb)SoapValidator set SoapNamespace to an empty value, hence validate the SOAP envelope against the SOAP XSD.
+ * Made (Esb)SoapValidator check for SOAP Envelope element
+ *
+ * Revision 1.5  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
  * Cleaned XML validation code and documentation a bit.
  *
@@ -110,7 +114,7 @@ public abstract class AbstractXmlValidator {
 	private String reasonSessionKey = "failureReason";
 	private String xmlReasonSessionKey = "xmlFailureReason";
 	private String root = null;
-	protected Set<List<String>> singleLeafValidations = null;
+	protected Set<List<String>> rootValidations = null;
 	private boolean validateFile=false;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	protected boolean warn = AppConstants.getInstance().getBoolean("xmlValidator.warn", true);
@@ -342,7 +346,7 @@ public abstract class AbstractXmlValidator {
 		this.root = root;
 		List<String> path = new ArrayList<String>();
 		path.add(root);
-		addSingleLeafValidation(path);
+		addRootValidation(path);
 	}
 	public String getRoot() {
 		return root;
@@ -383,11 +387,11 @@ public abstract class AbstractXmlValidator {
         return is;
     }
 
-	public void addSingleLeafValidation(List<String> path) {
-		if (singleLeafValidations == null) {
-			singleLeafValidations = new HashSet<List<String>>();
+	public void addRootValidation(List<String> path) {
+		if (rootValidations == null) {
+			rootValidations = new HashSet<List<String>>();
 		}
-		singleLeafValidations.add(path);
+		rootValidations.add(path);
 	}
 
 	public void setIgnoreUnknownNamespaces(boolean b) {

@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.89  2012-10-08 12:10:52  europe\m168309
+ * Revision 1.90  2012-10-12 16:17:17  m00f069
+ * Made (Esb)SoapValidator set SoapNamespace to an empty value, hence validate the SOAP envelope against the SOAP XSD.
+ * Made (Esb)SoapValidator check for SOAP Envelope element
+ *
+ * Revision 1.89  2012/10/08 12:10:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added method makeChangeRootXslt()
  *
  * Revision 1.88  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -371,7 +375,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.89 $ $Date: 2012-10-08 12:10:52 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.90 $ $Date: 2012-10-12 16:17:17 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1521,15 +1525,15 @@ public class XmlUtils {
 	}
 
 	static public boolean isWellFormed(String input, String root) {
-		Set<List<String>> singleLeafValidations = null;
+		Set<List<String>> rootValidations = null;
 		if (StringUtils.isNotEmpty(root)) {
 			List<String> path = new ArrayList<String>();
 			path.add(root);
-			singleLeafValidations = new HashSet<List<String>>();
-			singleLeafValidations.add(path);
+			rootValidations = new HashSet<List<String>>();
+			rootValidations.add(path);
 		}
 		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(
-				null, singleLeafValidations, true);
+				null, rootValidations, true);
 		try {
 			SAXSource saxSource = stringToSAXSource(input, true, false);
 			XMLReader xmlReader = saxSource.getXMLReader();

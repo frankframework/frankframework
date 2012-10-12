@@ -1,6 +1,10 @@
 /*
  * $Log: SoapValidator.java,v $
- * Revision 1.10  2012-10-01 07:59:29  m00f069
+ * Revision 1.11  2012-10-12 16:17:17  m00f069
+ * Made (Esb)SoapValidator set SoapNamespace to an empty value, hence validate the SOAP envelope against the SOAP XSD.
+ * Made (Esb)SoapValidator check for SOAP Envelope element
+ *
+ * Revision 1.10  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
  * Cleaned XML validation code and documentation a bit.
  *
@@ -56,6 +60,8 @@ public class SoapValidator extends XmlValidator {
 
     @Override
     public void configure() throws ConfigurationException {
+        setSoapNamespace("");
+        super.setRoot(getRoot());
         super.configure();
         this.setSchemaLocation(setSchemaLocation);
         if (StringUtils.isNotEmpty(soapBody)) {
@@ -63,14 +69,14 @@ public class SoapValidator extends XmlValidator {
             path.add("Envelope");
             path.add("Body");
             path.add(soapBody);
-            validator.addSingleLeafValidation(path);
+            validator.addRootValidation(path);
         }
         if (StringUtils.isNotEmpty(soapHeader)) {
             List<String> path = new ArrayList<String>();
             path.add("Envelope");
             path.add("Header");
             path.add(soapHeader);
-            validator.addSingleLeafValidation(path);
+            validator.addRootValidation(path);
         }
     }
 

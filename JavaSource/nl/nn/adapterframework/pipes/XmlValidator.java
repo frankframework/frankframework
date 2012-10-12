@@ -1,6 +1,10 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.42  2012-10-01 07:59:29  m00f069
+ * Revision 1.43  2012-10-12 16:17:17  m00f069
+ * Made (Esb)SoapValidator set SoapNamespace to an empty value, hence validate the SOAP envelope against the SOAP XSD.
+ * Made (Esb)SoapValidator check for SOAP Envelope element
+ *
+ * Revision 1.42  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
  * Cleaned XML validation code and documentation a bit.
  *
@@ -160,7 +164,7 @@ import nl.nn.adapterframework.util.*;
 * <tr><td>{@link #setRoot(String) root}</td><td>name of the root element</td><td>&nbsp;</td></tr>
 * <tr><td>{@link #setValidateFile(boolean) validateFile}</td><td>when set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated</td><td><code>false</code></td></tr>
 * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code></td><td>UTF-8</td></tr>
-* <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>when the input message is a SOAP Message, the namespace of the SOAP Envelope. For input SOAP Messages the content of the SOAP Body is used for validation</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
+* <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>the namespace of the SOAP Envelope, when this property has a value and the input message is a SOAP Message the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate. Please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.SoapValidator} is now the preferred solution in case a SOAP Message needs to be validated, in other cases give this property an empty value</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
 * <tr><td>{@link #setIgnoreUnknownNamespaces(boolean) ignoreUnknownNamespaces}</td><td>ignore namespaces in the input message which are unknown</td><td>false when schemaLocation is used, true otherwise</td></tr>
 * <tr><td>{@link #setWarn(boolean) warn}</td><td>when set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)</td><td><code>true</code></td></tr>
 * </table>
@@ -180,9 +184,9 @@ import nl.nn.adapterframework.util.*;
 */
 public class XmlValidator extends FixedForwardPipe {
 
-    protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
-    private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
+	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
 
 	protected String mainFailureMessageSchemaLocation;
 
@@ -205,12 +209,19 @@ public class XmlValidator extends FixedForwardPipe {
     public void configure() throws ConfigurationException {
         super.configure();
 
-		String extractNamespaceDefs = "soapenv=" + getSoapNamespace();
-		String extractBodyXPath     = "/soapenv:Envelope/soapenv:Body/*";
-		try {
-			transformerPoolExtractSoapBody = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, "xml"));
-		} catch (TransformerConfigurationException te) {
-			throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getSoapBody", te);
+		if (StringUtils.isNotEmpty(getSoapNamespace())) {
+			// Don't use this warning yet as it is used for the IFSA to Tibco
+			// migration where an adapter with Tibco listener (with SOAP
+			// Envelope and an adapter with IFSA listener (without SOAP Envelop)
+			// call an adapter with XmlValidator which should validate both.
+			// ConfigurationWarnings.getInstance().add(log, "Using XmlValidator with soapNamespace for Soap validation is deprecated. Please use " + SoapValidator.class.getName());
+			String extractNamespaceDefs = "soapenv=" + getSoapNamespace();
+			String extractBodyXPath     = "/soapenv:Envelope/soapenv:Body/*";
+			try {
+				transformerPoolExtractSoapBody = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, "xml"));
+			} catch (TransformerConfigurationException te) {
+				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getSoapBody", te);
+			}
 		}
 
 		String getRootNamespace_xslt = XmlUtils.makeGetRootNamespaceXslt();
@@ -491,9 +502,8 @@ public class XmlValidator extends FixedForwardPipe {
     @Deprecated
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
-        ConfigurationWarnings.getInstance().add(log, "Using XmlValidator for Soap validation is deprecated. Please use " + SoapValidator.class.getName());
-
     }
+
     @Deprecated
 	public String getSoapNamespace() {
 		return soapNamespace;

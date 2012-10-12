@@ -1,6 +1,10 @@
 /*
  * $Log: XercesXmlValidator.java,v $
- * Revision 1.1  2012-10-01 07:59:29  m00f069
+ * Revision 1.2  2012-10-12 16:17:17  m00f069
+ * Made (Esb)SoapValidator set SoapNamespace to an empty value, hence validate the SOAP envelope against the SOAP XSD.
+ * Made (Esb)SoapValidator check for SOAP Envelope element
+ *
+ * Revision 1.1  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
  * Cleaned XML validation code and documentation a bit.
  *
@@ -354,7 +358,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
         }
 
 		XmlValidatorContentHandler xmlValidatorContentHandler =
-				new XmlValidatorContentHandler(grammars, singleLeafValidations,
+				new XmlValidatorContentHandler(grammars, rootValidations,
 						getIgnoreUnknownNamespaces());
 		XmlValidatorErrorHandler xmlValidatorErrorHandler =
 				new XmlValidatorErrorHandler(xmlValidatorContentHandler,
