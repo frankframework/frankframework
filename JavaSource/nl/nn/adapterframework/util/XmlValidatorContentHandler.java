@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorContentHandler.java,v $
- * Revision 1.5  2012-10-13 12:37:16  m00f069
+ * Revision 1.6  2012-10-13 15:45:17  m00f069
+ * When checking for unknown namespaces also execute check when empty namespace is found
+ *
+ * Revision 1.5  2012/10/13 12:37:16  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Check whether all root elements have been found
  *
  * Revision 1.4  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -66,7 +69,9 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		this.grammarsValidation = grammarsValidation;
 		this.rootValidations = rootValidations;
 		this.ignoreUnknownNamespaces = ignoreUnknownNamespaces;
-		rootElementsNotFound.addAll(rootValidations);
+		if (rootValidations != null) {
+			rootElementsNotFound.addAll(rootValidations);
+		}
 	}
 
 	public void setXmlValidatorErrorHandler(
@@ -98,9 +103,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		}
 		level++;
 		elements.add(lName);
-		if (StringUtils.isNotEmpty(namespaceURI)) {
-			checkNamespaceExistance(namespaceURI);
-		}
+		checkNamespaceExistance(namespaceURI);
 	}
 
 	@Override
@@ -128,16 +131,21 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 				&& namespaceWarnings <= MAX_NAMESPACE_WARNINGS) {
 			Grammar grammar = grammarsValidation.get(namespace);
 			if (grammar == null) {
-				String message = "Unknown namespace " + namespace;
-				namespaceWarnings++;
-				if (namespaceWarnings > MAX_NAMESPACE_WARNINGS) {
-					message = message
-							+ " (maximum number of namespace warnings reached)";
+				if ("".equals(namespace)) {
+					grammar = grammarsValidation.get(null);
 				}
-				if (xmlValidatorErrorHandler != null) {
-					xmlValidatorErrorHandler.addReason(message, null);
-				} else {
-					throw new UnknownNamespaceException(message);
+				if (grammar == null) {
+					String message = "Unknown namespace '" + namespace + "'";
+					namespaceWarnings++;
+					if (namespaceWarnings > MAX_NAMESPACE_WARNINGS) {
+						message = message
+								+ " (maximum number of namespace warnings reached)";
+					}
+					if (xmlValidatorErrorHandler != null) {
+						xmlValidatorErrorHandler.addReason(message, null);
+					} else {
+						throw new UnknownNamespaceException(message);
+					}
 				}
 			}
 		}
