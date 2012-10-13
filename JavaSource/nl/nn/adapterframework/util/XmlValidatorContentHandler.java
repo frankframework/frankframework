@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorContentHandler.java,v $
- * Revision 1.4  2012-10-01 07:59:29  m00f069
+ * Revision 1.5  2012-10-13 12:37:16  m00f069
+ * Check whether all root elements have been found
+ *
+ * Revision 1.4  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
  * Cleaned XML validation code and documentation a bit.
  *
@@ -44,6 +47,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	private final Map<String, Grammar> grammarsValidation;
 	private final Set<List<String>> rootValidations;
+	private final Set<List<String>> rootElementsNotFound = new HashSet<List<String>>();
 	private final boolean ignoreUnknownNamespaces;
 	private XmlValidatorErrorHandler xmlValidatorErrorHandler;
 	private int namespaceWarnings = 0;
@@ -62,6 +66,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		this.grammarsValidation = grammarsValidation;
 		this.rootValidations = rootValidations;
 		this.ignoreUnknownNamespaces = ignoreUnknownNamespaces;
+		rootElementsNotFound.addAll(rootValidations);
 	}
 
 	public void setXmlValidatorErrorHandler(
@@ -76,14 +81,17 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 			for (List<String> path: rootValidations) {
 				int i = elements.size();
 				if (path.size() == i + 1
-						&& elements.equals(path.subList(0, i))
-						&& !path.get(i).equals(lName)) {
-					String message = "Illegal root element '" + lName
-							+ "'. Root element '" + path.get(i) + "' expected.";
-					if (xmlValidatorErrorHandler != null) {
-						xmlValidatorErrorHandler.addReason(message, null);
+						&& elements.equals(path.subList(0, i))) {
+					if (path.get(i).equals(lName)) {
+						rootElementsNotFound.remove(path);
 					} else {
-						throw new IllegalRootElementException(message);
+						String message = "Illegal element '" + lName
+								+ "'. Element '" + path.get(i) + "' expected.";
+						if (xmlValidatorErrorHandler != null) {
+							xmlValidatorErrorHandler.addReason(message, null);
+						} else {
+							throw new IllegalRootElementException(message);
+						}
 					}
 				}
 			}
@@ -103,8 +111,15 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	}
 
 	@Override
-	public void startPrefixMapping(String prefix, String namespace) throws SAXException {
-		// nop
+	public void endDocument() throws SAXException {
+		for (List<String> path: rootElementsNotFound) {
+			String message = "Element " + getXpath(path) + " not found";
+			if (xmlValidatorErrorHandler != null) {
+				xmlValidatorErrorHandler.addReason(message, null);
+			} else {
+				throw new IllegalRootElementException(message);
+			}
+		}
 	}
 
 	protected void checkNamespaceExistance(String namespace)
@@ -129,8 +144,12 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	}
 
 	public String getXpath() {
+		return getXpath(elements);
+	}
+
+	public String getXpath(List<String> path) {
 		StringBuilder xpath = new StringBuilder("/");
-		Iterator<String> it = elements.iterator();
+		Iterator<String> it = path.iterator();
 		if (it.hasNext()) {
 			xpath.append(it.next());
 		}
