@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorContentHandler.java,v $
- * Revision 1.6  2012-10-13 15:45:17  m00f069
+ * Revision 1.7  2012-10-15 13:49:40  m00f069
+ * Check root elements to not occur more than once.
+ *
+ * Revision 1.6  2012/10/13 15:45:17  Jaco de Groot <jaco.de.groot@ibissource.org>
  * When checking for unknown namespaces also execute check when empty namespace is found
  *
  * Revision 1.5  2012/10/13 12:37:16  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -26,13 +29,17 @@
  */
 package nl.nn.adapterframework.util;
 
-import org.apache.commons.lang.StringUtils;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.xerces.xni.grammars.Grammar;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
-
-import java.util.*;
 
 /**
  * SAX ContentHandler used during XML validation for some additional validation
@@ -50,7 +57,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	private final Map<String, Grammar> grammarsValidation;
 	private final Set<List<String>> rootValidations;
-	private final Set<List<String>> rootElementsNotFound = new HashSet<List<String>>();
+	private final Set<List<String>> rootElementsFound = new HashSet<List<String>>();
 	private final boolean ignoreUnknownNamespaces;
 	private XmlValidatorErrorHandler xmlValidatorErrorHandler;
 	private int namespaceWarnings = 0;
@@ -69,9 +76,6 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		this.grammarsValidation = grammarsValidation;
 		this.rootValidations = rootValidations;
 		this.ignoreUnknownNamespaces = ignoreUnknownNamespaces;
-		if (rootValidations != null) {
-			rootElementsNotFound.addAll(rootValidations);
-		}
 	}
 
 	public void setXmlValidatorErrorHandler(
@@ -88,7 +92,18 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 				if (path.size() == i + 1
 						&& elements.equals(path.subList(0, i))) {
 					if (path.get(i).equals(lName)) {
-						rootElementsNotFound.remove(path);
+						if (rootElementsFound.contains(path)) {
+							String message = "Element '" + lName
+									+ "' should occur only once.";
+							if (xmlValidatorErrorHandler != null) {
+								xmlValidatorErrorHandler.addReason(message,
+										null);
+							} else {
+								throw new IllegalRootElementException(message);
+							}
+						} else {
+							rootElementsFound.add(path);
+						}
 					} else {
 						String message = "Illegal element '" + lName
 								+ "'. Element '" + path.get(i) + "' expected.";
@@ -115,12 +130,14 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	@Override
 	public void endDocument() throws SAXException {
-		for (List<String> path: rootElementsNotFound) {
-			String message = "Element " + getXpath(path) + " not found";
-			if (xmlValidatorErrorHandler != null) {
-				xmlValidatorErrorHandler.addReason(message, null);
-			} else {
-				throw new IllegalRootElementException(message);
+		for (List<String> path: rootValidations) {
+			if (!rootElementsFound.contains(path)) {
+				String message = "Element " + getXpath(path) + " not found";
+				if (xmlValidatorErrorHandler != null) {
+					xmlValidatorErrorHandler.addReason(message, null);
+				} else {
+					throw new IllegalRootElementException(message);
+				}
 			}
 		}
 	}
