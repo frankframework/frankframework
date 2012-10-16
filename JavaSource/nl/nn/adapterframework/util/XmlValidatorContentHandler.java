@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorContentHandler.java,v $
- * Revision 1.7  2012-10-15 13:49:40  m00f069
+ * Revision 1.8  2012-10-16 15:50:57  m00f069
+ * Prevent NullPointerException when no root validations need to be done
+ *
+ * Revision 1.7  2012/10/15 13:49:40  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Check root elements to not occur more than once.
  *
  * Revision 1.6  2012/10/13 15:45:17  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -130,13 +133,15 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	@Override
 	public void endDocument() throws SAXException {
-		for (List<String> path: rootValidations) {
-			if (!rootElementsFound.contains(path)) {
-				String message = "Element " + getXpath(path) + " not found";
-				if (xmlValidatorErrorHandler != null) {
-					xmlValidatorErrorHandler.addReason(message, null);
-				} else {
-					throw new IllegalRootElementException(message);
+		if (rootValidations != null) {
+			for (List<String> path: rootValidations) {
+				if (!rootElementsFound.contains(path)) {
+					String message = "Element " + getXpath(path) + " not found";
+					if (xmlValidatorErrorHandler != null) {
+						xmlValidatorErrorHandler.addReason(message, null);
+					} else {
+						throw new IllegalRootElementException(message);
+					}
 				}
 			}
 		}

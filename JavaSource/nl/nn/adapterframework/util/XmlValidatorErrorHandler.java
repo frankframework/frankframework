@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorErrorHandler.java,v $
- * Revision 1.2  2012-10-01 07:59:29  m00f069
+ * Revision 1.3  2012-10-16 15:50:57  m00f069
+ * Prevent NullPointerException when no root validations need to be done
+ *
+ * Revision 1.2  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
  * Cleaned XML validation code and documentation a bit.
  *
@@ -13,6 +16,9 @@
  *
  */
 package nl.nn.adapterframework.util;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -82,7 +88,11 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 		if (t instanceof SAXException) {
 			message = t.getMessage();
 		} else {
-			message = t.getClass().toString() + ": " + t.getMessage();
+			StringWriter stringWriter = new StringWriter();
+			PrintWriter printWriter = new PrintWriter(stringWriter);
+			t.printStackTrace(printWriter);
+			printWriter.close();
+			message = stringWriter.toString();
 		}
 		addReason(message,location);
 	}
