@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springJBOSS.xml,v $
-  Revision 1.6  2012-09-07 13:15:16  m00f069
+  Revision 1.7  2012-10-16 11:16:05  m00f069
+  Restored jndiContextPrefix in the new way (old name was appServerJndiContextPrefix)
+
+  Revision 1.6  2012/09/07 13:15:16  Jaco de Groot <jaco.de.groot@ibissource.org>
   Messaging related changes:
   - Use CACHE_CONSUMER by default for ESB RR
   - Don't use JMSXDeliveryCount to determine whether message has already been processed
@@ -27,24 +30,39 @@
   Added Jboss Spring Configuration files
 
 -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:util="http://www.springframework.org/schema/util"
-       xsi:schemaLocation="
-            http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
-            http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
-            ">
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation=
+		"
+		http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
+		"
+	>
 
-    <!-- Transaction stuff -->
-    <!-- In order to properly handle 'Propagation: Supports', set property
-         'transactionSynchronization' to 'Synchronize on actual transaction'. -->
-    
-    <!-- Defining a open source transaction manager -->
-    <bean id="txManagerReal" class="org.springframework.transaction.jta.JtaTransactionManager"
-    	lazy-init="true">
-        <property name="transactionSynchronization">
-            <util:constant static-field="org.springframework.transaction.support.AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION"/>
-        </property>
-    </bean>
+	<!-- Transaction stuff -->
+	<!-- In order to properly handle 'Propagation: Supports', set property
+		 'transactionSynchronization' to 'Synchronize on actual transaction'. -->
+
+	<!-- Defining a open source transaction manager -->
+	<bean
+		id="txManagerReal"
+		class="org.springframework.transaction.jta.JtaTransactionManager"
+		lazy-init="true"
+		>
+		<property name="transactionSynchronization">
+			<util:constant static-field="org.springframework.transaction.support.AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION"/>
+		</property>
+	</bean>
+
+	<bean
+		name="jndiContextPrefixPropertyPlaceholderConfigurer"
+		class="nl.nn.adapterframework.configuration.OverwritePropertyPlaceholderConfigurer"
+		autowire="byName"
+		>
+		<property name="propertyName" value="jndiContextPrefix"/>
+		<property name="propertyValue" value="java:/"/>
+	</bean>
 
 </beans>
