@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.21  2012-10-12 13:07:47  m00f069
+ * Revision 1.22  2012-10-17 08:40:49  m00f069
+ * Added esbSoapOperationName and esbSoapOperationVersion
+ *
+ * Revision 1.21  2012/10/12 13:07:47  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed "Unrecognized listener" comment from WSDL (when no useful listener found WSDL is marked abstract)
  *
  * Revision 1.20  2012/10/12 09:55:17  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -235,13 +238,16 @@ class Wsdl {
                         + esbSoapServiceName + "_"
                         + esbSoapServiceContext + "_"
                         + esbSoapServiceContextVersion + "_"
-                        + esbSoapOperationName + "_" + esbSoapOperationVersion
-                        + "_" + wsdlType;
+                        + esbSoapOperationName + "_"
+                        + esbSoapOperationVersion + "_"
+                        + wsdlType;
                 tns = ESB_SOAP_TNS_BASE_URI + "/"
                         + esbSoapBusinessDomain + "/"
                         + esbSoapServiceName + "/"
                         + esbSoapServiceContext + "/"
-                        + esbSoapServiceContextVersion;
+                        + esbSoapServiceContextVersion + "/"
+                        + esbSoapOperationName + "/"
+                        + esbSoapOperationVersion;
                 String inputParadigm = null;
                 if (inputValidator instanceof SoapValidator) {
                     String soapBody = ((SoapValidator)inputValidator).getSoapBody();
