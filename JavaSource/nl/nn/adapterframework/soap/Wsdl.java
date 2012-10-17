@@ -1,6 +1,10 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.22  2012-10-17 08:40:49  m00f069
+ * Revision 1.23  2012-10-17 13:02:10  m00f069
+ * Check paradigm against list of valid values.
+ * Use schemaLocation instead of outputWrapper as main source for ESB SOAP vars.
+ *
+ * Revision 1.22  2012/10/17 08:40:49  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added esbSoapOperationName and esbSoapOperationVersion
  *
  * Revision 1.21  2012/10/12 13:07:47  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -176,7 +180,6 @@ class Wsdl {
     Wsdl(PipeLine pipeLine, boolean indent) {
         this.pipeLine = pipeLine;
         this.indentWsdl = indent;
-        this.documentation = documentation;
         this.name = this.pipeLine.getAdapter().getName();
         if (this.name == null) {
             throw new IllegalArgumentException("The adapter '" + pipeLine.getAdapter() + "' has no name");
@@ -186,6 +189,7 @@ class Wsdl {
             throw new IllegalStateException("The adapter '" + getName() + "' has no input validator");
         }
         outputValidator = (XmlValidator)pipeLine.getOutputValidator();
+        String filename = name;
         AppConstants appConstants = AppConstants.getInstance();
         String tns = appConstants.getResolvedProperty("wsdl." + getName() + ".targetNamespace");
         if (tns == null) {
@@ -194,20 +198,10 @@ class Wsdl {
         if (tns == null) {
             EsbSoapWrapperPipe inputWrapper = getEsbSoapInputWrapper();
             EsbSoapWrapperPipe outputWrapper = getEsbSoapOutputWrapper();
-            if (outputWrapper != null || (inputWrapper != null
-                    && EsbSoapWrapperPipe.isValidNamespace(getFirstNamespaceFromSchemaLocation(inputValidator)))) {
+            if (inputWrapper != null || outputWrapper != null) {
                 esbSoap = true;
-                String outputParadigm = null;
-                if (outputWrapper != null) {
-                    esbSoapBusinessDomain = outputWrapper.getBusinessDomain();
-                    esbSoapServiceName = outputWrapper.getServiceName();
-                    esbSoapServiceContext = outputWrapper.getServiceContext();
-                    esbSoapServiceContextVersion = outputWrapper.getServiceContextVersion();
-                    esbSoapOperationName = outputWrapper.getOperationName();
-                    esbSoapOperationVersion = outputWrapper.getOperationVersion();
-                    outputParadigm = outputWrapper.getParadigm();
-                } else {
-                    // One-way WSDL
+                String schemaLocation = getFirstNamespaceFromSchemaLocation(inputValidator);
+                if (EsbSoapWrapperPipe.isValidNamespace(schemaLocation)) {
                     String s = getFirstNamespaceFromSchemaLocation(inputValidator);
                     int i = s.lastIndexOf('/');
                     esbSoapOperationVersion = s.substring(i + 1);
@@ -226,52 +220,87 @@ class Wsdl {
                     s = s.substring(0, i);
                     i = s.lastIndexOf('/');
                     esbSoapBusinessDomain = s.substring(i + 1);
-                }
-                String wsdlType = "abstract";
-                for(IListener l : WsdlUtils.getListeners(pipeLine.getAdapter())) {
-                    if (l instanceof WebServiceListener
-                            || l instanceof JmsListener) {
-                        wsdlType = "concrete";
+                } else {
+                    warn("Namespace '" + schemaLocation + "' invalid according to ESB SOAP standard");
+                    if (outputWrapper != null) {
+                        esbSoapBusinessDomain = outputWrapper.getBusinessDomain();
+                        esbSoapServiceName = outputWrapper.getServiceName();
+                        esbSoapServiceContext = outputWrapper.getServiceContext();
+                        esbSoapServiceContextVersion = outputWrapper.getServiceContextVersion();
+                        esbSoapOperationName = outputWrapper.getOperationName();
+                        esbSoapOperationVersion = outputWrapper.getOperationVersion();
+                    } else {
+                        // One-way WSDL
                     }
                 }
-                filename = esbSoapBusinessDomain + "_"
-                        + esbSoapServiceName + "_"
-                        + esbSoapServiceContext + "_"
-                        + esbSoapServiceContextVersion + "_"
-                        + esbSoapOperationName + "_"
-                        + esbSoapOperationVersion + "_"
-                        + wsdlType;
-                tns = ESB_SOAP_TNS_BASE_URI + "/"
-                        + esbSoapBusinessDomain + "/"
-                        + esbSoapServiceName + "/"
-                        + esbSoapServiceContext + "/"
-                        + esbSoapServiceContextVersion + "/"
-                        + esbSoapOperationName + "/"
-                        + esbSoapOperationVersion;
-                String inputParadigm = null;
-                if (inputValidator instanceof SoapValidator) {
-                    String soapBody = ((SoapValidator)inputValidator).getSoapBody();
-                    if (soapBody != null) {
-                        int i = soapBody.lastIndexOf('_');
-                        if (i != -1) {
-                            inputParadigm = soapBody.substring(i + 1);
+                if (esbSoapBusinessDomain == null) {
+                    warn("Could not determine business domain");
+                } else if (esbSoapServiceName == null) {
+                    warn("Could not determine service name");
+                } else if (esbSoapServiceContext == null) {
+                    warn("Could not determine service context");
+                } else if (esbSoapServiceContextVersion == null) {
+                    warn("Could not determine service context version");
+                } else if (esbSoapOperationName == null) {
+                    warn("Could not determine operation name");
+                } else if (esbSoapOperationVersion == null) {
+                    warn("Could not determine operation version");
+                } else {
+                    String wsdlType = "abstract";
+                    for(IListener l : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+                        if (l instanceof WebServiceListener
+                                || l instanceof JmsListener) {
+                            wsdlType = "concrete";
                         }
                     }
+                    filename = esbSoapBusinessDomain + "_"
+                            + esbSoapServiceName + "_"
+                            + esbSoapServiceContext + "_"
+                            + esbSoapServiceContextVersion + "_"
+                            + esbSoapOperationName + "_"
+                            + esbSoapOperationVersion + "_"
+                            + wsdlType;
+                    tns = ESB_SOAP_TNS_BASE_URI + "/"
+                            + esbSoapBusinessDomain + "/"
+                            + esbSoapServiceName + "/"
+                            + esbSoapServiceContext + "/"
+                            + esbSoapServiceContextVersion + "/"
+                            + esbSoapOperationName + "/"
+                            + esbSoapOperationVersion;
+                    String inputParadigm = getEsbSoapParadigm(inputValidator);
+                    if (inputParadigm != null) {
+                        wsdlInputMessageName = esbSoapOperationName + "_"
+                            + esbSoapOperationVersion + "_" + inputParadigm;
+                        if (!"Action".equals(inputParadigm)
+                                && !"Event".equals(inputParadigm)
+                                && !"Request".equals(inputParadigm)
+                                && !"Solicit".equals(inputParadigm)) {
+                            warn("Paradigm for input message which was extracted from soapBody should be on of Action, Event, Request or Solicit instead of '"
+                                    + inputParadigm + "'");
+                        }
+                    } else {
+                        warn("Could not extract paradigm from soapBody attribute of inputValidator");
+                    }
+                    String outputParadigm = getEsbSoapParadigm(outputValidator);
+                    if (outputParadigm != null) {
+                        wsdlOutputMessageName = esbSoapOperationName + "_"
+                            + esbSoapOperationVersion + "_" + outputParadigm;
+                        if (!"Response".equals(outputParadigm)) {
+                            warn("Paradigm for output message which was extracted from soapBody should be Response instead of '"
+                                    + outputParadigm + "'");
+                        }
+                    } else {
+                        if (outputWrapper != null) {
+                            warn("Could not extract paradigm from soapBody attribute of outputValidator");
+                        } else {
+                            // One-way WSDL
+                        }
+                    }
+                    wsdlPortTypeName = esbSoapOperationName + "_Interface_" + esbSoapOperationVersion;
+                    wsdlOperationName = esbSoapOperationName + "_" + esbSoapOperationVersion;
                 }
-                if (inputParadigm != null) {
-                    wsdlInputMessageName = esbSoapOperationName + "_"
-                        + esbSoapOperationVersion + "_" + inputParadigm;
-                } else {
-                    warn("Could not extract paradigm from soapBody attribute of inputValidator");
-                }
-                if (outputParadigm != null) {
-                    wsdlOutputMessageName = esbSoapOperationName + "_"
-                        + esbSoapOperationVersion + "_" + outputParadigm;
-                }
-                wsdlPortTypeName = esbSoapOperationName + "_Interface_" + esbSoapOperationVersion;
-                wsdlOperationName = esbSoapOperationName + "_" + esbSoapOperationVersion;
-            } else {
-                filename = name;
+            }
+            if (tns == null) {
                 for(IListener l : WsdlUtils.getListeners(pipeLine.getAdapter())) {
                     if (l instanceof WebServiceListener) {
                         webServiceListenerNamespace = ((WebServiceListener)l).getServiceNamespaceURI();
@@ -291,9 +320,8 @@ class Wsdl {
                     tns = "${wsdl." + getName() + ".targetNamespace}";
                 }
             }
-        } else {
-            filename = name;
         }
+        this.filename = filename;
         this.targetNamespace = WsdlUtils.validUri(tns);
         try {
             // Check on IllegalStateException which might occur while generating
@@ -305,6 +333,19 @@ class Wsdl {
                 throw (IllegalStateException)e;
             }
         }
+    }
+
+    private static String getEsbSoapParadigm(XmlValidator xmlValidator) {
+        if (xmlValidator instanceof SoapValidator) {
+            String soapBody = ((SoapValidator)xmlValidator).getSoapBody();
+            if (soapBody != null) {
+                int i = soapBody.lastIndexOf('_');
+                if (i != -1) {
+                    return soapBody.substring(i + 1);
+                }
+            }
+        }
+        return null;
     }
 
     /**
