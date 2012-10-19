@@ -1,6 +1,9 @@
 /*
  * $Log: SoapValidator.java,v $
- * Revision 1.11  2012-10-12 16:17:17  m00f069
+ * Revision 1.12  2012-10-19 09:33:47  m00f069
+ * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
+ *
+ * Revision 1.11  2012/10/12 16:17:17  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made (Esb)SoapValidator set SoapNamespace to an empty value, hence validate the SOAP envelope against the SOAP XSD.
  * Made (Esb)SoapValidator check for SOAP Envelope element
  *
@@ -28,17 +31,13 @@
 package nl.nn.adapterframework.soap;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-
-import javax.xml.namespace.QName;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.pipes.XmlValidator;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 /**
@@ -48,7 +47,7 @@ import org.apache.log4j.Logger;
  */
 public class SoapValidator extends XmlValidator {
 
-    private static final Logger LOG = LogManager.getLogger(SoapValidator.class);
+    private static final Logger LOG = LogUtil.getLogger(SoapValidator.class);
 
     private String soapBody   = "";
     private String soapHeader = "";
@@ -84,9 +83,17 @@ public class SoapValidator extends XmlValidator {
     public void setSchemaLocation(String schemaLocation) {
         super.setSchemaLocation(schemaLocation + (schemaLocation.length() > 0 ? " "  : "") + StringUtils.join(versions, " "));
         setSchemaLocation = schemaLocation;
-        mainFailureMessageSchemaLocation = schemaLocation;
     }
 
+    @Override
+    public void setSchema(String schema) {
+        throw new IllegalArgumentException("The schema attribute isn't supported");
+    }
+
+    @Override
+    public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
+        throw new IllegalArgumentException("The noNamespaceSchemaLocation attribute isn't supported");
+    }
 
     @Override
     public String getRoot() {

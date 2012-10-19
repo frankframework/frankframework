@@ -1,6 +1,9 @@
 /*
  * $Log: EsbSoapValidator.java,v $
- * Revision 1.9  2012-10-01 07:59:29  m00f069
+ * Revision 1.10  2012-10-19 09:33:48  m00f069
+ * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
+ *
+ * Revision 1.9  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
  * Cleaned XML validation code and documentation a bit.
  *
@@ -85,7 +88,6 @@ public class EsbSoapValidator extends SoapValidator {
     public void setSchemaLocation(String schemaLocation) {
         super.setSchemaLocation(schemaLocation + " " + GENERIC_HEADER.get(mode).xmlns + " " + GENERIC_HEADER.get(mode).xsd);
         explicitSchemaLocation = schemaLocation;
-        mainFailureMessageSchemaLocation = schemaLocation;
     }
 
     @Override

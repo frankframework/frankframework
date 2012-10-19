@@ -1,6 +1,9 @@
 /*
  * $Log: XercesXmlValidator.java,v $
- * Revision 1.2  2012-10-12 16:17:17  m00f069
+ * Revision 1.3  2012-10-19 09:33:47  m00f069
+ * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
+ *
+ * Revision 1.2  2012/10/12 16:17:17  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made (Esb)SoapValidator set SoapNamespace to an empty value, hence validate the SOAP envelope against the SOAP XSD.
  * Made (Esb)SoapValidator check for SOAP Envelope element
  *
@@ -85,18 +88,16 @@ import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.xml.stream.XMLStreamException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.impl.Constants;
@@ -148,16 +149,13 @@ import org.xml.sax.XMLReader;
  * <br>
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
  * @version Id
- * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
+ * @author Johan Verrips IOS
+ * @author Jaco de Groot
  */
 public class XercesXmlValidator extends AbstractXmlValidator {
-    /** Property identifier: symbol table. */
-    public static final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
 
     /** Property identifier: grammar pool. */
     public static final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
-
-    // feature ids
 
     /** Namespaces feature id (http://xml.org/sax/features/namespaces). */
     protected static final String NAMESPACES_FEATURE_ID = Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
@@ -171,152 +169,107 @@ public class XercesXmlValidator extends AbstractXmlValidator {
     /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
     protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
 
-    private static Map<String, SymbolTable> symbolTables = null;
-    private static Map<String, XMLGrammarPool> grammarPools = null;
+    private static Map<String, SymbolTable> symbolTables =  new ConcurrentHashMap<String, SymbolTable>();
+    private static Map<String, XMLGrammarPool> grammarPools = new ConcurrentHashMap<String, XMLGrammarPool>();
+    private static Map<String, Set<String>> namespaceSets = new ConcurrentHashMap<String, Set<String>>();
 
-	private String            globalSchema     = null;
-    private SymbolTable       globalSymbolTable = null;
-    private XMLGrammarPool    globalGrammarPool = null;
-
-    private Map<String, Grammar>                grammars = new HashMap<String, Grammar>(); /* xmlns -> Grammar */
-
-    @Override
-    protected void init() throws ConfigurationException {
-        if (needsInit) {
-            super.init();
-            if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
-                StringUtils.isNotEmpty(getSchemaLocation())) {
-                globalSchema = getSchemaLocation();
-                if (StringUtils.isEmpty(globalSchema)) {
-                    globalSchema = getNoNamespaceSchemaLocation();
-                }
-                try {
-                    globalSymbolTable = createSymbolTable();
-                    globalGrammarPool = createGrammarPool(globalSymbolTable, globalSchema, StringUtils.isEmpty(getSchemaLocation()));
-                } catch (XmlValidatorException e) {
-                    throw new ConfigurationException(e);
-                } catch (Exception e) {
-                    throw new ConfigurationException("cannot compile schema for [" + globalSchema + "]", e);
-                }
-            } else {
-                symbolTables = new ConcurrentHashMap<String, SymbolTable>();
-                grammarPools = new ConcurrentHashMap<String, XMLGrammarPool>();
-            }
-        }
-
-    }
-
-
-	private SymbolTable createSymbolTable() {
-		SymbolTable sym = new SymbolTable(BIG_PRIME);
-		return sym;
-	}
-
-
-
-	private XMLGrammarPool createGrammarPool(SymbolTable sym, String schemas, boolean singleSchema) throws XmlValidatorException, XMLStreamException, IOException {
-		XMLGrammarPreparser preparser = new XMLGrammarPreparser(sym);
-		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
-
-        preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
-        preparser.setProperty(GRAMMAR_POOL, grammarPool);
-        preparser.setFeature(NAMESPACES_FEATURE_ID, true);
-        preparser.setFeature(VALIDATION_FEATURE_ID, true);
-        preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
-        preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
-        MyErrorHandler errorHandler = new MyErrorHandler();
-        errorHandler.warn = warn;
-        preparser.setErrorHandler(errorHandler);
-        if (singleSchema) {
-			addGrammar(schemas, preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(new Definition(null, schemas))));
-		} else {
-
-            List<Definition> definitions = new ArrayList<Definition>();
-            String[] schema = schemas.trim().split("\\s+");
-            for (int i = 0; i < schema.length; i += 2) {
-                definitions.add(new Definition(schema[i], schema[i + 1]));
-            }
-
-            // Loop over the definitions until nothing changes
-            // This makes sure that the _order_ is not important in the 'schemas'.
-            errorHandler.throwRetryException = true;
-            boolean changes;
-            do {
-                changes = false;
-                for (Iterator<Definition> i = definitions.iterator(); i.hasNext();) {
-                    Definition def = i.next();
-                    try {
-                        addGrammar(def.publicId, preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(def)));
-                        changes = true;
-                        i.remove();
-                    } catch (RetryException e) {
-                        // Try in next iteration
-                    }
-                }
-            } while (changes);
-            // loop the remaining ones, they seem to be unresolvable, so let the exception go then
-            errorHandler.throwRetryException = false;
-            for (Definition def : definitions) {
-                addGrammar(def.publicId, preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(def)));
-            }
-        }
-		grammarPool.lockPool();
-		return grammarPool;
-	}
-
-    private void addGrammar(String namespace, Grammar grammar) {
-        String schema = grammar.getGrammarDescription().getNamespace();
-        grammars.put(schema, grammar);
-        if (! namespace.equals(schema)) {
-            log.warn("Found namespace " + schema + " for " + grammar + " is not equals to the namespace in the grammar itself " + namespace);
-            grammars.put(namespace, grammar);
-        }
-        log.debug("Found " + schema + ":" + grammar);
-        if (grammar instanceof SchemaGrammar) {
-            List imported = ((SchemaGrammar) grammar).getImportedGrammars();
-            if (imported != null) {
-                for (Object g : imported) {
-                    Grammar gr = (Grammar)g;
-                    addGrammar(gr.getGrammarDescription().getNamespace(), gr);
-                }
-            }
-        }
-    }
-
-	private SymbolTable getSymbolTable(String schemas) throws XmlValidatorException {
-		SymbolTable result = symbolTables.get(schemas);
-		if (result == null) {
-			result = createSymbolTable();
-			symbolTables.put(schemas, result);
+//    @Override
+	protected void init() throws ConfigurationException {
+		if (needsInit) {
+			super.init();
+			String schemasId = null;
+			try {
+				schemasId = schemasProvider.getSchemasId();
+				if (schemasId != null) {
+					preparse(schemasId, schemasProvider.getSchemas());
+				}
+			} catch (IOException e) {
+				throw new ConfigurationException("cannot compile schema for [" + schemasId + "]", e);
+			}
 		}
-		return result;
 	}
 
-	private XMLGrammarPool getGrammarPool(SymbolTable symbolTable, String schemas, boolean singleSchema) throws XmlValidatorException, XMLStreamException, IOException {
-		XMLGrammarPool result = grammarPools.get(schemas);
-		if (result == null) {
-			result = createGrammarPool(symbolTable, schemas, singleSchema);
-			grammarPools.put(schemas, result);
+	private void preparse(String schemasId, List<Schema> schemas) throws IOException {
+		if (symbolTables.get(schemasId) == null) {
+			SymbolTable symbolTable = new SymbolTable(BIG_PRIME);
+			XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
+			Set<String> namespaceSet = new HashSet<String>();
+			XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
+			preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
+			preparser.setProperty(GRAMMAR_POOL, grammarPool);
+			preparser.setFeature(NAMESPACES_FEATURE_ID, true);
+			preparser.setFeature(VALIDATION_FEATURE_ID, true);
+			preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
+			preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
+			MyErrorHandler errorHandler = new MyErrorHandler();
+			errorHandler.warn = warn;
+			preparser.setErrorHandler(errorHandler);
+			// Loop over the definitions until nothing changes
+			// This makes sure that the _order_ is not important in the 'schemas'.
+			errorHandler.throwRetryException = true;
+			boolean changes;
+			do {
+				changes = false;
+				for (Iterator<Schema> i = schemas.iterator(); i.hasNext();) {
+					Schema schema = i.next();
+					try {
+						Grammar grammar = preparse(preparser, schema);
+						registerNamespaces(grammar, namespaceSet);
+						changes = true;
+						i.remove();
+					} catch (RetryException e) {
+						// Try in next iteration
+					}
+				}
+			} while (changes);
+			// loop the remaining ones, they seem to be unresolvable, so let the exception go then
+			errorHandler.throwRetryException = false;
+			for (Schema schema : schemas) {
+				Grammar grammar = preparse(preparser, schema);
+				registerNamespaces(grammar, namespaceSet);
+			}
+			grammarPool.lockPool();
+			symbolTables.put(schemasId, symbolTable);
+			grammarPools.put(schemasId, grammarPool);
+			namespaceSets.put(schemasId, namespaceSet);
 		}
-		return result;
+	}
+
+	private static Grammar preparse(XMLGrammarPreparser preparser,
+			Schema schema) throws IOException {
+		return preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA,
+				stringToXMLInputSource(schema));
+	}
+
+	private static void registerNamespaces(Grammar grammar, Set<String> namespaces) {
+		namespaces.add(grammar.getGrammarDescription().getNamespace());
+		if (grammar instanceof SchemaGrammar) {
+			List imported = ((SchemaGrammar)grammar).getImportedGrammars();
+			if (imported != null) {
+				for (Object g : imported) {
+					Grammar gr = (Grammar)g;
+					registerNamespaces(gr, namespaces);
+				}
+			}
+		}
 	}
 
 	/**
-      * Validate the XML string
-      * @param input a String
-      * @param session a {@link nl.nn.adapterframework.core.PipeLineSession Pipelinesession}
-      * @return MonitorEvent declared in{@link AbstractXmlValidator}
-
-      * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
-      */
-    @Override
-    public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException {
-        try {
-            init();
-        } catch (ConfigurationException e) {
-            throw new XmlValidatorException(e.getMessage(), e);
-        }
-
+	 * Validate the XML string
+	 * @param input a String
+	 * @param session a {@link nl.nn.adapterframework.core.PipeLineSession Pipelinesession}
+	 * @return MonitorEvent declared in{@link AbstractXmlValidator}
+	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
+	 * @throws PipeRunException 
+	 * @throws ConfigurationException 
+	 */
+	@Override
+	public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException {
+		try {
+			init();
+		} catch (ConfigurationException e) {
+			throw new XmlValidatorException(e.getMessage(), e);
+		}
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			log.debug(logPrefix+ "removing contents of sessionKey ["+getReasonSessionKey()+ "]");
 			session.remove(getReasonSessionKey());
@@ -327,38 +280,27 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			session.remove(getXmlReasonSessionKey());
 		}
 
-		String schema = globalSchema;
-		SymbolTable symbolTable = globalSymbolTable;
-		XMLGrammarPool grammarPool = globalGrammarPool;
-		if (schema == null) {
-   			// now look for the new session way
-   			String schemaSessionKey = getSchemaSessionKey();
-   			String schemaLocation;
-   			if (session.containsKey(schemaSessionKey)) {
-				schemaLocation = session.get(schemaSessionKey).toString();
-   			} else {
-   				throw new XmlValidatorException(logPrefix + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
-    		}
-			URL url = ClassUtils.getResourceURL(this, schemaLocation);
-			if (url == null) {
-				throw new XmlValidatorException(logPrefix + "could not find schema at [" + schemaLocation + "]");
+		String schemasId = schemasProvider.getSchemasId(session);
+		if (schemasId == null) {
+			schemasId = schemasProvider.getSchemasId();
+		} else {
+			try {
+				preparse(schemasProvider.getSchemasId(session), schemasProvider.getSchemas(session));
+			} catch (Exception e) {
+				throw new XmlValidatorException("cannot compile schema for [" + schemasId + "]", e);
 			}
-			String resolvedLocation = url.toExternalForm();
-			log.info(logPrefix + "resolved noNamespaceSchemaLocation [" + schemaLocation + "] to [" + resolvedLocation + "]");
+		}
 
-            try {
-                symbolTable = getSymbolTable(resolvedLocation);
-                grammarPool = getGrammarPool(symbolTable, resolvedLocation, true);
-            } catch (IOException e) {
-                throw new XmlValidatorException(e.getMessage(), e);
-            } catch (XMLStreamException e) {
-                throw new XmlValidatorException(e.getMessage(), e);
-            }
-            schema = schemaLocation;
-        }
+		SymbolTable symbolTable = symbolTables.get(schemasId);
+		XMLGrammarPool grammarPool = grammarPools.get(schemasId);
+		Set<String> namespacesSet = namespaceSets.get(schemasId);
+
+		String mainFailureMessage = "Validation using "
+				+ schemasProvider.getClass().getSimpleName() + " with '"
+				+ schemasId + "' failed";
 
 		XmlValidatorContentHandler xmlValidatorContentHandler =
-				new XmlValidatorContentHandler(grammars, rootValidations,
+				new XmlValidatorContentHandler(namespacesSet, rootValidations,
 						getIgnoreUnknownNamespaces());
 		XmlValidatorErrorHandler xmlValidatorErrorHandler =
 				new XmlValidatorErrorHandler(xmlValidatorContentHandler,
@@ -395,43 +337,16 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return XML_VALIDATOR_VALID_MONITOR_EVENT;
 	}
 
-    private XMLInputSource stringToXIS(Definition def) throws IOException, XMLStreamException {
-        if (isAddNamespaceToSchema()) {
-            InputStream input = XsdUtils.targetNameSpaceAdding(new URL(def.systemId).openStream(), def.publicId);
-            return new XMLInputSource(def.publicId, def.systemId, null, input, "UTF-8");
-        } else {
-            return new XMLInputSource(def.publicId, def.systemId, null);
-        }
-    }
+	private static XMLInputSource stringToXMLInputSource(Schema schema) throws IOException {
+		InputStream inputStream = schema.getInputStream();
+		// SystemId is needed in case the schema has an import. Maybe we should
+		// already resolve this add the SchemaProvider side.
+		if (inputStream != null) {
+			return new XMLInputSource(null, schema.getSystemId(), null, inputStream, null);
+		} else {
+			// 
+			return new XMLInputSource(null, schema.getSystemId(), null, schema.getReader(), null);
+		}
+	}
 
-
-    private static class Definition {
-        final String publicId;
-        final String systemId;
-        Definition(String pid, String sid) {
-            this.publicId = pid;
-            this.systemId = sid;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = publicId != null ? publicId.hashCode() : 0;
-            result = 31 * result + (systemId != null ? systemId.hashCode() : 0);
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            Definition that = (Definition) o;
-
-            if (publicId != null ? !publicId.equals(that.publicId) : that.publicId != null) return false;
-            if (systemId != null ? !systemId.equals(that.systemId) : that.systemId != null) return false;
-
-            return true;
-        }
-    }
 }
-

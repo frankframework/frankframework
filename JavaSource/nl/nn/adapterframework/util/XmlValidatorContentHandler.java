@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorContentHandler.java,v $
- * Revision 1.8  2012-10-16 15:50:57  m00f069
+ * Revision 1.9  2012-10-19 09:33:47  m00f069
+ * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
+ *
+ * Revision 1.8  2012/10/16 15:50:57  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Prevent NullPointerException when no root validations need to be done
  *
  * Revision 1.7  2012/10/15 13:49:40  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -58,7 +61,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	private int level = -1;
 	private List<String> elements = new ArrayList<String>();
 
-	private final Map<String, Grammar> grammarsValidation;
+	private final Set<String> validNamespaces;
 	private final Set<List<String>> rootValidations;
 	private final Set<List<String>> rootElementsFound = new HashSet<List<String>>();
 	private final boolean ignoreUnknownNamespaces;
@@ -73,10 +76,10 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	 *         entire xml) to root elements which should be checked upon
 	 * @param ignoreUnknownNamespaces
 	 */
-	public XmlValidatorContentHandler(Map<String, Grammar> grammarsValidation,
+	public XmlValidatorContentHandler(Set<String> validNamespaces,
 				Set<List<String>> rootValidations,
 				boolean ignoreUnknownNamespaces) {
-		this.grammarsValidation = grammarsValidation;
+		this.validNamespaces = validNamespaces;
 		this.rootValidations = rootValidations;
 		this.ignoreUnknownNamespaces = ignoreUnknownNamespaces;
 	}
@@ -149,25 +152,20 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	protected void checkNamespaceExistance(String namespace)
 			throws UnknownNamespaceException {
-		if (!ignoreUnknownNamespaces && grammarsValidation != null
+		if (!ignoreUnknownNamespaces && validNamespaces != null
 				&& namespaceWarnings <= MAX_NAMESPACE_WARNINGS) {
-			Grammar grammar = grammarsValidation.get(namespace);
-			if (grammar == null) {
-				if ("".equals(namespace)) {
-					grammar = grammarsValidation.get(null);
+			if (!validNamespaces.contains(namespace) && !("".equals(namespace)
+					&& validNamespaces.contains(null))) {
+				String message = "Unknown namespace '" + namespace + "'";
+				namespaceWarnings++;
+				if (namespaceWarnings > MAX_NAMESPACE_WARNINGS) {
+					message = message
+							+ " (maximum number of namespace warnings reached)";
 				}
-				if (grammar == null) {
-					String message = "Unknown namespace '" + namespace + "'";
-					namespaceWarnings++;
-					if (namespaceWarnings > MAX_NAMESPACE_WARNINGS) {
-						message = message
-								+ " (maximum number of namespace warnings reached)";
-					}
-					if (xmlValidatorErrorHandler != null) {
-						xmlValidatorErrorHandler.addReason(message, null);
-					} else {
-						throw new UnknownNamespaceException(message);
-					}
+				if (xmlValidatorErrorHandler != null) {
+					xmlValidatorErrorHandler.addReason(message, null);
+				} else {
+					throw new UnknownNamespaceException(message);
 				}
 			}
 		}

@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractXmlValidator.java,v $
- * Revision 1.6  2012-10-12 16:17:17  m00f069
+ * Revision 1.7  2012-10-19 09:33:47  m00f069
+ * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
+ *
+ * Revision 1.6  2012/10/12 16:17:17  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made (Esb)SoapValidator set SoapNamespace to an empty value, hence validate the SOAP envelope against the SOAP XSD.
  * Made (Esb)SoapValidator check for SOAP Envelope element
  *
@@ -54,7 +57,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -96,7 +98,8 @@ import org.xml.sax.SAXParseException;
  * <br>
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
  * @version Id
- * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
+ * @author Johan Verrips IOS
+ * @author Jaco de Groot
  */
 public abstract class AbstractXmlValidator {
 	protected Logger log = LogUtil.getLogger(this);
@@ -106,15 +109,13 @@ public abstract class AbstractXmlValidator {
 	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
 	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
 
-    private String schemaLocation = null;
-    private String noNamespaceSchemaLocation = null;
-	private String schemaSessionKey = null;
+	protected SchemasProvider schemasProvider;
     private boolean throwException = false;
     private boolean fullSchemaChecking = false;
 	private String reasonSessionKey = "failureReason";
 	private String xmlReasonSessionKey = "xmlFailureReason";
-	private String root = null;
-	protected Set<List<String>> rootValidations = null;
+	private String root;
+	protected Set<List<String>> rootValidations;
 	private boolean validateFile=false;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	protected boolean warn = AppConstants.getInstance().getBoolean("xmlValidator.warn", true);
@@ -124,7 +125,6 @@ public abstract class AbstractXmlValidator {
     protected String logPrefix = "";
     protected boolean addNamespaceToSchema = false;
 	protected Boolean ignoreUnknownNamespaces;
-	protected String mainFailureMessage;
 
     public boolean isAddNamespaceToSchema() {
         return addNamespaceToSchema;
@@ -150,35 +150,11 @@ public abstract class AbstractXmlValidator {
         }
     }
 
-    protected void init() throws ConfigurationException {
-        if (needsInit) {
-            if ((StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
-                StringUtils.isNotEmpty(getSchemaLocation())) &&
-                StringUtils.isNotEmpty(getSchemaSessionKey())) {
-                throw new ConfigurationException(logPrefix + "cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
-            }
-            if (StringUtils.isNotEmpty(getSchemaLocation())) {
-                String resolvedLocations = XmlUtils.resolveSchemaLocations(getSchemaLocation());
-                log.info(logPrefix + "resolved schemaLocation [" + getSchemaLocation() + "] to [" + resolvedLocations + "]");
-                setSchemaLocation(resolvedLocations);
-            }
-            if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
-                URL url = ClassUtils.getResourceURL(this, getNoNamespaceSchemaLocation());
-                if (url == null) {
-                    throw new ConfigurationException(logPrefix + "could not find schema at ["+getNoNamespaceSchemaLocation()+"]");
-                }
-                String resolvedLocation =url.toExternalForm();
-                log.info(logPrefix + "resolved noNamespaceSchemaLocation to [" + resolvedLocation+"]");
-                setNoNamespaceSchemaLocation(resolvedLocation);
-            }
-            if (StringUtils.isEmpty(getNoNamespaceSchemaLocation()) &&
-                StringUtils.isEmpty(getSchemaLocation()) &&
-                StringUtils.isEmpty(getSchemaSessionKey())) {
-                throw new ConfigurationException(logPrefix + "must have either schemaSessionKey, schemaLocation or noNamespaceSchemaLocation");
-            }
-            needsInit = false;
-        }
-    }
+	protected void init() throws ConfigurationException {
+		if (needsInit) {
+			needsInit = false;
+		}
+	}
 
 	protected String handleFailures(
 			XmlValidatorErrorHandler xmlValidatorErrorHandler,
@@ -205,14 +181,14 @@ public abstract class AbstractXmlValidator {
 		return event;
 	}
 
-     /**
-      * Validate the XML string
-      * @param input a String
-      * @param session a {@link nl.nn.adapterframework.core.IPipeLineSession Pipelinesession}
-
-      * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
-      */
-    public abstract String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException;
+    /**
+     * Validate the XML string
+     * @param input a String
+     * @param session a {@link nl.nn.adapterframework.core.IPipeLineSession Pipelinesession}
+     * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
+     * @throws ConfigurationException 
+     */
+    public abstract String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException;
 
     /**
      * Enable full schema grammar constraint checking, including
@@ -224,82 +200,13 @@ public abstract class AbstractXmlValidator {
      */
     public void setFullSchemaChecking(boolean fullSchemaChecking) {
         this.fullSchemaChecking = fullSchemaChecking;
-        this.needsInit = true;
     }
 	public boolean isFullSchemaChecking() {
 		return fullSchemaChecking;
 	}
 
-    /**
-     * <p>The filename of the schema on the classpath. The filename (which e.g.
-     * can contain spaces) is translated to an URI with the
-     * ClassUtils.getResourceURL(Object,String) method (e.g. spaces are translated to %20).
-     * It is not possible to specify a namespace using this attribute.
-     * <p>An example value would be "xml/xsd/GetPartyDetail.xsd"</p>
-     * <p>The value of the schema attribute is only used if the schemaLocation
-     * attribute and the noNamespaceSchemaLocation are not set</p>
-     * @see ClassUtils.getResource(Object,String)
-     */
-    public void setSchema(String schema) {
-        setNoNamespaceSchemaLocation(schema);
-        this.needsInit = true;
-    }
-	public String getSchema() {
-		return getNoNamespaceSchemaLocation();
-	}
-
-    /**
-     * <p>Pairs of URI references (one for the namespace name, and one for a
-     * hint as to the location of a schema document defining names for that
-     * namespace name).</p>
-     * <p> The syntax is the same as for schemaLocation attributes
-     * in instance documents: e.g, "http://www.example.com file%20name.xsd".</p>
-     * <p>The user can specify more than one XML Schema in the list.</p>
-     * <p><b>Note</b> that spaces are considered separators for this attributed.
-     * This means that, for example, spaces in filenames should be escaped to %20.
-     * </p>
-     *
-     * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
-     */
-    public void setSchemaLocation(String schemaLocation) {
-        this.schemaLocation = schemaLocation;
-        this.needsInit = true;
-    }
-	public String getSchemaLocation() {
-		return schemaLocation;
-	}
-
-    /**
-     * <p>A URI reference as a hint as to the location of a schema document with
-     * no target namespace.</p>
-     */
-    public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
-        this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
-        this.needsInit = true;
-    }
-	public String getNoNamespaceSchemaLocation() {
-		return noNamespaceSchemaLocation;
-	}
-
-	/**
-	 * <p>The sessionkey to a value that is the uri to the schema definition.</P>
-	 */
-	public void setSchemaSessionKey(String schemaSessionKey) {
-		this.schemaSessionKey = schemaSessionKey;
-	}
-	public String getSchemaSessionKey() {
-		return schemaSessionKey;
-	}
-
-	/**
-	 * @deprecated attribute name changed to {@link #setSchemaSessionKey(String) schemaSessionKey}
-	 */
-	public void setSchemaSession(String schemaSessionKey) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = "attribute 'schemaSession' is deprecated. Please use 'schemaSessionKey' instead.";
-		configWarnings.add(log, msg);
-		this.schemaSessionKey = schemaSessionKey;
-        this.needsInit = true;
+	public void setSchemasProvider(SchemasProvider schemasProvider) {
+		this.schemasProvider = schemasProvider;
 	}
 
 	protected String getLogPrefix(IPipeLineSession session){
@@ -398,20 +305,8 @@ public abstract class AbstractXmlValidator {
 		this.ignoreUnknownNamespaces = b;
 	}
 
-	public boolean getIgnoreUnknownNamespaces() {
-		if (ignoreUnknownNamespaces == null) {
-			if (StringUtils.isEmpty(getSchemaLocation())) {
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			return ignoreUnknownNamespaces;
-		}
-	}
-
-	public void setMainFailureMessage(String mainFailureMessage) {
-		this.mainFailureMessage = mainFailureMessage;
+	public Boolean getIgnoreUnknownNamespaces() {
+		return ignoreUnknownNamespaces;
 	}
 
 	protected static class RetryException extends XNIException {

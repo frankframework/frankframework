@@ -98,12 +98,15 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		return XML_VALIDATOR_VALID_MONITOR_EVENT;
     }
 
-    @Override
+// Should use the new SchemaProvider now...
+//    @Override
     public void setSchemaLocation(String schemaLocation) {
-        super.setSchemaLocation(schemaLocation);
+//        super.setSchemaLocation(schemaLocation);
         schema = null;
     }
-
+public String getSchemaLocation() {
+	return null;
+}
 
     /**
      * Returns the {@link Schema} associated with this validator. This ia an XSD schema containing knowledge about the

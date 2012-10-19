@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.90  2012-10-12 16:17:17  m00f069
+ * Revision 1.91  2012-10-19 09:33:47  m00f069
+ * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
+ *
+ * Revision 1.90  2012/10/12 16:17:17  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made (Esb)SoapValidator set SoapNamespace to an empty value, hence validate the SOAP envelope against the SOAP XSD.
  * Made (Esb)SoapValidator check for SOAP Envelope element
  *
@@ -375,7 +378,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.90 $ $Date: 2012-10-12 16:17:17 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.91 $ $Date: 2012-10-19 09:33:47 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1493,32 +1496,6 @@ public class XmlUtils {
 			t.transform(s, result);
 		}
 	}
-
-
-	static public String resolveSchemaLocations(String locationAttribute) throws ConfigurationException {
-		StringBuilder result = new StringBuilder();
-		StringTokenizer st = new StringTokenizer(locationAttribute);
-		while (st.hasMoreTokens()) {
-			if (result.length() > 0) {
-				result.append(' ');
-			}
-			String namespace=st.nextToken();
-			result.append(namespace).append(' ');
-			if (st.hasMoreTokens()) {
-				String location=st.nextToken();
-				URL url = ClassUtils.getResourceURL(XmlUtils.class, location);
-				if (url != null) {
-					result.append(url.toExternalForm());
-				} else {
-					throw new ConfigurationException("could not resolve location [" + location + "] for namespace ["+namespace+"] to URL");
-				}
-			} else {
-				log.warn("no location for namespace ["+namespace+"]");
-			}
-		}
-		return result.toString();
-	}
-
 
 	static public boolean isWellFormed(String input) {
 		return isWellFormed(input, null);
