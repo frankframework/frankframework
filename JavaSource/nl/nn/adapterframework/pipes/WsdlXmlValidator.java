@@ -1,6 +1,9 @@
 /*
  * $Log: WsdlXmlValidator.java,v $
- * Revision 1.7  2012-10-19 09:33:47  m00f069
+ * Revision 1.8  2012-10-19 11:54:07  m00f069
+ * Bugfix double occurrence of CommonMessageHeader.xsd in schemaLocation
+ *
+ * Revision 1.7  2012/10/19 09:33:47  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
  *
  * Revision 1.6  2012/08/17 14:34:15  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -129,6 +132,11 @@ public class WsdlXmlValidator extends SoapValidator implements SchemasProvider {
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session), e);
 		}
+	}
+
+	@Override
+	public void setSchemaLocation(String schemaLocation) {
+		throw new IllegalArgumentException("The schemaLocation attribute isn't supported");
 	}
 
 	protected static Definition getDefinition(URL url) throws WSDLException, IOException {

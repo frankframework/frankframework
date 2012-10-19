@@ -1,6 +1,9 @@
 /*
  * $Log: SoapValidator.java,v $
- * Revision 1.12  2012-10-19 09:33:47  m00f069
+ * Revision 1.13  2012-10-19 11:54:07  m00f069
+ * Bugfix double occurrence of CommonMessageHeader.xsd in schemaLocation
+ *
+ * Revision 1.12  2012/10/19 09:33:47  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
  *
  * Revision 1.11  2012/10/12 16:17:17  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -62,7 +65,6 @@ public class SoapValidator extends XmlValidator {
         setSoapNamespace("");
         super.setRoot(getRoot());
         super.configure();
-        this.setSchemaLocation(setSchemaLocation);
         if (StringUtils.isNotEmpty(soapBody)) {
             List<String> path = new ArrayList<String>();
             path.add("Envelope");
