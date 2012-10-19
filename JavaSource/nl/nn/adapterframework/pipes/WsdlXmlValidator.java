@@ -1,6 +1,9 @@
 /*
  * $Log: WsdlXmlValidator.java,v $
- * Revision 1.8  2012-10-19 11:54:07  m00f069
+ * Revision 1.9  2012-10-19 14:54:17  m00f069
+ * Made WsdlXmlValidator work with WebSphere 6
+ *
+ * Revision 1.8  2012/10/19 11:54:07  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Bugfix double occurrence of CommonMessageHeader.xsd in schemaLocation
  *
  * Revision 1.7  2012/10/19 09:33:47  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -29,14 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.wsdl.Definition;
-import javax.wsdl.WSDLException;
-import javax.wsdl.extensions.ExtensibilityElement;
-import javax.wsdl.extensions.schema.Schema;
-import javax.wsdl.factory.WSDLFactory;
-import javax.wsdl.xml.WSDLReader;
 import javax.xml.XMLConstants;
-import javax.xml.namespace.QName;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -47,15 +43,20 @@ import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SchemasProvider;
+import nl.nn.com.ibm.wsdl.extensions.schema.SchemaSerializer;
+import nl.nn.javax.wsdl.Definition;
+import nl.nn.javax.wsdl.WSDLException;
+import nl.nn.javax.wsdl.extensions.ExtensibilityElement;
+import nl.nn.javax.wsdl.extensions.schema.Schema;
+import nl.nn.javax.wsdl.factory.WSDLFactory;
+import nl.nn.javax.wsdl.xml.WSDLReader;
+import nl.nn.javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
 
-import com.ibm.wsdl.extensions.schema.SchemaSerializer;
-
 /**
- * Wsdl based input validator. Given an WSDL, it validates input. Note: Doesn't
- * work/compile with WebSphere 6.1, with WebSphere 7.0 it does.
+ * Wsdl based input validator. Given an WSDL, it validates input.
  * 
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
