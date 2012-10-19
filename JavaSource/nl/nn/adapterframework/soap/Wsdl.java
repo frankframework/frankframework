@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.23  2012-10-17 13:02:10  m00f069
+ * Revision 1.24  2012-10-19 11:52:28  m00f069
+ * Removed unused param
+ *
+ * Revision 1.23  2012/10/17 13:02:10  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Check paradigm against list of valid values.
  * Use schemaLocation instead of outputWrapper as main source for ESB SOAP vars.
  *
@@ -643,7 +646,7 @@ class Wsdl {
             if (listener instanceof WebServiceListener) {
                 httpBinding(w);
             } else if (listener instanceof JmsListener) {
-                jmsBinding(w, (JmsListener) listener);
+                jmsBinding(w);
             }
         }
     }
@@ -729,7 +732,7 @@ class Wsdl {
         return qname.getLocalPart();
     }
 
-    protected void jmsBinding(XMLStreamWriter w, JmsListener listener) throws XMLStreamException, IOException, URISyntaxException {
+    protected void jmsBinding(XMLStreamWriter w) throws XMLStreamException, IOException, URISyntaxException {
         w.writeStartElement(WSDL, "binding");
         w.writeAttribute("name", "SoapBinding");
         w.writeAttribute("type", "ibis:" + wsdlPortTypeName); {
