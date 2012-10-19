@@ -1,6 +1,9 @@
 /*
  * $Log: XercesXmlValidator.java,v $
- * Revision 1.3  2012-10-19 09:33:47  m00f069
+ * Revision 1.4  2012-10-19 11:51:03  m00f069
+ * First check for configured schemas then fall back to run time schemas
+ *
+ * Revision 1.3  2012/10/19 09:33:47  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
  *
  * Revision 1.2  2012/10/12 16:17:17  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -280,12 +283,11 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			session.remove(getXmlReasonSessionKey());
 		}
 
-		String schemasId = schemasProvider.getSchemasId(session);
+		String schemasId = schemasProvider.getSchemasId();
 		if (schemasId == null) {
-			schemasId = schemasProvider.getSchemasId();
-		} else {
+			schemasId = schemasProvider.getSchemasId(session);
 			try {
-				preparse(schemasProvider.getSchemasId(session), schemasProvider.getSchemas(session));
+				preparse(schemasId, schemasProvider.getSchemas(session));
 			} catch (Exception e) {
 				throw new XmlValidatorException("cannot compile schema for [" + schemasId + "]", e);
 			}
