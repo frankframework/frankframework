@@ -1,6 +1,9 @@
 /*
  * $Log: XercesXmlValidator.java,v $
- * Revision 1.4  2012-10-19 11:51:03  m00f069
+ * Revision 1.5  2012-10-24 14:41:35  m00f069
+ * Don't use static vars used by preparse as it's using the non static fullSchemaChecking
+ *
+ * Revision 1.4  2012/10/19 11:51:03  Jaco de Groot <jaco.de.groot@ibissource.org>
  * First check for configured schemas then fall back to run time schemas
  *
  * Revision 1.3  2012/10/19 09:33:47  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -172,9 +175,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
     /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
     protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
 
-    private static Map<String, SymbolTable> symbolTables =  new ConcurrentHashMap<String, SymbolTable>();
-    private static Map<String, XMLGrammarPool> grammarPools = new ConcurrentHashMap<String, XMLGrammarPool>();
-    private static Map<String, Set<String>> namespaceSets = new ConcurrentHashMap<String, Set<String>>();
+    private Map<String, SymbolTable> symbolTables =  new ConcurrentHashMap<String, SymbolTable>();
+    private Map<String, XMLGrammarPool> grammarPools = new ConcurrentHashMap<String, XMLGrammarPool>();
+    private Map<String, Set<String>> namespaceSets = new ConcurrentHashMap<String, Set<String>>();
 
 //    @Override
 	protected void init() throws ConfigurationException {
