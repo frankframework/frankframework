@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.81  2012-08-21 15:51:35  m00f069
+ * Revision 1.82  2012-10-24 14:14:08  europe\m168309
+ * added attribute auditTrailSessionKey
+ *
+ * Revision 1.81  2012/08/21 15:51:35  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Show duration statistics of sender message log too.
  *
  * Revision 1.80  2012/06/01 10:52:49  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -321,6 +324,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requirers the sender to have set the correlationID at the time of sending.</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuditTrailNamespaceDefs(String) auditTrailNamespaceDefs}</td><td>namespace defintions for auditTrailXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAuditTrailSessionKey(String) auditTrailSessionKey}</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as audit trail (instead of the default "no audit trail")</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDNamespaceDefs(String) correlationIDNamespaceDefs}</td><td>namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDStyleSheet(String) correlationIDStyleSheet}</td><td>stylesheet to extract correlationID from message</td><td>&nbsp;</td></tr>
@@ -411,6 +415,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	private String returnString;
 	private TransformerPool auditTrailTp=null;
+	private String auditTrailSessionKey = null;
 	private TransformerPool correlationIDTp=null;
 	private String correlationIDSessionKey = null;
 	private TransformerPool labelTp=null;
@@ -749,6 +754,10 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					String messageTrail="no audit trail";
 					if (auditTrailTp!=null) {
 						messageTrail=auditTrailTp.transform((String)input,null);
+					} else {
+						if (StringUtils.isNotEmpty(getAuditTrailSessionKey())) {
+							messageTrail = (String)(session.get(getAuditTrailSessionKey()));
+						}
 					}
 					String storedMessageID=messageID;
 					if (storedMessageID==null) {
@@ -1261,5 +1270,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	public boolean hasSizeStatistics() {
 		return getSender().isSynchronous();
+	}
+
+	public void setAuditTrailSessionKey(String string) {
+		auditTrailSessionKey = string;
+	}
+
+	public String getAuditTrailSessionKey() {
+		return auditTrailSessionKey;
 	}
 }
