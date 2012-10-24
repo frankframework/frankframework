@@ -1,6 +1,11 @@
 /*
  * $Log: IbisSoapServlet.java,v $
- * Revision 1.10  2012-10-11 09:45:58  m00f069
+ * Revision 1.11  2012-10-24 14:34:00  m00f069
+ * Load imported XSD's into the WSDL too
+ * When more than one XSD with the same namespace is present merge them into one schema element in the WSDL
+ * Exclude SOAP Envelope XSD
+ *
+ * Revision 1.10  2012/10/11 09:45:58  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added WSDL filename to WSDL documentation
  *
  * Revision 1.9  2012/10/04 11:28:57  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -34,7 +39,6 @@
 
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 
 import javax.naming.NamingException;
@@ -94,18 +98,12 @@ public class IbisSoapServlet extends HttpServlet {
             wsdl(req, res);
         } else if (pi != null && pi.endsWith(".xsd")) {
             res.setContentType("application/xml");
-            try {
-                xsd(req, res);
-            } catch (URISyntaxException e) {
-                throw new ServletException(e.getMessage(), e);
-            }
+            xsd(req, res);
         } else if (pi != null && pi.endsWith(".zip")) {
             res.setContentType("application/octet-stream");
             try {
                 zip(req, res);
             } catch (XMLStreamException e) {
-                throw new ServletException(e);
-            } catch (URISyntaxException e) {
                 throw new ServletException(e);
             } catch (NamingException e) {
                 throw new ServletException(e);
@@ -116,7 +114,7 @@ public class IbisSoapServlet extends HttpServlet {
         }
     }
 
-     private void zip(HttpServletRequest req, HttpServletResponse res) throws IOException, XMLStreamException, URISyntaxException, NamingException {
+     private void zip(HttpServletRequest req, HttpServletResponse res) throws IOException, XMLStreamException, NamingException {
 
          Adapter adapter = getAdapter(ibisManager, req.getPathInfo());
          Wsdl wsdl = new Wsdl(adapter.getPipeLine(), true);
@@ -131,7 +129,7 @@ public class IbisSoapServlet extends HttpServlet {
 
      }
 
-     private void xsd(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException, URISyntaxException {
+     private void xsd(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
 
          String resource = req.getPathInfo();
 
@@ -139,12 +137,12 @@ public class IbisSoapServlet extends HttpServlet {
              res.sendError(HttpServletResponse.SC_NOT_FOUND);
          } else {
              String dir = resource.substring(0, resource.lastIndexOf('/'));
-             XSD xs = new XSD(dir, null, ClassUtils.getResourceURL(resource).toURI(), 0);
+             XSD xs = new XSD(dir, null, ClassUtils.getResourceURL(resource), true);
              if (mayServe(resource)) {
                  try {
                      XMLStreamWriter writer
                          = WsdlUtils.createWriter(res.getOutputStream(), false);
-                     WsdlUtils.includeXSD(xs, writer, new HashMap<String, String>(), false, false);
+                     WsdlUtils.includeXSD(xs, writer, new HashMap<String, String>(), false);
                  } catch (XMLStreamException e) {
                      throw new ServletException(e);
                  }

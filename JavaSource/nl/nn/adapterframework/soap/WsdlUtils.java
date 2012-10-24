@@ -23,6 +23,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
@@ -39,13 +40,9 @@ import org.apache.xerces.util.XMLChar;
  * @author Michiel Meeuwissen
  */
 public abstract class WsdlUtils {
-
-
     private static final Logger LOG = LogUtil.getLogger(WsdlUtils.class);
 
-
     static final String ENCODING  = "UTF-8";
-
 
     private WsdlUtils() {
         // this class has no instances
@@ -82,29 +79,44 @@ public abstract class WsdlUtils {
      * @throws java.io.IOException
      * @throws javax.xml.stream.XMLStreamException
      */
-    static void xsincludeXSDs(final String nameSpace, final Collection<XSD> xsds, final XMLStreamWriter w, final Map<String, String> correctingNameSpaces) throws IOException, XMLStreamException {
+    static void xsincludeXsds(final String nameSpace,
+            final Collection<XSD> xsds, final XMLStreamWriter w,
+            final Map<String, String> correctingNameSpaces,
+            boolean rootXsdsOnly) throws IOException, XMLStreamException {
         w.writeStartElement(Wsdl.XSD, "schema");
         w.writeAttribute("targetNamespace", nameSpace); {
             for (XSD xsd : xsds) {
-                if (! nameSpace.equals(xsd.nameSpace)) {
-                    throw new IllegalArgumentException("The XSD " + xsd + " is for the wrong name space");
-                }
                 w.writeEmptyElement(Wsdl.XSD, "include");
                 w.writeAttribute("schemaLocation", xsd.getBaseUrl() + xsd.getName());
 
-                // including the XSD with includeXSD will also parse it, e.g. to determin the first tag.
-                // We don't need to actually include it here, so we just throw away the result.
+                // including the XSD with includeXSD will also parse it, e.g. to
+                // add elements to xsd.rootTags. We don't need to actually
+                // include it here, so we just throw away the result.
                 includeXSD(xsd, XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(new OutputStream() {
                     @Override
                     public void write(int i) throws IOException {
                         // /dev/null
                     }
-                }, ENCODING), correctingNameSpaces, true, false);
+                }, ENCODING), correctingNameSpaces, true);
             }
         }
         w.writeEndElement();
+    }
 
+    static void includeXSD(final XSD xsd, XMLStreamWriter xmlStreamWriter,
+            Map<String, String> correctingNamespaces, final boolean standalone)
+                    throws IOException, XMLStreamException {
+        includeXSD(xsd, xmlStreamWriter, correctingNamespaces, standalone,
+                false);
+    }
 
+    static void includeXSD(final XSD xsd, XMLStreamWriter xmlStreamWriter,
+            Map<String, String> correctingNamespaces, final boolean standalone,
+            final boolean stripSchemaLocationFromImport)
+                    throws IOException, XMLStreamException {
+        includeXSD(xsd, xmlStreamWriter, correctingNamespaces, standalone,
+                stripSchemaLocationFromImport, false, false, null, null, null,
+                false);
     }
 
     /**
@@ -114,7 +126,8 @@ public abstract class WsdlUtils {
      * @param xmlStreamWriter
      * @param correctingNamespaces
      * @param standalone
-     * When standalone the start and end document contants are ignored.
+     * When standalone the start and end document contants are ignored, hence
+     * the xml declaration is ignored.
      * @param stripSchemaLocationFromImport
      * Useful when generating a WSDL which should contain all XSD's inline
      * (without includes or imports). The XSD might have an import with
@@ -128,11 +141,15 @@ public abstract class WsdlUtils {
      */
     static void includeXSD(final XSD xsd, XMLStreamWriter xmlStreamWriter,
             Map<String, String> correctingNamespaces, final boolean standalone,
-            boolean stripSchemaLocationFromImport)
+            final boolean stripSchemaLocationFromImport,
+            final boolean skipRootStartElement, final boolean skipRootEndElement,
+            List<Attribute> rootAttributes,
+            List<Attribute> rootNamespaceAttributes,
+            List<XMLEvent> imports, final boolean noOutput)
                     throws IOException, XMLStreamException {
         final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(
             new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, correctingNamespaces));
-        InputStream in = xsd.url.toURL().openStream();
+        InputStream in = xsd.url.openStream();
 
         String xsdNamespace = correct(correctingNamespaces, xsd.nameSpace);
 
@@ -154,8 +171,33 @@ public abstract class WsdlUtils {
                     break;
                 case XMLStreamConstants.START_ELEMENT:
                     elementDepth++;
+                    if (skipRootStartElement && elementDepth == 1) {
+                        continue;
+                    }
                     StartElement el = e.asStartElement();
                     if (Wsdl.SCHEMA.equals(el.getName())) {
+                        if (rootAttributes != null && elementDepth == 1) {
+                            if (noOutput) {
+                                Iterator iterator = el.getAttributes();
+                                while (iterator.hasNext()) {
+                                    Attribute attribute = (Attribute)iterator.next();
+                                    rootAttributes.add(attribute);
+                                }
+                                iterator = el.getNamespaces();
+                                while (iterator.hasNext()) {
+                                    Attribute attribute = (Attribute)iterator.next();
+                                    rootNamespaceAttributes.add(attribute);
+                                }
+                            } else {
+                                el = XmlUtils.EVENT_FACTORY.createStartElement(
+                                        el.getName().getPrefix(),
+                                        el.getName().getNamespaceURI(),
+                                        el.getName().getLocalPart(),
+                                        rootAttributes.iterator(),
+                                        rootNamespaceAttributes.iterator(),
+                                        el.getNamespaceContext());
+                            }
+                        }
                         if (xsdNamespace == null) {
                             Attribute a = el.getAttributeByName(Wsdl.TNS);
                             if (a != null) {
@@ -173,12 +215,9 @@ public abstract class WsdlUtils {
                                     ).iterator(),
                                     XmlUtils.EVENT_FACTORY
                                 );
-
                             if (!ne.equals(e)) {
                                 List<AttributeEvent> list = new ArrayList<AttributeEvent>();
                                 list.add(new AttributeEvent(Wsdl.ELFORMDEFAULT, "qualified"));
-                                //list.add(
-
                                 Attribute targetNameSpace = el.getAttributeByName(Wsdl.TNS);
                                 e = XMLStreamUtils.mergeAttributes(ne, list.iterator(), XmlUtils.EVENT_FACTORY);
                                 if (targetNameSpace != null) {
@@ -190,43 +229,73 @@ public abstract class WsdlUtils {
                                             LOG.warn(xsd.url + " Corrected " + el + " -> " + e);
                                         }
                                     }
-
+                                }
+                            }
+                        }
+                        if (rootAttributes != null && elementDepth == 1
+                                && !noOutput) {
+                            // List imports contains start and end elements
+                            for (int i = 0; i < imports.size(); i = i + 2) {
+                                boolean skip = false;
+                                for (int j = 0; j < i; j = j + 2) {
+                                    Attribute attribute1 =
+                                            imports.get(i).asStartElement().getAttributeByName(Wsdl.NAMESPACE);
+                                    Attribute attribute2 =
+                                            imports.get(j).asStartElement().getAttributeByName(Wsdl.NAMESPACE);
+                                    if (attribute1 != null && attribute2 != null
+                                            && attribute1.getValue().equals(attribute2.getValue())) {
+                                        skip = true;
+                                    }
+                                }
+                                if (!skip) {
+                                    streamEventWriter.add(e);
+                                    e = imports.get(i);
+                                    streamEventWriter.add(e);
+                                    e = imports.get(i + 1);
                                 }
                             }
                         }
                     } else if (el.getName().equals(Wsdl.IMPORT)) {
-                        Attribute schemaLocation = el.getAttributeByName(Wsdl.SCHEMALOCATION);
-                        if (schemaLocation != null) {
-                            if (stripSchemaLocationFromImport) {
-                                List<Attribute> attributes = new ArrayList<Attribute>();
-                                Iterator<Attribute> iterator = el.getAttributes();
-                                while (iterator.hasNext()) {
-                                    Attribute a = iterator.next();
-                                    if (!Wsdl.SCHEMALOCATION.equals(a.getName())) {
-                                        attributes.add(a);
+                        if (imports == null || noOutput) {
+                            Attribute schemaLocation = el.getAttributeByName(Wsdl.SCHEMALOCATION);
+                            if (schemaLocation != null) {
+                                String location = schemaLocation.getValue();
+                                if (stripSchemaLocationFromImport) {
+                                    List<Attribute> attributes = new ArrayList<Attribute>();
+                                    Iterator<Attribute> iterator = el.getAttributes();
+                                    while (iterator.hasNext()) {
+                                        Attribute a = iterator.next();
+                                        if (!Wsdl.SCHEMALOCATION.equals(a.getName())) {
+                                            attributes.add(a);
+                                        }
+                                    }
+                                    e = new StartElementEvent(
+                                            el.getName(),
+                                            attributes.iterator(),
+                                            el.getNamespaces(),
+                                            el.getNamespaceContext(),
+                                            el.getLocation(),
+                                            el.getSchemaType());
+                                } else {
+                                    String relativeTo = xsd.parentLocation;
+                                    if (relativeTo.length() > 0 && location.startsWith(relativeTo)) {
+                                        location = location.substring(relativeTo.length());
+                                    }
+                                    e =
+                                        XMLStreamUtils.mergeAttributes(el,
+                                            Collections.singletonList(new AttributeEvent(Wsdl.SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
+                                    if (LOG.isDebugEnabled()) {
+                                        LOG.debug(xsd.url + " Corrected " + el + " -> " + e);
+                                        LOG.debug(xsd.url + " Relative to : " + relativeTo + " -> " + e);
                                     }
                                 }
-                                e = new StartElementEvent(
-                                        el.getName(),
-                                        attributes.iterator(),
-                                        el.getNamespaces(),
-                                        el.getNamespaceContext(),
-                                        el.getLocation(),
-                                        el.getSchemaType());
-                            } else {
-                                String location = schemaLocation.getValue();
-                                String relativeTo = xsd.parentLocation;
-                                if (relativeTo.length() > 0 && location.startsWith(relativeTo)) {
-                                    location = location.substring(relativeTo.length());
-                                }
-                                e =
-                                    XMLStreamUtils.mergeAttributes(el,
-                                        Collections.singletonList(new AttributeEvent(Wsdl.SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug(xsd.url + " Corrected " + el + " -> " + e);
-                                    LOG.debug(xsd.url + " Relative to : " + relativeTo + " -> " + e);
-                                }
                             }
+                        }
+                        if (imports != null) {
+                            if (noOutput) {
+                                imports.add(e);
+                            }
+                            continue;
                         }
                     } else if (el.getName().equals(Wsdl.ELEMENT)) {
                         if (elementDepth == 2) {
@@ -251,11 +320,25 @@ public abstract class WsdlUtils {
                     break;
                 case XMLStreamConstants.END_ELEMENT:
                     elementDepth--;
+                    if (skipRootEndElement && elementDepth == 0) {
+                        continue;
+                    }
+                    if (imports != null) {
+                        EndElement ee = e.asEndElement();
+                        if (ee.getName().equals(Wsdl.IMPORT)) {
+                            if (noOutput) {
+                                imports.add(e);
+                            }
+                            continue;
+                        }
+                    }
                     break;
                 default:
                     // simply copy
             }
-            streamEventWriter.add(e);
+            if (!noOutput) {
+                streamEventWriter.add(e);
+            }
         }
         streamEventWriter.flush();
     }
