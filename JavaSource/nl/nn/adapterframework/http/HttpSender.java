@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.56  2012-04-05 07:31:23  europe\m168309
+ * Revision 1.57  2012-10-25 16:21:29  m00f069
+ * Bugfix isParamsInUrl, when methodType isn't POST check the value not be false (instead of not to be true)
+ *
+ * Revision 1.56  2012/04/05 07:31:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * - reversed "HttpSender: split getMethod() in getGetMethod() and getPostMethod()"
  * - added paramsInUrl attribute
  *
@@ -253,7 +256,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
  * <tr><td>{@link #setStaleChecking(boolean) staleChecking}</td><td>controls whether connections checked to be stale, i.e. appear open, but are not.</td><td>true</td></tr>
  * <tr><td>{@link #setEncodeMessages(boolean) encodeMessages}</td><td>specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.</td><td>false</td></tr>
- * <tr><td>{@link #setParamsInUrl(boolean) paramsInUrl}</td><td>(only used when <code>methodeType=POST</code>) when true, request parameters are put in the url instead of in the request body</td><td>true</td></tr>
+ * <tr><td>{@link #setParamsInUrl(boolean) paramsInUrl}</td><td>when false and <code>methodeType=POST</code>, request parameters are put in the request body instead of in the url</td><td>true</td></tr>
  * <tr><td>{@link #setInputMessageParam(String) inputMessageParam}</td><td>(only used when <code>methodeType=POST</code> and <code>paramsInUrl=false</code>) name of the request parameter which is used to put the input message in</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIgnoreRedirects(boolean) ignoreRedirects}</td><td>when true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful</td><td>false</td></tr>
  * </table>
@@ -417,8 +420,8 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		super.configure();
 		
 		if (!getMethodType().equals("POST")) {
-			if (isParamsInUrl()) {
-				throw new ConfigurationException(getLogPrefix()+"paramsInUrl can only be set to true for methodType POST");
+			if (!isParamsInUrl()) {
+				throw new ConfigurationException(getLogPrefix()+"paramsInUrl can only be set to false for methodType POST");
 			}
 			if (StringUtils.isNotEmpty(getInputMessageParam())) {
 				throw new ConfigurationException(getLogPrefix()+"inputMessageParam can only be set for methodType POST");
