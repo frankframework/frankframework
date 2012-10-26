@@ -1,6 +1,9 @@
 /*
  * $Log: IbisSoapServlet.java,v $
- * Revision 1.11  2012-10-24 14:34:00  m00f069
+ * Revision 1.12  2012-10-26 15:43:18  m00f069
+ * Made WSDL without separate XSD's the default
+ *
+ * Revision 1.11  2012/10/24 14:34:00  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Load imported XSD's into the WSDL too
  * When more than one XSD with the same namespace is present merge them into one schema element in the WSDL
  * Exclude SOAP Envelope XSD
@@ -117,7 +120,8 @@ public class IbisSoapServlet extends HttpServlet {
      private void zip(HttpServletRequest req, HttpServletResponse res) throws IOException, XMLStreamException, NamingException {
 
          Adapter adapter = getAdapter(ibisManager, req.getPathInfo());
-         Wsdl wsdl = new Wsdl(adapter.getPipeLine(), true);
+         Wsdl wsdl = new Wsdl(adapter.getPipeLine());
+         wsdl.setUseSeparateXsds(true);
          setDocumentation(wsdl, req);
          res.setHeader("Content-Disposition",
              "inline;filename=\"" + wsdl.getFilename() + ".zip\"");
@@ -155,20 +159,23 @@ public class IbisSoapServlet extends HttpServlet {
      private void wsdl(HttpServletRequest req, HttpServletResponse res) throws ServletException {
          String servlet = HttpUtils.getRequestURL(req).toString();
          try {
-             boolean indent = "true".equals(req.getParameter("indent"));
              Wsdl wsdl;
              Adapter a = getAdapter(ibisManager, req.getPathInfo());
              if (a ==  null) {
                  res.sendError(HttpServletResponse.SC_NOT_FOUND);
                  return;
              }
-             wsdl = new Wsdl(a.getPipeLine(), indent);
+             wsdl = new Wsdl(a.getPipeLine());
+             if (req.getParameter("indent") != null) {
+                 wsdl.setIndent("true".equals(req.getParameter("indent")));
+             }
+             if (req.getParameter("separateXsds") != null) {
+                 wsdl.setUseSeparateXsds("true".equals(req.getParameter("separateXsds")));
+             }
              setDocumentation(wsdl, req);
              res.setHeader("Content-Disposition", "inline;filename=\"" +  wsdl.getFilename() + ".wsdl\"");
-             wsdl.setIncludeXsds("true".equals(req.getParameter("includeXsds")));
              wsdl.wsdl(res.getOutputStream(), servlet);
          } catch (Exception e) {
-
              throw new ServletException(e);
          }
      }
@@ -232,30 +239,28 @@ public class IbisSoapServlet extends HttpServlet {
             w.write("<li>");
             try {
                 Adapter adapter = (Adapter) a;
-                Wsdl wsdl = new Wsdl(adapter.getPipeLine(), false);
+                Wsdl wsdl = new Wsdl(adapter.getPipeLine());
                 setDocumentation(wsdl, req);
                 String url =
                     req.getContextPath() +
                         req.getServletPath() +
-                        "/" + wsdl.getName() + getWsdlExtention() +
-                        "?indent=true";
+                        "/" + wsdl.getName() + getWsdlExtention();
 
                 w.write("<a href='" + url + "'>" + wsdl.getName() + "</a>");
 
-                String includeXsds  =
+                String separateXsds  =
                     req.getContextPath() +
                         req.getServletPath() +
                         "/" + wsdl.getName() + getWsdlExtention() +
-                        "?indent=true&amp;includeXsds=true";
+                        "?separateXsds=true";
 
-                w.write(" (<a href='" + includeXsds + "'>with xsds</a>)");
+                w.write(" (<a href='" + separateXsds + "'>with separate xsds</a>");
 
                 String zip =
                     req.getContextPath() +
                         req.getServletPath() +
-                        "/" + wsdl.getName() + ".zip" +
-                        "?indent=true";
-                w.write(" (<a href='" + zip + "'>ZIP</a>)");
+                        "/" + wsdl.getName() + ".zip";
+                w.write(" <a href='" + zip + "'>zip</a>)");
 
             } catch (Exception e) {
                 w.write(e.getMessage());

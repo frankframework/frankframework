@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.25  2012-10-24 14:34:00  m00f069
+ * Revision 1.26  2012-10-26 15:43:18  m00f069
+ * Made WSDL without separate XSD's the default
+ *
+ * Revision 1.25  2012/10/24 14:34:00  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Load imported XSD's into the WSDL too
  * When more than one XSD with the same namespace is present merge them into one schema element in the WSDL
  * Exclude SOAP Envelope XSD
@@ -165,13 +168,13 @@ class Wsdl {
     private final String name;
     private final String filename;
     private final String targetNamespace;
-    private final boolean indentWsdl;
     private final PipeLine pipeLine;
     private final XmlValidator inputValidator;
     private final XmlValidator outputValidator;
     private String webServiceListenerNamespace;
 
-    private boolean includeXsds = false;
+    private boolean indent = true;
+    private boolean useSeparateXsds = false;
     private LinkedHashMap<String, String> namespacesByPrefix;
     private Set<XSD> xsds = null;
 
@@ -192,9 +195,8 @@ class Wsdl {
 
     private List<String> warnings = new ArrayList<String>();
 
-    Wsdl(PipeLine pipeLine, boolean indent) {
+    Wsdl(PipeLine pipeLine) {
         this.pipeLine = pipeLine;
-        this.indentWsdl = indent;
         this.name = this.pipeLine.getAdapter().getName();
         if (this.name == null) {
             throw new IllegalArgumentException("The adapter '" + pipeLine.getAdapter() + "' has no name");
@@ -358,7 +360,7 @@ class Wsdl {
      * @throws IOException
      */
     public void wsdl(OutputStream out, String servlet) throws XMLStreamException, IOException, NamingException {
-        XMLStreamWriter w = WsdlUtils.createWriter(out, indentWsdl);
+        XMLStreamWriter w = WsdlUtils.createWriter(out, isIndent());
 
         w.writeStartDocument(WsdlUtils.ENCODING, "1.0");
         w.setPrefix("wsdl", WSDL);
@@ -451,12 +453,20 @@ class Wsdl {
         this.documentation = documentation;
     }
 
-    public boolean isIncludeXsds() {
-        return includeXsds;
+    public boolean isIndent() {
+        return indent;
     }
 
-    public void setIncludeXsds(boolean includeXsds) {
-        this.includeXsds = includeXsds;
+    public void setIndent(boolean indent) {
+        this.indent = indent;
+    }
+
+    public boolean isUseSeparateXsds() {
+        return useSeparateXsds;
+    }
+
+    public void setUseSeparateXsds(boolean useSeparateXsds) {
+        this.useSeparateXsds = useSeparateXsds;
     }
 
     public static String getEsbSoapParadigm(XmlValidator xmlValidator) {
@@ -628,7 +638,14 @@ class Wsdl {
         w.writeStartElement(WSDL, "types");
         Map<String, String> correctingNamesSpaces = new HashMap<String, String>();
         Map<String, Collection<XSD>> xsdsGroupedByNamespace;
-        if (includeXsds) {
+        if (isUseSeparateXsds()) {
+            xsdsGroupedByNamespace = getXsdsGroupedByNamespace(getXsds(), true);
+            for (String namespace: xsdsGroupedByNamespace.keySet()) {
+                WsdlUtils.xsincludeXsds(namespace,
+                        xsdsGroupedByNamespace.get(namespace), w,
+                        correctingNamesSpaces, true);
+            }
+        }  else {
             xsdsGroupedByNamespace = getXsdsGroupedByNamespace(getXsds(), false);
             for (String namespace: xsdsGroupedByNamespace.keySet()) {
                 Collection<XSD> xsds = xsdsGroupedByNamespace.get(namespace);
@@ -665,13 +682,6 @@ class Wsdl {
                                 imports, false);
                     }
                 }
-            }
-        }  else {
-            xsdsGroupedByNamespace = getXsdsGroupedByNamespace(getXsds(), true);
-            for (String namespace: xsdsGroupedByNamespace.keySet()) {
-                WsdlUtils.xsincludeXsds(namespace,
-                        xsdsGroupedByNamespace.get(namespace), w,
-                        correctingNamesSpaces, true);
             }
         }
         w.writeEndElement();
