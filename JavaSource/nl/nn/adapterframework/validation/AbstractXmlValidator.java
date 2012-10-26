@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractXmlValidator.java,v $
- * Revision 1.7  2012-10-19 09:33:47  m00f069
+ * Revision 1.1  2012-10-26 16:13:38  m00f069
+ * Moved *Xmlvalidator*, Schema and SchemasProvider to new validation package
+ *
+ * Revision 1.7  2012/10/19 09:33:47  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
  *
  * Revision 1.6  2012/10/12 16:17:17  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -50,7 +53,7 @@
  * new baseclasses for XmlValidation
  *
  */
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.validation;
 
 
 import java.io.FileInputStream;
@@ -67,6 +70,11 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.Variant;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;

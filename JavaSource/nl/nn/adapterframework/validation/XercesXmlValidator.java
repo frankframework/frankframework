@@ -1,6 +1,9 @@
 /*
  * $Log: XercesXmlValidator.java,v $
- * Revision 1.5  2012-10-24 14:41:35  m00f069
+ * Revision 1.1  2012-10-26 16:13:38  m00f069
+ * Moved *Xmlvalidator*, Schema and SchemasProvider to new validation package
+ *
+ * Revision 1.5  2012/10/24 14:41:35  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Don't use static vars used by preparse as it's using the non static fullSchemaChecking
  *
  * Revision 1.4  2012/10/19 11:51:03  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -87,7 +90,7 @@
  * baseclasse for XmlValidation, that uses Xerces grammar pool
  *
  */
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.validation;
 
 
 import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME;

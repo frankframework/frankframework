@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorContentHandler.java,v $
- * Revision 1.9  2012-10-19 09:33:47  m00f069
+ * Revision 1.1  2012-10-26 16:13:38  m00f069
+ * Moved *Xmlvalidator*, Schema and SchemasProvider to new validation package
+ *
+ * Revision 1.9  2012/10/19 09:33:47  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
  *
  * Revision 1.8  2012/10/16 15:50:57  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -33,7 +36,7 @@
  * - Cleaned XML validation code a little (e.g. moved internal XmlErrorHandler class (double code in two classes) to an external class, removed MODE variable and related code)
  *
  */
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.validation;
 
 import java.util.ArrayList;
 import java.util.HashSet;

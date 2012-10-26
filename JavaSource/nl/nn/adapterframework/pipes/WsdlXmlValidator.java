@@ -1,6 +1,9 @@
 /*
  * $Log: WsdlXmlValidator.java,v $
- * Revision 1.9  2012-10-19 14:54:17  m00f069
+ * Revision 1.10  2012-10-26 16:13:38  m00f069
+ * Moved *Xmlvalidator*, Schema and SchemasProvider to new validation package
+ *
+ * Revision 1.9  2012/10/19 14:54:17  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made WsdlXmlValidator work with WebSphere 6
  *
  * Revision 1.8  2012/10/19 11:54:07  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -42,7 +45,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.SchemasProvider;
+import nl.nn.adapterframework.validation.SchemasProvider;
 import nl.nn.com.ibm.wsdl.extensions.schema.SchemaSerializer;
 import nl.nn.javax.wsdl.Definition;
 import nl.nn.javax.wsdl.WSDLException;
@@ -175,10 +178,10 @@ public class WsdlXmlValidator extends SoapValidator implements SchemasProvider {
 		return wsdl;
 	}
 
-	public List<nl.nn.adapterframework.util.Schema> getSchemas() {
-		List<nl.nn.adapterframework.util.Schema> result = new ArrayList();
+	public List<nl.nn.adapterframework.validation.Schema> getSchemas() {
+		List<nl.nn.adapterframework.validation.Schema> result = new ArrayList();
 		result.add(
-			new nl.nn.adapterframework.util.Schema() {
+			new nl.nn.adapterframework.validation.Schema() {
 
 				public InputStream getInputStream() throws IOException {
 					return ClassUtils.getResourceURL(validateSoapEnvelope.xsd).openStream();
@@ -202,7 +205,7 @@ public class WsdlXmlValidator extends SoapValidator implements SchemasProvider {
 				final Schema schema = (Schema) type;
 				addNamespaces(schema, definition.getNamespaces());
 				result.add(
-					new nl.nn.adapterframework.util.Schema() {
+					new nl.nn.adapterframework.validation.Schema() {
 
 						public InputStream getInputStream() {
 							return null;

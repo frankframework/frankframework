@@ -1,6 +1,9 @@
 /*
  * $Log: XmlWellFormedChecker.java,v $
- * Revision 1.8  2012-10-01 07:59:29  m00f069
+ * Revision 1.9  2012-10-26 16:13:38  m00f069
+ * Moved *Xmlvalidator*, Schema and SchemasProvider to new validation package
+ *
+ * Revision 1.8  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
  * Cleaned XML validation code and documentation a bit.
  *
@@ -33,8 +36,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.util.AbstractXmlValidator;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.validation.AbstractXmlValidator;
 
 /**
  *<code>Pipe</code> that checks the well-formedness of the input message.

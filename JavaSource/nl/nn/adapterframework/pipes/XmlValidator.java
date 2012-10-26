@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.44  2012-10-19 09:33:47  m00f069
+ * Revision 1.45  2012-10-26 16:13:38  m00f069
+ * Moved *Xmlvalidator*, Schema and SchemasProvider to new validation package
+ *
+ * Revision 1.44  2012/10/19 09:33:47  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
  *
  * Revision 1.43  2012/10/12 16:17:17  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -144,16 +147,16 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.util.AbstractXmlValidator;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Schema;
-import nl.nn.adapterframework.util.SchemasProvider;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XercesXmlValidator;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.XmlValidatorException;
 import nl.nn.adapterframework.util.XsdUtils;
+import nl.nn.adapterframework.validation.AbstractXmlValidator;
+import nl.nn.adapterframework.validation.Schema;
+import nl.nn.adapterframework.validation.SchemasProvider;
+import nl.nn.adapterframework.validation.XercesXmlValidator;
+import nl.nn.adapterframework.validation.XmlValidatorException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -575,7 +578,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider {
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			List<Schema> schemas = new ArrayList<Schema>();
 			schemas.add(
-				new nl.nn.adapterframework.util.Schema() {
+				new Schema() {
 
 					public InputStream getInputStream() throws IOException {
 						return ClassUtils.getResourceURL(getNoNamespaceSchemaLocation()).openStream();
@@ -602,7 +605,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider {
 					URL url = ClassUtils.getResourceURL(XmlUtils.class, location);
 					if (url != null) {
 						schemas.add(
-							new nl.nn.adapterframework.util.Schema() {
+							new Schema() {
 
 								public InputStream getInputStream() throws IOException {
 									InputStream inputStream = ClassUtils.getResourceURL(location).openStream();
@@ -662,7 +665,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider {
 				throw new PipeRunException(null, getLogPrefix(session) + "could not find schema at [" + schemaLocation + "]");
 			}
 			schemas.add(
-				new nl.nn.adapterframework.util.Schema() {
+				new Schema() {
 	
 					public InputStream getInputStream() throws IOException {
 						return url.openStream();

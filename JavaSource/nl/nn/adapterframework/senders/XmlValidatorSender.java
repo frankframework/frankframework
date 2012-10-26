@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorSender.java,v $
- * Revision 1.13  2012-10-01 07:59:29  m00f069
+ * Revision 1.14  2012-10-26 16:13:38  m00f069
+ * Moved *Xmlvalidator*, Schema and SchemasProvider to new validation package
+ *
+ * Revision 1.13  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
  * Cleaned XML validation code and documentation a bit.
  *
@@ -49,8 +52,8 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.AbstractXmlValidator;
-import nl.nn.adapterframework.util.XercesXmlValidator;
+import nl.nn.adapterframework.validation.AbstractXmlValidator;
+import nl.nn.adapterframework.validation.XercesXmlValidator;
 
 
 /**

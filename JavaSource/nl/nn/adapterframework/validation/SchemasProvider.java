@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.validation;
 
 import java.util.List;
 
