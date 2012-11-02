@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractXmlValidator.java,v $
- * Revision 1.1  2012-10-26 16:13:38  m00f069
+ * Revision 1.2  2012-11-02 10:15:12  m00f069
+ * Removed XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT (isn't used anymore)
+ *
+ * Revision 1.1  2012/10/26 16:13:38  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Moved *Xmlvalidator*, Schema and SchemasProvider to new validation package
  *
  * Revision 1.7  2012/10/19 09:33:47  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -113,7 +116,6 @@ public abstract class AbstractXmlValidator {
 	protected Logger log = LogUtil.getLogger(this);
 
 	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
-	public static final String XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT = "Invalid XML: wrong root";
 	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
 	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
 
