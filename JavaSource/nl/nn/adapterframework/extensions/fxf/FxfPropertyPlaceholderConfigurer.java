@@ -1,6 +1,9 @@
 /*
  * $Log: FxfPropertyPlaceholderConfigurer.java,v $
- * Revision 1.2  2012-09-07 13:15:17  m00f069
+ * Revision 1.3  2012-11-02 09:28:33  m00f069
+ * Changed log level from warn to debug when FxF directory not found (valid in case FxF isn't used)
+ *
+ * Revision 1.2  2012/09/07 13:15:17  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Messaging related changes:
  * - Use CACHE_CONSUMER by default for ESB RR
  * - Don't use JMSXDeliveryCount to determine whether message has already been processed
@@ -43,7 +46,7 @@ public class FxfPropertyPlaceholderConfigurer
 		}
 		if (fxfDir != null) {
 			if (!new File(fxfDir).isDirectory()) {
-				log.warn("Could not find FxF directory: " + fxfDir);
+				log.debug("Could not find FxF directory: " + fxfDir);
 				fxfDir = null;
 			} else {
 				log.debug("FxF directory: " + fxfDir);
