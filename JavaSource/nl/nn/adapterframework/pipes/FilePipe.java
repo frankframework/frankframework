@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.34  2012-10-05 15:45:31  m00f069
+ * Revision 1.35  2012-11-07 15:03:49  m00f069
+ * Changed general error message
+ *
+ * Revision 1.34  2012/10/05 15:45:31  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Introduced FileSender which is similar to FilePipe but can be used as a Sender (making is possible to have a MessageLog)
  *
  * Revision 1.33  2012/06/01 10:52:49  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -141,7 +144,7 @@ public class FilePipe extends FixedForwardPipe {
 			return new PipeRunResult(getForward(), fileHandler.handle(input, session));
 		}
 		catch(Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"Error while transforming input", e); 
+			throw new PipeRunException(this, getLogPrefix(session)+"Error while executing file action(s)", e); 
 		}
 	}
 
