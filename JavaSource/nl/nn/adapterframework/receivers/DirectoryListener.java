@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.20  2012-06-01 10:52:59  m00f069
+ * Revision 1.21  2012-11-12 15:36:39  m00f069
+ * Added fileList and fileListForcedAfter properties
+ *
+ * Revision 1.20  2012/06/01 10:52:59  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.19  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -96,6 +99,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -117,6 +121,8 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setWildcard(String) wildcard}</td><td>Filter of files to look for in inputDirectory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setExcludeWildcard(String) excludeWildcard}</td><td>Filter of files to be excluded when looking in inputDirectory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFileTimeSensitive(boolean) fileTimeSensitive}</td><td>when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before</td><td>false</td></tr>
+ * <tr><td>{@link #setFileList(int) fileList}</td><td>When set a list if files in xml format (&lt;files&gt;&lt;file&gt;/file/name&lt;/file&gt;&lt;file&gt;/another/file/name&lt;/file&gt;&lt;/files&gt;) is passed to the pipleline instead of 1 file name when the specified amount of files is present in the input directory. When set to -1 the list of files is passed to the pipleline whenever one of more files are present. Please note the processedDirectory doesn't (yet) work in combination with fileList</td><td></td></tr>
+ * <tr><td>{@link #setFileListForcedAfter(long) fileListForcedAfter}</td><td>When set along with fileList a list of files is passed to the pipleline when the specified amount of ms has passed since the first file for a new list of files was found even if the amount of files specified by fileList isn't present in the input directory yet</td><td></td></tr>
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Directory where files are stored <i>while</i> being processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputFilenamePattern(String) outputFilenamePattern}</td><td>Pattern for the name using the MessageFormat.format method. Params: 0=inputfilename, 1=inputfile extension, 2=unique uuid, 3=current date</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProcessedDirectory(String) processedDirectory}</td><td>Directory where files are stored <i>after</i> being processed</td><td>&nbsp;</td></tr>
@@ -142,6 +148,10 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	private String inputDirectory;
 	private String wildcard;
 	private String excludeWildcard;
+	private boolean fileTimeSensitive=false;
+	private Integer fileList;
+	private Long fileListForcedAfter;
+	private Long fileListFirstFileFound;
 	private String outputDirectory;
 	private String outputFilenamePattern;
 	private long responseTime = 0;
@@ -154,7 +164,6 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	private boolean delete = false;
 	private int numberOfAttempts = 1;
 	private long waitBeforeRetry = 1000;
-	private boolean fileTimeSensitive=false;
 
 	private long minStableTime = 1000;
 	
@@ -270,29 +279,59 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	 * Override this method for your specific needs! 
 	 */
 	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		String filename= rawMessage.toString();
-		String correlationId=filename;
-		if (isFileTimeSensitive()) {
-			try {
-				File f=new File(filename);
-				correlationId+="-"+DateUtils.format(f.lastModified());
-			} catch (Exception e) {
-				throw new ListenerException("Could not get filetime from filename ["+filename+"]",e);
+		if (getFileList() == null) {
+			String filename= rawMessage.toString();
+			String correlationId=filename;
+			if (isFileTimeSensitive()) {
+				try {
+					File f=new File(filename);
+					correlationId+="-"+DateUtils.format(f.lastModified());
+				} catch (Exception e) {
+					throw new ListenerException("Could not get filetime from filename ["+filename+"]",e);
+				}
 			}
+			PipeLineSessionBase.setListenerParameters(threadContext, correlationId, correlationId, null, null);
+			return correlationId;
+		} else {
+			return null;
 		}
-		PipeLineSessionBase.setListenerParameters(threadContext, correlationId, correlationId, null, null);
-		return correlationId;
 	}
 	/**
 	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
 	 * is a new file to process and returns the first record.
 	 */
 	public synchronized Object getRawMessage(Map threadContext) throws ListenerException {
-		File inputFile = FileUtils.getFirstMatchingFile(getInputDirectory(), getWildcard(), getExcludeWildcard(), getMinStableTime());
-		if (inputFile == null) {
+		File[] inputFiles = FileUtils.getFiles(getInputDirectory(), getWildcard(), getExcludeWildcard(), getMinStableTime());
+		if (inputFiles.length == 0) {
 			return null;
+		} else if (getFileList() != null) {
+			if (fileListFirstFileFound == null) {
+				fileListFirstFileFound = System.currentTimeMillis();
+			}
+			if (inputFiles.length >= getFileList()
+					|| (getFileListForcedAfter() != null
+					&& System.currentTimeMillis() > fileListFirstFileFound + getFileListForcedAfter())) {
+				XmlBuilder filesXml = new XmlBuilder("files");
+				int max = getFileList();
+				if (inputFiles.length < max || max == -1) {
+					max = inputFiles.length;
+				}
+				for (int i = 0; i < max; i++) {
+					XmlBuilder fileXml = new XmlBuilder("file");
+					fileXml.setValue(getInputFileName(inputFiles[i], threadContext));
+					filesXml.addSubElement(fileXml);
+				}
+				fileListFirstFileFound = null;
+				return filesXml.toXML();
+			} else {
+				return null;
+			}
+		} else {
+			return getInputFileName(inputFiles[0], threadContext);
 		}
+	}
 
+	private String getInputFileName(File inputFile, Map threadContext) throws ListenerException {
 		String inputFileName=null;
 		try {
 			inputFileName = inputFile.getCanonicalPath();
@@ -380,6 +419,22 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 
 	public String getExcludeWildcard() {
 		return excludeWildcard;
+	}
+
+	public void setFileList(Integer fileList) {
+		this.fileList = fileList;
+	}
+
+	public Integer getFileList() {
+		return fileList;
+	}
+
+	public void setFileListForcedAfter(Long fileListForcedAfter) {
+		this.fileListForcedAfter = fileListForcedAfter;
+	}
+
+	public Long getFileListForcedAfter() {
+		return fileListForcedAfter;
 	}
 
 	/**
