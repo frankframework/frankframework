@@ -6,7 +6,7 @@
 		- disable all receiver elements, except those with childs JdbcQueryListener, DirectoryListener, JavaListener and WebServiceListener
 		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter (and copy all attributes (except transactionAttribute), errorStorage and messageLog from disabled receiver when present)
 		- disable all listener elements which have a parent pipe
-		- stub all sender elements, which have a parent pipe, by an IbisJavaSender (serviceName="testtool-[pipe name]"), except the DirectQuerySender, FixedQuerySender, XmlQuerySender, DelaySender, EchoSender, IbisLocalSender, LogSender, ParallelSenders, SenderSeries, SenderWrapper, XsltSender, CommandSender, FixedResultSender and FileSender
+		- stub all sender elements, which have a parent pipe, by an IbisJavaSender (serviceName="testtool-[pipe name]"), except the ResultSet2FileSender, DirectQuerySender, FixedQuerySender, XmlQuerySender, DelaySender, EchoSender, IbisLocalSender, LogSender, ParallelSenders, SenderSeries, SenderWrapper, XsltSender, CommandSender, FixedResultSender and FileSender
 		- disable all elements sapSystems
 		- disable all elements jmsRealm which have an attribute queueConnectionFactoryName (if combined with the attribute datasourceName a new jmsRealm for this datasourceName is created)
 		- add the attribute returnFixedDate with value true to all pipe elements PutSystemDateInSession
@@ -82,6 +82,9 @@
 					<xsl:when test="parent::*[name()='pipe']">
 						<xsl:variable name="pipeName" select="parent::*[name()='pipe']/@name" />
 						<xsl:choose>
+							<xsl:when test="@className='nl.nn.adapterframework.jdbc.ResultSet2FileSender'">
+								<xsl:call-template name="copy" />
+							</xsl:when>
 							<xsl:when test="@className='nl.nn.adapterframework.jdbc.DirectQuerySender'">
 								<xsl:call-template name="copy" />
 							</xsl:when>
