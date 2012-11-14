@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springCommon.xml,v $
-  Revision 1.25  2012-09-07 13:15:16  m00f069
+  Revision 1.26  2012-11-14 16:36:15  m00f069
+  Made it possible to use Locker on Pipe level too
+
+  Revision 1.25  2012/09/07 13:15:16  Jaco de Groot <jaco.de.groot@ibissource.org>
   Messaging related changes:
   - Use CACHE_CONSUMER by default for ESB RR
   - Don't use JMSXDeliveryCount to determine whether message has already been processed
@@ -264,16 +267,24 @@
 								>
 								<property name="pipeProcessor">
 									<bean
-										class="nl.nn.adapterframework.processors.CheckMessageSizePipeProcessor"
+										class="nl.nn.adapterframework.processors.LockerPipeProcessor"
 										autowire="byName"
 										scope="prototype"
 										>
 										<property name="pipeProcessor">
 											<bean
-												class="nl.nn.adapterframework.processors.CorePipeProcessor"
+												class="nl.nn.adapterframework.processors.CheckMessageSizePipeProcessor"
 												autowire="byName"
 												scope="prototype"
-											/>
+												>
+												<property name="pipeProcessor">
+													<bean
+														class="nl.nn.adapterframework.processors.CorePipeProcessor"
+														autowire="byName"
+														scope="prototype"
+													/>
+												</property>
+											</bean>
 										</property>
 									</bean>
 								</property>
