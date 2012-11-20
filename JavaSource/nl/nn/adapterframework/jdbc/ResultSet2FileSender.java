@@ -1,6 +1,9 @@
 /*
  * $Log: ResultSet2FileSender.java,v $
- * Revision 1.1  2012-11-13 11:19:29  europe\m168309
+ * Revision 1.2  2012-11-20 13:27:51  europe\m168309
+ * bugfix for updateTimestamp()
+ *
+ * Revision 1.1  2012/11/13 11:19:29  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * initial version
  *
  *
@@ -66,7 +69,6 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		int counter = 0;
 		ResultSet resultset=null;
-		Date now = new Date();
 		String fileName = (String)prc.getSession().get(getFileNameSessionKey());
 		FileOutputStream fos=null;
 		try {
@@ -81,7 +83,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 				} 
 				if ("timestamp".equalsIgnoreCase(getStatusFieldType())) {
 					//TODO: statusFieldType is nu altijd een timestamp (dit moeten ook andere types kunnen zijn)
-					resultset.updateTimestamp(2 , new Timestamp(now.getTime()));
+					resultset.updateTimestamp(2 , new Timestamp((new Date()).getTime()));
 					resultset.updateRow();
 				}
 				fos.write(rec_str.getBytes());
