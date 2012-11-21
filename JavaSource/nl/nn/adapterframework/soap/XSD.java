@@ -42,7 +42,7 @@ class XSD implements Comparable<XSD> {
     final String nameSpace;
     final URL url;
     final boolean isRootXsd;
-    String pref;
+    String prefix;
     List<String> rootTags = new ArrayList<String>();
 
     XSD(String parentLocation, String nameSpace, URL resource, boolean isRootXsd) {
@@ -103,7 +103,7 @@ class XSD implements Comparable<XSD> {
     }
 
     public QName getTag(String tag) {
-        return new QName(nameSpace, tag, pref);
+        return new QName(nameSpace, tag, prefix);
     }
 
     /**

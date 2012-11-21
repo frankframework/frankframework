@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.26  2012-10-26 15:43:18  m00f069
+ * Revision 1.27  2012-11-21 14:11:00  m00f069
+ * Bugfix: Get root tags from root xsd's only otherwise when root tag name found in non root xsd, the non root xsd may be used which has no prefix, hence an exception is thrown.
+ *
+ * Revision 1.26  2012/10/26 15:43:18  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made WSDL without separate XSD's the default
  *
  * Revision 1.25  2012/10/24 14:34:00  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -549,7 +552,7 @@ class Wsdl {
                 for (String namespace: xsdsGroupedByNamespace.keySet()) {
                     Collection<XSD> xsds = xsdsGroupedByNamespace.get(namespace);
                     for (XSD xsd: xsds) {
-                        xsd.pref = "ns" + prefixCount;
+                        xsd.prefix = "ns" + prefixCount;
                     }
                     namespacesByPrefix.put("ns" + prefixCount, namespace);
                     prefixCount++;
@@ -1026,9 +1029,11 @@ class Wsdl {
     protected QName getRootTag(String tag) throws XMLStreamException, IOException {
         if (StringUtils.isNotEmpty(tag)) {
             for (XSD xsd : xsds) {
-                for (String rootTag : xsd.rootTags) {
-                    if (tag.equals(rootTag)) {
-                        return xsd.getTag(tag);
+                if (xsd.isRootXsd) {
+                    for (String rootTag : xsd.rootTags) {
+                        if (tag.equals(rootTag)) {
+                            return xsd.getTag(tag);
+                        }
                     }
                 }
             }
