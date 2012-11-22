@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.102  2012-08-23 11:57:43  m00f069
+ * Revision 1.103  2012-11-22 14:10:16  m00f069
+ * Made it possible to use Locker on PipeLine level too
+ *
+ * Revision 1.102  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Updates from Michiel
  *
  * Revision 1.101  2012/08/21 15:51:36  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -323,6 +326,7 @@ import nl.nn.adapterframework.statistics.SizeStatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.JtaUtil;
+import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
@@ -426,6 +430,8 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
     private String firstPipe;
 	private int transactionAttribute = TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout   = 0;
+
+	private Locker locker;
 
 	public final static String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
 	public final static String OUTPUT_VALIDATOR_NAME = "- pipeline outputValidator";
@@ -956,6 +962,13 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	}
 	public int getTransactionAttributeNum() {
 		return transactionAttribute;
+	}
+
+	public void setLocker(Locker locker) {
+		this.locker = locker;
+	}
+	public Locker getLocker() {
+		return locker;
 	}
 
 	public void setInputValidator(IPipe inputValidator) {
