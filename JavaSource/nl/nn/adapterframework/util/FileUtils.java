@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.27  2012-06-01 10:52:50  m00f069
+ * Revision 1.28  2012-11-22 09:48:49  m00f069
+ * Removed unused method getFirstMatchingFile because DirectoryListener isn't using it anymore
+ *
+ * Revision 1.27  2012/06/01 10:52:50  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.26  2012/03/09 15:56:29  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -412,14 +415,6 @@ public class FileUtils {
 			result.add(file);
 		}
 		return (File[])result.toArray(new File[0]);
-	}
-
-	public static File getFirstMatchingFile(String directory, String wildcard, String excludeWildcard, long minStability) {
-		File[] files = getFiles(directory, wildcard, excludeWildcard, minStability);
-		if (files.length > 0)
-			return files[0];
-
-		return null;
 	}
 
 	public static File[] getFiles(String directory, final String[] names) {
