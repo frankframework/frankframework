@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLineProcessor.java,v $
- * Revision 1.6  2012-06-01 10:52:49  m00f069
+ * Revision 1.7  2012-11-22 13:41:05  m00f069
+ * Made it possible to use Locker on PipeLine level too
+ *
+ * Revision 1.6  2012/06/01 10:52:49  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.5  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -29,6 +32,8 @@ import nl.nn.adapterframework.core.PipeRunException;
  */
 public interface PipeLineProcessor {
 
-	PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException;
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId,
+			String message, IPipeLineSession pipeLineSession, String firstPipe
+			) throws PipeRunException;
 
 }
