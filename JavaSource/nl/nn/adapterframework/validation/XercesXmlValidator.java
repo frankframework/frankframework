@@ -1,6 +1,9 @@
 /*
  * $Log: XercesXmlValidator.java,v $
- * Revision 1.1  2012-10-26 16:13:38  m00f069
+ * Revision 1.2  2012-11-29 09:23:23  m00f069
+ * Made preparse synchronized to prevent wrong validation when using schemaSessionKey
+ *
+ * Revision 1.1  2012/10/26 16:13:38  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Moved *Xmlvalidator*, Schema and SchemasProvider to new validation package
  *
  * Revision 1.5  2012/10/24 14:41:35  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -182,7 +185,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
     private Map<String, XMLGrammarPool> grammarPools = new ConcurrentHashMap<String, XMLGrammarPool>();
     private Map<String, Set<String>> namespaceSets = new ConcurrentHashMap<String, Set<String>>();
 
-//    @Override
+	@Override
 	protected void init() throws ConfigurationException {
 		if (needsInit) {
 			super.init();
@@ -198,7 +201,12 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		}
 	}
 
-	private void preparse(String schemasId, List<Schema> schemas) throws IOException {
+	// Needs to be synchronized as an issue has been seen while using
+	// schemaSessionKey in which case this method is called runtime while the
+	// pipeline starts processing messages (probably by more than one thread at
+	// a time) and elements in messages were reported not to be valid while
+	// being present in the XSD.
+	private synchronized void preparse(String schemasId, List<Schema> schemas) throws IOException {
 		if (symbolTables.get(schemasId) == null) {
 			SymbolTable symbolTable = new SymbolTable(BIG_PRIME);
 			XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
