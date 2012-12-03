@@ -1,6 +1,10 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.28  2012-11-22 09:48:49  m00f069
+ * Revision 1.29  2012-12-03 14:03:38  m00f069
+ * Read oldest file first (instead of unsorted).
+ * Made it possible to use processedDirectory in combination with fileList.
+ *
+ * Revision 1.28  2012/11/22 09:48:49  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed unused method getFirstMatchingFile because DirectoryListener isn't using it anymore
  *
  * Revision 1.27  2012/06/01 10:52:50  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -92,6 +96,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -399,7 +404,7 @@ public class FileUtils {
 		
 		long lastChangedAllowed=minStability>0?new Date().getTime()-minStability:0;
 		
-		List result = new ArrayList();
+		List<File> result = new ArrayList<File>();
 		int count = (files == null ? 0 : files.length);
 		for (int i = 0; i < count; i++) {
 			File file = files[i];
@@ -414,39 +419,8 @@ public class FileUtils {
 			}
 			result.add(file);
 		}
-		return (File[])result.toArray(new File[0]);
-	}
-
-	public static File[] getFiles(String directory, final String[] names) {
-		File dir = new File(directory);
-		File[] files = dir.listFiles(new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				for (int i = 0; i < names.length; i++) {
-					if (name.equals(names[i]))
-						return true;
-				}
-				return false;
-			}
-		});
-		
-		List result = new ArrayList();
-		int count = (files == null ? 0 : files.length);
-		for (int i = 0; i < count; i++) {
-			File file = files[i];
-			if (file.isDirectory()) {
-				continue;
-			}
-			result.add(file);
-		}
-		return (File[])result.toArray(new File[0]);
-	}
-
-	public static File getFirstMatchingFile(String directory, String[] names) {
-		File[] files = getFiles(directory, names);
-		if (files.length > 0) {
-			return files[0];
-		}
-		return null;
+		Collections.sort(result, new FileComparator());
+		return result.toArray(new File[0]);
 	}
 
 	public static List getListFromNames(String names, char seperator) {

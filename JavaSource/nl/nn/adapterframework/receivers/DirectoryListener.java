@@ -1,6 +1,10 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.21  2012-11-12 15:36:39  m00f069
+ * Revision 1.22  2012-12-03 14:03:38  m00f069
+ * Read oldest file first (instead of unsorted).
+ * Made it possible to use processedDirectory in combination with fileList.
+ *
+ * Revision 1.21  2012/11/12 15:36:39  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added fileList and fileListForcedAfter properties
  *
  * Revision 1.20  2012/06/01 10:52:59  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -100,11 +104,15 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * File {@link nl.nn.adapterframework.core.IPullingListener listener} that looks in a directory for files 
@@ -121,7 +129,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setWildcard(String) wildcard}</td><td>Filter of files to look for in inputDirectory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setExcludeWildcard(String) excludeWildcard}</td><td>Filter of files to be excluded when looking in inputDirectory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFileTimeSensitive(boolean) fileTimeSensitive}</td><td>when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before</td><td>false</td></tr>
- * <tr><td>{@link #setFileList(int) fileList}</td><td>When set a list if files in xml format (&lt;files&gt;&lt;file&gt;/file/name&lt;/file&gt;&lt;file&gt;/another/file/name&lt;/file&gt;&lt;/files&gt;) is passed to the pipleline instead of 1 file name when the specified amount of files is present in the input directory. When set to -1 the list of files is passed to the pipleline whenever one of more files are present. Please note the processedDirectory doesn't (yet) work in combination with fileList</td><td></td></tr>
+ * <tr><td>{@link #setFileList(int) fileList}</td><td>When set a list if files in xml format (&lt;files&gt;&lt;file&gt;/file/name&lt;/file&gt;&lt;file&gt;/another/file/name&lt;/file&gt;&lt;/files&gt;) is passed to the pipleline instead of 1 file name when the specified amount of files is present in the input directory. When set to -1 the list of files is passed to the pipleline whenever one of more files are present.</td><td></td></tr>
  * <tr><td>{@link #setFileListForcedAfter(long) fileListForcedAfter}</td><td>When set along with fileList a list of files is passed to the pipleline when the specified amount of ms has passed since the first file for a new list of files was found even if the amount of files specified by fileList isn't present in the input directory yet</td><td></td></tr>
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Directory where files are stored <i>while</i> being processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputFilenamePattern(String) outputFilenamePattern}</td><td>Pattern for the name using the MessageFormat.format method. Params: 0=inputfilename, 1=inputfile extension, 2=unique uuid, 3=current date</td><td>&nbsp;</td></tr>
@@ -227,13 +235,25 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
 		if (isDelete() || StringUtils.isNotEmpty(getProcessedDirectory())) {
-			String filename=getStringFromRawMessage(rawMessage, context);
-			File f=new File(filename);
-			try {
-				FileUtils.moveFileAfterProcessing(f, getProcessedDirectory(), isDelete(), isOverwrite(), getNumberOfBackups()); 
-			} catch (Exception e) {
-				throw new ListenerException("Could not move file ["+filename+"]",e);
+			if (getFileList() != null) {
+				try {
+					XmlUtils.parseXml(new AfterMessageProcessedHandler(),(String)rawMessage);
+				} catch (Exception e) {
+					throw new ListenerException("Could not move files ["+rawMessage+"]",e);
+				}
+			} else {
+				String filename=getStringFromRawMessage(rawMessage, context);
+				moveFileAfterProcessing(filename);
 			}
+		}
+	}
+
+	private void moveFileAfterProcessing(String filename) throws ListenerException {
+		File f=new File(filename);
+		try {
+			FileUtils.moveFileAfterProcessing(f, getProcessedDirectory(), isDelete(), isOverwrite(), getNumberOfBackups()); 
+		} catch (Exception e) {
+			throw new ListenerException("Could not move file ["+filename+"]",e);
 		}
 	}
 
@@ -559,6 +579,36 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	}
 	public boolean isFileTimeSensitive() {
 		return fileTimeSensitive;
+	}
+
+	class AfterMessageProcessedHandler extends DefaultHandler {
+		boolean fileStartElementFound = false;
+		StringBuffer fileName;
+
+		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
+			if ("file".equals(localName)) {
+				fileStartElementFound = true;
+				fileName = new StringBuffer();
+			}
+		}
+
+		public void characters(char[] ch, int start, int length) {
+			if (fileStartElementFound) {
+				fileName.append(ch, start, length);
+			}
+		}
+
+		public void endElement(String uri, String localName, String qname) throws SAXException {
+			if ("file".equals(localName)) {
+				fileStartElementFound = false;
+				try {
+					moveFileAfterProcessing(fileName.toString());
+				} catch (ListenerException e) {
+					throw new SAXException(e);
+				}
+				fileName = null;
+			}
+		}
 	}
 
 }
