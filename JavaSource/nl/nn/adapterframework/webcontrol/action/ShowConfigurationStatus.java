@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.26  2012-06-14 14:07:22  europe\m168309
+ * Revision 1.27  2012-12-03 08:09:42  europe\m168309
+ * added configWarning when errorlog is not empty
+ *
+ * Revision 1.26  2012/06/14 14:07:22  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * ShowConfigurationStatus: added facility to enable count for messageLog and errorStore
  *
  * Revision 1.25  2012/04/10 07:50:18  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -107,7 +110,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.26 $ $Date: 2012-06-14 14:07:22 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.27 $ $Date: 2012-12-03 08:09:42 $";
 
 	private int maxMessageSize = AppConstants.getInstance().getInt("adapter.message.max.size",0); 
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
@@ -124,6 +127,26 @@ public final class ShowConfigurationStatus extends ActionBase {
 
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
+		long esr = 0;
+		if (null!=config) {
+			for(Iterator adapterIt=config.getRegisteredAdapters().iterator(); adapterIt.hasNext();) {
+				Adapter adapter = (Adapter)adapterIt.next();
+				for(Iterator receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
+					ReceiverBase receiver=(ReceiverBase)receiverIt.next();
+					ITransactionalStorage errorStorage=receiver.getErrorStorage();
+					if (errorStorage!=null) {
+						try {
+							esr += errorStorage.getMessageCount();
+						} catch (Exception e) {
+							error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
+						    log.warn("assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+						}
+					}
+				}
+			}
+		}
+
+		
 		XmlBuilder adapters=new XmlBuilder("registeredAdapters");
 		if (config.getConfigurationException()!=null) {
 			XmlBuilder exceptionsXML=new XmlBuilder("exceptions");
@@ -132,8 +155,14 @@ public final class ShowConfigurationStatus extends ActionBase {
 			exceptionsXML.addSubElement(exceptionXML);
 			adapters.addSubElement(exceptionsXML);
 		}
-		if (configWarnings.size()>0) {
+		if (configWarnings.size()>0 || esr>0) {
 			XmlBuilder warningsXML=new XmlBuilder("warnings");
+			if (esr>0) {
+				XmlBuilder warningXML=new XmlBuilder("warnings");
+				warningXML=new XmlBuilder("warning");
+				warningXML.setValue("Errorlog contains "+esr+" records. These should be checked and after that resent or deleted");
+				warningsXML.addSubElement(warningXML);
+			}
 			for (int j=0; j<configWarnings.size(); j++) {
 				XmlBuilder warningXML=new XmlBuilder("warnings");
 				warningXML=new XmlBuilder("warning");
