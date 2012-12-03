@@ -1,6 +1,10 @@
 /*
  * $Log: FxfXmlValidator.java,v $
- * Revision 1.1  2012-08-17 14:34:15  m00f069
+ * Revision 1.2  2012-12-03 19:53:49  m00f069
+ * Bugfix NullPointerException as a result of changes in init/configure methods in underlying classes.
+ * Added check on soap header/body root element.
+ *
+ * Revision 1.1  2012/08/17 14:34:15  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Extended FxfWrapperPipe for sending files
  * Implemented FxfXmlValidator
  *
@@ -30,14 +34,18 @@ import nl.nn.adapterframework.pipes.WsdlXmlValidator;
 public class FxfXmlValidator extends WsdlXmlValidator {
 	private String direction = "send";
 
+	@Override
 	public void configure() throws ConfigurationException {
-		super.configure();
+		setThrowException(true);
 		if (getDirection().equals("receive")) {
 			setWsdl("xml/wsdl/OnCompletedTransferNotify_FxF3_1.1.4_abstract.wsdl");
+			setSoapBody("OnCompletedTransferNotify_Action");
 		} else {
 			setWsdl("xml/wsdl/StartTransfer_FxF3_1.1.4_abstract.wsdl");
+			setSoapHeader("MessageHeader");
+			setSoapBody("StartTransfer_Action");
 		}
-		setThrowException(true);
+		super.configure();
 	}
 
 	public String getDirection() {
