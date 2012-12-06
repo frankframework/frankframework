@@ -1,6 +1,9 @@
 /*
  * $Log: ResultSet2FileSender.java,v $
- * Revision 1.3  2012-11-21 10:23:54  europe\m168309
+ * Revision 1.4  2012-12-06 11:24:08  europe\m168309
+ * javadoc
+ *
+ * Revision 1.3  2012/11/21 10:23:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * ResultSet2FileSender: added maxRecordsSessionKey attribute
  *
  * Revision 1.2  2012/11/20 13:27:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -43,7 +46,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * <tr><td>{@link #setStatusFieldType(String) statusFieldType}</td><td>type of the optional status field which is set after the row is written to the file: timestamp</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFileNameSessionKey(String) fileNameSessionKey}</td><td>the session key that contains the name of the file to use</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAppend(boolean) append}</td><td>when set <code>true</code> and the file already exists, the resultset rows are written to the end of the file</td><td>false</td></tr>
- * <tr><td>{@link #setMaxRecordsSessionKey(String) maxRecordsSessionKey}</td><td>when set, this session key contains the maximum number of records which are processed. If <code>query</code> contains a group field (3), then also following records with the same group field value as the last record are processed</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMaxRecordsSessionKey(String) maxRecordsSessionKey}</td><td>when set (and &gt;=0), this session key contains the maximum number of records which are processed. If <code>query</code> contains a group field (3), then also following records with the same group field value as the last record are processed</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
