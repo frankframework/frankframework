@@ -1,6 +1,14 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.46  2012-11-02 10:15:12  m00f069
+ * Revision 1.47  2012-12-06 15:19:28  m00f069
+ * Resolved warnings which showed up when using addNamespaceToSchema (src-include.2.1: The targetNamespace of the referenced schema..., src-resolve.4.2: Error resolving component...)
+ * Handle includes in XSD's properly when generating a WSDL
+ * Removed XSD download (unused and XSD's were not adjusted according to e.g. addNamespaceToSchema)
+ * Sort schema's in WSDL (made sure the order is always the same)
+ * Indent WSDL with tabs instead of spaces
+ * Some cleaning and refactoring (made WSDL generator and XmlValidator share code)
+ *
+ * Revision 1.46  2012/11/02 10:15:12  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT (isn't used anymore)
  *
  * Revision 1.45  2012/10/26 16:13:38  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -132,16 +140,19 @@
 package nl.nn.adapterframework.pipes;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerConfigurationException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -154,10 +165,11 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.XsdUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.Schema;
+import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.SchemasProvider;
+import nl.nn.adapterframework.validation.XSD;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 
@@ -576,71 +588,80 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider {
 	}
 
 	public List<Schema> getSchemas() throws ConfigurationException {
+		List<Schema> schemas = new ArrayList<Schema>();
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
-			List<Schema> schemas = new ArrayList<Schema>();
 			schemas.add(
 				new Schema() {
-
 					public InputStream getInputStream() throws IOException {
 						return ClassUtils.getResourceURL(getNoNamespaceSchemaLocation()).openStream();
 					}
-
 					public Reader getReader() throws IOException {
 						return null;
 					}
-
 					public String getSystemId() {
 						return ClassUtils.getResourceURL(getNoNamespaceSchemaLocation()).toExternalForm();
 					}
-
 				}
 			);
-			return schemas;
 		} else if (StringUtils.isNotEmpty(getSchemaLocation())) {
-			List<Schema> schemas = new ArrayList<Schema>();
-			StringTokenizer stringTokenizer = new StringTokenizer(getSchemaLocation());
-			while (stringTokenizer.hasMoreTokens()) {
-				final String namespace = stringTokenizer.nextToken();
-				if (stringTokenizer.hasMoreTokens()) {
-					final String location = stringTokenizer.nextToken();
-					URL url = ClassUtils.getResourceURL(XmlUtils.class, location);
-					if (url != null) {
-						schemas.add(
-							new Schema() {
-
-								public InputStream getInputStream() throws IOException {
-									InputStream inputStream = ClassUtils.getResourceURL(location).openStream();
-									if (isAddNamespaceToSchema()) {
-										try {
-											return XsdUtils.targetNameSpaceAdding(inputStream, namespace);
-										} catch (XMLStreamException e) {
-											throw new IOException("XMLStreamException while reading schema");
-										}
-									} else {
-										return inputStream;
+			if (isAddNamespaceToSchema()) {
+				final Map<String, ByteArrayOutputStream> schemaStreams;
+				try {
+					Set<XSD> xsds = SchemaUtils.getXsds(getSchemaLocation(), null, true, false);
+					xsds = SchemaUtils.getXsdsRecursive(xsds);
+					Map<String, Set<XSD>> xsdsGroupedByNamespace =
+							SchemaUtils.getXsdsGroupedByNamespace(xsds);
+					schemaStreams = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
+							xsdsGroupedByNamespace, null);
+				} catch(Exception e) {
+					throw new ConfigurationException(getLogPrefix(null) + "could not read schema's", e);
+				}
+				for (final String namespace : schemaStreams.keySet()) {
+					schemas.add(
+						new Schema() {
+							public InputStream getInputStream() throws IOException {
+								return new ByteArrayInputStream(schemaStreams.get(namespace).toByteArray());
+							}
+							public Reader getReader() throws IOException {
+								return null;
+							}
+							public String getSystemId() {
+								return null;
+							}
+						}
+					);
+				}
+			} else {
+				StringTokenizer stringTokenizer = new StringTokenizer(getSchemaLocation());
+				while (stringTokenizer.hasMoreTokens()) {
+					final String namespace = stringTokenizer.nextToken();
+					if (stringTokenizer.hasMoreTokens()) {
+						final String location = stringTokenizer.nextToken();
+						URL url = ClassUtils.getResourceURL(XmlUtils.class, location);
+						if (url != null) {
+							schemas.add(
+								new Schema() {
+									public InputStream getInputStream() throws IOException {
+										return ClassUtils.getResourceURL(location).openStream();
+									}
+									public Reader getReader() throws IOException {
+										return null;
+									}
+									public String getSystemId() {
+										return ClassUtils.getResourceURL(location).toExternalForm();
 									}
 								}
-
-								public Reader getReader() throws IOException {
-									return null;
-								}
-
-								public String getSystemId() {
-									return ClassUtils.getResourceURL(location).toExternalForm();
-								}
-
-							}
-						);
+							);
+						} else {
+							throw new ConfigurationException(getLogPrefix(null) + "could not resolve location [" + location + "] for namespace ["+namespace+"] to URL");
+						}
 					} else {
-						throw new ConfigurationException("could not resolve location [" + location + "] for namespace ["+namespace+"] to URL");
+						log.warn(getLogPrefix(null) + "no location for namespace ["+namespace+"]");
 					}
-				} else {
-					log.warn("no location for namespace ["+namespace+"]");
 				}
 			}
-			return schemas;
 		}
-		return null;
+		return schemas;
 	}
 
 	public String getSchemasId(IPipeLineSession session) {
@@ -667,19 +688,15 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider {
 			}
 			schemas.add(
 				new Schema() {
-	
 					public InputStream getInputStream() throws IOException {
 						return url.openStream();
 					}
-	
 					public Reader getReader() throws IOException {
 						return null;
 					}
-	
 					public String getSystemId() {
 						return url.toExternalForm();
 					}
-	
 				}
 			);
 			return schemas;

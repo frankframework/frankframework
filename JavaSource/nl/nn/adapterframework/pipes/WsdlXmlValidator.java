@@ -1,6 +1,14 @@
 /*
  * $Log: WsdlXmlValidator.java,v $
- * Revision 1.10  2012-10-26 16:13:38  m00f069
+ * Revision 1.11  2012-12-06 15:19:28  m00f069
+ * Resolved warnings which showed up when using addNamespaceToSchema (src-include.2.1: The targetNamespace of the referenced schema..., src-resolve.4.2: Error resolving component...)
+ * Handle includes in XSD's properly when generating a WSDL
+ * Removed XSD download (unused and XSD's were not adjusted according to e.g. addNamespaceToSchema)
+ * Sort schema's in WSDL (made sure the order is always the same)
+ * Indent WSDL with tabs instead of spaces
+ * Some cleaning and refactoring (made WSDL generator and XmlValidator share code)
+ *
+ * Revision 1.10  2012/10/26 16:13:38  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Moved *Xmlvalidator*, Schema and SchemasProvider to new validation package
  *
  * Revision 1.9  2012/10/19 14:54:17  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -45,7 +53,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.validation.SchemasProvider;
 import nl.nn.com.ibm.wsdl.extensions.schema.SchemaSerializer;
 import nl.nn.javax.wsdl.Definition;
 import nl.nn.javax.wsdl.WSDLException;
@@ -64,7 +71,7 @@ import org.xml.sax.InputSource;
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
-public class WsdlXmlValidator extends SoapValidator implements SchemasProvider {
+public class WsdlXmlValidator extends SoapValidator {
 
 	private static final Logger LOG = LogUtil.getLogger(WsdlXmlValidator.class);
 
@@ -120,6 +127,7 @@ public class WsdlXmlValidator extends SoapValidator implements SchemasProvider {
         }
     }
 
+	@Override
 	public void configure() throws ConfigurationException {
 		// Prevent super.configure() from throwing an exception because
 		// schemaLocation is empty.
@@ -174,11 +182,13 @@ public class WsdlXmlValidator extends SoapValidator implements SchemasProvider {
 		return w.toString().trim();
 	}
 
+	@Override
 	public String getSchemasId() {
 		return wsdl;
 	}
 
-	public List<nl.nn.adapterframework.validation.Schema> getSchemas() {
+	@Override
+	public List<nl.nn.adapterframework.validation.Schema> getSchemas() throws ConfigurationException {
 		List<nl.nn.adapterframework.validation.Schema> result = new ArrayList();
 		result.add(
 			new nl.nn.adapterframework.validation.Schema() {

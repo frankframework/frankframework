@@ -1,54 +1,35 @@
 package nl.nn.adapterframework.soap;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javanet.staxutils.IndentingXMLStreamWriter;
-import javanet.staxutils.XMLStreamEventWriter;
-import javanet.staxutils.XMLStreamUtils;
-import javanet.staxutils.events.AttributeEvent;
-import javanet.staxutils.events.StartElementEvent;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.EndElement;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
 
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.log4j.Logger;
 import org.apache.xerces.util.XMLChar;
 
 /**
  * @author Michiel Meeuwissen
+ * @author Jaco de Groot
  */
 public abstract class WsdlUtils {
-    private static final Logger LOG = LogUtil.getLogger(WsdlUtils.class);
-
-    static final String ENCODING  = "UTF-8";
 
     private WsdlUtils() {
         // this class has no instances
     }
 
-    static Collection<IListener> getListeners(IAdapter a) {
+    public static Collection<IListener> getListeners(IAdapter a) {
         List<IListener> result = new ArrayList<IListener>();
         Iterator j = a.getReceiverIterator();
         while (j.hasNext()) {
@@ -61,293 +42,39 @@ public abstract class WsdlUtils {
         return result;
     }
 
-    static XMLStreamWriter createWriter(OutputStream out, boolean indentWsdl) throws XMLStreamException {
-        XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(out, ENCODING);
+    public static String getEsbSoapParadigm(XmlValidator xmlValidator) {
+        if (xmlValidator instanceof SoapValidator) {
+            String soapBody = ((SoapValidator)xmlValidator).getSoapBody();
+            if (soapBody != null) {
+                int i = soapBody.lastIndexOf('_');
+                if (i != -1) {
+                    return soapBody.substring(i + 1);
+                }
+            }
+        }
+        return null;
+    }
+
+    public static String getFirstNamespaceFromSchemaLocation(XmlValidator inputValidator) {
+        String schemaLocation = inputValidator.getSchemaLocation();
+        if (schemaLocation != null) {
+            String[] split =  schemaLocation.trim().split("\\s+");
+            if (split.length > 0) {
+                return split[0];
+            }
+        }
+        return null;
+    }
+
+    public static XMLStreamWriter getWriter(OutputStream out, boolean indentWsdl) throws XMLStreamException {
+        XMLStreamWriter w = XmlUtils.OUTPUT_FACTORY
+                .createXMLStreamWriter(out, XmlUtils.STREAM_FACTORY_ENCODING);
         if (indentWsdl) {
             IndentingXMLStreamWriter iw = new IndentingXMLStreamWriter(w);
-            iw.setIndent(" ");
+            iw.setIndent("\t");
             w = iw;
         }
         return w;
-    }
-
-    /**
-     * 'Include' another XSD with an xsd:include tag. So this does not actually include the full XSD, just a reference.
-     * @param xsds
-     * @param w
-     * @param correctingNameSpaces
-     * @throws java.io.IOException
-     * @throws javax.xml.stream.XMLStreamException
-     */
-    static void xsincludeXsds(final String nameSpace,
-            final Collection<XSD> xsds, final XMLStreamWriter w,
-            final Map<String, String> correctingNameSpaces,
-            boolean rootXsdsOnly) throws IOException, XMLStreamException {
-        w.writeStartElement(Wsdl.XSD, "schema");
-        w.writeAttribute("targetNamespace", nameSpace); {
-            for (XSD xsd : xsds) {
-                w.writeEmptyElement(Wsdl.XSD, "include");
-                w.writeAttribute("schemaLocation", xsd.getBaseUrl() + xsd.getName());
-
-                // including the XSD with includeXSD will also parse it, e.g. to
-                // add elements to xsd.rootTags. We don't need to actually
-                // include it here, so we just throw away the result.
-                includeXSD(xsd, XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(new OutputStream() {
-                    @Override
-                    public void write(int i) throws IOException {
-                        // /dev/null
-                    }
-                }, ENCODING), correctingNameSpaces, true);
-            }
-        }
-        w.writeEndElement();
-    }
-
-    static void includeXSD(final XSD xsd, XMLStreamWriter xmlStreamWriter,
-            Map<String, String> correctingNamespaces, final boolean standalone)
-                    throws IOException, XMLStreamException {
-        includeXSD(xsd, xmlStreamWriter, correctingNamespaces, standalone,
-                false);
-    }
-
-    static void includeXSD(final XSD xsd, XMLStreamWriter xmlStreamWriter,
-            Map<String, String> correctingNamespaces, final boolean standalone,
-            final boolean stripSchemaLocationFromImport)
-                    throws IOException, XMLStreamException {
-        includeXSD(xsd, xmlStreamWriter, correctingNamespaces, standalone,
-                stripSchemaLocationFromImport, false, false, null, null, null,
-                false);
-    }
-
-    /**
-     * Including a {@link nl.nn.adapterframework.soap.XSD} into an {@link javax.xml.stream.XMLStreamWriter} while parsing it. It is parsed (using a low level {@link javax.xml.stream.XMLEventReader} so that certain
-     * things can be corrected on the fly.  Most importantly, sometimes the XSD uses namespaces which are undesired, and can be 'corrected'.
-     * @param xsd
-     * @param xmlStreamWriter
-     * @param correctingNamespaces
-     * @param standalone
-     * When standalone the start and end document contants are ignored, hence
-     * the xml declaration is ignored.
-     * @param stripSchemaLocationFromImport
-     * Useful when generating a WSDL which should contain all XSD's inline
-     * (without includes or imports). The XSD might have an import with
-     * schemaLocation to make it valid on it's own, when
-     * stripSchemaLocationFromImport is true it will be removed. TODO Extend
-     * this functionality to check whether an XSD with the namespace mentioned
-     * by the import is already available in the WSDL or planned to be added
-     * and when it isn't add it to the list of XSD's to add to the WSDL.
-     * @throws java.io.IOException
-     * @throws javax.xml.stream.XMLStreamException
-     */
-    static void includeXSD(final XSD xsd, XMLStreamWriter xmlStreamWriter,
-            Map<String, String> correctingNamespaces, final boolean standalone,
-            final boolean stripSchemaLocationFromImport,
-            final boolean skipRootStartElement, final boolean skipRootEndElement,
-            List<Attribute> rootAttributes,
-            List<Attribute> rootNamespaceAttributes,
-            List<XMLEvent> imports, final boolean noOutput)
-                    throws IOException, XMLStreamException {
-        final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(
-            new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, correctingNamespaces));
-        InputStream in = xsd.url.openStream();
-
-        String xsdNamespace = correct(correctingNamespaces, xsd.nameSpace);
-
-        if (in == null) throw new IllegalStateException("" + xsd + " not found");
-        XMLEventReader er = XmlUtils.NAMESPACE_AWARE_INPUT_FACTORY.createXMLEventReader(in, ENCODING);
-        String wrongNamespace = null;
-        int elementDepth = 0;
-        while (er.hasNext()) {
-            XMLEvent e = er.nextEvent();
-            switch (e.getEventType()) {
-                case XMLStreamConstants.START_DOCUMENT:
-                case XMLStreamConstants.END_DOCUMENT:
-                    if (! standalone) {
-                        continue;
-                    }
-                    // fall through
-                case XMLStreamConstants.SPACE:
-                case XMLStreamConstants.COMMENT:
-                    break;
-                case XMLStreamConstants.START_ELEMENT:
-                    elementDepth++;
-                    if (skipRootStartElement && elementDepth == 1) {
-                        continue;
-                    }
-                    StartElement el = e.asStartElement();
-                    if (Wsdl.SCHEMA.equals(el.getName())) {
-                        if (rootAttributes != null && elementDepth == 1) {
-                            if (noOutput) {
-                                Iterator iterator = el.getAttributes();
-                                while (iterator.hasNext()) {
-                                    Attribute attribute = (Attribute)iterator.next();
-                                    rootAttributes.add(attribute);
-                                }
-                                iterator = el.getNamespaces();
-                                while (iterator.hasNext()) {
-                                    Attribute attribute = (Attribute)iterator.next();
-                                    rootNamespaceAttributes.add(attribute);
-                                }
-                            } else {
-                                el = XmlUtils.EVENT_FACTORY.createStartElement(
-                                        el.getName().getPrefix(),
-                                        el.getName().getNamespaceURI(),
-                                        el.getName().getLocalPart(),
-                                        rootAttributes.iterator(),
-                                        rootNamespaceAttributes.iterator(),
-                                        el.getNamespaceContext());
-                            }
-                        }
-                        if (xsdNamespace == null) {
-                            Attribute a = el.getAttributeByName(Wsdl.TNS);
-                            if (a != null) {
-                                xsdNamespace = correct(correctingNamespaces, a.getValue());
-                            }
-                        }
-                        if (xsdNamespace != null) {
-                            StartElement ne =
-                                XmlUtils.mergeAttributes(el,
-                                    Arrays.asList(
-                                        new AttributeEvent(Wsdl.TNS, xsdNamespace)
-                                    ).iterator(),
-                                    Arrays.asList(
-                                            XmlUtils.EVENT_FACTORY.createNamespace(xsdNamespace)
-                                    ).iterator(),
-                                    XmlUtils.EVENT_FACTORY
-                                );
-                            if (!ne.equals(e)) {
-                                List<AttributeEvent> list = new ArrayList<AttributeEvent>();
-                                list.add(new AttributeEvent(Wsdl.ELFORMDEFAULT, "qualified"));
-                                Attribute targetNameSpace = el.getAttributeByName(Wsdl.TNS);
-                                e = XMLStreamUtils.mergeAttributes(ne, list.iterator(), XmlUtils.EVENT_FACTORY);
-                                if (targetNameSpace != null) {
-                                    String currentTarget = targetNameSpace.getValue();
-                                    if (! currentTarget.equals(xsdNamespace)) {
-                                        wrongNamespace = currentTarget;
-                                        if (!correctingNamespaces.containsKey(wrongNamespace)) {
-                                            correctingNamespaces.put(wrongNamespace, xsdNamespace);
-                                            LOG.warn(xsd.url + " Corrected " + el + " -> " + e);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (rootAttributes != null && elementDepth == 1
-                                && !noOutput) {
-                            // List imports contains start and end elements
-                            for (int i = 0; i < imports.size(); i = i + 2) {
-                                boolean skip = false;
-                                for (int j = 0; j < i; j = j + 2) {
-                                    Attribute attribute1 =
-                                            imports.get(i).asStartElement().getAttributeByName(Wsdl.NAMESPACE);
-                                    Attribute attribute2 =
-                                            imports.get(j).asStartElement().getAttributeByName(Wsdl.NAMESPACE);
-                                    if (attribute1 != null && attribute2 != null
-                                            && attribute1.getValue().equals(attribute2.getValue())) {
-                                        skip = true;
-                                    }
-                                }
-                                if (!skip) {
-                                    streamEventWriter.add(e);
-                                    e = imports.get(i);
-                                    streamEventWriter.add(e);
-                                    e = imports.get(i + 1);
-                                }
-                            }
-                        }
-                    } else if (el.getName().equals(Wsdl.IMPORT)) {
-                        if (imports == null || noOutput) {
-                            Attribute schemaLocation = el.getAttributeByName(Wsdl.SCHEMALOCATION);
-                            if (schemaLocation != null) {
-                                String location = schemaLocation.getValue();
-                                if (stripSchemaLocationFromImport) {
-                                    List<Attribute> attributes = new ArrayList<Attribute>();
-                                    Iterator<Attribute> iterator = el.getAttributes();
-                                    while (iterator.hasNext()) {
-                                        Attribute a = iterator.next();
-                                        if (!Wsdl.SCHEMALOCATION.equals(a.getName())) {
-                                            attributes.add(a);
-                                        }
-                                    }
-                                    e = new StartElementEvent(
-                                            el.getName(),
-                                            attributes.iterator(),
-                                            el.getNamespaces(),
-                                            el.getNamespaceContext(),
-                                            el.getLocation(),
-                                            el.getSchemaType());
-                                } else {
-                                    String relativeTo = xsd.parentLocation;
-                                    if (relativeTo.length() > 0 && location.startsWith(relativeTo)) {
-                                        location = location.substring(relativeTo.length());
-                                    }
-                                    e =
-                                        XMLStreamUtils.mergeAttributes(el,
-                                            Collections.singletonList(new AttributeEvent(Wsdl.SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
-                                    if (LOG.isDebugEnabled()) {
-                                        LOG.debug(xsd.url + " Corrected " + el + " -> " + e);
-                                        LOG.debug(xsd.url + " Relative to : " + relativeTo + " -> " + e);
-                                    }
-                                }
-                            }
-                        }
-                        if (imports != null) {
-                            if (noOutput) {
-                                imports.add(e);
-                            }
-                            continue;
-                        }
-                    } else if (el.getName().equals(Wsdl.ELEMENT)) {
-                        if (elementDepth == 2) {
-                            xsd.rootTags.add(el.getAttributeByName(Wsdl.NAME).getValue());
-                        }
-                    } else {
-                        if (wrongNamespace != null) {
-                            if (wrongNamespace.equals(el.getName().getNamespaceURI())) {
-                                StartElementEvent ne = new StartElementEvent(
-                                    new QName(xsdNamespace,
-                                        el.getName().getLocalPart(),
-                                        el.getName().getPrefix()),
-                                    el.getAttributes(),
-                                    el.getNamespaces(),
-                                    el.getNamespaceContext(),
-                                    el.getLocation(),
-                                    el.getSchemaType());
-                                e = ne;
-                            }
-                        }
-                    }
-                    break;
-                case XMLStreamConstants.END_ELEMENT:
-                    elementDepth--;
-                    if (skipRootEndElement && elementDepth == 0) {
-                        continue;
-                    }
-                    if (imports != null) {
-                        EndElement ee = e.asEndElement();
-                        if (ee.getName().equals(Wsdl.IMPORT)) {
-                            if (noOutput) {
-                                imports.add(e);
-                            }
-                            continue;
-                        }
-                    }
-                    break;
-                default:
-                    // simply copy
-            }
-            if (!noOutput) {
-                streamEventWriter.add(e);
-            }
-        }
-        streamEventWriter.flush();
-    }
-
-    /**
-     * Uses a Map to 'correct' values. If there is no corresponding key in the map, the value itself will simply be returned, otherwise the corrected value which is the value in the map.
-     */
-    static <C> C correct(final Map<C, C> map, final C value) {
-        return map.containsKey(value)  ? map.get(value) : value;
     }
 
     static String getNCName(String name) {

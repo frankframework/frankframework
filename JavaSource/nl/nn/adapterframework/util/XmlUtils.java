@@ -1,6 +1,14 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.92  2012-10-26 16:13:38  m00f069
+ * Revision 1.93  2012-12-06 15:19:28  m00f069
+ * Resolved warnings which showed up when using addNamespaceToSchema (src-include.2.1: The targetNamespace of the referenced schema..., src-resolve.4.2: Error resolving component...)
+ * Handle includes in XSD's properly when generating a WSDL
+ * Removed XSD download (unused and XSD's were not adjusted according to e.g. addNamespaceToSchema)
+ * Sort schema's in WSDL (made sure the order is always the same)
+ * Indent WSDL with tabs instead of spaces
+ * Some cleaning and refactoring (made WSDL generator and XmlValidator share code)
+ *
+ * Revision 1.92  2012/10/26 16:13:38  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Moved *Xmlvalidator*, Schema and SchemasProvider to new validation package
  *
  * Revision 1.91  2012/10/19 09:33:47  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -375,7 +383,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.92 $ $Date: 2012-10-26 16:13:38 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.93 $ $Date: 2012-12-06 15:19:28 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -406,17 +414,10 @@ public class XmlUtils {
 			+ "<xsl:copy><xsl:apply-templates select=\"*|@*|text()|processing-instruction()|comment()\" />"
 			+ "</xsl:copy></xsl:template></xsl:stylesheet>";
 
-    public static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
-    static final XMLInputFactory INPUT_FACTORY   = XMLInputFactory.newInstance();
-    static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
-	public static final XMLInputFactory NAMESPACE_AWARE_INPUT_FACTORY = XMLInputFactory.newInstance();
-	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY = XMLOutputFactory.newInstance();
-
-	static {
-		XmlUtils.NAMESPACE_AWARE_INPUT_FACTORY.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);
-		XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
-	}
-
+	public static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
+	public static final XMLInputFactory INPUT_FACTORY   = XMLInputFactory.newInstance();
+	public static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
+	public static final String STREAM_FACTORY_ENCODING  = "UTF-8";
 
 	public XmlUtils() {
 		super();

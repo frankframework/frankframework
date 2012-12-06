@@ -1,6 +1,14 @@
 /*
  * $Log: XercesXmlValidator.java,v $
- * Revision 1.2  2012-11-29 09:23:23  m00f069
+ * Revision 1.3  2012-12-06 15:19:28  m00f069
+ * Resolved warnings which showed up when using addNamespaceToSchema (src-include.2.1: The targetNamespace of the referenced schema..., src-resolve.4.2: Error resolving component...)
+ * Handle includes in XSD's properly when generating a WSDL
+ * Removed XSD download (unused and XSD's were not adjusted according to e.g. addNamespaceToSchema)
+ * Sort schema's in WSDL (made sure the order is always the same)
+ * Indent WSDL with tabs instead of spaces
+ * Some cleaning and refactoring (made WSDL generator and XmlValidator share code)
+ *
+ * Revision 1.2  2012/11/29 09:23:23  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made preparse synchronized to prevent wrong validation when using schemaSessionKey
  *
  * Revision 1.1  2012/10/26 16:13:38  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -190,13 +198,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		if (needsInit) {
 			super.init();
 			String schemasId = null;
-			try {
-				schemasId = schemasProvider.getSchemasId();
-				if (schemasId != null) {
-					preparse(schemasId, schemasProvider.getSchemas());
-				}
-			} catch (IOException e) {
-				throw new ConfigurationException("cannot compile schema for [" + schemasId + "]", e);
+			schemasId = schemasProvider.getSchemasId();
+			if (schemasId != null) {
+				preparse(schemasId, schemasProvider.getSchemas());
 			}
 		}
 	}
@@ -206,7 +210,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	// pipeline starts processing messages (probably by more than one thread at
 	// a time) and elements in messages were reported not to be valid while
 	// being present in the XSD.
-	private synchronized void preparse(String schemasId, List<Schema> schemas) throws IOException {
+	private synchronized void preparse(String schemasId, List<Schema> schemas) throws ConfigurationException {
 		if (symbolTables.get(schemasId) == null) {
 			SymbolTable symbolTable = new SymbolTable(BIG_PRIME);
 			XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
@@ -230,7 +234,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				for (Iterator<Schema> i = schemas.iterator(); i.hasNext();) {
 					Schema schema = i.next();
 					try {
-						Grammar grammar = preparse(preparser, schema);
+						Grammar grammar = preparse(preparser, schemasId, schema);
 						registerNamespaces(grammar, namespaceSet);
 						changes = true;
 						i.remove();
@@ -242,7 +246,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			// loop the remaining ones, they seem to be unresolvable, so let the exception go then
 			errorHandler.throwRetryException = false;
 			for (Schema schema : schemas) {
-				Grammar grammar = preparse(preparser, schema);
+				Grammar grammar = preparse(preparser, schemasId, schema);
 				registerNamespaces(grammar, namespaceSet);
 			}
 			grammarPool.lockPool();
@@ -253,9 +257,14 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	private static Grammar preparse(XMLGrammarPreparser preparser,
-			Schema schema) throws IOException {
-		return preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA,
-				stringToXMLInputSource(schema));
+			String schemasId, Schema schema) throws ConfigurationException {
+		try {
+			return preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA,
+					stringToXMLInputSource(schema));
+		} catch (IOException e) {
+			throw new ConfigurationException("cannot compile schema's ["
+					+ schemasId + "]", e);
+		}
 	}
 
 	private static void registerNamespaces(Grammar grammar, Set<String> namespaces) {
@@ -300,11 +309,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		String schemasId = schemasProvider.getSchemasId();
 		if (schemasId == null) {
 			schemasId = schemasProvider.getSchemasId(session);
-			try {
-				preparse(schemasId, schemasProvider.getSchemas(session));
-			} catch (Exception e) {
-				throw new XmlValidatorException("cannot compile schema for [" + schemasId + "]", e);
-			}
+			preparse(schemasId, schemasProvider.getSchemas(session));
 		}
 
 		SymbolTable symbolTable = symbolTables.get(schemasId);
@@ -356,11 +361,11 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static XMLInputSource stringToXMLInputSource(Schema schema) throws IOException {
 		InputStream inputStream = schema.getInputStream();
 		// SystemId is needed in case the schema has an import. Maybe we should
-		// already resolve this add the SchemaProvider side.
+		// already resolve this at the SchemaProvider side (when using
+		// addNamespaceToSchema this is now already done).
 		if (inputStream != null) {
 			return new XMLInputSource(null, schema.getSystemId(), null, inputStream, null);
 		} else {
-			// 
 			return new XMLInputSource(null, schema.getSystemId(), null, schema.getReader(), null);
 		}
 	}

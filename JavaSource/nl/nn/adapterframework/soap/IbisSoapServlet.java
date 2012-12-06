@@ -1,6 +1,14 @@
 /*
  * $Log: IbisSoapServlet.java,v $
- * Revision 1.12  2012-10-26 15:43:18  m00f069
+ * Revision 1.13  2012-12-06 15:19:28  m00f069
+ * Resolved warnings which showed up when using addNamespaceToSchema (src-include.2.1: The targetNamespace of the referenced schema..., src-resolve.4.2: Error resolving component...)
+ * Handle includes in XSD's properly when generating a WSDL
+ * Removed XSD download (unused and XSD's were not adjusted according to e.g. addNamespaceToSchema)
+ * Sort schema's in WSDL (made sure the order is always the same)
+ * Indent WSDL with tabs instead of spaces
+ * Some cleaning and refactoring (made WSDL generator and XmlValidator share code)
+ *
+ * Revision 1.12  2012/10/26 15:43:18  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made WSDL without separate XSD's the default
  *
  * Revision 1.11  2012/10/24 14:34:00  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -42,7 +50,6 @@
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.HashMap;
 
 import javax.naming.NamingException;
 import javax.servlet.ServletConfig;
@@ -53,14 +60,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpUtils;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
@@ -87,10 +92,8 @@ public class IbisSoapServlet extends HttpServlet {
         }
     }
 
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-
         if (caching) {
             res.setHeader("Cache-Control", "max-age=3600, must-revalidate");
             res.setDateHeader("Expires", System.currentTimeMillis() + 3600000L);
@@ -99,9 +102,6 @@ public class IbisSoapServlet extends HttpServlet {
         if ((pi != null && pi.endsWith(getWsdlExtention())) || req.getParameter("listener") != null) {
             res.setContentType("application/xml");
             wsdl(req, res);
-        } else if (pi != null && pi.endsWith(".xsd")) {
-            res.setContentType("application/xml");
-            xsd(req, res);
         } else if (pi != null && pi.endsWith(".zip")) {
             res.setContentType("application/octet-stream");
             try {
@@ -118,42 +118,16 @@ public class IbisSoapServlet extends HttpServlet {
     }
 
      private void zip(HttpServletRequest req, HttpServletResponse res) throws IOException, XMLStreamException, NamingException {
-
          Adapter adapter = getAdapter(ibisManager, req.getPathInfo());
          Wsdl wsdl = new Wsdl(adapter.getPipeLine());
-         wsdl.setUseSeparateXsds(true);
+         wsdl.setUseIncludes(true);
          setDocumentation(wsdl, req);
+         wsdl.init();
          res.setHeader("Content-Disposition",
              "inline;filename=\"" + wsdl.getFilename() + ".zip\"");
          String servlet = HttpUtils.getRequestURL(req).toString();
          servlet = servlet.substring(0, servlet.lastIndexOf(".")) + getWsdlExtention();
-
          wsdl.zip(res.getOutputStream(), servlet);
-
-
-     }
-
-     private void xsd(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
-
-         String resource = req.getPathInfo();
-
-         if (ClassUtils.getResourceURL(resource) == null) {
-             res.sendError(HttpServletResponse.SC_NOT_FOUND);
-         } else {
-             String dir = resource.substring(0, resource.lastIndexOf('/'));
-             XSD xs = new XSD(dir, null, ClassUtils.getResourceURL(resource), true);
-             if (mayServe(resource)) {
-                 try {
-                     XMLStreamWriter writer
-                         = WsdlUtils.createWriter(res.getOutputStream(), false);
-                     WsdlUtils.includeXSD(xs, writer, new HashMap<String, String>(), false);
-                 } catch (XMLStreamException e) {
-                     throw new ServletException(e);
-                 }
-             } else {
-                 res.sendError(HttpServletResponse.SC_FORBIDDEN);
-             }
-         }
      }
 
      private void wsdl(HttpServletRequest req, HttpServletResponse res) throws ServletException {
@@ -169,22 +143,17 @@ public class IbisSoapServlet extends HttpServlet {
              if (req.getParameter("indent") != null) {
                  wsdl.setIndent("true".equals(req.getParameter("indent")));
              }
-             if (req.getParameter("separateXsds") != null) {
-                 wsdl.setUseSeparateXsds("true".equals(req.getParameter("separateXsds")));
+             if (req.getParameter("useIncludes") != null) {
+                 wsdl.setUseIncludes("true".equals(req.getParameter("useIncludes")));
              }
              setDocumentation(wsdl, req);
+             wsdl.init();
              res.setHeader("Content-Disposition", "inline;filename=\"" +  wsdl.getFilename() + ".wsdl\"");
              wsdl.wsdl(res.getOutputStream(), servlet);
          } catch (Exception e) {
              throw new ServletException(e);
          }
      }
-
-     protected boolean mayServe(String resource) {
-         // TODO, perhaps we should simple check wether the resource is indeed used in a WSDL
-         return resource.toLowerCase().endsWith(".xsd");
-     }
-
 
      protected Adapter getAdapter(IbisManager ibisManager, String pathInfo) {
          if (pathInfo.startsWith("/")) pathInfo = pathInfo.substring(1);
@@ -220,9 +189,7 @@ public class IbisSoapServlet extends HttpServlet {
                 session.invalidate();
             }
         }
-	  }
-
-
+    }
 
     protected void list(HttpServletRequest req, Writer w) throws IOException {
         w.write("<html>");
@@ -232,7 +199,6 @@ public class IbisSoapServlet extends HttpServlet {
         w.write("<body>");
         w.write("<ol>");
 
-
         int count = 0;
         for (IAdapter a : ibisManager.getConfiguration().getRegisteredAdapters()) {
             count++;
@@ -241,6 +207,7 @@ public class IbisSoapServlet extends HttpServlet {
                 Adapter adapter = (Adapter) a;
                 Wsdl wsdl = new Wsdl(adapter.getPipeLine());
                 setDocumentation(wsdl, req);
+                wsdl.init(true);
                 String url =
                     req.getContextPath() +
                         req.getServletPath() +
@@ -248,13 +215,13 @@ public class IbisSoapServlet extends HttpServlet {
 
                 w.write("<a href='" + url + "'>" + wsdl.getName() + "</a>");
 
-                String separateXsds  =
+                String useIncludes  =
                     req.getContextPath() +
                         req.getServletPath() +
                         "/" + wsdl.getName() + getWsdlExtention() +
-                        "?separateXsds=true";
+                        "?useIncludes=true";
 
-                w.write(" (<a href='" + separateXsds + "'>with separate xsds</a>");
+                w.write(" (<a href='" + useIncludes + "'>using includes</a>");
 
                 String zip =
                     req.getContextPath() +
@@ -272,7 +239,6 @@ public class IbisSoapServlet extends HttpServlet {
             w.write("<p>No registered listeners found</p>");
         }
         w.write("</body></html>");
-
     }
 
 }

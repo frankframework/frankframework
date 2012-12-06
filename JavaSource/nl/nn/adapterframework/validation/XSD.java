@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.soap;
+package nl.nn.adapterframework.validation;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -27,30 +26,60 @@ import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.InputSource;
 
 /**
- * The representation of a XSD in a WSDL.
- * This essentially bundles a resource (as an {@link java.net.URL} with a few other properties like the xml prefix and the
- * encountered 'first' tag (which can be used as default for the root tag)
+ * The representation of a XSD.
+ * 
  * @author Michiel Meeuwissen
  * @author  Jaco de Groot
  */
-class XSD implements Comparable<XSD> {
+public class XSD implements Comparable<XSD> {
     private static final Logger LOG = LogUtil.getLogger(XSD.class);
 
     private static String TEST_RESOURCE_IN_THE_ROOT = "Configuration.xml";
 
-    final String parentLocation;
-    final String nameSpace;
-    final URL url;
-    final boolean isRootXsd;
-    String prefix;
-    List<String> rootTags = new ArrayList<String>();
+    public final URL url;
+    public final String namespace;
+    public final boolean addNamespaceToSchema;
+    public final String parentLocation;
+    public final boolean isRootXsd;
+    public final String targetNamespace;
+    public final List<String> rootTags = new ArrayList<String>();
 
-    XSD(String parentLocation, String nameSpace, URL resource, boolean isRootXsd) {
+    public XSD(URL url, String namespace, boolean addNamespaceToSchema,
+            String parentLocation, boolean isRootXsd) throws IOException, XMLStreamException {
+        this.url = url;
+        this.namespace = namespace;
+        this.addNamespaceToSchema = addNamespaceToSchema;
         this.parentLocation = parentLocation;
-        this.nameSpace = nameSpace;
         this.isRootXsd = isRootXsd;
-        url = resource;
-        if (url == null) throw new IllegalArgumentException("No resource " + resource + " found");
+        String tns = null;
+        if (url == null) throw new IllegalArgumentException("No resource " + url + " found");
+        InputStream in = url.openStream();
+        XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in,
+                XmlUtils.STREAM_FACTORY_ENCODING);
+        int elementDepth = 0;
+        while (er.hasNext()) {
+            XMLEvent e = er.nextEvent();
+            switch (e.getEventType()) {
+            case XMLStreamConstants.START_ELEMENT:
+                elementDepth++;
+                StartElement el = e.asStartElement();
+                if (el.getName().equals(SchemaUtils.SCHEMA)) {
+                    Attribute a = el.getAttributeByName(SchemaUtils.TNS);
+                    if (a != null) {
+                        tns = a.getValue();
+                    }
+                } else if (el.getName().equals(SchemaUtils.ELEMENT)) {
+                    if (elementDepth == 2) {
+                        rootTags.add(el.getAttributeByName(SchemaUtils.NAME).getValue());
+                    }
+                }
+                break;
+            case XMLStreamConstants.END_ELEMENT:
+                elementDepth--;
+                break;
+            }
+        }
+        this.targetNamespace = tns;
     }
 
     @Override
@@ -66,22 +95,20 @@ class XSD implements Comparable<XSD> {
 
     @Override
     public int hashCode() {
-        return nameSpace.hashCode();
+        return namespace.hashCode();
     }
 
     @Override
     public String toString() {
-        return nameSpace + " " + url;
+        return namespace + " " + url;
     }
 
-    //@Override
     public int compareTo(XSD x) {
         if (x == null) return 1;
-        int c = 0;
-        if (nameSpace != null && x.nameSpace != null) {
-            c = nameSpace.compareTo(x.nameSpace);
+        if (namespace != null && x.namespace != null) {
+            int c = namespace.compareTo(x.namespace);
+            if (c != 0) return c;
         }
-        if (c != 0) return c;
         if (url.toString().compareTo(x.url.toString()) != 0) {
             // Compare XSD content to prevent copies of the same XSD showing up
             // more than once in the WSDL. For example the
@@ -102,10 +129,6 @@ class XSD implements Comparable<XSD> {
         return url.toString().compareTo(x.url.toString());
     }
 
-    public QName getTag(String tag) {
-        return new QName(nameSpace, tag, prefix);
-    }
-
     /**
      * Tries to determin the base url wich must be used for relative resolving of resources.
      * @TODO Too much ad hoc logic here
@@ -115,7 +138,7 @@ class XSD implements Comparable<XSD> {
         String u = url.toString();
         String baseUrl;
         if (url.toString().startsWith("file:")) {
-            URL testRoot = Wsdl.class.getResource("/" + TEST_RESOURCE_IN_THE_ROOT);
+            URL testRoot = XSD.class.getResource("/" + TEST_RESOURCE_IN_THE_ROOT);
             if (testRoot != null) {
                 baseUrl = u.substring(
                     testRoot.toString().length()
@@ -147,30 +170,45 @@ class XSD implements Comparable<XSD> {
         }
     }
 
-    public Set<XSD> getImportXsds() throws IOException, XMLStreamException {
-        return getImportXsds(new HashSet<XSD>());
+    public Set<XSD> getXsdsRecursive()
+            throws IOException, XMLStreamException {
+        return getXsdsRecursive(new HashSet<XSD>());
     }
 
-    public Set<XSD> getImportXsds(Set<XSD> xsds) throws IOException, XMLStreamException {
+    public Set<XSD> getXsdsRecursive(Set<XSD> xsds)
+            throws IOException, XMLStreamException {
         InputStream in = url.openStream();
         if (in == null) return null;
-        XMLEventReader er = XmlUtils.NAMESPACE_AWARE_INPUT_FACTORY.createXMLEventReader(in, WsdlUtils.ENCODING);
+        XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in,
+                XmlUtils.STREAM_FACTORY_ENCODING);
         while (er.hasNext()) {
             XMLEvent e = er.nextEvent();
             switch (e.getEventType()) {
             case XMLStreamConstants.START_ELEMENT:
                 StartElement el = e.asStartElement();
-                if (el.getName().equals(Wsdl.IMPORT) ||
-                    el.getName().equals(Wsdl.INCLUDE)
+                if (el.getName().equals(SchemaUtils.IMPORT) ||
+                    el.getName().equals(SchemaUtils.INCLUDE)
                     ) {
-                    Attribute schemaLocation = el.getAttributeByName(Wsdl.SCHEMALOCATION);
-                    Attribute namespace  = el.getAttributeByName(Wsdl.NAMESPACE);
-                    XSD x = new XSD(getBaseUrl(),
-                        namespace == null ? null : namespace.getValue(),
-                        ClassUtils.getResourceURL(getBaseUrl() + schemaLocation.getValue()),
-                        false);
+                    Attribute schemaLocation = el.getAttributeByName(SchemaUtils.SCHEMALOCATION);
+                    String namespace = this.namespace;
+                    boolean addNamespaceToSchema = this.addNamespaceToSchema;
+                    if (el.getName().equals(SchemaUtils.IMPORT)) {
+                        Attribute attribute =
+                                el.getAttributeByName(SchemaUtils.NAMESPACE);
+                        if (attribute != null) {
+                            namespace = attribute.getValue();
+                        } else {
+                            namespace = targetNamespace;
+                        }
+                        addNamespaceToSchema = false;
+                    }
+                    XSD x = new XSD(
+                            ClassUtils.getResourceURL(getBaseUrl() + schemaLocation.getValue()),
+                            namespace, addNamespaceToSchema, getBaseUrl(),
+                            false
+                            );
                     if (xsds.add(x)) {
-                        x.getImportXsds(xsds);
+                        x.getXsdsRecursive(xsds);
                     }
                 }
                 break;

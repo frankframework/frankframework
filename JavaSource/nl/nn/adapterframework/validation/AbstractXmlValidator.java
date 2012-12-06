@@ -1,6 +1,14 @@
 /*
  * $Log: AbstractXmlValidator.java,v $
- * Revision 1.2  2012-11-02 10:15:12  m00f069
+ * Revision 1.3  2012-12-06 15:19:28  m00f069
+ * Resolved warnings which showed up when using addNamespaceToSchema (src-include.2.1: The targetNamespace of the referenced schema..., src-resolve.4.2: Error resolving component...)
+ * Handle includes in XSD's properly when generating a WSDL
+ * Removed XSD download (unused and XSD's were not adjusted according to e.g. addNamespaceToSchema)
+ * Sort schema's in WSDL (made sure the order is always the same)
+ * Indent WSDL with tabs instead of spaces
+ * Some cleaning and refactoring (made WSDL generator and XmlValidator share code)
+ *
+ * Revision 1.2  2012/11/02 10:15:12  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT (isn't used anymore)
  *
  * Revision 1.1  2012/10/26 16:13:38  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -320,10 +328,11 @@ public abstract class AbstractXmlValidator {
 	}
 
 	protected static class RetryException extends XNIException {
-        public RetryException(String s) {
-            super(s);
-        }
-    }
+		private static final long serialVersionUID = 1L;
+		public RetryException(Exception e) {
+			super(e);
+		}
+	}
 
 	protected static class MyErrorHandler implements XMLErrorHandler {
 		protected Logger log = LogUtil.getLogger(this);
@@ -348,7 +357,7 @@ public abstract class AbstractXmlValidator {
 				throw e;
 			}
 			if (throwRetryException) {
-				throw new RetryException(e.getMessage());
+				throw new RetryException(e);
 			}
 			if (warn) {
 				ConfigurationWarnings.getInstance().add(log, e.getMessage());
@@ -359,7 +368,7 @@ public abstract class AbstractXmlValidator {
 			if (warn) {
 				ConfigurationWarnings.getInstance().add(log, e.getMessage());
 			}
-			throw new XNIException(e.getMessage());
+			throw new XNIException(e);
 		}
 	}
 }
