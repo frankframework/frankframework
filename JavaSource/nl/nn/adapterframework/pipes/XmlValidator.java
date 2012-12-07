@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.47  2012-12-06 15:19:28  m00f069
+ * Revision 1.48  2012-12-07 15:09:49  m00f069
+ * Bugfix xml validation when using schemaSessionKey (first encountered xsd was reused on every call) (previous bugfix attempt "made preparse synchronized to prevent wrong validation when using schemaSessionKey" did not solve the issue in the environment)
+ *
+ * Revision 1.47  2012/12/06 15:19:28  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Resolved warnings which showed up when using addNamespaceToSchema (src-include.2.1: The targetNamespace of the referenced schema..., src-resolve.4.2: Error resolving component...)
  * Handle includes in XSD's properly when generating a WSDL
  * Removed XSD download (unused and XSD's were not adjusted according to e.g. addNamespaceToSchema)
@@ -664,28 +667,26 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider {
 		return schemas;
 	}
 
-	public String getSchemasId(IPipeLineSession session) {
+	public String getSchemasId(IPipeLineSession session) throws PipeRunException {
 		String schemaSessionKey = getSchemaSessionKey();
 		if (schemaSessionKey != null) {
-			return schemaSessionKey;
+			if (session.containsKey(schemaSessionKey)) {
+				return session.get(schemaSessionKey).toString();
+			} else {
+				throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
+			}
 		}
 		return null;
 	}
 
 	public List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException {
-		List<Schema> schemas = new ArrayList<Schema>();
-		String schemaSessionKey = getSchemaSessionKey();
+		String schemaLocation = getSchemasId(session);
 		if (schemaSessionKey != null) {
-			String schemaLocation;
-			if (session.containsKey(schemaSessionKey)) {
-				schemaLocation = session.get(schemaSessionKey).toString();
-			} else {
-				throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
-			}
 			final URL url = ClassUtils.getResourceURL(schemaLocation);
 			if (url == null) {
 				throw new PipeRunException(null, getLogPrefix(session) + "could not find schema at [" + schemaLocation + "]");
 			}
+			List<Schema> schemas = new ArrayList<Schema>();
 			schemas.add(
 				new Schema() {
 					public InputStream getInputStream() throws IOException {

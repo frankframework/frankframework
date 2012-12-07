@@ -1,6 +1,9 @@
 /*
  * $Log: XercesXmlValidator.java,v $
- * Revision 1.3  2012-12-06 15:19:28  m00f069
+ * Revision 1.4  2012-12-07 15:09:50  m00f069
+ * Bugfix xml validation when using schemaSessionKey (first encountered xsd was reused on every call) (previous bugfix attempt "made preparse synchronized to prevent wrong validation when using schemaSessionKey" did not solve the issue in the environment)
+ *
+ * Revision 1.3  2012/12/06 15:19:28  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Resolved warnings which showed up when using addNamespaceToSchema (src-include.2.1: The targetNamespace of the referenced schema..., src-resolve.4.2: Error resolving component...)
  * Handle includes in XSD's properly when generating a WSDL
  * Removed XSD download (unused and XSD's were not adjusted according to e.g. addNamespaceToSchema)
@@ -205,11 +208,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		}
 	}
 
-	// Needs to be synchronized as an issue has been seen while using
-	// schemaSessionKey in which case this method is called runtime while the
-	// pipeline starts processing messages (probably by more than one thread at
-	// a time) and elements in messages were reported not to be valid while
-	// being present in the XSD.
 	private synchronized void preparse(String schemasId, List<Schema> schemas) throws ConfigurationException {
 		if (symbolTables.get(schemasId) == null) {
 			SymbolTable symbolTable = new SymbolTable(BIG_PRIME);
