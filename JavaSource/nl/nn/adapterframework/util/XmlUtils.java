@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.93  2012-12-06 15:19:28  m00f069
+ * Revision 1.94  2012-12-07 15:56:37  m00f069
+ * Restored the use of REPAIR_NAMESPACES_OUTPUT_FACTORY otherwise ESB_SOAP_JMS prefix seems to get lost (although according to the javadoc IS_REPAIRING_NAMESPACES of XMLOutputFactory should be true by default)
+ *
+ * Revision 1.93  2012/12/06 15:19:28  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Resolved warnings which showed up when using addNamespaceToSchema (src-include.2.1: The targetNamespace of the referenced schema..., src-resolve.4.2: Error resolving component...)
  * Handle includes in XSD's properly when generating a WSDL
  * Removed XSD download (unused and XSD's were not adjusted according to e.g. addNamespaceToSchema)
@@ -383,7 +386,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.93 $ $Date: 2012-12-06 15:19:28 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.94 $ $Date: 2012-12-07 15:56:37 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -417,7 +420,12 @@ public class XmlUtils {
 	public static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
 	public static final XMLInputFactory INPUT_FACTORY   = XMLInputFactory.newInstance();
 	public static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
+	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY = XMLOutputFactory.newInstance();
 	public static final String STREAM_FACTORY_ENCODING  = "UTF-8";
+
+	static {
+		XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
+	}
 
 	public XmlUtils() {
 		super();

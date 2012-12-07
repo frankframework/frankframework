@@ -67,7 +67,7 @@ public abstract class WsdlUtils {
     }
 
     public static XMLStreamWriter getWriter(OutputStream out, boolean indentWsdl) throws XMLStreamException {
-        XMLStreamWriter w = XmlUtils.OUTPUT_FACTORY
+        XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY
                 .createXMLStreamWriter(out, XmlUtils.STREAM_FACTORY_ENCODING);
         if (indentWsdl) {
             IndentingXMLStreamWriter iw = new IndentingXMLStreamWriter(w);
