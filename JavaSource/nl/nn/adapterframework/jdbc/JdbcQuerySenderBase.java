@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.59  2011-11-30 13:51:43  europe\m168309
+ * Revision 1.60  2012-12-07 13:16:06  europe\m168309
+ * added debug logging
+ *
+ * Revision 1.59  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -401,7 +404,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		try {
 			boolean updateBlob="updateBlob".equalsIgnoreCase(getQueryType());
 			boolean updateClob="updateClob".equalsIgnoreCase(getQueryType());
+			log.debug(getLogPrefix() + "obtaining prepared statement to execute");
 			statement = getStatement(connection, correlationID, message, updateBlob||updateClob);
+			log.debug(getLogPrefix() + "obtained prepared statement to execute");
 			statement.setQueryTimeout(getTimeout());
 			if (prc != null && paramList != null) {
 				applyParameters(statement, prc.getValues(newParamList));
@@ -575,6 +580,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	protected String executeUpdateBlobQuery(PreparedStatement statement, Object message) throws SenderException{
 		ResultSet rs=null;
 		try {
+			log.debug(getLogPrefix() + "executing an updating BLOB command");
 			rs = statement.executeQuery();
 			XmlBuilder result=new XmlBuilder("result");
 			JdbcUtil.warningsToXml(statement.getWarnings(),result);
@@ -610,11 +616,11 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			JdbcUtil.warningsToXml(rs.getWarnings(),result);
 			return result.toXML();
 		} catch (SQLException sqle) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",sqle );
+			throw new SenderException(getLogPrefix() + "got exception executing an updating BLOB command",sqle );
 		} catch (JdbcException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a updating BLOB",e );
+			throw new SenderException(getLogPrefix() + "got exception executing an updating BLOB command",e );
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a updating BLOB",e );
+			throw new SenderException(getLogPrefix() + "got exception executing an updating BLOB command",e );
 		} finally {
 			try {
 				if (rs!=null) {
@@ -629,6 +635,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	protected String executeUpdateClobQuery(PreparedStatement statement, Object message) throws SenderException{
 		ResultSet rs=null;
 		try {
+			log.debug(getLogPrefix() + "executing an updating CLOB command");
 			rs = statement.executeQuery();
 			XmlBuilder result=new XmlBuilder("result");
 			JdbcUtil.warningsToXml(statement.getWarnings(),result);
@@ -660,11 +667,11 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			JdbcUtil.warningsToXml(rs.getWarnings(),result);
 			return result.toXML();
 		} catch (SQLException sqle) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",sqle );
+			throw new SenderException(getLogPrefix() + "got exception executing an updating CLOB command",sqle );
 		} catch (JdbcException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a updating CLOB",e );
+			throw new SenderException(getLogPrefix() + "got exception executing an updating CLOB command",e );
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a updating CLOB",e );
+			throw new SenderException(getLogPrefix() + "got exception executing an updating CLOB command",e );
 		} finally {
 			try {
 				if (rs!=null) {
@@ -683,6 +690,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
 			}
 
+			log.debug(getLogPrefix() + "executing a SELECT SQL command");
 			resultset = statement.executeQuery();
 
 			if (getStartRow()>1) {
@@ -746,10 +754,12 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				pstmt.registerOutParameter(var, Types.CLOB); // make sure enough space is available for result...
 			}
 			if ("xml".equalsIgnoreCase(getPackageContent())) {
+				log.debug(getLogPrefix() + "executing a package SQL command");
 				pstmt.executeUpdate();
 				String pUitvoer = pstmt.getString(var);
 				return pUitvoer;
 			} 
+			log.debug(getLogPrefix() + "executing a package SQL command");
 			int numRowsAffected = pstmt.executeUpdate();
 			if (StringUtils.isNotEmpty(getResultQuery())) {
 				Statement resStmt = null;
@@ -802,10 +812,12 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					ri = parameters.size() + 1;
 				}
 				cstmt.registerOutParameter(ri, Types.VARCHAR);
+				log.debug(getLogPrefix() + "executing a SQL command");
 				numRowsAffected = cstmt.executeUpdate();
 				String rowId = cstmt.getString(ri);
 				if (prc!=null) prc.getSession().put(getRowIdSessionKey(), rowId);
 			} else {
+				log.debug(getLogPrefix() + "executing a SQL command");
 				numRowsAffected = statement.executeUpdate();
 			}
 			if (StringUtils.isNotEmpty(getResultQuery())) {
