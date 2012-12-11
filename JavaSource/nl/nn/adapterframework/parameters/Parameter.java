@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.44  2012-01-04 10:50:50  europe\m168309
+ * Revision 1.45  2012-12-11 13:19:59  europe\m168309
+ * added maxLength, minInclusive and maxInclusive attributes
+ *
+ * Revision 1.44  2012/01/04 10:50:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added removeNamespaces attribute
  *
  * Revision 1.43  2011/11/30 13:52:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -210,6 +213,9 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setPattern(String) pattern}</td><td>Value of parameter is determined using substitution and formating. The expression can contain references to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. {now}, {uid}, {hostname} and {fixeddate} are named constants that can be used in the expression. If fname is a parameter or session variable that resolves to Eric, then the pattern 'Hi {fname}, hoe gaat het?' resolves to 'Hi Eric, hoe gaat het?'. A guid can be generated using {hostname}_{uid}, see also <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html</a> for more information about (g)uid's.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValue(String) value}</td><td>A fixed value</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHidden(boolean) hidden}</td><td>if set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setMaxLength(String) maxLength}</td><td>if set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length</td><td>-1</td></tr>
+ * <tr><td>{@link #setMinInclusive(String) minInclusive}</td><td>used in combination with type <code>number</code>; if set and the value of the parameter exceeds this minimum value, this minimum value is taken</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMaxInclusive(String) maxInclusive}</td><td>used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * Examples:
@@ -237,7 +243,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.44 $ $Date: 2012-01-04 10:50:50 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.45 $ $Date: 2012-12-11 13:19:59 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static String TYPE_XML="xml";
@@ -266,6 +272,11 @@ public class Parameter implements INamedObject, IWithParameters {
 	private String formatString = null;
 	private String decimalSeparator = null;
 	private String groupingSeparator = null;
+	private int maxLength = -1;
+	private String minInclusiveString = null;
+	private String maxInclusiveString = null;
+	private Number minInclusive;
+	private Number maxInclusive;
 	private boolean hidden = false;
 	private boolean removeNamespaces=false;
 
@@ -329,6 +340,30 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 		}
 		configured = true;
+
+		if (getMinInclusive()!=null || getMaxInclusive()!=null) {
+			if (!TYPE_NUMBER.equals(getType())) {
+				throw new ConfigurationException("minInclusive and minInclusive only allowed in combination with type ["+TYPE_NUMBER+"]");
+			}
+			if (getMinInclusive()!=null) {
+				DecimalFormat df = new DecimalFormat();
+				df.setDecimalFormatSymbols(decimalFormatSymbols);
+				try {
+					minInclusive = df.parse(getMinInclusive());
+				} catch (ParseException e) {
+					throw new ConfigurationException("Attribute [minInclusive] could not parse result ["+getMinInclusive()+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
+				}
+			}
+			if (getMaxInclusive()!=null) {
+				DecimalFormat df = new DecimalFormat();
+				df.setDecimalFormatSymbols(decimalFormatSymbols);
+				try {
+					maxInclusive = df.parse(getMaxInclusive());
+				} catch (ParseException e) {
+					throw new ConfigurationException("Attribute [maxInclusive] could not parse result ["+getMinInclusive()+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
+				}
+			}
+		}
 	}
 
 	private Object transform(Source xmlSource, ParameterResolutionContext prc) throws ParameterException, TransformerException, IOException {
@@ -459,6 +494,27 @@ public class Parameter implements INamedObject, IWithParameters {
 				}
 			}
 		}
+		if (getMaxLength()>=0 && result instanceof String) {
+			if (result.toString().length()>getMaxLength()) {
+				log.debug("Trimming parameter ["+getName()+"] because length ["+result.toString().length()+"] exceeds maxLength ["+getMaxLength()+"]" );
+				result = result.toString().substring(0, getMaxLength());
+			}
+		}
+		if (getMinInclusive()!=null || getMaxInclusive()!=null) {
+			if (getMinInclusive()!=null) {
+				if (((Number)result).floatValue()<minInclusive.floatValue()) {
+					log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds minInclusive ["+getMinInclusive()+"]" );
+					result = minInclusive;
+				}
+			}
+			if (getMaxInclusive()!=null) {
+				if (((Number)result).floatValue()>maxInclusive.floatValue()) {
+					log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds maxInclusive ["+getMaxInclusive()+"]" );
+					result = maxInclusive;
+				}
+			}
+		}
+		
 		return result; 
 	}
 
@@ -671,5 +727,26 @@ public class Parameter implements INamedObject, IWithParameters {
 	}
 	public boolean isRemoveNamespaces() {
 		return removeNamespaces;
+	}
+
+	public void setMaxLength(int i) {
+		maxLength = i;
+	}
+	public int getMaxLength() {
+		return maxLength;
+	}
+
+	public void setMaxInclusive(String string) {
+		maxInclusiveString = string;
+	}
+	public String getMaxInclusive() {
+		return maxInclusiveString;
+	}
+
+	public void setMinInclusive(String string) {
+		minInclusiveString = string;
+	}
+	public String getMinInclusive() {
+		return minInclusiveString;
 	}
 }
