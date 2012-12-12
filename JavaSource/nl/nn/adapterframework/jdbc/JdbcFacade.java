@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.45  2012-09-07 13:15:17  m00f069
+ * Revision 1.46  2012-12-12 09:43:57  europe\m168309
+ * avoid NPE when parameter with type "number" is null
+ *
+ * Revision 1.45  2012/09/07 13:15:17  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Messaging related changes:
  * - Use CACHE_CONSUMER by default for ESB RR
  * - Don't use JMSXDeliveryCount to determine whether message has already been processed
@@ -432,7 +435,11 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 					statement.setTime(i+1, new java.sql.Time(((Date)value).getTime()));
 				}
 			} else if (Parameter.TYPE_NUMBER.equals(paramType)) {
-				statement.setDouble(i+1, ((Number)value).doubleValue());
+				if (value==null) {
+					statement.setNull(i+1, Types.NUMERIC);
+				} else {
+					statement.setDouble(i+1, ((Number)value).doubleValue());
+				}
 			} else { 
 				statement.setString(i+1, (String)value);
 			}
