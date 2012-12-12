@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.45  2012-12-11 13:19:59  europe\m168309
+ * Revision 1.46  2012-12-12 09:46:53  europe\m168309
+ * made corrections for the maxLength, minInclusive and maxInclusive attributes
+ *
+ * Revision 1.45  2012/12/11 13:19:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added maxLength, minInclusive and maxInclusive attributes
  *
  * Revision 1.44  2012/01/04 10:50:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -243,7 +246,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.45 $ $Date: 2012-12-11 13:19:59 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.46 $ $Date: 2012-12-12 09:46:53 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static String TYPE_XML="xml";
@@ -457,6 +460,12 @@ public class Parameter implements INamedObject, IWithParameters {
 			result=getDefaultValue();
 		}
 		if (result !=null && result instanceof String) {
+			if (getMaxLength()>=0) {
+				if (result.toString().length()>getMaxLength()) {
+					log.debug("Trimming parameter ["+getName()+"] because length ["+result.toString().length()+"] exceeds maxLength ["+getMaxLength()+"]" );
+					result = result.toString().substring(0, getMaxLength());
+				}
+			}
 			if (TYPE_NODE.equals(getType())) {
 				try {
 					result=XmlUtils.buildNode((String)result,prc. isNamespaceAware());
@@ -494,23 +503,19 @@ public class Parameter implements INamedObject, IWithParameters {
 				}
 			}
 		}
-		if (getMaxLength()>=0 && result instanceof String) {
-			if (result.toString().length()>getMaxLength()) {
-				log.debug("Trimming parameter ["+getName()+"] because length ["+result.toString().length()+"] exceeds maxLength ["+getMaxLength()+"]" );
-				result = result.toString().substring(0, getMaxLength());
-			}
-		}
-		if (getMinInclusive()!=null || getMaxInclusive()!=null) {
-			if (getMinInclusive()!=null) {
-				if (((Number)result).floatValue()<minInclusive.floatValue()) {
-					log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds minInclusive ["+getMinInclusive()+"]" );
-					result = minInclusive;
+		if (result !=null) {
+			if (getMinInclusive()!=null || getMaxInclusive()!=null) {
+				if (getMinInclusive()!=null) {
+					if (((Number)result).floatValue()<minInclusive.floatValue()) {
+						log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds minInclusive ["+getMinInclusive()+"]" );
+						result = minInclusive;
+					}
 				}
-			}
-			if (getMaxInclusive()!=null) {
-				if (((Number)result).floatValue()>maxInclusive.floatValue()) {
-					log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds maxInclusive ["+getMaxInclusive()+"]" );
-					result = maxInclusive;
+				if (getMaxInclusive()!=null) {
+					if (((Number)result).floatValue()>maxInclusive.floatValue()) {
+						log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds maxInclusive ["+getMaxInclusive()+"]" );
+						result = maxInclusive;
+					}
 				}
 			}
 		}
