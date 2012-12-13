@@ -1,6 +1,9 @@
 /*
  * $Log: XmlQuerySender.java,v $
- * Revision 1.9  2011-11-30 13:51:43  europe\m168309
+ * Revision 1.10  2012-12-13 10:42:35  europe\m168309
+ * added type xmldatetime
+ *
+ * Revision 1.9  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -51,6 +54,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -66,7 +70,7 @@ import org.w3c.dom.Element;
  *  update - tableName
  *         - columns [0..1] - column [1..n] - name
  *                                          - value [0..1]
- *                                          - type [0..1] one of {string;function;number;datetime;blob;clob}, string by default
+ *                                          - type [0..1] one of {string;function;number;datetime;blob;clob;xmldatetime}, string by default
  *                                          - decimalSeparator [0..1] only applicable for type=number
  *                                          - groupingSeparator [0..1] only applicable for type=number
  *                                          - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default 
@@ -114,6 +118,7 @@ public class XmlQuerySender extends DirectQuerySender {
 	public static final String TYPE_FUNCTION = "function";
 	public static final String TYPE_DATETIME = "datetime";
 	public static final String TYPE_DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
+	public static final String TYPE_XMLDATETIME = "xmldatetime";
 
 	public class Column {
 		private String name = null;
@@ -185,11 +190,21 @@ public class XmlQuerySender extends DirectQuerySender {
 					}
 					parameter = new java.sql.Timestamp(nDate.getTime());
 				} else {
-					if (type.equalsIgnoreCase(TYPE_BLOB) || type.equalsIgnoreCase(TYPE_CLOB) || type.equalsIgnoreCase(TYPE_FUNCTION)) {
-						//skip
+					if (type.equalsIgnoreCase(TYPE_XMLDATETIME)) {
+						java.util.Date nDate;
+						try {
+							nDate = DateUtils.parseXmlDateTime(value);
+						} catch (Exception e) {
+							throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] from xml dateTime to Date", e);
+						}
+						parameter = new java.sql.Timestamp(nDate.getTime());
 					} else {
-						// type.equalsIgnoreCase("string")
-						parameter = new String(value);
+						if (type.equalsIgnoreCase(TYPE_BLOB) || type.equalsIgnoreCase(TYPE_CLOB) || type.equalsIgnoreCase(TYPE_FUNCTION)) {
+							//skip
+						} else {
+							// type.equalsIgnoreCase("string")
+							parameter = new String(value);
+						}
 					}
 				}
 			}

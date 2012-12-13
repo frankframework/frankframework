@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.46  2012-12-12 09:43:57  europe\m168309
+ * Revision 1.47  2012-12-13 10:43:11  europe\m168309
+ * added type xmldatetime
+ *
+ * Revision 1.46  2012/12/12 09:43:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * avoid NPE when parameter with type "number" is null
  *
  * Revision 1.45  2012/09/07 13:15:17  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -433,6 +436,12 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 					statement.setNull(i+1, Types.TIME);
 				} else {
 					statement.setTime(i+1, new java.sql.Time(((Date)value).getTime()));
+				}
+			} else if (Parameter.TYPE_XMLDATETIME.equals(paramType)) {
+				if (value==null) {
+					statement.setNull(i+1, Types.TIMESTAMP);
+				} else {
+					statement.setTimestamp(i+1, new Timestamp(((Date)value).getTime()));
 				}
 			} else if (Parameter.TYPE_NUMBER.equals(paramType)) {
 				if (value==null) {

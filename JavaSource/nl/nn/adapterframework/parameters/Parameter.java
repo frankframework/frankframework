@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.46  2012-12-12 09:46:53  europe\m168309
+ * Revision 1.47  2012-12-13 10:41:59  europe\m168309
+ * added type xmldatetime
+ *
+ * Revision 1.46  2012/12/12 09:46:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * made corrections for the maxLength, minInclusive and maxInclusive attributes
  *
  * Revision 1.45  2012/12/11 13:19:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -201,6 +204,7 @@ import org.w3c.dom.Node;
  * 	<li><code>time</code>: converts the result to a Date, by default using formatString <code>HH:mm:ss</code>. When applied as a JDBC parameter, the method setTime() is used</li>
  * 	<li><code>datetime</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>. When applied as a JDBC parameter, the method setTimestamp() is used</li>
  * 	<li><code>timestamp</code>: similar to datetime, except for the formatString that is <code>yyyy-MM-dd HH:mm:ss.SSS</code> by default</li>
+ * 	<li><code>xmldatetime</code>: converts the result from a XML dateTime to a Date. When applied as a JDBC parameter, the method setTimestamp() is used</li>
  * 	<li><code>number</code>: converts the result to a Number, using decimalSeparator and groupingSeparator. When applied as a JDBC parameter, the method setDouble() is used</li>
  * </ul>
  * </td><td>string</td></tr>
@@ -246,7 +250,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.46 $ $Date: 2012-12-12 09:46:53 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.47 $ $Date: 2012-12-13 10:41:59 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static String TYPE_XML="xml";
@@ -256,6 +260,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	public final static String TYPE_TIME="time";
 	public final static String TYPE_DATETIME="datetime";
 	public final static String TYPE_TIMESTAMP="timestamp";
+	public final static String TYPE_XMLDATETIME="xmldatetime";
 	public final static String TYPE_NUMBER="number";
 	
 	public final static String TYPE_DATE_PATTERN="yyyy-MM-dd";
@@ -490,6 +495,10 @@ public class Parameter implements INamedObject, IWithParameters {
 				} catch (ParseException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to Date using formatString ["+getFormatString()+"]",e);
 				}
+			}
+			if (TYPE_XMLDATETIME.equals(getType())) {
+				log.debug("Parameter ["+getName()+"] converting result ["+result+"] from xml dateTime to date" );
+				result = DateUtils.parseXmlDateTime((String)result);
 			}
 			if (TYPE_NUMBER.equals(getType())) {
 				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
