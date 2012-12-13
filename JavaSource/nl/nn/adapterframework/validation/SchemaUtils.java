@@ -236,7 +236,6 @@ public class SchemaUtils {
         XMLEventReader er =
                 XmlUtils.INPUT_FACTORY.createXMLEventReader(
                         in, XmlUtils.STREAM_FACTORY_ENCODING);
-        int elementDepth = 0;
         while (er.hasNext()) {
             XMLEvent e = er.nextEvent();
             switch (e.getEventType()) {
@@ -250,14 +249,16 @@ public class SchemaUtils {
                 case XMLStreamConstants.COMMENT:
                     break;
                 case XMLStreamConstants.START_ELEMENT:
-                    elementDepth++;
-                    if (skipRootStartElement && elementDepth == 1) {
-                        continue;
-                    }
                     StartElement el = e.asStartElement();
                     if (SCHEMA.equals(el.getName())) {
-                        if (rootAttributes != null && elementDepth == 1) {
+                        if (skipRootStartElement) {
+                            continue;
+                        }
+                        if (rootAttributes != null) {
+                            // Collect or write attributes of schema element.
                             if (noOutput) {
+                                // First call to this method collecting
+                                // schema attributes.
                                 Iterator iterator = el.getAttributes();
                                 while (iterator.hasNext()) {
                                     Attribute attribute = (Attribute)iterator.next();
@@ -269,6 +270,8 @@ public class SchemaUtils {
                                     rootNamespaceAttributes.add(attribute);
                                 }
                             } else {
+                                // Second call to this method writing attributes
+                                // from previous call.
                                 el = XmlUtils.EVENT_FACTORY.createStartElement(
                                         el.getName().getPrefix(),
                                         el.getName().getNamespaceURI(),
@@ -299,10 +302,14 @@ public class SchemaUtils {
                                 }
                                 LOG.debug(xsd.url + " Corrected " + el + " -> " + e);
                             }
+                        } else {
+                            e = el;
                         }
-                        if (rootAttributes != null && elementDepth == 1
-                                && !noOutput) {
-                            // List imports contains start and end elements
+                        if (imports != null && !noOutput) {
+                            // Second call to this method writing imports
+                            // collected in previous call.
+                            // List contains start and end elements, hence add
+                            // 2 on every iteration.
                             for (int i = 0; i < imports.size(); i = i + 2) {
                                 boolean skip = false;
                                 for (int j = 0; j < i; j = j + 2) {
@@ -327,6 +334,7 @@ public class SchemaUtils {
                         continue;
                     } else if (el.getName().equals(IMPORT)) {
                         if (imports == null || noOutput) {
+                            // Not collecting or writing import elements.
                             Attribute schemaLocation = el.getAttributeByName(SCHEMALOCATION);
                             if (schemaLocation != null) {
                                 String location = schemaLocation.getValue();
@@ -362,7 +370,10 @@ public class SchemaUtils {
                             }
                         }
                         if (imports != null) {
+                            // Collecting or writing import elements.
                             if (noOutput) {
+                                // First call to this method collecting
+                                // imports.
                                 imports.add(e);
                             }
                             continue;
@@ -370,12 +381,12 @@ public class SchemaUtils {
                     }
                     break;
                 case XMLStreamConstants.END_ELEMENT:
-                    elementDepth--;
-                    if (skipRootEndElement && elementDepth == 0) {
-                        continue;
-                    }
                     EndElement ee = e.asEndElement();
-                    if (ee.getName().equals(INCLUDE)) {
+                    if (ee.getName().equals(SCHEMA)) {
+                        if (skipRootEndElement) {
+                            continue;
+                        }
+                    } else if (ee.getName().equals(INCLUDE)) {
                         continue;
                     } else if (imports != null) {
                         if (ee.getName().equals(IMPORT)) {
