@@ -1,6 +1,9 @@
 /*
  * $Log: DateUtils.java,v $
- * Revision 1.17  2011-11-30 13:51:48  europe\m168309
+ * Revision 1.18  2012-12-13 10:40:18  europe\m168309
+ * added parseXmlDateTime() method
+ *
+ * Revision 1.17  2011/11/30 13:51:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -49,6 +52,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.apache.xmlbeans.GDate;
 
 /**
  * Utilities for formatting and parsing dates.
@@ -57,7 +61,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class DateUtils {
-	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.17 $ $Date: 2011-11-30 13:51:48 $";
+	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.18 $ $Date: 2012-12-13 10:40:18 $";
 	protected static Logger log = LogUtil.getLogger(DateUtils.class);
 	
 
@@ -126,6 +130,15 @@ public class DateUtils {
         ParsePosition p = new ParsePosition(0);
         Date result = df.parse(s, p);
         return result;
+    }
+
+    /**
+     * Parses a string to a Date, according to the XML Schema dateTime data type
+     */
+    static public Date parseXmlDateTime(String s) {
+    	GDate gdate = new org.apache.xmlbeans.GDate(s);
+        Date result = gdate.getDate();
+		return result;
     }
 
 	/**
