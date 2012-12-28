@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.25  2011-11-30 13:51:46  europe\m168309
+ * Revision 1.26  2012-12-28 14:02:02  europe\m168309
+ * added total number of records to title
+ *
+ * Revision 1.25  2011/11/30 13:51:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -94,6 +97,7 @@ import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
@@ -117,7 +121,7 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.25 $ $Date: 2011-11-30 13:51:46 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.26 $ $Date: 2012-12-28 14:02:02 $";
 
 	private int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 	private int skipMessages=0;
@@ -228,6 +232,7 @@ public class Browse extends ActionBase {
 
 		IMessageBrowser mb;
 		IListener listener=null;
+		String logCount;
 		if ("messagelog".equals(storageType)) {
 			if (StringUtils.isNotEmpty(pipeName)) {
 				MessageSendingPipe pipe=(MessageSendingPipe)adapter.getPipeLine().getPipe(pipeName);
@@ -250,6 +255,12 @@ public class Browse extends ActionBase {
 			if (performAction(adapter, receiver, action, mb, messageId, selected, request, response))
 				return null;
 			listener = receiver.getListener();
+		}
+		try {
+			logCount = "(" + ((ITransactionalStorage) mb).getMessageCount() + ")";
+		} catch (Exception e) {
+			log.warn(e);
+			logCount = "(?)";
 		}
 
 		try {
@@ -278,10 +289,10 @@ public class Browse extends ActionBase {
 					messages.addAttribute("action",action);
 					messages.addAttribute("adapterName",XmlUtils.encodeChars(adapterName));
 					if ("messagelog".equals(storageType) && StringUtils.isNotEmpty(pipeName)) {
-						messages.addAttribute("object","pipe ["+XmlUtils.encodeChars(pipeName)+"] of adapter ["+XmlUtils.encodeChars(adapterName)+"]");
+						messages.addAttribute("object","pipe ["+XmlUtils.encodeChars(pipeName)+"] of adapter ["+XmlUtils.encodeChars(adapterName)+"] "+logCount);
 						messages.addAttribute("pipeName",XmlUtils.encodeChars(pipeName));
  					} else {
-						messages.addAttribute("object","receiver ["+XmlUtils.encodeChars(receiverName)+"] of adapter ["+XmlUtils.encodeChars(adapterName)+"]");
+						messages.addAttribute("object","receiver ["+XmlUtils.encodeChars(receiverName)+"] of adapter ["+XmlUtils.encodeChars(adapterName)+"] "+logCount);
 						messages.addAttribute("receiverName",XmlUtils.encodeChars(receiverName));
  					}
 					int messageCount;
