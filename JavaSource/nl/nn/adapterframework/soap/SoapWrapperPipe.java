@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapperPipe.java,v $
- * Revision 1.11  2012-10-08 12:14:44  europe\m168309
+ * Revision 1.12  2013-01-03 10:53:05  europe\m168309
+ * added removeUnusedOutputNamespaces attribute
+ *
+ * Revision 1.11  2012/10/08 12:14:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added root attribute
  *
  * Revision 1.10  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -75,6 +78,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>(only used when <code>direction=wrap</code>) stylesheet to create the content of the SOAP Header. As input for this stylesheet a dummy xml string is used. Note: outputType=<code>xml</code> and xslt2=<code>true</code></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapBodyStyleSheet(String) soapBodyStyleSheet}</td><td>(only used when <code>direction=wrap</code>) stylesheet to apply to the input message. Note: outputType=<code>xml</code> and xslt2=<code>true</code></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoveOutputNamespaces(boolean) removeOutputNamespaces}</td><td>(only used when <code>direction=unwrap</code>) when <code>true</code>, namespaces (and prefixes) in the content of the SOAP Body are removed</td><td>false</td></tr>
+ * <tr><td>{@link #setRemoveUnusedOutputNamespaces(boolean) removeUnusedOutputNamespaces}</td><td>(only used when <code>direction=unwrap</code> and <code>removeOutputNamespaces=false</code>) when <code>true</code>, unused namespaces in the content of the SOAP Body are removed</td><td>true</td></tr>
  * <tr><td>{@link #setOutputNamespace(String) outputNamespace}</td><td>(only used when <code>direction=wrap</code>) when not empty, this namespace is added to the root element in the SOAP Body</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>(only used when <code>direction=wrap</code>) namespace of the SOAP Envelope</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
  * <tr><td>{@link #setRoot(String) root}</td><td>when not empty, the root element in the SOAP Body is changed to this value</td><td>&nbsp;</td></tr>
@@ -102,6 +106,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	private String soapHeaderStyleSheet = null;
 	private String soapBodyStyleSheet = null;
 	private boolean removeOutputNamespaces = false;
+	private boolean removeUnusedOutputNamespaces = true;
 	private String outputNamespace = null;
 	private String soapNamespace = null;
 	private String root = null;
@@ -111,6 +116,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	private TransformerPool soapHeaderTp = null;
 	private TransformerPool soapBodyTp = null;
 	private TransformerPool removeOutputNamespacesTp = null;
+	private TransformerPool removeUnusedOutputNamespacesTp = null;
 	private TransformerPool outputNamespaceTp = null;
 	private TransformerPool rootTp = null;
 
@@ -129,6 +135,10 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 			if (isRemoveOutputNamespaces()) {
 				String removeOutputNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true, false);
 				removeOutputNamespacesTp = new TransformerPool(removeOutputNamespaces_xslt);
+			}
+			if (isRemoveUnusedOutputNamespaces() && !isRemoveOutputNamespaces()) {
+				String removeUnusedOutputNamespaces_xslt = XmlUtils.makeRemoveUnusedNamespacesXslt(true, false);
+				removeUnusedOutputNamespacesTp = new TransformerPool(removeUnusedOutputNamespaces_xslt);
 			}
 			if (StringUtils.isNotEmpty(getOutputNamespace())) {
 				String outputNamespace_xslt = XmlUtils.makeAddRootNamespaceXslt(getOutputNamespace(), true, false);
@@ -167,6 +177,13 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 				throw new PipeStartException(getLogPrefix(null)+"cannot start Remove Output Namespaces TransformerPool", e);
 			}
 		}
+		if (removeUnusedOutputNamespacesTp != null) {
+			try {
+				removeUnusedOutputNamespacesTp.open();
+			} catch (Exception e) {
+				throw new PipeStartException(getLogPrefix(null)+"cannot start Remove Unused Output Namespaces TransformerPool", e);
+			}
+		}
 		if (outputNamespaceTp != null) {
 			try {
 				outputNamespaceTp.open();
@@ -194,6 +211,9 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		}
 		if (removeOutputNamespacesTp != null) {
 			removeOutputNamespacesTp.close();
+		}
+		if (removeUnusedOutputNamespacesTp != null) {
+			removeUnusedOutputNamespacesTp.close();
 		}
 		if (outputNamespaceTp != null) {
 			outputNamespaceTp.close();
@@ -248,6 +268,9 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 				}
 				if (removeOutputNamespacesTp != null) {
 					result = removeOutputNamespacesTp.transform(result, null, true);
+				}
+				if (removeUnusedOutputNamespacesTp != null) {
+					result = removeUnusedOutputNamespacesTp.transform(result, null, true);
 				}
 				if (rootTp != null) {
 					result = rootTp.transform(result, null, true);
@@ -314,6 +337,13 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	}
 	public boolean isRemoveOutputNamespaces() {
 		return removeOutputNamespaces;
+	}
+
+	public void setRemoveUnusedOutputNamespaces(boolean b) {
+		removeUnusedOutputNamespaces = b;
+	}
+	public boolean isRemoveUnusedOutputNamespaces() {
+		return removeUnusedOutputNamespaces;
 	}
 
 	public void setOutputNamespace(String string) {
