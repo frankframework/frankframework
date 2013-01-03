@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.94  2012-12-07 15:56:37  m00f069
+ * Revision 1.95  2013-01-03 10:49:10  europe\m168309
+ * XmlUtils: added method removeUnusedNamespaces()
+ *
+ * Revision 1.94  2012/12/07 15:56:37  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Restored the use of REPAIR_NAMESPACES_OUTPUT_FACTORY otherwise ESB_SOAP_JMS prefix seems to get lost (although according to the javadoc IS_REPAIRING_NAMESPACES of XMLOutputFactory should be true by default)
  *
  * Revision 1.93  2012/12/06 15:19:28  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -386,7 +389,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.94 $ $Date: 2012-12-07 15:56:37 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.95 $ $Date: 2013-01-03 10:49:10 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -517,6 +520,21 @@ public class XmlUtils {
 			+ "</xsl:for-each>"
 			+ "<xsl:copy-of select=\"*\"/>"
 			+ "</xsl:element>"
+			+ "</xsl:template>"
+			+ "</xsl:stylesheet>";
+	}
+
+	public static String makeRemoveUnusedNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
+		return
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
+			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
+			+ "<xsl:template match=\"*\">"
+			+ "<xsl:element name=\"{local-name()}\" namespace=\"{namespace-uri()}\">"
+			+ "<xsl:apply-templates select=\"@* | node()\"/>"
+			+ "</xsl:element>"
+			+ "</xsl:template>"
+			+ "<xsl:template match=\"@* | comment() | processing-instruction() | text()\">"
+			+ "<xsl:copy/>"
 			+ "</xsl:template>"
 			+ "</xsl:stylesheet>";
 	}
@@ -1625,6 +1643,17 @@ public class XmlUtils {
 		}
 	}
 
+	public static String removeUnusedNamespaces(String input) {
+		String removeUnusedNamespaces_xslt = makeRemoveUnusedNamespacesXslt(true,false);
+		try {
+			Transformer t = createTransformer(removeUnusedNamespaces_xslt);
+			String query = transformXml(t, input);
+			return query;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
 	public static Map getIbisContext(String input) {
 		if (isWellFormed(input)) {
 			String getIbisContext_xslt = XmlUtils.makeGetIbisContextXslt();
