@@ -357,26 +357,25 @@
         <auth-method>BASIC</auth-method> 
         <realm-name>Ibis</realm-name> 
     </login-config> 
-    
-   
+
     <security-role>
-        <description>user who can look in configurations, statistics and log files</description>
+        <description>can call Ibis WebServices</description>
+        <role-name>IbisWebService</role-name>
+    </security-role>
+    <security-role>
+        <description>can look in configurations, statistics and log files</description>
         <role-name>IbisObserver</role-name>
     </security-role>
     <security-role>
-        <description>Administrator, can start and stop adapters and set schedules</description>
-        <role-name>IbisAdmin</role-name>
-    </security-role>
-    <security-role>
-        <description>can browse the error queue and resend or delete the messages in it</description>
+        <description>can browse the error queue and resend or delete the messages in it, has all IbisObserver permissions too</description>
         <role-name>IbisDataAdmin</role-name>
     </security-role>
     <security-role>
-        <description>can send test messages</description>
-        <role-name>IbisTester</role-name>
+        <description>can start and stop adapters and set schedules, has all IbisDataAdmin permissions too</description>
+        <role-name>IbisAdmin</role-name>
     </security-role>
     <security-role>
-    	<description>can call Ibis WebServices</description>
-    	<role-name>IbisWebService</role-name>
+        <description>can send test messages, has all IbisAdmin and IbisWebService permissions too</description>
+        <role-name>IbisTester</role-name>
     </security-role>
 </web-app>
