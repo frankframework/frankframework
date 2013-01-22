@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.104  2012-09-07 13:15:17  m00f069
+ * Revision 1.105  2013-01-22 15:01:21  m00f069
+ * Changed MAX_RETRY_INTERVAL from 600 to 100 to make it smaller than WebSphere default transaction timeout of 120
+ *
+ * Revision 1.104  2012/09/07 13:15:17  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Messaging related changes:
  * - Use CACHE_CONSUMER by default for ESB RR
  * - Don't use JMSXDeliveryCount to determine whether message has already been processed
@@ -649,7 +652,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public static final String RCV_MESSAGE_TO_ERRORSTORE_EVENT = "Receiver Moved Message to ErrorStorage";
 	
 	public static final int RCV_SUSPENSION_MESSAGE_THRESHOLD=60;
-	public static final int MAX_RETRY_INTERVAL=600;
+	// Should be smaller than the transaction timeout as the delay takes place
+	// within the transaction. WebSphere default transaction timeout is 120.
+	public static final int MAX_RETRY_INTERVAL=100;
 	private boolean suspensionMessagePending=false;
    
 	private BeanFactory beanFactory;
