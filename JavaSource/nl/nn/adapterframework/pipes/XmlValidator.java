@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.48  2012-12-07 15:09:49  m00f069
+ * Revision 1.49  2013-01-23 15:39:33  europe\m168309
+ * added forwardFailureToSuccess attribute
+ *
+ * Revision 1.48  2012/12/07 15:09:49  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Bugfix xml validation when using schemaSessionKey (first encountered xsd was reused on every call) (previous bugfix attempt "made preparse synchronized to prevent wrong validation when using schemaSessionKey" did not solve the issue in the environment)
  *
  * Revision 1.47  2012/12/06 15:19:28  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -206,6 +209,7 @@ import org.apache.log4j.Logger;
 * <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>the namespace of the SOAP Envelope, when this property has a value and the input message is a SOAP Message the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate. Please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.SoapValidator} is now the preferred solution in case a SOAP Message needs to be validated, in other cases give this property an empty value</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
 * <tr><td>{@link #setIgnoreUnknownNamespaces(boolean) ignoreUnknownNamespaces}</td><td>ignore namespaces in the input message which are unknown</td><td>false when schemaLocation is used, true otherwise</td></tr>
 * <tr><td>{@link #setWarn(boolean) warn}</td><td>when set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)</td><td><code>true</code></td></tr>
+* <tr><td>{@link #setForwardFailureToSuccess(boolean) forwardFailureToSuccess}</td><td>when set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)</td><td><code>false</code></td></tr>
 * </table>
 * <p><b>Exits:</b>
 * <table border="1">
@@ -226,7 +230,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
-
+    private boolean forwardFailureToSuccess = false;
+	
 	protected AbstractXmlValidator validator = new XercesXmlValidator();
 
 	private TransformerPool transformerPoolExtractSoapBody;
@@ -289,9 +294,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider {
 			throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
 		}
 
-		if (!isThrowException()){
+		if (!isForwardFailureToSuccess() && !isThrowException()){
 			if (findForward("failure")==null) {
-				throw new ConfigurationException(getLogPrefix(null)+ "must either set throwException true, or have a forward with name [failure]");
+				throw new ConfigurationException(getLogPrefix(null)+ "must either set throwException true, forwardFailureToSuccess true or have a forward with name [failure]");
 			}
 		}
 
@@ -348,7 +353,11 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider {
             forward = findForward("failure");
         }
         if (forward == null) {
-            throw new PipeRunException(this, "not implemented: should get reason from validator");
+        	if (isForwardFailureToSuccess()) {
+            	forward = findForward("success");
+        	} else {
+            	throw new PipeRunException(this, "not implemented: should get reason from validator");
+        	}
         }
         return forward;
     }
@@ -703,5 +712,13 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider {
 			return schemas;
 		}
 		return null;
+	}
+
+	public void setForwardFailureToSuccess(boolean b) {
+		this.forwardFailureToSuccess = b;
+	}
+
+	public Boolean isForwardFailureToSuccess() {
+		return forwardFailureToSuccess;
 	}
 }
