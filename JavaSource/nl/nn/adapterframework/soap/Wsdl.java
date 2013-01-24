@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.29  2013-01-24 16:49:54  m00f069
+ * Revision 1.30  2013-01-24 17:31:35  m00f069
+ * Determine ESB SOAP type based on input EsbSoapValidator instead of input or output EsbSoapWrapperPipe
+ *
+ * Revision 1.29  2013/01/24 16:49:54  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed header message. Added header part to request and response message.
  * Cleaned code a little.
  *
@@ -125,6 +128,7 @@ import javax.xml.stream.XMLStreamWriter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.extensions.esb.EsbSoapValidator;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.jms.JmsListener;
@@ -213,9 +217,7 @@ class Wsdl {
             tns = appConstants.getResolvedProperty("wsdl.targetNamespace");
         }
         if (tns == null) {
-            EsbSoapWrapperPipe inputWrapper = getEsbSoapInputWrapper();
-            EsbSoapWrapperPipe outputWrapper = getEsbSoapOutputWrapper();
-            if (inputWrapper != null || outputWrapper != null) {
+            if (inputValidator instanceof EsbSoapValidator) {
                 esbSoap = true;
                 String schemaLocation = WsdlUtils.getFirstNamespaceFromSchemaLocation(inputValidator);
                 if (EsbSoapWrapperPipe.isValidNamespace(schemaLocation)) {
@@ -239,13 +241,16 @@ class Wsdl {
                     esbSoapBusinessDomain = s.substring(i + 1);
                 } else {
                     warn("Namespace '" + schemaLocation + "' invalid according to ESB SOAP standard");
-                    if (outputWrapper != null) {
-                        esbSoapBusinessDomain = outputWrapper.getBusinessDomain();
-                        esbSoapServiceName = outputWrapper.getServiceName();
-                        esbSoapServiceContext = outputWrapper.getServiceContext();
-                        esbSoapServiceContextVersion = outputWrapper.getServiceContextVersion();
-                        esbSoapOperationName = outputWrapper.getOperationName();
-                        esbSoapOperationVersion = outputWrapper.getOperationVersion();
+                    IPipe outputWrapper = pipeLine.getOutputWrapper();
+                    if (outputWrapper != null
+                            && outputWrapper instanceof EsbSoapWrapperPipe) {
+                        EsbSoapWrapperPipe esbSoapWrapper = (EsbSoapWrapperPipe)outputWrapper;
+                        esbSoapBusinessDomain = esbSoapWrapper.getBusinessDomain();
+                        esbSoapServiceName = esbSoapWrapper.getServiceName();
+                        esbSoapServiceContext = esbSoapWrapper.getServiceContext();
+                        esbSoapServiceContextVersion = esbSoapWrapper.getServiceContextVersion();
+                        esbSoapOperationName = esbSoapWrapper.getOperationName();
+                        esbSoapOperationVersion = esbSoapWrapper.getOperationVersion();
                     }
                 }
                 if (esbSoapBusinessDomain == null) {
@@ -819,22 +824,6 @@ class Wsdl {
 
     protected PipeLine getPipeLine() {
         return pipeLine;
-    }
-
-    protected EsbSoapWrapperPipe getEsbSoapInputWrapper() {
-        IPipe inputWrapper = pipeLine.getInputWrapper();
-        if (inputWrapper instanceof  EsbSoapWrapperPipe) {
-            return (EsbSoapWrapperPipe) inputWrapper;
-        }
-        return null;
-    }
-
-    protected EsbSoapWrapperPipe getEsbSoapOutputWrapper() {
-        IPipe outputWrapper = pipeLine.getOutputWrapper();
-        if (outputWrapper instanceof  EsbSoapWrapperPipe) {
-            return (EsbSoapWrapperPipe) outputWrapper;
-        }
-        return null;
     }
 
     protected Collection<QName> getHeaderTags(XmlValidator xmlValidator) throws XMLStreamException, IOException {
