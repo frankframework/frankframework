@@ -1,6 +1,10 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.28  2012-12-06 15:19:28  m00f069
+ * Revision 1.29  2013-01-24 16:49:54  m00f069
+ * Removed header message. Added header part to request and response message.
+ * Cleaned code a little.
+ *
+ * Revision 1.28  2012/12/06 15:19:28  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Resolved warnings which showed up when using addNamespaceToSchema (src-include.2.1: The targetNamespace of the referenced schema..., src-resolve.4.2: Error resolving component...)
  * Handle includes in XSD's properly when generating a WSDL
  * Removed XSD download (unused and XSD's were not adjusted according to e.g. addNamespaceToSchema)
@@ -138,11 +142,6 @@ import org.apache.commons.lang.StringUtils;
  *
  *  An object of this class represents the WSDL associated with one IBIS pipeline.
  *
- *
- *  TODO http://cxf.547215.n5.nabble.com/ClassName-quot-is-already-defined-in-quot-during-compilation-after-code-generation-td4299849.html
- *
- *  TODO perhaps use wsdl4j or easywsdl to generate the WSDL more genericly (for easy switching between 1.1 and 2.0).
- *
  * @author  Michiel Meeuwissen
  * @author  Jaco de Groot
  */
@@ -247,8 +246,6 @@ class Wsdl {
                         esbSoapServiceContextVersion = outputWrapper.getServiceContextVersion();
                         esbSoapOperationName = outputWrapper.getOperationName();
                         esbSoapOperationVersion = outputWrapper.getOperationVersion();
-                    } else {
-                        // One-way WSDL
                     }
                 }
                 if (esbSoapBusinessDomain == null) {
@@ -299,19 +296,17 @@ class Wsdl {
                     } else {
                         warn("Could not extract paradigm from soapBody attribute of inputValidator");
                     }
-                    String outputParadigm = WsdlUtils.getEsbSoapParadigm(outputValidator);
-                    if (outputParadigm != null) {
-                        wsdlOutputMessageName = esbSoapOperationName + "_"
-                            + esbSoapOperationVersion + "_" + outputParadigm;
-                        if (!"Response".equals(outputParadigm)) {
-                            warn("Paradigm for output message which was extracted from soapBody should be Response instead of '"
-                                    + outputParadigm + "'");
-                        }
-                    } else {
-                        if (outputWrapper != null) {
-                            warn("Could not extract paradigm from soapBody attribute of outputValidator");
+                    if (outputValidator != null) {
+                        String outputParadigm = WsdlUtils.getEsbSoapParadigm(outputValidator);
+                        if (outputParadigm != null) {
+                            wsdlOutputMessageName = esbSoapOperationName + "_"
+                                + esbSoapOperationVersion + "_" + outputParadigm;
+                            if (!"Response".equals(outputParadigm)) {
+                                warn("Paradigm for output message which was extracted from soapBody should be Response instead of '"
+                                        + outputParadigm + "'");
+                            }
                         } else {
-                            // One-way WSDL
+                            warn("Could not extract paradigm from soapBody attribute of outputValidator");
                         }
                     }
                     wsdlPortTypeName = esbSoapOperationName + "_Interface_" + esbSoapOperationVersion;
@@ -511,7 +506,6 @@ class Wsdl {
             portType(w);
             binding(w);
             service(w, servlet);
-
         }
         w.writeEndDocument();
         warnings(w);
@@ -556,16 +550,17 @@ class Wsdl {
      * @throws IOException
      */
     protected void messages(XMLStreamWriter w) throws XMLStreamException, IOException {
-        message(w, "Header", getHeaderTags());
-        message(w, wsdlInputMessageName, getInputTags());
+        List<QName> parts = new ArrayList<QName>();
+        parts.addAll(getInputHeaderTags());
+        parts.addAll(getInputBodyTags());
+        message(w, wsdlInputMessageName, parts);
         XmlValidator outputValidator = (XmlValidator) pipeLine.getOutputValidator();
         if (outputValidator != null) {
-            Collection<QName> out = getOutputTags();
-            message(w, wsdlOutputMessageName, out);
-        } else {
-            // One-way WSDL
+            parts.clear();
+            parts.addAll(getOutputHeaderTags());
+            parts.addAll(getOutputBodyTags());
+            message(w, wsdlOutputMessageName, parts);
         }
-        //message(w, "PipeLineFault", "error", "bla:bloe");
     }
 
     protected void message(XMLStreamWriter w, String name, Collection<QName> tags) throws XMLStreamException, IOException {
@@ -592,16 +587,10 @@ class Wsdl {
             w.writeAttribute("name", wsdlOperationName); {
                 w.writeEmptyElement(WSDL, "input");
                 w.writeAttribute("message", "ibis:" + wsdlInputMessageName);
-
-                if (getOutputTags() != null) {
+                if (outputValidator != null) {
                     w.writeEmptyElement(WSDL, "output");
                     w.writeAttribute("message", "ibis:" + wsdlOutputMessageName);
                 }
-                /*
-               w.writeEmptyElement(WSDL, "fault");
-               w.writeAttribute("message", "ibis:PipeLineFault");
-               */
-
             }
             w.writeEndElement();
         }
@@ -651,51 +640,40 @@ class Wsdl {
             w.writeAttribute("style", "document");
             w.writeAttribute("soapAction", getSoapAction());
 
-
             w.writeStartElement(WSDL, "input"); {
-                writeSoapHeader(w);
-                Collection<QName>  inputTags = getInputTags();
-                //w.writeEmptyElement(input.xsd.nameSpace, input.getRootTag());
-                w.writeEmptyElement(SOAP_WSDL, "body");
-                writeParts(w, inputTags);
-                w.writeAttribute("use", "literal");
+                writeSoapHeader(w, wsdlInputMessageName, getInputHeaderTags());
+                writeSoapBody(w, getInputBodyTags());
             }
             w.writeEndElement();
 
-            Collection<QName> outputTags = getOutputTags();
-            if (outputTags != null) {
+            if (outputValidator != null) {
                 w.writeStartElement(WSDL, "output"); {
-                    writeSoapHeader(w);
-                    ///w.writeEmptyElement(outputTag.xsd.nameSpace, outputTag.getRootTag());
-                    w.writeEmptyElement(SOAP_WSDL, "body");
-                    writeParts(w, outputTags);
-                    w.writeAttribute("use", "literal");
+                    writeSoapHeader(w, wsdlOutputMessageName, getOutputHeaderTags());
+                    writeSoapBody(w, getOutputBodyTags());
                 }
                 w.writeEndElement();
             }
 
-            /*
-            w.writeStartElement(WSDL, "fault"); {
-                w.writeEmptyElement(SOAP_WSDL, "error");
-                w.writeAttribute("use", "literal");
-            }
-            w.writeEndElement();
-            */
         }
         w.writeEndElement();
     }
 
-    protected void writeSoapHeader(XMLStreamWriter w) throws XMLStreamException, IOException {
-        Collection<QName>  headers = getHeaderTags();
-        if (! headers.isEmpty()) {
-            if (headers.size() > 1) {
-                warn("Can only deal with one soap header. Taking only the first of " + headers);
+    protected void writeSoapHeader(XMLStreamWriter w, String wsdlMessageName, Collection<QName> tags) throws XMLStreamException, IOException {
+        if (!tags.isEmpty()) {
+            if (tags.size() > 1) {
+                warn("Can only deal with one soap header. Taking only the first of " + tags);
             }
             w.writeEmptyElement(SOAP_WSDL, "header");
-            w.writeAttribute("part", getIbisName(headers.iterator().next()));
+            w.writeAttribute("part", getIbisName(tags.iterator().next()));
             w.writeAttribute("use",     "literal");
-            w.writeAttribute("message", "ibis:Header");
+            w.writeAttribute("message", "ibis:" + wsdlMessageName);
         }
+    }
+
+    protected void writeSoapBody(XMLStreamWriter w, Collection<QName> tags) throws XMLStreamException, IOException {
+        w.writeEmptyElement(SOAP_WSDL, "body");
+        writeParts(w, tags);
+        w.writeAttribute("use", "literal");
     }
 
     protected void writeParts(XMLStreamWriter w, Collection<QName> tags) throws XMLStreamException {
@@ -899,22 +877,20 @@ class Wsdl {
         return null;
     }
 
-    protected Collection<QName> getHeaderTags() throws IOException, XMLStreamException {
+    protected Collection<QName> getInputHeaderTags() throws IOException, XMLStreamException {
         return getHeaderTags(inputValidator);
     }
 
-    protected Collection<QName> getInputTags() throws IOException, XMLStreamException {
+    protected Collection<QName> getInputBodyTags() throws IOException, XMLStreamException {
         return getRootTags(inputValidator);
     }
 
-    protected Collection<QName> getOutputTags() throws IOException, XMLStreamException {
-        XmlValidator outputValidator = (XmlValidator) getPipeLine().getOutputValidator();
-        if (outputValidator != null) {
-            return getRootTags((XmlValidator) getPipeLine().getOutputValidator());
-        } else {
-            // One-way WSDL
-            return null;
-        }
+    protected Collection<QName> getOutputHeaderTags() throws IOException, XMLStreamException {
+        return getHeaderTags(outputValidator);
+    }
+
+    protected Collection<QName> getOutputBodyTags() throws IOException, XMLStreamException {
+        return getRootTags((XmlValidator)getPipeLine().getOutputValidator());
     }
 
     protected void warn(String warning) {
@@ -924,29 +900,4 @@ class Wsdl {
         }
     }
 
-    /*
-        public void easywsdl(OutputStream out, String servlet) throws XMLStreamException, IOException, SchemaException {
-            Description description = WSDLFactory.newInstance().newDescription(AbsItfDescription.WSDLVersionConstants.WSDL11);
-
-            SchemaFactory fact = SchemaFactory.newInstance();
-            Types t = description.getTypes();
-            for (XSD xsd : getXsds()) {
-                description.addNamespace(xsd.pref, xsd.nameSpace);
-                SchemaReader sr = fact.newSchemaReader();
-                Schema s = sr.read(xsd.url);
-                t.addSchema(s);
-            }
-            InterfaceType it = description.createInterface();
-            Operation o = it.createOperation();
-            Input i = o.createInput();
-            i.setName("IbisInput");
-            //i.
-            // s
-            t.addOperation(it.createOperation());
-            description.addInterface();
-            Binding binding = description.createBinding();
-            BindingOperation op = binding.createBindingOperation();
-            //description.addBinding(binding);
-        }
-    */
 }
