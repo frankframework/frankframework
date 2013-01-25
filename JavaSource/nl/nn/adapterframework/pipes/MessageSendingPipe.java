@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.82  2012-10-24 14:14:08  europe\m168309
+ * Revision 1.83  2013-01-25 13:34:20  europe\m168309
+ * added useInputForExtract attribute
+ *
+ * Revision 1.82  2012/10/24 14:14:08  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attribute auditTrailSessionKey
  *
  * Revision 1.81  2012/08/21 15:51:35  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -339,6 +342,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setRetryMaxInterval(int) retryMaxInterval}</td><td>The maximum number of seconds waited after an unsuccessful processing attempt before another processing attempt is made</td><td>600</td></tr>
  * <tr><td>{@link #setRetryXPath(String) retryXPath}</td><td>xpath expression evaluated on each technical successful reply. Retry is done if condition returns true</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRetryNamespaceDefs(String) retryNamespaceDefs}</td><td>namespace defintions for retryXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setUseInputForExtract(boolean) useInputForExtract}</td><td>when set <code>true</code>, the input of a pipe is used to extract audit trail, correlationID and label (instead of the wrapped input)</td><td>true</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
@@ -402,6 +406,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private String labelStyleSheet;
 	private String timeOutOnResult;
 	private String exceptionOnResult;
+	private boolean useInputForExtract = true;
 
 	private int maxRetries=0;
 	private int retryMinInterval=1;
@@ -631,7 +636,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	
 	public PipeRunResult doPipe(Object input, IPipeLineSession session)	throws PipeRunException {
-
+		String originalMessage = input.toString();
 		String result = null;
 		String correlationID = session.getMessageId();
 
@@ -753,7 +758,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					long messageLogStartTime= System.currentTimeMillis();
 					String messageTrail="no audit trail";
 					if (auditTrailTp!=null) {
-						messageTrail=auditTrailTp.transform((String)input,null);
+						if (isUseInputForExtract()){
+							messageTrail=auditTrailTp.transform(originalMessage,null);
+						} else {
+							messageTrail=auditTrailTp.transform((String)input,null);
+						}
 					} else {
 						if (StringUtils.isNotEmpty(getAuditTrailSessionKey())) {
 							messageTrail = (String)(session.get(getAuditTrailSessionKey()));
@@ -768,7 +777,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 							String sourceString = (String)(session.get(getCorrelationIDSessionKey()));
 							correlationID=correlationIDTp.transform(sourceString,null);
 						} else {
-							correlationID=correlationIDTp.transform((String)input,null);
+							if (isUseInputForExtract()) {
+								correlationID=correlationIDTp.transform(originalMessage,null);
+							} else {
+								correlationID=correlationIDTp.transform((String)input,null);
+							}
 						}
 						if (StringUtils.isEmpty(correlationID)) {
 							correlationID="-";
@@ -776,7 +789,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					}
 					String label=null;
 					if (labelTp!=null) {
-						label=labelTp.transform((String)input,null);
+						if (isUseInputForExtract()) {
+							label=labelTp.transform(originalMessage,null);
+						} else {
+							label=labelTp.transform((String)input,null);
+						}
 					}
 					if (sender instanceof MailSender) {
 						String messageInMailSafeForm = (String)session.get("messageInMailSafeForm");
@@ -1278,5 +1295,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	public String getAuditTrailSessionKey() {
 		return auditTrailSessionKey;
+	}
+
+	public void setUseInputForExtract(boolean b) {
+		useInputForExtract = b;
+	}
+	public boolean isUseInputForExtract() {
+		return useInputForExtract;
 	}
 }
