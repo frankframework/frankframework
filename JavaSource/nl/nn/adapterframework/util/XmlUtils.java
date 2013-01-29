@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.95  2013-01-03 10:49:10  europe\m168309
+ * Revision 1.96  2013-01-29 14:03:21  m00f069
+ * Remove double attributes in schema element of merged schema´s (WebSphere's XMLStreamWriter doesn't remove them)
+ *
+ * Revision 1.95  2013/01/03 10:49:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * XmlUtils: added method removeUnusedNamespaces()
  *
  * Revision 1.94  2012/12/07 15:56:37  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -389,7 +392,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.95 $ $Date: 2013-01-03 10:49:10 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.96 $ $Date: 2013-01-29 14:03:21 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1733,55 +1736,64 @@ public class XmlUtils {
 			return null;
 		}
 	}
-    /**
-     * Like {@link javanet.staxutils.XMLStreamUtils#mergeAttributes} but it can also merge namespaces
-     * @param tag
-     * @param attrs
-     * @param nsps
-     * @return
-     */
-    public static StartElement mergeAttributes(StartElement tag,
-                                               Iterator<? extends Attribute> attrs,
-                                               Iterator<? extends Namespace> nsps,
-                                               XMLEventFactory factory) {
 
-        // create Attribute map
-        Map<QName, Attribute> attributes = new HashMap<QName, Attribute>();
+	/**
+	 * Like {@link javanet.staxutils.XMLStreamUtils#mergeAttributes} but it can
+	 * also merge namespaces
+	 * 
+	 * @param tag
+	 * @param attrs
+	 * @param nsps
+	 * @return
+	 */
+	public static StartElement mergeAttributes(StartElement tag,
+			Iterator<? extends Attribute> attrs,
+			Iterator<? extends Namespace> nsps, XMLEventFactory factory) {
+		// create Attribute map
+		Map<QName, Attribute> attributes = new HashMap<QName, Attribute>();
 
-        // iterate through start tag's attributes
-        for (Iterator i = tag.getAttributes(); i.hasNext();) {
-            Attribute attr = (Attribute) i.next();
-            attributes.put(attr.getName(), attr);
+		// iterate through start tag's attributes
+		for (Iterator i = tag.getAttributes(); i.hasNext();) {
+			Attribute attr = (Attribute) i.next();
+			attributes.put(attr.getName(), attr);
+		}
+		if (attrs != null) {
+			// iterate through new attributes
+			while (attrs.hasNext()) {
+				Attribute attr = attrs.next();
+				attributes.put(attr.getName(), attr);
+			}
+		}
 
-        }
-        if (attrs != null) {
-            // iterate through new attributes
-            while (attrs.hasNext()) {
-                Attribute attr = attrs.next();
-                attributes.put(attr.getName(), attr);
-            }
-        }
+		Map<QName, Namespace> namespaces = new HashMap<QName, Namespace>();
+		for (Iterator i = tag.getNamespaces(); i.hasNext();) {
+			Namespace ns = (Namespace) i.next();
+			namespaces.put(ns.getName(), ns);
+		}
+		if (nsps != null) {
+			while (nsps.hasNext()) {
+				Namespace ns = nsps.next();
+				namespaces.put(ns.getName(), ns);
+			}
+		}
 
-        Map<QName, Namespace> namespaces = new HashMap<QName, Namespace>();
-        for (Iterator i = tag.getNamespaces(); i.hasNext();) {
-            Namespace ns = (Namespace) i.next();
-            namespaces.put(ns.getName(), ns);
-        }
-        if (nsps != null) {
-            while (nsps.hasNext()) {
-                Namespace ns = nsps.next();
-                namespaces.put(ns.getName(), ns);
-            }
-        }
+		factory.setLocation(tag.getLocation());
 
-        factory.setLocation(tag.getLocation());
+		QName tagName = tag.getName();
+		return factory.createStartElement(tagName.getPrefix(), tagName
+				.getNamespaceURI(), tagName.getLocalPart(), attributes.values()
+				.iterator(), namespaces.values().iterator(), tag
+				.getNamespaceContext());
+	}
 
-        QName tagName = tag.getName();
-        return factory.createStartElement(tagName.getPrefix(),
-            tagName.getNamespaceURI(), tagName.getLocalPart(),
-            attributes.values().iterator(),
-            namespaces.values().iterator(),
-            tag.getNamespaceContext());
+	public static boolean attributesEqual(Attribute attribute1,
+			Attribute attribute2) {
+		if (!attribute1.getName().equals(attribute2.getName())) {
+			return false;
+		} else if (!attribute1.getValue().equals(attribute2.getValue())) {
+			return false;
+		}
+		return true;
+	}
 
-    }
 }

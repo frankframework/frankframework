@@ -129,6 +129,7 @@ public class SchemaUtils {
         }
     }
 
+    
     /**
      * @return a map with ByteArrayOutputStream's when xmlStreamWriter is null,
      *         otherwise write to xmlStreamWriter
@@ -151,6 +152,25 @@ public class SchemaUtils {
                 XMLStreamWriter w = XmlUtils.OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, XmlUtils.STREAM_FACTORY_ENCODING);
                 xsdToXmlStreamWriter(xsd, w, false, true, false, false,
                         rootAttributes, rootNamespaceAttributes, imports, true);
+            }
+            // Remove doubles
+            for (int i = 0; i < rootAttributes.size(); i++) {
+                Attribute attribute1 = rootAttributes.get(i);
+                for (int j = 0; j < rootAttributes.size(); j++) {
+                    Attribute attribute2 = rootAttributes.get(j);
+                    if (i != j && XmlUtils.attributesEqual(attribute1, attribute2)) {
+                        rootAttributes.remove(j);
+                    }
+                }
+            }
+            for (int i = 0; i < rootNamespaceAttributes.size(); i++) {
+                Attribute attribute1 = rootNamespaceAttributes.get(i);
+                for (int j = 0; j < rootNamespaceAttributes.size(); j++) {
+                    Attribute attribute2 = rootNamespaceAttributes.get(j);
+                    if (i != j && XmlUtils.attributesEqual(attribute1, attribute2)) {
+                        rootNamespaceAttributes.remove(j);
+                    }
+                }
             }
             // Write XSD's with merged root element
             XMLStreamWriter w;
