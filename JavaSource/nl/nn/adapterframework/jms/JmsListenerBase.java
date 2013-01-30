@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListenerBase.java,v $
- * Revision 1.16  2012-06-01 10:52:48  m00f069
+ * Revision 1.17  2013-01-30 15:37:42  europe\m168309
+ * separate method retrieveIdFromMessage for method getIdFromRawMessage
+ *
+ * Revision 1.16  2012/06/01 10:52:48  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.15  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -56,6 +59,7 @@ import java.util.Map;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
@@ -183,13 +187,17 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 	 */
 	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		TextMessage message = null;
-		String cid = "unset";
 		try {
 			message = (TextMessage) rawMessage;
 		} catch (ClassCastException e) {
 			log.error("message received by listener on ["+ getDestinationName()+ "] was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
 			return null;
 		}
+		return retrieveIdFromMessage(message, threadContext);
+	}
+
+	protected String retrieveIdFromMessage(Message message, Map threadContext) throws ListenerException {
+		String cid = "unset";
 		String mode = "unknown";
 		String id = "unset";
 		Date tsSent = null;
