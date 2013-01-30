@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.32  2013-01-30 15:16:53  m00f069
+ * Revision 1.33  2013-01-30 15:56:04  m00f069
+ * Show warning when targetNamespace is missing and addNamespaceToSchema is false
+ *
+ * Revision 1.32  2013/01/30 15:16:53  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Brought warning about paradigm from soapBody attribute of inputValidator and outputValidator in sync
  *
  * Revision 1.31  2013/01/25 12:48:37  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -305,7 +308,7 @@ class Wsdl {
                                     + inputParadigm + "'");
                         }
                     } else {
-                        warn("Could not extract paradigm from soapBody attribute of inputValidator (should end with _Action, _Event, _Request or _Solicit");
+                        warn("Could not extract paradigm from soapBody attribute of inputValidator (should end with _Action, _Event, _Request or _Solicit)");
                     }
                     if (outputValidator != null) {
                         String outputParadigm = WsdlUtils.getEsbSoapParadigm(outputValidator);
@@ -317,7 +320,7 @@ class Wsdl {
                                         + outputParadigm + "'");
                             }
                         } else {
-                            warn("Could not extract paradigm from soapBody attribute of outputValidator (should end with _Response");
+                            warn("Could not extract paradigm from soapBody attribute of outputValidator (should end with _Response)");
                         }
                     }
                     wsdlPortTypeName = esbSoapOperationName + "_Interface_" + esbSoapOperationVersion;
@@ -412,6 +415,13 @@ class Wsdl {
                 }
                 namespaceByPrefix.put("ns" + prefixCount, namespace);
                 prefixCount++;
+            }
+        }
+        for (XSD xsd : xsdsRecursive) {
+            if (StringUtils.isEmpty(xsd.targetNamespace)
+                    && !xsd.addNamespaceToSchema) {
+                warn("XSD '" + xsd.getBaseUrl() + xsd.getName()
+                        + "' doesn't have a targetNamespace and addNamespaceToSchema is false");
             }
         }
     }
