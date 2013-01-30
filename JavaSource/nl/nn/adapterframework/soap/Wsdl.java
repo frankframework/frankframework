@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.31  2013-01-25 12:48:37  m00f069
+ * Revision 1.32  2013-01-30 15:16:53  m00f069
+ * Brought warning about paradigm from soapBody attribute of inputValidator and outputValidator in sync
+ *
+ * Revision 1.31  2013/01/25 12:48:37  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Changed warning message about extracting paradigm from soapBody
  *
  * Revision 1.30  2013/01/24 17:31:35  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -302,7 +305,7 @@ class Wsdl {
                                     + inputParadigm + "'");
                         }
                     } else {
-                        warn("Could not extract paradigm from soapBody attribute of EsbSoapValidator (should end with _Action, _Event, _Request or _Solicit");
+                        warn("Could not extract paradigm from soapBody attribute of inputValidator (should end with _Action, _Event, _Request or _Solicit");
                     }
                     if (outputValidator != null) {
                         String outputParadigm = WsdlUtils.getEsbSoapParadigm(outputValidator);
@@ -314,7 +317,7 @@ class Wsdl {
                                         + outputParadigm + "'");
                             }
                         } else {
-                            warn("Could not extract paradigm from soapBody attribute of outputValidator");
+                            warn("Could not extract paradigm from soapBody attribute of outputValidator (should end with _Response");
                         }
                     }
                     wsdlPortTypeName = esbSoapOperationName + "_Interface_" + esbSoapOperationVersion;
