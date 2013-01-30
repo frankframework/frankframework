@@ -5,14 +5,11 @@
 <%@ taglib uri="/WEB-INF/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="http://jakarta.apache.org/taglibs/xtags-1.0" prefix="xtags" %>
 
-  
 <page title="Adapter logging">
-  
 	<contentTable>
 		<caption>Logfiles</caption>
 		<tbody>
 			<jsp:include page="/jsp/directoryLister.jsp" flush="true"/>
 		</tbody>
 	</contentTable>
-</page>		
-
+</page>
