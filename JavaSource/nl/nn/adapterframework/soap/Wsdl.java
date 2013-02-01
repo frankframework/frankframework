@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.33  2013-01-30 15:56:04  m00f069
+ * Revision 1.34  2013-02-01 13:36:24  m00f069
+ * Fixed NullPointerException
+ *
+ * Revision 1.33  2013/01/30 15:56:04  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Show warning when targetNamespace is missing and addNamespaceToSchema is false
  *
  * Revision 1.32  2013/01/30 15:16:53  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -416,12 +419,12 @@ class Wsdl {
                 namespaceByPrefix.put("ns" + prefixCount, namespace);
                 prefixCount++;
             }
-        }
-        for (XSD xsd : xsdsRecursive) {
-            if (StringUtils.isEmpty(xsd.targetNamespace)
-                    && !xsd.addNamespaceToSchema) {
-                warn("XSD '" + xsd.getBaseUrl() + xsd.getName()
-                        + "' doesn't have a targetNamespace and addNamespaceToSchema is false");
+            for (XSD xsd : xsdsRecursive) {
+                if (StringUtils.isEmpty(xsd.targetNamespace)
+                        && !xsd.addNamespaceToSchema) {
+                    warn("XSD '" + xsd.getBaseUrl() + xsd.getName()
+                            + "' doesn't have a targetNamespace and addNamespaceToSchema is false");
+                }
             }
         }
     }
