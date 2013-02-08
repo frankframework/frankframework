@@ -1,6 +1,9 @@
 /*
  * $Log: TibcoLogJmsListener.java,v $
- * Revision 1.1  2013-01-31 10:00:05  europe\m168309
+ * Revision 1.2  2013-02-08 09:37:08  europe\m168309
+ * added contextId to logging record and put environment in sessionKey
+ *
+ * Revision 1.1  2013/01/31 10:00:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Introduction of TibcoLogJmsListener
  *
  */
@@ -55,6 +58,7 @@ public class TibcoLogJmsListener extends JmsListener {
 		int severity = 0;
 		String severityStr = null;
 		String msg = null;
+		String contextId = null;
 		boolean first = true;
 		while (it.hasNext()) {
 			String mapName = (String) it.next();
@@ -72,18 +76,25 @@ public class TibcoLogJmsListener extends JmsListener {
 					if (mapName.equalsIgnoreCase("_cl.msg")) {
 						msg = tjmMessage.getString(mapName);
 					} else {
-						String mapValue = tjmMessage.getString(mapName);
-						if (first) {
-							first = false;
+						if (mapName.equalsIgnoreCase("_cl.contextId")) {
+							contextId = tjmMessage.getString(mapName);
 						} else {
-							sb.append(",");
+							String mapValue = tjmMessage.getString(mapName);
+							if (mapName.equalsIgnoreCase("_cl.physicalCompId.matrix.env")) {
+							    context.put("environment", mapValue);
+							}
+							if (first) {
+								first = false;
+							} else {
+								sb.append(",");
+							}
+							sb.append("[" + mapName + "]=[" + mapValue + "]");
 						}
-						sb.append("[" + mapName + "]=[" + mapValue + "]");
 					}
 				}
 			}
 		}
-		return DateUtils.format(creationTimes) + " " + severityStr + " " + msg
+		return DateUtils.format(creationTimes) + " " + severityStr + " " + contextId + " " + msg
 				+ " " + sb.toString();
 	}
 
