@@ -1,6 +1,10 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.49  2013-01-23 15:39:33  europe\m168309
+ * Revision 1.50  2013-02-09 13:47:03  m00f069
+ * Prevent InvocationTargetException/NullPointerException in logging when checking for default value of ignoreUnknownNamespaces.
+ * Bugfix invalid warning "already has a default value" for ignoreUnknownNamespaces (depends on value of schemaLocation, schema and noNamespaceSchemaLocation).
+ *
+ * Revision 1.49  2013/01/23 15:39:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added forwardFailureToSuccess attribute
  *
  * Revision 1.48  2012/12/07 15:09:49  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -163,6 +167,7 @@ import javax.xml.transform.TransformerConfigurationException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -207,7 +212,7 @@ import org.apache.log4j.Logger;
 * <tr><td>{@link #setValidateFile(boolean) validateFile}</td><td>when set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated</td><td><code>false</code></td></tr>
 * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code></td><td>UTF-8</td></tr>
 * <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>the namespace of the SOAP Envelope, when this property has a value and the input message is a SOAP Message the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate. Please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.SoapValidator} is now the preferred solution in case a SOAP Message needs to be validated, in other cases give this property an empty value</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
-* <tr><td>{@link #setIgnoreUnknownNamespaces(boolean) ignoreUnknownNamespaces}</td><td>ignore namespaces in the input message which are unknown</td><td>false when schemaLocation is used, true otherwise</td></tr>
+* <tr><td>{@link #setIgnoreUnknownNamespaces(boolean) ignoreUnknownNamespaces}</td><td>ignore namespaces in the input message which are unknown</td><td>true when schema or noNamespaceSchemaLocation is used, false otherwise</td></tr>
 * <tr><td>{@link #setWarn(boolean) warn}</td><td>when set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)</td><td><code>true</code></td></tr>
 * <tr><td>{@link #setForwardFailureToSuccess(boolean) forwardFailureToSuccess}</td><td>when set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)</td><td><code>false</code></td></tr>
 * </table>
@@ -225,7 +230,7 @@ import org.apache.log4j.Logger;
 * @version Id
 * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
 */
-public class XmlValidator extends FixedForwardPipe implements SchemasProvider {
+public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -586,7 +591,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider {
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 	}
 
-	public boolean getIgnoreUnknownNamespaces() {
+	public Boolean getIgnoreUnknownNamespaces() {
 		return validator.getIgnoreUnknownNamespaces();
 	}
 
@@ -720,5 +725,20 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider {
 
 	public Boolean isForwardFailureToSuccess() {
 		return forwardFailureToSuccess;
+	}
+
+	public Object getSpecialDefaultValue(String attributeName,
+			Object defaultValue, Map<String, String> attributes) {
+		// Different default value for ignoreUnknownNamespaces when using
+		// noNamespaceSchemaLocation.
+		if ("ignoreUnknownNamespaces".equals(attributeName)) {
+			if (StringUtils.isNotEmpty(attributes.get("schema"))
+					|| StringUtils.isNotEmpty(attributes.get("noNamespaceSchemaLocation"))) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return defaultValue;
 	}
 }

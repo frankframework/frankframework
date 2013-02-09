@@ -1,6 +1,10 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.23  2011-12-05 15:13:09  l190409
+ * Revision 1.24  2013-02-09 13:47:03  m00f069
+ * Prevent InvocationTargetException/NullPointerException in logging when checking for default value of ignoreUnknownNamespaces.
+ * Bugfix invalid warning "already has a default value" for ignoreUnknownNamespaces (depends on value of schemaLocation, schema and noNamespaceSchemaLocation).
+ *
+ * Revision 1.23  2011/12/05 15:13:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected extra source for name
  *
  * Revision 1.22  2011/12/05 10:21:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -214,7 +218,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      * @return
      * @throws Exception
      */
-    protected Object createObject(Map attrs) throws Exception {
+    protected Object createObject(Map<String, String> attrs) throws Exception {
         String className = (String) attrs.get("className");
         if (log.isDebugEnabled()) {
             log.debug("CreateObject: Element=[" + getDigester().getCurrentElementName()
@@ -228,22 +232,26 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		return currObj;
     }
 
-	protected void checkAttributes(Object currObj, Map attrs) throws Exception {
+	protected void checkAttributes(Object currObj, Map<String, String> attrs) throws Exception {
 		String beanName = (String)attrs.get("name");
 		for (Iterator it = attrs.keySet().iterator(); it.hasNext();) {
 			String attributeName = (String)it.next();
 			String value = (String)attrs.get(attributeName);
-			checkAttribute(currObj, beanName, attributeName, value);
+			checkAttribute(currObj, beanName, attributeName, value, attrs);
 		}
 	}
 
-	protected void checkAttribute(Object currObj, String beanName, String attributeName, String value) throws Exception {
+	protected void checkAttribute(Object currObj, String beanName,
+			String attributeName, String value, Map<String, String> attrs) throws Exception {
 		PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(currObj, attributeName);
 		if (pd!=null) {
 			Method rm = PropertyUtils.getReadMethod(pd);
 			if (rm!=null) {
 				try {
-					Object dv = rm.invoke(currObj, null);
+					Object dv = rm.invoke(currObj, new Object[0]);
+					if (currObj instanceof HasSpecialDefaultValues) {
+						dv = ((HasSpecialDefaultValues)currObj).getSpecialDefaultValue(attributeName, dv, attrs);
+					}
 					if (dv!=null) {
 						if (dv instanceof String) {
 							if (value.equals(dv)) {
@@ -383,22 +391,19 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
         return ibisContext.getBean(beanName, beanClass);
     }
 
-    protected Object createBeanAndAutoWire(Class beanClass) throws InstantiationException, IllegalAccessException {
+	protected Object createBeanAndAutoWire(Class beanClass) throws InstantiationException, IllegalAccessException {
 		if (log.isDebugEnabled()) {
-            log.debug("Bean class [" + beanClass.getName() + "], autowire bean name [" + getSuggestedBeanName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory for auto-wiring support.");
-        }
+			log.debug("Bean class [" + beanClass.getName() + "], autowire bean name [" + getSuggestedBeanName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory for auto-wiring support.");
+		}
+		return ibisContext.createBean(beanClass,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,false);
+	}
 
-		Object o = ibisContext.createBean(beanClass,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,false);
-   
-        return o;
-    }
-    
-    protected Map copyAttrsToMap(Attributes attrs) {
-    	Map map = new HashMap(attrs.getLength());
-    	for (int i=0;i<attrs.getLength();++i) {
-    		map.put(attrs.getQName(i), attrs.getValue(i));
-    	}
-    	return map;
-    }
+	protected Map<String, String> copyAttrsToMap(Attributes attrs) {
+		Map<String, String> map = new HashMap<String, String>(attrs.getLength());
+		for (int i=0;i<attrs.getLength();++i) {
+			map.put(attrs.getQName(i), attrs.getValue(i));
+		}
+		return map;
+	}
 
 }
