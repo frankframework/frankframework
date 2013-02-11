@@ -1,6 +1,9 @@
 /*
  * $Log: Wsdl.java,v $
- * Revision 1.34  2013-02-01 13:36:24  m00f069
+ * Revision 1.35  2013-02-11 11:15:10  m00f069
+ * Prevent problems when queueConnectionFactoryName on listener not specified and otap.stage not set, instead print a warning
+ *
+ * Revision 1.34  2013/02/01 13:36:24  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Fixed NullPointerException
  *
  * Revision 1.33  2013/01/30 15:56:04  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -811,15 +814,25 @@ class Wsdl {
             w.writeStartElement(ESB_SOAP_JNDI, "property"); {
                 w.writeAttribute("name", "java.naming.provider.url");
                 w.writeAttribute("type", "java.lang.String");
-                String qcf = "";
-                String stage = "";
-                try {
-                    qcf = URLEncoder.encode(
-                            listener.getQueueConnectionFactoryName(), "UTF-8");
-                    stage = URLEncoder.encode(
-                            AppConstants.getInstance().getResolvedProperty("otap.stage"),
-                            "UTF-8");
-                } catch (UnsupportedEncodingException e) {
+                String qcf = listener.getQueueConnectionFactoryName();
+                if (StringUtils.isEmpty(qcf)) {
+                    warn("Attribute queueConnectionFactoryName empty for listener '" + listener.getName() + "'");
+                } else {
+                    try {
+                        qcf = URLEncoder.encode(qcf, "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                        warn("Could not encode queueConnectionFactoryName for listener '" + listener.getName() + "'");
+                    }
+                }
+                String stage = AppConstants.getInstance().getResolvedProperty("otap.stage");
+                if (StringUtils.isEmpty(stage)) {
+                    warn("Property otap.stage empty");
+                } else {
+                    try {
+                        stage = URLEncoder.encode(stage, "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                        warn("Could not encode property otap.stage");
+                    }
                 }
                 w.writeCharacters("tibjmsnaming://host-for-" + qcf + "-on-"
                         + stage + ":37222");
