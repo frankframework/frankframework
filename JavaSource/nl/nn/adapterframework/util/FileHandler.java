@@ -1,6 +1,9 @@
 /*
  * $Log: FileHandler.java,v $
- * Revision 1.1  2012-10-05 15:45:31  m00f069
+ * Revision 1.2  2013-02-12 15:07:25  europe\m168309
+ * added skipBOM attribute
+ *
+ * Revision 1.1  2012/10/05 15:45:31  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Introduced FileSender which is similar to FilePipe but can be used as a Sender (making is possible to have a MessageLog)
  *
  * Revision 1.33  2012/06/01 10:52:49  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -152,6 +155,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to read from or write to is created if it does not exist</td><td>false</td></tr>
  * <tr><td>{@link #setWriteLineSeparator(boolean) writeLineSeparator}</td><td>when set to <code>true</code>, a line separator is written after the content is written</td><td>false</td></tr>
  * <tr><td>{@link #setTestCanWrite(boolean) testCanWrite}</td><td>when set to <code>true</code>, a test is performed to find out if a temporary file can be created and deleted in the specified directory (only used if directory is set and combined with the action write, write_append or create)</td><td>true</td></tr>
+ * <tr><td>{@link #setSkipBOM(boolean) skipBOM}</td><td>when set to <code>true</code>, a possible Bytes Order Mark (BOM) at the start of the file is skipped (only used for the action read and encoding UFT-8)</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -170,6 +174,8 @@ import org.apache.log4j.Logger;
 public class FileHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
+	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
+	
 	protected String charset = System.getProperty("file.encoding");
 	protected String actions;
 	protected String directory;
@@ -179,6 +185,7 @@ public class FileHandler {
 	protected boolean createDirectory = false;
 	protected boolean writeLineSeparator = false;
 	protected boolean testCanWrite = true;
+	protected boolean skipBOM = false;
 
 	protected List transformers;
 	protected byte[] eolArray=null;
@@ -418,7 +425,18 @@ public class FileHandler {
 			try {
 				byte[] result = new byte[fis.available()];
 				fis.read(result);
-				return result;
+				if (isSkipBOM()) {
+					if ((result[0] == BOM_UTF_8[0]) && (result[1] == BOM_UTF_8[1]) && (result[2] == BOM_UTF_8[2])) {
+					    byte[] resultWithoutBOM = new byte[result.length-3];
+					    for(int i = 3; i < result.length; ++i)
+					    	resultWithoutBOM[i-3]=result[i];
+					    return resultWithoutBOM;
+					} else {
+						return result;
+					}
+				} else {
+					return result;
+				}
 			} finally {
 				fis.close();
 
@@ -620,5 +638,12 @@ public class FileHandler {
 	}
 	public boolean isTestCanWrite() {
 		return testCanWrite;
+	}
+
+	public void setSkipBOM(boolean b) {
+		skipBOM = b;
+	}
+	public boolean isSkipBOM() {
+		return skipBOM;
 	}
 }
