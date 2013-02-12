@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.35  2012-11-07 15:03:49  m00f069
+ * Revision 1.36  2013-02-12 15:38:08  europe\m168309
+ * added skipBOM attribute
+ *
+ * Revision 1.35  2012/11/07 15:03:49  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Changed general error message
  *
  * Revision 1.34  2012/10/05 15:45:31  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -184,4 +187,7 @@ public class FilePipe extends FixedForwardPipe {
 		fileHandler.setTestCanWrite(b);
 	}
 
+	public void setSkipBOM(boolean b) {
+		fileHandler.setSkipBOM(b);
+	}
 }
