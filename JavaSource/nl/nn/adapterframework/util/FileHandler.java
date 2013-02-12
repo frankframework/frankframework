@@ -1,6 +1,9 @@
 /*
  * $Log: FileHandler.java,v $
- * Revision 1.2  2013-02-12 15:07:25  europe\m168309
+ * Revision 1.3  2013-02-12 15:44:15  europe\m168309
+ * added logging
+ *
+ * Revision 1.2  2013/02/12 15:07:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added skipBOM attribute
  *
  * Revision 1.1  2012/10/05 15:45:31  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -430,6 +433,7 @@ public class FileHandler {
 					    byte[] resultWithoutBOM = new byte[result.length-3];
 					    for(int i = 3; i < result.length; ++i)
 					    	resultWithoutBOM[i-3]=result[i];
+					    log.debug(getLogPrefix(session) + "removed UTF-8 BOM");
 					    return resultWithoutBOM;
 					} else {
 						return result;
