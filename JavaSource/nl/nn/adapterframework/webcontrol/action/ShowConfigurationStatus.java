@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.27  2012-12-03 08:09:42  europe\m168309
+ * Revision 1.28  2013-02-18 14:53:43  europe\m168309
+ * adjusted configWarning when errorlog is not empty
+ *
+ * Revision 1.27  2012/12/03 08:09:42  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added configWarning when errorlog is not empty
  *
  * Revision 1.26  2012/06/14 14:07:22  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -110,7 +113,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.27 $ $Date: 2012-12-03 08:09:42 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.28 $ $Date: 2013-02-18 14:53:43 $";
 
 	private int maxMessageSize = AppConstants.getInstance().getInt("adapter.message.max.size",0); 
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
@@ -160,7 +163,12 @@ public final class ShowConfigurationStatus extends ActionBase {
 			if (esr>0) {
 				XmlBuilder warningXML=new XmlBuilder("warnings");
 				warningXML=new XmlBuilder("warning");
-				warningXML.setValue("Errorlog contains "+esr+" records. These should be checked and after that resent or deleted");
+				if (esr==1) {
+					warningXML.setValue("Errorlog contains 1 record. Service management should check whether this record has to be resent or deleted");
+				} else {
+					warningXML.setValue("Errorlog contains "+esr+" records. Service Management should check whether these records have to be resent or deleted");
+				}
+				warningXML.addAttribute("severe", true);
 				warningsXML.addSubElement(warningXML);
 			}
 			for (int j=0; j<configWarnings.size(); j++) {
