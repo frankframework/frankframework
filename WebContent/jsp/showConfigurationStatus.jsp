@@ -102,7 +102,18 @@
 				<tbody>
 					<xtags:forEach select="warning">
 						<tr>
-							<td><xtags:valueOf select="."/></td>
+							<td>
+								<xtags:choose>
+									<xtags:when test="@severe='true'">
+										<font color="red">
+											<xtags:valueOf select="."/>
+										</font>
+									</xtags:when>
+									<xtags:otherwise>
+										<xtags:valueOf select="."/>
+									</xtags:otherwise>
+								</xtags:choose>
+							</td>
 						</tr>
 					</xtags:forEach>
 				</tbody>
