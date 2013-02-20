@@ -1,6 +1,9 @@
 /*
  * $Log: TibcoLogJmsListener.java,v $
- * Revision 1.2  2013-02-08 09:37:08  europe\m168309
+ * Revision 1.3  2013-02-20 09:49:56  europe\m168309
+ * changed layout logging record
+ *
+ * Revision 1.2  2013/02/08 09:37:08  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added contextId to logging record and put environment in sessionKey
  *
  * Revision 1.1  2013/01/31 10:00:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -58,7 +61,10 @@ public class TibcoLogJmsListener extends JmsListener {
 		int severity = 0;
 		String severityStr = null;
 		String msg = null;
-		String contextId = null;
+		String engineName = null;
+		String jobId = null;
+		String environment = null;
+		String node = null;
 		boolean first = true;
 		while (it.hasNext()) {
 			String mapName = (String) it.next();
@@ -76,26 +82,36 @@ public class TibcoLogJmsListener extends JmsListener {
 					if (mapName.equalsIgnoreCase("_cl.msg")) {
 						msg = tjmMessage.getString(mapName);
 					} else {
-						if (mapName.equalsIgnoreCase("_cl.contextId")) {
-							contextId = tjmMessage.getString(mapName);
+						if (mapName.equalsIgnoreCase("_cl.engineName")) {
+							engineName = tjmMessage.getString(mapName);
 						} else {
-							String mapValue = tjmMessage.getString(mapName);
-							if (mapName.equalsIgnoreCase("_cl.physicalCompId.matrix.env")) {
-							    context.put("environment", mapValue);
-							}
-							if (first) {
-								first = false;
+							if (mapName.equalsIgnoreCase("_cl.jobId")) {
+								jobId = tjmMessage.getString(mapName);
 							} else {
-								sb.append(",");
+								String mapValue = tjmMessage.getString(mapName);
+								if (mapName.equalsIgnoreCase("_cl.physicalCompId.matrix.env")) {
+									environment = mapValue;
+									context.put("environment", environment);
+								}
+								if (mapName.equalsIgnoreCase("_cl.physicalCompId.matrix.node")) {
+									node = mapValue;
+								}
+								if (first) {
+									first = false;
+								} else {
+									sb.append(",");
+								}
+								sb.append("[" + mapName + "]=[" + mapValue + "]");
 							}
-							sb.append("[" + mapName + "]=[" + mapValue + "]");
 						}
 					}
 				}
 			}
 		}
-		return DateUtils.format(creationTimes) + " " + severityStr + " " + contextId + " " + msg
-				+ " " + sb.toString();
+		return DateUtils.format(creationTimes) + " " + severityStr + " ["
+				+ (engineName != null ? engineName : (environment + "-" + node)) + "] ["
+				+ (jobId != null ? jobId : "") + "] " + msg + " "
+				+ sb.toString();
 	}
 
 	public String getIdFromRawMessage(Object rawMessage, Map threadContext)
