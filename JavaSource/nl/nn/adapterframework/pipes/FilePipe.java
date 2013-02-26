@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.36  2013-02-12 15:38:08  europe\m168309
+ * Revision 1.37  2013-02-26 12:42:23  europe\m168309
+ * added deleteEmptyDirectory attribute
+ *
+ * Revision 1.36  2013/02/12 15:38:08  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added skipBOM attribute
  *
  * Revision 1.35  2012/11/07 15:03:49  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -189,5 +192,9 @@ public class FilePipe extends FixedForwardPipe {
 
 	public void setSkipBOM(boolean b) {
 		fileHandler.setSkipBOM(b);
+	}
+
+	public void setDeleteEmptyDirectory(boolean b) {
+		fileHandler.setDeleteEmptyDirectory(b);
 	}
 }

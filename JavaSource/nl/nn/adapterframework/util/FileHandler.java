@@ -1,6 +1,9 @@
 /*
  * $Log: FileHandler.java,v $
- * Revision 1.3  2013-02-12 15:44:15  europe\m168309
+ * Revision 1.4  2013-02-26 12:41:56  europe\m168309
+ * added deleteEmptyDirectory attribute
+ *
+ * Revision 1.3  2013/02/12 15:44:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added logging
  *
  * Revision 1.2  2013/02/12 15:07:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -159,6 +162,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setWriteLineSeparator(boolean) writeLineSeparator}</td><td>when set to <code>true</code>, a line separator is written after the content is written</td><td>false</td></tr>
  * <tr><td>{@link #setTestCanWrite(boolean) testCanWrite}</td><td>when set to <code>true</code>, a test is performed to find out if a temporary file can be created and deleted in the specified directory (only used if directory is set and combined with the action write, write_append or create)</td><td>true</td></tr>
  * <tr><td>{@link #setSkipBOM(boolean) skipBOM}</td><td>when set to <code>true</code>, a possible Bytes Order Mark (BOM) at the start of the file is skipped (only used for the action read and encoding UFT-8)</td><td>false</td></tr>
+ * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>(only used when actions=delete) when set to <code>true</code>, the directory from which a file is deleted is also deleted when it contains no other files</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -189,6 +193,7 @@ public class FileHandler {
 	protected boolean writeLineSeparator = false;
 	protected boolean testCanWrite = true;
 	protected boolean skipBOM = false;
+	protected boolean deleteEmptyDirectory = false;
 
 	protected List transformers;
 	protected byte[] eolArray=null;
@@ -508,6 +513,23 @@ public class FileHandler {
 			else {
 				log.warn( getLogPrefix(session) + "file [" + file.toString() +"] does not exist");
 			}
+
+			/* if parent directory is empty, delete the directory */
+			if (isDeleteEmptyDirectory()) {
+				File directory = file.getParentFile();
+				if (directory.exists() && directory.list().length==0) {
+					boolean success = directory.delete();
+					if (!success){
+					   log.warn( getLogPrefix(session) + "could not delete directory [" + directory.toString() +"]");
+					} 
+					else {
+					   log.debug(getLogPrefix(session) + "deleted directory [" + directory.toString() +"]");
+					} 
+				} else {
+					   log.debug(getLogPrefix(session) + "directory [" + directory.toString() +"] doesn't exist or is not empty");
+				}
+			}
+			
 			return in;
 		}
 	}
@@ -649,5 +671,12 @@ public class FileHandler {
 	}
 	public boolean isSkipBOM() {
 		return skipBOM;
+	}
+
+	public void setDeleteEmptyDirectory(boolean b) {
+		deleteEmptyDirectory = b;
+	}
+	public boolean isDeleteEmptyDirectory() {
+		return deleteEmptyDirectory;
 	}
 }
