@@ -1,6 +1,9 @@
 /*
  * $Log: MoveFilePipe.java,v $
- * Revision 1.9  2012-06-01 10:52:49  m00f069
+ * Revision 1.10  2013-02-26 13:02:42  europe\m168309
+ * added deleteEmptyDirectory attribute
+ *
+ * Revision 1.9  2012/06/01 10:52:49  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.8  2012/02/13 14:31:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -74,6 +77,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of attempts before throwing an exception</td><td>10</td></tr>
  * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>Time between attempts</td><td>1000 [ms]</td></tr>
  * <tr><td>{@link #setAppend(boolean) append}</td><td> when set <code>true</code> and the destination file already exists, the content of the file to move is written to the end of the destination file. This implies <code>overwrite=true</code></td><td>false</td></tr>
+ * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>when set to <code>true</code>, the directory from which a file is moved is deleted when it contains no other files</td><td>false</td></tr>
  * </table>
  * </p>
  * 
@@ -83,7 +87,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class MoveFilePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.9 $ $Date: 2012-06-01 10:52:49 $";
+	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.10 $ $Date: 2013-02-26 13:02:42 $";
 
 	private String filename;
 	private String move2dir;
@@ -94,7 +98,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 	private int numberOfBackups = 5;
 	private boolean overwrite = false;
 	private boolean append = false;
-	
+	protected boolean deleteEmptyDirectory = false;
 		
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -146,12 +150,28 @@ public class MoveFilePipe extends FixedForwardPipe {
 					log.info(getLogPrefix(session)+"moved file ["+srcFile.getAbsolutePath()+"] to file ["+dstFile.getAbsolutePath()+"]");
 				}			 
 			}
+
+			/* if parent source directory is empty, delete the directory */
+			if (isDeleteEmptyDirectory()) {
+				File srcDirectory = srcFile.getParentFile();
+				if (srcDirectory.exists() && srcDirectory.list().length==0) {
+					boolean success = srcDirectory.delete();
+					if (!success){
+					   log.warn( getLogPrefix(session) + "could not delete directory [" + srcDirectory.toString() +"]");
+					} 
+					else {
+					   log.debug(getLogPrefix(session) + "deleted directory [" + srcDirectory.toString() +"]");
+					} 
+				} else {
+					   log.debug(getLogPrefix(session) + "directory [" + srcDirectory.toString() +"] doesn't exist or is not empty");
+				}
+			}
+
 		} catch(Exception e) {
 			throw new PipeRunException(this, "Error while moving file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]", e); 
 		}
 		return new PipeRunResult(getForward(), dstFile.getAbsolutePath());
 	}
-
 
 	public void setFilename(String filename) {
 		this.filename = filename;
@@ -159,8 +179,6 @@ public class MoveFilePipe extends FixedForwardPipe {
 	public String getFilename() {
 		return filename;
 	}
-
-
 
 	public void setMove2dir(String string) {
 		move2dir = string;
@@ -190,14 +208,12 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return numberOfAttempts;
 	}
 
-
 	public void setWaitBeforeRetry(long l) {
 		waitBeforeRetry = l;
 	}
 	public long getWaitBeforeRetry() {
 		return waitBeforeRetry;
 	}
-
 
 	public void setNumberOfBackups(int i) {
 		numberOfBackups = i;
@@ -218,5 +234,12 @@ public class MoveFilePipe extends FixedForwardPipe {
 	}
 	public boolean isAppend() {
 		return append;
+	}
+
+	public void setDeleteEmptyDirectory(boolean b) {
+		deleteEmptyDirectory = b;
+	}
+	public boolean isDeleteEmptyDirectory() {
+		return deleteEmptyDirectory;
 	}
 }
