@@ -1,6 +1,9 @@
 /*
  * $Log: UnzipPipe.java,v $
- * Revision 1.6  2012-06-01 10:52:49  m00f069
+ * Revision 1.7  2013-02-26 12:43:10  europe\m168309
+ * UnzipPipe: added collectsResults attribute
+ *
+ * Revision 1.6  2012/06/01 10:52:49  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.5  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -71,6 +74,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setDirectory(String) directory}</td>       <td>directory to extract the archive to</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDeleteOnExit(boolean) deleteOnExit}</td><td>when true, file is automatially deleted upon normal JVM termination</td><td>true</td></tr>
+ * <tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>if set <code>false</code>, only a small summary is returned</td><td>true</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -89,6 +93,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	
     private String directory;
     private boolean deleteOnExit=true;
+	private boolean collectResults=true;
     
 	private File dir; // File representation of directory
     
@@ -144,7 +149,9 @@ public class UnzipPipe extends FixedForwardPipe {
 					count++;
 					Misc.streamToStream(zis,fos,false);
 					fos.close();
-					entryResults += "<result item=\"" + count + "\"><zipEntry>" + XmlUtils.encodeCdataString(ze.getName()) + "</zipEntry><fileName>" + XmlUtils.encodeCdataString(tmpFile.getPath()) + "</fileName></result>";
+					if (isCollectResults()) {
+						entryResults += "<result item=\"" + count + "\"><zipEntry>" + XmlUtils.encodeCdataString(ze.getName()) + "</zipEntry><fileName>" + XmlUtils.encodeCdataString(tmpFile.getPath()) + "</fileName></result>";
+					}
 				}
 			}
 		} catch (IOException e) {
@@ -169,8 +176,15 @@ public class UnzipPipe extends FixedForwardPipe {
 
 	public void setDeleteOnExit(boolean b) {
 		deleteOnExit = b;
-}
+	}
 	public boolean isDeleteOnExit() {
 		return deleteOnExit;
+	}
+
+	public void setCollectResults(boolean b) {
+		collectResults = b;
+	}
+	public boolean isCollectResults() {
+		return collectResults;
 	}
 }
