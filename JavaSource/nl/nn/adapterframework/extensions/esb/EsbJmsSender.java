@@ -1,6 +1,9 @@
 /*
  * $Log: EsbJmsSender.java,v $
- * Revision 1.7  2012-08-31 13:54:04  europe\m168309
+ * Revision 1.8  2013-03-06 13:37:31  europe\m168309
+ * typo
+ *
+ * Revision 1.7  2012/08/31 13:54:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * changed derivation for soapAction attribute
  *
  * Revision 1.6  2012/08/30 14:08:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -37,7 +40,6 @@ import org.apache.commons.lang.StringUtils;
  * <p><b>Configuration </b><i>(where deviating from JmsSender)</i><b>:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.extensions.bis.BisSoapJmsSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values 
  * <ul>
  *   <li>"FF": Fire & Forget protocol</li>

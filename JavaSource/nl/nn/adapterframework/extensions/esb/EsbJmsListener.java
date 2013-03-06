@@ -1,6 +1,9 @@
 /*
  * $Log: EsbJmsListener.java,v $
- * Revision 1.4  2012-09-07 13:15:17  m00f069
+ * Revision 1.5  2013-03-06 13:37:31  europe\m168309
+ * typo
+ *
+ * Revision 1.4  2012/09/07 13:15:17  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Messaging related changes:
  * - Use CACHE_CONSUMER by default for ESB RR
  * - Don't use JMSXDeliveryCount to determine whether message has already been processed
@@ -39,7 +42,6 @@ import nl.nn.adapterframework.jms.JmsListener;
  * <p><b>Configuration </b><i>(where deviating from JmsListener)</i><b>:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.extensions.bis.BisSoapJmsSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values 
  * <ul>
  *   <li>"FF": Fire & Forget protocol</li>
