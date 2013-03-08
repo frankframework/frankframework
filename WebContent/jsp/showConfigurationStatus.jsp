@@ -245,7 +245,7 @@
 							 	<td class="receiverRow">
 							 		<xtags:valueOf select="@listenerClass"/>
 							 		<xtags:if test="@listenerDestination!=''">(<xtags:valueOf select="@listenerDestination"/>)</xtags:if>
-							 		<xtags:if test="@senderName!=''">/<xtags:valueOf select="@senderName"/>
+							 		<xtags:if test="@senderClass!=''">/<xtags:valueOf select="@senderClass"/>
 								 		<xtags:if test="@senderDestination!=''">(<xtags:valueOf select="@senderDestination"/>)</xtags:if>
 							 		</xtags:if>
 									<xtags:if test="@threadCount!=0">
@@ -328,20 +328,26 @@
 						</xtags:forEach>
 					</xtags:forEach>
 
-					<xtags:if test="pipes/pipe[@hasMessageLog='true']!=''">
+					<xtags:if test="count(pipes/pipe[@sender!='' and (@isJdbcSender='true'=false() or @hasMessageLog='true')])!=0">
 						<tr>
 							<td></td>
-							<subHeader colspan="3">message logging pipes</subHeader>
-							<subHeader colspan="2">destination</subHeader>
+							<subHeader colspan="3">message sending pipes</subHeader>
+							<subHeader colspan="2">sender/listener</subHeader>
 							<subHeader>Show Log</subHeader>
 						</tr>
-						<xtags:forEach select="pipes/pipe[@hasMessageLog='true']">
+						<xtags:forEach select="pipes/pipe[@sender!='' and (@isJdbcSender='true'=false() or @hasMessageLog='true')]">
 							<xtags:variable id="pipeName" select="@name"/>
 							<xtags:variable id="hasMessageLog" select="@hasMessageLog"/>
 							 <tr >
 								<td></td>
-								<td colspan="3" class="receiverRow"><xtags:valueOf select="@name"/>: <xtags:valueOf select="@sender"/></td>
-								<td colspan="2" class="receiverRow"><xtags:valueOf select="@destination"/></td>
+								<td colspan="3" class="receiverRow"><xtags:valueOf select="@name"/></td>
+								<td colspan="2" class="receiverRow">
+									<xtags:valueOf select="@sender"/>
+							 		<xtags:if test="@destination!=''">(<xtags:valueOf select="@destination"/>)</xtags:if>
+							 		<xtags:if test="@listenerClass!=''">/<xtags:valueOf select="@listenerClass"/>
+								 		<xtags:if test="@listenerDestination!=''">(<xtags:valueOf select="@listenerDestination"/>)</xtags:if>
+							 		</xtags:if>
+								</td>
 								<td>
 								<%  if ( "true".equalsIgnoreCase(hasMessageLog) ) { %>
 									<imagelink
@@ -354,7 +360,7 @@
 										<parameter name="adapterName"><%=java.net.URLEncoder.encode(adapterName)%></parameter>
 										<parameter name="pipeName"><%=java.net.URLEncoder.encode(pipeName)%></parameter>
 									 </imagelink> (<xtags:valueOf select="@messageLogCount"/>)
-								<% } %>
+								<% } else { %>&#160;<% } %>
 								</td>
 							</tr>
 						</xtags:forEach>
