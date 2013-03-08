@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.28  2013-02-18 14:53:43  europe\m168309
+ * Revision 1.29  2013-03-08 12:23:45  europe\m168309
+ * show "message sending pipes" instead of only "message logging pipes"
+ *
+ * Revision 1.28  2013/02/18 14:53:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted configWarning when errorlog is not empty
  *
  * Revision 1.27  2012/12/03 08:09:42  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -93,6 +96,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
@@ -113,7 +117,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.28 $ $Date: 2013-02-18 14:53:43 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.29 $ $Date: 2013-03-08 12:23:45 $";
 
 	private int maxMessageSize = AppConstants.getInstance().getInt("adapter.message.max.size",0); 
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
@@ -334,6 +338,18 @@ public final class ShowConfigurationStatus extends ActionBase {
 					pipeElem.addAttribute("sender",ClassUtils.nameOf(sender));
 					if (sender instanceof HasPhysicalDestination) {
 						pipeElem.addAttribute("destination",((HasPhysicalDestination)sender).getPhysicalDestinationName());
+					}
+					if (sender instanceof JdbcSenderBase) {
+						pipeElem.addAttribute("isJdbcSender","true");
+					}
+					IListener listener = msp.getListener();
+					if (listener!=null) {
+						pipeElem.addAttribute("listenerName", listener.getName());
+						pipeElem.addAttribute("listenerClass", ClassUtils.nameOf(listener));
+						if (listener instanceof HasPhysicalDestination) {
+							String pd = ((HasPhysicalDestination)listener).getPhysicalDestinationName();
+							pipeElem.addAttribute("listenerDestination", pd);
+						}
 					}
 					ITransactionalStorage messageLog = msp.getMessageLog();
 					if (messageLog!=null) {
