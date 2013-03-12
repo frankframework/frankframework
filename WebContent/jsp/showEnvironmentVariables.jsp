@@ -8,17 +8,23 @@
 			<bean:write name="envVars" scope="request" filter="false"/>
 	</xtags:parse>
 
+	<% int pos1=0; %>
 	<xtags:forEach select="environmentVariables/propertySet">
+		<% pos1++; %>
 		<br/><br/>
 		<contentTable>
 			<caption><xtags:valueOf select="@name"/></caption>
 			<tbody>
 				<tr>
+					<subHeader>Id</subHeader>
 					<subHeader>Property</subHeader>
 					<subHeader>Value</subHeader>
 				</tr>
+				<% int pos2=0; %>
 				<xtags:forEach select="property" sort="@name">
+				<% pos2++; %>
 					<tr>
+						<td><% out.print(pos1+"-"+pos2); %></td>
 						<td><xtags:valueOf select="@name"/></td>
 						<td><xtags:valueOf select="."/></td>
 					</tr>
