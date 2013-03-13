@@ -19,14 +19,21 @@
 			<tr>
 				<td></td>
 				<subHeader colspan="5" align="center">count</subHeader>
+				<td colspan="2"></td>
+				<subHeader colspan="3" align="center">count</subHeader>
 			</tr>
 			<tr>
 				<subHeader>state</subHeader>
-				<subHeader><img src="images/connected.gif" title="started"/></subHeader>
-				<subHeader><img src="images/connecting.gif" title="starting"/></subHeader>
-				<subHeader><img src="images/disconnected.gif" title="stopped"/></subHeader>
-				<subHeader><img src="images/disconnecting.gif" title="stopping"/></subHeader>
-				<subHeader><img src="images/error.gif" title="error"/></subHeader>
+				<subHeader align="center"><img src="images/connected.gif" title="started"/></subHeader>
+				<subHeader align="center"><img src="images/connecting.gif" title="starting"/></subHeader>
+				<subHeader align="center"><img src="images/disconnected.gif" title="stopped"/></subHeader>
+				<subHeader align="center"><img src="images/disconnecting.gif" title="stopping"/></subHeader>
+				<subHeader align="center"><img src="images/error.gif" title="error"/></subHeader>
+				<td></td>
+				<subHeader>level</subHeader>
+				<subHeader align="center">INFO</subHeader>
+				<subHeader align="center">WARN</subHeader>
+				<subHeader align="center">ERROR</subHeader>
 			</tr>
 			<tr>
 				<subHeader>adapters</subHeader>
@@ -35,6 +42,11 @@
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/adapterState/@stopped"/></td>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/adapterState/@stopping"/></td>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/adapterState/@error"/></td>
+				<td></td>
+				<subHeader>messages</subHeader>
+				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/messageLevel/@info"/></td>
+				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/messageLevel/@warn"/></td>
+				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/messageLevel/@error"/></td>
 			</tr>
 			<tr>
 				<subHeader>receivers</subHeader>
@@ -377,7 +389,21 @@
 						<tr>
 							<td></td>
 							<td colspan="6" class="messagesRow">
-								<xtags:valueOf select="@date"/> : <xtags:valueOf select="."/>
+								<xtags:choose>
+									<xtags:when test="@level='ERROR'">
+										<font color="red">
+											<xtags:valueOf select="@date"/> : <xtags:valueOf select="."/>
+										</font>
+									</xtags:when>
+									<xtags:when test="@level='WARN'">
+										<font color="orange">
+											<xtags:valueOf select="@date"/> : <xtags:valueOf select="."/>
+										</font>
+									</xtags:when>
+									<xtags:otherwise>
+										<xtags:valueOf select="@date"/> : <xtags:valueOf select="."/>
+									</xtags:otherwise>
+								</xtags:choose>
 							</td>
 						</tr>
 						</xtags:forEach>
