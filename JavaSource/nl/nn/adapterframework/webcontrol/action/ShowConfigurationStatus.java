@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.29  2013-03-08 12:23:45  europe\m168309
+ * Revision 1.30  2013-03-13 14:40:02  europe\m168309
+ * added summary for messages, coloured warnings and errors
+ *
+ * Revision 1.29  2013/03/08 12:23:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * show "message sending pipes" instead of only "message logging pipes"
  *
  * Revision 1.28  2013/02/18 14:53:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -102,6 +105,7 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -117,7 +121,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.29 $ $Date: 2013-03-08 12:23:45 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.30 $ $Date: 2013-03-13 14:40:02 $";
 
 	private int maxMessageSize = AppConstants.getInstance().getInt("adapter.message.max.size",0); 
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
@@ -193,6 +197,9 @@ public final class ShowConfigurationStatus extends ActionBase {
 		int countReceiverStateStopping=0;
 		int countReceiverStateStopped=0;
 		int countReceiverStateError=0;
+		int countMessagesInfo=0;
+		int countMessagesWarn=0;
+		int countMessagesError=0;
 		for(int j=0; j<config.getRegisteredAdapters().size(); j++) {
 			Adapter adapter = (Adapter)config.getRegisteredAdapter(j);
 
@@ -387,7 +394,18 @@ public final class ShowConfigurationStatus extends ActionBase {
 				}
 				adapterMessage.setValue(msg,true);
 				adapterMessage.addAttribute("date", DateUtils.format(adapter.getMessageKeeper().getMessage(t).getMessageDate(), DateUtils.FORMAT_FULL_GENERIC));
+				String level = adapter.getMessageKeeper().getMessage(t).getMessageLevel();
+				adapterMessage.addAttribute("level", level);
 				adapterMessages.addSubElement(adapterMessage);
+				if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
+					countMessagesError++;
+				} else {
+					if (level.equals(MessageKeeperMessage.WARN_LEVEL)) {
+						countMessagesWarn++;
+					} else {
+						countMessagesInfo++;
+					}
+				}
 			}
 
 		}
@@ -407,6 +425,11 @@ public final class ShowConfigurationStatus extends ActionBase {
 		receiverStateXML.addAttribute("stopped",countReceiverStateStopped+"");
 		receiverStateXML.addAttribute("error",countReceiverStateError+"");
 		summaryXML.addSubElement(receiverStateXML);
+		XmlBuilder messageLevelXML=new XmlBuilder("messageLevel");
+		messageLevelXML.addAttribute("error",countMessagesError+"");
+		messageLevelXML.addAttribute("warn",countMessagesWarn+"");
+		messageLevelXML.addAttribute("info",countMessagesInfo+"");
+		summaryXML.addSubElement(messageLevelXML);
 		adapters.addSubElement(summaryXML);
 		request.setAttribute("adapters", adapters.toXML());
 
