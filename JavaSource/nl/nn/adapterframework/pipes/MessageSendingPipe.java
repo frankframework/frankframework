@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.83  2013-01-25 13:34:20  europe\m168309
+ * Revision 1.84  2013-03-13 14:52:25  europe\m168309
+ * changed setMessageLog() from protected to public
+ *
+ * Revision 1.83  2013/01/25 13:34:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added useInputForExtract attribute
  *
  * Revision 1.82  2012/10/24 14:14:08  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -1033,7 +1036,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	/**
 	 * Sets the messageLog.
 	 */
-	protected void setMessageLog(ITransactionalStorage messageLog) {
+	public void setMessageLog(ITransactionalStorage messageLog) {
 		if (messageLog.isActive()) {
 			this.messageLog = messageLog;
 			messageLog.setName(MESSAGE_LOG_NAME_PREFIX+getName()+MESSAGE_LOG_NAME_SUFFIX);
