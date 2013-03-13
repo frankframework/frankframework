@@ -1,6 +1,9 @@
 /*
  * $Log: SchedulerAdapter.java,v $
- * Revision 1.8  2011-11-30 13:51:42  europe\m168309
+ * Revision 1.9  2013-03-13 14:39:34  europe\m168309
+ * added level (INFO, WARN or ERROR) to adapter/receiver messages
+ *
+ * Revision 1.8  2011/11/30 13:51:42  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -43,7 +46,7 @@ import org.quartz.Trigger;
  * @since 4.0
   */
 public class SchedulerAdapter {
-	public static final String version = "$RCSfile: SchedulerAdapter.java,v $ $Revision: 1.8 $ $Date: 2011-11-30 13:51:42 $";
+	public static final String version = "$RCSfile: SchedulerAdapter.java,v $ $Revision: 1.9 $ $Date: 2013-03-13 14:39:34 $";
 	protected Logger log=LogUtil.getLogger(this);
 	
     /**
@@ -129,6 +132,7 @@ public class SchedulerAdapter {
 			XmlBuilder jobMessage=new XmlBuilder("jobMessage");
 			jobMessage.setValue(jobdef.getMessageKeeper().getMessage(t).getMessageText(),true);
 			jobMessage.addAttribute("date", DateUtils.format(jobdef.getMessageKeeper().getMessage(t).getMessageDate(), DateUtils.FORMAT_FULL_GENERIC));
+			jobMessage.addAttribute("level", jobdef.getMessageKeeper().getMessage(t).getMessageLevel());
 			jobMessages.addSubElement(jobMessage);
 		}
 		return jobMessages;

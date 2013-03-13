@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.26  2012-10-10 10:19:37  m00f069
+ * Revision 1.27  2013-03-13 14:39:34  europe\m168309
+ * added level (INFO, WARN or ERROR) to adapter/receiver messages
+ *
+ * Revision 1.26  2012/10/10 10:19:37  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Made it possible to use Locker on Pipe level too
  *
  * Revision 1.25  2012/09/28 14:14:16  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -98,6 +101,7 @@ import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 import org.apache.commons.lang.StringUtils;
@@ -602,7 +606,7 @@ public class JobDef {
 								objectId = getLocker().lock();
 							} catch (Exception e) {
 								String msg = "error while setting lock: " + e.getMessage();
-								getMessageKeeper().add(msg);
+								getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
 								log.error(getLogPrefix()+msg);
 							}
 							if (objectId!=null) {
@@ -622,7 +626,7 @@ public class JobDef {
 									getLocker().unlock(objectId);
 								} catch (Exception e) {
 									String msg = "error while removing lock: " + e.getMessage();
-									getMessageKeeper().add(msg);
+									getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
 									log.error(getLogPrefix()+msg);
 								}
 							}
@@ -641,7 +645,7 @@ public class JobDef {
 			}
 		} else {
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be interrupted";
-			getMessageKeeper().add(msg);
+			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
 			log.error(getLogPrefix()+msg);
 		}
 	}
@@ -836,14 +840,14 @@ public class JobDef {
 			log.info("result [" + result + "]");
 		} catch (Exception e) {
 			String msg = "error while executing query ["+getQuery()+"] (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg);
+			getMessageKeeper().add(msg,MessageKeeperMessage.ERROR_LEVEL);
 			log.error(getLogPrefix()+msg);
 		} finally {
 			try {
 				qs.close();
 			} catch (SenderException e1) {
 				String msg = "Could not close query sender" + e1.getMessage();
-				getMessageKeeper().add(msg);
+				getMessageKeeper().add(msg, MessageKeeperMessage.WARN_LEVEL);
 				log.warn(msg);
 			}
 		}
@@ -868,7 +872,7 @@ public class JobDef {
 		}
 		catch(Exception e) {
 			String msg = "Error while sending message (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg);
+			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
 			log.error(getLogPrefix()+msg);
 		}
 	}

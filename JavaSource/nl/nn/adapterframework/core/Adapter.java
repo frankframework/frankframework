@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.66  2012-06-01 10:52:51  m00f069
+ * Revision 1.67  2013-03-13 14:38:44  europe\m168309
+ * added level (INFO, WARN or ERROR) to adapter/receiver messages
+ *
+ * Revision 1.66  2012/06/01 10:52:51  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Created IPipeLineSession (making it easier to write a debugger around it)
  *
  * Revision 1.65  2011/11/30 13:51:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -225,6 +228,7 @@ import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.MsgLogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
@@ -345,7 +349,7 @@ public class Adapter implements IAdapter, NamedBean {
 		statsMessageProcessingDuration = new StatisticsKeeper(getName());
 		if (pipeline == null) {
 			String msg = "No pipeline configured for adapter [" + getName() + "]";
-			messageKeeper.add(msg);
+			messageKeeper.add(msg, MessageKeeperMessage.ERROR_LEVEL);
 			throw new ConfigurationException(msg);
 		}
 
@@ -380,7 +384,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	protected void warn(String msg) {
 		log.warn("Adapter [" + getName() + "] "+msg);
-		getMessageKeeper().add("WARNING: " + msg);
+		getMessageKeeper().add("WARNING: " + msg, MessageKeeperMessage.WARN_LEVEL);
 	}
 
 	/** 
@@ -391,7 +395,7 @@ public class Adapter implements IAdapter, NamedBean {
 		if (!(t instanceof IbisException)) {
 			msg+=" (" + t.getClass().getName()+")";
 		}
-		getMessageKeeper().add("ERROR: " + msg+": "+t.getMessage());
+		getMessageKeeper().add("ERROR: " + msg+": "+t.getMessage(), MessageKeeperMessage.ERROR_LEVEL);
 	}
 
 

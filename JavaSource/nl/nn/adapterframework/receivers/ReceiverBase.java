@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.105  2013-01-22 15:01:21  m00f069
+ * Revision 1.106  2013-03-13 14:39:00  europe\m168309
+ * added level (INFO, WARN or ERROR) to adapter/receiver messages
+ *
+ * Revision 1.105  2013/01/22 15:01:21  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Changed MAX_RETRY_INTERVAL from 600 to 100 to make it smaller than WebSphere default transaction timeout of 120
  *
  * Revision 1.104  2012/09/07 13:15:17  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -508,6 +511,7 @@ import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -850,7 +854,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	protected void warn(String msg) {
 		log.warn(msg);
 		if (adapter != null)
-			adapter.getMessageKeeper().add("WARNING: " + msg);
+			adapter.getMessageKeeper().add("WARNING: " + msg, MessageKeeperMessage.WARN_LEVEL);
 	}
 
 	/** 
@@ -859,7 +863,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	protected void error(String msg, Throwable t) {
 		log.error(msg, t);
 		if (adapter != null)
-			adapter.getMessageKeeper().add("ERROR: " + msg+(t!=null?": "+t.getMessage():""));
+			adapter.getMessageKeeper().add("ERROR: " + msg+(t!=null?": "+t.getMessage():""), MessageKeeperMessage.ERROR_LEVEL);
 	}
 
 

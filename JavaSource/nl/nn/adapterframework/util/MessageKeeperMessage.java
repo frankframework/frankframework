@@ -1,6 +1,9 @@
 /*
  * $Log: MessageKeeperMessage.java,v $
- * Revision 1.7  2011-11-30 13:51:49  europe\m168309
+ * Revision 1.8  2013-03-13 14:37:58  europe\m168309
+ * added level (INFO, WARN or ERROR) to adapter/receiver messages
+ *
+ * Revision 1.7  2011/11/30 13:51:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -23,30 +26,40 @@ import java.util.Date;
  * @author Johan Verrips IOS
  */
 public class MessageKeeperMessage {
-	public static final String version="$RCSfile: MessageKeeperMessage.java,v $ $Revision: 1.7 $ $Date: 2011-11-30 13:51:49 $";
+	public static final String version="$RCSfile: MessageKeeperMessage.java,v $ $Revision: 1.8 $ $Date: 2013-03-13 14:37:58 $";
 
+	public static final String INFO_LEVEL = "INFO";
+	public static final String WARN_LEVEL = "WARN";
+	public static final String ERROR_LEVEL = "ERROR";
+	
 	private Date messageDate=new Date();
 	private String messageText;
+	private String messageLevel;
 	
 	/**
 	* Set the messagetext of this message. The text will be xml-encoded.
 	*/
-	public MessageKeeperMessage(String message){
+	public MessageKeeperMessage(String message, String level){
 	//	this.messageText=XmlUtils.encodeChars(message);
 		this.messageText=message;
+		this.messageLevel=level;
 	}
 	/**
 	* Set the messagetext and -date of this message. The text will be xml-encoded.
 	*/
-	public MessageKeeperMessage(String message, Date date) {
+	public MessageKeeperMessage(String message, Date date, String level) {
 	//	this.messageText=XmlUtils.encodeChars(message);
 		this.messageText=message;
 		this.messageDate=date;
+		this.messageLevel=level;
 	}
 	public Date getMessageDate() {
 		return messageDate;
 	}
 	public String getMessageText() {
 		return messageText;
+	}
+	public String getMessageLevel() {
+		return messageLevel;
 	}
 }
