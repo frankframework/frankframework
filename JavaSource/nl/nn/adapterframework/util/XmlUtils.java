@@ -1,4 +1,19 @@
 /*
+   Copyright 2013 Nationale-Nederlanden
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+/*
  * $Log: XmlUtils.java,v $
  * Revision 1.96  2013-01-29 14:03:21  m00f069
  * Remove double attributes in schema element of merged schema´s (WebSphere's XMLStreamWriter doesn't remove them)
@@ -389,7 +404,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * Some utilities for working with XML.
  *
  * @author  Johan Verrips
- * @version Id
+ * @version $Id$
  */
 public class XmlUtils {
 	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.96 $ $Date: 2013-01-29 14:03:21 $";

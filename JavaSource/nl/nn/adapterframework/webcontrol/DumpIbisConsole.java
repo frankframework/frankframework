@@ -1,4 +1,19 @@
 /*
+   Copyright 2013 Nationale-Nederlanden
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+/*
  * $Log: DumpIbisConsole.java,v $
  * Revision 1.15  2011-11-30 13:51:58  europe\m168309
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
@@ -88,7 +103,7 @@ import org.apache.log4j.Logger;
  * This functionality is developed because developers don't have rigths for the Ibis Console in the IUFWeb environment.
  * 
  * @author  Peter Leeuwenburgh
- * @version Id
+ * @version $Id$
  */
 public class DumpIbisConsole extends HttpServlet {
 	private Logger log = LogUtil.getLogger(this);
