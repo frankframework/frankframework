@@ -13,27 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: Afm2EdiFactSender.java,v $
- * Revision 1.7  2011-11-30 13:52:05  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.5  2010/03/10 14:30:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * rolled back testtool adjustments (IbisDebuggerDummy)
- *
- * Revision 1.3  2007/02/12 13:47:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.2  2005/02/24 12:20:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused imports
- *
- * Revision 1.1  2005/02/02 16:37:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * copied Afm2Edifact code from fb-broker
- *
- */
 package nl.nn.adapterframework.extensions.afm;
 
 import java.text.DecimalFormat;

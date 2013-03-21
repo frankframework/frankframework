@@ -13,33 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ErrorMessageFormatter.java,v $
- * Revision 1.11  2011-11-30 13:52:03  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.9  2011/09/16 12:05:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * moved getting message to separate method
- *
- * Revision 1.8  2010/04/16 11:31:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed bug CDATA in CDATA
- *
- * Revision 1.7  2007/02/12 14:30:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected version string
- *
- * Revision 1.6  2007/02/12 13:44:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.5  2004/09/01 11:26:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * made receivedTime optional (only used if non-zero)
- *
- * Revision 1.4  2004/03/30 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- */
 package nl.nn.adapterframework.errormessageformatters;
 
 import java.util.Date;

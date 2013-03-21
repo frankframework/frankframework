@@ -13,30 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IbisJavaSender.java,v $
- * Revision 1.8  2011-11-30 13:52:00  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
- *
- * Revision 1.5  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * rolled back testtool adjustments (IbisDebuggerDummy)
- *
- * Revision 1.3  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
- *
- * Revision 1.2  2009/11/18 17:28:04  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Added senders to IbisDebugger
- *
- * Revision 1.1  2008/08/06 16:36:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved from pipes to senders package
- *
- */
 package nl.nn.adapterframework.senders;
 
 import java.util.HashMap;

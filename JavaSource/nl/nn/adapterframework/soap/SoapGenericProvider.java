@@ -13,48 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SoapGenericProvider.java,v $
- * Revision 1.11  2012-06-11 13:10:01  m00f069
- * Log incoming SOAP message on debug level
- *
- * Revision 1.10  2012/06/01 10:52:48  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.9  2012/02/06 13:18:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved SOAP error logging
- *
- * Revision 1.8  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2011/09/28 06:52:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * disabled automatic (un)wrapping soap envelope
- *
- * Revision 1.5  2011/05/19 15:08:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use simplified ServiceDispatcher
- *
- * Revision 1.4  2011/02/21 17:55:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved errorhandling and logging
- *
- * Revision 1.3  2007/10/08 12:24:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map where possible
- *
- * Revision 1.2  2007/02/12 14:06:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.1  2005/10/18 08:14:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * created separate soap-package
- *
- * Revision 1.2  2005/07/05 13:29:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of SecurityHandlers
- *
- * Revision 1.1  2005/04/26 09:28:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of SoapGenericProvider
- *
- */
 package nl.nn.adapterframework.soap;
 
 import java.util.HashMap;

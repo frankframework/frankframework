@@ -13,51 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: DateUtils.java,v $
- * Revision 1.18  2012-12-13 10:40:18  europe\m168309
- * added parseXmlDateTime() method
- *
- * Revision 1.17  2011/11/30 13:51:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.15  2011/03/16 16:38:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added nextHigerValue()
- *
- * Revision 1.14  2008/09/01 15:54:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * make generic dateformat more generic
- *
- * Revision 1.13  2008/09/01 15:36:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added seconds to generic datetime format
- *
- * Revision 1.12  2008/06/03 15:55:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added code for parsing in any format, and optimal formatting
- *
- * Revision 1.11  2008/02/13 12:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added format() with default format
- *
- * Revision 1.10  2007/10/08 12:25:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed incorrect date format
- *
- * Revision 1.9  2007/02/19 08:17:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * add convertDate() function (by Sanne Hoekstra)
- *
- * Revision 1.8  2007/02/19 07:46:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * add changeDate() functions (by Sanne Hoekstra)
- *
- * Revision 1.7  2006/08/21 15:13:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added full-generic format
- *
- * Revision 1.6  2006/01/19 12:18:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected fullIsoFormat
- *
- * Revision 1.5  2005/10/17 07:35:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added format(long)
- *
- */
 package nl.nn.adapterframework.util;
 
 import java.text.ParseException;

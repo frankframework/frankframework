@@ -13,60 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: DumpIbisConsole.java,v $
- * Revision 1.15  2011-11-30 13:51:58  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.13  2010/11/05 13:59:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * retry copying resources with preceding slash when inputstream is null
- *
- * Revision 1.12  2009/08/04 11:36:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use openZipDownload
- *
- * Revision 1.11  2008/09/17 12:28:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * add SystemOut and statistics file to Dump
- *
- * Revision 1.10  2008/08/27 16:26:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * some simplifications
- *
- * Revision 1.9  2008/07/24 12:38:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed threadUnsafeness
- * now uses requestDispatcher
- *
- * Revision 1.8  2008/07/14 17:46:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added .zip to filename
- *
- * Revision 1.7  2008/06/24 08:01:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * remove subdirectory from zip
- * added newlines to logfile lines
- *
- * Revision 1.6  2008/06/18 12:40:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * quite a lot of modifications.
- * N.B. is still not threadsafe
- *
- * Revision 1.1  2008/04/04 14:07:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * *** empty log message ***
- *
- * Revision 1.5  2007/08/30 15:12:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified getRootLogger()
- *
- * Revision 1.4  2007/02/16 14:22:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * retrieve logfiles automatically
- *
- * Revision 1.3  2007/02/12 14:41:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.2  2006/08/22 11:57:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed call tot response sink
- *
- * Revision 1.1  2006/08/22 07:51:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.webcontrol;
 
 import java.io.File;

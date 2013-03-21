@@ -13,36 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: GalmMonitorAdapter.java,v $
- * Revision 1.9  2011-11-30 13:51:43  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.7  2008/07/24 12:34:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * rework
- *
- * Revision 1.6  2008/06/24 07:58:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * reduce warnings to debug
- *
- * Revision 1.5  2008/05/21 10:52:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified monitorAdapter interface
- *
- * Revision 1.4  2007/12/12 09:09:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * truncated messages after newline
- *
- * Revision 1.3  2007/12/10 10:07:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added removal of special characters from sourceId
- *
- * Revision 1.2  2007/10/01 14:06:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified configuration keys
- *
- * Revision 1.1  2007/09/27 12:55:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of monitoring
- *
- */
 package nl.nn.adapterframework.monitoring;
 
 import java.text.SimpleDateFormat;

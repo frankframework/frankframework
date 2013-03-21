@@ -13,39 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: Text2XmlPipe.java,v $
- * Revision 1.10  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.9  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.7  2008/10/07 10:48:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added replaceNonXmlChars attribute
- *
- * Revision 1.6  2008/09/23 09:17:21  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Fixed typo xmlag -> xmlTag in javadoc
- *
- * Revision 1.5  2006/04/28 06:19:37  Martijn IJsselmuiden <martijn.ijsselmuiden@ibissource.org>
- * fixed exception text
- *
- * Revision 1.4  2006/04/26 11:29:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added splitLines attribute
- *
- * Revision 1.3  2004/10/14 15:36:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added includeXmlDeclaration-attribute
- *
- * Revision 1.2  2004/04/27 11:42:40  unknown <unknown@ibissource.org>
- * Access properties via getters
- *
- * Revision 1.1  2004/04/27 10:51:34  unknown <unknown@ibissource.org>
- * Allows the conversion from a non-xml formatted text to a simple xml
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import java.io.BufferedReader;

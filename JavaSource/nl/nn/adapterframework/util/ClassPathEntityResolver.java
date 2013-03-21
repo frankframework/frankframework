@@ -13,25 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ClassPathEntityResolver.java,v $
- * Revision 1.5  2011-11-30 13:51:49  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2007/02/12 14:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.2  2005/12/28 08:28:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved handling of malformed URLs
- *
- * Revision 1.1  2004/06/16 06:57:44  Johan Verrips <johan.verrips@ibissource.org>
- * Initial version
- *
- *
- */
 package nl.nn.adapterframework.util;
 import java.io.IOException;
 import java.net.URL;

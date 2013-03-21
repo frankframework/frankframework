@@ -13,24 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: PipeLineResult.java,v $
- * Revision 1.8  2011-11-30 13:51:55  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2011/08/09 07:42:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * simplified toString()
- *
- * Revision 1.5  2008/07/14 17:10:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added serialVersionUID
- *
- * Revision 1.4  2004/03/30 07:29:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- */
 package nl.nn.adapterframework.core;
 
 

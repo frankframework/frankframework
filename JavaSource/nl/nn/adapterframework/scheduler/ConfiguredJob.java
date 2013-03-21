@@ -13,31 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ConfiguredJob.java,v $
- * Revision 1.3  2011-11-30 13:51:42  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.1  2008/09/04 13:27:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * restructured job scheduling
- *
- * Revision 1.7  2008/08/27 16:21:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added function dumpStatistics
- *
- * Revision 1.6  2007/12/12 09:09:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow for query-type jobs
- *
- * Revision 1.5  2007/10/10 09:40:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Direct copy from Ibis-EJB:
- * version using IbisManager
- *
- * Revision 1.4  2007/02/21 16:02:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- */
 package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.configuration.IbisManager;

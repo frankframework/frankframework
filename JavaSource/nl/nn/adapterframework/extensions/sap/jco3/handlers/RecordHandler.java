@@ -13,12 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: RecordHandler.java,v $
- * Revision 1.1  2012-05-15 22:13:44  m00f069
- * Allow nesting of (different) types in SAP XML
- *
- */
 package nl.nn.adapterframework.extensions.sap.jco3.handlers;
 
 import com.sap.conn.jco.JCoRecord;

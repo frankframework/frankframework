@@ -13,40 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JdbcTableListener.java,v $
- * Revision 1.10  2011-11-30 13:51:43  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.8  2011/03/16 16:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of DbmsSupport, including support for MS SQL Server
- *
- * Revision 1.7  2009/08/04 11:24:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for messages in CLOBs and BLOBs
- *
- * Revision 1.6  2008/12/10 08:35:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved locking and selection mechanism: now works in multiple threads. 
- * improved disaster recovery: no more specific 'in process' status, rolls back to original state (where apropriate)
- *
- * Revision 1.5  2008/02/28 16:21:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.4  2007/10/02 09:17:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added tablename to physical destination
- *
- * Revision 1.3  2007/09/17 07:44:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * limit query to single row
- *
- * Revision 1.2  2007/09/12 09:26:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first working version
- *
- * Revision 1.1  2007/09/11 11:53:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added JdbcListeners
- *
- */
 package nl.nn.adapterframework.jdbc;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

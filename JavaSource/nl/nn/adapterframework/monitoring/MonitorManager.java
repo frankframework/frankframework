@@ -13,49 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: MonitorManager.java,v $
- * Revision 1.14  2011-11-30 13:51:43  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.12  2010/04/01 12:03:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * disabled debug tracing
- *
- * Revision 1.11  2009/05/13 08:18:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved monitoring: triggers can now be filtered multiselectable on adapterlevel
- *
- * Revision 1.10  2009/04/15 14:28:16  Martijn Onstwedder <martijn.onstwedder@ibissource.org>
- * added attributes heapSize and totalMemory to monitorstatus tag in showmonitor.xml
- *
- *
- * Revision 1.8  2008/08/27 16:17:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added lastStateChangeDate
- *
- * Revision 1.7  2008/08/13 13:39:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added eventsByThrowerType
- *
- * Revision 1.6  2008/08/12 15:38:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * keep maps of eventThrowerTypes
- *
- * Revision 1.5  2008/08/07 11:31:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * rework
- *
- * Revision 1.4  2008/07/24 12:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * rework
- *
- * Revision 1.3  2008/07/17 16:23:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed default monitors
- *
- * Revision 1.2  2008/07/17 16:17:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * rework
- *
- * Revision 1.1  2008/07/14 17:21:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version of flexible monitoring
- *
- */
 package nl.nn.adapterframework.monitoring;
 
 import java.util.ArrayList;

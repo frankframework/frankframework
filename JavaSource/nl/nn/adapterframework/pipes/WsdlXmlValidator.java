@@ -13,37 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: WsdlXmlValidator.java,v $
- * Revision 1.11  2012-12-06 15:19:28  m00f069
- * Resolved warnings which showed up when using addNamespaceToSchema (src-include.2.1: The targetNamespace of the referenced schema..., src-resolve.4.2: Error resolving component...)
- * Handle includes in XSD's properly when generating a WSDL
- * Removed XSD download (unused and XSD's were not adjusted according to e.g. addNamespaceToSchema)
- * Sort schema's in WSDL (made sure the order is always the same)
- * Indent WSDL with tabs instead of spaces
- * Some cleaning and refactoring (made WSDL generator and XmlValidator share code)
- *
- * Revision 1.10  2012/10/26 16:13:38  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Moved *Xmlvalidator*, Schema and SchemasProvider to new validation package
- *
- * Revision 1.9  2012/10/19 14:54:17  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Made WsdlXmlValidator work with WebSphere 6
- *
- * Revision 1.8  2012/10/19 11:54:07  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Bugfix double occurrence of CommonMessageHeader.xsd in schemaLocation
- *
- * Revision 1.7  2012/10/19 09:33:47  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
- *
- * Revision 1.6  2012/08/17 14:34:15  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Extended FxfWrapperPipe for sending files
- * Implemented FxfXmlValidator
- *
- * Revision 1.5  2012/07/02 08:39:08  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Added note about WebSphere versions
- * Added CVS log
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;

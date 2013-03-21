@@ -13,12 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: FileComparator.java,v $
- * Revision 1.2  2013-03-18 15:41:08  m00f069
- * Added log and author
- *
- */
 package nl.nn.adapterframework.util;
 
 import java.io.File;

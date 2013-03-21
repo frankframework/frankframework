@@ -13,58 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: XComSender.java,v $
- * Revision 1.17  2012-06-01 10:52:59  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.16  2011/12/08 09:12:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed javadoc
- *
- * Revision 1.15  2011/11/30 13:52:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.13  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * rolled back testtool adjustments (IbisDebuggerDummy)
- *
- * Revision 1.11  2005/12/19 17:18:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected typos in javadoc
- *
- * Revision 1.10  2005/12/19 17:14:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.9  2005/12/19 16:59:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected typo: had only single r in carriageflag
- *
- * Revision 1.8  2005/12/19 16:40:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added authentication using authentication-alias
- *
- * Revision 1.7  2005/10/31 14:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.6  2005/10/28 12:31:05  John Dekker <john.dekker@ibissource.org>
- * Corrected bug with password added twice to command
- *
- * Revision 1.5  2005/10/27 13:29:26  John Dekker <john.dekker@ibissource.org>
- * Add optional configFile property
- *
- * Revision 1.4  2005/10/27 07:58:57  John Dekker <john.dekker@ibissource.org>
- * Host is not longer a required property, since it could be set in a config file
- *
- * Revision 1.3  2005/10/24 09:59:24  John Dekker <john.dekker@ibissource.org>
- * Add support for pattern parameters, and include them into several listeners,
- * senders and pipes that are file related
- *
- * Revision 1.2  2005/10/11 13:04:50  John Dekker <john.dekker@ibissource.org>
- * *** empty log message ***
- *
- * Revision 1.1  2005/10/11 13:04:24  John Dekker <john.dekker@ibissource.org>
- * Support for sending files via the XComSender
- *
- */
 package nl.nn.adapterframework.xcom;
 
 import java.io.BufferedReader;

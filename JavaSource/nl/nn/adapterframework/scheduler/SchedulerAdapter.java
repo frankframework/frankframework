@@ -13,27 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SchedulerAdapter.java,v $
- * Revision 1.9  2013-03-13 14:39:34  europe\m168309
- * added level (INFO, WARN or ERROR) to adapter/receiver messages
- *
- * Revision 1.8  2011/11/30 13:51:42  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2009/03/17 10:34:29  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added getJobMessages method
- *
- * Revision 1.5  2008/08/27 16:22:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed scheduler client
- *
- * Revision 1.4  2007/02/12 14:08:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- */
 package nl.nn.adapterframework.scheduler;
 
 import java.util.Date;

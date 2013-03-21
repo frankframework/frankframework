@@ -13,30 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: UUIDGeneratorPipe.java,v $
- * Revision 1.6  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.5  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.2  2011/10/19 15:01:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * do not print versions anymore
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2011/01/12 15:48:39  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * updated javadoc
- *
- * Revision 1.2  2008/12/08 13:12:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * *** empty log message ***
- *
- * Revision 1.1  2008/12/08 13:02:32  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

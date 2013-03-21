@@ -13,50 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JmsMessageBrowser.java,v $
- * Revision 1.12  2011-11-30 13:51:51  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.10  2011/03/16 16:37:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added getIterator() with time and order parameters
- *
- * Revision 1.9  2009/12/23 17:09:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified MessageBrowsing interface to reenable and improve export of messages
- *
- * Revision 1.8  2009/03/13 14:31:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added method getExpiryDate
- *
- * Revision 1.7  2008/07/24 12:18:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added messageCount
- *
- * Revision 1.6  2007/10/10 08:32:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * additional selector specifications possible
- *
- * Revision 1.5.4.1  2007/09/21 13:23:34  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * * Add method to ITransactionalStorage to check if original message ID can be found in it
- * * Check for presence of original message id in ErrorStorage before processing, so it can be removed from queue if it has already once been recorded as unprocessable (but the TX in which it ran could no longer be committed).
- *
- * Revision 1.5  2005/12/20 16:59:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * implemented support for connection-pooling
- *
- * Revision 1.4  2005/07/28 07:36:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added selector
- *
- * Revision 1.3  2005/07/19 15:12:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * adapted to an implementation extending IMessageBrowser
- *
- * Revision 1.2  2004/10/05 10:41:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused imports
- *
- * Revision 1.1  2004/06/16 12:25:52  Johan Verrips <johan.verrips@ibissource.org>
- * Initial version of Queue browsing functionality
- *
- *
- */
 package nl.nn.adapterframework.jms;
 
 import java.util.Date;

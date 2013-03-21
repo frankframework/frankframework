@@ -13,30 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JmsRealmFactory.java,v $
- * Revision 1.9  2011-11-30 13:51:51  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.7  2009/09/07 13:19:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused check for NPE
- *
- * Revision 1.6  2007/10/08 13:30:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.5  2007/02/12 13:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.4  2004/03/26 10:42:55  Johan Verrips <johan.verrips@ibissource.org>
- * added @version tag in javadoc
- *
- * Revision 1.3  2004/03/23 18:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cosmetic changes
- *
- */
 package nl.nn.adapterframework.jms;
 
 import java.util.ArrayList;

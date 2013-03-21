@@ -13,39 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: PostboxRetrieverPipe.java,v $
- * Revision 1.9  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.8  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2007/10/03 08:56:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected version string
- *
- * Revision 1.5  2007/10/03 08:55:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map
- *
- * Revision 1.4  2004/10/05 11:39:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused imports
- *
- * Revision 1.3  2004/08/23 13:10:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated JavaDoc
- *
- * Revision 1.2  2004/05/21 12:05:09  unknown <unknown@ibissource.org>
- * Correct errors in javadoc
- *
- * Revision 1.1  2004/05/21 10:47:30  unknown <unknown@ibissource.org>
- * Add (modifications) due to the postbox retriever implementation
- *
- * Revision 1.1  2004/05/21 07:59:30  unknown <unknown@ibissource.org>
- * Add (modifications) due to the postbox sender implementation
- *
- */
 package nl.nn.adapterframework.pipes;
 
 

@@ -13,55 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: OracleTransactionalStorage.java,v $
- * Revision 1.16  2011-11-30 13:51:43  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.14  2010/01/06 15:18:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added type to index ix_ibisstore
- *
- * Revision 1.13  2008/12/30 17:01:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added configuration warnings facility (in Show configurationStatus)
- *
- * Revision 1.12  2007/12/27 16:02:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * add grant to SYS.PENDING_TRANSACTIONS to create DDL-comments
- *
- * Revision 1.11  2007/12/10 10:06:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified SQL creation scripts
- *
- * Revision 1.10  2007/06/12 11:20:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added depreciation warning
- *
- * Revision 1.9  2007/05/23 09:13:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * incorporated functionality of OracleTransactionalStorage
- * in basic JdbcTransactionalStorage
- *
- * Revision 1.8  2006/12/12 09:57:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * restore jdbc package
- *
- * Revision 1.6  2005/12/28 08:43:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected javadoc
- *
- * Revision 1.5  2005/10/26 13:34:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated JavaDoc
- *
- * Revision 1.4  2005/10/18 07:18:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use generic blob functions
- *
- * Revision 1.3  2005/09/07 15:37:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.2  2005/08/24 15:49:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use getObject from superclass
- *
- * Revision 1.1  2005/08/18 13:31:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * JdbcTransactionalStorate descender-class for Oracle
- *
- */
 package nl.nn.adapterframework.jdbc;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

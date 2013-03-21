@@ -13,39 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IbisManager.java,v $
- * Revision 1.6  2011-11-30 13:51:56  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2007/11/22 08:26:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added shutdown method and javadoc
- *
- * Revision 1.3.2.2  2007/11/15 09:52:46  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Add JavaDoc
- *
- * Revision 1.3.2.1  2007/10/25 08:36:58  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Add shutdown method for IBIS which shuts down the scheduler too, and which unregisters all EjbJmsConfigurators from the ListenerPortPoller.
- * Unregister JmsListener from ListenerPortPoller during ejbRemove method.
- * Both changes are to facilitate more proper shutdown of the IBIS adapters.
- *
- * Revision 1.3  2007/10/16 09:12:27  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Merge with changes from EJB branch in preparation for creating new EJB brance
- *
- * Revision 1.1.2.5  2007/10/15 09:51:57  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Add back transaction-management to BrowseExecute action
- *
- * Revision 1.1.2.4  2007/10/10 14:30:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * synchronize with HEAD (4.8-alpha1)
- *
- * Revision 1.2  2007/10/09 15:29:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Direct copy from Ibis-EJB:
- * first version in HEAD
- *
- */
 package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.IAdapter;

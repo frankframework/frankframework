@@ -13,22 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ResultSet2FileSender.java,v $
- * Revision 1.4  2012-12-06 11:24:08  europe\m168309
- * javadoc
- *
- * Revision 1.3  2012/11/21 10:23:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * ResultSet2FileSender: added maxRecordsSessionKey attribute
- *
- * Revision 1.2  2012/11/20 13:27:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * bugfix for updateTimestamp()
- *
- * Revision 1.1  2012/11/13 11:19:29  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * initial version
- *
- *
- */
 package nl.nn.adapterframework.jdbc;
 
 import java.io.FileNotFoundException;

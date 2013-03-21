@@ -13,45 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: CleanupOldFilesPipe.java,v $
- * Revision 1.8  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.7  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.5  2007/10/08 13:33:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.4  2007/07/10 15:17:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fix switching between by input and by pattern
- *
- * Revision 1.3  2007/07/10 07:29:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved logging
- *
- * Revision 1.2  2007/01/02 09:56:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.1  2006/08/24 07:10:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved CleanupOldFilesPipe to pipes-package
- *
- * Revision 1.5  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
- * Restore java files from batch package after unwanted deletion.
- *
- * Revision 1.3  2005/12/20 09:57:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.2  2005/11/08 09:31:08  John Dekker <john.dekker@ibissource.org>
- * Bug concerning filenames resolved
- *
- * Revision 1.1  2005/11/01 08:54:00  John Dekker <john.dekker@ibissource.org>
- * Initial version
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import java.io.File;

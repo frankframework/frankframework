@@ -13,22 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: DelphiStringRecordReader.java,v $
- * Revision 1.4  2011-11-30 13:51:56  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.2  2010/05/14 16:51:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added separatorReplacement
- * fixed operation of stringsPerRecord
- *
- * Revision 1.1  2010/05/03 17:03:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * IInputstreamReader-classes to enable reading Delphi String records
- *
- */
 package nl.nn.adapterframework.batch;
 
 import java.io.EOFException;

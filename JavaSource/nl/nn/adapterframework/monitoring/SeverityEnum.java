@@ -13,21 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SeverityEnum.java,v $
- * Revision 1.4  2011-11-30 13:51:43  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.2  2011/07/06 06:54:19  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * replaced <commons-lang-2.0.jar> by <commons-lang-2.6.jar>
- *
- * Revision 1.1  2007/09/27 12:55:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of monitoring
- *
- */
 package nl.nn.adapterframework.monitoring;
 
 import java.util.Iterator;

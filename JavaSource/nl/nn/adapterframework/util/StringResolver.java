@@ -13,45 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: StringResolver.java,v $
- * Revision 1.15  2011-11-30 13:51:48  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.13  2010/03/17 11:20:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added method needsResolution and extended method substVars with extra Properties object
- *
- * Revision 1.12  2010/03/10 13:59:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * committed to soon...
- *
- * Revision 1.10  2008/06/03 15:59:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * avoid NPE in solving keys to properties
- *
- * Revision 1.9  2008/03/28 14:24:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused code
- *
- * Revision 1.8  2007/10/01 14:13:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved error messages
- *
- * Revision 1.7  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.6  2006/11/14 16:39:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cosmetic changes
- *
- * Revision 1.5  2004/08/30 06:37:19  Johan Verrips <johan.verrips@ibissource.org>
- * Accepts map as parameter instead of Properties
- *
- * Revision 1.4  2004/03/26 10:42:37  Johan Verrips <johan.verrips@ibissource.org>
- * added @version tag in javadoc
- *
- * Revision 1.3  2004/03/23 17:05:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cosmetic changes
- *
- */
 package nl.nn.adapterframework.util;
 
 import java.util.Map;

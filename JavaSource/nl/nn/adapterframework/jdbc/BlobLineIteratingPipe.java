@@ -13,35 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: BlobLineIteratingPipe.java,v $
- * Revision 1.9  2011-12-08 13:01:59  europe\m168309
- * fixed javadoc
- *
- * Revision 1.8  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted javadoc for resultOnTimeOut attribute
- *
- * Revision 1.5  2009/07/13 10:07:29  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted javadoc
- *
- * Revision 1.4  2008/05/21 09:37:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added block info to javadoc
- *
- * Revision 1.3  2008/02/26 09:28:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.2  2007/07/26 16:22:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * now based on LobLineIteratingPipe
- *
- * Revision 1.1  2007/07/19 15:06:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- */
 package nl.nn.adapterframework.jdbc;
 
 import java.io.Reader;

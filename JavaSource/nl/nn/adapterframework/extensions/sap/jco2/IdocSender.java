@@ -13,27 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IdocSender.java,v $
- * Revision 1.1  2012-02-06 14:33:05  m00f069
- * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
- *
- * Revision 1.6  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * rolled back testtool adjustments (IbisDebuggerDummy)
- *
- * Revision 1.2  2009/08/26 15:34:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.1  2008/01/30 14:44:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.extensions.sap.jco2;
 
 import nl.nn.adapterframework.core.SenderException;

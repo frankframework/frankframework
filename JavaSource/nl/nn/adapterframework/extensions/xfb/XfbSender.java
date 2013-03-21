@@ -13,12 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: XfbSender.java,v $
- * Revision 1.1  2012-01-10 09:49:15  m00f069
- * Added XfbSender
- *
- */
 package nl.nn.adapterframework.extensions.xfb;
 
 import java.io.File;

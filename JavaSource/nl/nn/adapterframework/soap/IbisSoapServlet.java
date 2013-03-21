@@ -13,54 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IbisSoapServlet.java,v $
- * Revision 1.13  2012-12-06 15:19:28  m00f069
- * Resolved warnings which showed up when using addNamespaceToSchema (src-include.2.1: The targetNamespace of the referenced schema..., src-resolve.4.2: Error resolving component...)
- * Handle includes in XSD's properly when generating a WSDL
- * Removed XSD download (unused and XSD's were not adjusted according to e.g. addNamespaceToSchema)
- * Sort schema's in WSDL (made sure the order is always the same)
- * Indent WSDL with tabs instead of spaces
- * Some cleaning and refactoring (made WSDL generator and XmlValidator share code)
- *
- * Revision 1.12  2012/10/26 15:43:18  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Made WSDL without separate XSD's the default
- *
- * Revision 1.11  2012/10/24 14:34:00  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Load imported XSD's into the WSDL too
- * When more than one XSD with the same namespace is present merge them into one schema element in the WSDL
- * Exclude SOAP Envelope XSD
- *
- * Revision 1.10  2012/10/11 09:45:58  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Added WSDL filename to WSDL documentation
- *
- * Revision 1.9  2012/10/04 11:28:57  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Fixed ESB Soap namespace
- * Added location (url) of WSDL generation to the WSDL documentation
- * Show warning add the bottom of the WSDL (if any) instead of Ibis logging
- *
- * Revision 1.8  2012/10/03 14:30:46  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Different filename for ESB Soap WSDL
- *
- * Revision 1.7  2012/10/01 15:23:44  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Strip schemaLocation from xsd import in case of generated WSDL with inline XSD's.
- *
- * Revision 1.6  2012/09/27 13:44:31  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Updates in generating wsdl namespace, wsdl input message name, wsdl output message name, wsdl port type name and wsdl operation name in case of EsbSoap
- *
- * Revision 1.5  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Updates from Michiel
- *
- * Revision 1.4  2012/03/19 15:07:22  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Bugfix mangled file name of WSDL when adapter name contains a space
- *
- * Revision 1.3  2012/03/16 15:35:43  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Michiel added EsbSoapValidator and WsdlXmlValidator, made WSDL's available for all adapters and did a bugfix on XML Validator where it seems to be dependent on the order of specified XSD's
- *
- * Revision 1.2  2011/12/15 10:08:06  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Added CVS log
- *
- */
  package nl.nn.adapterframework.soap;
 
 import java.io.IOException;

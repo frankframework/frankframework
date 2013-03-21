@@ -13,18 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: AlterTracingConfigurationExecute.java,v $
- * Revision 1.3  2011-11-30 13:51:45  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.1  2006/09/14 15:28:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version of TracingHandlers
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;

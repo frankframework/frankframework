@@ -13,32 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: UnzipPipe.java,v $
- * Revision 1.7  2013-02-26 12:43:10  europe\m168309
- * UnzipPipe: added collectsResults attribute
- *
- * Revision 1.6  2012/06/01 10:52:49  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.5  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2010/09/02 12:34:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * synced with Ibis4Belasting
- * force write to specified directory
- * keep filename and extension
- *
- * Revision 1.2  2008/08/27 16:19:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * some fixes
- *
- * Revision 1.1  2008/06/26 12:51:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fisrt version
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import java.io.BufferedInputStream;

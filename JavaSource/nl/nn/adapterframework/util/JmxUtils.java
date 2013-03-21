@@ -13,21 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JmxUtils.java,v $
- * Revision 1.7  2011-11-30 13:51:49  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.5  2008/02/26 09:40:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added getMbeanServer function
- *
- * Revision 1.4  2007/10/08 13:35:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- */
 package nl.nn.adapterframework.util;
 
 import java.util.List;

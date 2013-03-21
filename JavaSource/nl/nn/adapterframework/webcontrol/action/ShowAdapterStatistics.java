@@ -13,48 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ShowAdapterStatistics.java,v $
- * Revision 1.16  2011-11-30 13:51:46  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.14  2011/08/18 14:36:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved pipe statistics iteration to PipeLine, modified interface for statistics
- *
- * Revision 1.13  2009/12/29 14:45:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved statistics to separate package
- *
- * Revision 1.12  2009/08/26 15:50:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for separated adapter-only and detailed statistics
- *
- * Revision 1.11  2009/06/05 07:54:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for adapter level only statistics
- * end-processing of statisticskeeperhandler in a finally clause
- * added hidden 'deep' option, to output full contents of statisticskeeper
- *
- * Revision 1.10  2009/03/19 08:27:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Adapter statistics by the hour
- *
- * Revision 1.9  2008/09/22 13:33:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * exchanged name and type in statisticshandler
- * changed reference to Hashtable to Map
- *
- * Revision 1.8  2008/09/04 12:20:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * collect interval statistics
- *
- * Revision 1.7  2008/08/27 16:27:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added reset option to statisticsdump
- *
- * Revision 1.6  2008/08/12 15:50:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added messagesRetried
- *
- * Revision 1.5  2008/05/22 07:42:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cosmetic changes
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;

@@ -13,51 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IsolatedServiceCaller.java,v $
- * Revision 1.15  2011-11-30 13:51:50  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.13  2011/05/19 15:07:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use simplified ServiceDispatcher
- *
- * Revision 1.12  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
- *
- * Revision 1.11  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * rolled back testtool adjustments (IbisDebuggerDummy)
- *
- * Revision 1.9  2009/11/18 17:28:04  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Added senders to IbisDebugger
- *
- * Revision 1.8  2009/09/07 13:28:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused code
- *
- * Revision 1.7  2007/12/10 10:10:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * no transactions in IsolatedServiceCaller
- *
- * Revision 1.6  2007/06/07 15:19:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * set names of isolated threads
- *
- * Revision 1.5  2007/02/12 14:02:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.4  2006/08/22 06:50:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added asynchronous and transactional features
- *
- * Revision 1.3  2005/09/26 11:54:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * enabeld isolated calls from IbisLocalSender to JavaListener as well as to WebServiceListener
- *
- * Revision 1.2  2005/09/20 13:27:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added asynchronous call-facility
- *
- * Revision 1.1  2005/09/07 15:35:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of IsolatedServiceCaller
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import java.util.HashMap;

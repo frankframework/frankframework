@@ -13,24 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: Variant.java,v $
- * Revision 1.8  2011-11-30 13:51:48  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2005/06/13 11:49:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use separate version of stringToSource, optimized for single use
- *
- * Revision 1.5  2005/06/13 10:10:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * optimized transformation to XmlSource
- *
- * Revision 1.4  2005/05/31 09:39:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * using stringToSource to obtain a source for XSLT; cached this source
- *
- */
 package nl.nn.adapterframework.util;
 
 import org.xml.sax.InputSource;

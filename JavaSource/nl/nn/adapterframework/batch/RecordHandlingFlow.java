@@ -13,58 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: RecordHandlingFlow.java,v $
- * Revision 1.17  2012-04-03 08:13:12  europe\m168309
- * added ConfigurationException for openBlockBeforeLineNumber
- *
- * Revision 1.16  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.14  2011/10/10 12:49:30  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added openBlockBeforeLineNumber attribute
- *
- * Revision 1.13  2008/03/27 10:53:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * javadoc for autoclose block on forced close, too
- *
- * Revision 1.12  2008/03/20 11:57:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.11  2007/10/08 12:14:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map where possible
- *
- * Revision 1.10  2007/09/24 13:02:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.9  2007/09/19 11:17:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added block handling functions
- *
- * Revision 1.8  2007/09/13 12:37:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed bug in configuration
- *
- * Revision 1.7  2007/08/03 08:28:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.6  2007/07/24 16:12:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved configure to flow
- *
- * Revision 1.5  2007/07/24 08:03:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * reformatted code
- *
- * Revision 1.4  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
- * Restore java files from batch package after unwanted deletion.
- *
- * Revision 1.2  2005/10/31 14:38:02  John Dekker <john.dekker@ibissource.org>
- * Add . in javadoc
- *
- * Revision 1.1  2005/10/11 13:00:21  John Dekker <john.dekker@ibissource.org>
- * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
- * BatchFileTransformerPipe
- *
- */
 package nl.nn.adapterframework.batch;
 
 import java.util.Map;

@@ -13,50 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: FTPsClient.java,v $
- * Revision 1.14  2012-03-16 10:37:09  m00f069
- * Unified use of allowSelfSignedCertificates property for ftp and http sender
- *
- * Revision 1.13  2011/12/20 12:11:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved error handling
- *
- * Revision 1.12  2011/11/30 13:52:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.10  2011/06/27 15:39:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * enabled KeyboardInteractive login (experimental)
- * allow to set keyManagerAlgorithm and trustManagerAlgorithm
- *
- * Revision 1.9  2007/10/08 13:30:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.8  2007/05/11 09:39:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * make class public
- *
- * Revision 1.7  2007/02/12 13:50:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.6  2006/01/19 10:34:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * overided isPositiveCompletion to avoid hanging ls (belastingdienst)
- *
- * Revision 1.5  2005/12/20 09:33:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * remove TYPE I from prot_p code
- *
- * Revision 1.4  2005/12/19 16:46:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * rework, lots of changes
- *
- * Revision 1.3  2005/12/07 15:47:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modifications to make protp working
- *
- * Revision 1.1  2005/10/11 13:03:31  John Dekker <john.dekker@ibissource.org>
- * Supports retrieving files (FtpFileRetrieverPipe) and sending files (FtpSender)
- * via one of the FTP protocols (ftp, sftp, ftps both implicit as explicit).
- *
- */
 package nl.nn.adapterframework.ftp;
 
 import java.io.BufferedReader;

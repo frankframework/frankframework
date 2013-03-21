@@ -13,63 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: EsbSoapWrapperPipe.java,v $
- * Revision 1.17  2012-10-03 14:26:17  m00f069
- * Added extra checks to isValidNamespace
- *
- * Revision 1.16  2012/09/28 14:39:47  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Bugfix WSLD target namespace for ESB Soap, part XSD should be WSDL
- *
- * Revision 1.15  2012/09/27 13:44:31  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Updates in generating wsdl namespace, wsdl input message name, wsdl output message name, wsdl port type name and wsdl operation name in case of EsbSoap
- *
- * Revision 1.14  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Updates from Michiel
- *
- * Revision 1.13  2012/08/21 10:01:20  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Set destination parameter with default value when wrapping FxF message
- *
- * Revision 1.12  2012/04/06 14:51:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * updated javadoc
- *
- * Revision 1.11  2012/02/15 08:10:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * avoid NPE
- *
- * Revision 1.10  2012/02/10 15:32:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * - added parameter destination
- * - added default value for parameters conversationId and cpaId
- *
- * Revision 1.9  2012/01/10 11:57:39  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added parameter paradigm in SoapBody xslt for mode 'bis'
- *
- * Revision 1.8  2012/01/06 15:48:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * updated javadoc
- *
- * Revision 1.7  2012/01/06 15:40:37  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added mode 'bis'
- *
- * Revision 1.6  2012/01/04 11:02:21  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted xpathExpression in soap header parameters
- *
- * Revision 1.5  2011/12/29 13:37:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * - updated javadoc
- * - added addOutputNamespace attribute
- *
- * Revision 1.4  2011/12/23 16:04:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added mode 'reg'
- *
- * Revision 1.3  2011/12/20 14:52:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * updated javadoc
- *
- * Revision 1.2  2011/12/20 10:50:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * completed mode 'i2t'
- *
- * Revision 1.1  2011/12/15 10:53:08  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * initial version
- *
- *
- */
 package nl.nn.adapterframework.extensions.esb;
 
 import java.util.StringTokenizer;

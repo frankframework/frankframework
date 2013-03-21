@@ -13,15 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SapSystem.java,v $
- * Revision 1.15  2012-03-12 15:23:00  m00f069
- * Implemented logon group properties
- *
- * Revision 1.14  2012/02/06 14:33:04  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
- *
- */
 package nl.nn.adapterframework.extensions.sap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

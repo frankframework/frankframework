@@ -13,24 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ConfigurationWarnings.java,v $
- * Revision 1.5  2011-11-30 13:49:18  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.2  2011/10/19 14:54:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * do not print versions anymore
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.2  2009/11/24 08:32:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * excluded ${property.key} values from default value check
- *
- * Revision 1.1  2008/12/30 17:01:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added configuration warnings facility (in Show configurationStatus)
- *
- */
 package nl.nn.adapterframework.configuration;
 
 import java.util.LinkedList;

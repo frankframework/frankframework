@@ -13,27 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: CheckSemaphorePipeProcessor.java,v $
- * Revision 1.7  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.6  2011/11/30 13:51:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2011/08/18 14:40:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use modified interface for statistics
- *
- * Revision 1.3  2010/09/13 13:53:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * now extends baseclass
- *
- * Revision 1.2  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
- *
- */
 package nl.nn.adapterframework.processors;
 
 import java.util.Hashtable;

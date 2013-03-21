@@ -13,30 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: DigesterPipe.java,v $
- * Revision 1.12  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.11  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.2  2011/10/19 15:01:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * do not print versions anymore
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.9  2004/10/05 10:49:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused code
- *
- * Revision 1.8  2004/03/26 10:42:34  Johan Verrips <johan.verrips@ibissource.org>
- * added @version tag in javadoc
- *
- * Revision 1.7  2004/03/24 13:53:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cosmetic changes
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import java.io.ByteArrayInputStream;

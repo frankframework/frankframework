@@ -13,18 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: Semaphore.java,v $
- * Revision 1.10  2011-11-30 13:51:49  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.8  2010/02/08 14:43:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added log keyword
- *
- */
 package nl.nn.adapterframework.util;
 
 

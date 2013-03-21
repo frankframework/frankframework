@@ -13,30 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: BatchBlobTransformerPipe.java,v $
- * Revision 1.6  2012-06-01 10:52:52  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.5  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2010/05/03 17:04:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * reworked stream handling, to allow for binary records.
- *
- * Revision 1.2  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted javadoc for resultOnTimeOut attribute
- *
- * Revision 1.1  2007/08/03 08:44:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * renamed TransformingPipes to TransformerPipes
- *
- * Revision 1.1  2007/07/26 16:19:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.jdbc;
 
 import java.io.InputStream;

@@ -13,62 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IAdapter.java,v $
- * Revision 1.19  2012-06-01 10:52:50  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.18  2011/11/30 13:51:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.16  2011/08/22 14:21:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused methods
- *
- * Revision 1.15  2010/09/13 13:35:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * renamed configurePipes() into configure() (javadoc only)
- *
- * Revision 1.14  2009/12/29 14:32:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified imports to reflect move of statistics classes to separate package
- *
- * Revision 1.13  2009/06/05 07:21:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added throws clause to forEachStatisticsKeeperBody()
- *
- * Revision 1.12  2008/09/04 12:02:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * collect interval statistics
- *
- * Revision 1.11  2008/08/27 15:54:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * *** empty log message ***
- *
- * Revision 1.10  2007/10/09 15:33:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * copy changes from Ibis-EJB:
- * removed usertransaction-methods
- * added getErrorState()
- *
- * Revision 1.9  2005/12/28 08:34:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduced StatisticsKeeper-iteration
- *
- * Revision 1.8  2005/07/05 12:28:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added possibility to end processing with an exception
- *
- * Revision 1.7  2005/01/13 08:55:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Make threadContext-attributes available in PipeLineSession
- *
- * Revision 1.6  2004/08/09 08:43:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added formatErrorMessage()
- *
- * Revision 1.5  2004/06/16 12:34:46  Johan Verrips <johan.verrips@ibissource.org>
- * Added AutoStart functionality on Adapter
- *
- * Revision 1.4  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
- * added @version tag in javadoc
- *
- * Revision 1.3  2004/03/23 17:36:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added methods for Transaction control
- *
- */
 package nl.nn.adapterframework.core;
 
 import java.util.Iterator;

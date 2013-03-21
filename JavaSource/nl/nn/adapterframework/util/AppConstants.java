@@ -13,57 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: AppConstants.java,v $
- * Revision 1.22  2012-08-23 11:57:43  m00f069
- * Updates from Michiel
- *
- * Revision 1.21  2011/11/30 13:51:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.19  2011/06/27 15:55:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Java 5.0 compatibility
- *
- * Revision 1.18  2010/03/17 11:26:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added StageSpecifics_${otap.stage}.properties file
- *
- * Revision 1.17  2010/03/10 13:57:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * committed to soon...
- *
- * Revision 1.15  2008/06/03 16:04:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * let custom properties override appConstants and DeploymentSpecifics
- *
- * Revision 1.14  2008/05/29 13:41:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * reordered methods in file
- *
- * Revision 1.13  2007/10/10 07:27:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of VariableExpander
- *
- * Revision 1.12  2007/02/12 14:09:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.11  2006/03/15 14:01:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * resolving in toXml parameterized
- *
- * Revision 1.10  2006/03/08 13:57:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed resolving of properties in XML
- *
- * Revision 1.8  2006/01/19 12:17:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed warning for non found file to debug
- *
- * Revision 1.7  2005/09/20 13:29:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed setting of baseResourceURL
- *
- * Revision 1.6  2005/09/13 15:44:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added code to determine and set baseResourceURL
- *
- * Revision 1.5  2005/07/28 07:41:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added log-keyword
- *
- */
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;

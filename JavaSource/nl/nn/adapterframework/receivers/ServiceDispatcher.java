@@ -13,39 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ServiceDispatcher.java,v $
- * Revision 1.15  2012-02-01 12:55:42  europe\m168309
- * added received message to debug logging
- *
- * Revision 1.14  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.12  2011/05/19 15:00:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * simplified, now uses a single dispatch-method
- *
- * Revision 1.11  2008/08/13 13:43:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed reference to ServiceListener
- *
- * Revision 1.10  2007/10/08 12:24:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map where possible
- *
- * Revision 1.9  2007/02/12 14:03:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.8  2005/09/20 13:28:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added warning for double registered listeners
- *
- * Revision 1.7  2005/08/30 16:05:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * throw exception if requested service does not exist
- *
- * Revision 1.6  2005/07/05 13:17:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow for ServiceClient2 extensions
- *
- */
 package nl.nn.adapterframework.receivers;
 
 import java.util.HashMap;

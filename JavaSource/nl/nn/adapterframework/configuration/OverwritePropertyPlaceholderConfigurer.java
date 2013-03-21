@@ -13,19 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: OverwritePropertyPlaceholderConfigurer.java,v $
- * Revision 1.1  2012-09-07 13:15:17  m00f069
- * Messaging related changes:
- * - Use CACHE_CONSUMER by default for ESB RR
- * - Don't use JMSXDeliveryCount to determine whether message has already been processed
- * - Added maxDeliveries
- * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
- * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
- * - Some cleaning along the way like making some synchronized statements unnecessary
- * - Made BTM and ActiveMQ work for testing purposes
- *
- */
 package nl.nn.adapterframework.configuration;
 
 import java.util.Properties;

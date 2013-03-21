@@ -13,12 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: LockerPipeLineProcessor.java,v $
- * Revision 1.1  2012-11-22 13:41:05  m00f069
- * Made it possible to use Locker on PipeLine level too
- *
- */
 package nl.nn.adapterframework.processors;
 
 import nl.nn.adapterframework.core.IPipeLineSession;

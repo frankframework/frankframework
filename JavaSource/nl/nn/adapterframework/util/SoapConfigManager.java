@@ -13,24 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SoapConfigManager.java,v $
- * Revision 1.10  2012-02-06 13:18:19  l190409
- * improved SOAP error logging
- *
- * Revision 1.9  2011/11/30 13:51:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.7  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.6  2005/10/18 08:18:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected version string
- *
- */
 package nl.nn.adapterframework.util;
 
 import java.net.MalformedURLException;

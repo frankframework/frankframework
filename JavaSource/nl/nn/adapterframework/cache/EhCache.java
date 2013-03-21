@@ -13,33 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: EhCache.java,v $
- * Revision 1.8  2011-11-30 13:51:48  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2011/05/31 15:35:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.5  2011/05/30 07:54:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved javadoc
- *
- * Revision 1.4  2010/09/20 15:54:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added javadoc comment
- *
- * Revision 1.3  2010/09/20 15:49:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use default cache configuration parameters from appConstants
- *
- * Revision 1.2  2010/09/20 14:37:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified defaults
- *
- * Revision 1.1  2010/09/13 13:28:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added cache facility
- *
- */
 package nl.nn.adapterframework.cache;
 
 import java.io.Serializable;

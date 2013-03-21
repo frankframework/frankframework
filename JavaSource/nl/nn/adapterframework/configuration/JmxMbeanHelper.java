@@ -13,30 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JmxMbeanHelper.java,v $
- * Revision 1.11  2011-11-30 13:51:56  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.9  2007/10/08 13:29:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.8  2007/02/12 13:38:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.7  2006/09/14 11:44:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * correctede logger definition
- *
- * Revision 1.6  2004/10/25 08:30:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected DisplayName
- *
- * Revision 1.5  2004/08/23 13:07:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated JavaDoc
- *
- */
 package nl.nn.adapterframework.configuration;
 
 import java.util.List;

@@ -13,35 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SenderWithParametersBase.java,v $
- * Revision 1.8  2011-11-30 13:51:55  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2010/12/13 13:14:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused code
- * added documentation
- *
- * Revision 1.5  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
- *
- * Revision 1.4  2007/02/26 16:53:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * add throws clause to open and close
- *
- * Revision 1.3  2007/02/12 13:44:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.2  2005/08/30 15:55:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added log and getLogPrefix()
- *
- * Revision 1.1  2005/06/20 08:58:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of SenderWithParametersBase
- *
- *
- */
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

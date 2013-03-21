@@ -13,31 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ShowEnvironmentVariables.java,v $
- * Revision 1.7  2011-11-30 13:51:46  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.5  2011/06/20 13:27:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Java 5.0 compatibility
- *
- * Revision 1.4  2006/08/22 06:56:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused imports
- *
- * Revision 1.3  2005/12/28 09:18:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support unicode names for environment-variables
- *
- * Revision 1.2  2005/10/27 08:44:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved getEnvironmentVariables to Misc
- *
- * Revision 1.1  2005/10/26 12:52:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added ShowEnvironmentVariables to console
- *
- */
-
 package nl.nn.adapterframework.webcontrol.action;
 
 import org.apache.struts.action.ActionForm;

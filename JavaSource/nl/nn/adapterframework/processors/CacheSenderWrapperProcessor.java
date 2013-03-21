@@ -13,24 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: CacheSenderWrapperProcessor.java,v $
- * Revision 1.5  2011-11-30 13:51:54  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2011/05/31 15:30:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for new cache features
- *
- * Revision 1.2  2010/12/13 13:29:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * optimize debugging
- *
- * Revision 1.1  2010/09/13 13:50:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * created cache processors
- *
- */
 package nl.nn.adapterframework.processors;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;

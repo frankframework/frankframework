@@ -13,45 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: FileRecordListener.java,v $
- * Revision 1.15  2012-06-01 10:52:57  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.14  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.12  2008/02/28 16:24:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use PipeLineSession.setListenerParameters()
- *
- * Revision 1.11  2007/10/08 13:33:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.10  2007/10/03 08:58:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map
- *
- * Revision 1.9  2007/07/17 15:13:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added attribute storeFileNameInSessionKey
- *
- * Revision 1.8  2007/02/12 14:03:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.7  2006/01/05 14:42:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc and reordered code
- *
- * Revision 1.6  2004/08/23 13:10:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated JavaDoc
- *
- * Revision 1.5  2004/03/26 10:43:03  Johan Verrips <johan.verrips@ibissource.org>
- * added @version tag in javadoc
- *
- * Revision 1.4  2004/03/23 18:16:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cosmetic changes
- *
- */
 package nl.nn.adapterframework.receivers;
 
 import java.io.File;

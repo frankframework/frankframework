@@ -13,38 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: XmlWellFormedChecker.java,v $
- * Revision 1.9  2012-10-26 16:13:38  m00f069
- * Moved *Xmlvalidator*, Schema and SchemasProvider to new validation package
- *
- * Revision 1.8  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
- * Cleaned XML validation code and documentation a bit.
- *
- * Revision 1.7  2012/06/01 10:52:49  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.6  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2011/08/22 14:28:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * constants moved to XmlValidatorBase
- *
- * Revision 1.3  2008/12/09 12:47:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added forward parserError
- *
- * Revision 1.2  2008/08/06 16:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added support for flexible monitoring
- *
- * Revision 1.1  2006/02/06 12:42:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
-
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

@@ -13,54 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JmsRealm.java,v $
- * Revision 1.17  2011-11-30 13:51:51  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.15  2011/10/04 09:57:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added jndiContextPrefix
- *
- * Revision 1.14  2008/07/24 12:20:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added support for authenticated JMS
- *
- * Revision 1.13  2007/10/10 08:23:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added a ToDo about cleanup
- *
- * Revision 1.12  2007/07/10 07:19:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * add some checks
- *
- * Revision 1.11  2007/05/08 16:07:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * add jndiAuthAlias attribute
- *
- * Revision 1.10  2007/05/03 11:40:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * add Principal
- *
- * Revision 1.9  2007/02/12 13:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.8  2006/08/21 15:11:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cosmetic changes
- *
- * Revision 1.7  2004/10/05 10:42:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused code
- *
- * Revision 1.6  2004/08/23 13:08:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated JavaDoc
- *
- * Revision 1.5  2004/03/30 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.4  2004/03/26 10:42:55  Johan Verrips <johan.verrips@ibissource.org>
- * added @version tag in javadoc
- *
- * Revision 1.3  2004/03/23 18:06:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added properties for Transaction control
- *
- */
 package nl.nn.adapterframework.jms;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

@@ -13,37 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JdbcQueryListener.java,v $
- * Revision 1.9  2011-11-30 13:51:43  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.7  2011/03/16 16:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of DbmsSupport, including support for MS SQL Server
- *
- * Revision 1.6  2010/11/22 13:09:02  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * replaced configuration warning "has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead" by info logging message
- *
- * Revision 1.5  2009/08/04 11:24:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for messages in CLOBs and BLOBs
- *
- * Revision 1.4  2008/12/30 17:01:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added configuration warnings facility (in Show configurationStatus)
- *
- * Revision 1.3  2008/12/10 08:35:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved locking and selection mechanism: now works in multiple threads. 
- * improved disaster recovery: no more specific 'in process' status, rolls back to original state (where apropriate)
- *
- * Revision 1.2  2008/06/19 08:10:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * set default updateStatusToError-query to updateStatusToProcessed
- *
- * Revision 1.1  2008/02/28 16:22:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.jdbc;
 
 import org.apache.commons.lang.StringUtils;

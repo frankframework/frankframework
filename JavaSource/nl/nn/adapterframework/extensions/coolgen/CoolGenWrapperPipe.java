@@ -13,27 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: CoolGenWrapperPipe.java,v $
- * Revision 1.8  2012-06-01 10:52:59  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.7  2011/11/30 13:52:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.5  2005/05/31 09:13:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added catch for DomBuilderException
- *
- * Revision 1.4  2004/03/31 12:04:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed javadoc
- *
- * Revision 1.3  2004/03/24 15:26:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cosmetic changes
- *
- */
 package nl.nn.adapterframework.extensions.coolgen;
 
 import java.awt.event.ActionEvent;

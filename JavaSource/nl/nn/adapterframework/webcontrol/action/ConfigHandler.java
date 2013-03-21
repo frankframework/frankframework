@@ -13,18 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ConfigHandler.java,v $
- * Revision 1.3  2011-11-30 13:51:46  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.1  2011/05/09 14:04:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * showConfiguration: added options "show original configuration" and "show loaded configuration"
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import nl.nn.adapterframework.util.AppConstants;

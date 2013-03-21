@@ -13,47 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JmsMessagingSourceFactory.java,v $
- * Revision 1.6  2012-09-07 13:15:17  m00f069
- * Messaging related changes:
- * - Use CACHE_CONSUMER by default for ESB RR
- * - Don't use JMSXDeliveryCount to determine whether message has already been processed
- * - Added maxDeliveries
- * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
- * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
- * - Some cleaning along the way like making some synchronized statements unnecessary
- * - Made BTM and ActiveMQ work for testing purposes
- *
- * Revision 1.5  2011/12/05 15:33:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * JMS 1.03 compatibilty restored
- *
- * Revision 1.4  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.2  2010/03/10 14:20:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * wrapped connectionfactories, to work around bug in IBM implementation of 
- * QueueConnectionFactory, that shows up when SSL is used in combination with Spring
- *
- * Revision 1.1  2010/01/28 14:48:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * renamed 'Connection' classes to 'MessageSource'
- *
- * Revision 1.4  2008/07/24 12:20:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added support for authenticated JMS
- *
- * Revision 1.3  2007/10/08 12:20:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map where possible
- *
- * Revision 1.2  2005/10/26 08:21:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * renamed createJmsConnection() into createConnection()
- *
- * Revision 1.1  2005/10/20 15:43:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduced JmsConnectionFactory special for real Jms connections
- *
- */
 package nl.nn.adapterframework.jms;
 
 import java.util.HashMap;

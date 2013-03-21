@@ -13,36 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: FileLineIteratorPipe.java,v $
- * Revision 1.9  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.8  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed javadoc
- *
- * Revision 1.7  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.5  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted javadoc for resultOnTimeOut attribute
- *
- * Revision 1.4  2008/05/21 09:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added block info to javadoc
- *
- * Revision 1.3  2007/10/08 12:23:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map where possible
- *
- * Revision 1.2  2007/09/13 09:10:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * base on StreamLineIteratorPipe
- *
- * Revision 1.1  2007/09/13 08:58:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import java.io.File;

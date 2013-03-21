@@ -13,68 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ParameterResolutionContext.java,v $
- * Revision 1.19  2012-06-01 10:52:57  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.18  2011/11/30 13:52:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.16  2008/10/27 08:08:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * XSLT 2.0 made possible
- *
- * Revision 1.15  2008/10/23 14:16:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * XSLT 2.0 made possible
- *
- * Revision 1.14  2007/10/08 12:21:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map where possible
- *
- * Revision 1.13  2007/02/12 13:59:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.12  2006/11/06 08:19:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added default constructor
- *
- * Revision 1.11  2005/10/26 08:49:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * reintroduced check for empty parameterlist in getValueMap
- *
- * Revision 1.10  2005/10/24 09:59:24  John Dekker <john.dekker@ibissource.org>
- * Add support for pattern parameters, and include them into several listeners,
- * senders and pipes that are file related
- *
- * Revision 1.9  2005/10/17 11:43:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * namespace-awareness configurable
- *
- * Revision 1.8  2005/06/13 11:55:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * made namespaceAware
- *
- * Revision 1.7  2005/06/02 11:47:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * obtain source from XmlUtils
- *
- * Revision 1.6  2005/03/31 08:15:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * generalized Source
- *
- * Revision 1.5  2005/02/24 10:49:56  Johan Verrips <johan.verrips@ibissource.org>
- * 4.2.e dd 24-02-2005
- *
- * Revision 1.4  2005/02/10 08:15:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed bug in map-generation
- *
- * Revision 1.3  2005/01/13 08:08:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Xslt parameter handling by Maps instead of by Ibis parameter system
- *
- * Revision 1.2  2004/10/14 16:07:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed from Object,Hashtable to String, PipelineSession
- *
- * Revision 1.1  2004/10/05 09:51:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed from ParameterResolver to ParameterResolutionContext
- * moved to package parameters
- *
- */
 package nl.nn.adapterframework.parameters;
 
 

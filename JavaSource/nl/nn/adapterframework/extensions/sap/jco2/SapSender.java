@@ -13,64 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SapSender.java,v $
- * Revision 1.1  2012-02-06 14:33:05  m00f069
- * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
- *
- * Revision 1.16  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.14  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * rolled back testtool adjustments (IbisDebuggerDummy)
- *
- * Revision 1.12  2009/08/26 15:34:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.11  2008/04/24 12:19:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fix NPE in configure() when no parameters present
- *
- * Revision 1.10  2008/01/30 14:42:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * return TID for asynchronous functions
- *
- * Revision 1.9  2008/01/29 15:39:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved some code to baseclass
- * added support for dynamic selection of sapsystem
- *
- * Revision 1.8  2007/05/02 11:33:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for handling parameters
- *
- * Revision 1.7  2007/05/01 14:22:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of SAP LUW management
- *
- * Revision 1.6  2006/01/05 13:59:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.5  2005/08/10 12:45:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected version-string
- *
- * Revision 1.4  2005/08/10 12:44:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * do close() if open() fails
- *
- * Revision 1.3  2004/07/19 09:45:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added getLogPrefix()
- *
- * Revision 1.2  2004/07/15 07:36:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.1  2004/07/06 07:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved SAP functionality to extensions
- *
- * Revision 1.2  2004/07/05 10:50:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected version setting
- *
- * Revision 1.1  2004/06/22 06:56:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * First version of SAP package
- *
- */
 package nl.nn.adapterframework.extensions.sap.jco2;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

@@ -13,51 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: BrowseJdbcTableExecute.java,v $
- * Revision 1.14  2011-11-30 13:51:46  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.12  2011/08/22 08:37:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed incomplete cookies
- *
- * Revision 1.11  2011/03/16 16:38:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * databasetype now defined in DbmsSupportFactory
- *
- * Revision 1.10  2009/10/19 14:01:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * includeFieldDefinition=true
- *
- * Revision 1.9  2009/09/25 12:28:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added WHERE facility
- *
- * Revision 1.8  2008/11/12 12:34:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed error in cookies
- *
- * Revision 1.7  2008/11/05 12:22:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * impose limits to prevent memory exception
- *
- * Revision 1.6  2008/10/20 13:02:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * also show not compressed blobs and not serialized blobs
- *
- * Revision 1.5  2008/06/18 09:17:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected rownums together with order by (MO)
- *
- * Revision 1.4  2008/05/22 07:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use inherited error() method
- *
- * Revision 1.3  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.2  2007/05/24 09:54:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * made cloudscape compatible
- *
- * Revision 1.1  2007/05/21 12:24:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added browseJdbcTable functions
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;

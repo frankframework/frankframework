@@ -13,34 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: EsbJmsSender.java,v $
- * Revision 1.8  2013-03-06 13:37:31  europe\m168309
- * typo
- *
- * Revision 1.7  2012/08/31 13:54:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * changed derivation for soapAction attribute
- *
- * Revision 1.6  2012/08/30 14:08:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * bugfix for soapAction attribute
- *
- * Revision 1.5  2012/08/30 14:02:39  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * *** empty log message ***
- *
- * Revision 1.4  2012/04/13 13:45:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted javadoc
- *
- * Revision 1.3  2012/01/06 13:29:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * don't override soapAction when set
- *
- * Revision 1.2  2012/01/05 10:25:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * corrected javadoc
- *
- * Revision 1.1  2012/01/05 09:59:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * initial version
- *
- *
- */
 package nl.nn.adapterframework.extensions.esb;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

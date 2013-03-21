@@ -13,37 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IbisMultiSourceExpander.java,v $
- * Revision 1.8  2011-11-30 13:51:56  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2008/06/03 11:42:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added some javadoc
- *
- * Revision 1.5  2008/03/28 14:19:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * resolve non-found value to empty string
- *
- * Revision 1.4  2008/01/03 15:39:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * remove superfluous logging
- *
- * Revision 1.3  2007/10/16 09:12:27  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Merge with changes from EJB branch in preparation for creating new EJB brance
- *
- * Revision 1.1.2.4  2007/10/15 11:35:52  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Fix direct retrieving of Logger w/o using the LogUtil
- *
- * Revision 1.1.2.3  2007/10/10 14:30:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * synchronize with HEAD (4.8-alpha1)
- *
- * Revision 1.2  2007/10/09 15:29:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Direct copy from Ibis-EJB:
- * first version in HEAD
- *
- */
 package nl.nn.adapterframework.configuration;
 
 import java.util.ArrayList;

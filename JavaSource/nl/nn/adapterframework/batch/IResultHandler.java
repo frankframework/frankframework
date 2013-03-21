@@ -13,51 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IResultHandler.java,v $
- * Revision 1.14  2012-06-01 10:52:48  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.13  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.11  2010/01/27 13:31:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added isBlockByRecordType()
- *
- * Revision 1.10  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for parameters
- *
- * Revision 1.9  2007/09/19 11:15:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added openDocument() and closeDocument()
- * added openBlock() and closeBlock()
- *
- * Revision 1.8  2007/09/17 07:43:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added hasPrefix()
- *
- * Revision 1.7  2007/09/10 11:07:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed logic processing from writePrefix to calling class
- * renamed writePrefix() and writeSuffix() into open/closeRecordType()
- *
- * Revision 1.6  2007/08/03 08:26:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added configure(), open() and close()
- *
- * Revision 1.5  2007/07/24 07:59:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * change inputFilename to streamId
- *
- * Revision 1.4  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
- * Restore java files from batch package after unwanted deletion.
- *
- * Revision 1.2  2005/10/31 14:38:03  John Dekker <john.dekker@ibissource.org>
- * Add . in javadoc
- *
- * Revision 1.1  2005/10/11 13:00:20  John Dekker <john.dekker@ibissource.org>
- * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
- * BatchFileTransformerPipe
- *
- */
 package nl.nn.adapterframework.batch;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

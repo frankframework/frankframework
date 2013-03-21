@@ -13,44 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: LdapChallengePipe.java,v $
- * Revision 1.12  2012-06-01 10:52:50  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.11  2011/11/30 13:52:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.9  2007/10/08 12:20:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map where possible
- *
- * Revision 1.8  2007/09/27 13:46:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified handling of empty principal and credentials
- *
- * Revision 1.7  2007/09/05 13:03:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.6  2007/09/04 09:33:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * no stacktrace if reason is stored
- *
- * Revision 1.5  2007/09/04 07:59:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added attribute errorSessionKey
- *
- * Revision 1.4  2007/08/03 08:45:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed bug, added internal entryName parameter
- *
- * Revision 1.3  2007/05/16 11:42:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cleanup code, remove threading problems, improve javadoc
- *
- * Revision 1.2  2007/02/27 12:48:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * set pooling off
- *
- * Revision 1.1  2007/02/26 15:56:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * update of LDAP code, after a snapshot from Ibis4Toegang
- */
 package nl.nn.adapterframework.ldap;
 
 import java.util.Map;

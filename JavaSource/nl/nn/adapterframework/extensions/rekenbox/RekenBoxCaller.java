@@ -13,43 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: RekenBoxCaller.java,v $
- * Revision 1.12  2012-06-01 10:52:52  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.11  2011/11/30 13:52:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.9  2005/12/29 15:15:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected javadoc
- *
- * Revision 1.8  2004/10/05 10:40:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved filename generation
- *
- * Revision 1.7  2004/09/01 11:17:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unnecessary code
- *
- * Revision 1.6  2004/09/01 08:18:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * create output file in advance
- *
- * Revision 1.5  2004/08/17 15:48:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added 'redirected' commandlinetype
- * added precreation of outputfile, required for L76HB000
- *
- * Revision 1.4  2004/08/09 13:57:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved determination of rekenbox-name
- *
- * Revision 1.3  2004/03/26 09:50:52  Johan Verrips <johan.verrips@ibissource.org>
- * Updated javadoc
- *
- * Revision 1.2  2004/03/24 15:30:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cleaned up unused comments
- *
- */
 package nl.nn.adapterframework.extensions.rekenbox;
 
 import java.io.File;

@@ -13,42 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: CorePipeLineProcessor.java,v $
- * Revision 1.11  2012-08-23 11:57:44  m00f069
- * Updates from Michiel
- *
- * Revision 1.10  2012/06/01 10:52:49  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.9  2012/05/04 09:42:35  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Use PipeProcessors (to e.g. handle statistics) for Validators and Wrappers
- *
- * Revision 1.8  2012/03/05 14:46:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * changed order of validate and wrap
- *
- * Revision 1.7  2012/01/25 15:52:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * skip output wrap when output validation fails
- *
- * Revision 1.6  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.2  2011/11/25 11:28:17  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added inputWrapper and outputWrapper pipes to PipeLine and MessageSendingPipes
- *
- * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2011/08/22 14:28:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for size statistics
- *
- * Revision 1.3  2011/08/18 14:39:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added validator statistics
- *
- * Revision 1.2  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
- *
- */
 package nl.nn.adapterframework.processors;
 import java.io.IOException;
 

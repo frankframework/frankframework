@@ -13,21 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: Basics.java,v $
- * Revision 1.4  2011-11-30 13:51:48  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.2  2011/05/23 13:41:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * renamed 'total' fields to 'sum'
- *
- * Revision 1.1  2009/12/29 14:25:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved statistics to separate package
- *
- */
 package nl.nn.adapterframework.statistics;
 
 import java.text.DecimalFormat;

@@ -13,60 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JmsListenerBase.java,v $
- * Revision 1.17  2013-01-30 15:37:42  europe\m168309
- * separate method retrieveIdFromMessage for method getIdFromRawMessage
- *
- * Revision 1.16  2012/06/01 10:52:48  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.15  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.13  2011/09/28 08:30:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * corrected javadoc
- *
- * Revision 1.12  2011/09/28 08:01:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * removed configWarning soap=true
- *
- * Revision 1.11  2011/09/28 06:40:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * removed configWarning soap=true
- *
- * Revision 1.10  2011/09/23 12:10:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * moved configWarning from method setSoap() to method Configuration()
- *
- * Revision 1.9  2011/09/22 14:18:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Deprecated attribute soap=true in JmsSender/JmsListener
- *
- * Revision 1.8  2011/06/22 10:44:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * improved logging
- *
- * Revision 1.7  2011/06/06 12:26:32  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added soapHeader to method prepareReply
- *
- * Revision 1.6  2011/03/21 14:58:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added throws ListenerException to prepareReply()
- *
- * Revision 1.5  2011/01/27 08:45:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * timeout as int
- *
- * Revision 1.4  2009/08/20 12:14:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * user generic getStringFromRawMessage from JMSFacade
- *
- * Revision 1.3  2009/07/28 12:44:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * enable SOAP over JMS
- *
- * Revision 1.2  2008/09/17 09:49:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * implement interface HasSender
- *
- * Revision 1.1  2008/09/01 15:13:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * made common baseclass for pushing and pulling jms listeners
- *
- */
 package nl.nn.adapterframework.jms;
 
 import java.util.Date;

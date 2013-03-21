@@ -13,51 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: PutSystemDateInSession.java,v $
- * Revision 1.14  2012-06-01 10:52:50  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.13  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.11  2011/01/06 09:04:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed bug in sleepWhenEqualToPrevious
- *
- * Revision 1.10  2011/01/06 08:54:18  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed bug in sleepWhenEqualToPrevious combined with returnFixedDate
- *
- * Revision 1.9  2010/08/20 07:45:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * returnFixedDate attribute only available in stub mode
- *
- * Revision 1.8  2009/11/20 10:18:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * facility to override fixeddate
- *
- * Revision 1.7  2009/06/09 09:16:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * updated javadoc
- *
- * Revision 1.6  2009/06/09 08:35:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added returnFixedDate attribute
- *
- * Revision 1.5  2006/08/30 12:33:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * set timezone only when set
- *
- * Revision 1.4  2006/08/22 12:55:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added timeZone and sleepWhenEqualToPrevious attributes
- *
- * Revision 1.3  2005/07/28 07:40:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved logging
- *
- * Revision 1.2  2004/11/10 12:58:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added default values for attributes + cosmetic changes
- *
- * Revision 1.1  2004/09/01 11:05:06  Johan Verrips <johan.verrips@ibissource.org>
- * Initial version
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import java.text.ParseException;

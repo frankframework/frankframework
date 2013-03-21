@@ -13,46 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ITransactionalStorage.java,v $
- * Revision 1.12  2011-11-30 13:51:55  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.10  2009/12/29 14:55:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * increased IBISSTORE with the field LABEL for adding user data
- *
- * Revision 1.9  2009/12/23 17:05:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified MessageBrowsing interface to reenable and improve export of messages
- *
- * Revision 1.8  2008/07/24 12:04:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added messageCount
- *
- * Revision 1.7  2008/01/11 14:48:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added getTypeString() and getHostString()
- *
- * Revision 1.6  2007/10/09 15:33:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * copy changes from Ibis-EJB:
- * added containsMessageId()
- *
- * Revision 1.5  2007/06/12 11:19:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added set/getType
- *
- * Revision 1.4  2007/05/23 09:07:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added attributes slotId and active
- *
- * Revision 1.3  2005/07/19 12:20:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * adapted to work extend IMessageBrowser
- *
- * Revision 1.2  2004/03/26 10:42:44  Johan Verrips <johan.verrips@ibissource.org>
- * added @version tag in javadoc
- *
- * Revision 1.1  2004/03/23 16:50:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * initial version
- *
- */
 package nl.nn.adapterframework.core;
 
 import java.io.Serializable;

@@ -13,42 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ShowMonitors.java,v $
- * Revision 1.11  2011-11-30 13:51:46  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.9  2011/06/20 13:29:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Java 5.0 compatibility
- *
- * Revision 1.8  2009/05/13 08:19:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved monitoring: triggers can now be filtered multiselectable on adapterlevel
- *
- * Revision 1.7  2008/08/27 16:28:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added getStatus in xml
- *
- * Revision 1.6  2008/08/13 13:46:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * some bugfixing
- *
- * Revision 1.5  2008/08/12 16:05:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added feature to show events in console
- *
- * Revision 1.4  2008/08/07 11:32:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * rework
- *
- * Revision 1.3  2008/07/24 12:42:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * rework of monitoring
- *
- * Revision 1.2  2008/07/17 16:21:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * work in progess
- *
- * Revision 1.1  2008/07/14 17:29:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for flexibile monitoring
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;

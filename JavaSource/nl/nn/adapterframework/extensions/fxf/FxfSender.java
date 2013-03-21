@@ -13,59 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: FxfSender.java,v $
- * Revision 1.18  2012-08-15 08:08:20  m00f069
- * Implemented FxF3 listener as a wrapper and FxF3 cleanup mechanism
- *
- * Revision 1.17  2011/11/30 13:51:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.15  2011/01/26 14:42:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * new style ProcessUtil
- *
- * Revision 1.14  2010/09/09 11:42:02  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Removed double destinationName in javadoc
- *
- * Revision 1.13  2010/03/22 11:08:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * moved message logging from INFO level to DEBUG level
- *
- * Revision 1.12  2010/03/10 14:30:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * rolled back testtool adjustments (IbisDebuggerDummy)
- *
- * Revision 1.10  2009/09/07 13:14:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use log from ancestor
- *
- * Revision 1.9  2009/06/10 15:49:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added test for presence queueConnectionFactoryName, for fxf 2 compatibility
- *
- * Revision 1.8  2009/03/04 15:57:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added support for FXF 2.0
- * added local and remote filenames to fxf_init calls
- *
- * Revision 1.6  2008/09/04 12:05:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * test for version of fxf
- *
- * Revision 1.5  2008/08/27 15:55:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added remote filename option
- *
- * Revision 1.4  2008/02/22 14:29:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * implement ISender
- *
- * Revision 1.3  2008/02/21 12:42:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed default of script
- * options to delete or backup file after sending
- *
- * Revision 1.2  2008/02/19 09:39:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.1  2008/02/13 12:53:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of FxF components
- *
- */
 package nl.nn.adapterframework.extensions.fxf;
 
 import java.io.File;

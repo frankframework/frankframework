@@ -13,35 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: BisWrapperPipe.java,v $
- * Revision 1.10  2012-06-01 10:52:57  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.9  2012/01/24 11:33:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Deprecated ExtendedSoapWrapperPipe
- *
- * Revision 1.6  2011/09/22 08:54:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * corrected javadoc
- *
- * Revision 1.5  2011/09/22 08:45:22  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added attributes removeOutputNamespaces, omitResult and addOutputNamespace for the purpose of the migration from IFSA to TIBCO
- *
- * Revision 1.4  2011/09/16 13:30:21  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added check on soap body not empty in case of unwrap
- *
- * Revision 1.3  2011/09/16 13:11:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * - renamed attributes xpathExpression and namespaceDefs to inputXPath and inputNamespaceDefs
- * - added attributes outputRoot and outputNamespace
- *
- * Revision 1.2  2011/09/15 10:19:42  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * corrected javadoc
- *
- * Revision 1.1  2011/09/14 14:13:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * first version
- *
- *
- */
 package nl.nn.adapterframework.extensions.bis;
 
 import java.io.IOException;

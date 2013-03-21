@@ -13,60 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: TestPipeLineExecute.java,v $
- * Revision 1.22  2012-06-01 10:52:59  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.21  2011/11/30 13:51:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.19  2009/12/31 10:06:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * SendJmsMessage/TestIfsaService/TestPipeLine: made zipfile-upload facility case-insensitive
- *
- * Revision 1.18  2009/09/03 08:58:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted javadoc
- *
- * Revision 1.17  2009/09/03 08:48:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * bugfix: or upload or message
- *
- * Revision 1.16  2009/08/31 09:48:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted javadoc
- *
- * Revision 1.15  2009/03/17 10:52:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * slight error fixed
- *
- * Revision 1.14  2009/02/05 14:08:37  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * bugfix - non xml strings results in error
- *
- * Revision 1.13  2008/12/24 10:57:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added context facility (in xml processing instructions)
- *
- * Revision 1.12  2008/12/16 13:37:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * read messages in the right encoding
- *
- * Revision 1.11  2008/07/24 12:41:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * do not execute when cancelled
- *
- * Revision 1.10  2008/05/22 07:45:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use inherited error() method
- *
- * Revision 1.9  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.8  2007/07/19 15:16:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * list Adapters in order of configuration
- *
- * Revision 1.7  2007/02/12 15:50:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed remote directory facility
- *
- * Revision 1.6  2007/02/12 14:36:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added zipfile-upload capability
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.ByteArrayInputStream;

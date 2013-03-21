@@ -13,36 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ActionBase.java,v $
- * Revision 1.12  2011-11-30 13:51:46  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.10  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
- *
- * Revision 1.9  2009/09/02 13:22:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * avoid NPE
- *
- * Revision 1.8  2008/05/22 07:29:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added error and warn methods
- *
- * Revision 1.7  2007/12/10 10:24:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added getAndSetProperty
- *
- * Revision 1.6  2007/10/16 09:12:28  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Merge with changes from EJB branch in preparation for creating new EJB brance
- *
- * Revision 1.5  2007/10/10 07:29:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * execute control via IbisManager
- *
- * Revision 1.4  2007/02/12 14:34:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;

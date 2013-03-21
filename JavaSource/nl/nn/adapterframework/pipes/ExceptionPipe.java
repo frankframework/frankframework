@@ -13,37 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ExceptionPipe.java,v $
- * Revision 1.9  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.8  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2010/12/30 09:21:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * improved javadoc
- *
- * Revision 1.5  2007/07/24 08:53:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * set default noThrow message
- *
- * Revision 1.4  2007/07/24 08:06:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added default message
- *
- * Revision 1.3  2007/07/10 07:30:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved javadoc
- *
- * Revision 1.2  2007/06/26 09:35:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cleanup exception message
- *
- * Revision 1.1  2007/05/02 11:20:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of ExceptionPipe
- *
- */
-
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.IPipeLineSession;

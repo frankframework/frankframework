@@ -13,36 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: Result2StringWriter.java,v $
- * Revision 1.9  2012-06-01 10:52:48  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.8  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2010/01/27 13:34:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added documentation for attribute blockByRecordType
- *
- * Revision 1.5  2008/02/19 09:49:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.4  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.3  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for parameters
- *
- * Revision 1.2  2007/09/24 13:02:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.1  2007/09/19 13:01:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.batch;
 
 import java.io.StringWriter;

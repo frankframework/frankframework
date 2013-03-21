@@ -13,57 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SapSystem.java,v $
- * Revision 1.2  2012-03-12 15:23:00  m00f069
- * Implemented logon group properties
- *
- * Revision 1.1  2012/02/06 14:33:04  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
- *
- * Revision 1.13  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.11  2010/04/26 14:21:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added attribute unicode (only for SapListeners, not for SapSenders)
- *
- * Revision 1.10  2008/01/29 15:34:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added support for idocs and for multiple sap system objects
- *
- * Revision 1.9  2007/05/01 14:20:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved exception handling
- *
- * Revision 1.8  2005/12/19 16:44:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added authentication using authentication-alias
- *
- * Revision 1.7  2005/08/10 12:46:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * underflow-correction of reference count
- *
- * Revision 1.6  2005/08/08 09:42:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * reworked SAP classes to provide better refresh of repository when needed
- *
- * Revision 1.5  2005/08/02 13:04:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added configurable trace facility
- *
- * Revision 1.4  2004/10/05 10:41:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused imports
- *
- * Revision 1.3  2004/08/23 13:11:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated JavaDoc
- *
- * Revision 1.2  2004/07/07 13:56:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * remove ClientPool before adding it
- *
- * Revision 1.1  2004/07/06 07:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved SAP functionality to extensions
- *
- * Revision 1.1  2004/06/22 06:56:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * First version of SAP package
- *
- */
 package nl.nn.adapterframework.extensions.sap.jco3;
 
 import java.util.Iterator;

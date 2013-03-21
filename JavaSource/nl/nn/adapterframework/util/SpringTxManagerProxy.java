@@ -13,24 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SpringTxManagerProxy.java,v $
- * Revision 1.6  2011-11-30 13:51:48  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2008/02/06 16:39:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added support for setting of transaction timeout
- *
- * Revision 1.3  2008/01/11 09:55:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added utility functions
- *
- * Revision 1.2  2007/11/22 09:14:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.util;
 
 import org.apache.log4j.Logger;

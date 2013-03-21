@@ -13,21 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: CachedStatGroupTable.java,v $
- * Revision 1.3  2011-11-30 13:52:03  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.1  2010/01/07 13:16:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved statistics related classes to statistics package
- *
- * Revision 1.1  2009/08/26 15:35:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for storing statistics in a database
- *
- */
 package nl.nn.adapterframework.statistics.jdbc;
 
 import java.sql.Connection;

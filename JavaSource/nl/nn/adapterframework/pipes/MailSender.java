@@ -13,63 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: MailSender.java,v $
- * Revision 1.19  2011-11-30 13:51:50  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.17  2008/12/30 17:01:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added configuration warnings facility (in Show configurationStatus)
- *
- * Revision 1.16  2008/11/26 09:38:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Fixed warning message in deprecated classes
- *
- * Revision 1.15  2008/08/06 16:38:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved from pipes to senders package
- *
- * Revision 1.14  2008/05/15 15:12:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow to send messages without parameters
- *
- * Revision 1.13  2007/02/12 14:02:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.12  2005/12/19 16:37:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected version string
- *
- * Revision 1.11  2005/12/19 16:36:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added authentication using authentication-alias
- *
- * Revision 1.10  2005/04/26 09:21:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added parameters messageType, messageBase64 and attachment[@base64] (by Peter Leeuwenburgh)
- *
- * Revision 1.1  2005/04/21 13:37:15  NNVZNL01#L168309
- * added parameters messageType, messageBase64 and attachment[@base64]
- *
- * Revision 1.9  2004/10/26 07:45:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * check if any recipients are found
- *
- * Revision 1.8  2004/10/19 16:12:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * made Transport per thread instead of per instance
- *
- * Revision 1.7  2004/10/19 13:53:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * graceful handling of empty recipients
- *
- * Revision 1.6  2004/10/19 06:39:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified parameter handling, introduced IWithParameters
- *
- * Revision 1.5  2004/10/14 16:13:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * parametrization and adding of attachments
- *
- * Revision 1.4  2004/03/26 10:42:34  Johan Verrips <johan.verrips@ibissource.org>
- * added @version tag in javadoc
- *
- * Revision 1.3  2004/03/24 13:58:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed TimeOutException
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

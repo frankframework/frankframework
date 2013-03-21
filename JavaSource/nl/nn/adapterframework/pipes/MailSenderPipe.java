@@ -13,21 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: MailSenderPipe.java,v $
- * Revision 1.8  2011-11-30 13:51:50  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2009/02/10 10:44:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Replaced deprecated class
- *
- * Revision 1.5  2005/10/17 11:31:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * simplified code
- * 
- */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.senders.MailSender;

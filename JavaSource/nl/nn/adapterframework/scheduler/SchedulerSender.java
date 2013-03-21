@@ -13,32 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SchedulerSender.java,v $
- * Revision 1.8  2011-11-30 13:51:42  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * rolled back testtool adjustments (IbisDebuggerDummy)
- *
- * Revision 1.4  2007/10/10 09:40:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Direct copy from Ibis-EJB:
- * version using IbisManager
- *
- * Revision 1.3  2007/02/26 16:52:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * startScheduler on open()
- *
- * Revision 1.2  2007/02/12 14:08:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.1  2005/11/01 08:51:13  John Dekker <john.dekker@ibissource.org>
- * Add support for dynamic scheduling, i.e. add a job to the scheduler using 
- * a sender
- *
- */
 package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

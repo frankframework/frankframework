@@ -13,63 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: AbstractRecordHandler.java,v $
- * Revision 1.18  2012-06-01 10:52:48  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.17  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.15  2010/01/27 13:48:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added getRecordType()
- * modified isNewRecordType, to better detect what is promised by its name
- *
- * Revision 1.14  2008/12/30 17:01:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added configuration warnings facility (in Show configurationStatus)
- *
- * Revision 1.13  2008/07/14 17:52:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * return whole record when no fields or separator specified
- *
- * Revision 1.12  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.11  2008/02/15 16:04:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added trim attribute
- *
- * Revision 1.10  2007/10/08 13:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.9  2007/09/24 14:55:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for parameters
- *
- * Revision 1.8  2007/09/10 11:11:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * renamed mustPrefix() to isNewRecordType()
- * renamed attribute 'separatorWhenFieldsDiffer' to 'recordIdentifyingFields'
- *
- * Revision 1.7  2007/08/03 08:24:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.6  2007/07/26 16:02:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed seperator into separator
- *
- * Revision 1.5  2007/05/03 11:29:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * add methods configure(), open() and close()
- *
- * Revision 1.4  2006/05/19 09:01:49  Peter Eijgermans <peter.eijgermans@ibissource.org>
- * Restore java files from batch package after unwanted deletion.
- *
- * Revision 1.2  2005/10/13 14:09:41  John Dekker <john.dekker@ibissource.org>
- * StringTokenizer did not return token if two delimeters follow eachother directly.
- *
- * Revision 1.1  2005/10/11 13:00:21  John Dekker <john.dekker@ibissource.org>
- * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
- * BatchFileTransformerPipe
- *
- */
 package nl.nn.adapterframework.batch;
 
 import java.util.ArrayList;

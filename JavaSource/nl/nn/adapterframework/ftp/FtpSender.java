@@ -13,63 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: FtpSender.java,v $
- * Revision 1.20  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.19  2011/11/30 13:52:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.17  2011/06/27 15:39:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * enabled KeyboardInteractive login (experimental)
- * allow to set keyManagerAlgorithm and trustManagerAlgorithm
- *
- * Revision 1.16  2010/03/19 07:22:32  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * default port for FTP is 21 instead of 22 (which is for SFTP)
- *
- * Revision 1.15  2010/03/10 14:30:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * rolled back testtool adjustments (IbisDebuggerDummy)
- *
- * Revision 1.13  2007/12/28 12:15:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added getPassword
- *
- * Revision 1.11  2006/01/05 14:17:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.10  2005/12/19 17:22:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected typos in javadoc
- *
- * Revision 1.9  2005/12/19 16:46:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * rework, lots of changes
- *
- * Revision 1.8  2005/12/07 15:53:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * increased usage of superclass
- *
- * Revision 1.6  2005/11/07 08:21:35  John Dekker <john.dekker@ibissource.org>
- * Enable sftp public/private key authentication
- *
- * Revision 1.5  2005/10/31 14:42:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.4  2005/10/27 07:57:41  John Dekker <john.dekker@ibissource.org>
- * add setRemoteDirectory method
- *
- * Revision 1.3  2005/10/24 09:59:22  John Dekker <john.dekker@ibissource.org>
- * Add support for pattern parameters, and include them into several listeners,
- * senders and pipes that are file related
- *
- * Revision 1.2  2005/10/17 12:21:21  John Dekker <john.dekker@ibissource.org>
- * *** empty log message ***
- *
- * Revision 1.1  2005/10/11 13:03:29  John Dekker <john.dekker@ibissource.org>
- * Supports retrieving files (FtpFileRetrieverPipe) and sending files (FtpSender)
- * via one of the FTP protocols (ftp, sftp, ftps both implicit as explicit).
- *
- */
 package nl.nn.adapterframework.ftp;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

@@ -13,31 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IMessageHandler.java,v $
- * Revision 1.7  2011-11-30 13:51:55  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.5  2007/10/03 08:10:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map
- *
- * Revision 1.4  2005/07/05 12:54:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow to set parameters from context for processRequest() methods
- *
- * Revision 1.3  2004/08/23 13:07:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated JavaDoc
- *
- * Revision 1.2  2004/08/09 14:00:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduced formatErrorMessage
- * some interface-changes
- *
- * Revision 1.1  2004/08/03 13:11:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.core;
 
 import java.util.Map;

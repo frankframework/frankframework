@@ -13,37 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: StatisticsKeeperXmlBuilder.java,v $
- * Revision 1.3  2011-11-30 13:51:48  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.1  2009/12/29 14:25:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved statistics to separate package
- *
- * Revision 1.6  2009/08/26 15:44:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for separated adapter-only and detailed statistics
- *
- * Revision 1.5  2009/06/05 07:38:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for adapter level only statistics
- * added heapSize and totalMemory attributes
- *
- * Revision 1.4  2009/01/08 16:45:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added period indicator attributes to generated XML
- *
- * Revision 1.3  2008/09/04 12:19:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * collect interval statistics
- *
- * Revision 1.2  2008/09/01 15:37:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added generic summary information
- *
- * Revision 1.1  2008/06/03 15:57:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.statistics;
 
 import java.text.DateFormat;

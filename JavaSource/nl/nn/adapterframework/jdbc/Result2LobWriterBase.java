@@ -13,34 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: Result2LobWriterBase.java,v $
- * Revision 1.8  2012-06-01 10:52:52  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.7  2012/02/17 18:04:02  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Use proxiedDataSources for JdbcIteratingPipeBase too
- * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
- *
- * Revision 1.6  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2011/04/13 08:39:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Blob and Clob support using DbmsSupport
- *
- * Revision 1.3  2007/09/24 14:58:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for parameters
- *
- * Revision 1.2  2007/09/19 13:06:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modify exception type thrown
- *
- * Revision 1.1  2007/08/03 08:43:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first versions of Jdbc result writers
- *
- */
 package nl.nn.adapterframework.jdbc;
 
 import java.io.Writer;

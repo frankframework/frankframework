@@ -13,28 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: CacheAdapterBase.java,v $
- * Revision 1.6  2011-11-30 13:51:48  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2011/06/20 13:14:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added output-types for xpath expressions
- *
- * Revision 1.3  2011/05/31 15:30:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for transformation of values,
- * support for configurable caching of empty keys and values
- *
- * Revision 1.2  2010/09/20 15:48:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added warning for empty key
- *
- * Revision 1.1  2010/09/13 13:28:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added cache facility
- *
- */
 package nl.nn.adapterframework.cache;
 
 import java.io.Serializable;

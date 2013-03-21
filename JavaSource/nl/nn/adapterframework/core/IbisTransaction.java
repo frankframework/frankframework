@@ -13,19 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IbisTransaction.java,v $
- * Revision 1.3  2011-11-30 13:51:55  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.1  2008/12/05 09:40:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * clarified transaction management logging
- *
- */
-
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.util.LogUtil;

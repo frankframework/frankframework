@@ -13,45 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JdbcSenderBase.java,v $
- * Revision 1.14  2011-11-30 13:51:43  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.12  2011/10/04 09:57:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * test for empty datasourceName instead of null Datasource
- *
- * Revision 1.11  2011/08/09 09:57:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added timeout
- *
- * Revision 1.10  2011/04/27 10:01:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * used timeout attribute in getting connection too
- *
- * Revision 1.9  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * rolled back testtool adjustments (IbisDebuggerDummy)
- *
- * Revision 1.7  2009/04/01 08:22:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added TimeOutException to SendMessage()
- *
- * Revision 1.6  2007/06/19 12:09:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improve javadoc
- *
- * Revision 1.5  2006/12/12 09:57:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * restore jdbc package
- *
- * Revision 1.3  2005/08/25 15:45:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * close connection in a finally clause
- *
- * Revision 1.2  2005/05/31 09:55:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * implemented attribute 'connectionsArePooled'
- *
- * Revision 1.1  2005/04/26 15:20:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduced JdbcSenderBase, with non-sql oriented basics
- *
- */
 package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;

@@ -13,33 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: XslErrorMessageFormatter.java,v $
- * Revision 1.11  2012-06-01 10:52:57  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.10  2011/11/30 13:52:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.8  2009/06/23 12:41:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * allow use of parameters
- *
- * Revision 1.7  2007/05/08 15:52:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * add xpath-attribute
- *
- * Revision 1.6  2006/12/13 16:24:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.5  2004/03/31 12:04:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed javadoc
- *
- * Revision 1.4  2004/03/30 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- */
 package nl.nn.adapterframework.errormessageformatters;
 
 

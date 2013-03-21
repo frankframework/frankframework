@@ -13,59 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JmsTransactionalStorage.java,v $
- * Revision 1.16  2011-11-30 13:51:51  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.14  2010/01/04 15:05:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added label
- *
- * Revision 1.13  2009/12/29 14:56:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * increased IBISSTORE with the field LABEL for adding user data
- *
- * Revision 1.12  2009/12/23 17:09:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified MessageBrowsing interface to reenable and improve export of messages
- *
- * Revision 1.11  2008/01/11 14:51:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added getTypeString() and getHostString()
- *
- * Revision 1.10  2007/10/09 15:35:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * copy changes from Ibis-EJB:
- * added containsMessageId()
- *
- * Revision 1.9  2007/06/12 11:21:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * adapted to new functionality
- *
- * Revision 1.8  2007/05/23 09:16:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added attribute 'active'
- *
- * Revision 1.7  2005/12/20 16:59:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * implemented support for connection-pooling
- *
- * Revision 1.6  2005/10/20 15:44:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified JMS-classes to use shared connections
- * open()/close() became openFacade()/closeFacade()
- *
- * Revision 1.5  2005/08/04 15:40:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed slotId code
- *
- * Revision 1.4  2005/07/28 07:38:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added slotId attribute
- *
- * Revision 1.3  2005/07/19 15:12:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * adapted to an implementation extending IMessageBrowser
- *
- * Revision 1.2  2004/03/26 10:42:54  Johan Verrips <johan.verrips@ibissource.org>
- * added @version tag in javadoc
- *
- * Revision 1.1  2004/03/23 18:02:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * initial version
- *
- */
 package nl.nn.adapterframework.jms;
 
 import java.io.Serializable;

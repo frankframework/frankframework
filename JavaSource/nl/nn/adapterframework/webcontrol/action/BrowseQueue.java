@@ -13,25 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: BrowseQueue.java,v $
- * Revision 1.5  2011-11-30 13:51:46  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2011/03/16 16:38:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cosmetic change
- *
- * Revision 1.2  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.1  2004/06/16 12:25:52  Johan Verrips <johan.verrips@ibissource.org>
- * Initial version of Queue browsing functionality
- *
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;

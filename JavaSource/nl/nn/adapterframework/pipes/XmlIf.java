@@ -13,43 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: XmlIf.java,v $
- * Revision 1.11  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.10  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.8  2008/01/30 14:47:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * avoid NPE
- *
- * Revision 1.7  2007/08/29 15:08:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.6  2006/01/05 14:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.5  2005/12/29 15:18:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected javadoc
- *
- * Revision 1.4  2005/10/24 09:20:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * made namespaceAware an attribute of AbstractPipe
- *
- * Revision 1.3  2005/08/30 16:03:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * decreased amount of logging
- *
- * Revision 1.2  2005/08/25 15:49:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved logging
- *
- * Revision 1.1  2005/08/24 15:54:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of XmlIf
- *
- */
-
 package nl.nn.adapterframework.pipes;
 
 import javax.xml.transform.TransformerConfigurationException;

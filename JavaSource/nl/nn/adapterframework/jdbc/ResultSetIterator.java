@@ -13,34 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ResultSetIterator.java,v $
- * Revision 1.8  2012-02-17 18:04:02  m00f069
- * Use proxiedDataSources for JdbcIteratingPipeBase too
- * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
- *
- * Revision 1.7  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.5  2008/10/23 14:16:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * XSLT 2.0 made possible
- *
- * Revision 1.4  2008/05/15 14:36:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * change startup behaviour, first line is now returned too
- *
- * Revision 1.3  2008/02/26 08:36:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.2  2007/07/26 16:14:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use JdbcUtil.fullClose()
- *
- * Revision 1.1  2007/07/17 11:16:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added iterating classes
- *
- */
 package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;

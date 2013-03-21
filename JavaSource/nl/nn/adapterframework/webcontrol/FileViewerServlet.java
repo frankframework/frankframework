@@ -13,52 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: FileViewerServlet.java,v $
- * Revision 1.17  2011-11-30 13:51:58  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.15  2010/11/24 12:06:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for click on stats overview
- *
- * Revision 1.14  2010/01/07 13:21:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow to show trends of statistics
- *
- * Revision 1.13  2009/12/29 14:46:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved statistics to separate package
- * enabled overview over saved statistics file
- *
- * Revision 1.12  2009/09/07 13:54:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * made some static variables final
- *
- * Revision 1.11  2009/04/03 14:34:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added statistics file viewer
- *
- * Revision 1.10  2007/09/24 13:05:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * ability to download file, using correct filename
- *
- * Revision 1.9  2007/06/14 09:45:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * strip slash from context path
- *
- * Revision 1.8  2007/02/12 14:41:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.7  2005/12/05 08:36:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified handling of log4j-xml files
- *
- * Revision 1.6  2005/10/17 11:05:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * replace non-printable characters from log4j.xml
- *
- * Revision 1.5  2005/10/17 09:34:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added log4j xml view facility
- *
- * Revision 1.4  2005/07/19 11:42:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * performance improvements
- *
- */
 package nl.nn.adapterframework.webcontrol;
 
 import java.io.File;

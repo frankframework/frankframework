@@ -13,63 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/* 
- * $Log: SapServer.java,v $
- * Revision 1.1  2012-02-06 14:33:05  m00f069
- * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
- *
- * Revision 1.14  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.12  2011/08/08 15:16:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * disable trace when level < 1
- *
- * Revision 1.11  2010/04/26 14:08:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * support Unicode SAP system
- *
- * Revision 1.10  2008/01/30 14:42:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified javadoc
- *
- * Revision 1.9  2008/01/29 15:36:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added support for idocs
- *
- * Revision 1.8  2007/02/12 13:47:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.7  2005/08/10 11:31:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * no abort() before stopping server
- *
- * Revision 1.6  2005/08/08 09:42:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * reworked SAP classes to provide better refresh of repository when needed
- *
- * Revision 1.5  2005/08/02 13:03:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected version string
- *
- * Revision 1.4  2005/08/02 13:01:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * included logging in transaction handling functions
- *
- * Revision 1.3  2005/03/14 17:27:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * increased logging
- *
- * Revision 1.2  2004/10/05 10:41:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused imports
- *
- * Revision 1.1  2004/07/06 07:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved SAP functionality to extensions
- *
- * Revision 1.3  2004/06/30 12:38:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed self from exceptionlisteners
- *
- * Revision 1.2  2004/06/23 11:40:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * included error-logging and added transaction-related function-stubs
- *
- * Revision 1.1  2004/06/22 06:56:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * First version of SAP package
- *
- */
 package nl.nn.adapterframework.extensions.sap.jco2;
 
 import nl.nn.adapterframework.util.LogUtil;

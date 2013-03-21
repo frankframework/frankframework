@@ -13,51 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.21  2012-06-01 10:52:48  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.20  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.18  2010/05/03 17:01:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * reworked stream handling, to allow for binary records.
- *
- * Revision 1.17  2009/03/16 16:11:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added charset attribute, default charset is now UTF-8
- *
- * Revision 1.16  2008/12/23 12:50:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added storeOriginalBlock attribute
- *
- * Revision 1.15  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.14  2008/02/15 16:05:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added default manager and flow, for simple configurations
- *
- * Revision 1.13  2008/02/15 13:57:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added attributes numberOfBackups, overwrite and delete
- *
- * Revision 1.12  2007/09/11 11:51:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.11  2007/09/04 09:34:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * check type of input message
- *
- * Revision 1.10  2007/09/04 07:57:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fix bug in rename after transform
- *
- * Revision 1.9  2007/07/26 16:07:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.8  2007/07/24 16:10:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * new style BatchFileTransformerPipe
- *
- */
 package nl.nn.adapterframework.batch;
 
 import java.io.File;

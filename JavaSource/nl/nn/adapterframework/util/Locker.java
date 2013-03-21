@@ -13,28 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: Locker.java,v $
- * Revision 1.1  2012-10-10 10:19:37  m00f069
- * Made it possible to use Locker on Pipe level too
- *
- * Revision 1.5  2011/11/30 13:51:42  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2009/09/07 13:30:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use log from ancestor
- * removed unused code
- *
- * Revision 1.2  2009/03/27 10:56:16  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Typo
- *
- * Revision 1.1  2009/03/13 14:36:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Introduction of Locker (child element of Job)
- *
- */
 package nl.nn.adapterframework.util;
 
 import java.sql.Connection;

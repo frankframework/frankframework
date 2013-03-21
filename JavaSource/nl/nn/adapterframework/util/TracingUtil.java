@@ -13,33 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: TracingUtil.java,v $
- * Revision 1.8  2011-11-30 13:51:49  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2007/05/02 11:38:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed necesity of including mett-server.jar
- *
- * Revision 1.5  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.4  2006/11/21 09:50:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * try to avoid class not found exceptions for METT
- *
- * Revision 1.3  2006/09/14 15:28:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added configuration file generation
- *
- * Revision 1.2  2006/09/06 16:03:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added startTracing() and stopTracing()
- *
- * Revision 1.1  2006/02/20 15:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved METT-support to single entry point for tracing
- *
- */
 package nl.nn.adapterframework.util;
 
 import java.io.File;

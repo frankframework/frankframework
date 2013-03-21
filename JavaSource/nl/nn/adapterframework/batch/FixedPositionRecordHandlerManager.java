@@ -13,55 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: FixedPositionRecordHandlerManager.java,v $
- * Revision 1.16  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.15  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.13  2011/10/04 09:51:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed typo in javadoc
- *
- * Revision 1.12  2011/08/25 12:39:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * avoid StringIndexOutOfBoundsException
- *
- * Revision 1.11  2008/06/30 08:54:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow for variable endPosition
- *
- * Revision 1.10  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.9  2008/02/15 16:06:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.8  2007/09/24 14:54:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected javadoc
- *
- * Revision 1.7  2007/09/12 09:15:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.6  2007/07/26 16:07:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cosmetic changes
- *
- * Revision 1.5  2007/07/24 08:02:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.4  2006/05/19 09:28:37  Peter Eijgermans <peter.eijgermans@ibissource.org>
- * Restore java files from batch package after unwanted deletion.
- *
- * Revision 1.2  2005/10/31 14:38:03  John Dekker <john.dekker@ibissource.org>
- * Add . in javadoc
- *
- * Revision 1.1  2005/10/11 13:00:21  John Dekker <john.dekker@ibissource.org>
- * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
- * BatchFileTransformerPipe
- *
- */
 package nl.nn.adapterframework.batch;
 
 import java.util.Iterator;

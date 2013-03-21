@@ -13,39 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IbisJavaSender.java,v $
- * Revision 1.10  2011-11-30 13:51:50  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.8  2008/12/30 17:01:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added configuration warnings facility (in Show configurationStatus)
- *
- * Revision 1.7  2008/11/26 09:38:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Fixed warning message in deprecated classes
- *
- * Revision 1.6  2008/08/06 16:38:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved from pipes to senders package
- *
- * Revision 1.5  2007/09/05 13:04:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added support for returning session keys
- *
- * Revision 1.4  2007/06/07 15:18:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cosmetic changes
- *
- * Revision 1.3  2007/05/29 11:10:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * implementation of HasPhysicalDestination
- *
- * Revision 1.2  2007/05/16 11:46:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved javadoc
- *
- * Revision 1.1  2006/03/21 10:18:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

@@ -13,45 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: StreamLineIteratorPipe.java,v $
- * Revision 1.12  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.11  2012/01/20 10:39:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * StreamLineIteratorPipe: added endOfLineString attribute
- *
- * Revision 1.10  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed javadoc
- *
- * Revision 1.9  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.7  2010/03/25 12:58:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added attribute closeInputstreamOnExit
- *
- * Revision 1.6  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted javadoc for resultOnTimeOut attribute
- *
- * Revision 1.5  2008/05/21 09:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added block info to javadoc
- *
- * Revision 1.4  2007/10/08 12:23:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map where possible
- *
- * Revision 1.3  2007/09/13 09:10:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * extracted getReader()
- *
- * Revision 1.2  2007/07/17 10:57:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * update javadoc
- *
- * Revision 1.1  2007/07/10 08:05:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import java.io.InputStream;

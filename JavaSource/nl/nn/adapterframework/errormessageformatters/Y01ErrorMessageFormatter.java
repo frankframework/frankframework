@@ -13,21 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: Y01ErrorMessageFormatter.java,v $
- * Revision 1.6  2011-11-30 13:52:03  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.2  2011/10/19 14:59:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * do not print versions anymore
- *
- * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2004/03/30 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- */
 package nl.nn.adapterframework.errormessageformatters;
 
 import nl.nn.adapterframework.core.INamedObject;

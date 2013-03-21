@@ -13,64 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JdbcIteratingPipeBase.java,v $
- * Revision 1.15  2012-06-01 10:52:52  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.14  2012/02/17 18:04:02  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Use proxiedDataSources for JdbcIteratingPipeBase too
- * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
- *
- * Revision 1.13  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed javadoc
- *
- * Revision 1.12  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.10  2011/09/05 09:43:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * perform close also when resultset is empty
- *
- * Revision 1.9  2011/04/13 08:37:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Indicate updatability of resultset explicitly using method-parameter
- *
- * Revision 1.8  2011/03/16 16:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of DbmsSupport, including support for MS SQL Server
- *
- * Revision 1.7  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted javadoc for resultOnTimeOut attribute
- *
- * Revision 1.6  2009/07/13 10:07:29  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted javadoc
- *
- * Revision 1.5  2009/03/26 14:47:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added LOCKROWS_SUFFIX
- *
- * Revision 1.4  2009/02/25 10:43:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added lockRows attribute
- *
- * Revision 1.3  2008/05/21 09:37:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow for query to be passed as inputmessage
- *
- * Revision 1.2  2008/05/15 14:37:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved handling of empty resultsets
- *
- * Revision 1.1  2008/02/26 08:34:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * renamed IteratingPipeBase to JdbcIteratingPipeBase
- *
- * Revision 1.3  2007/10/08 12:18:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map where possible
- *
- * Revision 1.2  2007/07/26 16:14:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * check for null resultset
- *
- * Revision 1.1  2007/07/17 11:16:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added iterating classes
- *
- */
 package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;

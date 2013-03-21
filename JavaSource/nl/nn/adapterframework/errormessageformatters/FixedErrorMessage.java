@@ -13,21 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: FixedErrorMessage.java,v $
- * Revision 1.4  2011-11-30 13:52:03  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.2  2006/06/20 14:09:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added stylesheet attribute
- *
- * Revision 1.1  2005/09/27 09:33:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of FixedErrorMessage
- *
- */
 package nl.nn.adapterframework.errormessageformatters;
 
 import java.net.URL;

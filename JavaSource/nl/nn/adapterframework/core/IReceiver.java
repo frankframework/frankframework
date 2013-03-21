@@ -13,37 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IReceiver.java,v $
- * Revision 1.11  2011-11-30 13:51:55  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.9  2009/12/29 14:32:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified imports to reflect move of statistics classes to separate package
- *
- * Revision 1.8  2009/03/30 12:23:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added counter for messagesRejected
- *
- * Revision 1.7  2008/08/12 15:33:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * receiver must implement HasStatistics
- * added property messagesRetried
- *
- * Revision 1.6  2004/08/25 09:11:33  unknown <unknown@ibissource.org>
- * Add waitForRunstate with timeout
- *
- * Revision 1.5  2004/03/31 12:04:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed javadoc
- *
- * Revision 1.4  2004/03/30 07:29:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.3  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
- * added @version tag in javadoc
- *
- */
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

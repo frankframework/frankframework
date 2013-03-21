@@ -13,34 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: BatchTransformerPipeBase.java,v $
- * Revision 1.7  2012-06-01 10:52:52  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.6  2012/02/17 18:04:02  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Use proxiedDataSources for JdbcIteratingPipeBase too
- * Call close on original/proxied connection instead of connection from statement that might be the unproxied connection
- *
- * Revision 1.5  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2011/04/13 08:27:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Indicate updatability of resultset explicitly using method-parameter
- *
- * Revision 1.2  2010/05/03 17:04:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * reworked stream handling, to allow for binary records.
- *
- * Revision 1.1  2007/08/03 08:44:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * renamed TransformingPipes to TransformerPipes
- *
- * Revision 1.1  2007/07/26 16:16:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.jdbc;
 
 import java.io.BufferedReader;

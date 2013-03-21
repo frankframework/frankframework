@@ -13,39 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: XmlQuerySender.java,v $
- * Revision 1.10  2012-12-13 10:42:35  europe\m168309
- * added type xmldatetime
- *
- * Revision 1.9  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.7  2011/08/09 10:13:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * follow modified interface of ancestor
- *
- * Revision 1.6  2011/07/01 09:46:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added sql element
- *
- * Revision 1.5  2011/04/13 08:40:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Indicate updatability of resultset explicitly using method-parameter
- *
- * Revision 1.4  2011/03/16 16:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of DbmsSupport, including support for MS SQL Server
- *
- * Revision 1.3  2010/03/03 08:55:17  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed '(EOFException) Unexpected end of ZLIB input stream'
- *
- * Revision 1.2  2010/02/01 08:32:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * setConfigWarning
- *
- * Revision 1.1  2010/01/28 09:48:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * initial version
- *
- */
 package nl.nn.adapterframework.jdbc;
 
 import java.sql.CallableStatement;

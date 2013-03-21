@@ -13,54 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: GenericMessageSendingPipe.java,v $
- * Revision 1.15  2013-03-13 14:51:23  europe\m168309
- * added public setMessageLog()
- *
- * Revision 1.14  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed javadoc
- *
- * Revision 1.13  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.11  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted javadoc for resultOnTimeOut attribute
- *
- * Revision 1.10  2009/07/13 10:08:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted javadoc
- *
- * Revision 1.9  2008/05/14 09:56:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved error message for non-sender senders
- *
- * Revision 1.8  2008/02/26 09:18:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.7  2007/05/21 12:28:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added public setMessageLog()
- *
- * Revision 1.6  2007/05/09 09:47:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected javadoc
- *
- * Revision 1.5  2007/02/05 14:59:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * update javadoc
- *
- * Revision 1.4  2006/12/28 14:21:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.3  2006/01/05 14:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.2  2005/12/19 14:27:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.1  2004/04/08 15:58:59  Dennis van Loon <dennis.van.loon@ibissource.org>
- * Initial Version
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;

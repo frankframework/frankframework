@@ -13,22 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: MessageKeeperMessage.java,v $
- * Revision 1.8  2013-03-13 14:37:58  europe\m168309
- * added level (INFO, WARN or ERROR) to adapter/receiver messages
- *
- * Revision 1.7  2011/11/30 13:51:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.5  2005/10/18 08:17:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected version string
- * cosmetic changes
- *
- */
 package nl.nn.adapterframework.util;
 
 import java.util.Date;

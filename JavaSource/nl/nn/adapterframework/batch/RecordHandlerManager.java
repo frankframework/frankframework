@@ -13,52 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: RecordHandlerManager.java,v $
- * Revision 1.15  2012-06-01 10:52:48  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.14  2012/01/27 13:35:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * replaced HashMap with LinkedHashMap to guarantee iteration order
- *
- * Revision 1.13  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.11  2008/06/30 08:51:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * make valueHandlersMap available to descenders
- *
- * Revision 1.10  2008/02/19 09:23:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.9  2008/02/15 16:07:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.8  2007/10/08 12:14:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map where possible
- *
- * Revision 1.7  2007/08/03 08:28:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.6  2007/07/24 16:13:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved configure to manager
- *
- * Revision 1.5  2007/07/24 08:02:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * reformatted code
- *
- * Revision 1.4  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
- * Restore java files from batch package after unwanted deletion.
- *
- * Revision 1.2  2005/10/31 14:38:02  John Dekker <john.dekker@ibissource.org>
- * Add . in javadoc
- *
- * Revision 1.1  2005/10/11 13:00:20  John Dekker <john.dekker@ibissource.org>
- * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
- * BatchFileTransformerPipe
- *
- */
 package nl.nn.adapterframework.batch;
 
 import java.util.Collection;

@@ -13,45 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: MailSender.java,v $
- * Revision 1.13  2011-11-30 13:52:00  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.11  2011/01/27 13:25:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added attribute timeout
- *
- * Revision 1.10  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
- *
- * Revision 1.9  2010/05/19 10:25:22  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * support diacritics in every charset
- *
- * Revision 1.8  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * rolled back testtool adjustments (IbisDebuggerDummy)
- *
- * Revision 1.6  2009/12/24 13:14:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * bugfix: decodeBase64ToString only  when message is not empty
- *
- * Revision 1.5  2009/12/11 13:09:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * replaced <xerces.jar> by <xercesImpl-2.9.1.jar>
- *
- * Revision 1.4  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
- *
- * Revision 1.3  2009/11/18 17:28:03  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Added senders to IbisDebugger
- *
- * Revision 1.2  2009/04/09 12:11:42  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * store message in mail-safe form to MessageLog
- *
- * Revision 1.1  2008/08/06 16:36:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved from pipes to senders package
- *
- */
 package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayOutputStream;

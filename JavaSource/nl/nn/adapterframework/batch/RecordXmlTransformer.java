@@ -13,64 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: RecordXmlTransformer.java,v $
- * Revision 1.19  2012-06-01 10:52:48  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.18  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.16  2010/07/12 12:50:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow to specfiy namespace prefixes to be used in XPath-epressions
- *
- * Revision 1.15  2009/01/30 09:06:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * bugfix - removed double xml escaping
- *
- * Revision 1.14  2008/12/23 12:48:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added endOfRecord attribute
- *
- * Revision 1.13  2008/07/17 16:13:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.12  2008/03/27 10:33:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved logging
- *
- * Revision 1.11  2008/02/28 16:17:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * move xslt functionality to base class RecordXmlTransformer
- *
- * Revision 1.10  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.9  2008/02/15 16:05:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.8  2007/10/08 13:28:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.7  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for parameters
- *
- * Revision 1.6  2007/07/26 16:10:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * now uses XmlBuilder
- *
- * Revision 1.5  2007/05/03 11:36:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * encode characters where required
- *
- * Revision 1.4  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
- * Restore java files from batch package after unwanted deletion.
- *
- * Revision 1.2  2005/10/31 14:38:02  John Dekker <john.dekker@ibissource.org>
- * Add . in javadoc
- *
- * Revision 1.1  2005/10/11 13:00:20  John Dekker <john.dekker@ibissource.org>
- * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
- * BatchFileTransformerPipe
- *
- */
 package nl.nn.adapterframework.batch;
 
 import java.util.Iterator;

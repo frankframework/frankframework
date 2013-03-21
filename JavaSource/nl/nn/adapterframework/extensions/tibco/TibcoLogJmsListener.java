@@ -13,18 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: TibcoLogJmsListener.java,v $
- * Revision 1.3  2013-02-20 09:49:56  europe\m168309
- * changed layout logging record
- *
- * Revision 1.2  2013/02/08 09:37:08  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added contextId to logging record and put environment in sessionKey
- *
- * Revision 1.1  2013/01/31 10:00:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Introduction of TibcoLogJmsListener
- *
- */
 package nl.nn.adapterframework.extensions.tibco;
 
 import java.io.IOException;

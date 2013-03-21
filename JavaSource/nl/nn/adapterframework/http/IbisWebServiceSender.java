@@ -13,36 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IbisWebServiceSender.java,v $
- * Revision 1.9  2011-11-30 13:52:01  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.7  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * rolled back testtool adjustments (IbisDebuggerDummy)
- *
- * Revision 1.5  2007/05/29 11:08:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected version string
- *
- * Revision 1.4  2007/05/29 11:07:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * implementation of HasPhysicalDestination
- *
- * Revision 1.3  2004/08/31 15:51:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added ToDo
- *
- * Revision 1.2  2004/08/09 13:55:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ServiceListenerName to ServiceName
- *
- * Revision 1.1  2004/07/15 07:40:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of http package
- *
- * Revision 1.1  2004/06/01 13:53:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * eerste versie
- *
- */
 package nl.nn.adapterframework.http;
 
 import java.net.MalformedURLException;

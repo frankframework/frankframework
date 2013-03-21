@@ -13,48 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SendJmsMessageExecute.java,v $
- * Revision 1.15  2011-11-30 13:51:46  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.13  2009/12/31 10:06:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * SendJmsMessage/TestIfsaService/TestPipeLine: made zipfile-upload facility case-insensitive
- *
- * Revision 1.12  2009/09/03 09:01:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added zipfile-upload facility
- *
- * Revision 1.11  2009/09/02 12:22:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected location of debug-guard
- *
- * Revision 1.10  2009/08/31 12:44:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed cookie bug
- *
- * Revision 1.9  2009/08/31 09:48:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added context facility for the JMS correlationId (in xml processing instructions)
- *
- * Revision 1.8  2009/08/26 15:50:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * catch TimeOutException
- *
- * Revision 1.7  2008/12/16 13:37:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * read messages in the right encoding
- *
- * Revision 1.6  2008/05/22 07:41:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use inherited error() method
- *
- * Revision 1.5  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.4  2004/03/26 10:42:58  Johan Verrips <johan.verrips@ibissource.org>
- * added @version tag in javadoc
- *
- * Revision 1.3  2004/03/23 16:58:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * now uses unique ID for sending test-messages
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.ByteArrayInputStream;

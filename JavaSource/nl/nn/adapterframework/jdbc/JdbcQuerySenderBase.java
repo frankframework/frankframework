@@ -13,193 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.60  2012-12-07 13:16:06  europe\m168309
- * added debug logging
- *
- * Revision 1.59  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.57  2011/09/20 07:56:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * used isNotEmpty instead of !=null
- *
- * Revision 1.56  2011/09/15 11:55:03  Martijn Onstwedder <martijn.onstwedder@ibissource.org>
- * blobBase64Direction added for streamBlob
- *
- *
- * Revision 1.55  2011/08/09 10:07:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.54  2011/08/09 10:02:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved timeout to JdbcSenderBase
- * added blob stream facility
- *
- * Revision 1.53  2011/04/27 10:01:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * used timeout attribute in getting connection too
- *
- * Revision 1.52  2011/04/13 08:38:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Indicate updatability of resultset explicitly using method-parameter
- * Blob and Clob support using DbmsSupport
- *
- * Revision 1.51  2011/03/04 15:02:42  Sanne Hoekstra <sanne.hoekstra@ibissource.org>
- * Corrected timeout exception message (from ms to sec)
- *
- * Revision 1.50  2010/03/25 12:57:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added attribute closeInputstreamOnExit
- *
- * Revision 1.49  2010/01/28 09:47:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * separate method for executing "other" queries
- *
- * Revision 1.48  2009/10/22 13:42:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added attribute rowIdSessionKey
- *
- * Revision 1.47  2009/10/09 13:26:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added default includeFieldDefinition (true) for querySenders
- *
- * Revision 1.46  2009/10/07 13:35:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added attribute includeFieldDefinition
- *
- * Revision 1.45  2009/09/07 13:16:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * replaced a '&' by '&&'
- *
- * Revision 1.44  2009/08/14 13:21:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed bug in useNamedParams
- *
- * Revision 1.43  2009/08/14 07:19:02  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed bug in useNamedParams (not thread safe)
- *
- * Revision 1.42  2009/08/12 07:38:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added warning for useNamedParams
- *
- * Revision 1.41  2009/08/12 07:17:19  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added warning for useNamedParams
- *
- * Revision 1.40  2009/08/04 10:12:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected description of useNamedParams
- *
- * Revision 1.39  2009/07/17 12:39:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added attribute useNamedParams
- *
- * Revision 1.38  2009/04/01 08:23:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added timeout attribute
- *
- * Revision 1.37  2009/03/03 14:38:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added support to put byte array as blob
- *
- * Revision 1.36  2008/10/20 12:52:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added blobSmartGet attribute
- *
- * Revision 1.35  2008/06/24 07:57:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allocate larger buffer for package result
- *
- * Revision 1.34  2008/06/19 15:13:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added support for binary BLOBs
- * select binary BLOB as base64
- *
- * Revision 1.33  2008/05/15 14:35:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * catch more exceptions
- *
- * Revision 1.32  2008/03/27 10:54:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cosmetic changes to javadoc
- *
- * Revision 1.31  2007/10/08 13:30:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.30  2007/07/19 15:09:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * handle charsets of BLOB and CLOB streams correctly
- *
- * Revision 1.29  2007/07/17 09:20:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fix typo
- *
- * Revision 1.28  2007/07/10 07:18:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for loading streams to blobs and clobs
- *
- * Revision 1.27  2007/04/24 11:37:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added package execution feature
- *
- * Revision 1.26  2007/02/27 12:37:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected returned result for blob/clobs & do required trimming
- *
- * Revision 1.25  2006/12/13 16:25:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added attribute blobCharset
- *
- * Revision 1.24  2006/12/12 09:57:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * restore jdbc package
- *
- * Revision 1.22  2006/11/06 13:02:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added attribute scalarExtended
- *
- * Revision 1.21  2006/02/09 10:42:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added clob-support (PL)
- *
- * Revision 1.20  2006/01/05 14:21:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.19  2005/10/24 09:17:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * separate statement for result query
- *
- * Revision 1.18  2005/10/19 10:45:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved prepareStatement-met-columnlist to separate method, 
- * to avoid compilation problems when non JDBC 3.0 drivers are used
- *
- * Revision 1.17  2005/10/19 09:34:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved getGeneratedKeys to separate method, 
- * to avoid compilation problems when non JDBC 3.0 drivers are used
- *
- * Revision 1.16  2005/10/18 07:09:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added updateBlob functionality
- * added trimSpaces feature
- *
- * Revision 1.15  2005/09/29 13:59:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * provided attributes and handling for nullValue,columnsReturned and resultQuery
- *
- * Revision 1.14  2005/09/08 16:00:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * make synchronous an attribute, default="true"
- *
- * Revision 1.13  2005/08/25 15:48:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * close all jdbc-objects in finally clause
- *
- * Revision 1.12  2005/07/28 07:33:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * close statement also for update-statements
- *
- * Revision 1.11  2005/07/19 12:36:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved applyParameters to JdbcFacade
- *
- * Revision 1.10  2005/06/28 09:05:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * explicit closing of resultset
- *
- * Revision 1.9  2005/06/02 13:48:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added 'scalar' attribute, to return a single value
- *
- * Revision 1.8  2005/04/26 15:20:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduced JdbcSenderBase, with non-sql oriented basics
- *
- * Revision 1.7  2004/11/10 12:56:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected parameter setting routine
- *
- * Revision 1.6  2004/10/19 06:41:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified parameter handling
- *
- * Revision 1.5  2004/04/08 16:12:16  Dennis van Loon <dennis.van.loon@ibissource.org>
- * changed default value for maxRows to -1 (show All)
- *
- * Revision 1.4  2004/03/31 12:04:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed javadoc
- *
- * Revision 1.3  2004/03/26 10:43:07  Johan Verrips <johan.verrips@ibissource.org>
- * added @version tag in javadoc
- *
- * Revision 1.2  2004/03/26 09:50:52  Johan Verrips <johan.verrips@ibissource.org>
- * Updated javadoc
- *
- * Revision 1.1  2004/03/24 13:28:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * initial version
- *
- */
 package nl.nn.adapterframework.jdbc;
 
 import java.io.IOException;
@@ -902,6 +715,21 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					ix++;
 				}
 				int eindInputs = beginOutput - ix;
+/*
+   Copyright 2013 Nationale-Nederlanden
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 				packageInput = message.substring(startHaakje + 1, eindInputs);
 				StringTokenizer st2 = new StringTokenizer(packageInput, ",");		
 				if (idx != 1) {

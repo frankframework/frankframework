@@ -13,39 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SoapValidator.java,v $
- * Revision 1.13  2012-10-19 11:54:07  m00f069
- * Bugfix double occurrence of CommonMessageHeader.xsd in schemaLocation
- *
- * Revision 1.12  2012/10/19 09:33:47  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
- *
- * Revision 1.11  2012/10/12 16:17:17  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Made (Esb)SoapValidator set SoapNamespace to an empty value, hence validate the SOAP envelope against the SOAP XSD.
- * Made (Esb)SoapValidator check for SOAP Envelope element
- *
- * Revision 1.10  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
- * Cleaned XML validation code and documentation a bit.
- *
- * Revision 1.9  2012/09/28 14:40:15  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Bugfix WSDL target namespace for one-way ESB Soap (when getting it from the namespace of the first XSD)
- *
- * Revision 1.8  2012/09/26 12:41:05  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Bugfix in WSDL generator: Wrong prefix being used in element attribute of PipeLineInput and PipeLineOutput message part when using EsbSoapValidator.
- *
- * Revision 1.7  2012/09/19 09:49:58  Jaco de Groot <jaco.de.groot@ibissource.org>
- * - Set reasonSessionKey to "failureReason" and xmlReasonSessionKey to "xmlFailureReason" by default
- * - Fixed check on unknown namspace in case root attribute or xmlReasonSessionKey is set
- * - Fill reasonSessionKey with a message when an exception is thrown by parser instead of the ErrorHandler being called
- * - Added/fixed check on element of soapBody and soapHeader
- * - Cleaned XML validation code a little (e.g. moved internal XmlErrorHandler class (double code in two classes) to an external class, removed MODE variable and related code)
- *
- * Revision 1.6  2012/09/14 13:35:48  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Added CVS log
- *
- */
 package nl.nn.adapterframework.soap;
 
 import java.util.ArrayList;

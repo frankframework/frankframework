@@ -13,39 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IfsaEjbBeanBase.java,v $
- * Revision 1.6  2011-11-30 13:51:57  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2008/03/27 11:55:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified cid handling
- *
- * Revision 1.3  2008/01/03 15:44:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * rework port connected listener interfaces
- *
- * Revision 1.2  2007/11/22 08:48:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * update from ejb-branch
- *
- * Revision 1.1.2.4  2007/11/15 12:59:51  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Add bit more logging
- *
- * Revision 1.1.2.3  2007/11/15 10:27:07  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * * Add logging of EJB Create / Remove events
- * * Move code up to parent class
- *
- * Revision 1.1.2.2  2007/11/06 12:49:33  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Add methods 'populateThreadContext' and 'destroyThreadContext' to interface IPortConnectedListener
- *
- * Revision 1.1.2.1  2007/10/29 12:25:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Create EJb Beans required to connect to IFSA J2EE implementation as an IFSA Provider application
- *
- * 
- */
-
 package nl.nn.adapterframework.extensions.ifsa.ejb;
 
 import java.rmi.RemoteException;

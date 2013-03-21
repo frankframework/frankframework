@@ -13,30 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SapSenderBase.java,v $
- * Revision 1.2  2012-06-01 10:52:50  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.1  2012/02/06 14:33:04  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Implemented JCo 3 based on the JCo 2 code. JCo2 code has been moved to another package, original package now contains classes to detect the JCo version available and use the corresponding implementation.
- *
- * Revision 1.5  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2009/08/26 15:34:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.2  2008/01/30 14:41:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified javadoc
- *
- * Revision 1.1  2008/01/29 15:37:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * base class extracted from SapSender
- *
- */
 package nl.nn.adapterframework.extensions.sap.jco3;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

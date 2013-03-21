@@ -13,12 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: LockerPipeProcessor.java,v $
- * Revision 1.1  2012-10-10 10:19:37  m00f069
- * Made it possible to use Locker on Pipe level too
- *
- */
 package nl.nn.adapterframework.processors;
 
 import nl.nn.adapterframework.core.IExtendedPipe;

@@ -13,12 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: XmlExternalEntityResolver.java,v $
- * Revision 1.1  2012-09-24 18:16:04  m00f069
- * Don't resolve external entities in DOCTYPE
- *
- */
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;

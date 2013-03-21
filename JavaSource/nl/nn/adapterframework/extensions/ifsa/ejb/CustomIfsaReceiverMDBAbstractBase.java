@@ -13,32 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: CustomIfsaReceiverMDBAbstractBase.java,v $
- * Revision 1.4  2011-11-30 13:51:58  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.2  2007/11/22 08:48:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * update from ejb-branch
- *
- * Revision 1.1.2.4  2007/11/15 14:10:39  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Don't use static (=global) instance of ServiceLocator, to avoid same EJB aliasing issues as happens when global NamingHelper instance is used (with it's globally cached EJB's keyed per JNDI lookup name).
- *
- * Revision 1.1.2.3  2007/11/14 08:54:33  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Use LogUtil to initialize logging (since this class in in IBIS, not in IFSA, it doesn't use Log4j loaded/initalized from same classloader as IFSA); put logger as protected instance-variable in AbstractBaseMDB class
- *
- * Revision 1.1.2.2  2007/11/12 12:41:27  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Use LogUtil for obtaining logger
- *
- * Revision 1.1.2.1  2007/11/02 11:47:05  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Add custom versions of IFSA MDB Receiver beans, and subclass of IFSA ServiceLocatorEJB
- *
- * 
- */
-
 package nl.nn.adapterframework.extensions.ifsa.ejb;
 
 import com.ing.ifsa.exceptions.ConnectionException;

@@ -13,15 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ParameterListHandler.java,v $
- * Revision 1.2  2012-05-23 16:10:20  m00f069
- * Fixed javadoc
- *
- * Revision 1.1  2012/05/15 22:13:44  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Allow nesting of (different) types in SAP XML
- *
- */
 package nl.nn.adapterframework.extensions.sap.jco3.handlers;
 
 import com.sap.conn.jco.JCoParameterList;

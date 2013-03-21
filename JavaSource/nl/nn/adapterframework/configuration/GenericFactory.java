@@ -13,25 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: GenericFactory.java,v $
- * Revision 1.6  2011-11-30 13:51:56  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2007/10/24 07:13:21  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Rename abstract method 'getBeanName()' to 'getSuggestedBeanName()' since it better reflects the role of the method in the class.
- *
- * Revision 1.3  2007/10/22 14:56:21  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Make the 'Generic Factory' more generically useful by allowing beans to be created based of name of element in IBIS Configuration file.
- *
- * Revision 1.2  2007/10/09 15:29:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Direct copy from Ibis-EJB:
- * first version in HEAD
- *
- */
 package nl.nn.adapterframework.configuration;
 
 /**

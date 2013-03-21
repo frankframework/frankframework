@@ -13,34 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: StatisticsKeeperIterationHandler.java,v $
- * Revision 1.3  2011-11-30 13:51:48  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.1  2009/12/29 14:25:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved statistics to separate package
- *
- * Revision 1.5  2009/08/26 15:40:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for separated adapter-only and detailed statistics
- *
- * Revision 1.4  2009/06/05 07:36:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow methods to throw SenderException
- * handle scalar now accepts only long and date values
- *
- * Revision 1.3  2008/05/14 09:30:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * simplified methodnames of StatisticsKeeperIterationHandler
- *
- * Revision 1.2  2006/02/09 08:02:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * iterate over string scalars too
- *
- * Revision 1.1  2005/12/28 08:31:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduced StatisticsKeeper-iteration
- *
- */
 package nl.nn.adapterframework.statistics;
 
 import java.util.Date;

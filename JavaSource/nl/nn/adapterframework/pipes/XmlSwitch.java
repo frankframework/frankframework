@@ -13,51 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: XmlSwitch.java,v $
- * Revision 1.26  2012-06-01 10:52:50  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.25  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.23  2008/12/30 17:01:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added configuration warnings facility (in Show configurationStatus)
- *
- * Revision 1.22  2008/08/06 16:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added support for flexible monitoring
- *
- * Revision 1.21  2007/12/10 10:13:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fix configuration of notFoundForward (no exception when not found)
- *
- * Revision 1.20  2006/01/05 14:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.19  2005/12/29 15:19:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected javadoc
- *
- * Revision 1.18  2005/10/24 09:20:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * made namespaceAware an attribute of AbstractPipe
- *
- * Revision 1.17  2005/10/17 11:35:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * throw ConfigurationException when stylesheet not found
- *
- * Revision 1.16  2005/06/13 11:46:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected version-string
- *
- * Revision 1.15  2005/06/13 11:45:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added attribute 'namespaceAware'
- *
- * Revision 1.14  2005/05/03 16:00:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected typo
- *
- * Revision 1.13  2005/04/26 09:22:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added SessionVariable facility (by Peter Leeuwenburgh)
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;

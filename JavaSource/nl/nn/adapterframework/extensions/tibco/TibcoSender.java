@@ -13,34 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: TibcoSender.java,v $
- * Revision 1.6  2012-09-07 13:15:16  m00f069
- * Messaging related changes:
- * - Use CACHE_CONSUMER by default for ESB RR
- * - Don't use JMSXDeliveryCount to determine whether message has already been processed
- * - Added maxDeliveries
- * - Delay wasn't increased when unable to write to error store (it was reset on every new try)
- * - Don't call session.rollback() when isTransacted() (it was also called in afterMessageProcessed when message was moved to error store)
- * - Some cleaning along the way like making some synchronized statements unnecessary
- * - Made BTM and ActiveMQ work for testing purposes
- *
- * Revision 1.5  2011/11/30 13:51:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2010/01/28 14:50:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * renamed 'Connection' classes to 'MessageSource'
- *
- * Revision 1.2  2008/07/24 12:30:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added support for authenticated JMS
- *
- * Revision 1.1  2008/05/15 14:32:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.extensions.tibco;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

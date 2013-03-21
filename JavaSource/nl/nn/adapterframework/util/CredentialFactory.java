@@ -13,40 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: CredentialFactory.java,v $
- * Revision 1.10  2011-11-30 13:51:48  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.8  2009/10/01 12:55:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified operation to get Java 2 Security working
- *
- * Revision 1.7  2009/09/08 14:35:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved signalling of misconfiguration
- *
- * Revision 1.6  2009/08/13 09:19:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * made compatible with WAS 6
- *
- * Revision 1.5  2007/02/12 14:09:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.4  2006/03/20 13:51:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow null-password
- *
- * Revision 1.3  2006/03/15 14:04:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added getLoginContext(), that performs actual login
- *
- * Revision 1.2  2006/01/19 12:23:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved logging and javadoc
- * added fallback to resolving userid and password from appConstants
- *
- * Revision 1.1  2005/12/19 16:38:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction for credential factory, to enable authentication using authentication-alias
- *
- */
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;

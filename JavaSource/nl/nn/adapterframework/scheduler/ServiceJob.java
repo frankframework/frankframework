@@ -13,25 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ServiceJob.java,v $
- * Revision 1.5  2011-11-30 13:51:42  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2008/09/04 13:27:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * restructured job scheduling
- *
- * Revision 1.2  2007/02/21 16:09:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.1  2005/11/01 08:51:14  John Dekker <john.dekker@ibissource.org>
- * Add support for dynamic scheduling, i.e. add a job to the scheduler using 
- * a sender
- *
- */
 package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.senders.IbisLocalSender;

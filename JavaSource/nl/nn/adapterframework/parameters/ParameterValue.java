@@ -13,33 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ParameterValue.java,v $
- * Revision 1.7  2011-11-30 13:52:03  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.5  2009/09/07 13:27:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added nested exception to new exception thrown
- *
- * Revision 1.4  2007/02/12 13:59:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.3  2004/10/14 16:08:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduced logging
- *
- * Revision 1.2  2004/10/12 15:08:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added asCollection() method
- *
- * Revision 1.1  2004/10/05 09:52:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved parameter code  to package parameters
- *
- * Revision 1.1  2004/05/21 07:58:47  unknown <unknown@ibissource.org>
- * Moved PipeParameter to core
- *
- */
 package nl.nn.adapterframework.parameters;
 
 import java.util.Collection;

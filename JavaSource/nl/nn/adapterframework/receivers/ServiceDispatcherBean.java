@@ -13,18 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ServiceDispatcherBean.java,v $
- * Revision 1.8  2011-11-30 13:51:54  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2011/06/20 13:23:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * reintroduced ServiceDispatcherBean, added warning
- *
- */
 package nl.nn.adapterframework.receivers;
 
 import nl.nn.adapterframework.core.ListenerException;

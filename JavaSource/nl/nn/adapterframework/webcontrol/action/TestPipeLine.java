@@ -13,24 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: TestPipeLine.java,v $
- * Revision 1.8  2011-11-30 13:51:46  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2008/10/24 14:42:31  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adapters are shown case insensitive sorted
- *
- * Revision 1.5  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.4  2007/07/19 15:15:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * list Adapters in order of configuration
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;

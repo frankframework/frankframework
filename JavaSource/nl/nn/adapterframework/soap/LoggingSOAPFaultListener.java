@@ -13,12 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: LoggingSOAPFaultListener.java,v $
- * Revision 1.1  2012-02-06 13:18:20  l190409
- * improved SOAP error logging
- *
- */
 package nl.nn.adapterframework.soap;
 
 import nl.nn.adapterframework.util.LogUtil;

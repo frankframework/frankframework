@@ -13,38 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IfsaRequesterSender.java,v $
- * Revision 1.6  2011-11-30 13:51:58  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * rolled back testtool adjustments (IbisDebuggerDummy)
- *
- * Revision 1.2  2007/11/22 08:48:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * update from ejb-branch
- *
- * Revision 1.1.2.5  2007/11/06 12:33:07  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Implement more closely some of the details of original code
- *
- * Revision 1.1.2.4  2007/11/05 13:51:37  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Add 'version' string to new IFSA classes
- *
- * Revision 1.1.2.3  2007/10/29 12:25:34  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Create EJb Beans required to connect to IFSA J2EE implementation as an IFSA Provider application
- *
- * Revision 1.1.2.2  2007/10/29 09:33:00  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Refactor: pullup a number of methods to abstract base class so they can be shared between IFSA parts
- *
- * Revision 1.1.2.1  2007/10/25 15:03:44  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Begin work on implementing IFSA-EJB
- *
- * 
- */
-
 package nl.nn.adapterframework.extensions.ifsa.ejb;
 
 import com.ing.ifsa.exceptions.IFSAException;

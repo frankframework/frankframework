@@ -13,21 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IfsaRequesterSender.java,v $
- * Revision 1.32  2011-11-30 13:51:58  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.30  2007/10/16 08:21:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added original javadoc
- *
- * Revision 1.29  2007/10/16 08:15:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduced switch class for jms and ejb
- *
- */
 package nl.nn.adapterframework.extensions.ifsa;
 
 /**

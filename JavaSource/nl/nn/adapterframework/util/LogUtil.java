@@ -13,37 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: LogUtil.java,v $
- * Revision 1.9  2011-11-30 13:51:48  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.7  2010/09/23 09:18:56  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Print exception class name also when an exception is thrown
- *
- * Revision 1.6  2010/09/21 16:26:48  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Moved log4j4ibis.properties to AF jar
- * Use EnhancedPatternLayout instead of PatternLayout as adviced by PatternLayout javadoc
- *
- * Revision 1.5  2010/09/09 14:02:35  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Upgrade log4j-1.2.7.jar to log4j-1.2.16.jar: RootCategory replaced by RootLogger
- *
- * Revision 1.4  2007/08/30 15:11:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use only hierarchy if log4j4ibis.properties is present
- *
- * Revision 1.3  2007/08/29 15:13:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * enables use of log4j4ibis.properties
- *
- * Revision 1.2  2007/02/12 15:56:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * configure logging hierarchy from log4j.properties
- *
- * Revision 1.1  2007/02/12 14:10:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of LogUtil
- *
- */
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;

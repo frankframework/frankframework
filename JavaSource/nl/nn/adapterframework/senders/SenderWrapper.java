@@ -13,47 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SenderWrapper.java,v $
- * Revision 1.12  2011-12-08 13:02:00  europe\m168309
- * fixed javadoc
- *
- * Revision 1.11  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.9  2010/09/13 14:07:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * call super in open() and close()
- *
- * Revision 1.8  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
- *
- * Revision 1.7  2009/12/29 14:37:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified imports to reflect move of statistics classes to separate package
- *
- * Revision 1.6  2009/06/05 07:29:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added throws clause to iterateOverStatistics()
- *
- * Revision 1.5  2008/09/04 12:16:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * collect interval statistics
- *
- * Revision 1.4  2008/08/27 16:22:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added reset option to statisticsdump
- *
- * Revision 1.3  2008/07/17 16:18:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * call sender.configure in configure
- *
- * Revision 1.2  2008/05/21 10:41:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added documentation
- *
- * Revision 1.1  2008/05/15 15:08:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * created senders package
- * moved some sender to senders package
- * created special senders
- *
- */
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

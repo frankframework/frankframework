@@ -13,46 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IExtendedPipe.java,v $
- * Revision 1.12  2012-10-10 10:19:37  m00f069
- * Made it possible to use Locker on Pipe level too
- *
- * Revision 1.11  2011/11/30 13:51:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.9  2011/08/22 14:22:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for size statistics
- *
- * Revision 1.8  2009/11/12 12:37:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added 'Pipe Message Size Exceeding' event
- *
- * Revision 1.7  2008/08/12 15:32:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * defined additional events
- *
- * Revision 1.6  2008/08/07 11:19:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added event supporting functions
- *
- * Revision 1.5  2007/05/02 11:30:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added attribute 'active'
- * added attribute getInputFromFixedValue
- *
- * Revision 1.4  2007/05/01 14:08:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of PipeLine-exithandlers
- *
- * Revision 1.3  2006/12/28 14:21:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.2  2006/08/22 12:51:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added preserveInput attribute
- *
- * Revision 1.1  2005/09/08 15:52:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved extra functionality to IExtendedPipe
- *
- */
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

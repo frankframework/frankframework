@@ -13,63 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: FixedResult.java,v $
- * Revision 1.25  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.24  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.22  2010/03/17 11:24:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * extended substituteVars with application properties
- *
- * Revision 1.20  2008/08/18 11:20:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed javadoc
- *
- * Revision 1.19  2008/06/03 15:50:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * avoid another NPE at file lookup
- *
- * Revision 1.18  2008/06/03 15:47:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * avoid NPE at file lookup
- *
- * Revision 1.17  2007/10/01 14:10:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.16  2007/05/02 11:36:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added attribute 'lookupAtRuntime'
- *
- * Revision 1.15  2006/06/20 14:10:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added stylesheet attribute
- *
- * Revision 1.14  2006/01/05 14:34:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow an empty resultstring to be specified
- *
- * Revision 1.13  2005/12/29 15:17:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected javadoc
- *
- * Revision 1.12  2005/09/26 11:07:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * better handling of null-parameter values
- *
- * Revision 1.11  2005/08/18 13:40:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.10  2005/08/11 15:00:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * parameters can now be used to replace ${...} constructs
- *
- * Revision 1.9  2005/04/26 09:19:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added replace facilty (by Peter Leeuwenburgh)
- *
- * Revision 1.8  2004/10/05 10:50:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused imports
- *
- * Revision 1.7  2004/09/01 07:21:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * correction in documentation
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;

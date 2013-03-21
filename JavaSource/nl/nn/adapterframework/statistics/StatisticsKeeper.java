@@ -13,54 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: StatisticsKeeper.java,v $
- * Revision 1.5  2011-11-30 13:51:48  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2011/08/22 14:31:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for size statistics
- *
- * Revision 1.2  2011/05/23 13:41:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * renamed 'total' fields to 'sum'
- *
- * Revision 1.1  2009/12/29 14:25:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved statistics to separate package
- *
- * Revision 1.14  2009/06/05 07:36:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for adapter level only statistics
- *
- * Revision 1.13  2008/09/04 13:26:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * collect interval statistics
- *
- * Revision 1.12  2008/08/27 16:25:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added clear()
- *
- * Revision 1.11  2007/10/08 13:35:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.10  2006/09/07 08:39:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected version String
- *
- * Revision 1.9  2006/09/07 08:38:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added dumpToXml()
- *
- * Revision 1.8  2005/03/10 09:52:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * reworked percentile estimation
- *
- * Revision 1.7  2005/02/17 09:55:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed percentile estimator to basic
- *
- * Revision 1.6  2005/02/02 16:37:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modular percentile estimation
- *
- * Revision 1.5  2005/01/13 09:05:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added percentile estimations
- *
- */
 package nl.nn.adapterframework.statistics;
 
 import java.text.DecimalFormat;

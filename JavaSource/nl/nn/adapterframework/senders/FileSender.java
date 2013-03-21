@@ -13,12 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: FileSender.java,v $
- * Revision 1.1  2012-10-05 15:45:31  m00f069
- * Introduced FileSender which is similar to FilePipe but can be used as a Sender (making is possible to have a MessageLog)
- *
- */
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.core.ISenderWithParameters;

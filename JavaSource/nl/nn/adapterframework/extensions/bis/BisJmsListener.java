@@ -13,45 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: BisJmsListener.java,v $
- * Revision 1.12  2011-11-30 13:52:00  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.10  2011/09/22 14:17:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Deprecated BisJmsSender/BisJmsListener
- *
- * Revision 1.9  2011/09/12 07:23:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * BisJmsSender/BisJmsListener: added functionality on behalf of DINN (migration from IFSA to TIBCO)
- *
- * Revision 1.8  2011/08/31 13:39:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * moved result tag from first child of root to last child of root
- *
- * Revision 1.7  2011/08/12 11:43:22  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * *** empty log message ***
- *
- * Revision 1.6  2011/07/07 12:13:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added resultInPayload attribute
- *
- * Revision 1.5  2011/06/27 12:03:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * improved logging
- *
- * Revision 1.4  2011/06/06 12:27:26  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * BisJmsSender/BisJmsListener: added messageHeaderInSoapBody attribute
- *
- * Revision 1.3  2011/03/30 14:48:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * moved prepareMessageHeader() and prepareResult() to BisUtils
- *
- * Revision 1.2  2011/03/29 13:01:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * cosmetic change
- *
- * Revision 1.1  2011/03/21 14:55:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.extensions.bis;
 
 import java.io.IOException;

@@ -13,33 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: Dir2Xml.java,v $
- * Revision 1.11  2011-11-30 13:51:48  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.9  2011/02/04 15:35:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * avoid NPE
- *
- * Revision 1.8  2007/02/12 14:09:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.7  2006/01/05 14:52:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improve error handling
- *
- * Revision 1.6  2005/10/20 15:20:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added feature to include directories
- *
- * Revision 1.5  2005/07/19 11:04:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use explicit FileNameComparator
- *
- * Revision 1.4  2005/05/31 09:20:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added sort for files
- *
- */
 package nl.nn.adapterframework.util;
 
 import java.io.File;

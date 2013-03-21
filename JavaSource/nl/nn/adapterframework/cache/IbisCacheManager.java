@@ -13,24 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IbisCacheManager.java,v $
- * Revision 1.5  2011-11-30 13:51:48  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2011/05/25 10:00:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed resolution of cache directory
- *
- * Revision 1.2  2011/05/25 07:32:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * collect statistics
- *
- * Revision 1.1  2010/09/13 13:28:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added cache facility
- *
- */
 package nl.nn.adapterframework.cache;
 
 import net.sf.ehcache.Cache;

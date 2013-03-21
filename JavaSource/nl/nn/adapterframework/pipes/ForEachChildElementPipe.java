@@ -13,67 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.28  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.27  2011/12/08 13:01:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed javadoc
- *
- * Revision 1.26  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.24  2010/04/08 09:59:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added attribute xslt2
- *
- * Revision 1.23  2010/03/10 10:16:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added TimeOutException to iterateInput
- *
- * Revision 1.22  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted javadoc for resultOnTimeOut attribute
- *
- * Revision 1.21  2010/02/03 14:29:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * check for interrupt
- *
- * Revision 1.20  2008/09/08 14:58:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected in error logging
- *
- * Revision 1.19  2008/05/27 16:56:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * handle blocks correctly
- *
- * Revision 1.18  2008/05/21 09:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added block info to javadoc
- *
- * Revision 1.17  2008/05/15 15:32:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * set root cause of SAX exception
- *
- * Revision 1.16  2008/02/22 14:32:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fix bug for nested elements
- *
- * Revision 1.15  2008/02/21 12:48:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added option for pushing iteration
- *
- * Revision 1.14  2007/10/08 12:23:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map where possible
- *
- * Revision 1.13  2007/09/10 11:19:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * remove unused imports
- *
- * Revision 1.12  2007/07/17 11:06:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * switch to new version
- *
- * Revision 1.1  2007/07/10 10:06:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * switch back to original ForEachChildElementPipe
- *
- * Revision 1.10  2007/07/10 07:53:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * new implementation based on IteratingPipe
- *
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import java.io.FileInputStream;

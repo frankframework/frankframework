@@ -13,58 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: PushingIfsaProviderListener.java,v $
- * Revision 1.16  2012-06-01 10:52:56  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.15  2011/12/05 15:31:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow for check that transactionality is configured, warn if not
- *
- * Revision 1.14  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.12  2011/06/20 13:18:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Java 5.0 compatibility
- *
- * Revision 1.11  2010/12/13 13:17:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * made acknowledgemode configurable
- *
- * Revision 1.10  2010/01/28 15:05:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * renamed 'Connection' classes to 'MessageSource'
- *
- * Revision 1.9  2008/10/06 14:31:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * encode contents of poisonmessage
- *
- * Revision 1.8  2008/09/02 11:45:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use session key definition from interface to retrieve session
- *
- * Revision 1.7  2008/09/01 15:09:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use BIFname as correlationId
- *
- * Revision 1.6  2008/08/27 15:57:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduced delivery count calculation
- * use bifname for correlationID
- *
- * Revision 1.5  2008/05/22 07:24:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added some support for bif and btc
- *
- * Revision 1.4  2008/02/28 16:20:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use PipeLineSession.setListenerParameters()
- *
- * Revision 1.3  2008/01/29 12:20:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added support for thread number control
- *
- * Revision 1.2  2008/01/11 09:41:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * check values of cache mode
- *
- * Revision 1.1  2008/01/03 15:46:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * split IfsaProviderListener into a Pulling and a Pushing version
- *
- */
 package nl.nn.adapterframework.extensions.ifsa.jms;
 
 import java.util.Date;

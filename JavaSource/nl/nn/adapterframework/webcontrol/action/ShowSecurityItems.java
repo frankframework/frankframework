@@ -13,45 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ShowSecurityItems.java,v $
- * Revision 1.10  2012-06-06 13:12:49  europe\m168309
- * fixed bug empty Role in Security Role Bindings
- *
- * Revision 1.9  2011/11/30 13:51:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.7  2011/10/05 12:54:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * ShowSecurityItems: added Used Authentication Entries
- *
- * Revision 1.6  2011/10/05 11:21:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * ShowSecurityItems: added Used Authentication Entries
- *
- * Revision 1.5  2010/08/13 12:43:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed bug empty Security Role Bindings
- *
- * Revision 1.4  2010/02/03 11:25:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * removed a debug logging
- *
- * Revision 1.3  2010/02/03 11:15:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added information about JmsRealms
- *
- * Revision 1.2  2008/12/15 12:23:35  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * improved Security Role Bindings
- *
- * Revision 1.1  2008/11/25 10:14:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * ShowUsedCertificates renamed to ShowSecurityItems
- *
- * Revision 1.2  2008/10/31 10:56:34  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Error handling  when certificateUrl is null
- *
- * Revision 1.1  2007/12/28 12:17:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;

@@ -13,41 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ShowIbisstoreSummary.java,v $
- * Revision 1.10  2012-04-04 09:45:52  europe\m168309
- * fixed empty result issue (caused in v4_12_a10)
- *
- * Revision 1.9  2011/11/30 13:51:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.7  2011/08/22 13:19:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed NPEs
- *
- * Revision 1.6  2009/10/26 13:53:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added MessageLog facility to receivers
- *
- * Revision 1.5  2009/04/28 11:35:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * guard for debug logging
- *
- * Revision 1.4  2009/04/28 11:11:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added links to pipe messagelogs
- * added empty result where it is null
- *
- * Revision 1.3  2009/04/28 09:33:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * made clickable
- *
- * Revision 1.2  2009/04/16 10:10:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * second version of ShowIbisstoreSummary
- *
- * Revision 1.1  2009/04/16 08:58:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version of ShowIbisstoreSummary
- *
- */
-
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;

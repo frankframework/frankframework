@@ -13,58 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JdbcListener.java,v $
- * Revision 1.16  2012-06-01 10:52:56  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.15  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.13  2011/08/09 10:09:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use modified getBlobAsString
- *
- * Revision 1.12  2011/03/16 16:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of DbmsSupport, including support for MS SQL Server
- *
- * Revision 1.11  2009/08/04 11:24:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for messages in CLOBs and BLOBs
- *
- * Revision 1.10  2009/03/26 14:47:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added LOCKROWS_SUFFIX
- *
- * Revision 1.9  2008/12/10 08:35:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved locking and selection mechanism: now works in multiple threads. 
- * improved disaster recovery: no more specific 'in process' status, rolls back to original state (where apropriate)
- *
- * Revision 1.8  2008/02/28 16:22:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use PipeLineSession.setListenerParameters()
- *
- * Revision 1.7  2007/12/10 10:05:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * put id and cid in session
- *
- * Revision 1.6  2007/11/15 12:38:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed message wrapping
- *
- * Revision 1.5  2007/10/18 15:55:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed returning of message text
- *
- * Revision 1.4  2007/10/03 08:48:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map
- *
- * Revision 1.3  2007/09/13 09:08:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allowed use outside transaction
- *
- * Revision 1.2  2007/09/12 09:17:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first working version
- *
- * Revision 1.1  2007/09/11 11:53:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added JdbcListeners
- *
- */
 package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;

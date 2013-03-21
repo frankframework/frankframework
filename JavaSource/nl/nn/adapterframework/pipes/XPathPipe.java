@@ -13,40 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: XPathPipe.java,v $
- * Revision 1.10  2011-11-30 13:51:50  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.8  2008/12/30 17:01:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added configuration warnings facility (in Show configurationStatus)
- *
- * Revision 1.7  2004/10/19 13:53:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * replaced by XsltPipe
- *
- * Revision 1.6  2004/10/05 10:57:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * deprecated,
- * all functionality now in XsltPipe
- *
- * Revision 1.5  2004/08/31 13:19:58  unknown <unknown@ibissource.org>
- * Allow multithreading
- *
- * Revision 1.4  2004/08/03 12:28:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * replaced embedded stylesheet with call to xmlutils.createxpathevaluator
- *
- * Revision 1.3  2004/05/05 09:30:53  Johan Verrips <johan.verrips@ibissource.org>
- * added sessionkey feature
- *
- * Revision 1.2  2004/04/27 11:42:40  unknown <unknown@ibissource.org>
- * Access properties via getters
- *
- * Revision 1.1  2004/04/27 10:52:17  unknown <unknown@ibissource.org>
- * Pipe that evaluates an xpath expression on the inpup
- * 
- */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

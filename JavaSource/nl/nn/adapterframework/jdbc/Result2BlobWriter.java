@@ -13,24 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: Result2BlobWriter.java,v $
- * Revision 1.5  2011-11-30 13:51:43  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2011/04/13 08:39:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Blob and Clob support using DbmsSupport
- *
- * Revision 1.2  2007/09/24 14:58:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for parameters
- *
- * Revision 1.1  2007/08/03 08:43:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first versions of Jdbc result writers
- *
- */
 package nl.nn.adapterframework.jdbc;
 
 import java.io.Writer;

@@ -13,12 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: Soap.java,v $
- * Revision 1.2  2011-12-15 10:08:06  m00f069
- * Added CVS log
- *
- */
 package nl.nn.adapterframework.soap;
 
 import javanet.staxutils.XMLStreamUtils;

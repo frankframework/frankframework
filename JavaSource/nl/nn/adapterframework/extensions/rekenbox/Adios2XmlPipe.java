@@ -13,52 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: Adios2XmlPipe.java,v $
- * Revision 1.15  2012-06-01 10:52:52  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.14  2011/11/30 13:52:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.12  2007/12/03 13:36:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow for sub records while converting to xml
- *
- * Revision 1.11  2007/02/12 14:31:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected version string
- *
- * Revision 1.10  2007/02/12 13:47:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Logger from LogUtil
- *
- * Revision 1.9  2005/01/05 12:31:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow for colons in 'waarde'
- *
- * Revision 1.8  2005/01/04 12:55:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * automatic recognition of xml-input for adios2xml conversion
- * ignore unknown labels converting adios2xml
- *
- * Revision 1.7  2004/10/05 10:38:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused imports
- *
- * Revision 1.6  2004/08/09 13:58:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved check for existence of interface-file
- *
- * Revision 1.5  2004/04/07 06:58:21  Johan Verrips <johan.verrips@ibissource.org>
- * adjusted bericht.toXML() to bericht.toXML(true) to add an xml header
- *
- * Revision 1.4  2004/04/07 06:36:40  Johan Verrips <johan.verrips@ibissource.org>
- * removed unused log variable
- *
- * Revision 1.3  2004/03/26 09:50:52  Johan Verrips <johan.verrips@ibissource.org>
- * Updated javadoc
- *
- * Revision 1.2  2004/03/24 15:28:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * removed unused variables
- *
- */
 package nl.nn.adapterframework.extensions.rekenbox;
 
 import java.io.BufferedReader;

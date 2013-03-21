@@ -13,28 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: FxfWrapperPipe.java,v $
- * Revision 1.6  2012-09-14 07:18:12  m00f069
- * Reverting last change of removal of Ibis name from transferFlowId, shouldn't be send by FxF after all.
- *
- * Revision 1.5  2012/09/05 09:00:16  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Remove Ibis name from transferFlowId when determining flowId
- *
- * Revision 1.4  2012/08/21 10:01:20  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Set destination parameter with default value when wrapping FxF message
- *
- * Revision 1.3  2012/08/17 15:46:44  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Added some documentation
- *
- * Revision 1.2  2012/08/17 14:34:15  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Extended FxfWrapperPipe for sending files
- * Implemented FxfXmlValidator
- *
- * Revision 1.1  2012/08/15 08:08:20  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Implemented FxF3 listener as a wrapper and FxF3 cleanup mechanism
- *
- */
 package nl.nn.adapterframework.extensions.fxf;
 
 import java.io.File;

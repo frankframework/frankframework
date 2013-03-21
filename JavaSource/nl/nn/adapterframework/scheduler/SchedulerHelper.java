@@ -13,38 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SchedulerHelper.java,v $
- * Revision 1.9  2011-11-30 13:51:42  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.7  2010/09/10 11:37:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added warning for empty cronExpression
- *
- * Revision 1.6  2008/09/04 13:27:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * restructured job scheduling
- *
- * Revision 1.5  2007/12/12 09:09:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow for query-type jobs
- *
- * Revision 1.4  2007/10/10 09:40:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Direct copy from Ibis-EJB:
- * version using IbisManager
- *
- * Revision 1.3  2007/02/26 16:50:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * add method startScheduler()
- *
- * Revision 1.2  2007/02/21 16:07:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cosmetic changes
- *
- * Revision 1.1  2005/11/01 08:51:14  John Dekker <john.dekker@ibissource.org>
- * Add support for dynamic scheduling, i.e. add a job to the scheduler using 
- * a sender
- *
- */
 package nl.nn.adapterframework.scheduler;
 
 import java.text.ParseException;

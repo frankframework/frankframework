@@ -13,40 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: Base64Pipe.java,v $
- * Revision 1.10  2012-06-01 10:52:49  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.9  2011/11/30 13:51:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.7  2010/09/21 14:54:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * lineLength and separator configurable
- *
- * Revision 1.6  2010/04/28 09:53:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * enabled use of InputStream as input. 
- * replaced Base64 codec by Apache Commons Codec 1.4
- *
- * Revision 1.5  2008/12/16 13:40:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added charset attribute
- *
- * Revision 1.4  2008/03/20 12:06:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.3  2006/04/25 06:56:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added attribute convert2String
- *
- * Revision 1.2  2005/10/13 11:44:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * switched encode and decode code
- *
- * Revision 1.1  2005/10/05 07:38:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of Base64Pipe
- *
- */
 package nl.nn.adapterframework.pipes;
 
 

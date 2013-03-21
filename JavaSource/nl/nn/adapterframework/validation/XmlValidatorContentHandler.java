@@ -13,44 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: XmlValidatorContentHandler.java,v $
- * Revision 1.1  2012-10-26 16:13:38  m00f069
- * Moved *Xmlvalidator*, Schema and SchemasProvider to new validation package
- *
- * Revision 1.9  2012/10/19 09:33:47  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Made WsdlXmlValidator extent Xml/SoapValidator to make it use the same validation logic, cleaning XercesXmlValidator on the way
- *
- * Revision 1.8  2012/10/16 15:50:57  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Prevent NullPointerException when no root validations need to be done
- *
- * Revision 1.7  2012/10/15 13:49:40  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Check root elements to not occur more than once.
- *
- * Revision 1.6  2012/10/13 15:45:17  Jaco de Groot <jaco.de.groot@ibissource.org>
- * When checking for unknown namespaces also execute check when empty namespace is found
- *
- * Revision 1.5  2012/10/13 12:37:16  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Check whether all root elements have been found
- *
- * Revision 1.4  2012/10/01 07:59:29  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Improved messages stored in reasonSessionKey and xmlReasonSessionKey
- * Cleaned XML validation code and documentation a bit.
- *
- * Revision 1.3  2012/09/28 13:51:49  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Restored illegalRoot forward and XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT with new check on root implementation.
- *
- * Revision 1.2  2012/09/19 21:40:37  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Added ignoreUnknownNamespaces attribute
- *
- * Revision 1.1  2012/09/19 09:49:58  Jaco de Groot <jaco.de.groot@ibissource.org>
- * - Set reasonSessionKey to "failureReason" and xmlReasonSessionKey to "xmlFailureReason" by default
- * - Fixed check on unknown namspace in case root attribute or xmlReasonSessionKey is set
- * - Fill reasonSessionKey with a message when an exception is thrown by parser instead of the ErrorHandler being called
- * - Added/fixed check on element of soapBody and soapHeader
- * - Cleaned XML validation code a little (e.g. moved internal XmlErrorHandler class (double code in two classes) to an external class, removed MODE variable and related code)
- *
- */
 package nl.nn.adapterframework.validation;
 
 import java.util.ArrayList;

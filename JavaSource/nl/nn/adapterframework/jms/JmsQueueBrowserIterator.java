@@ -13,27 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JmsQueueBrowserIterator.java,v $
- * Revision 1.6  2011-11-30 13:51:51  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2009/12/23 17:09:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified MessageBrowsing interface to reenable and improve export of messages
- *
- * Revision 1.3  2005/12/20 16:59:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * implemented support for connection-pooling
- *
- * Revision 1.2  2005/07/28 07:37:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added selector
- *
- * Revision 1.1  2005/07/19 15:12:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * adapted to an implementation extending IMessageBrowser
- *
- */
 package nl.nn.adapterframework.jms;
 
 import java.util.Enumeration;

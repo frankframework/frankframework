@@ -13,12 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JsonPipe.java,v $
- * Revision 1.1  2012-06-21 12:09:10  m00f069
- * Added cleaned version from Bipa project (original version was created by Martijn)
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

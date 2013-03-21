@@ -13,46 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: SoapWrapperPipe.java,v $
- * Revision 1.12  2013-01-03 10:53:05  europe\m168309
- * added removeUnusedOutputNamespaces attribute
- *
- * Revision 1.11  2012/10/08 12:14:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added root attribute
- *
- * Revision 1.10  2012/08/23 11:57:43  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Updates from Michiel
- *
- * Revision 1.9  2012/06/01 10:52:48  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.8  2012/05/10 11:52:45  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Resolve parameters only once
- *
- * Revision 1.7  2012/02/28 13:26:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added soapNamespace attribute
- *
- * Revision 1.6  2011/12/23 16:02:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added soapBodyStyleSheet attribute
- *
- * Revision 1.5  2011/12/15 10:52:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added soapHeaderStyleSheet, removeOutputNamespaces and outputNamespace attribute
- *
- * Revision 1.4  2011/11/30 13:52:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.2  2011/09/23 11:33:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added attributes encodingStyle and serviceNamespace
- *
- * Revision 1.1  2011/09/14 14:14:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * first version
- *
- *
- */
 package nl.nn.adapterframework.soap;
 
 import java.io.IOException;

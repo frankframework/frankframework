@@ -13,27 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: AbstractListenerConnectingEJB.java,v $
- * Revision 1.4  2011-11-30 13:51:57  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.2  2007/11/22 08:47:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * update from ejb-branch
- *
- * Revision 1.1.2.2  2007/11/15 10:26:12  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * * Initialize logging with instance, instead of (incorrect) classname.
- * * Add more common methods and instance-variables for both subclasses
- *
- * Revision 1.1.2.1  2007/10/29 10:29:13  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Refactor: pullup a number of methods to abstract base class so they can be shared with new IFSA Session EJBs
- *
- * 
- */
-
 package nl.nn.adapterframework.ejb;
 
 import nl.nn.adapterframework.core.IAdapter;

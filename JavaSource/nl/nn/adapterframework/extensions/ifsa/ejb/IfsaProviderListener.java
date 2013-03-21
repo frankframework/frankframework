@@ -13,68 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: IfsaProviderListener.java,v $
- * Revision 1.8  2012-06-01 10:52:50  m00f069
- * Created IPipeLineSession (making it easier to write a debugger around it)
- *
- * Revision 1.7  2011/11/30 13:51:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.5  2010/12/13 13:17:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * made acknowledgemode configurable
- *
- * Revision 1.4  2008/03/27 11:55:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified cid handling
- *
- * Revision 1.3  2008/01/03 15:45:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * rework port connected listener interfaces
- *
- * Revision 1.2  2007/11/22 08:48:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * update from ejb-branch
- *
- * Revision 1.1.2.12  2007/11/14 09:11:50  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Fix unimplemented-method error (no implementation required, add no-op implementation)
- *
- * Revision 1.1.2.11  2007/11/06 14:03:10  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Fix method to get name of WebSphere Listener Port
- *
- * Revision 1.1.2.10  2007/11/06 13:34:52  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Remove unused imports
- *
- * Revision 1.1.2.9  2007/11/06 13:15:10  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Move code putting properties into threadContext from 'getIdFromRawMessage' to 'populateThreadContext'
- *
- * Revision 1.1.2.8  2007/11/06 12:49:33  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Add methods 'populateThreadContext' and 'destroyThreadContext' to interface IPortConnectedListener
- *
- * Revision 1.1.2.7  2007/11/06 12:33:07  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Implement more closely some of the details of original code
- *
- * Revision 1.1.2.6  2007/11/06 10:40:24  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Make IfsaProviderListener follow state of it's ListenerPort, like with JmsListener
- *
- * Revision 1.1.2.5  2007/11/06 10:36:49  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Make IfsaProviderListener follow state of it's ListenerPort, like with JmsListener
- *
- * Revision 1.1.2.4  2007/11/05 13:51:37  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Add 'version' string to new IFSA classes
- *
- * Revision 1.1.2.3  2007/10/29 12:25:34  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Create EJb Beans required to connect to IFSA J2EE implementation as an IFSA Provider application
- *
- * Revision 1.1.2.2  2007/10/29 09:33:00  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Refactor: pullup a number of methods to abstract base class so they can be shared between IFSA parts
- *
- * Revision 1.1.2.1  2007/10/25 15:03:44  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Begin work on implementing IFSA-EJB
- *
- * 
- */
-
 package nl.nn.adapterframework.extensions.ifsa.ejb;
 
 import java.util.Date;

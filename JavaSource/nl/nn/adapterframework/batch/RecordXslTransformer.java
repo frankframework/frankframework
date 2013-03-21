@@ -13,59 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: RecordXslTransformer.java,v $
- * Revision 1.17  2011-11-30 13:51:57  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.15  2010/05/14 16:52:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected deprecation warning
- *
- * Revision 1.14  2010/05/03 16:58:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * deprecated
- *
- * Revision 1.13  2008/12/30 17:01:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added configuration warnings facility (in Show configurationStatus)
- *
- * Revision 1.12  2008/07/17 16:13:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.11  2008/02/28 16:17:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * move xslt functionality to base class RecordXmlTransformer
- *
- * Revision 1.10  2008/02/19 09:23:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.9  2008/02/15 16:05:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * updated javadoc
- *
- * Revision 1.8  2007/10/08 13:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.7  2007/09/24 14:55:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * support for parameters
- *
- * Revision 1.6  2007/07/26 16:11:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed seperator into separator
- * allow use of xPathExpression and parameters
- *
- * Revision 1.5  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
- * Restore java files from batch package after unwanted deletion.
- *
- * Revision 1.3  2005/10/31 14:38:02  John Dekker <john.dekker@ibissource.org>
- * Add . in javadoc
- *
- * Revision 1.2  2005/10/27 12:32:18  John Dekker <john.dekker@ibissource.org>
- * *** empty log message ***
- *
- * Revision 1.1  2005/10/11 13:00:21  John Dekker <john.dekker@ibissource.org>
- * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
- * BatchFileTransformerPipe
- *
- */
 package nl.nn.adapterframework.batch;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

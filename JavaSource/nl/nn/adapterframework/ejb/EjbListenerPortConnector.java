@@ -13,65 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: EjbListenerPortConnector.java,v $
- * Revision 1.7  2011-11-30 13:51:57  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.5  2010/12/13 13:17:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * made acknowledgemode configurable
- *
- * Revision 1.4  2008/01/03 15:42:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * rework port connected listener interfaces
- *
- * Revision 1.3  2007/11/22 08:47:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * update from ejb-branch
- *
- * Revision 1.2.2.4  2007/11/15 10:34:02  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Rename method 'getJmsListener' to 'getListener' to reflect fact that more types of listener can be controlled
- *
- * Revision 1.2.2.3  2007/11/15 10:28:42  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * * Add JavaDoc
- * * Refactor a number of fields & variables to more logical names
- *
- * Revision 1.2.2.2  2007/11/09 14:18:16  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Fix NPE when WAS ListenerPort not found; replace a lot more illegal characters
- *
- * Revision 1.2.2.1  2007/11/06 09:39:13  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Merge refactoring/renaming from HEAD
- *
- * Revision 1.2  2007/11/05 13:06:55  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Rename and redefine methods in interface IListenerConnector to remove 'jms' from names
- *
- * Revision 1.1  2007/11/05 12:20:17  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Rename 'EjbJmsConfigurator' to 'EjbListenerPortConnector'
- *
- * Revision 1.5  2007/11/05 10:33:16  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Move interface 'IListenerConnector' from package 'configuration' to package 'core' in preparation of renaming it
- *
- * Revision 1.4  2007/10/16 09:52:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Change over JmsListener to a 'switch-class' to facilitate smoother switchover from older version to spring version
- *
- * Revision 1.3  2007/10/15 13:08:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * EJB updates
- *
- * Revision 1.1.2.5  2007/10/15 08:36:31  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Fix lookup of JMX MBean for ListenerPort
- *
- * Revision 1.1.2.4  2007/10/12 14:29:31  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Several fixes and improvements to get EJB deployment mode running
- *
- * Revision 1.1.2.3  2007/10/10 14:30:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * synchronize with HEAD (4.8-alpha1)
- *
- * Revision 1.2  2007/10/10 09:48:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Direct copy from Ibis-EJB:
- * first version in HEAD
- *
- */
 package nl.nn.adapterframework.ejb;
 
 import java.util.Set;

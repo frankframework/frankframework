@@ -13,17 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: FxfXmlValidator.java,v $
- * Revision 1.2  2012-12-03 19:53:49  m00f069
- * Bugfix NullPointerException as a result of changes in init/configure methods in underlying classes.
- * Added check on soap header/body root element.
- *
- * Revision 1.1  2012/08/17 14:34:15  Jaco de Groot <jaco.de.groot@ibissource.org>
- * Extended FxfWrapperPipe for sending files
- * Implemented FxfXmlValidator
- *
- */
 package nl.nn.adapterframework.extensions.fxf;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

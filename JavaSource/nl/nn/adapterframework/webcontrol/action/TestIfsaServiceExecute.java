@@ -13,46 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: TestIfsaServiceExecute.java,v $
- * Revision 1.12  2011-11-30 13:51:45  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.10  2009/12/31 10:06:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * SendJmsMessage/TestIfsaService/TestPipeLine: made zipfile-upload facility case-insensitive
- *
- * Revision 1.9  2009/09/03 08:47:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * bugfix: or upload or message
- *
- * Revision 1.8  2008/12/16 13:37:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * read messages in the right encoding
- *
- * Revision 1.7  2008/05/22 07:44:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use inherited error() method
- *
- * Revision 1.6  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.5  2005/06/28 09:03:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * close in finally-clause
- *
- * Revision 1.4  2005/04/14 09:54:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * saved results
- *
- * Revision 1.3  2005/04/14 09:28:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * saved message protocols to form
- *
- * Revision 1.2  2005/04/14 09:12:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * exchanged message and result
- *
- * Revision 1.1  2005/04/14 08:07:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * introduction of TestIfsaService-functionality
- *
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.ByteArrayInputStream;

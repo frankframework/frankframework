@@ -13,27 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ConfigurationUtils.java,v $
- * Revision 1.6  2012-09-25 13:11:36  m00f069
- * Use namespaceAware=true for active.xsl and stub4testtool.xsl now we are using SAXSource otherwise a NullPointerException seems to occur during transformation.
- *
- * Revision 1.5  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2011/10/05 11:44:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * do not print versions anymore
- *
- * Revision 1.2  2011/10/05 11:19:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * added method getOriginalConfiguration()
- *
- * Revision 1.1  2010/05/19 10:27:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * first version
- *
- */
 package nl.nn.adapterframework.configuration;
 
 import java.io.IOException;

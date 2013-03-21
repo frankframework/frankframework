@@ -13,24 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ShowTracingConfiguration.java,v $
- * Revision 1.5  2011-11-30 13:51:46  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2008/10/24 14:42:31  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adapters are shown case insensitive sorted
- *
- * Revision 1.2  2007/07/19 15:17:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * list Adapters in order of configuration
- *
- * Revision 1.1  2006/09/14 15:29:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version of TracingHandlers
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;

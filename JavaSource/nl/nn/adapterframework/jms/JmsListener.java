@@ -13,25 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: JmsListener.java,v $
- * Revision 1.32  2011-11-30 13:51:51  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.30  2007/12/17 08:56:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved documentation
- *
- * Revision 1.29  2007/11/22 09:10:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * switch to PushingListener
- *
- * Revision 1.28  2007/10/16 09:52:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Change over JmsListener to a 'switch-class' to facilitate smoother switchover from older version to spring version
- *
- * 
- */
 package nl.nn.adapterframework.jms;
 
 /**

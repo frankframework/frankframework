@@ -13,21 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: LogHandler.java,v $
- * Revision 1.8  2011-11-30 13:51:45  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.6  2007/08/30 15:12:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified getRootLogger()
- *
- * Revision 1.5  2007/02/16 14:24:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * corrected version string
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;

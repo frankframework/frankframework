@@ -13,30 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ExecuteJdbcQueryExecute.java,v $
- * Revision 1.7  2012-07-19 12:16:12  europe\m168309
- * workaround to avoid http error 500 on WAS (line separators in query cookie)
- *
- * Revision 1.6  2011/11/30 13:51:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2008/10/20 13:02:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * also show not compressed blobs and not serialized blobs
- *
- * Revision 1.3  2008/05/22 07:36:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use inherited error() method
- *
- * Revision 1.2  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.1  2005/10/27 12:20:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * execQuery functionality in IbisConsole
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;

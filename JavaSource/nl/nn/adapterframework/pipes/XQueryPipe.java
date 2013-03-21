@@ -13,12 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: XQueryPipe.java,v $
- * Revision 1.1  2013-01-30 16:47:58  m00f069
- * Added XQueryPipe
- *
- */
 package nl.nn.adapterframework.pipes;
 
 import java.io.File;

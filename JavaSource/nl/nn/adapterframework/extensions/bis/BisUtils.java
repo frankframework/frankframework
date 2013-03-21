@@ -13,27 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: BisUtils.java,v $
- * Revision 1.6  2011-11-30 13:52:00  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.4  2011/09/22 14:17:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Deprecated BisJmsSender/BisJmsListener
- *
- * Revision 1.3  2011/09/12 07:23:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * BisJmsSender/BisJmsListener: added functionality on behalf of DINN (migration from IFSA to TIBCO)
- *
- * Revision 1.2  2011/06/06 12:27:26  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * BisJmsSender/BisJmsListener: added messageHeaderInSoapBody attribute
- *
- * Revision 1.1  2011/03/30 14:48:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * moved prepareMessageHeader() and prepareResult() to BisUtils
- *
- */
 package nl.nn.adapterframework.extensions.bis;
 
 import java.io.IOException;

@@ -13,25 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: StreamUtil.java,v $
- * Revision 1.5  2011-11-30 13:51:50  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.3  2011/08/09 07:55:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added functions to obtain an OutputStream or Writer
- *
- * Revision 1.2  2009/08/04 11:35:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added openZipDownload
- *
- * Revision 1.1  2007/07/17 11:03:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * first version, copied from SRP
- *
- *
- */
 package nl.nn.adapterframework.util;
 
 import java.io.FileNotFoundException;

@@ -13,31 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: BrowseJdbcTable.java,v $
- * Revision 1.7  2011-11-30 13:51:46  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.5  2011/08/22 08:37:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed incomplete cookies
- *
- * Revision 1.4  2008/11/12 12:34:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * fixed error in cookies
- *
- * Revision 1.3  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.2  2007/05/21 12:25:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed version string
- *
- * Revision 1.1  2007/05/21 12:24:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added browseJdbcTable functions
- *
- *
- */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;

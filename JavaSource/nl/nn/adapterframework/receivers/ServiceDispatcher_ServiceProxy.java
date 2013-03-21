@@ -13,27 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * $Log: ServiceDispatcher_ServiceProxy.java,v $
- * Revision 1.12  2011-11-30 13:51:54  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.10  2005/06/02 12:08:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * cosmetic changes
- *
- * Revision 1.9  2005/05/19 12:32:09  Johan Verrips <johan.verrips@ibissource.org>
- * Updated VersionID
- *
- * Revision 1.8  2005/05/19 12:31:24  Johan Verrips <johan.verrips@ibissource.org>
- * Updated VersionID
- *
- * Revision 1.7  2005/05/19 12:30:18  Johan Verrips <johan.verrips@ibissource.org>
- * Updated VersionID
- *
- */
 package nl.nn.adapterframework.receivers;
 
 import org.apache.soap.Constants;
