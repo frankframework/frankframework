@@ -88,6 +88,7 @@ public final class TestPipeLineExecute extends ActionBase {
 	    String form_resultText = "";
 	    String form_resultState = "";
 	    FormFile form_file = (FormFile) pipeLineTestForm.get("file");
+	    String form_fileEncoding = (String) pipeLineTestForm.get("fileEncoding");
 	
 	    // if no message and no formfile, send an error
 	    if ( StringUtils.isEmpty(form_message) &&
@@ -126,6 +127,13 @@ public final class TestPipeLineExecute extends ActionBase {
 	    // if upload is choosen, it prevails over the message
 	    if ((form_file != null) && (form_file.getFileSize() > 0)) {
 			log.debug("Upload of file ["+form_file.getFileName()+"] ContentType["+form_file.getContentType()+"]");
+			String defaultEncoding = request.getCharacterEncoding();
+			boolean useDeclarationEncoding = true;
+			if (StringUtils.isNotEmpty(form_fileEncoding)) {
+				defaultEncoding = form_fileEncoding;
+				useDeclarationEncoding = false;
+			}
+			String currentMessage = null;
 			if (FileUtils.extensionEqualsIgnoreCase(form_file.getFileName(),"zip")) {
 	    		ZipInputStream archive = new ZipInputStream(new ByteArrayInputStream(form_file.getFileData()));
 	    		for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
@@ -142,7 +150,7 @@ public final class TestPipeLineExecute extends ActionBase {
 							}
 							rb+=chunk;
 						}
-						String currentMessage = XmlUtils.readXml(b,0,rb,request.getCharacterEncoding(),false);
+						currentMessage = XmlUtils.readXml(b,0,rb,defaultEncoding,false,useDeclarationEncoding);
 						//PipeLineResult pipeLineResult = adapter.processMessage(name+"_" + Misc.createSimpleUUID(), currentMessage);
 						PipeLineResult pipeLineResult = processMessage(adapter, name+"_" + Misc.createSimpleUUID(), currentMessage);
 						form_resultText += name + ":" + pipeLineResult.getState() + "\n";
@@ -151,9 +159,13 @@ public final class TestPipeLineExecute extends ActionBase {
 					archive.closeEntry();
 	    		}
 	    		archive.close();
-	    		form_message = null;
+	    		if (currentMessage == null) {
+	    			form_message = "";
+	    		} else {
+	    			form_message = currentMessage;
+	    		}
 	    	} else {
-				form_message = XmlUtils.readXml(form_file.getFileData(),request.getCharacterEncoding(),false);
+				form_message = XmlUtils.readXml(form_file.getFileData(),defaultEncoding,false,useDeclarationEncoding);
 	    	}
 	    } else {
 			form_message=new String(form_message.getBytes(),Misc.DEFAULT_INPUT_STREAM_ENCODING);

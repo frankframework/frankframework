@@ -57,6 +57,7 @@
                         <form-property name="result"     		type="java.lang.String"/>
                         <form-property name="state"     		type="java.lang.String"/>
                         <form-property name="file"    			type="org.apache.struts.upload.FormFile"/>
+                        <form-property name="fileEncoding"		type="java.lang.String"/>
         </form-bean>
 
         <form-bean      name="ServiceTestForm"

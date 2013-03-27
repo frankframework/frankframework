@@ -27,7 +27,7 @@
 	</tr>	
 	<tr>
 		<td>Upload File</td>
-		<td><html:file property="file"/></td>
+		<td><html:file property="file"/> Encoding <html:text property="fileEncoding" size="10" maxlength="20"/></td>
 	</tr>
 	<tr>
 		<td>Result</td>

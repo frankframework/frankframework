@@ -481,8 +481,15 @@ public class XmlUtils {
 	public static String readXml(byte[] source, String defaultEncoding, boolean skipDeclaration) throws UnsupportedEncodingException {
 		return readXml(source, 0, source.length, defaultEncoding, skipDeclaration);
 	}
+	public static String readXml(byte[] source, String defaultEncoding, boolean skipDeclaration, boolean useDeclarationEncoding) throws UnsupportedEncodingException {
+		return readXml(source, 0, source.length, defaultEncoding, skipDeclaration, useDeclarationEncoding);
+	}
 
 	public static String readXml(byte[] source, int offset, int length, String defaultEncoding, boolean skipDeclaration) throws UnsupportedEncodingException {
+		return readXml(source, 0, source.length, defaultEncoding, skipDeclaration, true);
+	}
+
+	public static String readXml(byte[] source, int offset, int length, String defaultEncoding, boolean skipDeclaration, boolean useDeclarationEncoding) throws UnsupportedEncodingException {
 		String charset;
 
 		charset=defaultEncoding;
@@ -506,7 +513,9 @@ public class XmlUtils {
 					log.debug("encoding-declaration ["+declaration.substring(encodingStart)+"]");
 					int encodingEnd=declaration.indexOf("\"",encodingStart);
 					if (encodingEnd>0) {
-						charset=declaration.substring(encodingStart,encodingEnd);
+						if (useDeclarationEncoding) {
+							charset=declaration.substring(encodingStart,encodingEnd);
+						}
 						log.debug("parsed charset ["+charset+"]");
 					} else {
 						log.warn("no end in encoding attribute in declaration ["+declaration+"]");
