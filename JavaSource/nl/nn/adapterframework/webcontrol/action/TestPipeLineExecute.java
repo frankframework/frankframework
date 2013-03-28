@@ -133,7 +133,6 @@ public final class TestPipeLineExecute extends ActionBase {
 				defaultEncoding = form_fileEncoding;
 				useDeclarationEncoding = false;
 			}
-			String currentMessage = null;
 			if (FileUtils.extensionEqualsIgnoreCase(form_file.getFileName(),"zip")) {
 	    		ZipInputStream archive = new ZipInputStream(new ByteArrayInputStream(form_file.getFileData()));
 	    		for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
@@ -150,7 +149,7 @@ public final class TestPipeLineExecute extends ActionBase {
 							}
 							rb+=chunk;
 						}
-						currentMessage = XmlUtils.readXml(b,0,rb,defaultEncoding,false,useDeclarationEncoding);
+						String currentMessage = XmlUtils.readXml(b,0,rb,defaultEncoding,false,useDeclarationEncoding);
 						//PipeLineResult pipeLineResult = adapter.processMessage(name+"_" + Misc.createSimpleUUID(), currentMessage);
 						PipeLineResult pipeLineResult = processMessage(adapter, name+"_" + Misc.createSimpleUUID(), currentMessage);
 						form_resultText += name + ":" + pipeLineResult.getState() + "\n";
@@ -159,11 +158,7 @@ public final class TestPipeLineExecute extends ActionBase {
 					archive.closeEntry();
 	    		}
 	    		archive.close();
-	    		if (currentMessage == null) {
-	    			form_message = "";
-	    		} else {
-	    			form_message = currentMessage;
-	    		}
+	    		form_message = null;
 	    	} else {
 				form_message = XmlUtils.readXml(form_file.getFileData(),defaultEncoding,false,useDeclarationEncoding);
 	    	}
