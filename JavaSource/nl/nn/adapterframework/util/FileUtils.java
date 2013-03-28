@@ -435,6 +435,16 @@ public class FileUtils {
 		return fileName.substring(idx);
 	}
 
+	public static String getBaseName(String fileName) {
+		File file = new File(fileName);
+		String fname = file.getName();
+		int idx = fname.lastIndexOf('.');
+		if (idx<0) {
+			return null;
+		} 
+		return fname.substring(0, idx);
+	}
+
 	public static boolean extensionEqualsIgnoreCase(String fileName, String extension) {
 		String fileNameExtension = getFileNameExtension(fileName);
 		if (fileNameExtension==null) {
