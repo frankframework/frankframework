@@ -64,6 +64,7 @@ import org.apache.log4j.Logger;
  * <li>encode: encode base64</li>
  * <li>decode: decode base64</li>
  * <li>list: returns the files and directories in the directory that satisfy the specified filter (see {@link nl.nn.adapterframework.util.Dir2Xml dir2xml}). If a directory is not specified, the fileName is expected to include the directory</li>
+ * <li>info: returns information about the file</li>
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created (only used if fileName and fileNameSession are not set)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to read from or write to is created if it does not exist</td><td>false</td></tr>
@@ -137,6 +138,8 @@ public class FileHandler {
 				transformers.add(new Decoder());
 			else if ("list".equalsIgnoreCase(token))
 				transformers.add(new FileLister());
+			else if ("info".equalsIgnoreCase(token))
+				transformers.add(new FileInfoProvider());
 			else
 				throw new ConfigurationException(getLogPrefix(null)+"Action [" + token + "] is not supported");
 		}
@@ -481,6 +484,55 @@ public class FileHandler {
 			}
 			String listResult=dx.getDirList();
 			return listResult.getBytes();
+		}
+	}
+
+	private class FileInfoProvider implements TransformerAction {
+		public void configure() throws ConfigurationException {
+			if (StringUtils.isNotEmpty(getDirectory())) {
+				File file = new File(getDirectory());
+				if (! (file.exists() && file.isDirectory() && file.canRead())) {
+					throw new ConfigurationException(directory + " is not a directory, or no read permission");
+				}
+			}
+		}
+
+		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
+			File file;
+			 
+			String name = (String)session.get(fileNameSessionKey);;
+			
+			if (StringUtils.isEmpty(name)) {
+				name = new String(in);
+			}
+															
+			if (StringUtils.isNotEmpty(getDirectory())) {
+				file = new File(getDirectory(), name);
+			} else {
+				file = new File(name);
+			}
+
+			XmlBuilder fileXml = new XmlBuilder("file");
+			XmlBuilder fullName = new XmlBuilder("fullName");
+			fullName.setValue(file.getPath());
+			fileXml.addSubElement(fullName);
+			XmlBuilder directory = new XmlBuilder("directory");
+			String dir = file.getParent();
+			if (dir!=null) {
+				directory.setValue(dir);
+			}
+			fileXml.addSubElement(directory);
+			XmlBuilder shortName = new XmlBuilder("name");
+			String sname = file.getName();
+			shortName.setValue(sname);
+			fileXml.addSubElement(shortName);
+			XmlBuilder baseName = new XmlBuilder("baseName");
+			baseName.setValue(FileUtils.getBaseName(sname));
+			fileXml.addSubElement(baseName);
+			XmlBuilder extension = new XmlBuilder("extension");
+			extension.setValue(FileUtils.getFileNameExtension(sname));
+			fileXml.addSubElement(extension);
+			return fileXml.toXML().getBytes();
 		}
 	}
 
