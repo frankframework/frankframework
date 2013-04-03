@@ -559,8 +559,8 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 				}
 			}
 		} else {
-			enforceMQCompliancy(destination);
-			mp = session.createProducer(destination);
+			enforceMQCompliancy(dest);
+			mp = session.createProducer(dest);
 		}
 		if (messageType!=null) {
 			msg.setJMSType(messageType);
