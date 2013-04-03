@@ -2,8 +2,8 @@
 <%@ taglib uri="/WEB-INF/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/struts-logic.tld" prefix="logic" %>
-<%@ page import="org.apache.struts.action.DynaActionForm" %> 
-
+<%@ page import="org.apache.struts.action.DynaActionForm" %>
+<%@ page import="nl.nn.adapterframework.jms.JmsMessageBrowserIteratorItem" %>
 
 
 <page title="Browse a queue or topic">
@@ -46,21 +46,20 @@ count = (String) f.get("numberOfMessages");
 for (int i=0;i<l.size();i++) {
 	String msg="";
 	try {
-		msg = ((javax.jms.TextMessage) l.get(i)).getText();
+		msg = ((JmsMessageBrowserIteratorItem)l.get(i)).getText();
 	}
 	catch (Exception e) {
 		msg="Could not display message: "+e.getMessage();
 	}
 %>
-<tr  alternatingRows="true"><td><%=i+1%></td>
-<td><%=new java.util.Date(((javax.jms.TextMessage) l.get(i)).getJMSTimestamp()).toString()%></td>
-<td><%=((javax.jms.TextMessage) l.get(i)).getJMSMessageID()%></td>
-<td><%=((javax.jms.TextMessage) l.get(i)).getJMSCorrelationID()%></td>
+<tr  alternatingRows="true">
+	<td><%=i+1%></td>
+	<td><%=new java.util.Date(((JmsMessageBrowserIteratorItem)l.get(i)).getJMSTimestamp()).toString()%></td>
+	<td><%=((JmsMessageBrowserIteratorItem)l.get(i)).getJMSMessageID()%></td>
+	<td><%=((JmsMessageBrowserIteratorItem)l.get(i)).getCorrelationId()%></td>
 <% if (showPayload) {%>
-		<td>
-		<![CDATA[<%=msg%>]]></td>	
+	<td><![CDATA[<%=msg%>]]></td>
 <%}%>
-
 </tr>
 <%}%>
 			

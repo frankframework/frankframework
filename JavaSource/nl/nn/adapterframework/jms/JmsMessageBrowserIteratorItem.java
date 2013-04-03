@@ -19,6 +19,7 @@ import java.util.Date;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
@@ -95,6 +96,30 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 	public String getLabel() throws ListenerException {
 		try {
 			return msg.getStringProperty(JmsTransactionalStorage.FIELD_LABEL);
+		} catch (JMSException e) {
+			throw new ListenerException(e);
+		}
+	}
+
+	public String getJMSMessageID() throws ListenerException {
+		try {
+			return msg.getJMSMessageID();
+		} catch (JMSException e) {
+			throw new ListenerException(e);
+		}
+	}
+
+	public long getJMSTimestamp() throws ListenerException {
+		try {
+			return msg.getJMSTimestamp();
+		} catch (JMSException e) {
+			throw new ListenerException(e);
+		}
+	}
+
+	public String getText() throws ListenerException {
+		try {
+			return ((TextMessage)msg).getText();
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}

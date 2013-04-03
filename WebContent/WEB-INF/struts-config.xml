@@ -83,7 +83,7 @@
                         <form-property name="messageId"   		type="java.lang.String"/>
                         <form-property name="numberOfMessages"  type="java.lang.String"/>
                         <form-property name="destinationType"   type="java.lang.String"/>
-                        <form-property name="messages"       	type="java.lang.String"/>
+                        <form-property name="messages"       	type="java.util.ArrayList"/>
                         <form-property name="numberOfMessagesOnly" type="java.lang.Boolean"/>
                         <form-property name="showPayload"    	type="java.lang.Boolean"/>
                         <form-property name="maxMessages"    	type="java.lang.String"/>

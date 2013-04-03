@@ -21,7 +21,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
-import javax.jms.QueueSession;
+import javax.jms.Session;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
@@ -35,18 +35,18 @@ import org.apache.commons.lang.StringUtils;
  * 
  * @author  Gerrit van Brakel
  * @since   4.3
- * @version $Id$
+ * @version $Id: JmsQueueBrowserIterator.java,v 1.6 2011/11/30 13:51:51 europe\m168309 Exp $
  */
 public class JmsQueueBrowserIterator implements IMessageBrowsingIterator {
 
 	private final JMSFacade    facade;
-	private final QueueSession session;
+	private final Session session;
 	private final QueueBrowser queueBrowser;
 	private final Enumeration  enm;
 		
 	public JmsQueueBrowserIterator(JMSFacade facade, Queue destination, String selector) throws JMSException, NamingException, JmsException {
 		this.facade=facade;
-		this.session=(QueueSession)(facade.createSession());
+		this.session=facade.createSession();
 		if (StringUtils.isEmpty(selector)) {
 			this.queueBrowser=session.createBrowser(destination);
 		} else {

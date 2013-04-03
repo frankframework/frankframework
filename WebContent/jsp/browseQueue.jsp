@@ -8,7 +8,7 @@
 <page title="Browse a queue or topic">
 
 <html:xhtml/>
-<html:form action="/browseQueueExecute.do">
+<html:form action="/browseQueueExecute.do" method="GET">
 <html:hidden property="action"/>
 
 <table border="0" width="100%">
