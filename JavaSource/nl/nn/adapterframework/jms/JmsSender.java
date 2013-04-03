@@ -221,7 +221,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 				replyQueue = getDestination(replyToName);
 			} else {
 				if (isSynchronous()) {
-					replyQueue = getMessagingSource().getDynamicReplyQueue((QueueSession)s);
+					replyQueue = getMessagingSource().getDynamicReplyQueue(s);
 				}
 			}
 			if (replyQueue!=null) {

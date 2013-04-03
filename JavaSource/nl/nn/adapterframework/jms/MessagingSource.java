@@ -330,7 +330,7 @@ public class MessagingSource  {
 		}
 	}
 
-	public Queue getDynamicReplyQueue(QueueSession session) throws JMSException {
+	public Queue getDynamicReplyQueue(Session session) throws JMSException {
 		Queue result;
 		if (useSingleDynamicReplyQueue()) {
 			synchronized (this) {
