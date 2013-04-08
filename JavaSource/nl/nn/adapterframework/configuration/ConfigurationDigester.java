@@ -201,6 +201,10 @@ abstract public class ConfigurationDigester {
 			digester.addRule("*/statistics", attributeChecker);
 			digester.addRule("*/handler", attributeChecker);
 			digester.addRule("*/cache", attributeChecker);
+			digester.addRule("*/inputValidator", attributeChecker);
+			digester.addRule("*/outputValidator", attributeChecker);
+			digester.addRule("*/inputWrapper", attributeChecker);
+			digester.addRule("*/outputWrapper", attributeChecker);
 			MonitorManager.getInstance().setDigesterRules(digester);
 
 // Resolving variables is now done by Digester
