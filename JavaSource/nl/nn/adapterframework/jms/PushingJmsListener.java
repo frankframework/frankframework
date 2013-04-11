@@ -176,6 +176,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 				log.debug("sending reply message with correlationID[" + cid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
+				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
 					Message messageReceived=(Message)rawMessage;
 					long expiration=messageReceived.getJMSExpiration();
@@ -184,10 +185,13 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 						if (timeToLive<=0) {
 							log.warn("message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
 							timeToLive=1000;
+							// In case of a temporary queue it might already
+							// have disappeared.
+							ignoreInvalidDestinationException = true;
 						}
 					}
 				}
-				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority());
+				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException);
 			} else {
 				if (getSender()==null) {
 					log.info("["+getName()+"] has no sender, not sending the result.");

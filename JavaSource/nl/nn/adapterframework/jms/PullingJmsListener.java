@@ -214,6 +214,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	
 				log.debug(getLogPrefix()+"sending reply message with correlationID [" + cid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
+				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
 					Message messageSent=(Message)rawMessage;
 					long expiration=messageSent.getJMSExpiration();
@@ -222,6 +223,9 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 						if (timeToLive<=0) {
 							log.warn(getLogPrefix()+"message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
 							timeToLive=1000;
+							// In case of a temporary queue it might already
+							// have disappeared.
+							ignoreInvalidDestinationException = true;
 						}
 					}
 				}
@@ -231,12 +235,12 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				if (session==null) { 
 					try {
 						session=getSession(threadContext);
-						send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority());
+						send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException);
 					} finally {
 						releaseSession(session);					 
 					}
 				}  else {
-					send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority()); 
+					send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException); 
 				}
 			} else {
 				if (getSender()==null) {

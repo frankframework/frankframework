@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -546,21 +547,33 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 
 	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority) throws NamingException, JMSException, SenderException {
+		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, false);
+	}
+	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException) throws NamingException, JMSException, SenderException {
 		TextMessage msg = createTextMessage(session, correlationId, message);
 		MessageProducer mp;
-		if (useJms102()) {
-			if ((session instanceof TopicSession) && (dest instanceof Topic)) {
-				mp = getTopicPublisher((TopicSession)session, (Topic)dest);
-			} else {
-				if ((session instanceof QueueSession) && (dest instanceof Queue)) {
-					mp = getQueueSender((QueueSession)session, (Queue)dest);
+		try {
+			if (useJms102()) {
+				if ((session instanceof TopicSession) && (dest instanceof Topic)) {
+					mp = getTopicPublisher((TopicSession)session, (Topic)dest);
 				} else {
-					throw new SenderException("classes of Session ["+session.getClass().getName()+"] and Destination ["+dest.getClass().getName()+"] do not match (Queue vs Topic)");
+					if ((session instanceof QueueSession) && (dest instanceof Queue)) {
+						mp = getQueueSender((QueueSession)session, (Queue)dest);
+					} else {
+						throw new SenderException("classes of Session ["+session.getClass().getName()+"] and Destination ["+dest.getClass().getName()+"] do not match (Queue vs Topic)");
+					}
 				}
+			} else {
+				enforceMQCompliancy(destination);
+				mp = session.createProducer(destination);
 			}
-		} else {
-			enforceMQCompliancy(dest);
-			mp = session.createProducer(dest);
+		} catch (InvalidDestinationException e) {
+			if (ignoreInvalidDestinationException) {
+				log.warn("queue ["+dest+"] doesn't exist");
+				return null;
+			} else {
+				throw e;
+			}
 		}
 		if (messageType!=null) {
 			msg.setJMSType(messageType);
@@ -576,7 +589,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		if (timeToLive>0) {
 			mp.setTimeToLive(timeToLive);
 		}
-		String result = send(mp, msg);
+		String result = send(mp, msg, ignoreInvalidDestinationException);
 		mp.close();
 		return result;
 	}
@@ -593,16 +606,29 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 */
 	public String send(MessageProducer messageProducer, Message message)
 			throws NamingException, JMSException {
-		if (useJms102()) {
-			if (messageProducer instanceof TopicPublisher) {
-				((TopicPublisher) messageProducer).publish(message);
+		return send(messageProducer, message, false);
+	}
+	public String send(MessageProducer messageProducer, Message message, boolean ignoreInvalidDestinationException)
+			throws NamingException, JMSException {
+		try {
+			if (useJms102()) {
+				if (messageProducer instanceof TopicPublisher) {
+					((TopicPublisher) messageProducer).publish(message);
+				} else {
+					((QueueSender) messageProducer).send(message);
+				}
+				return message.getJMSMessageID();
 			} else {
-				((QueueSender) messageProducer).send(message);
+				messageProducer.send(message);
+				return message.getJMSMessageID();
 			}
-			return message.getJMSMessageID();
-		} else {
-			messageProducer.send(message);
-			return message.getJMSMessageID();
+		} catch (InvalidDestinationException e) {
+			if (ignoreInvalidDestinationException) {
+				log.warn("queue ["+messageProducer.getDestination()+"] doesn't exist");
+				return null;
+			} else {
+				throw e;
+			}
 		}
 	}
 	/**
@@ -615,19 +641,32 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @throws JMSException
 	 */
 	public String send(Session session, Destination dest, Message message)
+		throws NamingException, JMSException {
+		return send(session, dest, message, false);
+	}
+	public String send(Session session, Destination dest, Message message, boolean ignoreInvalidDestinationException)
 			throws NamingException, JMSException {
-		if (useJms102()) {
-			if (dest instanceof Topic) {
-				return sendByTopic((TopicSession)session, (Topic)dest, message);
+		try {
+			if (useJms102()) {
+				if (dest instanceof Topic) {
+					return sendByTopic((TopicSession)session, (Topic)dest, message);
+				} else {
+					return sendByQueue((QueueSession)session, (Queue)dest, message);
+				}
 			} else {
-				return sendByQueue((QueueSession)session, (Queue)dest, message);
+				enforceMQCompliancy(dest);
+				MessageProducer mp = session.createProducer(dest);
+				mp.send(message);
+				mp.close();
+				return message.getJMSMessageID();
 			}
-		} else {
-			enforceMQCompliancy(dest);
-			MessageProducer mp = session.createProducer(dest);
-			mp.send(message);
-			mp.close();
-			return message.getJMSMessageID();
+		} catch (InvalidDestinationException e) {
+			if (ignoreInvalidDestinationException) {
+				log.warn("queue ["+dest+"] doesn't exist");
+				return null;
+			} else {
+				throw e;
+			}
 		}
 	}
 	/**
