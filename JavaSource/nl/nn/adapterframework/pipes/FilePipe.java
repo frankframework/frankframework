@@ -66,6 +66,10 @@ public class FilePipe extends FixedForwardPipe {
 		fileHandler.setCharset(charset);
 	}
 
+	public void setOutputType(String outputType) {
+		fileHandler.setOutputType(outputType);
+	}
+
 	public void setActions(String actions) {
 		fileHandler.setActions(actions);
 	}

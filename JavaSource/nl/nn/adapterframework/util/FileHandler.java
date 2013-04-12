@@ -72,6 +72,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setTestCanWrite(boolean) testCanWrite}</td><td>when set to <code>true</code>, a test is performed to find out if a temporary file can be created and deleted in the specified directory (only used if directory is set and combined with the action write, write_append or create)</td><td>true</td></tr>
  * <tr><td>{@link #setSkipBOM(boolean) skipBOM}</td><td>when set to <code>true</code>, a possible Bytes Order Mark (BOM) at the start of the file is skipped (only used for the action read and encoding UFT-8)</td><td>false</td></tr>
  * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>(only used when actions=delete) when set to <code>true</code>, the directory from which a file is deleted is also deleted when it contains no other files</td><td>false</td></tr>
+ * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code> or <code>bytes</code></td><td>"string"</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -93,6 +94,7 @@ public class FileHandler {
 	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
 	
 	protected String charset = System.getProperty("file.encoding");
+	protected String outputType = "string";
 	protected String actions;
 	protected String directory;
 	protected String writeSuffix;
@@ -146,6 +148,9 @@ public class FileHandler {
 		
 		if (transformers.size() == 0)
 			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
+		if (!outputType.equalsIgnoreCase("string") && !outputType.equalsIgnoreCase("bytes")) {
+			throw new ConfigurationException(getLogPrefix(null)+"illegal value for outputType ["+outputType+"], must be 'string' or 'bytes'");
+		}
 		
 		// configure the transformers
 		for (Iterator it = transformers.iterator(); it.hasNext(); ) {
@@ -154,20 +159,24 @@ public class FileHandler {
 		eolArray = System.getProperty("line.separator").getBytes();
 	}
 	
-	public String handle(Object input, IPipeLineSession session) throws Exception {
+	public Object handle(Object input, IPipeLineSession session) throws Exception {
 		byte[] inValue = null;
 		if (input instanceof byte[]) {
 			inValue = (byte [])input;
 		}
 		else {
+//inputType
 			inValue = (input == null) ? null : input.toString().getBytes(charset);
 		}
 			
 		for (Iterator it = transformers.iterator(); it.hasNext(); ) {
 			inValue = ((TransformerAction)it.next()).go(inValue, session);
 		}
-		String outValue = inValue == null ? null : new String(inValue, charset);
-		return outValue;
+		if (inValue == null || "bytes".equals(outputType)) {
+			return inValue;
+		} else {
+			return new String(inValue, charset);
+		}
 	}
 	
 	/**
@@ -550,6 +559,10 @@ public class FileHandler {
 
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	public void setOutputType(String outputType) {
+		this.outputType = outputType;
 	}
 
 	/**
