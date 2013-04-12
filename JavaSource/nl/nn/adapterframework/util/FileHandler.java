@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,6 +74,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setSkipBOM(boolean) skipBOM}</td><td>when set to <code>true</code>, a possible Bytes Order Mark (BOM) at the start of the file is skipped (only used for the action read and encoding UFT-8)</td><td>false</td></tr>
  * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>(only used when actions=delete) when set to <code>true</code>, the directory from which a file is deleted is also deleted when it contains no other files</td><td>false</td></tr>
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code> or <code>bytes</code></td><td>"string"</td></tr>
+ * <tr><td>{@link #setFileSource(String) fileSource}</td><td>(action=read) either <code>filesystem</code> or <code>classpath</code></td><td>"filesystem"</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -95,6 +97,7 @@ public class FileHandler {
 	
 	protected String charset = System.getProperty("file.encoding");
 	protected String outputType = "string";
+	protected String fileSource = "filesystem";
 	protected String actions;
 	protected String directory;
 	protected String writeSuffix;
@@ -333,6 +336,9 @@ public class FileHandler {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
 				}
 			}
+			if (!fileSource.equalsIgnoreCase("filesystem") && !fileSource.equalsIgnoreCase("classpath")) {
+				throw new ConfigurationException(getLogPrefix(null)+"illegal value for fileSource ["+outputType+"], must be 'filesystem' or 'classpath'");
+			}
 		}
 		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
 			File file;
@@ -342,11 +348,16 @@ public class FileHandler {
 			if (StringUtils.isEmpty(name)) {
 				name = new String(in);
 			}
-															
-			if (StringUtils.isNotEmpty(getDirectory())) {
-				file = new File(getDirectory(), name);
+			
+			if (fileSource.equals("classpath")) {
+				URL resource = ClassUtils.getResourceURL(this, name);
+				file = new File(resource.getFile());
 			} else {
-				file = new File(name);
+				if (StringUtils.isNotEmpty(getDirectory())) {
+					file = new File(getDirectory(), name);
+				} else {
+					file = new File(name);
+				}
 			}
 			FileInputStream fis = new FileInputStream(file);
 			
@@ -563,6 +574,10 @@ public class FileHandler {
 
 	public void setOutputType(String outputType) {
 		this.outputType = outputType;
+	}
+
+	public void setFileSource(String fileSource) {
+		this.fileSource = fileSource;
 	}
 
 	/**

@@ -74,6 +74,10 @@ public class FilePipe extends FixedForwardPipe {
 		fileHandler.setActions(actions);
 	}
 
+	public void setFileSource(String fileSource) {
+		fileHandler.setFileSource(fileSource);
+	}
+
 	public void setDirectory(String directory) {
 		fileHandler.setDirectory(directory);
 	}
