@@ -1,0 +1,35 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>nl.nn</groupId>
+  <artifactId>maven-parent</artifactId>
+  <packaging>pom</packaging>
+  <version>5-SNAPSHOT</version>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <modules>
+    <module>adapterframework</module>
+  </modules>
+
+  <dependencies>
+
+  </dependencies>
+  <build>
+    <defaultGoal>install</defaultGoal>
+  </build>
+  <repositories>
+    <repository>
+      <id>Java.Net</id>
+      <url>http://download.java.net/maven/2</url>
+    </repository>
+    <repository>
+      <id>ibiblio</id>
+      <url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
+    </repository>
+  </repositories>
+</project>
