@@ -1,0 +1,93 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>nl.nn</groupId>
+    <artifactId>maven-parent</artifactId>
+    <version>5-SNAPSHOT</version>
+  </parent>
+  <artifactId>adapterframework-sap</artifactId>
+  <name>The Ibis adapter framework, Sap stuff</name>
+
+  <packaging>jar</packaging>
+
+  <properties>
+    <ibis.dependencies>${basedir}/lib</ibis.dependencies>
+ </properties>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>nl.nn</groupId>
+      <artifactId>adapterframework</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.sap</groupId>
+      <artifactId>jco3</artifactId>
+      <version>3</version>
+      <systemPath>${ibis.dependencies}/sapjco3.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.sap</groupId>
+      <artifactId>idoc3</artifactId>
+      <version>3</version>
+      <systemPath>${ibis.dependencies}/sapidoc3.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.sap</groupId>
+      <artifactId>mw</artifactId>
+      <version>3</version>
+      <systemPath>${ibis.dependencies}/sap-mw3.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.sap</groupId>
+      <artifactId>jco2</artifactId>
+      <version>2.0</version>
+      <systemPath>${ibis.dependencies}/sapjco.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.sap</groupId>
+      <artifactId>idoc1</artifactId>
+      <version>1.0.1</version>
+      <systemPath>${ibis.dependencies}/sapidoc-1.0.1.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.sap</groupId>
+      <artifactId>idoc-jco</artifactId>
+      <version>1.0.2</version>
+      <systemPath>${ibis.dependencies}/sapidocjco-1.0.2.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+    </dependency>
+  </dependencies>
+  <build>
+    <defaultGoal>install</defaultGoal>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
