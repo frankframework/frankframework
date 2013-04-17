@@ -15,28 +15,24 @@
 */
 package nl.nn.adapterframework.util;
 
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
-import org.apache.log4j.Logger;
-import nl.nn.adapterframework.util.LogUtil;
-
-//do not use these imports, they make inclusion of mett-server.jar required
-//import com.ing.coins.mett.application.MonitorAccessor;
-//import com.ing.coins.mett.application.exceptions.MonitorStartFailedException;
+import java.lang.reflect.InvocationTargetException;
 
 
 /**
  * Single point of entry for METT tracing utility
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.4.5
  * @version $Id$
  */
 public class TracingUtil {
 	private static Logger log = LogUtil.getLogger(TracingUtil.class);
-	private static String properties = "<mett-server>\n\t<start-on-boot>true</start-on-boot>\n\t<sleep-time-thread>50</sleep-time-thread>\n\t<log-events>true</log-events>\n\t<listener-pumps>\n\t\t<listener-pump>\n\t\t\t<className>com.ing.coins.mett.application.SocketPump</className>\n\t\t\t<unique-id>1</unique-id>\n\t\t\t<enabled>true</enabled>\n\t\t\t<attributes>\n\t\t\t\t<attribute>\n\t\t\t\t\t<name>port</name>\n\t\t\t\t\t<value>55555</value>\n\t\t\t\t</attribute>\n\t\t\t</attributes>\n\t\t</listener-pump>\n\t\t<listener-pump>\n\t\t\t<className>com.ing.coins.mett.application.FilePump</className>\n\t\t\t<unique-id>2</unique-id>\n\t\t\t<enabled>true</enabled>\n\t\t\t<attributes>\n\t\t\t\t<attribute>\n\t\t\t\t\t<name>loggerCategory</name>\n\t\t\t\t\t<value>MettLogger</value>\n\t\t\t\t</attribute>\n\t\t\t\t<attribute>\n\t\t\t\t\t<name>closeLogManagerOnDeregister</name>\n\t\t\t\t\t<value>false</value>\n\t\t\t\t</attribute>\n\t\t\t</attributes>\n\t\t</listener-pump>\n\t</listener-pumps>\n</mett-server>";	
+	private static String properties = "<mett-server>\n\t<start-on-boot>true</start-on-boot>\n\t<sleep-time-thread>50</sleep-time-thread>\n\t<log-events>true</log-events>\n\t<listener-pumps>\n\t\t<listener-pump>\n\t\t\t<className>com.ing.coins.mett.application.SocketPump</className>\n\t\t\t<unique-id>1</unique-id>\n\t\t\t<enabled>true</enabled>\n\t\t\t<attributes>\n\t\t\t\t<attribute>\n\t\t\t\t\t<name>port</name>\n\t\t\t\t\t<value>55555</value>\n\t\t\t\t</attribute>\n\t\t\t</attributes>\n\t\t</listener-pump>\n\t\t<listener-pump>\n\t\t\t<className>com.ing.coins.mett.application.FilePump</className>\n\t\t\t<unique-id>2</unique-id>\n\t\t\t<enabled>true</enabled>\n\t\t\t<attributes>\n\t\t\t\t<attribute>\n\t\t\t\t\t<name>loggerCategory</name>\n\t\t\t\t\t<value>MettLogger</value>\n\t\t\t\t</attribute>\n\t\t\t\t<attribute>\n\t\t\t\t\t<name>closeLogManagerOnDeregister</name>\n\t\t\t\t\t<value>false</value>\n\t\t\t\t</attribute>\n\t\t\t</attributes>\n\t\t</listener-pump>\n\t</listener-pumps>\n</mett-server>";
 	private static File file = null;
 	private static boolean isStarted = false;
 
@@ -46,7 +42,7 @@ public class TracingUtil {
 		}
 		try {
 			// do not move package name to imports, that makes inclusion of mett-server.jar required
-			com.ing.coins.mett.application.MonitorAccessor.start(serverConfigFile);
+			Class.forName("com.ing.coins.mett.application.MonitorAccessor").getMethod("start", String.class).invoke(null, serverConfigFile);
 		} catch (Throwable t) {
 			throw new TracingException("Could not start tracing from config file ["+serverConfigFile+"]", t);
 		}
@@ -69,17 +65,17 @@ public class TracingUtil {
 		startTracing(file.getPath());
 	}
 
-	public static void stopTracing() throws TracingException {
+	public static void stopTracing() throws TracingException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 		if (!isStarted) {
 			throw new TracingException("Monitor is already stopped");
 		}
-		com.ing.coins.mett.application.MonitorAccessor.stop();
+		Class.forName("com.ing.coins.mett.application.MonitorAccessor").getMethod("stop").invoke(null);
 		isStarted = false;
 		if (file != null) {
 			file.delete();
 		}
 	}
-	
+
 	public static void beforeEvent(Object o) {
 		if (o instanceof TracingEventNumbers) {
 			eventOccurred(((TracingEventNumbers)o).getBeforeEvent());
@@ -98,7 +94,7 @@ public class TracingUtil {
 		}
 	}
 
-	
+
 	protected static void eventOccurred(int eventNr) {
 		if (eventNr>=0) {
 			postEventToMett(eventNr);
@@ -107,8 +103,7 @@ public class TracingUtil {
 
 	private static void postEventToMett(int eventNr) {
 		try {
-			// do not move package name to imports, that makes inclusion of mett-server.jar required
-			com.ing.coins.mett.application.MonitorAccessor.eventOccurred(eventNr);
+			Class.forName("com.ing.coins.mett.application.MonitorAccessor").getMethod("eventOccurred", Integer.TYPE).invoke(null, eventNr);
 		} catch (Throwable t) {
 			log.warn("Exception occured posting METT event",t);
 		}
