@@ -1,0 +1,108 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>nl.nn</groupId>
+    <artifactId>maven-parent</artifactId>
+    <version>5-SNAPSHOT</version>
+  </parent>
+  <artifactId>adapterframework-ifsa</artifactId>
+  <name>The Ibis adapter framework</name>
+
+  <packaging>jar</packaging>
+
+
+  <properties>
+    <ibis.dependencies>${basedir}/lib</ibis.dependencies>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>nl.nn</groupId>
+      <artifactId>adapterframework</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ing.ifsa</groupId>
+      <artifactId>IFSACommon</artifactId>
+      <version>0</version>
+      <systemPath>${ibis.dependencies}/IFSACommon.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ing.ifsa</groupId>
+      <artifactId>IFSARequestorEJB</artifactId>
+      <version>0</version>
+      <systemPath>${ibis.dependencies}/IFSARequestorEJB.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ing.ifsa</groupId>
+      <artifactId>jmsXA</artifactId>
+      <version>22.10.055(beta)</version>
+      <systemPath>${ibis.dependencies}/ifsajmsXA-22.10.055(beta).jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ing.ifsa</groupId>
+      <artifactId>jcil</artifactId>
+      <version>2.2</version>
+      <systemPath>${ibis.dependencies}/ifsajcil.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ing.ifsa</groupId>
+      <artifactId>j2ee</artifactId>
+      <version>0</version>
+      <systemPath>${ibis.dependencies}/ifsaj2ee.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.ing.mettserver</groupId>
+      <artifactId>mettserver</artifactId>
+      <version>0</version>
+      <systemPath>${ibis.dependencies}/mett-server.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+    </dependency>
+  </dependencies>
+  <build>
+    <defaultGoal>install</defaultGoal>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+   </plugins>
+  </build>
+  <repositories>
+    <repository>
+      <id>Java.Net</id>
+      <url>http://download.java.net/maven/2</url>
+    </repository>
+    <repository>
+      <id>ibiblio</id>
+      <url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
+    </repository>
+  </repositories>
+</project>
