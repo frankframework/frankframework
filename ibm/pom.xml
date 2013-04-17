@@ -1,0 +1,61 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>nl.nn</groupId>
+    <artifactId>maven-parent</artifactId>
+    <version>5-SNAPSHOT</version>
+  </parent>
+  <artifactId>adapterframework-ibm</artifactId>
+
+  <properties>
+    <ibis.dependencies>${basedir}/lib</ibis.dependencies>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>nl.nn</groupId>
+      <artifactId>adapterframework</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ibm.websphere</groupId>
+      <artifactId>admin</artifactId>
+      <version>0</version>
+      <systemPath>${ibis.dependencies}/admin.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ibm.websphere</groupId>
+      <artifactId>sas</artifactId>
+      <version>0</version>
+      <systemPath>${ibis.dependencies}/sas.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.ibm.websphere</groupId>
+      <artifactId>wssec</artifactId>
+      <version>0</version>
+      <systemPath>${ibis.dependencies}/wssec.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.imb.mq</groupId>
+      <artifactId>jms</artifactId>
+      <version>1.0.2b</version>
+      <systemPath>${ibis.dependencies}/com.ibm.mqjms.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jms_1.1_spec</artifactId>
+    </dependency>
+  </dependencies>
+</project>
