@@ -35,7 +35,7 @@ import org.apache.commons.lang.StringUtils;
  * 
  * @author  Gerrit van Brakel
  * @since   4.3
- * @version $Id: JmsQueueBrowserIterator.java,v 1.6 2011/11/30 13:51:51 europe\m168309 Exp $
+ * @version $Id$
  */
 public class JmsQueueBrowserIterator implements IMessageBrowsingIterator {
 
