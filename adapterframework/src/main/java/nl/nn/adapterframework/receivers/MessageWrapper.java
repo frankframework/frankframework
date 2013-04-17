@@ -15,18 +15,17 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IMessageWrapper;
+import nl.nn.adapterframework.core.ListenerException;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IMessageWrapper;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.extensions.ifsa.jms.PushingIfsaProviderListener;
-
 /**
  * Wrapper for messages that are not serializable.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.3
  * @version $Id$
@@ -34,18 +33,18 @@ import nl.nn.adapterframework.extensions.ifsa.jms.PushingIfsaProviderListener;
 public class MessageWrapper implements Serializable, IMessageWrapper {
 
 	static final long serialVersionUID = -8251009650246241025L;
-	
+
 	private Map context = new HashMap();
-	private String text; 
-	private String id; 
-	
+	private String text;
+	private String id;
+
 	public MessageWrapper()  {
 		super();
 	}
 	public MessageWrapper(Object message, IListener listener) throws ListenerException  {
 		this();
 		text = listener.getStringFromRawMessage(message, context);
-		Object rm = context.remove(PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
+		Object rm = context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 		id = listener.getIdFromRawMessage(message, context);
 	}
 
