@@ -24,7 +24,7 @@ import nl.nn.adapterframework.util.FileHandler;
 
 /**
  * <p>See {@link FileHandler}</p>
- * 
+ *
  * @author Jaco de Groot
  */
 public class FileSender extends FileHandler implements ISenderWithParameters {
@@ -34,15 +34,15 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 			ParameterResolutionContext prc) throws SenderException,
 			TimeOutException {
 		try {
-			return handle(message, prc.getSession());
+			return "" + handle(message, prc.getSession());
 		} catch(Exception e) {
-			throw new SenderException(e); 
+			throw new SenderException(e);
 		}
 	}
 
 	public String sendMessage(String correlationID, String message)
 			throws SenderException, TimeOutException {
-		throw new SenderException("FileSender cannot be used without a session"); 
+		throw new SenderException("FileSender cannot be used without a session");
 	}
 
 	public void setName(String name) {
