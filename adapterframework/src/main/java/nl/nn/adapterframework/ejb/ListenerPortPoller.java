@@ -15,7 +15,7 @@
 */
 /*
  * ListenerPortPoller.java
- *  
+ *
  * $Log: ListenerPortPoller.java,v $
  * Revision 1.4  2011-11-30 13:51:57  europe\m168309
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
@@ -49,16 +49,13 @@
  *
  *
  * Created on 24-okt-2007, 13:33:28
- * 
+ *
  */
 
 package nl.nn.adapterframework.ejb;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.GenericReceiver;
@@ -67,44 +64,50 @@ import nl.nn.adapterframework.util.RunStateEnum;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 
+import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * The ListenerPortPoller checks for all registered EjbListenerPortConnector
  * instances if the associated listener-port is still open while the
  * listener is also open, and opens / closes the listeners / receivers
  * accordingly.
- * 
+ *
  * Instances to be polled are kept are weak references so that registration
  * here does not prevent objects from being garbage-collected. When a weak
  * reference goes <code>null</code> it is automatically unregistered.
- * 
+ *
  * @author Tim van der Leeuw
  * @version $Id$
  */
 public class ListenerPortPoller implements DisposableBean {
 	private Logger log = LogUtil.getLogger(this);
-    
+
 	private List portConnectorList = new ArrayList();
 
 	public ListenerPortPoller() {
 		log.debug("Created new ListenerPortPoller: " + this.toString());
 	}
-    
-    
+
+
 	/**
 	 * Add an EjbListenerPortConnector instance to be polled.
-	 * 
+	 *
 	 * Only add instances if they are not already registered.
 	 */
-	public void registerEjbListenerPortConnector(EjbListenerPortConnector ejc) {
+	public void registerEjbListenerPortConnector(IListenerConnector ejc) {
 		if (!isRegistered(ejc)) {
 			portConnectorList.add(new WeakReference(ejc));
 		}
 	}
-    
+
 	/**
 	 * Remove an EjbListenerPortConnector instance from the list to be polled.
 	 */
-	public void unregisterEjbListenerPortConnector(EjbListenerPortConnector ejc) {
+	public void unregisterEjbListenerPortConnector(IListenerConnector ejc) {
 		for (Iterator iter = portConnectorList.iterator(); iter.hasNext();) {
 			WeakReference wr = (WeakReference)iter.next();
 			Object referent = wr.get();
@@ -113,8 +116,8 @@ public class ListenerPortPoller implements DisposableBean {
 			}
 		}
 	}
-    
-	public boolean isRegistered(EjbListenerPortConnector ejc) {
+
+	public boolean isRegistered(IListenerConnector ejc) {
 		for (Iterator iter = portConnectorList.iterator(); iter.hasNext();) {
 			WeakReference wr = (WeakReference)iter.next();
 			Object referent = wr.get();
@@ -137,25 +140,25 @@ public class ListenerPortPoller implements DisposableBean {
 	 * are in the same state as their associated listener-ports, and
 	 * toggle their state if not.
 	 */
-	public void poll() {
+	public void poll() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 //		  if (log.isDebugEnabled()) {
 //			  log.debug("Enter polling " + this.toString() + ", thread: " + Thread.currentThread().getName());
 //		  }
 		for (Iterator iter = portConnectorList.iterator(); iter.hasNext();) {
 			WeakReference wr = (WeakReference)iter.next();
-			EjbListenerPortConnector elpc = (EjbListenerPortConnector) wr.get();
+			IListenerConnector elpc = (IListenerConnector) wr.get();
 			if (elpc == null) {
 				iter.remove();
 				continue;
 			}
 			// Check for each ListenerPort if it's state matches with the
 			// state that IBIS thinks it should be in.
-			IPortConnectedListener listener = elpc.getListener();
+			IPortConnectedListener listener = getListener(elpc);
 			try {
-				if (elpc.isClosed() != elpc.isListenerPortClosed()) {
+				if (isClosed(elpc) != isListenerPortClosed(elpc)) {
 					log.info("State of listener [" + listener.getName()
 							+ "] does not match state of WebSphere ListenerPort ["
-							+ elpc.getListenerPortName(listener)
+							//+ elpc.getListenerPortName(listener)
 							+ "] to which it is attached; will try to change state of Receiver ["
 							+ listener.getReceiver().getName() +"]");
 					toggleConfiguratorState(elpc);
@@ -171,27 +174,39 @@ public class ListenerPortPoller implements DisposableBean {
 //		  }
 	}
 
+	private IPortConnectedListener getListener(IListenerConnector elpc) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+		return (IPortConnectedListener) elpc.getClass().getMethod("getListener").invoke(elpc);
+	}
+
+	private boolean isClosed(IListenerConnector elpc) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+		return (Boolean) elpc.getClass().getMethod("isClosed").invoke(elpc);
+	}
+
+	private boolean isListenerPortClosed(IListenerConnector elpc) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+		return (Boolean) elpc.getClass().getMethod("isListenerPortClosed").invoke(elpc);
+	}
+
 	/**
 	 * Toggle the state of the EjbListenerPortConnector instance by starting/stopping
 	 * the receiver it is attached to (via the JmsListener).
 	 * This method changes the state of the Receiver to match the state of the
 	 * WebSphere ListenerPort.
-	 * 
+	 *
 	 * @param elpc ListenerPortConnector for which state is to be changed.
-	 * 
+	 *
 	 * @throws nl.nn.adapterframework.configuration.ConfigurationException
 	 */
-	public void toggleConfiguratorState(EjbListenerPortConnector elpc) throws ConfigurationException {
-		GenericReceiver receiver = (GenericReceiver) elpc.getListener().getReceiver();
-		if (elpc.isListenerPortClosed()) {
+	public void toggleConfiguratorState(IListenerConnector elpc) throws ConfigurationException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+		GenericReceiver receiver = (GenericReceiver) getListener(elpc).getReceiver();
+		if (isListenerPortClosed(elpc)) {
 			if (receiver.isInRunState(RunStateEnum.STARTED)) {
 				log.info("Stopping Receiver [" + receiver.getName() + "] because the WebSphere Listener-Port is in state 'stopped' but the JmsConnector in state 'open' and the receiver is in state 'started'");
 				receiver.stopRunning();
 			} else {
-				log.info("ListenerPort [" + elpc.getListenerPortName(elpc.getListener())
-						+ "] is in closed state, Listener is not in closed state, but Receiver is in state ["
+				log.info("ListenerPort [" + //elpc.getListenerPortName(getListener(elpc))
+						"] is in closed state, Listener is not in closed state, but Receiver is in state ["
 						+ receiver.getRunState().getName() + "] so the state of Receiver will not be changed.");
-                
+
 			}
 		} else {
 			// Only start the receiver for adapters which are running.
@@ -215,9 +230,9 @@ public class ListenerPortPoller implements DisposableBean {
 
 	/**
 	 * Callback method from the Spring Bean Factory to allow destruction on shutdown.
-	 * 
+	 *
 	 * This method ensures that all registered listener are cleared.
-	 * 
+	 *
 	 * @throws java.lang.Exception
 	 */
 	public void destroy() throws Exception {
