@@ -49,16 +49,16 @@ abstract public class AbstractListenerConnectingEJB extends AbstractEJBBase {
 		this.containerManagedTransactions = retrieveTransactionType();
 		log.info("onEjbCreate: Connected to Listener [" + listener.getName() + "]");
 	}
-    
+
 	/**
 	 * Common code to be executed when an EJB is created which is derived
 	 * from this abstract class.
 	 */
 	protected void onEjbRemove() {
 		listenerPortPoller.unregisterEjbListenerPortConnector(
-				(EjbListenerPortConnector)listener.getListenerPortConnector());
+				listener.getListenerPortConnector());
 	}
-    
+
 	protected boolean retrieveTransactionType() {
 		try {
 			Boolean txType = (Boolean) getContextVariable("containerTransactions");
