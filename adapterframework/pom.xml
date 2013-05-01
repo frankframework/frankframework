@@ -4,14 +4,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>nl.nn</groupId>
-    <artifactId>maven-parent</artifactId>
+    <groupId>org.ibissource</groupId>
+    <artifactId>ibis-parent</artifactId>
     <version>5-SNAPSHOT</version>
   </parent>
-  <artifactId>adapterframework</artifactId>
+  <artifactId>ibis-adapterframework</artifactId>
   <name>The Ibis adapter framework</name>
-
-  <packaging>war</packaging>
 
 
   <properties>
@@ -69,7 +67,6 @@
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-      <version>2.6</version>
     </dependency>
 
 
@@ -215,7 +212,6 @@
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
-      <version>1.2.16</version>
     </dependency>
 
     <dependency>
