@@ -272,6 +272,7 @@
     -->
 
     <!-- TODO: should be dropped -->
+    <!--
     <dependency>
       <groupId>com.imb.mq</groupId>
       <artifactId>jms</artifactId>
@@ -279,6 +280,7 @@
       <systemPath>${ibis.dependencies}/com.ibm.mqjms.jar</systemPath>
       <scope>system</scope>
     </dependency>
+    -->
 
 
    <!-- Test scoped dependencies -->
@@ -374,22 +376,4 @@
       -->
     </plugins>
   </build>
-  <repositories>
-    <repository>
-      <id>Java.Net</id>
-      <url>http://download.java.net/maven/2</url>
-    </repository>
-    <repository>
-      <id>ibiblio</id>
-      <url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
-    </repository>
-    <repository>
-      <id>ibis</id>
-      <url>https://github.com/ibissource/mvn-repo/raw/master/releases</url>
-    </repository>
-    <repository>
-      <id>ibis-snapshots</id>
-      <url>https://github.com/ibissource/mvn-repo/raw/master/snapshots</url>
-    </repository>
-  </repositories>
 </project>
