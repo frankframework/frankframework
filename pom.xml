@@ -67,6 +67,16 @@
       <id>ibiblio</id>
       <url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
     </repository>
+    <repository>
+      <id>ibis</id>
+      <url>https://github.com/ibissource/mvn-repo/raw/master/releases</url>
+    </repository>
+    <repository>
+      <id>ibis-snapshots</id>
+      <url>https://github.com/ibissource/mvn-repo/raw/master/snapshots</url>
+    </repository>
+  </repositories>
+
   </repositories>
   <distributionManagement>
     <repository>
