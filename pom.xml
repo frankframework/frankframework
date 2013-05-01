@@ -77,7 +77,6 @@
     </repository>
   </repositories>
 
-  </repositories>
   <distributionManagement>
     <repository>
       <id>repo</id>
