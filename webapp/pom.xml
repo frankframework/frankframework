@@ -9,7 +9,7 @@
     <version>5-SNAPSHOT</version>
   </parent>
   <artifactId>ibis-webapp</artifactId>
-  <name>The Ibis adapter web application</name>
+  <name>The Ibis AdapterFramework web application</name>
   <packaging>war</packaging>
 
   <properties>

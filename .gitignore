@@ -3,3 +3,7 @@ lib
 .idea
 *.iml
 target
+.idea
+.project
+.classpath
+.settings
