@@ -4,11 +4,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>nl.nn</groupId>
-    <artifactId>maven-parent</artifactId>
+    <groupId>org.ibissource</groupId>
+    <artifactId>ibis-parent</artifactId>
     <version>5-SNAPSHOT</version>
   </parent>
-  <artifactId>adapterframework-ibm</artifactId>
+  <artifactId>ibis-adapterframework-ibm</artifactId>
 
   <properties>
     <ibis.dependencies>${basedir}/lib</ibis.dependencies>
@@ -16,8 +16,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>nl.nn</groupId>
-      <artifactId>adapterframework</artifactId>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-adapterframework</artifactId>
     </dependency>
 
     <dependency>
@@ -53,9 +53,11 @@
       <systemPath>${ibis.dependencies}/com.ibm.mqjms.jar</systemPath>
       <scope>system</scope>
     </dependency>
+    <!--
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-jms_1.1_spec</artifactId>
     </dependency>
+    -->
   </dependencies>
 </project>
