@@ -109,8 +109,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	protected void init() throws ConfigurationException {
 		if (needsInit) {
 			super.init();
-			String schemasId = null;
-			schemasId = schemasProvider.getSchemasId();
+            if (schemasProvider == null) throw new IllegalStateException("No schema provider");
+			String schemasId = schemasProvider.getSchemasId();
 			if (schemasId != null) {
 				preparse(schemasId, schemasProvider.getSchemas());
 			}
@@ -193,8 +193,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	 * @param session a {@link nl.nn.adapterframework.core.PipeLineSession Pipelinesession}
 	 * @return MonitorEvent declared in{@link AbstractXmlValidator}
 	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
-	 * @throws PipeRunException 
-	 * @throws ConfigurationException 
+	 * @throws PipeRunException
+	 * @throws ConfigurationException
 	 */
 	@Override
 	public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException {
