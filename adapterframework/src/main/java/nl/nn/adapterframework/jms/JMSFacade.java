@@ -15,20 +15,44 @@
 */
 package nl.nn.adapterframework.jms;
 
+import java.io.IOException;
+import java.util.Map;
+
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
+import javax.naming.NamingException;
+import javax.xml.transform.TransformerException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.*;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IXAEnabled;
+import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DomBuilderException;
+
 import org.apache.commons.lang.StringUtils;
 
-import javax.jms.*;
-import javax.naming.NamingException;
-import javax.xml.transform.TransformerException;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
+import com.ibm.mq.jms.JMSC;
+import com.ibm.mq.jms.MQQueue;
 
 
 /**
@@ -69,8 +93,8 @@ import java.util.Map;
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
 
-	public static final String MODE_PERSISTENT     = "PERSISTENT";
-	public static final String MODE_NON_PERSISTENT = "NON_PERSISTENT";
+	public static final String MODE_PERSISTENT="PERSISTENT";
+	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
 
 	private String name;
 
@@ -311,31 +335,17 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 */
  	private void enforceMQCompliancy(Destination destination) throws JMSException {
  		if (forceTargetClientMQ) {
-             setTargetClient(destination, 1 /*JMSC.MQJMS_CLIENT_NONJMS_MQ*/);
-             if (log.isDebugEnabled()) log.debug("["+name+"] MQ Compliancy for queue ["+destination.toString()+"] set to NONJMS");
+			((MQQueue)destination).setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ);
+			if (log.isDebugEnabled()) log.debug("["+name+"] MQ Compliancy for queue ["+destination.toString()+"] set to NONJMS");
  		} else {
-             if (forceTargetClientJMS) {
-                 setTargetClient(destination, 0 /*JMSC.MQJMS_CLIENT_JMS_COMPLIANT*/);
-                 if (log.isDebugEnabled()) log.debug("MQ Compliancy for queue ["+destination.toString()+"] set to JMS");
+			if (forceTargetClientJMS) {
+				((MQQueue)destination).setTargetClient(JMSC.MQJMS_CLIENT_JMS_COMPLIANT);
+				if (log.isDebugEnabled()) log.debug("MQ Compliancy for queue ["+destination.toString()+"] set to JMS");
 			}
  		}
     }
 
-    private void setTargetClient(Destination destination, int integer) {
-        try {
-            Method method = destination.getClass().getMethod("setTargetClient", Integer.class);
-            method.invoke(destination, integer);
-        } catch (NoSuchMethodException e) {
-            log.error(e.getMessage() + " You need to have ibm mq");
-        } catch (InvocationTargetException e) {
-            log.error(e.getMessage(), e);
-        } catch (IllegalAccessException e) {
-            log.error(e.getMessage(), e);
-        }
-
-
-    }
-    public Destination getDestination() throws NamingException, JMSException, JmsException  {
+    	public Destination getDestination() throws NamingException, JMSException, JmsException  {
 
 	    if (destination == null) {
 	    	String destinationName = getDestinationName();

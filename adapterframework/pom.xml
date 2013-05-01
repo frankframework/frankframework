@@ -271,16 +271,12 @@
     </dependency>
     -->
 
-    <!-- TODO: should be dropped -->
-    <!--
     <dependency>
-      <groupId>com.imb.mq</groupId>
-      <artifactId>jms</artifactId>
-      <version>1.0.2b</version>
-      <systemPath>${ibis.dependencies}/com.ibm.mqjms.jar</systemPath>
-      <scope>system</scope>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-webspheremq</artifactId>
+      <version>1.0</version>
+      <scope>compile</scope>
     </dependency>
-    -->
 
 
    <!-- Test scoped dependencies -->
