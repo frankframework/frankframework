@@ -271,6 +271,7 @@
     </dependency>
     -->
 
+<<<<<<< HEAD
     <!-- TODO: should be dropped -->
     <!--
     <dependency>
@@ -281,6 +282,14 @@
       <scope>system</scope>
     </dependency>
     -->
+=======
+    <dependency>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-webspheremq</artifactId>
+      <version>1.0</version>
+      <scope>compile</scope>
+    </dependency>
+>>>>>>> 7a899f9641b0242d87b6a61c45c7c665856a21d9
 
 
    <!-- Test scoped dependencies -->
