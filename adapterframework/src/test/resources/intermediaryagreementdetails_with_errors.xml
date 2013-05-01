@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<A xmlns="http://www.ing.com/testxmlns" xmlns:b="http://xmlns/b">
+  <!-- this XML is invalid according to/Users/michiel/ibis/Ibis/src/test/resources/GetIntermediaryAgreementDetails/xsd/A.xsd -->
+  <b:B/>
+  <b:B/>
+  <b:B/> <!-- one too much -->
+</A>

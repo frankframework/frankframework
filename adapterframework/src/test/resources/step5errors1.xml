@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Body>
+    <MessageHeader xmlns="http://www.ing.com/CSP/XSD/General/Message_2">
+      <From>
+        <Id>Ibis4Toegang</Id>
+      </From>
+      <HeaderFields>
+        <ConversationId/>
+        <MessageId>WPNLD8921975_0a4ac029-7747a1ed_12da7d4b033_-7ff3</MessageId>
+        <ExternalRefToMessageId/>
+        <Timestamp>2001-12-17T09:30:47</Timestamp>
+      </HeaderFields>
+    </MessageHeader>
+    <Request xmlns="http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01">
+      <BankSparen xmlns="http://www.ing.com/BESTAATNIET">
+        <PRD>
+          <KLT>
+            <KLT_NA_RELNUM>181373377001</KLT_NA_RELNUM>
+          </KLT>
+        </PRD>
+      </BankSparen>
+    </Request>
+  </Body>
+</Envelope>

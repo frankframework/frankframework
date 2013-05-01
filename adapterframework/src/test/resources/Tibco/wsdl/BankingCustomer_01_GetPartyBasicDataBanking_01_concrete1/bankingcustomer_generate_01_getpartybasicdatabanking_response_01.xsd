@@ -1,0 +1,49 @@
+<xs:schema xmlns="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01" xmlns:afd="http://ing.nn.afd/AFDTypes" xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" id="LifeRetailDomain" targetNamespace="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01" version="1.0d" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:ns0="http://www.ing.com/CSP/XSD/General/Message_2" xmlns:ns1="http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01" xmlns:ns2="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01" xmlns:ns3="http://ing.nn.afd/AFDTypes" xmlns:ns4="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.ing.com/nl/banking/coe/wsdl/bankingcustomer_generate_01/getpartybasicdatabanking_01_concrete" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+            <xs:import namespace="http://ing.nn.afd/AFDTypes"/>
+            <xs:complexType name="KLTType">
+                <xs:sequence>
+                    <xs:element name="KLT_NA_RELNUM" type="afd:AN..20"/>
+                    <xs:element name="KLT_NA_VOORL" type="afd:AN..12"/>
+                    <xs:element minOccurs="0" name="KLT_NA_VOORV" type="afd:AN..30"/>
+                    <xs:element name="KLT_NA_ANAAM" type="afd:AN..49"/>
+                    <xs:element name="KLT_NA_STRAAT" type="afd:AN..60"/>
+                    <xs:element name="KLT_NA_HUISNR" type="afd:AN..10"/>
+                    <xs:element minOccurs="0" name="KLT_NA_TOEVOEG" type="afd:AN..10"/>
+                    <xs:element name="KLT_NA_PCODE" type="afd:AN..10"/>
+                    <xs:element name="KLT_NA_PLAATS" type="afd:AN..25"/>
+                    <xs:element name="KLT_NA_LAND" type="afd:AN..2"/>
+                    <xs:element name="KLT_NA_GESLACH" type="afd:AN1"/>
+                    <xs:element name="KLT_NA_EMAIL" type="afd:AN..70"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="PRDType">
+                <xs:sequence>
+                    <xs:element name="KLT" type="ns2:KLTType">
+                        <xs:annotation>
+                            <xs:documentation>Client</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="RESType">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="RES_NA_RTNCD" type="afd:AN..7"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="BankSparen">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="PRD" type="ns2:PRDType">
+                            <xs:annotation>
+                                <xs:documentation>Product</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="RES" type="ns2:RESType">
+                            <xs:annotation>
+                                <xs:documentation>Result</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:schema>

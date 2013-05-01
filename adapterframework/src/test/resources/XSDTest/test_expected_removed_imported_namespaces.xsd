@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+    targetNamespace="http://test"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:pim="http://test"
+    elementFormDefault="qualified" >
+    <xsd:import namespace="http://www.ing.com/pim/imported"/>
+    <xsd:import namespace="http://www.ing.com/pim/imported2" />
+    <xsd:element name="a">
+    </xsd:element>
+    <xsd:element name="b">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="pim2:d"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <pim:hoi a="b" />
+</xsd:schema>

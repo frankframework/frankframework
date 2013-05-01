@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2007 rel. 3 (http://www.altova.com) by HP SLMS Purchasing (ING Bank/OPs & IT) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="CalculationRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="SystemCode" type="UDTText8"/>
+				<xs:element name="CalculationData">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="BEREKENING">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="BER_VERZ_CD" type="xs:string"/>
+										<xs:element name="AR_AD" type="xs:string"/>
+										<xs:element name="AR_VERZ_BDR" type="xs:string"/>
+										<xs:element name="AS_1_AD" type="xs:string"/>
+										<xs:element name="AS_2_AD" type="xs:string"/>
+										<xs:element name="BERP_GRP_1_CD" type="xs:string"/>
+										<xs:element name="BERP_GRP_2_CD" type="xs:string"/>
+										<xs:element name="BESCH_KAP" type="xs:string"/>
+										<xs:element name="BESCH_LEV_PROGN_KAP" type="xs:string"/>
+										<xs:element name="BESCH_TRM_PRM" type="xs:string"/>
+										<xs:element name="GEZIN_RNT_PRC" type="xs:string"/>
+										<xs:element name="NORM_BER_DT" type="xs:string"/>
+										<xs:element name="PRM_TRM" type="xs:string"/>
+										<xs:element name="VERHOUD_FAKT" type="xs:string"/>
+										<xs:element name="VERZ_1_GEB_DT" type="xs:string"/>
+										<xs:element name="VERZ_1_GESL_CD" type="xs:string"/>
+										<xs:element name="VERZ_2_GEB_DT" type="xs:string"/>
+										<xs:element name="VERZ_2_GESL_CD" type="xs:string"/>
+										<xs:element name="VERZ_BGIND" type="xs:string"/>
+										<xs:element name="VERZ_EINDD" type="xs:string"/>
+										<xs:element name="VERZR_AD" type="xs:string"/>
+										<xs:element name="WINST_VORM_CD" type="xs:string"/>
+										<xs:element name="VERZ_1_LFT_JR" type="xs:string"/>
+										<xs:element name="VERZ_2_LFT_JR" type="xs:string"/>
+										<xs:element name="ANN_PRC" type="xs:string"/>
+										<xs:element name="PRM_BET_EINDD" type="xs:string"/>
+										<xs:element name="WINST_AD" type="xs:string"/>
+										<xs:element name="BETAL_CD" type="xs:string"/>
+										<xs:element name="FLEX_AD" type="xs:string"/>
+										<xs:element name="CLAUS_VOLL_AD"/>
+										<xs:element name="CLAUS_TRM_PRM" type="xs:string"/>
+										<xs:element name="DOELV_PRC" type="xs:string"/>
+										<xs:element name="VERZ_1_VERH_JR" type="xs:string"/>
+										<xs:element name="VSH_RNT_PRC" type="xs:string"/>
+										<xs:element name="PRM_DEPOT_AD" type="xs:string"/>
+										<xs:element name="HOOG_LAAG_FCT" type="xs:string"/>
+										<xs:element name="HOOG_PRM_DUUR_JR" type="xs:string"/>
+										<xs:element name="MAR_INTR_PRC" type="xs:string"/>
+										<xs:element name="LEN_BDR" type="xs:string"/>
+										<xs:element name="NHG_AD" type="xs:string"/>
+										<xs:element name="DEPOT_BDR" type="xs:string"/>
+										<xs:element name="HOOG_LAAG_SOORT_PRM_CD" type="xs:string"/>
+										<xs:element name="PRM_DEPOT_DUUR_JR" type="xs:string"/>
+										<xs:element name="OPTIE_RECHT_AD" type="xs:string"/>
+										<xs:element name="SOORT_BER_CD" type="xs:string"/>
+										<xs:element name="RIS_1_KAP" type="xs:string"/>
+										<xs:element name="RIS_2_KAP" type="xs:string"/>
+										<xs:element name="BESCH_KPS" type="xs:string"/>
+										<xs:element name="PERSL_AD" type="xs:string"/>
+										<xs:element name="SPLTS_AD" type="xs:string"/>
+										<xs:element name="UITK_DUUR_JR" type="xs:string"/>
+										<xs:element name="RIS_TAR_CD" type="xs:string"/>
+										<xs:element name="VERZ_1_OVERG_PRC" type="xs:string"/>
+										<xs:element name="VERZ_2_OVERG_PRC" type="xs:string"/>
+										<xs:element name="UITK_TRM_CD" type="xs:string"/>
+										<xs:element name="AR_AS_1_KLAS_CD" type="xs:string"/>
+										<xs:element name="AR_AS_1_CLAIM_ELFT_JR" type="xs:string"/>
+										<xs:element name="AR_WACHT_MND" type="xs:string"/>
+										<xs:element name="RNT_TRM" type="xs:string"/>
+										<xs:element name="VERZ_MUTD" type="xs:string"/>
+										<xs:element name="PARTN_GESL_CD" type="xs:string"/>
+										<xs:element name="PARTN_GEB_DT" type="xs:string"/>
+										<xs:element name="UL_FONDS_PRC" maxOccurs="unbounded">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="INDEXWAARDE" type="xs:string"/>
+												</xs:sequence>
+												<xs:attribute name="INDEX" type="xs:string"/>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="UL_TAR_CD" type="xs:string"/>
+										<xs:element name="CLAUS_KPS" type="xs:string"/>
+										<xs:element name="SLOT_UITK_AD" type="xs:string"/>
+										<xs:element name="BAP_TAR_CD" type="xs:string"/>
+										<xs:element name="VERZ_2_VERH_JR" type="xs:string"/>
+										<xs:element name="VALUTA_CD" type="xs:string"/>
+										<xs:element name="FLX_PERIODE" type="xs:string"/>
+										<xs:element name="VSH_TAR_CD" type="xs:string"/>
+										<xs:element name="BESCH_LIJFR" type="xs:string"/>
+										<xs:element name="AR_AS_2_KLAS_CD" type="xs:string"/>
+										<xs:element name="HOOG_PRM_EINDD" type="xs:string"/>
+										<xs:element name="AR_AS_2_CLAIM_ELFT_JR" type="xs:string"/>
+										<xs:element name="PARTN_LFT_JR" type="xs:string"/>
+										<xs:element name="RIS_DEKK_PRC" type="xs:string"/>
+										<xs:element name="GBR_GRP_CD" type="xs:string"/>
+										<xs:element name="RIS_1_EINDD" type="xs:string"/>
+										<xs:element name="RIS_2_EINDD" type="xs:string"/>
+										<xs:element name="JRL_AANV_STORT_AANT" type="xs:string"/>
+										<xs:element name="JRL_AANV_STORT_BDR" type="xs:string"/>
+										<xs:element name="HIST_PROGN_PRC" maxOccurs="unbounded">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="INDEXWAARDE" type="xs:string"/>
+												</xs:sequence>
+												<xs:attribute name="INDEX" type="xs:string"/>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="NHG_PROGN_PRC" maxOccurs="unbounded">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="INDEXWAARDE" type="xs:string"/>
+												</xs:sequence>
+												<xs:attribute name="INDEX" type="xs:string"/>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="REND_INVOER_AD" type="xs:string"/>
+										<xs:element name="VOLL_WRDOVERZ_AD" type="xs:string"/>
+										<xs:element name="VOLL_WRD_OVERZ_AD" type="xs:string"/>
+										<xs:element name="MIN_UITVOER_AD" type="xs:string"/>
+										<xs:element name="HYP_AD" type="xs:string"/>
+										<xs:element name="EIGEN_PROGN_PRC" maxOccurs="unbounded">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="INDEXWAARDE" type="xs:string"/>
+												</xs:sequence>
+												<xs:attribute name="INDEX" type="xs:string"/>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="EIGEN_REND_AD" type="xs:string"/>
+										<xs:element name="SOM_VORIGE_KOOPSOMMEN" type="xs:string"/>
+										<xs:element name="AFSL_PRV_INBW_PRM_PRC" type="xs:string"/>
+										<xs:element name="AFSL_PRV_INBW_KPS_PRC" type="xs:string"/>
+										<xs:element name="DOORL_PRV_INBW_PRC" type="xs:string"/>
+										<xs:element name="UITR_AFSL_PRV_PRC" type="xs:string"/>
+										<xs:element name="VERZ_1_LENGTE" type="xs:string"/>
+										<xs:element name="VERZ_2_LENGTE" type="xs:string"/>
+										<xs:element name="VERZ_1_GEWICHT" type="xs:string"/>
+										<xs:element name="VERZ_2_GEWICHT" type="xs:string"/>
+										<xs:element name="VERZ_1_ROOK_AANT" type="xs:string"/>
+										<xs:element name="VERZ_2_ROOK_AANT" type="xs:string"/>
+										<xs:element name="DIFF_FCT_DT" type="xs:string"/>	
+										<xs:element name="VERZ_1_ROOK_STOP_DT" type="xs:string"/>
+										<xs:element name="VERZ_2_ROOK_STOP_DT" type="xs:string"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="UDTText8">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="8"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

@@ -1,0 +1,16 @@
+<xs:schema xmlns="http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01" xmlns:ns0="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01" xmlns:ns1="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01" xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:ns2="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01" xmlns:ns3="http://ing.nn.afd/AFDTypes" xmlns:ns4="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.ing.com/nl/banking/coe/wsdl/bankingcustomer_generate_01/getpartybasicdatabanking_01_concrete" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+            <xs:import namespace="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01"/>
+            <xs:import namespace="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01"/>
+            <xs:complexType name="RequestType">
+                <xs:sequence>
+                    <xs:element ref="ns0:BankSparen"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="ResponseType">
+                <xs:sequence>
+                    <xs:element ref="ns1:BankSparen"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="Request" type="RequestType"/>
+            <xs:element name="Response" type="ResponseType"/>
+        </xs:schema>
