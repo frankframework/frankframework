@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/ibissource/ibis-servicedispatcher.png?branch=maveninze)](https://travis-ci.org/ibissource/iaf)
+i
+
 Ibis framework
 ==============
 
