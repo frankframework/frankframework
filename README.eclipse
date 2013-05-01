@@ -10,11 +10,11 @@ Then
 1. start a new eclipse workspace
 2. close Welcome, open 'Git Repository Exploring' perspective (with the little plus near the upper right corner)
 3. Clone a  git repository
-4. URI: git@github.com:ibissource/maven-parent.git 
-5. select master branch
-6. Choose directory. Check 'clone submodules'.
-7. Wait until pull from git is ready 
-8. Right click 'maven-parent' and choose 'Import maven projects'
+4. URI: git@github.com:ibissource/iaf.git
+5. select mavenize branch
+6. Choose directory.
+7. Wait until pull from git is ready
+8. Right click 'maven-iaf' and choose 'Import maven projects'
 9. Select all
 
 The work space will now be build.
@@ -22,4 +22,3 @@ The work space will now be build.
 Via the Java EE perspective you can create a tomcat server.
 
 The example-webapp can be run in this server.
-
