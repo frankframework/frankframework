@@ -36,6 +36,11 @@
       <artifactId>ibis-adapterframework-sap</artifactId>
       <version>${ibis.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-adapterframework-coolgen</artifactId>
+      <version>${ibis.version}</version>
+    </dependency>
 
     <!-- a number of classes are mentioned in spring configuration -->
     <dependency>
