@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<A xmlns="http://www.ing.com/testxmlns">
+  <!-- this XML is valid according to/Users/michiel/ibis/Ibis/src/test/resources/GetIntermediaryAgreementDetails/xsd/A.xsd -->
+  <B xmlns="http://xmlns/b"/>
+</A>

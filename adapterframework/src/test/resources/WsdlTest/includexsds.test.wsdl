@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:ibis="http://wub2nn.nn.nl/FindIntermediary/wsdl/"
+                  xmlns:ns1="http://wub2nn.nn.nl/FindIntermediary"
+                  targetNamespace="http://wub2nn.nn.nl/FindIntermediary/wsdl/">
+  <wsdl:documentation><![CDATA[test]]></wsdl:documentation>
+  <wsdl:types>
+      <xsd:schema xmlns="urn:webservice1" xmlns:pim="http://test" targetNamespace="urn:webservice1"
+                  elementFormDefault="qualified">
+          <xsd:element name="a">
+          </xsd:element>
+          <xsd:element name="b">
+          </xsd:element>
+          <pim:hoi a="b"/>
+      </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="PipeLineInput">
+    <wsdl:part name="FindIntermediaryREQ" element="ns1:FindIntermediaryREQ"/>
+  </wsdl:message>
+  <wsdl:message name="PipeLineOutput">
+    <wsdl:part name="FindIntermediaryRLY" element="ns1:FindIntermediaryRLY"/>
+  </wsdl:message>
+  <wsdl:portType name="PipeLine">
+    <wsdl:operation name="Process">
+      <wsdl:input message="ibis:PipeLineInput"/>
+      <wsdl:output message="ibis:PipeLineOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SoapBinding" type="ibis:PipeLine">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <wsdl:operation name="Process">
+      <soap:operation style="document" soapAction="defaultAction"/>
+      <wsdl:input>
+        <ns1:FindIntermediaryREQ use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <ns1:FindIntermediaryRLY use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="FindIntermediary">
+    <wsdl:port name="SoapHttp" binding="ibis:SoapBinding">
+      <soap:address location="Test"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

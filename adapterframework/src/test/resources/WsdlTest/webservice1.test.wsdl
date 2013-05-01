@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:ibis="urn:webservice1/wsdl/"
+                  xmlns:ns1="urn:webservice1" targetNamespace="urn:webservice1/wsdl/">
+  <wsdl:documentation><![CDATA[test]]></wsdl:documentation>
+  <wsdl:types>
+    <xsd:schema targetNamespace="urn:webservice1">
+      <xsd:include schemaLocation="WsdlTest/test.xsd"/>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="PipeLineInput">
+    <wsdl:part name="a" element="ns1:a"/>
+  </wsdl:message>
+  <wsdl:message name="PipeLineOutput">
+    <wsdl:part name="b" element="ns1:b"/>
+  </wsdl:message>
+  <wsdl:portType name="PipeLine">
+    <wsdl:operation name="Process">
+      <wsdl:input message="ibis:PipeLineInput"/>
+      <wsdl:output message="ibis:PipeLineOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SoapBinding" type="ibis:PipeLine">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <wsdl:operation name="Process">
+      <soap:operation style="document" soapAction="defaultAction"/>
+      <wsdl:input>
+        <soap:body parts="a" use="literal"/>
+        <!-- used to be this
+        <ns1:a use="literal"/>
+        -->
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body parts="b" use="literal"/>
+        <!-- used to be this
+        <ns1:b use="literal"/>
+        -->
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Test1">
+    <wsdl:port name="SoapHttp" binding="ibis:SoapBinding">
+      <soap:address location="Test"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

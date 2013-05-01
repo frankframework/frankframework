@@ -1,0 +1,967 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Created by TIBCO WSDL-->
+<wsdl:definitions xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:ns0="http://www.ing.com/CSP/XSD/General/Message_2" xmlns:ns1="http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01" xmlns:ns2="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01" xmlns:ns3="http://ing.nn.afd/AFDTypes" xmlns:ns4="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.ing.com/nl/banking/coe/wsdl/bankingcustomer_generate_01/getpartybasicdatabanking_01_concrete" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" name="Untitled" targetNamespace="http://www.ing.com/nl/banking/coe/wsdl/bankingcustomer_generate_01/getpartybasicdatabanking_01_concrete">
+    <wsdl:types>
+        <xs:schema xmlns="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01" xmlns:afd="http://ing.nn.afd/AFDTypes" xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" id="LifeRetailDomain" targetNamespace="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01" version="1.0d">
+            <xs:import namespace="http://ing.nn.afd/AFDTypes"/>
+            <xs:complexType name="KLTType">
+                <xs:sequence>
+                    <xs:element name="KLT_NA_RELNUM" type="afd:AN..20"/>
+                    <xs:element name="KLT_NA_VOORL" type="afd:AN..12"/>
+                    <xs:element minOccurs="0" name="KLT_NA_VOORV" type="afd:AN..30"/>
+                    <xs:element name="KLT_NA_ANAAM" type="afd:AN..49"/>
+                    <xs:element name="KLT_NA_STRAAT" type="afd:AN..60"/>
+                    <xs:element name="KLT_NA_HUISNR" type="afd:AN..10"/>
+                    <xs:element minOccurs="0" name="KLT_NA_TOEVOEG" type="afd:AN..10"/>
+                    <xs:element name="KLT_NA_PCODE" type="afd:AN..10"/>
+                    <xs:element name="KLT_NA_PLAATS" type="afd:AN..25"/>
+                    <xs:element name="KLT_NA_LAND" type="afd:AN..2"/>
+                    <xs:element name="KLT_NA_GESLACH" type="afd:AN1"/>
+                    <xs:element name="KLT_NA_EMAIL" type="afd:AN..70"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="PRDType">
+                <xs:sequence>
+                    <xs:element name="KLT" type="ns2:KLTType">
+                        <xs:annotation>
+                            <xs:documentation>Client</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="RESType">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="RES_NA_RTNCD" type="afd:AN..7"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="BankSparen">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="PRD" type="ns2:PRDType">
+                            <xs:annotation>
+                                <xs:documentation>Product</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="RES" type="ns2:RESType">
+                            <xs:annotation>
+                                <xs:documentation>Result</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:schema>
+        <xsd:schema xmlns="http://www.ing.com/CSP/XSD/General/Message_2" xmlns:xsd="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ing.com/CSP/XSD/General/Message_2">
+            <xsd:complexType name="ActionType">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="Paradigm">
+                        <xsd:annotation>
+                            <xsd:documentation>            Enumerated value of paradigm: MEP=Message Exchange Pattern
+
+            Service Consumer sending message to Service Provider
+            (MEP=Request-Reply): Paradigm=Request Service Provider
+            sending correlated message to Service Consumer
+            (MEP=Request-Reply): Paradigm=Reply
+
+            Service Consumer sending message to Service Provider
+            (MEP=OneWay): Paradigm=OneWay
+
+            Service Provider sending message to Service Consumer
+            (MEP=Notification-Response): Paradigm=Notification Service
+            Consumer sending correlated message to Service Provider
+            (MEP=Notification-Response): Paradigm=Response
+
+            Service Provider sending message to Service Consumer
+            (MEP=Notification): Paradigm=Notification
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                        <xsd:simpleType>
+                            <xsd:restriction base="xsd:string">
+                                <xsd:enumeration value="OneWay"/>
+                                <xsd:enumeration value="Request"/>
+                                <xsd:enumeration value="Reply"/>
+                                <xsd:enumeration value="Notification"/>
+                                <xsd:enumeration value="Response"/>
+                                <xsd:enumeration value="RequestReply"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                    </xsd:element>
+                    <xsd:element name="Name" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            Name of the operation including version number.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="Version" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            Name of the operation including version number.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ConnectionInfoType">
+                <xsd:annotation>
+                    <xsd:documentation/>
+                </xsd:annotation>
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="Principal" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            Id of an front-end system.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element minOccurs="0" name="RemoteAddress" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            Id of an front end system's addres e.g. IP address.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ConsumingEndpointType">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="Id" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            The identification of the service operation or backend
+            system functional being invoked.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="Location" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            The address of the service operation or backend system
+            functional being invoked.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="DetailListType">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="unbounded" name="Detail" type="ns0:DetailType">
+                        <xsd:annotation>
+                            <xsd:documentation>            Code, technical error code.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="DetailType">
+                <xsd:sequence>
+                    <xsd:element name="Code" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            Code, technical error code.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element minOccurs="0" name="SubCode" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            SubCode, technical error code for free use.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element minOccurs="0" name="Text" type="ns0:TextType">
+                        <xsd:annotation>
+                            <xsd:documentation>            Text, technical error description.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ErrorListType">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="unbounded" name="Error" type="ns0:ErrorType"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ErrorType">
+                <xsd:sequence>
+                    <xsd:element name="Code" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>Canonical error code.</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="Reason" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            Canonical error description.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="Service" type="ns0:ServiceType">
+                        <xsd:annotation>
+                            <xsd:documentation>            Description of which service and operation the error
+            occurred.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element minOccurs="0" name="DetailList" type="ns0:DetailListType">
+                        <xsd:annotation>
+                            <xsd:documentation>            List of specific non canonical errors.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="HeaderFieldType">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="CPAId" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>Business chain.</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="ConversationId" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            Unique number holding one or more messageId for 1 particular
+            transaction.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="MessageId" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            Unique identifier for this message.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element minOccurs="0" name="ExternalRefToMessageId" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            Id of an reference id passed from an front-end system
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="Timestamp" type="xsd:dateTime">
+                        <xsd:annotation>
+                            <xsd:documentation>            Date and time message was send, including the timezone.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element minOccurs="0" name="HeaderProperties" type="ns0:PropertiesType">
+                        <xsd:annotation>
+                            <xsd:documentation>            List of 1 or more HeaderProperty elements used for
+            extension.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="HeaderPropertyType">
+                <xsd:attribute name="Name" type="xsd:string" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation>Identifier.</xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="Value" type="xsd:string" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation>Text value.</xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+            </xsd:complexType>
+            <xsd:complexType name="MessageDataType">
+                <xsd:sequence>
+                    <xsd:element name="MessageId" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>Copy of the MessageId.</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="Timestamp" type="xsd:dateTime">
+                        <xsd:annotation>
+                            <xsd:documentation>Copy of the Timestamp.</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element minOccurs="0" name="RefToMessageId" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            The original received MessageId received in the request.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="Status" type="ns0:StatusType"/>
+                    <xsd:element minOccurs="0" name="Retry_Option" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation> The field captivate the retry option.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="MessageHeaderType">
+                <xsd:sequence>
+                    <xsd:element name="From" type="ns0:ProducingEndpointType"/>
+                    <xsd:element minOccurs="0" name="To" type="ns0:ConsumingEndpointType"/>
+                    <xsd:element name="HeaderFields" type="ns0:HeaderFieldType"/>
+                    <xsd:element minOccurs="0" name="ConnectionInfo" type="ns0:ConnectionInfoType"/>
+                    <xsd:element minOccurs="0" name="Service" type="ns0:ServiceType"/>
+                    <xsd:element minOccurs="0" name="TraceHeaderList" type="ns0:TraceHeaderListType"/>
+                    <xsd:element minOccurs="0" name="TransactionList" type="ns0:TransactionListType"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ProducingEndpointType">
+                <xsd:sequence>
+                    <xsd:element name="Id" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            The identification of the initiator of this interaction
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element minOccurs="0" name="Location" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            The address of the initiator when a response should be given
+            back
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="PropertiesType">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="unbounded" name="HeaderProperty" type="ns0:HeaderPropertyType"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ResultType">
+                <xsd:sequence>
+                    <xsd:element name="Status" type="ns0:StatusType"/>
+                    <xsd:element minOccurs="0" name="ErrorList" type="ns0:ErrorListType">
+                        <xsd:annotation>
+                            <xsd:documentation>            List which is only present when the status contains an ERROR
+            value. The ErrorList will have 1 or more Error elements with
+            the most recent error on the bottom.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ServiceType">
+                <xsd:sequence>
+                    <xsd:element name="Name" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            Unique identifier of the service.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="Context" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            The service context revision.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="Action" type="ns0:ActionType">
+                        <xsd:annotation>
+                            <xsd:documentation>            The action can be an operation being triggered, an event
+            handler or an event being published during processing.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:simpleType name="StatusType">
+                <xsd:annotation>
+                    <xsd:documentation>        Status, an enumerated value OK, ERROR.
+      
+					</xsd:documentation>
+                </xsd:annotation>
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="OK"/>
+                    <xsd:enumeration value="ERROR"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:complexType name="TextType">
+                <xsd:simpleContent>
+                    <xsd:extension base="xsd:string">
+                        <xsd:attribute name="language" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:documentation>          Text/@language, language mark when multiple error descriptions
+          are needed.
+        
+								</xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:attribute>
+                    </xsd:extension>
+                </xsd:simpleContent>
+            </xsd:complexType>
+            <xsd:complexType name="TraceHeaderListType">
+                <xsd:annotation>
+                    <xsd:documentation>        List of l or more TraceHeader elements. The TraceHeader
+        information in this list is an historical list of all previous
+        invoked services and is extended with 1 new TraceHeader when a
+        next invocation is initated. e.g. an abstracted service invoking
+        multiple other services will not use the resulting
+        TraceHeaderList of the service responses, only the original
+        message received. This list will have the most recent
+        TraceHeader on the bottom.
+      
+					</xsd:documentation>
+                </xsd:annotation>
+                <xsd:sequence>
+                    <xsd:element maxOccurs="unbounded" name="TraceHeader" type="ns0:TraceHeaderType"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="TraceHeaderType">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="Sender" type="ns0:ProducingEndpointType">
+                        <xsd:annotation>
+                            <xsd:documentation>            Copy of the From element.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element minOccurs="0" name="Receiver" type="ns0:ConsumingEndpointType">
+                        <xsd:annotation>
+                            <xsd:documentation>Copy of the To element.</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element minOccurs="0" name="Service" type="ns0:ServiceType">
+                        <xsd:annotation>
+                            <xsd:documentation>            Copy of the Service element.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element minOccurs="0" name="MessageData" type="ns0:MessageDataType">
+                        <xsd:annotation>
+                            <xsd:documentation>            Copy of some of the HeaderFields.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="TransactionListType">
+                <xsd:annotation>
+                    <xsd:documentation>        List of 1 or more Transaction elements with the most recent
+        Transaction on the bottom, this element is mainly used for Sox
+        purposes.
+      
+					</xsd:documentation>
+                </xsd:annotation>
+                <xsd:sequence>
+                    <xsd:element maxOccurs="unbounded" name="TransactionList" type="ns0:TransactionType"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="TransactionType">
+                <xsd:annotation>
+                    <xsd:documentation>        Element mainly used for Sox purposes.
+      
+					</xsd:documentation>
+                </xsd:annotation>
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="Interaction">
+                        <xsd:annotation>
+                            <xsd:documentation>            External communication outside the ESB an is an enumerated
+            value of Front-end or Backend
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                        <xsd:simpleType>
+                            <xsd:restriction base="xsd:string">
+                                <xsd:enumeration value="Frontend"/>
+                                <xsd:enumeration value="Backend"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                    </xsd:element>
+                    <xsd:element name="TransactionId" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            Identifier used as reference when an transaction entering or
+            leaving the ESB.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="MessageId" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            Identifier unique within the TransactionId, when multiple
+            communications are needed with the external system.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element minOccurs="0" name="SystemId" type="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation>            Identifier for the external system.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="Timestamp" type="xsd:dateTime">
+                        <xsd:annotation>
+                            <xsd:documentation>            Timestamp including the timezone.
+          
+							</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="MessageHeader" type="ns0:MessageHeaderType"/>
+            <xsd:element name="Result" type="ns0:ResultType"/>
+        </xsd:schema>
+        <xs:schema xmlns="http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01" xmlns:ns0="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01" xmlns:ns1="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01" xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01">
+            <xs:import namespace="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01"/>
+            <xs:import namespace="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01"/>
+            <xs:complexType name="RequestType">
+                <xs:sequence>
+                    <xs:element ref="ns0:BankSparen"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="ResponseType">
+                <xs:sequence>
+                    <xs:element ref="ns1:BankSparen"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="Request" type="RequestType"/>
+            <xs:element name="Response" type="ResponseType"/>
+        </xs:schema>
+        <xs:schema xmlns:ns1="http://ing.nn.afd/AFDTypes" xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://ing.nn.afd/AFDTypes">
+            <xs:simpleType name="AN..1">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="1"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..10">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="10"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..100">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="100"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..12">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="12"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..15">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="15"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..17">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="17"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..18">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="18"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..2">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..20">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="20"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..200">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="200"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..24">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="24"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..25">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="25"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..28">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="28"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..3">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="3"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..30">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="30"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..35">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="35"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..4">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="4"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..40">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="40"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..49">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="49"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..5">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="5"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..50">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="50"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..6">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="6"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..60">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="60"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..7">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="7"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..70">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="70"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..8">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="8"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..9">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="9"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..9999">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="9999"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN1">
+                <xs:restriction base="xs:string">
+                    <xs:length value="1"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN1..10">
+                <xs:restriction base="xs:string">
+                    <xs:minLength value="1"/>
+                    <xs:maxLength value="10"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN1JN">
+                <xs:restriction base="xs:string">
+                    <xs:length value="1"/>
+                    <xs:pattern value="J|N"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN2">
+                <xs:restriction base="xs:string">
+                    <xs:length value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN3">
+                <xs:restriction base="xs:string">
+                    <xs:length value="3"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN4">
+                <xs:restriction base="xs:string">
+                    <xs:length value="4"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN5">
+                <xs:restriction base="xs:string">
+                    <xs:length value="5"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="City">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="24"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="D1">
+                <xs:restriction base="xs:string">
+                    <xs:length value="8"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="Date">
+                <xs:restriction base="xs:string">
+                    <xs:length value="8"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="Datetime">
+                <xs:restriction base="xs:string">
+                    <xs:length value="26"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..1">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="1"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..10">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="10"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..11B2">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="11"/>
+                    <xs:fractionDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..15">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="15"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..15A0">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="15"/>
+                    <xs:fractionDigits value="0"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..15A5">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="15"/>
+                    <xs:fractionDigits value="5"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..15B2">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="15"/>
+                    <xs:fractionDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..15B5">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="15"/>
+                    <xs:fractionDigits value="5"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..2">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..3">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="3"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..4">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="4"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..4T1">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="4"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..5">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="5"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..5P2">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="5"/>
+                    <xs:fractionDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..6">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="6"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..7">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="7"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..7P2">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="7"/>
+                    <xs:fractionDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..7P4">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="7"/>
+                    <xs:fractionDigits value="4"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..8">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="8"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..8P3">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="8"/>
+                    <xs:fractionDigits value="3"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..8P5">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="8"/>
+                    <xs:fractionDigits value="5"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..9">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="9"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..9B2">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="9"/>
+                    <xs:fractionDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..9P2">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="9"/>
+                    <xs:fractionDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N1">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="1"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N2">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N4">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="4"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N6">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="6"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N8">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="8"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="PhoneNumber">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="25"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="PostalCodeDutch">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="9"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:schema>
+        <xs:schema xmlns="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01" xmlns:afd="http://ing.nn.afd/AFDTypes" xmlns:ns1="http://www.ing.com/CSP/XSD/NL/LI/LifeRetail_1_AddMedicalDetailsSubSet_1" xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" id="LifeRetailDomain" targetNamespace="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01" version="1.0d">
+            <xs:import namespace="http://ing.nn.afd/AFDTypes"/>
+            <xs:complexType name="KLTType">
+                <xs:sequence>
+                    <xs:element name="KLT_NA_RELNUM" type="afd:AN..20"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="PRDType">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="KLT" type="ns4:KLTType">
+                        <xs:annotation>
+                            <xs:documentation>Client</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="BankSparen">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="PRD" type="ns4:PRDType">
+                            <xs:annotation>
+                                <xs:documentation>Product</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:schema>
+    </wsdl:types>
+    <wsdl:service name="Banking.BankingCustomer.01">
+        <wsdl:port binding="tns:GetPartyBasicDatabanking_BindingBinding" name="GetPartyBasicDatabanking_Binding">
+            <soap:address location=""/>
+            <jms:connectionFactory>QueueConnectionFactory</jms:connectionFactory>
+            <jms:targetAddress destination="queue">TS.Banking.BankingCustomer.Generate.01.Request.GetPartyBasicDataBanking.01</jms:targetAddress>
+        </wsdl:port>
+    </wsdl:service>
+    <wsdl:portType name="GetPartyBasicDatabanking_Interface">
+        <wsdl:operation name="GetPartyBasicDataBanking_01">
+            <wsdl:input message="tns:GetPartyBasicDatabanking_01_request"/>
+            <wsdl:output message="tns:GetPartyBasicDatabanking_01_response"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="GetPartyBasicDatabanking_BindingBinding" type="tns:GetPartyBasicDatabanking_Interface">
+        <soap:binding style="document" transport="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS"/>
+        <jms:binding messageFormat="Text"/>
+        <wsdl:operation name="GetPartyBasicDataBanking_01">
+            <soap:operation soapAction="BankingCustomer_Generate_01_GetPartyBasicDatabanking_01" style="document"/>
+            <wsdl:input>
+                <soap:body parts="header request" use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body parts="header response Result" use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:message name="GetPartyBasicDatabanking_01_request">
+        <wsdl:part element="ns0:MessageHeader" name="header"/>
+        <wsdl:part element="ns1:Request" name="request"/>
+    </wsdl:message>
+    <wsdl:message name="GetPartyBasicDatabanking_01_response">
+        <wsdl:part element="ns0:MessageHeader" name="header"/>
+        <wsdl:part element="ns1:Response" name="response"/>
+        <wsdl:part element="ns0:Result" name="Result"/>
+    </wsdl:message>
+</wsdl:definitions>
