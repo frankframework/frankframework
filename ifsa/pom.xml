@@ -4,15 +4,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>nl.nn</groupId>
-    <artifactId>maven-parent</artifactId>
+    <groupId>org.ibissource</groupId>
+    <artifactId>ibis-parent</artifactId>
     <version>5-SNAPSHOT</version>
   </parent>
-  <artifactId>adapterframework-ifsa</artifactId>
+  <artifactId>ibis-adapterframework-ifsa</artifactId>
   <name>The Ibis adapter framework</name>
 
   <packaging>jar</packaging>
-
 
   <properties>
     <ibis.dependencies>${basedir}/lib</ibis.dependencies>
@@ -20,8 +19,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>nl.nn</groupId>
-      <artifactId>adapterframework</artifactId>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-adapterframework</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -80,6 +79,22 @@
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.ejb</groupId>
+      <artifactId>ejb-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.struts</groupId>
+      <artifactId>struts-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.jms</groupId>
+          <artifactId>jms</artifactId>
     </dependency>
   </dependencies>
   <build>
