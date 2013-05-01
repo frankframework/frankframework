@@ -20,11 +20,15 @@
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework</artifactId>
-      <version>${ibis.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-ifsa</artifactId>
+      <version>${ibis.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-adapterframework-tibco</artifactId>
       <version>${ibis.version}</version>
     </dependency>
 
@@ -41,5 +45,10 @@
       <version>3.1.2.2</version>
       <scope>runtime</scope>
     </dependency>
-    </dependencies>
+    <dependency>
+      <groupId>jaxen</groupId>
+      <artifactId>jaxen</artifactId>
+      <version>1.1.4</version>
+    </dependency>
+  </dependencies>
 </project>
