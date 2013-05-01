@@ -387,5 +387,9 @@
       <id>ibis</id>
       <url>https://github.com/ibissource/mvn-repo/raw/master/releases</url>
     </repository>
+    <repository>
+      <id>ibis-snapshots</id>
+      <url>https://github.com/ibissource/mvn-repo/raw/master/snapshots</url>
+    </repository>
   </repositories>
 </project>
