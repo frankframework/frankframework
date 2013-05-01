@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+    targetNamespace="http://www.ing.com/pim"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:pim="http://www.ing.com/pim"
+    elementFormDefault="qualified" >
+  <pim:hoi a="b" />
+
+</xsd:schema>

@@ -1,0 +1,28 @@
+<xs:schema xmlns="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01" xmlns:afd="http://ing.nn.afd/AFDTypes" xmlns:ns1="http://www.ing.com/CSP/XSD/NL/LI/LifeRetail_1_AddMedicalDetailsSubSet_1" xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" id="LifeRetailDomain" targetNamespace="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01" version="1.0d" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:ns0="http://www.ing.com/CSP/XSD/General/Message_2" xmlns:ns2="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01" xmlns:ns3="http://ing.nn.afd/AFDTypes" xmlns:ns4="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.ing.com/nl/banking/coe/wsdl/bankingcustomer_generate_01/getpartybasicdatabanking_01_concrete" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+            <xs:import namespace="http://ing.nn.afd/AFDTypes" schemaLocation="AFDTypes.xsd"/>
+            <xs:complexType name="KLTType">
+                <xs:sequence>
+                    <xs:element name="KLT_NA_RELNUM" type="afd:AN..20"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="PRDType">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="KLT" type="ns4:KLTType">
+                        <xs:annotation>
+                            <xs:documentation>Client</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="BankSparen">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="PRD" type="ns4:PRDType">
+                            <xs:annotation>
+                                <xs:documentation>Product</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:schema>

@@ -1,0 +1,4 @@
+<schema targetNamespace="http://example.com/wrapper"
+        xmlns="http://www.w3.org/2001/XMLSchema">
+  <import schemaLocation="simplein.xsd"  namespace="http://example.com/stockquote.xsd"/>
+</schema>
