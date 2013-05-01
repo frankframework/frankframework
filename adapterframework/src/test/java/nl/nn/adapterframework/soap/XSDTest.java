@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.soap;
 
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.validation.XSD;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -26,7 +27,7 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 public class XSDTest {
 
 	@Test
-	public void xsdName() throws URISyntaxException {
+	public void xsdName() throws URISyntaxException, XMLStreamException, IOException {
 		XSD xsd = new XSD("", "http://test", ClassUtils.getResourceURL("v1 test.xsd").toURI(), 0);
 		assertEquals("v1 test.xsd", xsd.getName());
 	}
@@ -47,7 +48,7 @@ public class XSDTest {
 
 
 	@Test
-	public void baseUrlXsdWebsphere() throws URISyntaxException {
+	public void baseUrlXsdWebsphere() throws URISyntaxException, XMLStreamException, IOException {
 		XSD xsd = new XSD("", "http://test",
 				new URI("file:/data/WAS/6.1/wasap02/appl/Ibis4WUB-010_20111221-1815_wasap02.ear/Ibis4WUB.war/WEB-INF/classes/CalculateQuoteAndPolicyValuesLifeRetail/xsd/Calculation.xsd"), 0);
 		assertEquals("CalculateQuoteAndPolicyValuesLifeRetail/xsd/", xsd.getBaseUrl());
