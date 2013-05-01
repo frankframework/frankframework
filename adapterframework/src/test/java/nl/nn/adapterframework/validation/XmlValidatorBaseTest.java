@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.validation;
 
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.pipes.XmlValidator;
