@@ -4,11 +4,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>nl.nn</groupId>
-    <artifactId>maven-parent</artifactId>
+    <groupId>org.ibissource</groupId>
+    <artifactId>ibis-parent</artifactId>
     <version>5-SNAPSHOT</version>
   </parent>
-  <artifactId>adapterframework-sap</artifactId>
+  <artifactId>ibis-adapterframework-sap</artifactId>
   <name>The Ibis adapter framework, Sap stuff</name>
 
   <packaging>jar</packaging>
@@ -20,8 +20,8 @@
   <dependencies>
 
     <dependency>
-      <groupId>nl.nn</groupId>
-      <artifactId>adapterframework</artifactId>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-adapterframework</artifactId>
     </dependency>
 
     <dependency>
