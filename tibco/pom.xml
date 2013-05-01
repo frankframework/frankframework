@@ -4,18 +4,18 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>nl.nn</groupId>
-    <artifactId>maven-parent</artifactId>
+    <groupId>org.ibissource</groupId>
+    <artifactId>ibis-parent</artifactId>
     <version>5-SNAPSHOT</version>
   </parent>
-  <artifactId>adapterframework-tibco</artifactId>
+  <artifactId>ibis-adapterframework-tibco</artifactId>
  <properties>
    <ibis.dependencies>${basedir}/lib</ibis.dependencies>
  </properties>
   <dependencies>
     <dependency>
-      <groupId>nl.nn</groupId>
-      <artifactId>adapterframework</artifactId>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-adapterframework</artifactId>
     </dependency>
     <dependency>
       <groupId>com.tibco.tibjms</groupId>
@@ -29,9 +29,15 @@
       <artifactId>commons-lang</artifactId>
     </dependency>
     <dependency>
+      <groupId>javax.jms</groupId>
+      <artifactId>jms</artifactId>
+    </dependency>
+    <!--
+      <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-jms_1.1_spec</artifactId>
     </dependency>
+    -->
   </dependencies>
   <build>
     <defaultGoal>install</defaultGoal>
