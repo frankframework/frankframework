@@ -22,12 +22,10 @@
       <artifactId>ibis-adapterframework</artifactId>
       <version>${ibis.version}</version>
     </dependency>
-    <!--
     <dependency>
-      <groupId>nl.nn</groupId>
-      <artifactId>ibis-ifsa</artifactId>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-adapterframework-ifsa</artifactId>
       <version>${ibis.version}</version>
     </dependency>
-    -->
   </dependencies>
 </project>
