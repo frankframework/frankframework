@@ -52,6 +52,10 @@
 
 		<%@ include file="requestToXml.jsp" %>
 		<machineName><%=Misc.getHostname()%></machineName>
+		<fileSystem>
+			<totalSpace><%=Misc.getFileSystemTotalSpace()%></totalSpace>
+			<freeSpace><%=Misc.getFileSystemFreeSpace()%></freeSpace>
+		</fileSystem>
 		<%=AppConstants.getInstance().toXml(true)%>
 		<%=ProcessMetrics.toXml()%>
 

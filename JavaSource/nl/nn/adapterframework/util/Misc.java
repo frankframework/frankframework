@@ -665,4 +665,34 @@ public class Misc {
 		}
 		return sb.toString();
 	}
+
+	public static String getFileSystemTotalSpace() {
+		try {
+			Method getTotalSpace = File.class.getMethod("getTotalSpace", (java.lang.Class[]) null);
+			File file = new File("/");
+			long l = ((Long) getTotalSpace.invoke(file, (java.lang.Object[]) null)).longValue();
+			return toFileSize(l);
+		} catch ( NoSuchMethodException e ) {
+			log.debug("Caught NoSuchMethodException, just not on JDK 1.6: "+e.getMessage());
+			return null;
+		} catch ( Exception e ) {
+			log.debug("Caught Exception",e);
+			return null;
+		}
+	}
+
+	public static String getFileSystemFreeSpace() {
+		try {
+			Method getFreeSpace = File.class.getMethod("getFreeSpace", (java.lang.Class[]) null);
+			File file = new File("/");
+			long l = ((Long) getFreeSpace.invoke(file, (java.lang.Object[]) null)).longValue();
+			return toFileSize(l);
+		} catch ( NoSuchMethodException e ) {
+			log.debug("Caught NoSuchMethodException, just not on JDK 1.6: "+e.getMessage());
+			return null;
+		} catch ( Exception e ) {
+			log.debug("Caught Exception",e);
+			return null;
+		}
+	}
 }

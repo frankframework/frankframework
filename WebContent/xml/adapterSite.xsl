@@ -142,8 +142,14 @@
 						<div>
 						running on <xsl:value-of select="//machineName"/> using <xsl:value-of select="//requestInfo/servletRequest/serverInfo"/>
 						</div>
+						<div>
 						heap size: <xsl:value-of select="//processMetrics/properties/property[@name='heapSize']"/>,
 						total JVM memory: <xsl:value-of select="//processMetrics/properties/property[@name='totalMemory']"/>
+						</div>
+						<xsl:if test="//fileSystem/totalSpace!='null'">
+							free space: <xsl:value-of select="//fileSystem/freeSpace"/>,
+							total space: <xsl:value-of select="//fileSystem/totalSpace"/>
+						</xsl:if>
 						<div id="clock"/>
 					</td>
 					</tr></table>
