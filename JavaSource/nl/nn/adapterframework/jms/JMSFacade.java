@@ -82,6 +82,7 @@ import com.ibm.mq.jms.MQQueue;
 	 to "JMS" will cause that on mq the destination is identified as jms-compliant.</td><td>JMS</td></tr>
  * <tr><td>{@link #setCorrelationIdToHex(boolean) correlationIdToHex}</td><td>Transform the value of the correlationId to a hexadecimal value if it starts with ID: (preserving the ID: part). Useful when sending messages to MQ which expects this value to be in hexadecimal format when it starts with ID:, otherwise generating the error: MQJMS1044: String is not a valid hexadecimal number</td><td>false</td></tr>
  * <tr><td>{@link #setCorrelationIdToHexPrefix(String) correlationIdToHexPrefix}</td><td>Prefix to check before executing correlationIdToHex. When empty (and correlationIdToHex equals true) all correlationId's are transformed, this is useful in case you want the entire correlationId to be transformed (for example when the receiving party doesn't allow characters like a colon to be present in the correlationId).</td><td>ID:</td></tr>
+ * <tr><td>{@link #setCorrelationIdMaxLength(int) correlationIdMaxLength}</td><td>if set (>=0) and the length of the correlationID exceeds this maximum length, the correlationID is trimmed from the left side of a string to this maximum length</td><td>-1</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to JMS server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -143,6 +144,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
     private boolean correlationIdToHex=false;
     private String correlationIdToHexPrefix="ID:";
+    private int correlationIdMaxLength=-1;
 
 	public static int stringToDeliveryMode(String mode) {
 		if (MODE_PERSISTENT.equalsIgnoreCase(mode)) {
@@ -314,6 +316,18 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		TextMessage textMessage = null;
 		textMessage = session.createTextMessage();
 		if (null != correlationID) {
+			if (correlationIdMaxLength>=0) {
+				int cidlen;
+				if (correlationID.startsWith(correlationIdToHexPrefix)) {
+					cidlen = correlationID.length()-correlationIdToHexPrefix.length();
+				} else {
+					cidlen = correlationID.length();
+				}
+				if (cidlen>correlationIdMaxLength) {
+					correlationID = correlationIdToHexPrefix+correlationID.substring(correlationID.length()-correlationIdMaxLength);
+					if (log.isDebugEnabled()) log.debug("correlationId shortened to ["+correlationID+"]");
+				}
+			}
 			if (correlationIdToHex && correlationID.startsWith(correlationIdToHexPrefix)) {
 				String hexCorrelationID = correlationIdToHexPrefix;
 				int i;
@@ -322,6 +336,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 					hexCorrelationID+=Integer.toHexString(c);
 				};
 				correlationID = hexCorrelationID;
+				if (log.isDebugEnabled()) log.debug("correlationId changed, based on hexidecimal values, to ["+correlationID+"]");
 			}
 			textMessage.setJMSCorrelationID(correlationID);
 		}
@@ -1004,6 +1019,13 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	public boolean isCorrelationIdToHex() {
 		return correlationIdToHex;
+	}
+
+	public void setCorrelationIdMaxLength(int i) {
+		correlationIdMaxLength = i;
+	}
+	public int getCorrelationIdMaxLength() {
+		return correlationIdMaxLength;
 	}
 
 	/**
