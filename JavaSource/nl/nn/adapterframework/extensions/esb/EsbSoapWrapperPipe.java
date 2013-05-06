@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td></td><td>if direction=<code>wrap</code> and mode=<code>bis</code>:</td><td>/xml/xsl/esb/bisSoapHeader.xsl</td></tr>
  * <tr><td>{@link #setSoapBodyStyleSheet(String) soapBodyStyleSheet}</td><td>if direction=<code>wrap</code> and mode=<code>reg</code>:</td><td>/xml/xsl/esb/soapBody.xsl</td></tr>
  * <tr><td></td><td>if direction=<code>wrap</code> and mode=<code>bis</code>:</td><td>/xml/xsl/esb/bisSoapBody.xsl</td></tr>
- * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters ("http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion")</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion')</td><td><code>false</code></td></tr>
  * </table></p>
  * <p>
  * <b>/xml/xsl/esb/soapHeader.xsl:</b>
@@ -270,13 +270,21 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			}
 			stripDestination();
 			if (isAddOutputNamespace()) {
-				String ons = getOutputNamespaceBaseUri() +
-						"/" + getBusinessDomain() +
-						"/" + getServiceName() +
-						"/" + getServiceContext() +
-						"/" + getServiceContextVersion() +
-						"/" + getOperationName() +
-						"/" + getOperationVersion();
+				String ons = getOutputNamespaceBaseUri();
+				if (getMessagingLayer().equals("P2P")) {
+					ons = ons +
+					"/" + getBusinessDomain() +
+					"/" + getApplicationName() +
+					"/" + getApplicationFunction();
+				} else {
+					ons = ons +
+					"/" + getBusinessDomain() +
+					"/" + getServiceName() +
+					"/" + getServiceContext() +
+					"/" + getServiceContextVersion() +
+					"/" + getOperationName() +
+					"/" + getOperationVersion();
+				}
 				setOutputNamespace(ons);
 			}
 			addParameters();
@@ -332,6 +340,14 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 
     public String getParadigm() {
         return getParameterValue(PARADIGM);
+    }
+
+    public String getApplicationName() {
+        return getParameterValue(APPLICATIONNAME);
+    }
+
+    public String getApplicationFunction() {
+        return getParameterValue(APPLICATIONFUNCTION);
     }
 
 	private void stripDestination() {
