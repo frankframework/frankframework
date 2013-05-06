@@ -130,6 +130,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	public final static String TYPE_TIMESTAMP="timestamp";
 	public final static String TYPE_XMLDATETIME="xmldatetime";
 	public final static String TYPE_NUMBER="number";
+	public final static String TYPE_INTEGER="integer";
 	
 	public final static String TYPE_DATE_PATTERN="yyyy-MM-dd";
 	public final static String TYPE_TIME_PATTERN="HH:mm:ss";
@@ -377,6 +378,15 @@ public class Parameter implements INamedObject, IWithParameters {
 					result = n;
 				} catch (ParseException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
+				}
+			}
+			if (TYPE_INTEGER.equals(getType())) {
+				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to integer" );
+				try {
+					Integer i = Integer.parseInt((String)result);
+					result = i;
+				} catch (NumberFormatException e) {
+					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to integer",e);
 				}
 			}
 		}
