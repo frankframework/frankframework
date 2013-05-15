@@ -669,7 +669,14 @@ public class Misc {
 	public static String getFileSystemTotalSpace() {
 		try {
 			Method getTotalSpace = File.class.getMethod("getTotalSpace", (java.lang.Class[]) null);
-			File file = new File("/");
+			String dirName = System.getProperty("APPSERVER_ROOT_DIR");
+			if (dirName==null) {
+				dirName = System.getProperty("user.dir");
+				if (dirName==null) {
+					return null;
+				}
+			}
+			File file = new File(dirName);
 			long l = ((Long) getTotalSpace.invoke(file, (java.lang.Object[]) null)).longValue();
 			return toFileSize(l);
 		} catch ( NoSuchMethodException e ) {
@@ -684,7 +691,14 @@ public class Misc {
 	public static String getFileSystemFreeSpace() {
 		try {
 			Method getFreeSpace = File.class.getMethod("getFreeSpace", (java.lang.Class[]) null);
-			File file = new File("/");
+			String dirName = System.getProperty("APPSERVER_ROOT_DIR");
+			if (dirName==null) {
+				dirName = System.getProperty("user.dir");
+				if (dirName==null) {
+					return null;
+				}
+			}
+			File file = new File(dirName);
 			long l = ((Long) getFreeSpace.invoke(file, (java.lang.Object[]) null)).longValue();
 			return toFileSize(l);
 		} catch ( NoSuchMethodException e ) {
