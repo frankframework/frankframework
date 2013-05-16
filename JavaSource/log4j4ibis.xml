@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+	<appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+		<layout class="org.apache.log4j.EnhancedPatternLayout">
+			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %x %c{1} %m%n"/>
+		</layout>
+	</appender>
+	<appender name="file" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="${log.dir}/${instance.name.lc}.log"/>
+		<param name="MaxBackupIndex" value="${log.maxBackupIndex}"/>
+		<param name="MaxFileSize" value="${log.maxFileSize}"/>
+		<layout class="org.apache.log4j.EnhancedPatternLayout">
+			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %x %c{2} - %m%n"/>
+		</layout>
+	</appender>
+	<appender name="XML" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="${log.dir}/${instance.name.lc}_xml.log"/>
+		<param name="MaxBackupIndex" value="${log.xml.maxBackupIndex}"/>
+		<param name="MaxFileSize" value="${log.xml.maxFileSize}"/>
+		<param name="Append" value="true"/>
+		<layout class="org.apache.log4j.xml.XMLLayout"/>
+	</appender>
+	<appender name="galm" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="${log.dir}/${instance.name.lc}-GALM.log"/>
+		<param name="MaxBackupIndex" value="5"/>
+		<param name="MaxFileSize" value="100KB"/>
+		<layout class="org.apache.log4j.EnhancedPatternLayout">
+			<param name="ConversionPattern" value="%m%n"/>
+		</layout>
+	</appender>
+	<appender name="msg" class="nl.nn.adapterframework.extensions.log4j.IbisDailyRollingFileAppender">
+		<param name="Append" value="true"/>
+		<param name="DatePattern" value="'.'yyyy-MM-dd"/>
+		<param name="File" value="${log.dir}/${instance.name.lc}-MSG.log"/>
+		<param name="RetentionDays" value="7"/>
+		<layout class="org.apache.log4j.EnhancedPatternLayout">
+			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
+		</layout>
+	</appender>
+	<logger name="org.apache">
+		<level value="INFO"/>
+	</logger>
+	<logger name="org.apache.commons">
+		<level value="WARN"/>
+	</logger>
+	<logger name="com.ing.coins.mett">
+		<level value="INFO"/>
+	</logger>
+	<logger name="GALM" additivity="false">
+		<level value="INFO"/>
+		<appender-ref ref="galm"/>
+	</logger>
+	<logger name="MSG" additivity="false">
+		<level value="INFO"/>
+		<appender-ref ref="msg"/>
+	</logger>
+	<root>
+		<level value="${log.level}"/>
+		<appender-ref ref="file"/>
+		<appender-ref ref="XML"/>
+	</root>
+</log4j:configuration>

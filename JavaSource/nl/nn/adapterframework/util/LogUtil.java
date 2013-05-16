@@ -16,14 +16,18 @@
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.Properties;
 
+import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Hierarchy;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.spi.RootLogger;
+import org.apache.log4j.xml.DOMConfigurator;
 
 /**
  * Convenience functions for logging.
@@ -40,11 +44,29 @@ public class LogUtil {
 	public static final String DEBUG_LOG_SUFFIX = "";
 	public static final String WARN_LOG_PREFIX = DEBUG_LOG_PREFIX;
 	public static final String WARN_LOG_SUFFIX = ", leaving it up to log4j's default initialization procedure: http://logging.apache.org/log4j/docs/manual.html#defaultInit";
+	public static final String LOG4J_XML_FILE = "log4j4ibis.xml";
+	public static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 
 	private static Hierarchy hierarchy=null;
 	
 	static {
-		Properties log4jProperties = getProperties("log4j4ibis.properties");
+		String l4jxml;
+		URL url = LogUtil.class.getClassLoader().getResource(LOG4J_XML_FILE);
+		if (url==null) {
+			l4jxml = null;
+			System.out.println(DEBUG_LOG_PREFIX + "did not find " + LOG4J_XML_FILE + ", will try " + LOG4J_PROPS_FILE + " instead" + DEBUG_LOG_SUFFIX);
+		} else {
+			String lineSeparator = SystemUtils.LINE_SEPARATOR;
+			if (null == lineSeparator) lineSeparator = "\n";
+			try {
+				l4jxml = Misc.resourceToString(url, lineSeparator, false);
+			} catch (IOException e) {
+				l4jxml = null;
+				System.out.println(DEBUG_LOG_PREFIX + "could not read " + url + " (" + e.getClass().getName() + ": " + e.getMessage() + "), will try " + LOG4J_PROPS_FILE + " instead" + DEBUG_LOG_SUFFIX);
+			}
+		}
+
+		Properties log4jProperties = getProperties(LOG4J_PROPS_FILE);
 		if (log4jProperties != null) {
 			Properties dsProperties = getProperties("DeploymentSpecifics.properties");
 			if (dsProperties != null) {
@@ -57,7 +79,14 @@ public class LogUtil {
 				log4jProperties.put("instance.name.lc", instanceNameLowerCase);
 				log4jProperties.putAll(dsProperties);
 				hierarchy = new Hierarchy(new RootLogger(Level.DEBUG));
-				new PropertyConfigurator().doConfigure(log4jProperties, hierarchy);
+				if (l4jxml==null) {
+					new PropertyConfigurator().doConfigure(log4jProperties, hierarchy);
+				} else {
+					log4jProperties.putAll(System.getProperties());
+					l4jxml = StringResolver.substVars(l4jxml, log4jProperties);
+					Reader reader = new StringReader(l4jxml);
+					new DOMConfigurator().doConfigure(reader, hierarchy);
+				}
 			}
 		}
 	}
