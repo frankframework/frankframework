@@ -38,6 +38,11 @@
 			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
 		</layout>
 	</appender>
+	<appender name="appwrap" class="nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper">
+		<param name="maxMessageLength" value="${log.lengthLogRecords}"/>
+		<appender-ref ref="file"/>
+		<appender-ref ref="XML"/>
+	</appender>
 	<logger name="org.apache">
 		<level value="INFO"/>
 	</logger>
@@ -57,7 +62,6 @@
 	</logger>
 	<root>
 		<level value="${log.level}"/>
-		<appender-ref ref="file"/>
-		<appender-ref ref="XML"/>
+		<appender-ref ref="appwrap"/>
 	</root>
 </log4j:configuration>

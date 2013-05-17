@@ -25,11 +25,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 
+import org.apache.log4j.Appender;
+import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -79,13 +82,21 @@ public final class ShowConfiguration extends ActionBase {
 	    initAction(request);
 		 
 	    DynaActionForm configurationPropertiesForm = getPersistentForm(mapping, form, request);
-		configurationPropertiesForm.set("logLevel", LogUtil.getRootLogger().getLevel().toString());
+	    Logger rl = LogUtil.getRootLogger();
+	    configurationPropertiesForm.set("logLevel", rl.getLevel().toString());
 		configurationPropertiesForm.set("logIntermediaryResults", new Boolean(false));
 		if (AppConstants.getInstance().getResolvedProperty("log.logIntermediaryResults")!=null) {
 			if (AppConstants.getInstance().getResolvedProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
 				configurationPropertiesForm.set("logIntermediaryResults", new Boolean(true));
 			}
 		}
+		Appender appender = rl.getAppender("appwrap");
+        if (appender!=null && appender instanceof IbisAppenderWrapper) {
+        	IbisAppenderWrapper iaw = (IbisAppenderWrapper) appender;
+    		configurationPropertiesForm.set("lengthLogRecords", iaw.getMaxMessageLength());
+        } else {
+    		configurationPropertiesForm.set("lengthLogRecords", -1);
+        }
 	     
 	    URL configURL = config.getConfigurationURL();
 	    String result = "";

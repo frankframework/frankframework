@@ -134,7 +134,8 @@
         <form-bean      name="ConfigurationPropertiesForm"
                         type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
                         <form-property name="logLevel" 			type="java.lang.String"/>
-                        <form-property name="logIntermediaryResults" type="java.lang.Boolean"/>                                       
+                        <form-property name="logIntermediaryResults" type="java.lang.Boolean"/>
+                        <form-property name="lengthLogRecords"	type="java.lang.Integer"/>
         </form-bean>
 
         <form-bean      name="AlterTracingConfigurationForm"

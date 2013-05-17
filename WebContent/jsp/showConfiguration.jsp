@@ -63,6 +63,12 @@
 								<html:checkbox property="logIntermediaryResults"/>
 						</td>
 					  </tr>
+					  <tr>
+						<td>Length log records</td>
+						<td>
+								<html:text property="lengthLogRecords" size="8" maxlength="16"/>
+						</td>
+					  </tr>
 
 					  <tr>
 						<td>
