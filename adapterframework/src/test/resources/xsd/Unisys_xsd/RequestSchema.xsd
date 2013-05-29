@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ufsa="http://unisys.financial.framework/UDTSchema">
+	<xs:import namespace="http://unisys.financial.framework/UDTSchema" schemaLocation="UDTSchema.xsd"/>
+	<xs:element name="RequestEnvelope" type="RequestEnvelopeType"/>
+	<xs:complexType name="RequestEnvelopeType">
+		<xs:sequence>
+			<xs:element name="activityReference" type="ufsa:UDTReference" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="countryCode" type="ufsa:UDTText20" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="event" type="ufsa:UDTText100" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="from" type="ufsa:UDTText100" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="languageCode" type="ufsa:UDTText20" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="messageId" type="ufsa:UDTText100" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="messageVersion" type="ufsa:UDTText20" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="processReference" type="ufsa:UDTText100" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="responseRequired" type="ufsa:UDTBoolean" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="role" type="ufsa:UDTText100" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="serviceType" type="ufsa:UDTText100" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="timeStamp" type="ufsa:UDTDateTime" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="to" type="ufsa:UDTText100" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="txReference" type="ufsa:UDTText100" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="userReference" type="ufsa:UDTReference" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="windbackInd" type="ufsa:UDTBoolean" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="ServiceRequest" type="ServiceRequestType"/>
+	<xs:complexType name="ServiceRequestType">
+		<xs:sequence>
+			<xs:element ref="RequestEnvelope" minOccurs="1" maxOccurs="1"/>
+			<xs:element ref="Body" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="Body" type="BodyType"/>
+	<xs:complexType name="BodyType">
+	</xs:complexType>
+
+</xs:schema>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="CalculationResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Information" type="InformationType"/>
+				<xs:element name="CalculationResult" type="xs:string"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="InformationType">
+		<xs:sequence>
+			<xs:element name="Completion" type="CompletionType" minOccurs="0"/>
+			<xs:element name="Debug" type="DebugType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="CompletionType">
+		<xs:sequence>
+			<xs:element name="returnCode" type="UDTText20" minOccurs="0"/>
+			<xs:element name="reasonCode" type="UDTText100" minOccurs="0"/>
+			<xs:element name="languageCode" type="UDTText20" minOccurs="0"/>
+			<xs:element name="message" type="UDTText2000" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DebugType">
+		<xs:sequence>
+			<xs:element name="dateTime" type="UDTDateTime" minOccurs="0"/>
+			<xs:element name="exceptionCode" type="UDTText20" minOccurs="0"/>
+			<xs:element name="exceptionMessage" type="UDTText2000" minOccurs="0"/>
+			<xs:element name="systemId" type="UDTText20" minOccurs="0"/>
+			<xs:element name="ActingComponent" type="UDTText20" minOccurs="0"/>
+			<xs:element name="ContextInformation" type="UDTText50" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="UDTText20">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="20"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTText50">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="50"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTText100">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTText2000">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="2000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UDTDateTime">
+		<xs:restriction base="xs:dateTime"/>
+	</xs:simpleType>
+</xs:schema>

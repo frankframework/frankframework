@@ -1,0 +1,366 @@
+<xs:schema xmlns:ns1="http://ing.nn.afd/AFDTypes" xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://ing.nn.afd/AFDTypes" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:ns0="http://www.ing.com/CSP/XSD/General/Message_2" xmlns:ns2="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01" xmlns:ns3="http://ing.nn.afd/AFDTypes" xmlns:ns4="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.ing.com/nl/banking/coe/wsdl/bankingcustomer_generate_01/getpartybasicdatabanking_01_concrete" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+            <xs:simpleType name="AN..1">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="1"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..10">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="10"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..100">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="100"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..12">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="12"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..15">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="15"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..17">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="17"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..18">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="18"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..2">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..20">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="20"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..200">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="200"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..24">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="24"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..25">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="25"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..28">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="28"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..3">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="3"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..30">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="30"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..35">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="35"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..4">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="4"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..40">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="40"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..49">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="49"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..5">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="5"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..50">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="50"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..6">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="6"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..60">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="60"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..7">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="7"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..70">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="70"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..8">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="8"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..9">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="9"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN..9999">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="9999"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN1">
+                <xs:restriction base="xs:string">
+                    <xs:length value="1"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN1..10">
+                <xs:restriction base="xs:string">
+                    <xs:minLength value="1"/>
+                    <xs:maxLength value="10"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN1JN">
+                <xs:restriction base="xs:string">
+                    <xs:length value="1"/>
+                    <xs:pattern value="J|N"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN2">
+                <xs:restriction base="xs:string">
+                    <xs:length value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN3">
+                <xs:restriction base="xs:string">
+                    <xs:length value="3"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN4">
+                <xs:restriction base="xs:string">
+                    <xs:length value="4"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="AN5">
+                <xs:restriction base="xs:string">
+                    <xs:length value="5"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="City">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="24"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="D1">
+                <xs:restriction base="xs:string">
+                    <xs:length value="8"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="Date">
+                <xs:restriction base="xs:string">
+                    <xs:length value="8"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="Datetime">
+                <xs:restriction base="xs:string">
+                    <xs:length value="26"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..1">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="1"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..10">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="10"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..11B2">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="11"/>
+                    <xs:fractionDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..15">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="15"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..15A0">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="15"/>
+                    <xs:fractionDigits value="0"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..15A5">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="15"/>
+                    <xs:fractionDigits value="5"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..15B2">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="15"/>
+                    <xs:fractionDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..15B5">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="15"/>
+                    <xs:fractionDigits value="5"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..2">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..3">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="3"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..4">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="4"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..4T1">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="4"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..5">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="5"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..5P2">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="5"/>
+                    <xs:fractionDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..6">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="6"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..7">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="7"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..7P2">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="7"/>
+                    <xs:fractionDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..7P4">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="7"/>
+                    <xs:fractionDigits value="4"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..8">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="8"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..8P3">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="8"/>
+                    <xs:fractionDigits value="3"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..8P5">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="8"/>
+                    <xs:fractionDigits value="5"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..9">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="9"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..9B2">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="9"/>
+                    <xs:fractionDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N..9P2">
+                <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="9"/>
+                    <xs:fractionDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N1">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="1"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N2">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="2"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N4">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="4"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N6">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="6"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="N8">
+                <xs:restriction base="xs:int">
+                    <xs:totalDigits value="8"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="PhoneNumber">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="25"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="PostalCodeDutch">
+                <xs:restriction base="xs:string">
+                    <xs:maxLength value="9"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:schema>

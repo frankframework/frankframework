@@ -1,2 +1,8 @@
 classes
+.idea
+*.iml
+target
+.project
+.classpath
+.settings
 lib

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSPY v2004 rel. 3 U (http://www.xmlspy.com) by XMLSPY 2004 Professional Ed. Release 3, Concurrent + SMP for 5 users (ING Bank) -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:cia="http://www.ing.com/cia" targetNamespace="http://www.ing.com/cia" elementFormDefault="qualified" attributeFormDefault="unqualified" cia:agent="CIA" cia:package="com.ing.cia">
+	<xsd:annotation>
+		<xsd:documentation>Service WsdlTest.FindIntermediary. Version 1.1P_r0.1 Created by Elke Klieverik on 8 August
+            2007. (C) 2007 ING Group. Based on the definition as described in Functional Service Definition FSD
+            FindIntermediary v1.1_r0.1.doc. (C) 2007 ING Group.</xsd:documentation>
+		<xsd:appinfo>V1.1</xsd:appinfo>
+	</xsd:annotation>
+	<!--28 July 2006 - Chi Kit Kong - Added annotation-->
+	<!--4 August 2006 - Chi Kit Kong - Change BusinessPartnerRole to typeName and PortfolioNumber to portfolioNumber-->
+	<!--9 August 2006 - Chi Kit Kong - Change include file-->
+	<!--13 September 2006 - Update simple type file to 0.5 version-->
+	<!--7-August 2007 - Update simple type file name to XSD_Simple_Types_c0.7.xsd-->
+	<!--8 August 2007 - Elke Klieverik - New service version: Added extra output fields-->
+	<!--21-September 2007 - Update simple type file name to XSD_Simple_Types_c0.8.xsd-->
+	<!--15-Octoberr 2007 - Elke Klieverik - PortfolioNumber level 0..n changed-->
+	<!--5 November 2007 - Elke Klieverik - only release number of XSD changed-->
+	<xsd:include schemaLocation="XSD_Simple_Types_c0.8.xsd"/>
+	<xsd:element name="FindIntermediaryREQ" type="cia:FindIntermediaryREQType"/>
+	<xsd:complexType name="FindIntermediaryREQType">
+		<xsd:sequence>
+			<xsd:element name="OrganisationName" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="name" type="cia:name" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="PostalAddress" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="street" type="cia:street" minOccurs="0"/>
+						<xsd:element name="houseNumber" type="cia:houseNumber" minOccurs="0"/>
+						<xsd:element name="houseNumberAddition" type="cia:houseNumberAddition" minOccurs="0"/>
+						<xsd:element name="postalCode" type="cia:postalCode" minOccurs="0"/>
+						<xsd:element name="city" type="cia:city" minOccurs="0"/>
+						<xsd:element name="countryCode" type="cia:countryCodeEnum" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="PartyRegistration" minOccurs="0" maxOccurs="2">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="typeName" type="cia:typeName" minOccurs="0"/>
+						<xsd:element name="registeredReference" type="cia:registeredReference" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="PortfolioNumber" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="portfolioNumber" type="cia:portfolioNumber" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="PartyInternalAgreementRole">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="status" type="cia:partyInternalAgreementRoleContactStatus"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="FindIntermediaryRLY" type="cia:FindIntermediaryRLYType"/>
+	<xsd:complexType name="FindIntermediaryRLYType">
+		<xsd:sequence>
+			<xsd:element name="ProcessItem">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="CompletionInformation" type="cia:completionInformation"/>
+						<xsd:element name="DebuggingInformation" type="cia:debuggingInformation" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Organisation" minOccurs="0" maxOccurs="30">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="organisationalId" type="cia:organizationalId" minOccurs="0"/>
+						<xsd:element name="portfolioNumber" type="cia:portfolioNumber" minOccurs="0"/>
+						<xsd:element name="OrganisationName" minOccurs="0">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="name" type="cia:organisationName" minOccurs="0"/>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="PostalAddress" minOccurs="0">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="street" type="cia:street" minOccurs="0"/>
+									<xsd:element name="houseNumber" type="cia:houseNumber" minOccurs="0"/>
+									<xsd:element name="houseNumberAddition" type="cia:houseNumberAddition" minOccurs="0"/>
+									<xsd:element name="postalCode" type="cia:postalCode" minOccurs="0"/>
+									<xsd:element name="city" type="cia:city" minOccurs="0"/>
+									<xsd:element name="countryCode" type="cia:countryCodeEnum" minOccurs="0"/>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="PortfolioNumber" minOccurs="0" maxOccurs="unbounded">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="portfolioNumber" type="cia:portfolioNumber"/>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="PartyInternalAgreementRole" minOccurs="0">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="typeName" type="cia:typeName" minOccurs="0"/>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>
