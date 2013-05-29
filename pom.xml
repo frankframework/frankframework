@@ -16,13 +16,16 @@
     <module>webapp</module>
 
 
-    <!-- these need to added before doing a release -->
+    <!-- these need to added before doing a release
+         (at least the first time, I propose that we'll maintain seperate versions and releases for these later)
+    -->
+    <!--
     <module>sap</module>
     <module>ifsa</module>
     <module>coolgen</module>
     <module>ibm</module>
     <module>tibco</module>
-
+    -->
 
   </modules>
 
