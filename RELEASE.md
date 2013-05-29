@@ -9,7 +9,7 @@ How to release
   check that in.
 
 - Checkout the mvn-repo in ../mvn-repo
-- mvn release:prepare
+- mvn -Darguments="-DskipTests"  release:prepare
   It will ask for the version of the release (of every module). And do a
   suggestion. E.g. '5'. Accept the suggestions.
   It will also ask for the name of the tag, and suggest
@@ -17,7 +17,10 @@ How to release
   It will also ask for new development version and proposes something
   e.g. '6-SNAPSHOT'.
 
-- mvn release:perform
+
+- If everything sucessfull:
+  mvn -Darguments="-DskipTests"  release:perform
+  This will build again, and now deploy to your (local) repository ../mvn-repo
 - Add the new files  in the mvn-repo and commit that
 - Comment out the propriatary modules again in de parent pom
   (otherwise it won't easily build)
