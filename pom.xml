@@ -4,12 +4,12 @@
   <groupId>org.ibissource</groupId>
   <artifactId>ibis-parent</artifactId>
   <packaging>pom</packaging>
-  <version>5</version>
+  <version>6-SNAPSHOT</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <github.maven.repository>file:../mvn-repo</github.maven.repository>
-    <ibis.version>5</ibis.version>
+    <ibis.version>6-SNAPSHOT</ibis.version>
   </properties>
 
   <modules>
@@ -137,7 +137,7 @@
     <connection>scm:git:git://github.com/ibissource/iaf.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/ibissource/iaf.git</developerConnection>
     <url>https://github.com/ibissource/iaf</url>
-    <tag>REL-5</tag>
+    <tag>HEAD</tag>
   </scm>
 
 
