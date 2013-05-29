@@ -37,10 +37,9 @@ public class AbstractXmlValidatorTest {
     @Test
     public void straighforward() throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
         AbstractXmlValidator instance = implementation.newInstance();
-        // TODO It seems that setSchemaLocation was renamed
-        /*instance.setSchemaLocation("http://www.ing.com/testxmlns " +
-            "/GetIntermediaryAgreementDetails/xsd/A_correct.xsd");
-        */instance.validate("intermediaryagreementdetails.xml", new PipeLineSessionBase(), "test");
+        instance.setSchemasProvider(new SchemasProviderImpl("http://www.ing.com/testxmlns",
+                "/GetIntermediaryAgreementDetails/xsd/A_correct.xsd"));
+        instance.validate("intermediaryagreementdetails.xml", new PipeLineSessionBase(), "test");
     }
 
 

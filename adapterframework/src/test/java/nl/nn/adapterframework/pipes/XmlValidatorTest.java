@@ -240,7 +240,6 @@ public class XmlValidatorTest {
         validator.setThrowException(true);
         validator.configure();
         validator.setFullSchemaChecking(true);
-
         return validator;
     }
     private String getTestXml(String testxml) throws IOException {
