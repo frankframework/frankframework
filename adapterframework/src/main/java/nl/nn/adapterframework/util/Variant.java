@@ -32,7 +32,7 @@ public class Variant {
 
 	private String data = null;
 	private Source dataAsXmlSource = null;
-	
+
 	public Variant(Object obj) {
 		this(obj.toString());
 	}
@@ -46,16 +46,13 @@ public class Variant {
 	public String asString() {
 		return data;
 	}
-	
+
 	/**
 	 * Renders an InputSource for SAX parsing
 	 */
 	public InputSource asXmlInputSource() {
 
-		StringReader sr;
-
-		sr = new StringReader(data);
-
+		StringReader sr = new StringReader(data);
 		return new InputSource(sr);
 	}
 

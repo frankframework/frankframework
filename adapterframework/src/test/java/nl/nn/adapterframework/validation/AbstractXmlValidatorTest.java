@@ -18,10 +18,10 @@ import java.util.Collection;
  * @author Michiel Meeuwissen
  */
 @RunWith(value = Parameterized.class)
-public class XmlValidatorBaseTest {
+public class AbstractXmlValidatorTest {
     private Class<AbstractXmlValidator> implementation;
 
-    public XmlValidatorBaseTest(Class<AbstractXmlValidator> implementation) {
+    public AbstractXmlValidatorTest(Class<AbstractXmlValidator> implementation) {
         this.implementation = implementation;
     }
 
@@ -37,20 +37,21 @@ public class XmlValidatorBaseTest {
     @Test
     public void straighforward() throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
         AbstractXmlValidator instance = implementation.newInstance();
-        // TODO It seems that setSchemaLocation was renamed
-        /*instance.setSchemaLocation("http://www.ing.com/testxmlns " +
-            "/GetIntermediaryAgreementDetails/xsd/A_correct.xsd");
-        */instance.validate("intermediaryagreementdetails.xml", new PipeLineSessionBase(), "test");
+        instance.setSchemasProvider(new SchemasProviderImpl("http://www.ing.com/testxmlns",
+                "/GetIntermediaryAgreementDetails/xsd/A_correct.xsd"));
+        instance.validate(getTestXml("/intermediaryagreementdetails.xml"), new PipeLineSessionBase(), "test");
     }
 
 
     @Test
     public void addTargetNamespace() throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
         AbstractXmlValidator instance = implementation.newInstance();
-        /*instance.setSchemaLocation("http://www.ing.com/testxmlns " +
-            "/GetIntermediaryAgreementDetails/xsd/A.xsd");
-        */instance.setAddNamespaceToSchema(true);
-        instance.validate("intermediaryagreementdetails.xml", new PipeLineSessionBase(), "test");
+        instance.setSchemasProvider(
+                new SchemasProviderImpl(
+                        "http://www.ing.com/testxmlns",
+                        "/GetIntermediaryAgreementDetails/xsd/A.xsd"));
+        instance.setAddNamespaceToSchema(true);
+        instance.validate(getTestXml("/intermediaryagreementdetails.xml"), new PipeLineSessionBase(), "test");
     }
 
 

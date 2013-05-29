@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.util;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -14,7 +15,9 @@ import java.net.URL;
 public class ClassUtilsTest {
 
 
-	@Test
+    @Test
+    @Ignore("Only runs  @michiel")
+    // TODO may actual tests...
 	public void classUtilsTest() throws URISyntaxException, IOException {
 		URL url = ClassUtils.getResourceURL("jar:file:///Users/michiel/ibis/workspace/rsa-8/Ibis4WUBWEB/WebContent/WEB-INF/lib/AdapterFramework 5.0-a14.jarx!/xml/xsd/soap/envelope.xsd");
 		System.out.println(url);

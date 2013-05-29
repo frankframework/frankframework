@@ -64,7 +64,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		//globalRegistry.put("http://ing.nn.afd/AFDTypes",                ClassUtils.getResourceURL("/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/AFDTypes.xsd"));
 	}
 
-	private Map<String, Schema> javaxSchemas = new HashMap();
+	private Map<String, Schema> javaxSchemas = new HashMap<String, Schema>();
 
 	@Override
 	protected void init() throws ConfigurationException {
@@ -87,6 +87,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 
 	protected String validate(Source source, IPipeLineSession session) throws XmlValidatorException, ConfigurationException, PipeRunException {
+        init();
 		String schemasId = schemasProvider.getSchemasId();
 		if (schemasId == null) {
 			schemasId = schemasProvider.getSchemasId(session);
@@ -97,29 +98,27 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 			Validator validator = xsd.newValidator();
 			validator.setResourceResolver(new LSResourceResolver() {
 				public LSInput resolveResource(String s, String s1, String s2, String s3, String s4) {
-					System.out.println("--");
+                    System.out.println("--");
 					return null;//To change body of implemented methods Settings | File Templates.
 				}
 			});
 			validator.setErrorHandler(new ErrorHandler() {
 				public void warning(SAXParseException e) throws SAXException {
-					System.out.println("--");
+                    LOG.warn(e.getMessage());
 				}
 
 				public void error(SAXParseException e) throws SAXException {
-					System.out.println("--");
-					//To change body of implemented methods Settings | File Templates.
-				}
+                    LOG.error(e.getMessage());
+                }
 
 				public void fatalError(SAXParseException e) throws SAXException {
-					System.out.println("--");
-					//To change body of implemented methods Settings | File Templates.
+                    LOG.error(e.getMessage());
 				}
 			});
-			validator.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
+			//validator.setFeature("http://xml.org/sax/features/namespace-prefixes", true); /// DOESNT" WORK any more?
 			validator.validate(source);
 		} catch (SAXException e) {
-			throw new XmlValidatorException(e.getMessage());
+			throw new XmlValidatorException(e.getClass() + " " + e.getMessage());
 		} catch (IOException e) {
 			throw new XmlValidatorException(e.getMessage(), e);
 		}
@@ -129,7 +128,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	/**
 	 * Returns the {@link Schema} associated with this validator. This ia an XSD schema containing knowledge about the
 	 * schema source as returned by {@link #getSchemaSources()}
-	 * @throws ConfigurationException 
+	 * @throws ConfigurationException
 	 */
 	protected synchronized Schema getSchemaObject(String schemasId, List<nl.nn.adapterframework.validation.Schema> schemas) throws  ConfigurationException {
 		Schema schema = javaxSchemas.get(schemasId);

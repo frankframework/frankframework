@@ -15,17 +15,16 @@
 */
 package nl.nn.adapterframework.validation;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public class XmlValidatorErrorHandler implements ErrorHandler {
 	private Logger log = LogUtil.getLogger(this);
@@ -45,7 +44,7 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 		reasons = mainMessage + ":";
 	}
 
-	public void addReason(String message, String location) {
+	protected void addReason(String message, String location) {
 		String xpath = xmlValidatorContentHandler.getXpath();
 
 		XmlBuilder reason = new XmlBuilder("reason");
@@ -79,14 +78,14 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 		}
 	}
 
-	public void addReason(Throwable t) {
-		String message = null;
+	protected void addReason(Throwable t) {
 		String location = null;
 		if (t instanceof SAXParseException) {
 			SAXParseException spe = (SAXParseException)t;
 			location = "at ("+spe.getLineNumber()+ ","+spe.getColumnNumber()+")";
 		}
-		if (t instanceof SAXException) {
+        String message;
+        if (t instanceof SAXException) {
 			message = t.getMessage();
 		} else {
 			StringWriter stringWriter = new StringWriter();

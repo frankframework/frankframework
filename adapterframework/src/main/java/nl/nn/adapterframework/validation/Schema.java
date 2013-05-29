@@ -21,10 +21,10 @@ import java.io.Reader;
 
 public interface Schema {
 
-	public InputStream getInputStream() throws IOException;
+	InputStream getInputStream() throws IOException;
 
-	public Reader getReader() throws IOException;
+	Reader getReader() throws IOException;
 
-	public String getSystemId();
+	String getSystemId();
 
 }

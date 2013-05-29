@@ -33,7 +33,7 @@ import nl.nn.adapterframework.core.PipeForward;
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
- * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
+ * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are:
  *   <table border="1">
  *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipe excecuted in Transaction</th></tr>
  *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
@@ -73,6 +73,7 @@ public class FixedForwardPipe extends AbstractPipe {
     /**
      * checks for correct configuration of forward
      */
+    @Override
     public void configure() throws ConfigurationException {
     	super.configure();
         forward = findForward(forwardName);
@@ -85,7 +86,7 @@ public class FixedForwardPipe extends AbstractPipe {
  	/**
  	 * Sets the name of the <code>forward</code> that is looked up
  	 * upon completion.
- 	 */ 
+ 	 */
 	public void setForwardName(String forwardName) {
         this.forwardName = forwardName;
     }
