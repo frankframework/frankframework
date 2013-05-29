@@ -18,10 +18,10 @@ import java.util.Collection;
  * @author Michiel Meeuwissen
  */
 @RunWith(value = Parameterized.class)
-public class XmlValidatorBaseTest {
+public class AbstractXmlValidatorTest {
     private Class<AbstractXmlValidator> implementation;
 
-    public XmlValidatorBaseTest(Class<AbstractXmlValidator> implementation) {
+    public AbstractXmlValidatorTest(Class<AbstractXmlValidator> implementation) {
         this.implementation = implementation;
     }
 
@@ -47,9 +47,11 @@ public class XmlValidatorBaseTest {
     @Test
     public void addTargetNamespace() throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
         AbstractXmlValidator instance = implementation.newInstance();
-        /*instance.setSchemaLocation("http://www.ing.com/testxmlns " +
-            "/GetIntermediaryAgreementDetails/xsd/A.xsd");
-        */instance.setAddNamespaceToSchema(true);
+        instance.setSchemasProvider(
+                new SchemasProviderImpl(
+                        "http://www.ing.com/testxmlns",
+                        "/GetIntermediaryAgreementDetails/xsd/A.xsd"));
+        instance.setAddNamespaceToSchema(true);
         instance.validate("intermediaryagreementdetails.xml", new PipeLineSessionBase(), "test");
     }
 

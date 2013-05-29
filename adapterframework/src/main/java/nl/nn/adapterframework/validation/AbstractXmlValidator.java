@@ -153,7 +153,7 @@ public abstract class AbstractXmlValidator {
      * @param input a String
      * @param session a {@link nl.nn.adapterframework.core.IPipeLineSession Pipelinesession}
      * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
-     * @throws ConfigurationException 
+     * @throws ConfigurationException
      */
     public abstract String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException;
 
@@ -172,6 +172,10 @@ public abstract class AbstractXmlValidator {
 		return fullSchemaChecking;
 	}
 
+    /**
+     * @since 5.0
+     * @param schemasProvider
+     */
 	public void setSchemasProvider(SchemasProvider schemasProvider) {
 		this.schemasProvider = schemasProvider;
 	}
@@ -273,7 +277,7 @@ public abstract class AbstractXmlValidator {
 	}
 
 	public Boolean getIgnoreUnknownNamespaces() {
-		return ignoreUnknownNamespaces;
+		return ignoreUnknownNamespaces == null ? false : ignoreUnknownNamespaces;
 	}
 
 	protected static class RetryException extends XNIException {

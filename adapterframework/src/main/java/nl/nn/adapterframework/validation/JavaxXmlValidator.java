@@ -64,7 +64,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		//globalRegistry.put("http://ing.nn.afd/AFDTypes",                ClassUtils.getResourceURL("/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/AFDTypes.xsd"));
 	}
 
-	private Map<String, Schema> javaxSchemas = new HashMap();
+	private Map<String, Schema> javaxSchemas = new HashMap<String, Schema>();
 
 	@Override
 	protected void init() throws ConfigurationException {
@@ -87,6 +87,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 
 	protected String validate(Source source, IPipeLineSession session) throws XmlValidatorException, ConfigurationException, PipeRunException {
+        init();
 		String schemasId = schemasProvider.getSchemasId();
 		if (schemasId == null) {
 			schemasId = schemasProvider.getSchemasId(session);
@@ -129,7 +130,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	/**
 	 * Returns the {@link Schema} associated with this validator. This ia an XSD schema containing knowledge about the
 	 * schema source as returned by {@link #getSchemaSources()}
-	 * @throws ConfigurationException 
+	 * @throws ConfigurationException
 	 */
 	protected synchronized Schema getSchemaObject(String schemasId, List<nl.nn.adapterframework.validation.Schema> schemas) throws  ConfigurationException {
 		Schema schema = javaxSchemas.get(schemasId);
