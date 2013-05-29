@@ -25,6 +25,7 @@ Then
 The work space will now be build.
 
 10. Switch to the Java EE perspective
+The code can be found in the 'ibis-adapterframework-module'.
 You can create a tomcat server.
 
-The example-webapp can be run in this server.
+The ibis-webapp can be run in this server.
