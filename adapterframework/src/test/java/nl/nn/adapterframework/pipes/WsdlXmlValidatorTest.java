@@ -7,7 +7,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 import org.junit.Test;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 import javax.wsdl.WSDLException;
 import java.io.IOException;
@@ -31,14 +30,6 @@ public class WsdlXmlValidatorTest {
     private IPipeLineSession session = mock(IPipeLineSession.class);
 
 
-    @Test
-    public void getInputSchema() throws IOException, WSDLException, ConfigurationException {
-        WsdlXmlValidator val = new WsdlXmlValidator();
-        val.setWsdl(SIMPLE);
-        /*Schema inputSchema = val.getInputSchema();
-        assertNotNull(inputSchema);
-        System.out.println("" + val.toString(inputSchema));*/
-    }
 
     @Test
     public void wsdlValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
@@ -94,7 +85,7 @@ public class WsdlXmlValidatorTest {
         val.validate("<TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest>", session);
     }
 
-    @Test(expected = SAXParseException.class)
+    @Test(expected = XmlValidatorException.class)
     public void wsdlValidateWithReferenceFail() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setValidateSoapEnvelope(null);
@@ -141,7 +132,7 @@ public class WsdlXmlValidatorTest {
                 "", session);
     }
 
-    @Test(expected = SAXParseException.class)
+    @Test(expected = XmlValidatorException.class)
     public void wsdlTibcoFailEnvelop() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(TIBCO);
@@ -175,7 +166,7 @@ public class WsdlXmlValidatorTest {
                 "", session);
     }
 
-    @Test(expected = SAXParseException.class)
+    @Test(expected = XmlValidatorException.class)
     public void wsdlTibcoFailMessage() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(TIBCO);

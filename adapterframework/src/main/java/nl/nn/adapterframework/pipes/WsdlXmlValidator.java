@@ -167,25 +167,26 @@ public class WsdlXmlValidator extends SoapValidator {
 	@Override
 	public List<nl.nn.adapterframework.validation.Schema> getSchemas() throws ConfigurationException {
 		List<nl.nn.adapterframework.validation.Schema> result = new ArrayList<nl.nn.adapterframework.validation.Schema>();
-		result.add(
-			new nl.nn.adapterframework.validation.Schema() {
+        if (validateSoapEnvelope != null) {
+            result.add(
+                    new nl.nn.adapterframework.validation.Schema() {
 
-				public InputStream getInputStream() throws IOException {
-                    if (validateSoapEnvelope == null) throw new IOException("No validate soap envelop");
-                    if (validateSoapEnvelope.xsd == null) throw new IOException(validateSoapEnvelope + " has  no xsd");
-					return ClassUtils.getResourceURL(validateSoapEnvelope.xsd).openStream();
-				}
+                        public InputStream getInputStream() throws IOException {
+                            if (validateSoapEnvelope.xsd == null) throw new IOException(validateSoapEnvelope + " has  no xsd");
+                            return ClassUtils.getResourceURL(validateSoapEnvelope.xsd).openStream();
+                        }
 
-				public Reader getReader() throws IOException {
-					return null;
-				}
+                        public Reader getReader() throws IOException {
+                            return null;
+                        }
 
-				public String getSystemId() {
-					return ClassUtils.getResourceURL(validateSoapEnvelope.xsd).toExternalForm();
-				}
+                        public String getSystemId() {
+                            return ClassUtils.getResourceURL(validateSoapEnvelope.xsd).toExternalForm();
+                        }
 
-			}
-		);
+                    }
+            );
+        }
 		List types = definition.getTypes().getExtensibilityElements();
 		for (Iterator i = types.iterator(); i.hasNext();) {
 			ExtensibilityElement type = (ExtensibilityElement) i.next();

@@ -16,21 +16,6 @@
 package nl.nn.adapterframework.pipes;
 
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-
-import javax.xml.namespace.QName;
-import javax.xml.transform.TransformerConfigurationException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
@@ -42,16 +27,15 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.validation.AbstractXmlValidator;
-import nl.nn.adapterframework.validation.Schema;
-import nl.nn.adapterframework.validation.SchemaUtils;
-import nl.nn.adapterframework.validation.SchemasProvider;
-import nl.nn.adapterframework.validation.XSD;
-import nl.nn.adapterframework.validation.XercesXmlValidator;
-import nl.nn.adapterframework.validation.XmlValidatorException;
-
+import nl.nn.adapterframework.validation.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
+import javax.xml.namespace.QName;
+import javax.xml.transform.TransformerConfigurationException;
+import java.io.*;
+import java.net.URL;
+import java.util.*;
 
 
 /**
@@ -102,7 +86,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
     private boolean forwardFailureToSuccess = false;
-	
+
 	protected AbstractXmlValidator validator = new XercesXmlValidator();
 
 	private TransformerPool transformerPoolExtractSoapBody;

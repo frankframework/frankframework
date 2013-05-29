@@ -16,26 +16,12 @@
 package nl.nn.adapterframework.validation;
 
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.Variant;
-
+import nl.nn.adapterframework.util.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.xerces.xni.XNIException;
@@ -43,6 +29,12 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLParseException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 
 /**
  * baseclass for validating input message against a XML-Schema.
@@ -134,7 +126,7 @@ public abstract class AbstractXmlValidator {
 		}
 		String fullReasons = xmlValidatorErrorHandler.getReasons();
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-			log.debug(getLogPrefix(session)+"storing reasons under sessionKey ["+getReasonSessionKey()+"]");
+			log.debug(getLogPrefix(session) + "storing reasons under sessionKey ["+getReasonSessionKey()+"]");
 			session.put(getReasonSessionKey(),fullReasons);
 		}
 		if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
@@ -222,9 +214,7 @@ public abstract class AbstractXmlValidator {
 
 	public void setRoot(String root) {
 		this.root = root;
-		List<String> path = new ArrayList<String>();
-		path.add(root);
-		addRootValidation(path);
+		addRootValidation(Arrays.asList(root));
 	}
 	public String getRoot() {
 		return root;

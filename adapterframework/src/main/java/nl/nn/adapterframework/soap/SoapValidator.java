@@ -15,15 +15,13 @@
 */
 package nl.nn.adapterframework.soap;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
+import java.util.Arrays;
 
 /**
  * XmlValidator that will automatically add the SOAP envelope XSD.
@@ -48,18 +46,10 @@ public class SoapValidator extends XmlValidator {
         super.setRoot(getRoot());
         super.configure();
         if (StringUtils.isNotEmpty(soapBody)) {
-            List<String> path = new ArrayList<String>();
-            path.add("Envelope");
-            path.add("Body");
-            path.add(soapBody);
-            validator.addRootValidation(path);
+            validator.addRootValidation(Arrays.asList("Envelope", "Body", soapBody));
         }
         if (StringUtils.isNotEmpty(soapHeader)) {
-            List<String> path = new ArrayList<String>();
-            path.add("Envelope");
-            path.add("Header");
-            path.add(soapHeader);
-            validator.addRootValidation(path);
+            validator.addRootValidation(Arrays.asList("Envelope", "Body", soapHeader));
         }
     }
 
