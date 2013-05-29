@@ -10,7 +10,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <github.maven.repository>file:///Users/michiel/github/ibissource/mvn-repo</github.maven.repository>
+    <github.maven.repository>file:../mvn-repo</github.maven.repository>
     <ibis.version>5-SNAPSHOT</ibis.version>
   </properties>
 
@@ -90,6 +90,14 @@
       <url>https://github.com/ibissource/mvn-repo/raw/master/snapshots</url>
     </repository>
   </repositories>
+
+  <scm>
+    <connection>scm:git:git://github.com/ibissource/iaf.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/ibissource/iaf.git</developerConnection>
+    <url>https://github.com/ibissource/iaf</url>
+    <tag>HEAD</tag>
+  </scm>
+
 
   <distributionManagement>
     <repository>
