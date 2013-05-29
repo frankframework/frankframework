@@ -17,9 +17,16 @@
   <modules>
     <module>adapterframework</module>
     <module>webapp</module>
-    <!--
-    <module>ibis-ifsa</module>
-    -->
+
+
+    <!-- these need to added before doing a release -->
+    <module>sap</module>
+    <module>ifsa</module>
+    <module>coolgen</module>
+    <module>ibm</module>
+    <module>tibco</module>
+
+
   </modules>
 
   <dependencyManagement>
