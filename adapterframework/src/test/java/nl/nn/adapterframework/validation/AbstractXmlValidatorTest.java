@@ -39,7 +39,7 @@ public class AbstractXmlValidatorTest {
         AbstractXmlValidator instance = implementation.newInstance();
         instance.setSchemasProvider(new SchemasProviderImpl("http://www.ing.com/testxmlns",
                 "/GetIntermediaryAgreementDetails/xsd/A_correct.xsd"));
-        instance.validate("intermediaryagreementdetails.xml", new PipeLineSessionBase(), "test");
+        instance.validate(getTestXml("/intermediaryagreementdetails.xml"), new PipeLineSessionBase(), "test");
     }
 
 
@@ -51,7 +51,7 @@ public class AbstractXmlValidatorTest {
                         "http://www.ing.com/testxmlns",
                         "/GetIntermediaryAgreementDetails/xsd/A.xsd"));
         instance.setAddNamespaceToSchema(true);
-        instance.validate("intermediaryagreementdetails.xml", new PipeLineSessionBase(), "test");
+        instance.validate(getTestXml("/intermediaryagreementdetails.xml"), new PipeLineSessionBase(), "test");
     }
 
 
