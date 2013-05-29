@@ -27,7 +27,7 @@ public class XsdUtilsTest {
     @Test
     public void targetNameSpaceAddingEmpty() throws XMLStreamException {
         InputStream in = new ByteArrayInputStream("<doesntmatterwhat />".getBytes());
-   /*     assertEquals(in, XsdUtils.targetNameSpaceAdding(in, ""));
+       /* assertEquals(in, XsdUtils.targetNameSpaceAdding(in, ""));
         assertEquals(in, XsdUtils.targetNameSpaceAdding(in, null));*/
     }
 
