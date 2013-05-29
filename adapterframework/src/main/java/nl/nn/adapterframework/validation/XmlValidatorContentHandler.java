@@ -49,7 +49,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	private int namespaceWarnings = 0;
 
 	/**
-	 * 
+	 *
 	 * @param grammarsValidation
 	 * @param rootValidations
 	 *         contains path's (just a single element in case of the root of the

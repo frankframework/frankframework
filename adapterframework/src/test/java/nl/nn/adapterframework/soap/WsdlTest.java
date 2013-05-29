@@ -148,8 +148,9 @@ public class WsdlTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         wsdl.wsdl(out, "Test");
         DocumentBuilder dbuilder = createDocumentBuilder();
-        Document result = dbuilder.parse(new ByteArrayInputStream(out.toByteArray()));
         //System.out.println(new String(out.toByteArray()));
+        Document result = dbuilder.parse(new ByteArrayInputStream(out.toByteArray()));
+
         Document expected = dbuilder.parse(getClass().getClassLoader().getResourceAsStream(testWsdl));
         XMLUnit.setIgnoreWhitespace(true);
         XMLUnit.setIgnoreComments(true);

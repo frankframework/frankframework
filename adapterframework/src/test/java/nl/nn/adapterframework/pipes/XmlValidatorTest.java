@@ -116,7 +116,7 @@ public class XmlValidatorTest {
     }
     @Test(expected = XmlValidatorException.class) // step4errorr1.xml uses the namespace xmlns="http://www.ing.com/BESTAATNIET
     public void step5ValidationErrorUnknownNamespace() throws PipeRunException, ConfigurationException, IOException, XmlValidatorException {
-        getValidator(
+        XmlValidator validator = getValidator(
             "http://schemas.xmlsoap.org/soap/envelope/ " +
                 "/Tibco/xsd/soap/envelope.xsd " +
 
@@ -128,11 +128,12 @@ public class XmlValidatorTest {
 
                 "http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01 " +
                 "/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/bankingcustomer_generate_01_getpartybasicdatabanking_request_01.xsd"
-        ).
-            validate(getTestXml("/step5errors1.xml"), new PipeLineSessionBase());
+        );
+        validator.setIgnoreUnknownNamespaces(false);
+        validator.validate(getTestXml("/step5errors1.xml"), new PipeLineSessionBase());
     }
 
-    @Test
+    @Test(expected = XmlValidatorException.class)
     public void validationUnknownNamespaceSwitchedOff() throws PipeRunException, ConfigurationException, IOException, XmlValidatorException {
         XmlValidator validator = getValidator(
             "http://schemas.xmlsoap.org/soap/envelope/ " +
@@ -142,7 +143,7 @@ public class XmlValidatorTest {
         validator.validate(getTestXml("/step5errors1.xml"), new PipeLineSessionBase());
     }
 
-    @Test(expected = XmlValidatorException.class)
+    @Test
     public void validationUnknownNamespaceSwitchedOn() throws PipeRunException, ConfigurationException, IOException, XmlValidatorException {
         XmlValidator validator = getValidator(
             "http://schemas.xmlsoap.org/soap/envelope/ " +
