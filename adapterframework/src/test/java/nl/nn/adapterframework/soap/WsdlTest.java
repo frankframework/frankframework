@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -132,6 +133,8 @@ public class WsdlTest {
             "http://wub2nn.nn.nl/FindIntermediary",
 				"WsdlTest/FindIntermediary");
         Wsdl wsdl = new Wsdl(pipe).init();
+        wsdl.setUseIncludes(true);
+        assertTrue(wsdl.isUseIncludes());
 		test(wsdl, "WsdlTest/FindIntermediary.test.wsdl");
         zip(wsdl);
         // assertEquals(2, wsdl.getXSDs(true).size()); TODO?
