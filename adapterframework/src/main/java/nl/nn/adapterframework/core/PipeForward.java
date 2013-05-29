@@ -27,7 +27,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * pipeName is defined in the <code>path</code> property.<br/><br/>
  * In this manner it is possible to influence the flow through the pipeline
  * without affecting the Java-code. Simply change the forwarding-XML.<br/>
- * 
+ *
  * @version $Id$
  * @author Johan Verrips
  * @see PipeLine
@@ -37,6 +37,14 @@ public class PipeForward {
 
     private String name;
     private String path;
+
+    public PipeForward(String name, String path) {
+        this.name = name;
+        this.path = path;
+    }
+    public PipeForward() {
+
+    }
 
 	/**
 	 * the <code>name</code> is a symbolic reference to a <code>path</code>.<br/>
@@ -64,7 +72,7 @@ public class PipeForward {
     }
  	/**
  	 * uses reflection to return the value
- 	 */ 
+ 	 */
 	public String toString(){
       return ToStringBuilder.reflectionToString(this);
     }

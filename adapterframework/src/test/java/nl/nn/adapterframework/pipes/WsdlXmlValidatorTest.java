@@ -2,6 +2,7 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 import org.junit.Test;
@@ -44,6 +45,8 @@ public class WsdlXmlValidatorTest {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setValidateSoapEnvelope(null);
         val.setWsdl(SIMPLE);
+        val.setThrowException(true);
+        val.registerForward(new PipeForward("success", null));
         val.configure();
         val.validate("<TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest>", session);
     }
@@ -53,6 +56,8 @@ public class WsdlXmlValidatorTest {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setValidateSoapEnvelope("false");
         val.setWsdl(SIMPLE);
+        val.setThrowException(true);
+        val.registerForward(new PipeForward("success", null));
         val.configure();
         val.validate("<TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest>", session);
     }
@@ -72,6 +77,8 @@ public class WsdlXmlValidatorTest {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setValidateSoapEnvelope("false");
         val.setWsdl(SIMPLE_WITH_INCLUDE);
+        val.setThrowException(true);
+        val.registerForward(new PipeForward("success", null));
         val.configure();
         val.validate("<TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest>", session);
     }
@@ -81,6 +88,8 @@ public class WsdlXmlValidatorTest {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setValidateSoapEnvelope(null);
         val.setWsdl(SIMPLE_WITH_REFERENCE);
+        val.setThrowException(true);
+        val.registerForward(new PipeForward("success", null));
         val.configure();
         val.validate("<TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest>", session);
     }
@@ -90,6 +99,8 @@ public class WsdlXmlValidatorTest {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setValidateSoapEnvelope(null);
         val.setWsdl(SIMPLE_WITH_REFERENCE);
+        val.setThrowException(true);
+        val.registerForward(new PipeForward("success", null));
         val.configure();
         val.validate("<TradePriceRequestERROR xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequestERROR>", session);
     }
@@ -100,6 +111,8 @@ public class WsdlXmlValidatorTest {
     public void wsdlTibco() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(TIBCO);
+        val.setThrowException(true);
+        val.registerForward(new PipeForward("success", null));
         val.configure();
         val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
                 "  <Body>\n" +
@@ -132,6 +145,8 @@ public class WsdlXmlValidatorTest {
     public void wsdlTibcoFailEnvelop() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(TIBCO);
+        val.setThrowException(true);
+        val.registerForward(new PipeForward("success", null));
         val.configure();
         val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
                 "  <BodyERROR>\n" +
@@ -164,6 +179,8 @@ public class WsdlXmlValidatorTest {
     public void wsdlTibcoFailMessage() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(TIBCO);
+        val.setThrowException(true);
+        val.registerForward(new PipeForward("success", null));
         val.configure();
         val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
                 "  <Body>\n" +
