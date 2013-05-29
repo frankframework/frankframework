@@ -5,7 +5,7 @@ Via Eclipse Marketplace (Help -> Eclipse Marketplace):
 0. install egit if not yet available (it is default available on newer eclipse's)
 1. install 'Maven Integration for Eclipse'  (m2e).
 2. install 'm2e-egit' via the 'm2e Marketplace'. The only way I can
-come up with the find the m2e market place is: File ->Import -> Maven
+come up with the find to m2e market place is: File ->Import -> Maven
 -> Check out Maven Projects From SCM -> Find more SCM connectors in
 the 'm2e Marketplace'. Don't actually import this way, because it
 won't let you select a branch.
@@ -19,11 +19,12 @@ Then
 5. select mavenize branch
 6. Choose directory.
 7. Wait until pull from git is ready
-8. Right click 'iaf' and choose 'Import maven projects'
-9. Select all
+8. Right click on your chosen directory and choose 'Import maven projects'
+9. Select all and Finish
 
 The work space will now be build.
 
-Via the Java EE perspective you can create a tomcat server.
+10. Switch to the Java EE perspective
+You can create a tomcat server.
 
 The example-webapp can be run in this server.
