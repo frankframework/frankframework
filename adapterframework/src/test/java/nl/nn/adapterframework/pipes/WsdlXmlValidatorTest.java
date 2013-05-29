@@ -34,7 +34,7 @@ public class WsdlXmlValidatorTest {
     public void getInputSchema() throws IOException, WSDLException, ConfigurationException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(SIMPLE);
-      /*  Schema inputSchema = val.getInputSchema();
+        /*Schema inputSchema = val.getInputSchema();
         assertNotNull(inputSchema);
         System.out.println("" + val.toString(inputSchema));*/
     }
@@ -44,6 +44,7 @@ public class WsdlXmlValidatorTest {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setValidateSoapEnvelope(null);
         val.setWsdl(SIMPLE);
+        val.configure();
         val.validate("<TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest>", session);
     }
 
@@ -52,6 +53,7 @@ public class WsdlXmlValidatorTest {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setValidateSoapEnvelope("false");
         val.setWsdl(SIMPLE);
+        val.configure();
         val.validate("<TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest>", session);
     }
 
@@ -70,6 +72,7 @@ public class WsdlXmlValidatorTest {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setValidateSoapEnvelope("false");
         val.setWsdl(SIMPLE_WITH_INCLUDE);
+        val.configure();
         val.validate("<TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest>", session);
     }
 
@@ -78,6 +81,7 @@ public class WsdlXmlValidatorTest {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setValidateSoapEnvelope(null);
         val.setWsdl(SIMPLE_WITH_REFERENCE);
+        val.configure();
         val.validate("<TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest>", session);
     }
 
@@ -86,6 +90,7 @@ public class WsdlXmlValidatorTest {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setValidateSoapEnvelope(null);
         val.setWsdl(SIMPLE_WITH_REFERENCE);
+        val.configure();
         val.validate("<TradePriceRequestERROR xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequestERROR>", session);
     }
 
@@ -95,7 +100,7 @@ public class WsdlXmlValidatorTest {
     public void wsdlTibco() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(TIBCO);
-
+        val.configure();
         val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
                 "  <Body>\n" +
                 "    <MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
@@ -127,7 +132,7 @@ public class WsdlXmlValidatorTest {
     public void wsdlTibcoFailEnvelop() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(TIBCO);
-
+        val.configure();
         val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
                 "  <BodyERROR>\n" +
                 "    <MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
@@ -159,7 +164,7 @@ public class WsdlXmlValidatorTest {
     public void wsdlTibcoFailMessage() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(TIBCO);
-
+        val.configure();
         val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
                 "  <Body>\n" +
                 "    <MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +

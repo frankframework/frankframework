@@ -15,20 +15,6 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.XMLConstants;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -45,13 +31,20 @@ import nl.nn.javax.wsdl.extensions.schema.Schema;
 import nl.nn.javax.wsdl.factory.WSDLFactory;
 import nl.nn.javax.wsdl.xml.WSDLReader;
 import nl.nn.javax.xml.namespace.QName;
-
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
 
+import javax.xml.XMLConstants;
+import java.io.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Wsdl based input validator. Given an WSDL, it validates input.
- * 
+ *
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
@@ -173,7 +166,7 @@ public class WsdlXmlValidator extends SoapValidator {
 
 	@Override
 	public List<nl.nn.adapterframework.validation.Schema> getSchemas() throws ConfigurationException {
-		List<nl.nn.adapterframework.validation.Schema> result = new ArrayList();
+		List<nl.nn.adapterframework.validation.Schema> result = new ArrayList<nl.nn.adapterframework.validation.Schema>();
 		result.add(
 			new nl.nn.adapterframework.validation.Schema() {
 

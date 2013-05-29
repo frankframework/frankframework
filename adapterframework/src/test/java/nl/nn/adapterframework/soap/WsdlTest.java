@@ -63,7 +63,7 @@ public class WsdlTest {
 				getXmlValidatorInstance("a", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 				getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "Test1");
 
-		test(new Wsdl(simple), "WsdlTest/webservice1.test.wsdl");
+		test(new Wsdl(simple).init(), "WsdlTest/webservice1.test.wsdl");
 	}
 
 	@Test
@@ -74,7 +74,7 @@ public class WsdlTest {
 
 		Wsdl wsdl = new Wsdl(simple);
         wsdl.setUseIncludes(true);
-
+        wsdl.init();
 		test(wsdl, "WsdlTest/includexsds.test.wsdl");
 	}
 
@@ -98,7 +98,7 @@ public class WsdlTest {
             getXmlValidatorInstance(null, "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
             getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "TestRootTag");
 
-        test(new Wsdl(simple), "WsdlTest/noroottag.test.wsdl");
+        test(new Wsdl(simple).init(), "WsdlTest/noroottag.test.wsdl");
     }
 
 
@@ -115,7 +115,7 @@ public class WsdlTest {
                 "http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response " +
 						"WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd"),
             "http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail", "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail");
-        Wsdl wsdl = new Wsdl(pipe);
+        Wsdl wsdl = new Wsdl(pipe).init();
         test(wsdl, "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail.test.wsdl");
 
     }
@@ -131,7 +131,7 @@ public class WsdlTest {
 						"WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd"),
             "http://wub2nn.nn.nl/FindIntermediary",
 				"WsdlTest/FindIntermediary");
-        Wsdl wsdl = new Wsdl(pipe);
+        Wsdl wsdl = new Wsdl(pipe).init();
 		test(wsdl, "WsdlTest/FindIntermediary.test.wsdl");
         zip(wsdl);
         // assertEquals(2, wsdl.getXSDs(true).size()); TODO?
