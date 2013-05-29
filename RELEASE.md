@@ -12,9 +12,10 @@ How to release
 - mvn release:prepare
   It will ask for the version of the release (of every module). And do a
   suggestion. E.g. '5'. Accept the suggestions.
-  It will also ask for the name of the tag
-  It will ask for new development version and propases something
-   e.g. '6-SNAPSHOT'.
+  It will also ask for the name of the tag, and suggest
+  e.g. REL-5. That's fine.
+  It will also ask for new development version and proposes something
+  e.g. '6-SNAPSHOT'.
 
 - mvn release:perform
 - Add the new files  in the mvn-repo and commit that
