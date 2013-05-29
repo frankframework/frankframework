@@ -4,12 +4,11 @@
   <groupId>org.ibissource</groupId>
   <artifactId>ibis-parent</artifactId>
   <packaging>pom</packaging>
-  <version>6-SNAPSHOT</version>
+  <version>5.0-SNAPSHOT</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <github.maven.repository>file:../mvn-repo</github.maven.repository>
-    <ibis.version>6-SNAPSHOT</ibis.version>
   </properties>
 
   <modules>
@@ -42,22 +41,22 @@
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-tibco</artifactId>
-        <version>${ibis.version}</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-sap</artifactId>
-        <version>${ibis.version}</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-coolgen</artifactId>
-        <version>${ibis.version}</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-ibm</artifactId>
-        <version>${ibis.version}</version>
+        <version>${project.version}</version>
       </dependency>
 
 
@@ -108,8 +107,8 @@
         <artifactId>maven-release-plugin</artifactId>
         <version>2.4</version>
         <configuration>
-          <branchName>REL-${project.version}</branchName>
-          <tagNameFormat>REL-@{project.version}</tagNameFormat>
+          <branchName>v${project.version}</branchName>
+          <tagNameFormat>v@{project.version}</tagNameFormat>
         </configuration>
       </plugin>
     </plugins>
