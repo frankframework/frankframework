@@ -34,7 +34,7 @@
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework</artifactId>
-        <version>${ibis.version}</version>
+        <version>${project.version}</version>
       </dependency>
 
       <dependency>
