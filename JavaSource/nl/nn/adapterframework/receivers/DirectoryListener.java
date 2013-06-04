@@ -71,6 +71,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * <tr><td>{@link #setResponseTime(long) responseTime}</td><td>Waittime to wait between polling. N.B. not used anymore. Please use pollInterval on the Receiver instead</td><td>10000 [ms]</td></tr>
  * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of move attempts before throwing an exception. N.B. not used anymore. Please use maxRetries on the Receiver instead</td><td>1</td></tr>
  * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>time waited after unsuccesful try. N.B. not used anymore.</td><td>1000 [ms]</td></tr>
+ * <tr><td>{@link #setRandom(boolean) random}</td><td>when set to <code>true</code>, every file in the directory is passed in a random order</td><td>false</td></tr>
  * </table>
  * </p>
  *
@@ -93,6 +94,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	private long responseTime = 0;
 	private boolean passWithoutDirectory = false;
 	protected boolean createInputDirectory = false;
+	private boolean random = false;
 
 	private String processedDirectory;
 	private int numberOfBackups = 0;
@@ -110,8 +112,14 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getInputDirectory()))
 			throw new ConfigurationException("no value specified for inputDirectory");
+		if (isRandom()) {
+			if (StringUtils.isNotEmpty(getWildcard()) || StringUtils.isNotEmpty(getExcludeWildcard()) || getFileList() != null) {
+				throw new ConfigurationException("wildcard, excludeWildcard and fileList are not allowed for random=true");
+			}
+		} else {
 		if (StringUtils.isEmpty(getWildcard()))
 			throw new ConfigurationException("no value specified for wildcard");
+		}
 		if (StringUtils.isEmpty(getOutputDirectory())) {
 			//throw new ConfigurationException("no value specified for outputDirectory");
 			//TODO: instead of an outputDirectory a script to remove processed files is permitted
@@ -249,6 +257,14 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	 * is a new file to process and returns the first record.
 	 */
 	public synchronized Object getRawMessage(Map threadContext) throws ListenerException {
+		if (isRandom()) {
+			File file = FileUtils.getFirstFile(getInputDirectory(), getMinStableTime());
+			if (file==null) {
+				return null;
+			} else {
+				return getInputFileName(file, threadContext);
+			}
+		} else {
 		File[] inputFiles = FileUtils.getFiles(getInputDirectory(), getWildcard(), getExcludeWildcard(), getMinStableTime());
 		if (inputFiles.length == 0) {
 			return null;
@@ -277,6 +293,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		} else {
 			return getInputFileName(inputFiles[0], threadContext);
 		}
+	}
 	}
 
 	private String getInputFileName(File inputFile, Map threadContext) throws ListenerException {
@@ -507,6 +524,13 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	}
 	public boolean isFileTimeSensitive() {
 		return fileTimeSensitive;
+	}
+
+	public void setRandom(boolean b) {
+		random = b;
+	}
+	public boolean isRandom() {
+		return random;
 	}
 
 	class AfterMessageProcessedHandler extends DefaultHandler {
