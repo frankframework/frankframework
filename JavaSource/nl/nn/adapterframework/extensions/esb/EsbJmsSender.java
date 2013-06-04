@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>20000 (20s)</td></tr>
  * <tr><td>{@link #setMessageTimeToLive(String) messageTimeToLive}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
+ * <tr><td>{@link #setDeliveryMode(String) deliveryMode}</td><td></td><td>if messageProtocol=<code>RR</code>: </td><td><code>"NON_PERSISTENT"</code></td></tr>
  * <tr><td>{@link #setReplyTimeout(String) replyTimeout}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
  * <tr><td>{@link #setSynchronous(String) synchronous}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>if empty then derived from the element MessageHeader/To/Location in the SOAP header of the input message (if $messagingLayer='P2P' then '$applicationName_$applicationFunction' else '$operationName_$operationVersion)</td></tr>
@@ -57,6 +58,7 @@ public class EsbJmsSender extends JmsSender {
 			throw new ConfigurationException(getLogPrefix() + "illegal value for messageProtocol [" + getMessageProtocol() + "], must be '" + REQUEST_REPLY + "' or '" + FIRE_AND_FORGET + "'");
 		}
 		if (getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY)) {
+			setDeliveryMode(MODE_NON_PERSISTENT);
 			setMessageTimeToLive(getTimeOut());
 			setReplyTimeout((int) getTimeOut());
 			setSynchronous(true);
