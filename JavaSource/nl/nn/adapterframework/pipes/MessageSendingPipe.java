@@ -41,6 +41,8 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.extensions.esb.EsbJmsSender;
+import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -388,6 +390,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getInputWrapper().registerForward(pf);
+			if (getInputWrapper() instanceof EsbSoapWrapperPipe) {
+				EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe)getInputWrapper();
+				ISender sender = getSender();
+				eswPipe.retrievePhysicalDestinationFromSender(sender);
+			}
 			if (getInputWrapper() instanceof IExtendedPipe) {
 				((IExtendedPipe)getInputWrapper()).configure(getPipeLine());
 			} else {
