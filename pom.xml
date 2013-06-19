@@ -3,8 +3,9 @@
 
   <groupId>org.ibissource</groupId>
   <artifactId>ibis-parent</artifactId>
+  <version>5.0.28-SNAPSHOT</version>
+  <name>Ibis AdapterFramework parent</name>
   <packaging>pom</packaging>
-  <version>5.0-SNAPSHOT</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -137,7 +138,7 @@
 
   <scm>
     <connection>scm:git:git://github.com/ibissource/iaf.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/ibissource/iaf.git</developerConnection>
+    <developerConnection>scm:git:git://github.com/ibissource/iaf.git</developerConnection>
     <url>https://github.com/ibissource/iaf</url>
     <tag>HEAD</tag>
   </scm>

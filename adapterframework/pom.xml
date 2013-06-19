@@ -4,11 +4,10 @@
   <parent>
     <groupId>org.ibissource</groupId>
     <artifactId>ibis-parent</artifactId>
-    <version>5.0-SNAPSHOT</version>
+    <version>5.0.28-SNAPSHOT</version>
   </parent>
   <artifactId>ibis-adapterframework</artifactId>
-  <name>The Ibis adapter framework</name>
-
+  <name>Ibis AdapterFramework core</name>
 
   <properties>
     <ibis.dependencies>${basedir}/lib</ibis.dependencies>

@@ -4,11 +4,10 @@
   <parent>
     <groupId>org.ibissource</groupId>
     <artifactId>ibis-parent</artifactId>
-    <version>5.0-SNAPSHOT</version>
+    <version>5.0.28-SNAPSHOT</version>
   </parent>
   <artifactId>ibis-adapterframework-coolgen</artifactId>
-  <packaging>jar</packaging>
-
+  <name>Ibis AdapterFramework support for CoolGen</name>
 
   <properties>
     <ibis.dependencies>${basedir}/lib</ibis.dependencies>
