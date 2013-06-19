@@ -3,7 +3,7 @@
 
   <groupId>org.ibissource</groupId>
   <artifactId>ibis-parent</artifactId>
-  <version>5.0.28-SNAPSHOT</version>
+  <version>5.0.28</version>
   <name>Ibis AdapterFramework parent</name>
   <packaging>pom</packaging>
 
@@ -15,19 +15,14 @@
   <modules>
     <module>adapterframework</module>
     <module>webapp</module>
-
-
-    <!-- these need to added before doing a release
+    <!-- following modules need to be added before doing a release
          (at least the first time, I propose that we'll maintain seperate versions and releases for these later)
     -->
-    <!--
     <module>sap</module>
     <module>ifsa</module>
     <module>coolgen</module>
     <module>ibm</module>
     <module>tibco</module>
-    -->
-
   </modules>
 
   <dependencyManagement>
@@ -40,27 +35,27 @@
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-ifsa</artifactId>
-        <version>${project.version}</version>
+        <version>5.0.28</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-tibco</artifactId>
-        <version>${project.version}</version>
+        <version>5.0.28</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-sap</artifactId>
-        <version>${project.version}</version>
+        <version>5.0.28</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-coolgen</artifactId>
-        <version>${project.version}</version>
+        <version>5.0.28</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-ibm</artifactId>
-        <version>${project.version}</version>
+        <version>5.0.28</version>
       </dependency>
 
 
@@ -140,7 +135,7 @@
     <connection>scm:git:git://github.com/ibissource/iaf.git</connection>
     <developerConnection>scm:git:git://github.com/ibissource/iaf.git</developerConnection>
     <url>https://github.com/ibissource/iaf</url>
-    <tag>HEAD</tag>
+    <tag>v5.0.28</tag>
   </scm>
 
 
