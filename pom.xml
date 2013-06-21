@@ -3,7 +3,7 @@
 
   <groupId>org.ibissource</groupId>
   <artifactId>ibis-parent</artifactId>
-  <version>5.0.28-SNAPSHOT</version>
+  <version>5.0.28</version>
   <name>Ibis AdapterFramework parent</name>
   <packaging>pom</packaging>
 
@@ -27,32 +27,32 @@
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework</artifactId>
-        <version>5.0.28-SNAPSHOT</version>
+        <version>5.0.28</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-ifsa</artifactId>
-        <version>5.0.28-SNAPSHOT</version>
+        <version>5.0.28</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-tibco</artifactId>
-        <version>5.0.28-SNAPSHOT</version>
+        <version>5.0.28</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-sap</artifactId>
-        <version>5.0.28-SNAPSHOT</version>
+        <version>5.0.28</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-coolgen</artifactId>
-        <version>5.0.28-SNAPSHOT</version>
+        <version>5.0.28</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-ibm</artifactId>
-        <version>5.0.28-SNAPSHOT</version>
+        <version>5.0.28</version>
       </dependency>
       <dependency>
         <groupId>commons-lang</groupId>
@@ -134,7 +134,7 @@
     <connection>scm:git:git://github.com/ibissource/iaf.git</connection>
     <developerConnection>scm:git:git://github.com/ibissource/iaf.git</developerConnection>
     <url>https://github.com/ibissource/iaf</url>
-      <tag>HEAD</tag>
+      <tag>5.0.28</tag>
   </scm>
 
   <distributionManagement>

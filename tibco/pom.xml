@@ -4,7 +4,7 @@
  <parent>
    <groupId>org.ibissource</groupId>
    <artifactId>ibis-parent</artifactId>
-   <version>5.0.28-SNAPSHOT</version>
+   <version>5.0.28</version>
   </parent>
   <artifactId>ibis-adapterframework-tibco</artifactId>
   <name>Ibis AdapterFramework support for TIBCO</name>
