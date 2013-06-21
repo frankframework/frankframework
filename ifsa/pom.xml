@@ -88,8 +88,9 @@
       <artifactId>servlet-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>javax.jms</groupId>
-          <artifactId>jms</artifactId>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jms_1.1_spec</artifactId>
+      <version>1.1</version>
     </dependency>
   </dependencies>
   <build>

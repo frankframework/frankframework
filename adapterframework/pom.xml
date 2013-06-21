@@ -178,26 +178,10 @@
       <version>2.3.1</version>
     </dependency>
 
-    <!--
-    <dependency>
-      <groupId>wsdl4j</groupId>
-      <artifactId>wsdl4j</artifactId>
-      <version>1.6.2</version>
-    </dependency>
-    -->
-    <!-- WTF -->
     <dependency>
       <groupId>nl.nn.wsdl</groupId>
       <artifactId>ibis-wsdl4j</artifactId>
       <version>1.6.2</version>
-    </dependency>
-
-
-    <!-- miscellaneous -->
-    <dependency>
-      <groupId>javax.jms</groupId>
-      <artifactId>jms-api</artifactId>
-      <version>1.1-rev-1</version>
     </dependency>
 
     <dependency>
@@ -258,26 +242,6 @@
       <version>1.3</version>
     </dependency>
 
-    <!--
-    <dependency>
-      <groupId>com.ing.mettserver</groupId>
-      <artifactId>mettserver</artifactId>
-      <version>0</version>
-      <systemPath>${ibis.dependencies}/mett-server.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-    -->
-
-    <!-- TODO: should be dropped -->
-    <!--
-    <dependency>
-      <groupId>com.imb.mq</groupId>
-      <artifactId>jms</artifactId>
-      <version>1.0.2b</version>
-      <systemPath>${ibis.dependencies}/com.ibm.mqjms.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-    -->
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-webspheremq</artifactId>

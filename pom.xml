@@ -3,7 +3,7 @@
 
   <groupId>org.ibissource</groupId>
   <artifactId>ibis-parent</artifactId>
-  <version>5.0.28</version>
+  <version>5.0.28-SNAPSHOT</version>
   <name>Ibis AdapterFramework parent</name>
   <packaging>pom</packaging>
 
@@ -14,15 +14,12 @@
 
   <modules>
     <module>adapterframework</module>
-    <module>webapp</module>
-    <!-- following modules need to be added before doing a release
-         (at least the first time, I propose that we'll maintain seperate versions and releases for these later)
-    -->
     <module>sap</module>
     <module>ifsa</module>
     <module>coolgen</module>
     <module>ibm</module>
     <module>tibco</module>
+    <module>webapp</module>
   </modules>
 
   <dependencyManagement>
@@ -30,35 +27,33 @@
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework</artifactId>
-        <version>${project.version}</version>
+        <version>5.0.28-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-ifsa</artifactId>
-        <version>5.0.28</version>
+        <version>5.0.28-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-tibco</artifactId>
-        <version>5.0.28</version>
+        <version>5.0.28-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-sap</artifactId>
-        <version>5.0.28</version>
+        <version>5.0.28-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-coolgen</artifactId>
-        <version>5.0.28</version>
+        <version>5.0.28-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-ibm</artifactId>
-        <version>5.0.28</version>
+        <version>5.0.28-SNAPSHOT</version>
       </dependency>
-
-
       <dependency>
         <groupId>commons-lang</groupId>
         <artifactId>commons-lang</artifactId>
@@ -86,32 +81,36 @@
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>javax.jms</groupId>
-        <artifactId>jms</artifactId>
-        <version>1.1</version>
-      </dependency>
-      <!--
-      <dependency>
         <groupId>org.apache.geronimo.specs</groupId>
         <artifactId>geronimo-jms_1.1_spec</artifactId>
+        <version>1.1</version>
+        <scope>provided</scope>
       </dependency>
-      -->
     </dependencies>
   </dependencyManagement>
+
   <build>
     <defaultGoal>install</defaultGoal>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>2.4</version>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
         <configuration>
-          <branchName>v${project.version}</branchName>
-          <tagNameFormat>v@{project.version}</tagNameFormat>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.atlassian.maven.plugins</groupId>
+        <artifactId>maven-jgitflow-plugin</artifactId>
+        <version>1.0-alpha8</version>
+        <configuration>
+          <pushChanges>false</pushChanges>
         </configuration>
       </plugin>
     </plugins>
   </build>
+
   <repositories>
     <repository>
       <id>Java.Net</id>
@@ -135,9 +134,7 @@
     <connection>scm:git:git://github.com/ibissource/iaf.git</connection>
     <developerConnection>scm:git:git://github.com/ibissource/iaf.git</developerConnection>
     <url>https://github.com/ibissource/iaf</url>
-    <tag>v5.0.28</tag>
   </scm>
-
 
   <distributionManagement>
     <repository>
