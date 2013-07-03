@@ -15,10 +15,6 @@
 */
 package nl.nn.adapterframework.unmanaged;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
@@ -35,6 +31,11 @@ import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.quartz.SchedulerException;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -42,34 +43,34 @@ import org.springframework.transaction.PlatformTransactionManager;
 /**
  * Implementation of IbisManager which does not use EJB for
  * managing IBIS Adapters.
- * 
+ *
  * @author  Tim van der Leeuw
  * @since   4.8
  * @version $Id$
  */
 public class DefaultIbisManager implements IbisManager {
     protected Logger log=LogUtil.getLogger(this);
-	
+
     public static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
-    
+
     private Configuration configuration;
     private String name;
-    private ConfigurationDigester configurationDigester;
+    private  ConfigurationDigester configurationDigester;
     private SchedulerHelper schedulerHelper;
     private int deploymentMode;
     private PlatformTransactionManager transactionManager;
     private ListenerPortPoller listenerPortPoller;
-    
+
     protected final String[] deploymentModes = new String[] {DEPLOYMENT_MODE_UNMANAGED_STRING, DEPLOYMENT_MODE_EJB_STRING};
-    
+
     public void loadConfigurationFile(String configurationFile) {
         String digesterRulesFile = DFLT_DIGESTER_RULES;
-        
+
         // Reading in Apache Digester configuration file
         if (null == configurationFile) {
             configurationFile = DFLT_CONFIGURATION;
         }
-        
+
         log.info("* IBIS Startup: Reading IBIS configuration from file [" + configurationFile + "]" + (DFLT_CONFIGURATION.equals(configurationFile) ?
             " (default configuration file)" : ""));
         try {
@@ -81,8 +82,8 @@ public class DefaultIbisManager implements IbisManager {
             log.error("Error occured unmarshalling configuration:", e);
         }
     }
-    
-    
+
+
     /**
      * Start the already configured IBIS instance
      */
@@ -95,10 +96,10 @@ public class DefaultIbisManager implements IbisManager {
 
     /**
      * Shut down the IBIS instance and clean up.
-     * 
+     *
      * After execution of this method, the IBIS instance can not
      * be used anymore.
-     * 
+     *
      * TODO: Add shutdown-methods to Adapter, Receiver, Listener to make shutdown more complete.
      */
     public void shutdownIbis() {
@@ -112,10 +113,10 @@ public class DefaultIbisManager implements IbisManager {
         IbisCacheManager.shutdown();
         log.info("* IBIS Shutdown: Shutdown complete for instance [" + name + "]");
     }
-    
+
     /**
      * Utility function to give commands to Adapters and Receivers
-     * 
+     *
      */
     public void handleAdapter(String action, String adapterName, String receiverName, String commandIssuedBy) {
         if (action.equalsIgnoreCase("STOPADAPTER")) {
@@ -183,7 +184,7 @@ public class DefaultIbisManager implements IbisManager {
                 localSender.setIsolated(false);
                 localSender.setName("AdapterJob");
                 localSender.configure();
-            
+
                 localSender.open();
                 try {
                     localSender.sendMessage(null, "");
@@ -198,7 +199,7 @@ public class DefaultIbisManager implements IbisManager {
 //          ServiceDispatcher.getInstance().dispatchRequest(receiverName, "");
         }
     }
-    
+
     public void shutdownScheduler() {
         try {
             log.info("Shutting down the scheduler");
@@ -207,7 +208,7 @@ public class DefaultIbisManager implements IbisManager {
             log.error("Could not stop scheduler", e);
         }
     }
-    
+
     public void startScheduledJobs() {
         List scheduledJobs = configuration.getScheduledJobs();
         for (Iterator iter = scheduledJobs.iterator(); iter.hasNext();) {
@@ -226,16 +227,13 @@ public class DefaultIbisManager implements IbisManager {
             log.error("Could not start scheduler", e);
         }
     }
-    
+
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.configuration.IbisManager#startAdapters()
      */
     public void startAdapters() {
         log.info("Starting all autostart-configured adapters");
-        List adapters = configuration.getRegisteredAdapters();
-        for (Iterator iter = adapters.iterator(); iter.hasNext();) {
-            IAdapter adapter = (IAdapter) iter.next();
-
+        for (IAdapter adapter : configuration.getAdapterService().getAdapters().values()) {
             if (adapter.isAutoStart()) {
                 log.info("Starting adapter [" + adapter.getName()+"]");
                 startAdapter(adapter);
@@ -243,18 +241,17 @@ public class DefaultIbisManager implements IbisManager {
         }
     }
 
-    
+
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.configuration.IbisManager#stopAdapters()
      */
     public void stopAdapters() {
 		getConfiguration().dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
-     	
+
         log.info("Stopping all adapters");
-        List adapters = configuration.getRegisteredAdapters();
-        for (ListIterator iter = adapters.listIterator(adapters.size()); iter.hasPrevious();) {
-            IAdapter adapter = (IAdapter) iter.previous();
-            
+        List<IAdapter> adapters = new ArrayList<IAdapter>(configuration.getAdapterService().getAdapters().values());
+        Collections.reverse(adapters);
+        for (IAdapter adapter : adapters) {
             log.info("Stopping adapter [" + adapter.getName() + "]");
 			stopAdapter(adapter);
         }
@@ -310,7 +307,7 @@ public class DefaultIbisManager implements IbisManager {
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
     }
-    
+
     public Configuration getConfiguration() {
         return configuration;
     }
@@ -325,14 +322,14 @@ public class DefaultIbisManager implements IbisManager {
     public void setConfigurationDigester(ConfigurationDigester configurationDigester) {
         this.configurationDigester = configurationDigester;
     }
-    
+
     public ConfigurationDigester getConfigurationDigester() {
         return configurationDigester;
     }
 
     public void setDeploymentMode(int deploymentMode) {
         if (deploymentMode < 0 || deploymentMode >= deploymentModes.length) {
-            throw new IllegalArgumentException("DeploymentMode should be a value between 0 and " 
+            throw new IllegalArgumentException("DeploymentMode should be a value between 0 and "
                     + (deploymentModes.length-1) + " inclusive.");
         }
 		log.debug("setting deploymentMode to ["+deploymentMode+"]");
@@ -341,7 +338,7 @@ public class DefaultIbisManager implements IbisManager {
     public int getDeploymentMode() {
         return deploymentMode;
     }
-    
+
     public String getDeploymentModeString() {
         return deploymentModes[this.deploymentMode];
     }

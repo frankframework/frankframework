@@ -1,0 +1,20 @@
+<!DOCTYPE IOS-Adaptering [
+	<!ENTITY HelloWorld SYSTEM "./ConfigurationHelloWorld.xml">
+]>
+<IOS-Adaptering configurationName="IBIS AdapterFramework (IAF) configuration for VOORBEELD">
+  <!--
+   <jmsRealms>
+
+      <jmsRealm realmName="jdbc" datasourceName="jdbc/ibis4voorbeeld"/>
+
+      <jmsRealm realmName="qcf" queueConnectionFactoryName="jms/qcf"/>
+      <jmsRealm realmName="qcf_fxf" queueConnectionFactoryName="jms/qcf_fxf"/>
+
+   </jmsRealms>
+-->
+  <!-- include configuration for managing the database -->
+
+
+	<!-- include configuration for collection of statistics, flexible monitoring and cleaning up the database -->
+  &HelloWorld;
+</IOS-Adaptering>

@@ -15,18 +15,24 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import nl.nn.adapterframework.cache.IbisCacheManager;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.scheduler.JobDef;
+import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+
 import java.net.URL;
 import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
-
-import nl.nn.adapterframework.cache.IbisCacheManager;
-import nl.nn.adapterframework.core.*;
-import nl.nn.adapterframework.scheduler.JobDef;
-import nl.nn.adapterframework.statistics.*;
-import nl.nn.adapterframework.util.*;
 
 /**
  * The Configuration is placeholder of all configuration objects. Besides that, it provides
@@ -38,12 +44,12 @@ import nl.nn.adapterframework.util.*;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-    protected Logger log=LogUtil.getLogger(this);
+    protected Logger log = LogUtil.getLogger(this);
 
-    private Map<String, IAdapter> adapterTable = new Hashtable<String, IAdapter>();
-	private List<IAdapter> adapters = new ArrayList<IAdapter>();
-	private Map jobTable = new Hashtable();
-    private List<JobDef> scheduledJobs = new ArrayList<JobDef>();
+    private final AdapterService adapterService;
+
+	private final Map jobTable = new Hashtable(); // TODO useless synchronization ?
+    private final List<JobDef> scheduledJobs = new ArrayList<JobDef>();
 
     private URL configurationURL;
     private URL digesterRulesURL;
@@ -77,11 +83,11 @@ public class Configuration {
     }
 
 	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
-		Object root=hski.start(now,mainMark,detailMark);
+		Object root = hski.start(now,mainMark,detailMark);
 		try {
 			Object groupData=hski.openGroup(root,appConstants.getString("instance.name",""),"instance");
-			for (int i=0; i<adapters.size(); i++) {
-				IAdapter adapter = getRegisteredAdapter(i);
+			for (Map.Entry<String, IAdapter> entry : adapterService.getAdapters().entrySet()) {
+				IAdapter adapter = entry.getValue();
 				adapter.forEachStatisticsKeeperBody(hski,groupData,action);
 			}
 			IbisCacheManager.iterateOverStatistics(hski, groupData, action);
@@ -92,10 +98,10 @@ public class Configuration {
 	}
 
 	public void dumpStatistics(int action) {
-		Date now=new Date();
-		boolean showDetails=(action==HasStatistics.STATISTICS_ACTION_FULL ||
-							 action==HasStatistics.STATISTICS_ACTION_MARK_FULL ||
-							 action==HasStatistics.STATISTICS_ACTION_RESET);
+		Date now = new Date();
+		boolean showDetails=(action == HasStatistics.STATISTICS_ACTION_FULL ||
+							 action == HasStatistics.STATISTICS_ACTION_MARK_FULL ||
+							 action == HasStatistics.STATISTICS_ACTION_RESET);
 		try {
 			if (statisticsHandler==null) {
 				statisticsHandler =new StatisticsKeeperLogger();
@@ -134,10 +140,11 @@ public class Configuration {
      *	initializes the log and the AppConstants
      * @see nl.nn.adapterframework.util.AppConstants
      */
-    public Configuration() {
+    public Configuration(AdapterService adapterService) {
+         this.adapterService = adapterService;
     }
     public Configuration(URL digesterRulesURL, URL configurationURL) {
-        this();
+        this(new BasicAdapterServiceImpl());
         this.configurationURL = configurationURL;
         this.digesterRulesURL = digesterRulesURL;
 
@@ -151,31 +158,31 @@ public class Configuration {
      * @param name  the adapter to retrieve
      * @return IAdapter
      */
+    @Deprecated
     public IAdapter getRegisteredAdapter(String name) {
-        return adapterTable.get(name);
+        return adapterService.getAdapter(name);
     }
+
+    @Deprecated
 	public IAdapter getRegisteredAdapter(int index) {
-		return adapters.get(index);
+		return getRegisteredAdapters().get(index);
 	}
 
+    @Deprecated
 	public List<IAdapter> getRegisteredAdapters() {
-		return adapters;
+        return new ArrayList<IAdapter>(adapterService.getAdapters().values());
 	}
 
     //Returns a sorted list of registered adapter names as an <code>Iterator</code>
+    @Deprecated
     public Iterator<IAdapter> getRegisteredAdapterNames() {
-        // Why is the set copied?
-        SortedSet<IAdapter> sortedKeys = new TreeSet(adapterTable.keySet());
-        return sortedKeys.iterator();
+        return adapterService.getAdapters().values().iterator();
     }
-    /**
-     * returns wether an adapter is known at the configuration.
-     * @param name the Adaptername
-     * @return true if the adapter is known at the configuration
-     */
-    public boolean isRegisteredAdapter(String name){
-        return getRegisteredAdapter(name)==null;
+
+    public AdapterService getAdapterService() {
+        return adapterService;
     }
+
     /**
      * @param adapterName the adapter
      * @param receiverName the receiver
@@ -183,19 +190,11 @@ public class Configuration {
      */
     public boolean isRegisteredReceiver(String adapterName, String receiverName){
         IAdapter adapter=getRegisteredAdapter(adapterName);
-        if (null==adapter) {
+        if (null ==adapter) {
         	return false;
 		}
         return adapter.getReceiverByName(receiverName) != null;
     }
-    public void listObjects() {
-		for (int i=0; i<adapters.size(); i++) {
-			IAdapter adapter = getRegisteredAdapter(i);
-
-			log.info(i+") "+ adapter.getName()+ ": "	+ adapter.toString());
-        }
-    }
-
     /**
      * Register an adapter with the configuration.  If JMX is {@link #setEnableJMX(boolean) enabled},
      * the adapter will be visible and managable as an MBEAN.
@@ -207,17 +206,7 @@ public class Configuration {
     		log.debug("adapter [" + adapter.getName() + "] is not active, therefore not included in configuration");
     		return;
     	}
-        if (null != adapterTable.get(adapter.getName())) {
-            throw new ConfigurationException("Adapter [" + adapter.getName() + "] already registered.");
-        }
-        adapterTable.put(adapter.getName(), adapter);
-		adapters.add(adapter);
-		if (isEnableJMX()) {
-			log.debug("Registering adapter [" + adapter.getName() + "] to the JMX server");
-	        JmxMbeanHelper.hookupAdapter( (nl.nn.adapterframework.core.Adapter) adapter);
-	        log.info ("[" + adapter.getName() + "] registered to the JMX server");
-		}
-        adapter.configure();
+        adapterService.registerAdapter(adapter);
 
     }
     /**
@@ -292,7 +281,7 @@ public class Configuration {
 		return (JobDef) jobTable.get(name);
 	}
 	public JobDef getScheduledJob(int index) {
-		return (JobDef) scheduledJobs.get(index);
+		return scheduledJobs.get(index);
 	}
 
 

@@ -108,314 +108,319 @@
 
 -->
 <beans
-	xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:util="http://www.springframework.org/schema/util"
-	default-autowire="byName"
-	xsi:schemaLocation=
-		"
-		http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
-		http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
-		"
-	>
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    default-autowire="byName"
+    xsi:schemaLocation=
+        "http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
+		 /xsd/spring-util-2.5.xsd"
+    >
 
-	<bean
-		name="appConstantsPropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.configuration.AppConstantsPropertyPlaceholderConfigurer"
-		autowire="byName"
-	/>
+  <bean
+      name="appConstantsPropertyPlaceholderConfigurer"
+      class="nl.nn.adapterframework.configuration.AppConstantsPropertyPlaceholderConfigurer"
+      autowire="byName"
+      />
 
-	<bean
-		name="lowerCasePropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.configuration.LowerCasePropertyPlaceholderConfigurer"
-		autowire="byName"
-	/>
+  <bean
+      name="lowerCasePropertyPlaceholderConfigurer"
+      class="nl.nn.adapterframework.configuration.LowerCasePropertyPlaceholderConfigurer"
+      autowire="byName"
+      />
 
-	<bean
-		name="jndiContextPrefixPropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.configuration.OverwritePropertyPlaceholderConfigurer"
-		autowire="byName"
-		>
-		<property name="propertyName" value="jndiContextPrefix"/>
-		<property name="propertyValue" value=""/>
-	</bean>
+  <bean
+      name="jndiContextPrefixPropertyPlaceholderConfigurer"
+      class="nl.nn.adapterframework.configuration.OverwritePropertyPlaceholderConfigurer"
+      autowire="byName"
+      >
+    <property name="propertyName" value="jndiContextPrefix"/>
+    <property name="propertyValue" value=""/>
+  </bean>
 
-	<bean
-		name="fxfPropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.extensions.fxf.FxfPropertyPlaceholderConfigurer"
-		autowire="byName"
-	/>
+  <bean
+      name="fxfPropertyPlaceholderConfigurer"
+      class="nl.nn.adapterframework.extensions.fxf.FxfPropertyPlaceholderConfigurer"
+      autowire="byName"
+      />
 
-    <!-- IBIS Beans -->
-    <bean name="configuration" class="nl.nn.adapterframework.configuration.Configuration"
+
+  <!-- IBIS Beans -->
+  <bean id="adapterService" class="nl.nn.adapterframework.configuration.BasicAdapterServiceImpl"
+      >
+  </bean>
+  <bean name="configuration" class="nl.nn.adapterframework.configuration.Configuration"
         autowire="byName"
         init-method="init">
-    </bean>
-    
-    <bean name="configurationDigester" class="nl.nn.adapterframework.configuration.ConfigurationDigester" 
+    <constructor-arg ref="adapterService"/>
+  </bean>
+
+  <bean name="configurationDigester" class="nl.nn.adapterframework.configuration.ConfigurationDigester"
         autowire="byName">
-        <lookup-method name="createDigester" bean="digester"/>
-    </bean>
-    
-    <bean name="digester" class="org.apache.commons.digester.Digester"
-        autowire="byName" scope="prototype">
-        <property name="substitutor">
-            <bean class="org.apache.commons.digester.substitution.VariableSubstitutor">
-                <constructor-arg ref="variableExpander"/>
-            </bean>
-        </property>
-        <property name="useContextClassLoader" value="true"/>
-        <property name="entityResolver">
-            <bean class="nl.nn.adapterframework.util.ClassPathEntityResolver"/>
-        </property>
-    </bean>
-    
-    <bean name="variableExpander" class="nl.nn.adapterframework.configuration.IbisMultiSourceExpander">
-        <property name="environmentFallback" value="false"/>
-        <property name="sources">
-            <list>
-                <bean class="java.lang.System" factory-method="getProperties"/>
-                <ref bean="appConstants"/>
-            </list>
-        </property>
-    </bean>
-    
-    <bean name="appConstants" class="nl.nn.adapterframework.util.AppConstants"
-        autowire="byName"
-        factory-method="getInstance">
-    </bean>
-    
-    <bean name="jmsRealmsFactory" class="nl.nn.adapterframework.jms.JmsRealmFactory"
-        autowire="byName"
-        factory-method="getInstance">
-    </bean>
+    <lookup-method name="createDigester" bean="digester"/>
+  </bean>
 
-    <bean name="proto-jmsRealm" class="nl.nn.adapterframework.jms.JmsRealm"
+  <bean name="digester" class="org.apache.commons.digester.Digester"
         autowire="byName" scope="prototype">
-    	<property name="jndiContextPrefix" value="${jndiContextPrefix}"/>
-    </bean>
-    
-    <bean name="listenerContainer" class="nl.nn.adapterframework.receivers.PullingListenerContainer"
+    <property name="substitutor">
+      <bean class="org.apache.commons.digester.substitution.VariableSubstitutor">
+        <constructor-arg ref="variableExpander"/>
+      </bean>
+    </property>
+    <property name="useContextClassLoader" value="true"/>
+    <property name="entityResolver">
+      <bean class="nl.nn.adapterframework.util.ClassPathEntityResolver"/>
+    </property>
+  </bean>
+
+  <bean name="variableExpander" class="nl.nn.adapterframework.configuration.IbisMultiSourceExpander">
+    <property name="environmentFallback" value="false"/>
+    <property name="sources">
+      <list>
+        <bean class="java.lang.System" factory-method="getProperties"/>
+        <ref bean="appConstants"/>
+      </list>
+    </property>
+  </bean>
+
+  <bean name="appConstants" class="nl.nn.adapterframework.util.AppConstants"
+        autowire="byName"
+        factory-method="getInstance">
+  </bean>
+
+  <bean name="jmsRealmsFactory" class="nl.nn.adapterframework.jms.JmsRealmFactory"
+        autowire="byName"
+        factory-method="getInstance">
+  </bean>
+
+  <bean name="proto-jmsRealm" class="nl.nn.adapterframework.jms.JmsRealm"
         autowire="byName" scope="prototype">
-    </bean>
-    
-    <bean id="schedulerHelper" class="nl.nn.adapterframework.scheduler.SchedulerHelper"
+    <property name="jndiContextPrefix" value="${jndiContextPrefix}"/>
+  </bean>
+
+  <bean name="listenerContainer" class="nl.nn.adapterframework.receivers.PullingListenerContainer"
+        autowire="byName" scope="prototype">
+  </bean>
+
+  <bean id="schedulerHelper" class="nl.nn.adapterframework.scheduler.SchedulerHelper"
         autowire="byName" lazy-init="true">
-    </bean>
-    
-    <bean id="txManagerProxy" class="nl.nn.adapterframework.util.SpringTxManagerProxy">
-    	<property name="realTxManagerBeanName"><idref bean="txManagerReal"/></property>
-    </bean>
-    
-    <alias name="txManagerProxy" alias="txManager"/>
+  </bean>
 
-    <bean name="isolatedServiceCaller" class="nl.nn.adapterframework.pipes.IsolatedServiceCaller"
+  <bean id="txManagerProxy" class="nl.nn.adapterframework.util.SpringTxManagerProxy">
+    <property name="realTxManagerBeanName">
+      <idref bean="txManagerReal"/>
+    </property>
+  </bean>
+
+  <alias name="txManagerProxy" alias="txManager"/>
+
+  <bean name="isolatedServiceCaller" class="nl.nn.adapterframework.pipes.IsolatedServiceCaller"
         autowire="byName" scope="singleton">
-    </bean>
+  </bean>
 
-	<bean
-		name="pipeLineProcessor"
-		class="nl.nn.adapterframework.processors.InputOutputPipeLineProcessor"
-		autowire="byName"
-		scope="prototype"
-		>
-		<property name="pipeLineProcessor">
-			<bean
-				class="nl.nn.adapterframework.processors.CachePipeLineProcessor"
-				autowire="byName"
-				scope="prototype"
-				>
-				<property name="pipeLineProcessor">
-					<bean
-						class="nl.nn.adapterframework.processors.TransactionAttributePipeLineProcessor"
-						autowire="byName"
-						scope="prototype"
-						>
-						<property name="pipeLineProcessor">
-							<bean
-								class="nl.nn.adapterframework.processors.LockerPipeLineProcessor"
-								autowire="byName"
-								scope="prototype"
-								>
-								<property name="pipeLineProcessor">
-									<bean
-										class="nl.nn.adapterframework.processors.CorePipeLineProcessor"
-										autowire="byName"
-										scope="prototype"
-									/>
-								</property>
-							</bean>
-						</property>
-					</bean>
-				</property>
-			</bean>
-		</property>
-	</bean>
+  <bean
+      name="pipeLineProcessor"
+      class="nl.nn.adapterframework.processors.InputOutputPipeLineProcessor"
+      autowire="byName"
+      scope="prototype"
+      >
+    <property name="pipeLineProcessor">
+      <bean
+          class="nl.nn.adapterframework.processors.CachePipeLineProcessor"
+          autowire="byName"
+          scope="prototype"
+          >
+        <property name="pipeLineProcessor">
+          <bean
+              class="nl.nn.adapterframework.processors.TransactionAttributePipeLineProcessor"
+              autowire="byName"
+              scope="prototype"
+              >
+            <property name="pipeLineProcessor">
+              <bean
+                  class="nl.nn.adapterframework.processors.LockerPipeLineProcessor"
+                  autowire="byName"
+                  scope="prototype"
+                  >
+                <property name="pipeLineProcessor">
+                  <bean
+                      class="nl.nn.adapterframework.processors.CorePipeLineProcessor"
+                      autowire="byName"
+                      scope="prototype"
+                      />
+                </property>
+              </bean>
+            </property>
+          </bean>
+        </property>
+      </bean>
+    </property>
+  </bean>
 
-	<bean
-		name="pipeProcessor,inputValidatorProcessor,outputValidatorProcessor,inputWrapperProcessor,outputWrapperProcessor"
-		class="nl.nn.adapterframework.processors.TracingEventsPipeProcessor"
-		autowire="byName"
-		scope="prototype"
-		>
-		<property name="pipeProcessor">
-			<bean
-				class="nl.nn.adapterframework.processors.InputOutputPipeProcessor"
-				autowire="byName"
-				scope="prototype"
-				>
-				<property name="pipeProcessor">
-					<bean
-						class="nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor"
-						autowire="byName"
-						scope="prototype"
-						>
-						<property name="pipeProcessor">
-							<bean
-								class="nl.nn.adapterframework.processors.TransactionAttributePipeProcessor"
-								autowire="byName"
-								scope="prototype"
-								>
-								<property name="pipeProcessor">
-									<bean
-										class="nl.nn.adapterframework.processors.LockerPipeProcessor"
-										autowire="byName"
-										scope="prototype"
-										>
-										<property name="pipeProcessor">
-											<bean
-												class="nl.nn.adapterframework.processors.CheckMessageSizePipeProcessor"
-												autowire="byName"
-												scope="prototype"
-												>
-												<property name="pipeProcessor">
-													<bean
-														class="nl.nn.adapterframework.processors.CorePipeProcessor"
-														autowire="byName"
-														scope="prototype"
-													/>
-												</property>
-											</bean>
-										</property>
-									</bean>
-								</property>
-							</bean>
-						</property>
-					</bean>
-				</property>
-			</bean>
-		</property>
-	</bean>
+  <bean
+      name="pipeProcessor,inputValidatorProcessor,outputValidatorProcessor,inputWrapperProcessor,outputWrapperProcessor"
+      class="nl.nn.adapterframework.processors.TracingEventsPipeProcessor"
+      autowire="byName"
+      scope="prototype"
+      >
+    <property name="pipeProcessor">
+      <bean
+          class="nl.nn.adapterframework.processors.InputOutputPipeProcessor"
+          autowire="byName"
+          scope="prototype"
+          >
+        <property name="pipeProcessor">
+          <bean
+              class="nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor"
+              autowire="byName"
+              scope="prototype"
+              >
+            <property name="pipeProcessor">
+              <bean
+                  class="nl.nn.adapterframework.processors.TransactionAttributePipeProcessor"
+                  autowire="byName"
+                  scope="prototype"
+                  >
+                <property name="pipeProcessor">
+                  <bean
+                      class="nl.nn.adapterframework.processors.LockerPipeProcessor"
+                      autowire="byName"
+                      scope="prototype"
+                      >
+                    <property name="pipeProcessor">
+                      <bean
+                          class="nl.nn.adapterframework.processors.CheckMessageSizePipeProcessor"
+                          autowire="byName"
+                          scope="prototype"
+                          >
+                        <property name="pipeProcessor">
+                          <bean
+                              class="nl.nn.adapterframework.processors.CorePipeProcessor"
+                              autowire="byName"
+                              scope="prototype"
+                              />
+                        </property>
+                      </bean>
+                    </property>
+                  </bean>
+                </property>
+              </bean>
+            </property>
+          </bean>
+        </property>
+      </bean>
+    </property>
+  </bean>
 
-	<bean
-		name="senderWrapperProcessor"
-		class="nl.nn.adapterframework.processors.InputOutputSenderWrapperProcessor"
-		autowire="byName"
-		scope="prototype"
-		>
-		<property name="senderWrapperProcessor">
-			<bean
-				class="nl.nn.adapterframework.processors.CacheSenderWrapperProcessor"
-				autowire="byName"
-				scope="prototype"
-				>
-				<property name="senderWrapperProcessor">
-					<bean
-						class="nl.nn.adapterframework.processors.CoreSenderWrapperProcessor"
-						autowire="byName"
-						scope="prototype"
-						>
-					</bean>
-				</property>
-			</bean>
-		</property>
-	</bean>
+  <bean
+      name="senderWrapperProcessor"
+      class="nl.nn.adapterframework.processors.InputOutputSenderWrapperProcessor"
+      autowire="byName"
+      scope="prototype"
+      >
+    <property name="senderWrapperProcessor">
+      <bean
+          class="nl.nn.adapterframework.processors.CacheSenderWrapperProcessor"
+          autowire="byName"
+          scope="prototype"
+          >
+        <property name="senderWrapperProcessor">
+          <bean
+              class="nl.nn.adapterframework.processors.CoreSenderWrapperProcessor"
+              autowire="byName"
+              scope="prototype"
+              >
+          </bean>
+        </property>
+      </bean>
+    </property>
+  </bean>
 
-	<bean
-		name="listenerProcessor"
-		class="nl.nn.adapterframework.processors.CoreListenerProcessor"
-		autowire="byName"
-		scope="prototype"
-	/>
+  <bean
+      name="listenerProcessor"
+      class="nl.nn.adapterframework.processors.CoreListenerProcessor"
+      autowire="byName"
+      scope="prototype"
+      />
 
-    <!-- Beans created from Configuration.xml, but prototyped here for
-         extra dependencies which cannot be created otherwise.
-         Bean names are prefixed with 'proto-' so that autowiring by
-         name doesn't create unnessecary instances. -->
-    <bean name="proto-adapter" class="nl.nn.adapterframework.core.Adapter"
+  <!-- Beans created from Configuration.xml, but prototyped here for
+extra dependencies which cannot be created otherwise.
+Bean names are prefixed with 'proto-' so that autowiring by
+name doesn't create unnessecary instances. -->
+  <bean name="proto-adapter" class="nl.nn.adapterframework.core.Adapter"
         autowire="byName" scope="prototype">
-    </bean>
-    
-    <bean name="proto-pipeline" class="nl.nn.adapterframework.core.PipeLine"
-        autowire="byName" scope="prototype">
-    </bean>
-    
-    <bean name="proto-param" class="nl.nn.adapterframework.parameters.Parameter"
-        autowire="byName" scope="prototype">
-    </bean>
-    
-    <bean name="proto-receiver" class="nl.nn.adapterframework.receivers.GenericReceiver"
-        autowire="byName" scope="prototype">
-    </bean>
-    
-    <!-- Default pipe is a message-sending pipe -->
-    <bean name="proto-pipe" class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
-        autowire="byName" scope="prototype">
-    </bean>
+  </bean>
 
-    <bean name="proto-sender" class="nl.nn.adapterframework.core.ISender"
+  <bean name="proto-pipeline" class="nl.nn.adapterframework.core.PipeLine"
         autowire="byName" scope="prototype">
-    </bean>
+  </bean>
 
-    <bean name="proto-RecordHandlingFlow" class="nl.nn.adapterframework.batch.RecordHandlingFlow"
+  <bean name="proto-param" class="nl.nn.adapterframework.parameters.Parameter"
         autowire="byName" scope="prototype">
-    </bean>
+  </bean>
 
-    <bean name="proto-monitor" class="nl.nn.adapterframework.monitoring.Monitor"
+  <bean name="proto-receiver" class="nl.nn.adapterframework.receivers.GenericReceiver"
         autowire="byName" scope="prototype">
-    </bean>
-    <bean name="proto-trigger" class="nl.nn.adapterframework.monitoring.Trigger"
-        autowire="byName" scope="prototype">
-    </bean>
-    <bean name="proto-alarm" class="nl.nn.adapterframework.monitoring.Trigger"
-        autowire="byName" scope="prototype">
-    </bean>
-    <bean name="proto-clearing" class="nl.nn.adapterframework.monitoring.Trigger"
-        autowire="byName" scope="prototype">
-    </bean>
+  </bean>
 
-    <bean name="proto-job" class="nl.nn.adapterframework.scheduler.JobDef"
+  <!-- Default pipe is a message-sending pipe -->
+  <bean name="proto-pipe" class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
         autowire="byName" scope="prototype">
-    </bean>
+  </bean>
 
-    <bean name="proto-statisticsHandlers" class="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandlerCollection"
+  <bean name="proto-sender" class="nl.nn.adapterframework.core.ISender"
         autowire="byName" scope="prototype">
-    </bean>
+  </bean>
 
-    <bean name="proto-statisticsHandler" class="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler"
+  <bean name="proto-RecordHandlingFlow" class="nl.nn.adapterframework.batch.RecordHandlingFlow"
         autowire="byName" scope="prototype">
-    </bean>
+  </bean>
 
-    <bean name="proto-cache" class="nl.nn.adapterframework.cache.EhCache"
+  <bean name="proto-monitor" class="nl.nn.adapterframework.monitoring.Monitor"
         autowire="byName" scope="prototype">
-    </bean>
+  </bean>
+  <bean name="proto-trigger" class="nl.nn.adapterframework.monitoring.Trigger"
+        autowire="byName" scope="prototype">
+  </bean>
+  <bean name="proto-alarm" class="nl.nn.adapterframework.monitoring.Trigger"
+        autowire="byName" scope="prototype">
+  </bean>
+  <bean name="proto-clearing" class="nl.nn.adapterframework.monitoring.Trigger"
+        autowire="byName" scope="prototype">
+  </bean>
 
-    <bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor"
+  <bean name="proto-job" class="nl.nn.adapterframework.scheduler.JobDef"
+        autowire="byName" scope="prototype">
+  </bean>
+
+  <bean name="proto-statisticsHandlers"
+        class="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandlerCollection"
+        autowire="byName" scope="prototype">
+  </bean>
+
+  <bean name="proto-statisticsHandler" class="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler"
+        autowire="byName" scope="prototype">
+  </bean>
+
+  <bean name="proto-cache" class="nl.nn.adapterframework.cache.EhCache"
+        autowire="byName" scope="prototype">
+  </bean>
+
+  <bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor"
         scope="singleton">
-    </bean>
+  </bean>
 
-    <bean name="messageListenerClassName" class="java.lang.String">
-        <constructor-arg value="org.springframework.jms.listener.DefaultMessageListenerContainer"/>
-    </bean>
+  <bean name="messageListenerClassName" class="java.lang.String">
+    <constructor-arg value="org.springframework.jms.listener.DefaultMessageListenerContainer"/>
+  </bean>
 
-	<bean id="dbmsSupportFactoryDefault" class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory" 
-	>
-		<property name="dbmsSupportMap">
-			<props >
-			    <prop key="Oracle">nl.nn.adapterframework.jdbc.dbms.OracleDbmsSupport</prop>
-			    <prop key="Microsoft SQL Server">nl.nn.adapterframework.jdbc.dbms.MsSqlServerDbmsSupport</prop>
-			</props>
-		</property>
-	</bean>
+  <bean id="dbmsSupportFactoryDefault" class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory"
+      >
+    <property name="dbmsSupportMap">
+      <props>
+        <prop key="Oracle">nl.nn.adapterframework.jdbc.dbms.OracleDbmsSupport</prop>
+        <prop key="Microsoft SQL Server">nl.nn.adapterframework.jdbc.dbms.MsSqlServerDbmsSupport</prop>
+      </props>
+    </property>
+  </bean>
 
 </beans>
