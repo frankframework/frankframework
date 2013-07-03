@@ -17,13 +17,13 @@ package nl.nn.adapterframework.configuration;
 
 /**
  * Generic factory for instantiating beans from the Digester framework.
- * 
+ *
  * <p>
  * This factory uses the name of the current element for name of the bean,
  * instead of hard-wiring a bean name. The name of current element is prefixed
  * with the string "proto-", to prevent unwanted auto-wiring cascaded of
  * other prototype beans defined in the Spring Factory which are supposed to
- * be defined in the IBIS Configuration File. 
+ * be defined in the IBIS Configuration File.
  * </p>
  * <p>
  * If a className attribute is specified in the configuration file, then
@@ -45,7 +45,7 @@ package nl.nn.adapterframework.configuration;
  * parameters to the factory created from the XML digester-rules, so there is
  * no way to configure a factory instance with a bean-name from the digester-rules.
  * </p>
- * 
+ *
  * @author  Tim van der Leeuw
  * @since   4.8
  * @version $Id$
@@ -53,11 +53,12 @@ package nl.nn.adapterframework.configuration;
 public class GenericFactory extends AbstractSpringPoweredDigesterFactory {
 
     /**
-     * Return name of current element prefixed with the string "proto-" as 
+     * Return name of current element prefixed with the string "proto-" as
      * bean-name.
-     * 
+     *
      * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#getBeanName()
      */
+    @Override
     public String getSuggestedBeanName() {
         return "proto-" + getDigester().getCurrentElementName();
     }

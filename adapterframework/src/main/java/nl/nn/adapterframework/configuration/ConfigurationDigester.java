@@ -15,21 +15,15 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.util.*;
+
+import javax.xml.transform.Transformer;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
-
-import javax.xml.transform.Transformer;
-
-import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StringResolver;
-import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.Rule;
@@ -37,14 +31,8 @@ import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.w3c.dom.Element;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+import org.xml.sax.*;
 
 /**
  * The configurationDigester reads the configuration.xml and the digester rules
@@ -93,8 +81,8 @@ abstract public class ConfigurationDigester {
 	private static String stub4testtool_xslt = "/xml/xsl/stub4testtool.xsl";
 	private static String attributesGetter_xslt = "/xml/xsl/AttributesGetter.xsl";
 
-	private String configurationFile=null;
-	private String digesterRulesFile=DIGESTER_RULES_DEFAULT;
+	private String configurationFile = null;
+	private String digesterRulesFile = DIGESTER_RULES_DEFAULT;
 
 	private Configuration configuration;
 
@@ -220,7 +208,7 @@ abstract public class ConfigurationDigester {
 //			Variant var=new Variant(resolvedConfig);
 //			InputSource is=var.asXmlInputSource();
 
-			boolean validation=AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY, false);
+			boolean validation = AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY, false);
 			if (validation) {
 				digester.setValidating(true);
 				digester.setNamespaceAware(true);

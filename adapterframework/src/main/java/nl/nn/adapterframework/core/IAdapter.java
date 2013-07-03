@@ -15,18 +15,18 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.util.Iterator;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.MessageKeeper;
+
+import java.util.Iterator;
 
 /**
  * The Adapter is the central manager in the framework. It has knowledge of both
  * <code>IReceiver</code>s as well as the <code>PipeLine</code> and statistics.
  * The Adapter is the class that is responsible for configuring, initializing and
  * accessing/activating IReceivers, Pipelines, statistics etc.
- * 
+ *
  * @version $Id$
  **/
 public interface IAdapter extends IManagable {
@@ -38,29 +38,31 @@ public interface IAdapter extends IManagable {
   	 * @see nl.nn.adapterframework.pipes.AbstractPipe#configure()
   	 * @see PipeLine#configure()
   	 */
-  	public void configure() throws ConfigurationException;
-  	
+    void configure() throws ConfigurationException;
+
  	/**
  	 * The messagekeeper is used to keep the last x messages, relevant to
  	 * display in the web-functions.
- 	 */ 
-	public MessageKeeper getMessageKeeper();
-	public IReceiver getReceiverByName(String receiverName);
-	public Iterator getReceiverIterator();
-	public PipeLineResult processMessage(String messageId, String message, IPipeLineSession pipeLineSession);
-	public PipeLineResult processMessageWithExceptions(String messageId, String message, IPipeLineSession pipeLineSession) throws ListenerException;
+ 	 */
+	MessageKeeper getMessageKeeper();
+	IReceiver getReceiverByName(String receiverName);
+	Iterator getReceiverIterator();
+	PipeLineResult processMessage(String messageId, String message, IPipeLineSession pipeLineSession);
+	PipeLineResult processMessageWithExceptions(String messageId, String message, IPipeLineSession pipeLineSession) throws ListenerException;
 
-  	public void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
-  	public void setName(String name);
-  	public boolean isAutoStart();
-	public String toString();
+  	void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
+  	void setName(String name);
+  	boolean isAutoStart();
+	String toString();
 
-	public String formatErrorMessage(String errorMessage, Throwable t, String originalMessage, String messageID, INamedObject objectInError, long receivedTime);
-		
-	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException ;
+	String formatErrorMessage(String errorMessage, Throwable t, String originalMessage, String messageID, INamedObject objectInError, long receivedTime);
+
+	void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException ;
 
     /**
      * state to put in PipeLineResult when a PipeRunException occurs.
      */
-	public String getErrorState();
+	String getErrorState();
+
+    String getDescription();
 }
