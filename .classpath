@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="tibco/src/main/java"/>
+	<classpathentry kind="src" path="adapterframework/src/main/resources"/>
+	<classpathentry kind="src" path="ibm/src/main/java"/>
+	<classpathentry kind="src" path="ifsa/src/main/java"/>
+	<classpathentry kind="src" path="adapterframework/src/main/java"/>
+	<classpathentry kind="src" path="sap/src/main/java"/>
+	<classpathentry kind="src" path="coolgen/src/main/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="coolgen/lib/NNCoolgenJavaProxies.jar"/>
+	<classpathentry kind="lib" path="ibm/lib/com.ibm.mqjms.jar"/>
+	<classpathentry kind="lib" path="ibm/lib/com.ibm.ws.runtime_6.1.0.jar"/>
+	<classpathentry kind="lib" path="ifsa/lib/IFSACommon.jar"/>
+	<classpathentry kind="lib" path="ifsa/lib/ifsaj2ee.jar"/>
+	<classpathentry kind="lib" path="ifsa/lib/ifsajcil.jar"/>
+	<classpathentry kind="lib" path="ifsa/lib/ifsajmsXA-22.10.055(beta).jar"/>
+	<classpathentry kind="lib" path="ifsa/lib/IFSARequestorEJB.jar"/>
+	<classpathentry kind="lib" path="ifsa/lib/mett-server.jar"/>
+	<classpathentry kind="lib" path="sap/lib/sapidoc-1.0.1.jar"/>
+	<classpathentry kind="lib" path="sap/lib/sapidoc3.jar"/>
+	<classpathentry kind="lib" path="sap/lib/sapidocjco-1.0.2.jar"/>
+	<classpathentry kind="lib" path="sap/lib/sapjco.jar"/>
+	<classpathentry kind="lib" path="sap/lib/sapjco3.jar"/>
+	<classpathentry kind="lib" path="tibco/lib/tibjms.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
+	<classpathentry kind="lib" path="adapterframework/lib/j2ee.jar"/>
+	<classpathentry kind="output" path="webapp/src/main/webapp/WEB-INF/classes"/>
+</classpath>
