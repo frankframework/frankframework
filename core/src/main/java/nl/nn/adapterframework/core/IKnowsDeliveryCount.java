@@ -21,7 +21,6 @@ package nl.nn.adapterframework.core;
  * 
  * @author  Gerrit van Brakel
  * @since	4.9  
- * @version $Id$
  */
 public interface IKnowsDeliveryCount {
 	

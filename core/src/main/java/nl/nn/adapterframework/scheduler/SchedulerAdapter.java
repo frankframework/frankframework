@@ -35,12 +35,10 @@ import org.quartz.Trigger;
 /**
  * The SchedulerAdapter is an adapter for the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> <br/>
  * It transforms the information from the scheduler to XML.
- * @version $Id$
  * @author  Johan Verrips
  * @since 4.0
   */
 public class SchedulerAdapter {
-	public static final String version = "$RCSfile: SchedulerAdapter.java,v $ $Revision: 1.9 $ $Date: 2013-03-13 14:39:34 $";
 	protected Logger log=LogUtil.getLogger(this);
 	
     /**

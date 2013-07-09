@@ -25,13 +25,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 /**
  * Handles various function for an adapter: start, stop.
- * @version $Id$
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.core.Adapter
  */
 
 public final class AdapterHandler extends ActionBase {
-	public static final String version="$RCSfile: AdapterHandler.java,v $ $Revision: 1.6 $ $Date: 2011-11-30 13:51:46 $";
 
 
 

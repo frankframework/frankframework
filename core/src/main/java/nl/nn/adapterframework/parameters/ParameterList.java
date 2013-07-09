@@ -25,7 +25,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * List of parameters.
  * 
  * @author Gerrit van Brakel
- * @version $Id$
  */
 public class ParameterList extends ArrayList {
 	

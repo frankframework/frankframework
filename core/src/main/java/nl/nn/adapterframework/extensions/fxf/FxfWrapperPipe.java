@@ -53,7 +53,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * </table>
  * 
  * @author Jaco de Groot
- * @version $Id$
  */
 public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	private AppConstants appConstants;

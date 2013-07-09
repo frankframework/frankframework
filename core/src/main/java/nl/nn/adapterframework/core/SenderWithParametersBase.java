@@ -31,10 +31,8 @@ import nl.nn.adapterframework.senders.SenderBase;
  * 
  * @author Gerrit van Brakel
  * @since  4.3
- * @version $Id$
  */
 public abstract class SenderWithParametersBase extends SenderBase implements ISenderWithParameters {
-	public static final String version="$RCSfile: SenderWithParametersBase.java,v $ $Revision: 1.8 $ $Date: 2011-11-30 13:51:55 $";
 	
 	protected ParameterList paramList = null;
 

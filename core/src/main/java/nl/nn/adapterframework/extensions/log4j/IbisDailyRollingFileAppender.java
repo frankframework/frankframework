@@ -29,7 +29,6 @@ import org.apache.log4j.spi.LoggingEvent;
  * Extension of DailyRollingFileAppender with the facility to clean up files.
  *
  * @author  Peter Leeuwenburgh
- * @version $Id$
  */
 
 public class IbisDailyRollingFileAppender extends DailyRollingFileAppender {

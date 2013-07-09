@@ -36,7 +36,6 @@ import java.util.Map;
  *
  * @todo factor away a few java 6 things I probably used (@Override, StringBuilder)
  *
- * @version $Id$
  * @author  Michiel Meeuwissen
  */
 class Soap {

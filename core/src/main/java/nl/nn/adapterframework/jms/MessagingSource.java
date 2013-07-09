@@ -46,7 +46,6 @@ import org.apache.log4j.Logger;
  * Generic Source for JMS connection, to be shared for JMS Objects that can use the same. 
  * 
  * @author  Gerrit van Brakel
- * @version $Id$
  */
 public class MessagingSource  {
 	protected Logger log = LogUtil.getLogger(this);

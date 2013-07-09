@@ -25,7 +25,6 @@ import nl.nn.adapterframework.core.ListenerException;
  * Please consider using a call using serviceNamespaceURI instead.
  * 
  * @author Johan Verrips IOS
- * @version $Id$
  */
 public class ServiceDispatcherBean {
 	

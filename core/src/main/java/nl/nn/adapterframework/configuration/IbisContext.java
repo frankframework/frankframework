@@ -36,7 +36,6 @@ import org.springframework.core.JdkVersion;
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public class IbisContext {
     private final static Logger log = LogUtil.getLogger(IbisContext.class);

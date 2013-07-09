@@ -47,7 +47,6 @@ import org.apache.commons.lang.StringUtils;
  * </td><td>true</td></tr>
  * </table>
  * @author  Gerrit van Brakel 
- * @version $Id$
  */
 public class WebServiceListener extends PushingListenerAdapter implements Serializable, HasPhysicalDestination {
 

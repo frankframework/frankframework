@@ -116,7 +116,6 @@ import org.springframework.transaction.TransactionDefinition;
 
  * </p>
  * 
- * @version $Id$
  * @author  Johan Verrips
  */
 public class PipeLine implements ICacheEnabled, HasStatistics {

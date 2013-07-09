@@ -45,14 +45,12 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * </table>
  * </p>
- * @version $Id$
  * @author  Johan Verrips
  * @author  Jaco de Groot (***@dynasol.nl)
  * @since   4.2c
  */
 public class PutSystemDateInSession extends FixedForwardPipe {
-	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.14 $ $Date: 2012-06-01 10:52:50 $";
-
+	public final static Object OBJECT = new Object();
 	public final static String FIXEDDATETIME  ="2001-12-17 09:30:47";
 	public final static String FORMAT_FIXEDDATETIME  ="yyyy-MM-dd HH:mm:ss";
 	public final static String FIXEDDATE_STUB4TESTTOOL_KEY  ="stub4testtool.fixeddate";
@@ -124,7 +122,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 			if (sleepWhenEqualToPrevious > -1) {
 				// Synchronize on a static value to generate unique value's for the
 				// whole virtual machine.
-				synchronized (version) {
+				synchronized (OBJECT) {
 					formattedDate = formatter.format(new Date());
 					while (formattedDate.equals(previousFormattedDate)) {
 						try {

@@ -17,10 +17,8 @@ package nl.nn.adapterframework.batch;
 
 /**
  * @author  John Dekker
- * @version $Id$
  */
 public class InputfieldsPart {
-	public static final String version = "$RCSfile: InputfieldsPart.java,v $  $Revision: 1.6 $ $Date: 2011-11-30 13:51:57 $";
 
 	private String value;
 	private String description;

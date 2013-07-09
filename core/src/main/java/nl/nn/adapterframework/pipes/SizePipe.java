@@ -23,11 +23,9 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * Returns the number of bytes or characters in the input.
  *
  * @author Jaco de Groot (***@dynasol.nl)
- * @version $Id$
  *
  */
 public class SizePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: SizePipe.java,v $ $Revision: 1.4 $ $Date: 2012-06-01 10:52:50 $";
 
 	/**
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)

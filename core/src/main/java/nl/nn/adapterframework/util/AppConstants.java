@@ -95,13 +95,11 @@ import org.apache.log4j.Logger;
 	</tr>
 	</table>
 <p></p>
- * @version $Id$
 
  * @author Johan Verrips
  *
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.22 $ $Date: 2012-08-23 11:57:43 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	public final static String propertiesFileName="AppConstants.properties";

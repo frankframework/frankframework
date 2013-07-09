@@ -21,7 +21,6 @@ import javax.ejb.EJBObject;
 /**
  *
  * @author Tim van der Leeuw
- * @version $Id$
  */
 public interface IfsaFFSessionBeanRemote extends FireForgetService, EJBObject {
 

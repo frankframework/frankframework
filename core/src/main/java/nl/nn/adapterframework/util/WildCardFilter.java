@@ -35,7 +35,6 @@ import java.util.Vector;
  * <li>in*.log</li>
  * <li>data*.* </li>
  * </ul>
- * @version $Id$
  * @author Johan Verrips IOS
  **/
 

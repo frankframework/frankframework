@@ -82,7 +82,6 @@ import org.springframework.core.task.TaskExecutor;
  *  </table></td><td>application default (None)</td></tr>
  * </table>
  * 
- * @version $Id$
  * @author Johan Verrips
  * @see    nl.nn.adapterframework.core.IReceiver
  * @see    nl.nn.adapterframework.core.PipeLine

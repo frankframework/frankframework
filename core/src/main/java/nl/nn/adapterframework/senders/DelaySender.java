@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.SenderException;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
- * @version $Id$
  */
 public class DelaySender extends SenderBase {
 

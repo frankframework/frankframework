@@ -82,11 +82,9 @@ import com.sap.conn.jco.server.JCoServerTIDHandler;
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  * @see   http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, JCoServerFunctionHandler, JCoServerTIDHandler, JCoIDocHandlerFactory, JCoIDocHandler, JCoQueuedIDocHandler, JCoServerExceptionListener, JCoServerErrorListener, ServerDataProvider {
-	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.3 $ $Date: 2012-06-14 14:13:49 $";
 
 	private String progid;	 // progid of the RFC-destination
 	private String connectionCount = "2"; // used in SAP examples

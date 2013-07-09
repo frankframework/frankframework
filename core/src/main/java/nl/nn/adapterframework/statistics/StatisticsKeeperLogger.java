@@ -30,7 +30,6 @@ import nl.nn.adapterframework.util.FileUtils;
  * 
  * @author  Gerrit van Brakel
  * @since   4.4.3
- * @version $Id$
  */
 public class StatisticsKeeperLogger extends StatisticsKeeperXmlBuilder {
 

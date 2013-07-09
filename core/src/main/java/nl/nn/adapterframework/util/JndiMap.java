@@ -34,7 +34,6 @@ import javax.naming.NamingException;
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public class JndiMap implements Map {
     

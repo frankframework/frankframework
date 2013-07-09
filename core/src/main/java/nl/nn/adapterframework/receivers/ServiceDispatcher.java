@@ -33,7 +33,6 @@ import org.apache.log4j.Logger;
  * This class is exposed as a webservice, to be able to provide a single point
  * of entry to all adapters that have a ServiceListener as a IReceiver.
  *
- * @version $Id$
  * @author Johan Verrips
  * @see ServiceClient
  * @see ServiceListener

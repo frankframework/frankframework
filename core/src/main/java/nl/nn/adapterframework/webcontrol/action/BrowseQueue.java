@@ -39,10 +39,8 @@ import org.apache.struts.action.ActionMapping;
  * 
  * @author Johan Verrips
  * @since 4.1.1
- * @version $Id$
  */
 public class BrowseQueue extends ActionBase {
-	public static final String version = "$RCSfile: BrowseQueue.java,v $ $Revision: 1.5 $ $Date: 2011-11-30 13:51:46 $";
 	
 
 public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {

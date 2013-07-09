@@ -37,7 +37,6 @@ import nl.nn.adapterframework.core.SenderException;
  * 
  * @author  Gerrit van Brakel
  * @since   4.10  
- * @version $Id$
  */
 public class DelphiStringRecordReaderFactory implements IInputStreamReaderFactory {
 

@@ -25,7 +25,6 @@ import nl.nn.adapterframework.util.Locker;
 
 /**
  * @author Jaco de Groot
- * @version $Id$
  */
 public class LockerPipeProcessor extends PipeProcessorBase {
 

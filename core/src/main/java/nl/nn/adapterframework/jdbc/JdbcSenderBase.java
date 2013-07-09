@@ -49,7 +49,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * </table>
 
  *  * </p>
- * @version $Id$
  * @author  Gerrit van Brakel
  * @since 	4.2.h
  */

@@ -66,7 +66,6 @@ import java.util.Map;
  * </p>
  *
  * @author 	Gerrit van Brakel
- * @version $Id$
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
 

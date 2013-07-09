@@ -45,7 +45,6 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
- * @version $Id$
  * @author Peter Leeuwenburgh
  *
  * @see PipeLineSession

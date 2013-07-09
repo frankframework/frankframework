@@ -42,7 +42,6 @@ import nl.nn.adapterframework.util.SsoUtil;
  * 
  * @author  Gerrit van Brakel
  * @since   4.8
- * @version $Id$
  */
 public class GetLtpaTokenPipe extends FixedForwardPipe {
 	

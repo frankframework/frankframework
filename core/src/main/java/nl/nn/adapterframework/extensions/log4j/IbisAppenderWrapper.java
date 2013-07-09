@@ -15,7 +15,6 @@ import org.apache.log4j.spi.LoggingEvent;
  * Extension of AppenderSkeleton with the facility to truncate all messages to a specified length.
  * 
  * @author Peter Leeuwenburgh
- * @version $Id$
  */
 
 public class IbisAppenderWrapper extends AppenderSkeleton implements

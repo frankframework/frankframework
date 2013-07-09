@@ -20,7 +20,6 @@ package nl.nn.adapterframework.extensions.fxf;
  * 
  * @author  Gerrit van Brakel
  * @since   FXF 2.0
- * @version $Id$
  */
 public class Transfer {
 	

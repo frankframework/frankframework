@@ -128,7 +128,6 @@ import org.apache.commons.lang.StringUtils;
  * 
  * Queries that return no data (queryType 'other') return a message indicating the number of rows processed
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  * @since 	4.1
  */

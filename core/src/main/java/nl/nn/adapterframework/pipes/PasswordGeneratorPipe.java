@@ -55,12 +55,10 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
- * @version $Id$
  * @author  Milan Tomc
  * @since   4.5
  */
 public class PasswordGeneratorPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: PasswordGeneratorPipe.java,v $ $Revision: 1.6 $ $Date: 2012-06-01 10:52:49 $";
 	
 	private String lCharacters="abcdefghijklmnopqrstuvwxyz";
 	private String uCharacters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";

@@ -53,7 +53,6 @@ import org.apache.log4j.Logger;
 </pre></code>
  *
  * @author Johan Verrips
- * @version $Id$
  **/
 
 public class DB2XMLWriter {

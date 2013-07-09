@@ -62,11 +62,9 @@ import nl.nn.adapterframework.core.PipeForward;
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
- * @version $Id$
  * @author Gerrit van Brakel
  */
 public class FixedForwardPipe extends AbstractPipe {
-	public static final String version="$RCSfile: FixedForwardPipe.java,v $ $Revision: 1.10 $ $Date: 2011-11-30 13:51:50 $";
 
     private String forwardName = "success";
     private PipeForward forward;

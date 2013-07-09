@@ -22,7 +22,6 @@ import com.sap.conn.jco.JCoRecord;
  * 
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class RecordHandler extends Handler {
 

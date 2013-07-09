@@ -36,12 +36,10 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * </p>
  * 
- * @version $Id$
  * @author Jaco de Groot (***@dynasol.nl)
  * @deprecated please use CommandSender
  */
 public class ExecutePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: ExecutePipe.java,v $ $Revision: 1.9 $ $Date: 2012-06-01 10:52:49 $";
 	
 	private String command;
 	private String commandSessionKey;

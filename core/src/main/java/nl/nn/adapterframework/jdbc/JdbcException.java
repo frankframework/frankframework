@@ -20,12 +20,10 @@ import nl.nn.adapterframework.core.IbisException;
 /**
  * Wrapper for JDBC related exceptions.
  * 
- * @version $Id$
  * @author Gerrit van Brakel
  * @since  4.1
  */
 public class JdbcException extends IbisException {
-	public static final String version = "$RCSfile: JdbcException.java,v $ $Revision: 1.7 $ $Date: 2011-11-30 13:51:43 $";
 
 	public JdbcException() {
 		super();

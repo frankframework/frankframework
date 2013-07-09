@@ -28,11 +28,9 @@ import org.xml.sax.SAXException;
  * This class offers the resolveEntity method to resolve a systemId to
  * a resource on the classpath.
  * @since 4.1.1
- * @version $Id$
  */
 
 public class ClassPathEntityResolver implements EntityResolver {
-	public static final String version="$RCSfile: ClassPathEntityResolver.java,v $ $Revision: 1.5 $ $Date: 2011-11-30 13:51:49 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 

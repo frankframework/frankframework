@@ -42,7 +42,6 @@ import org.apache.commons.lang.StringUtils;
  * between all IBIS objects that have the same connectionFactoryName.
  * 
  * @author  Gerrit van Brakel
- * @version $Id$
  * @since   4.4
  */
 public class JmsMessagingSourceFactory extends MessagingSourceFactory {

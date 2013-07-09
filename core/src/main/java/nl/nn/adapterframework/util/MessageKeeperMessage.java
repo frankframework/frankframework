@@ -21,11 +21,9 @@ import java.util.Date;
  * Although this could be an inner class of the MessageKeeper,
  * it's made "standalone" to provide the use of iterators and
  * enumerators with the MessageKeeper.
- * @version $Id$
  * @author Johan Verrips IOS
  */
 public class MessageKeeperMessage {
-	public static final String version="$RCSfile: MessageKeeperMessage.java,v $ $Revision: 1.8 $ $Date: 2013-03-13 14:37:58 $";
 
 	public static final String INFO_LEVEL = "INFO";
 	public static final String WARN_LEVEL = "WARN";

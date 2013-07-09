@@ -87,10 +87,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * Some utilities for working with XML.
  *
  * @author  Johan Verrips
- * @version $Id$
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.96 $ $Date: 2013-01-29 14:03:21 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1286,7 +1284,8 @@ public class XmlUtils {
 
 	public static String getVersionInfo() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(version).append(SystemUtils.LINE_SEPARATOR);
+		sb.append(AppConstants.getInstance().getProperty("application.name") + " "
+				+ AppConstants.getInstance().getProperty("application.version")).append(SystemUtils.LINE_SEPARATOR);
 		sb.append("XML tool version info:").append(SystemUtils.LINE_SEPARATOR);
 
 		SAXParserFactory spFactory = SAXParserFactory.newInstance();

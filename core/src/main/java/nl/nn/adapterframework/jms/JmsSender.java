@@ -83,7 +83,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * </p>
  * 
  * @author Gerrit van Brakel
- * @version $Id$
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {

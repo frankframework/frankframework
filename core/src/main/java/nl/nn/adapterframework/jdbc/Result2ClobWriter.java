@@ -51,7 +51,6 @@ import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 public class Result2ClobWriter extends Result2LobWriterBase {
 	

@@ -20,7 +20,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 /**
  * A Pipe represents an action to take in a {@link PipeLine}.
  * 
- * @version $Id$
  * @author Johan Verrips
  */
 public interface IPipe extends INamedObject {

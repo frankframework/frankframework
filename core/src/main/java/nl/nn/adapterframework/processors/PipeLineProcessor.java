@@ -22,7 +22,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 
 /**
  * @author Jaco de Groot
- * @version $Id$
  */
 public interface PipeLineProcessor {
 

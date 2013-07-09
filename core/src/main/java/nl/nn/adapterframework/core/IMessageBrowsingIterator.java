@@ -20,7 +20,6 @@ package nl.nn.adapterframework.core;
  * 
  * @author  Gerrit van Brakel
  * @since   4.3
- * @version $Id$
  */
 public interface IMessageBrowsingIterator {
 

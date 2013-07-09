@@ -52,10 +52,8 @@ import com.sap.conn.jco.JCoException;
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHandler {
-	public static String version="$RCSfile: SapLUWManager.java,v $  $Revision: 1.2 $ $Date: 2012-06-01 10:52:50 $";
 
 	public static final String ACTION_BEGIN="begin";
 	public static final String ACTION_COMMIT="commit";

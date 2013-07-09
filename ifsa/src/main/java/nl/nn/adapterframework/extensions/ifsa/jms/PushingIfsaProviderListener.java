@@ -113,7 +113,6 @@ import com.ing.ifsa.IFSAServicesProvided;
  * 
  * @author  Gerrit van Brakel
  * @since   4.2
- * @version $Id$
  */
 public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount, ITransactionRequirements {
 

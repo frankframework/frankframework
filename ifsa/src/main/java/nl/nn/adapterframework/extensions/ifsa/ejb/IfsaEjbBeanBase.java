@@ -34,7 +34,6 @@ import com.ing.ifsa.exceptions.ServiceException;
 /**
  *
  * @author Tim van der Leeuw
- * @version $Id$
  */
 abstract public class IfsaEjbBeanBase extends AbstractListenerConnectingEJB implements SessionBean {
     protected SessionContext ejbContext;

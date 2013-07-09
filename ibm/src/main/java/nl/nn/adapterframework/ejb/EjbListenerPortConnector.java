@@ -39,7 +39,6 @@ import com.ibm.websphere.management.AdminServiceFactory;
  *
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public class EjbListenerPortConnector implements IListenerConnector {
     private final static String LISTENER_PORTNAME_SUFFIX = "ListenerPort";

@@ -33,7 +33,6 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTable extends ActionBase {
-	public static final String version = "$RCSfile: BrowseJdbcTable.java,v $ $Revision: 1.7 $ $Date: 2011-11-30 13:51:46 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,

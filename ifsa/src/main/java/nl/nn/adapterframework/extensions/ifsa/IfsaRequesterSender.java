@@ -44,7 +44,6 @@ package nl.nn.adapterframework.extensions.ifsa;
  *
  * @author  Gerrit van Brakel
  * @since   4.2, switch class: 4.8
- * @version $Id$
  */
 public class IfsaRequesterSender extends nl.nn.adapterframework.extensions.ifsa.jms.IfsaRequesterSender {
 

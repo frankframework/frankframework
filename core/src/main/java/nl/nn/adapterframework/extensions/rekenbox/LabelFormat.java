@@ -77,7 +77,6 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * </table>
  * </p>
  * @author Gerrit van Brakel
- * @version $Id$
  */
 public class LabelFormat extends FixedForwardPipe {
 	 

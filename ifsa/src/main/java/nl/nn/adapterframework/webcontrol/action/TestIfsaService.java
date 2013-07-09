@@ -37,10 +37,8 @@ import org.apache.struts.action.DynaActionForm;
  * Send a test message to an IFSA Service.
  * 
  * @author Gerrit van Brakel / Johan Verrips
- * @version $Id$
  */
 public final class TestIfsaService extends ActionBase {
-	public static final String version = "$RCSfile: TestIfsaService.java,v $ $Revision: 1.4 $ $Date: 2011-11-30 13:51:45 $";
 
 	public ActionForward execute(
 	    ActionMapping mapping,

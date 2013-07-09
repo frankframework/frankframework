@@ -27,7 +27,6 @@ import javax.jms.Session;
  * IfsaProviderListener.
  * 
  * @author Tim van der Leeuw
- * @version $Id$
  *
  */
 public interface IPortConnectedListener extends IPushingListener {

@@ -42,7 +42,6 @@ import nl.nn.adapterframework.util.Locker;
  * 
  * @author  Gerrit van Brakel
  * @since   4.3
- * @version $Id$
  */
 public interface IExtendedPipe extends IPipe {
 

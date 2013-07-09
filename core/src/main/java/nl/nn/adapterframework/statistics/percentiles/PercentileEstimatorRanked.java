@@ -20,7 +20,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 /**  
  * @author Gerrit van Brakel
- * @version $Id$
  */
 public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 

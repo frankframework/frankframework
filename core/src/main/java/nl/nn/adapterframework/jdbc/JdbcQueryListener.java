@@ -49,7 +49,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * </table>
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 public class JdbcQueryListener extends JdbcListener {
 

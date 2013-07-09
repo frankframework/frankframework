@@ -32,7 +32,6 @@ import nl.nn.adapterframework.receivers.GenericReceiver;
 /**
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public class GenericMDB extends AbstractListenerConnectingEJB implements MessageDrivenBean, MessageListener {
     

@@ -62,7 +62,6 @@ import org.apache.commons.lang.StringUtils;
  *
  * @author  Gerrit van Brakel
  * @since   4.4.5
- * @version $Id$
  */
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
 	

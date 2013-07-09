@@ -49,7 +49,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * </table>
  * </p>
  * 
- * @version $Id$
  * @author  Peter Leeuwenburgh
  */
 public class ResultSet2FileSender extends FixedQuerySender {

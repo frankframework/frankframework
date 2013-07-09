@@ -43,7 +43,6 @@ import org.apache.struts.action.ActionMapping;
  * <code>Action</code> to retrieve the statistics from a
  * specific adapter. The pipeline statistics are sorted by
  * pipename.
- * @version $Id$
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.core.PipeLine
  * @see nl.nn.adapterframework.core.Adapter

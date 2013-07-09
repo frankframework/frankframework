@@ -33,7 +33,6 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * 
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class SapListener implements IPushingListener {
 	private int jcoVersion = 3;

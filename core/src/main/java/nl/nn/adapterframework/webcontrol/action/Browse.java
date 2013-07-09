@@ -49,12 +49,10 @@ import org.apache.struts.action.DynaActionForm;
 /**
  * Basic browser for transactional storage.
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.26 $ $Date: 2012-12-28 14:02:02 $";
 
 	private int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 	private int skipMessages=0;

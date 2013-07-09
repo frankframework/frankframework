@@ -38,7 +38,6 @@ import org.apache.log4j.Logger;
  * naming convention instead of a bean per IFSA Service name.
  * 
  * @author Tim van der Leeuw
- * @version $Id$
  */
 public abstract class CustomIfsaReceiverMDBAbstractBase implements MessageDrivenBean, MessageListener {
     protected final Logger log = LogUtil.getLogger(this);

@@ -174,7 +174,6 @@ import org.w3c.dom.Node;
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
- * @version $Id$
  * @author Peter Leeuwenburgh
  * @deprecated Please replace with nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe (not 1:1)
  */

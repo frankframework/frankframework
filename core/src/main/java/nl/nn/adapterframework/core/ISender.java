@@ -21,7 +21,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * The <code>ISender</code> is responsible for sending a message to
  * some destination.
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  */
 public interface ISender extends INamedObject {

@@ -29,10 +29,8 @@ import org.w3c.dom.Element;
  * 
  * 
  * @author John Dekker
- * @version $Id$
  */
 public class ParameterValue {
-	public static final String version="$RCSfile: ParameterValue.java,v $ $Revision: 1.7 $ $Date: 2011-11-30 13:52:03 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Object value;

@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletResponseWrapper;
  * Extension of HttpServletResponseRwapper on to capture response in a String.
  * 
  * @author  Peter Leeuwenburgh
- * @version $Id$
  */
 
 public class IbisServletResponseWrapper	extends HttpServletResponseWrapper {

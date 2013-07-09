@@ -41,12 +41,10 @@ import org.w3c.dom.NodeList;
  *
  * <b>Note</b>: Make sure the <code>soap.xml</code>-file is placed in the 'current' directory. This still
  * needs to be a file, but often only single file per instance is sufficient.
- * @version $Id$
  *
  * @author Gerrit van Brakel IOS
  */
 public class SoapConfigManager extends XMLConfigManager {
-	public static final String version="$RCSfile: SoapConfigManager.java,v $ $Revision: 1.10 $ $Date: 2012-02-06 13:18:19 $";
     protected Logger log = LogUtil.getLogger(this);
 
 	private String defaultProvider=SoapGenericProvider.class.getName();    

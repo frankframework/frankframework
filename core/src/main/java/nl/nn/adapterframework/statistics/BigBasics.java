@@ -23,7 +23,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * Extension to Basics, allowing for large numbers, like message sizes.
  * 
  * @author  Gerrit van Brakel
- * @version $Id$
  */
 public class BigBasics extends Basics {
 

@@ -68,7 +68,6 @@ import org.apache.commons.lang.SystemUtils;
  * </p>
  * @author  Gerrit van Brakel
  * @since   4.9
- * @version $Id$
  */
 public class FixedResultSender extends SenderWithParametersBase {
 

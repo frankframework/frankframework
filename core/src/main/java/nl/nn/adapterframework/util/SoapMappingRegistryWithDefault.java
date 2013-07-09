@@ -24,7 +24,6 @@ import org.apache.soap.util.xml.QName;
  * SoapMappingRegistry that returns StringDeserializer for each unknown element.
  * 
  * @author Gerrit van Brakel
- * @version $Id$
  */
 public class SoapMappingRegistryWithDefault extends SOAPMappingRegistry {
 	

@@ -53,7 +53,6 @@ import org.apache.commons.lang.StringUtils;
  * </p>
  * 
  * @author  John Dekker
- * @version $Id$
  */
 public class Result2Filewriter extends ResultWriter {
 	

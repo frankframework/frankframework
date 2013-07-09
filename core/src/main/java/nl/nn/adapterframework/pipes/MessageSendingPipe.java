@@ -148,8 +148,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>"illegalResult"</td><td>the received data does not comply with <code>checkXmlWellFormed</code> or <code>checkRootTag</code>.</td></tr>
  * </table>
  * </p>
- * @author  Gerrit van Brakel
- * @version $Id$</p>
+ * @author  Gerrit van Brakel</p>
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {

@@ -33,7 +33,6 @@ import com.sap.conn.jco.JCoRecord;
  * 
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class Handler extends DefaultHandler {
 	protected Logger log = LogUtil.getLogger(this);

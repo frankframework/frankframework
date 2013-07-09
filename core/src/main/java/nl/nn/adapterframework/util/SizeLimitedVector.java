@@ -20,7 +20,6 @@ package nl.nn.adapterframework.util;
  * If, after the maximum has exceeded, another element is put
  * in the vector the oldest element is removed.
  * <p>Creation date: (03-03-2003 9:10:43)</p>
- * @version $Id$
  * @author Johan Verrips
  */
 public class SizeLimitedVector extends java.util.Vector {

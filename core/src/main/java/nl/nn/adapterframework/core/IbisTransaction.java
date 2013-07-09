@@ -28,11 +28,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * Class which generates extra logging when starting and committing transactions.
  *
  * @author  Peter Leeuwenburgh
- * @version $Id$
  */
 
 public class IbisTransaction {
-	public static final String version="$RCSfile: IbisTransaction.java,v $ $Revision: 1.3 $ $Date: 2011-11-30 13:51:55 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private PlatformTransactionManager txManager;

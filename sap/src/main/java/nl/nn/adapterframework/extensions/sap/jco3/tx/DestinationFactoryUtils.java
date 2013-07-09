@@ -36,7 +36,6 @@ import com.sap.conn.jco.JCoException;
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public abstract class DestinationFactoryUtils {
 	private static final Logger logger = LogUtil.getLogger(DestinationFactoryUtils.class);

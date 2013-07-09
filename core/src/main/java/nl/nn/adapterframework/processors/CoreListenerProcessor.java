@@ -28,7 +28,6 @@ import org.apache.log4j.Logger;
 
 /**
  * @author Jaco de Groot
- * @version $Id$
  */
 public class CoreListenerProcessor implements ListenerProcessor {
 	private Logger log = LogUtil.getLogger(this);

@@ -19,7 +19,6 @@ package nl.nn.adapterframework.core;
  * Exception thrown by the ISender (implementation) to notify
  * that the sending did not succeed.
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  */
 public class SenderException extends IbisException {

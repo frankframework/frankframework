@@ -38,7 +38,6 @@ import org.apache.log4j.Logger;
  * The Configuration is placeholder of all configuration objects. Besides that, it provides
  * functions for starting and stopping adapters as a facade.
  *
- * @version $Id$
  * @author Johan Verrips
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.IAdapter

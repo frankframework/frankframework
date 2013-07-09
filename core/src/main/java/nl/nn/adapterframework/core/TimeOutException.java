@@ -17,7 +17,6 @@ package nl.nn.adapterframework.core;
 
 /**
  * Exception thrown to signal that a timeout occurred.
- * @version $Id$
  */
 public class TimeOutException extends IbisException {
 	

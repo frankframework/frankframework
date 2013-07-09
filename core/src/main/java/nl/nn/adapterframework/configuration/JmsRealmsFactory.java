@@ -23,7 +23,6 @@ package nl.nn.adapterframework.configuration;
  * can not be used.
  * 
  * @author Tim van der Leeuw
- * @version $Id$
  *
  */
 public class JmsRealmsFactory extends AbstractSpringPoweredDigesterFactory {

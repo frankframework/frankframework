@@ -30,12 +30,10 @@ import org.apache.log4j.Logger;
 
 /**
  * A collection of class management utility methods.
- * @version $Id$
  * @author Johan Verrips
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.23 $ $Date: 2012-04-12 09:01:26 $";
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
 
 	private static final boolean trace=false;

@@ -23,7 +23,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 
 /**
  * @author Jaco de Groot
- * @version $Id$
  */
 public class CorePipeProcessor implements PipeProcessor {
 	

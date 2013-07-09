@@ -18,11 +18,9 @@ package nl.nn.adapterframework.util;
 /**
  * Synchronized Counter.
  * 
- * @version $Id$
  * @author Gerrit van Brakel
  */
 public class Counter {
-	public static final String version="$RCSfile: Counter.java,v $  $Revision: 1.7 $ $Date: 2011-11-30 13:51:49 $";
 	
 	private long value = 0 ;
 

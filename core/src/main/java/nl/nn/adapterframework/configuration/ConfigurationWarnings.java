@@ -23,7 +23,6 @@ import org.apache.log4j.Logger;
 /**
  * Singleton class that has the configuration warnings for this application.
  * 
- * @version $Id$
  * @author Peter Leeuwenburgh
  */
 public final class ConfigurationWarnings extends LinkedList {

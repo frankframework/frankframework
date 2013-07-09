@@ -18,11 +18,9 @@ package nl.nn.adapterframework.util;
 /**
  * Interface to support enquiries about the run state.
  * 
- * @version $Id$
  * @author Gerrit van Brakel
  */
 public interface RunStateEnquiring {
-	public static final String version="$RCSfile: RunStateEnquiring.java,v $ $Revision: 1.3 $ $Date: 2011-11-30 13:51:49 $";
 
 	public void SetRunStateEnquirer(RunStateEnquirer enquirer);
 }

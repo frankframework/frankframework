@@ -21,7 +21,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * Interface to define estimators for percentiles.
  * 
  * @author Gerrit van Brakel
- * @version $Id$
  */
 public interface PercentileEstimator {
 	

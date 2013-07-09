@@ -25,7 +25,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.9
- * @version $Id$
  */
 public class Basics implements ItemList {
 

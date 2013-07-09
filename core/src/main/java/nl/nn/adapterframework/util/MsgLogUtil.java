@@ -19,7 +19,6 @@ package nl.nn.adapterframework.util;
  * Utility functions for message logging.
  * 
  * @author  Peter Leeuwenburgh
- * @version $Id$
  */
 
 public class MsgLogUtil {

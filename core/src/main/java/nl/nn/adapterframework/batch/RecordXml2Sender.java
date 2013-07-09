@@ -53,10 +53,8 @@ import nl.nn.adapterframework.util.ClassUtils;
  * </p>
  * 
  * @author  John Dekker
- * @version $Id$
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.18 $ $Date: 2012-06-01 10:52:48 $";
 
 	private ISender sender = null; 
 	

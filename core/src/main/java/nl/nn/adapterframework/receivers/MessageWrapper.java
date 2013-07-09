@@ -28,7 +28,6 @@ import java.util.Map;
  *
  * @author  Gerrit van Brakel
  * @since   4.3
- * @version $Id$
  */
 public class MessageWrapper implements Serializable, IMessageWrapper {
 

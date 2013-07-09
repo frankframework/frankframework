@@ -40,12 +40,10 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Get the messages on a queue without deleting them
- * @version $Id$
  * @author  Johan Verrips / Gerrit van Brakel
  * @see nl.nn.adapterframework.webcontrol.action.BrowseQueue
  */
 public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
-	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.12 $ $Date: 2011-11-30 13:51:51 $";
 
 	private long timeOut = 3000;
 	private String selector=null;

@@ -21,7 +21,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 /**
  * Base interface to allow objects to declare that they accept paramters. 
  * 
- * @version HasSender.java,v 1.3 2004/03/23 16:42:59 L190409 Exp $
  * @author  Gerrit van Brakel
  */
 public interface IWithParameters {

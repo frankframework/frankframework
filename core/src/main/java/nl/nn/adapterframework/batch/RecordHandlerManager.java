@@ -40,10 +40,8 @@ import org.apache.log4j.Logger;
  * </p>
  * 
  * @author  John Dekker
- * @version $Id$
  */
 public class RecordHandlerManager implements IRecordHandlerManager {
-	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.15 $ $Date: 2012-06-01 10:52:48 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Map valueHandlersMap;

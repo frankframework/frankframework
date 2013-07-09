@@ -52,7 +52,6 @@ import org.apache.log4j.Logger;
  * </table>
  * </p>
  * <br/>
- * @version $Id$
  * @author Johan Verrips IOS
  */
 public class JNDIBase {

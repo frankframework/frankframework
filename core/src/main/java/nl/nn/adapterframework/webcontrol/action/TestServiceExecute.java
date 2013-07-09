@@ -38,7 +38,6 @@ import org.apache.struts.upload.FormFile;
 
 /**
  * Execute a service test.
- * @version $Id$
  * @author Johan Verrips
  */
 public class TestServiceExecute extends ActionBase {

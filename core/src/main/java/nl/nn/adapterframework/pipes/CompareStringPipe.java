@@ -70,7 +70,6 @@ import org.w3c.dom.NodeList;
  * </table>
  * </p>
  * @author  Peter Leeuwenburgh
- * @version $Id$
  */
 public class CompareStringPipe extends AbstractPipe {
 

@@ -59,11 +59,9 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setStoreFileNameInSessionKey(String) storeFileNameInSessionKey}</td><td>when set, the name of the read file is stored under this session key</td><td>&nbsp;</td></tr>
  * </table>
  * 
- * @version $Id$
  * @author  Johan Verrips
  */
 public class FileRecordListener implements IPullingListener, INamedObject {
-	public static final String version="$RCSfile: FileRecordListener.java,v $ $Revision: 1.15 $ $Date: 2012-06-01 10:52:57 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;

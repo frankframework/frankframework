@@ -74,11 +74,9 @@ import org.apache.log4j.Logger;
  	FileViewerServlet.signal.css=IE4.css
  	</pre></code>
  	The last item specifies which stylesheet to use.
- * @version $Id$
  * @author Johan Verrips 
  */
 public class FileViewerServlet extends HttpServlet  {
-	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.17 $ $Date: 2011-11-30 13:51:58 $";
 	protected static Logger log = LogUtil.getLogger(FileViewerServlet.class);	
 
 	// key that is looked up to retrieve texts to be signalled

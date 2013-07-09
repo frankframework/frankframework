@@ -23,12 +23,10 @@ import java.io.StringReader;
 
 /**
  * Class to handle all kinds of conversions.
- * @version $Id$
  *
  * @author Gerrit van Brakel IOS
  */
 public class Variant {
-	public static final String version = "$RCSfile: Variant.java,v $ $Revision: 1.8 $ $Date: 2011-11-30 13:51:48 $";
 
 	private String data = null;
 	private Source dataAsXmlSource = null;

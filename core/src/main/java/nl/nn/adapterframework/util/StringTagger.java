@@ -44,7 +44,6 @@ import java.util.*;
 * cmd:[(a,b), c]
 *
 * </code> </pre>
-*@version $Id$
 */
 public class StringTagger implements Map {
 

@@ -40,7 +40,6 @@ import org.apache.commons.lang.StringUtils;
  * </table></p>
  * 
  * @author  Peter Leeuwenburgh
- * @version $Id$
  */
 public class EsbJmsSender extends JmsSender {
 	private final static String REQUEST_REPLY = "RR";

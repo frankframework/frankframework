@@ -23,7 +23,6 @@ import javax.jms.Message;
  * IfsaReceiverMDB for FireForget services.
  * 
  * @author Tim van der Leeuw
- * @version $Id$
  */
 public class CustomIfsaFFReceiverMDB extends CustomIfsaReceiverMDBAbstractBase {
 

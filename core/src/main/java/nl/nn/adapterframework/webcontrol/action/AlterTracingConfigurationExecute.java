@@ -34,7 +34,6 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.DynaActionForm;
 
 public final class AlterTracingConfigurationExecute extends ActionBase {
-	public static final String version="$RCSfile: AlterTracingConfigurationExecute.java,v $ $Revision: 1.3 $ $Date: 2011-11-30 13:51:45 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,

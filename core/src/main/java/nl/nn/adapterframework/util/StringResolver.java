@@ -21,12 +21,10 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
- * @version $Id$
  * 
  * @author Johan Verrips 
  */
 public class StringResolver {
-	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.15 $ $Date: 2011-11-30 13:51:48 $";
 	protected static Logger log = LogUtil.getLogger(StringResolver.class);
 	
     static String DELIM_START = "${";

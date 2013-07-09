@@ -19,7 +19,6 @@ package nl.nn.adapterframework.core;
  * Exception that indicates that the starting of a {@link IPipe Pipe}
  * did not succeed.<br/>
 
- * @version $Id$
  * @author Johan Verrips IOS
  * @see nl.nn.adapterframework.pipes.AbstractPipe#start()
  */

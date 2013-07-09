@@ -29,7 +29,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * Interpolated values do not change anymore once the array gets filled completely.
  * 
  * @author Gerrit van Brakel
- * @version $Id$
  */
 public class PercentileEstimatorBase implements PercentileEstimator {
 

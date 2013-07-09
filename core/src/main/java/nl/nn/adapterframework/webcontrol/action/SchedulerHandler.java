@@ -33,7 +33,6 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
 /**
- * @version $Id$
  * @author  Johan Verrips
  */
 public class SchedulerHandler extends ActionBase {

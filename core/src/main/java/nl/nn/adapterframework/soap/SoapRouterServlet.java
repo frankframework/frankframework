@@ -28,7 +28,6 @@ import org.apache.soap.server.http.RPCRouterServlet;
  *
  * @author  Gerrit van Brakel
  * @since   4.4.5
- * @version $Id$
  */
 public class SoapRouterServlet extends RPCRouterServlet {
 

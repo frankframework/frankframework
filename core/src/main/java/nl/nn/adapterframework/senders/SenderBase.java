@@ -34,7 +34,6 @@ import org.apache.log4j.Logger;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
- * @version $Id$
  */
 public abstract class SenderBase implements ISender {
 	protected Logger log = LogUtil.getLogger(this);

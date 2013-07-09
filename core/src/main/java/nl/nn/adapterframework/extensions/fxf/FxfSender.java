@@ -72,7 +72,6 @@ import org.apache.commons.lang.StringUtils;
  * 
  * @author  Gerrit van Brakel
  * @since   4.8
- * @version $Id$
  */
 public class FxfSender extends JMSFacade implements ISenderWithParameters {
 

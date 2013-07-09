@@ -54,7 +54,6 @@ import org.springframework.core.task.TaskExecutor;
 
  * @author  Gerrit van Brakel
  * @since   4.9
- * @version $Id$
  */
 public class ParallelSenders extends SenderSeries {
 

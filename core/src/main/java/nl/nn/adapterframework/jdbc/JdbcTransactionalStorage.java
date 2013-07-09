@@ -177,7 +177,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 	at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
    </pre>
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  * @since 	4.1
  */

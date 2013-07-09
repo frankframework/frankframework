@@ -21,7 +21,6 @@ import nl.nn.adapterframework.core.IbisException;
  * Exception thrown by ConfigurationDigester and configure()-methods, signaling the configuration
  * did not succeed.
  * 
- * @version $Id$
  * @author Johan Verrips
  */
 public class ConfigurationException extends IbisException {

@@ -36,7 +36,6 @@ import com.sap.mw.idoc.jco.JCoIDoc;
  * 
  * @author  Gerrit van Brakel
  * @since   4.8  
- * @version $Id$
  */
 public class IdocXmlHandler extends DefaultHandler {
 	protected Logger log = LogUtil.getLogger(this.getClass());

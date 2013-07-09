@@ -34,11 +34,9 @@ import org.apache.log4j.Logger;
  * New items are registerd using registerItem().
  * Typical use: SapSystem.getSystem(name).&lt;method to execute&gt;
  * <br/>
- * @version $Id$
  * @author Gerrit van Brakel
  */
 public class GlobalListItem implements INamedObject {
-	public static final String version = "$RCSfile: GlobalListItem.java,v $ $Revision: 1.7 $ $Date: 2011-11-30 13:51:49 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     private static Hashtable items = new Hashtable();

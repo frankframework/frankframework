@@ -45,7 +45,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * </p>
  * @author  Gerrit van Brakel
  * @since   4.8
- * @version $Id$
  */
 public class FilenameSwitch extends AbstractPipe {
 	

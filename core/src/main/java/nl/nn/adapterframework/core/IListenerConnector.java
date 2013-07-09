@@ -26,7 +26,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public interface IListenerConnector {
 

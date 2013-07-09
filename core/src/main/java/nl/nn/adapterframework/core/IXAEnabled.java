@@ -19,7 +19,6 @@ package nl.nn.adapterframework.core;
  * Indicates a Pipe, Sender or Listener to be capable of supporting XA-transactions. 
  * When isTransacted() returns true, alternative XA enabled versions of resources like
  * connectionfactories should be used by implementing classes.
- * @version $Id$
  * @author Gerrit van Brakel
  * @since  4.1
  */

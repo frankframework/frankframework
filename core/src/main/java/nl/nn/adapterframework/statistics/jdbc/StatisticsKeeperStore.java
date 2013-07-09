@@ -45,7 +45,6 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.8
- * @version $Id$
  */
 public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeeperIterationHandler {
 

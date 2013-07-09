@@ -38,7 +38,6 @@ import org.apache.log4j.Logger;
  * Servlet that listens for REST requests, and handles them over to the RestServiceDispatcher.
  * 
  * @author  Gerrit van Brakel
- * @version $Id$
  */
 public class RestListenerServlet extends HttpServlet {
 	protected Logger log=LogUtil.getLogger(this);

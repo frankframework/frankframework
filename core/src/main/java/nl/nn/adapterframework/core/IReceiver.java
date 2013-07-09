@@ -38,7 +38,6 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * may observe the status in the <code>{@link PipeLineResult}</code> to perfom committing
  * requests.
  * 
- *  @version $Id$
  *  @author Johan Verrips
  *  @see IAdapter
  *  @see IAdapter#processMessage(String, String)

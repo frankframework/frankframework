@@ -23,7 +23,6 @@ import javax.jms.Message;
  * IfsaReceiverMDB for RequestReply services
  * 
  * @author Tim van der Leeuw
- * @version $Id$
  */
 public class CustomIfsaRRReceiverMDB extends CustomIfsaReceiverMDBAbstractBase {
 

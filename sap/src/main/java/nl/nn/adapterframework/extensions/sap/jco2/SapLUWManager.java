@@ -49,10 +49,8 @@ import org.apache.commons.lang.StringUtils;
  * 
  * @author  Gerrit van Brakel
  * @since   4.6.0
- * @version $Id$
  */
 public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHandler {
-	public static String version="$RCSfile: SapLUWManager.java,v $  $Revision: 1.2 $ $Date: 2012-06-01 10:52:50 $";
 
 	public static final String ACTION_BEGIN="begin";
 	public static final String ACTION_COMMIT="commit";

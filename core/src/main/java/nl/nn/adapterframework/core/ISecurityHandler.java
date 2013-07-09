@@ -24,7 +24,6 @@ import org.apache.commons.lang.NotImplementedException;
  * 
  * @author Gerrit van Brakel
  * @since  4.3
- * @version $Id$
  */
 public interface ISecurityHandler {
 	

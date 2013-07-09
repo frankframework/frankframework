@@ -20,7 +20,6 @@ import javax.ejb.EJBHome;
 /**
  *
  * @author Tim van der Leeuw
- * @version $Id$
  */
 public interface IfsaRRSessionBeanRemoteHome extends EJBHome {
     public IfsaRRSessionBeanRemote create()

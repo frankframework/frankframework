@@ -46,7 +46,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  * </p>
  * 
  * @author  Peter Leeuwenburgh
- * @version $Id$
  */
 public class PutParametersInSession extends FixedForwardPipe {
 	

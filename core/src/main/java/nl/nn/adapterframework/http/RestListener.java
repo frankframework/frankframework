@@ -39,7 +39,6 @@ import nl.nn.adapterframework.core.IPushingListener;
  * </td><td>true</td></tr>
  * </table>
  * @author  Gerrit van Brakel 
- * @version $Id$
  */
 public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination {
 

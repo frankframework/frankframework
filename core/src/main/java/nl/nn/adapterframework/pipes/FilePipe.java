@@ -35,7 +35,6 @@ import nl.nn.adapterframework.util.FileHandler;
  * 
  * @author J. Dekker
  * @author Jaco de Groot (***@dynasol.nl)
- * @version $Id$
  *
  */
 public class FilePipe extends FixedForwardPipe {

@@ -43,7 +43,6 @@ import nl.nn.adapterframework.util.Misc;
  * If {@link #setType(String) type} is set to <code>alphanumeric</code>, the UUID will not have a fixed length which will be about 42.
  * Only type <code>alphanumeric</code> guarantees a 100% unique identifier, type <code>numeric</code> has a 0.01% chance of exactly the same id in case of multiple calls on the same host within a few milliseconds.  
  * 
- * @version $Id$
  * @author Peter Leeuwenburgh
  */
 public class UUIDGeneratorPipe extends FixedForwardPipe {

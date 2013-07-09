@@ -51,7 +51,6 @@ import org.apache.log4j.Logger;
  * 
  * @author  Gerrit van Brakel
  * @since   4.4.2
- * @version $Id$
  */
 public class CredentialFactory implements CallbackHandler {
 	protected Logger log = LogUtil.getLogger(this);

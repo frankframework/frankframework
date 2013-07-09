@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
  * Factory for {@link MessagingSource}s, to share them for JMS Objects that can use the same. 
  * 
  * @author Gerrit van Brakel
- * @version $Id$
  */
 public abstract class MessagingSourceFactory  {
 	protected Logger log = LogUtil.getLogger(this);

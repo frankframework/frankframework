@@ -28,7 +28,6 @@ import nl.nn.adapterframework.jdbc.JdbcException;
  * 
  * @author  Gerrit van Brakel
  * @since  
- * @version $Id$
  */
 public interface IDbmsSupport {
 

@@ -81,7 +81,6 @@ import org.apache.log4j.Logger;
  *
  * @author  Jaco de Groot
  * @since   4.11
- * @version $Id$
  */
 public class XfbSender extends SenderWithParametersBase {
 	private Logger log = LogUtil.getLogger(this);

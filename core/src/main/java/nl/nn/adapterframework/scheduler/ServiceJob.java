@@ -30,7 +30,6 @@ import org.quartz.JobExecutionException;
  * @author John Dekker
  */
 public class ServiceJob extends BaseJob {
-	public static final String version="$RCSfile: ServiceJob.java,v $ $Revision: 1.5 $ $Date: 2011-11-30 13:51:42 $";
 
 	public ServiceJob() {
 		super();

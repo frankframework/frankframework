@@ -34,7 +34,6 @@ import com.sap.mw.jco.JCO;
  * 
  * @author  Gerrit van Brakel
  * @since   4.8
- * @version $Id$
  */
 public abstract class ClientFactoryUtils {
 	private static final Logger logger = LogUtil.getLogger(ClientFactoryUtils.class);

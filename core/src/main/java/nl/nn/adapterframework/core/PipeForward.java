@@ -28,7 +28,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * In this manner it is possible to influence the flow through the pipeline
  * without affecting the Java-code. Simply change the forwarding-XML.<br/>
  *
- * @version $Id$
  * @author Johan Verrips
  * @see PipeLine
  * @see nl.nn.adapterframework.pipes.AbstractPipe#findForward

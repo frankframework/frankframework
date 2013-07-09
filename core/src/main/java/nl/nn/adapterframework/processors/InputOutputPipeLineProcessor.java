@@ -24,7 +24,6 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * @author Jaco de Groot
- * @version $Id$
  */
 public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
 	

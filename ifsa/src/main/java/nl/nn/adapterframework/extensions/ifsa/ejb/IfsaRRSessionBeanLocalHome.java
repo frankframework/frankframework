@@ -20,7 +20,6 @@ import javax.ejb.EJBLocalHome;
 /**
  *
  * @author Tim van der Leeuw
- * @version $Id$
  */
 public interface IfsaRRSessionBeanLocalHome extends EJBLocalHome {
     public IfsaRRSessionBeanLocal create()

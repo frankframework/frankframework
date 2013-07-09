@@ -13,45 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/*
- * ListenerPortPoller.java
- *
- * $Log: ListenerPortPoller.java,v $
- * Revision 1.4  2011-11-30 13:51:57  europe\m168309
- * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
- *
- * Revision 1.1  2011/10/19 14:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
- * Upgraded from WebSphere v5.1 to WebSphere v6.1
- *
- * Revision 1.2  2007/11/22 08:47:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * update from ejb-branch
- *
- * Revision 1.1.2.6  2007/11/15 12:19:24  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Comment out some logging because it is overkill, and testing done proves that the poll() method is no longer called after stopping the IBIS application.
- *
- * Revision 1.1.2.5  2007/11/15 10:34:31  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Method in references class was renamed
- *
- * Revision 1.1.2.4  2007/11/15 09:54:23  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * * Add more detailed logging
- * * Do not attempt to start/stop a receiver which is in state 'Starting'
- *
- * Revision 1.1.2.3  2007/11/06 09:39:13  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Merge refactoring/renaming from HEAD
- *
- * Revision 1.1.2.2  2007/10/25 08:36:57  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Add shutdown method for IBIS which shuts down the scheduler too, and which unregisters all EjbListenerPortConnectors from the ListenerPortPoller.
- * Unregister JmsListener from ListenerPortPoller during ejbRemove method.
- * Both changes are to facilitate more proper shutdown of the IBIS adapters.
- *
- * Revision 1.1.2.1  2007/10/24 15:04:44  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Let runstate of receivers/listeners follow the state of WebSphere ListenerPorts if they are changed outside the control of IBIS.
- *
- *
- * Created on 24-okt-2007, 13:33:28
- *
- */
-
 package nl.nn.adapterframework.ejb;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -81,7 +42,6 @@ import java.util.List;
  * reference goes <code>null</code> it is automatically unregistered.
  *
  * @author Tim van der Leeuw
- * @version $Id$
  */
 public class ListenerPortPoller implements DisposableBean {
 	private Logger log = LogUtil.getLogger(this);

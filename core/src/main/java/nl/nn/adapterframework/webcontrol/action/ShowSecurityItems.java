@@ -65,12 +65,10 @@ import org.w3c.dom.Element;
  * Shows the used certificate.
  * 
  * @author  Peter Leeuwenburgh
- * @since	4.8
- * @version $Id$ 
+ * @since	4.8 
  */
 
 public final class ShowSecurityItems extends ActionBase {
-	public static final String version = "$RCSfile: ShowSecurityItems.java,v $ $Revision: 1.10 $ $Date: 2012-06-06 13:12:49 $";
 	public static final String AUTHALIAS_XSLT = "xml/xsl/authAlias.xsl";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {

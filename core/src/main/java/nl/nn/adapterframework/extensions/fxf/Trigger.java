@@ -23,7 +23,6 @@ import java.util.List;
  * 
  * @author  Gerrit van Brakel
  * @since   FXF 2.0
- * @version $Id$
  */
 public class Trigger {
 	

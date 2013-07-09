@@ -54,7 +54,6 @@ import nl.nn.adapterframework.util.StreamUtil;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.10
- * @version $Id$
  */
 public class ZipWriterSender extends SenderWithParametersBase {
 

@@ -46,7 +46,6 @@ import org.springframework.transaction.PlatformTransactionManager;
  *
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public class DefaultIbisManager implements IbisManager {
     protected Logger log=LogUtil.getLogger(this);

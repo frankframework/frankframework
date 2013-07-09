@@ -31,10 +31,8 @@ import org.apache.log4j.Logger;
  * Utility classes for JMX.
  * 
  * @author Johan Verrips
- * @version $Id$
  */
 public class JmxUtils {
-	public static final String version = "$RCSfile: JmxUtils.java,v $ $Revision: 1.7 $ $Date: 2011-11-30 13:51:49 $";
 	protected static Logger log = LogUtil.getLogger(JmxUtils.class);
 
 	static MBeanServer mbeanServer=null;

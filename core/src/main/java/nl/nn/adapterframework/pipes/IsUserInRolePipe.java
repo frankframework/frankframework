@@ -49,10 +49,8 @@ import org.apache.commons.lang.StringUtils;
  * 
  * @author  Gerrit van Brakel
  * @since   4.4.3
- * @version $Id$
  */
 public class IsUserInRolePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: IsUserInRolePipe.java,v $ $Revision: 1.6 $ $Date: 2012-06-01 10:52:49 $";
 
 	private String role=null;
 	private String notInRoleForwardName="notInRole";

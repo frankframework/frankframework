@@ -23,7 +23,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  * @deprecated Please replace with nl.nn.adapterframework.senders.EchoSender
  */
 public class EchoSender extends nl.nn.adapterframework.senders.EchoSender {

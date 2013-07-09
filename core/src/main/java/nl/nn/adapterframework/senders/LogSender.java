@@ -39,7 +39,6 @@ import org.apache.log4j.Level;
  * 
  * @author Gerrit van Brakel
  * @since  4.9
- * @version $Id$
  */
 public class LogSender extends SenderWithParametersBase implements IParameterHandler {
 	private String logLevel="info";

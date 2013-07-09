@@ -32,7 +32,6 @@ import org.xml.sax.Locator;
  * object being configured. 
  * 
  * @author  Gerrit van Brakel
- * @version $Id$
  */
 public class AttributeCheckingRule extends Rule {
 	protected Logger log = LogUtil.getLogger(this);

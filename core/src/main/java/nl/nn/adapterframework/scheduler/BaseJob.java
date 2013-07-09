@@ -25,7 +25,6 @@ import org.quartz.JobExecutionContext;
  * 
  * @author  Johan Verrips
  * @since   4.0
- * @version $Id$
  */
 public abstract class BaseJob implements Job {
     protected Logger log=LogUtil.getLogger(this);

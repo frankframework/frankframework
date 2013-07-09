@@ -24,7 +24,6 @@ import org.apache.commons.lang.enums.Enum;
  * Enumeration of IFSA message protocols.
  *
  * @author Johan Verrips IOS
- * @version $Id$
  */
 public class IfsaMessageProtocolEnum extends Enum {
 	

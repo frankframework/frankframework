@@ -27,7 +27,6 @@ import com.sap.mw.jco.JCO;
  * 
  * @author  Gerrit van Brakel
  * @since   4.6.0
- * @version $Id$
  */
 public class SapLUWHandle {
 	protected static Logger log = LogUtil.getLogger(SapLUWHandle.class);

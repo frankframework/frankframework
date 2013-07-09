@@ -19,7 +19,6 @@ package nl.nn.adapterframework.core;
  * The PipeLineExit, that represents a terminator of the PipeLine, provides a placeholder
  * for a path (corresponding to a pipeforward) and a state (that is returned to the receiver). 
  * </p>
- * @version $Id$
  * @author Johan Verrips
  */
 public class PipeLineExit {

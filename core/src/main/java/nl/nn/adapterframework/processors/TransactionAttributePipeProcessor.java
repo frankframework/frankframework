@@ -32,7 +32,6 @@ import org.springframework.transaction.TransactionStatus;
 
 /**
  * @author Jaco de Groot
- * @version $Id$
  */
 public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 

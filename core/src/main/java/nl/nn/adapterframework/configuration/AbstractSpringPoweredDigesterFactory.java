@@ -54,7 +54,6 @@ import org.xml.sax.Locator;
  *
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  *
  */
 public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory {

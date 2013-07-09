@@ -46,7 +46,6 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
- * @version $Id$
  */
 public class SenderWrapper extends SenderWrapperBase {
 	private ISender sender;

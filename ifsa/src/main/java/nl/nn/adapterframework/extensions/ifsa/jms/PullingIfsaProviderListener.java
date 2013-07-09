@@ -101,7 +101,6 @@ import com.ing.ifsa.IFSATextMessage;
  * 
  * @author  Gerrit van Brakel
  * @since   4.2
- * @version $Id$
  */
 public class PullingIfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
 

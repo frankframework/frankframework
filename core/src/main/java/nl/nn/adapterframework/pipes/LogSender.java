@@ -30,7 +30,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * 
  * @author Gerrit van Brakel
  * @since  4.3
- * @version $Id$
  * @deprecated Please replace with nl.nn.adapterframework.senders.LogSender
  */
 public class LogSender extends nl.nn.adapterframework.senders.LogSender {

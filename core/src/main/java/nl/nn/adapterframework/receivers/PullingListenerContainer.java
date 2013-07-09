@@ -42,7 +42,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public class PullingListenerContainer implements IThreadCountControllable {
 	protected Logger log = LogUtil.getLogger(this);

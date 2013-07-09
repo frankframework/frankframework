@@ -72,10 +72,8 @@ import org.apache.commons.lang.StringUtils;
  * messages often start with a newline character.
  * </p>
  * @author Gerrit van Brakel
- * @version $Id$
  */
 public class RekenBoxCaller extends FixedForwardPipe {
-	public static final String version="$RCSfile: RekenBoxCaller.java,v $ $Revision: 1.12 $ $Date: 2012-06-01 10:52:52 $";
 	
 	private String runPath="";
 	private String executableExtension="exe"; //bat, com or exe

@@ -53,7 +53,6 @@ import nl.nn.adapterframework.util.ClassUtils;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
- * @version $Id$
  */
 public class SenderSeries extends SenderWrapperBase {
 

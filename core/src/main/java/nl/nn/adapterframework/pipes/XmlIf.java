@@ -47,13 +47,11 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * </p>
  *
- * @version $Id$
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
 
 public class XmlIf extends AbstractPipe {
-	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.11 $ $Date: 2012-06-01 10:52:49 $";
 
 	private String sessionKey = null;
 	private String xpathExpression = null;

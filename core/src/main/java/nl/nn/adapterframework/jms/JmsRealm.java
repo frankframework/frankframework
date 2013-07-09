@@ -30,13 +30,11 @@ import org.apache.log4j.Logger;
  * This class is not an extension of JNDIBase, which would be logical, because
  * in the JMSBase class the function PropertyUtils.copyProperties is used, which cannot
  * handle this.
- * @version $Id$
  * @see JMSFacade#setJmsRealm
  * @author Johan Verrips IOS
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.17 $ $Date: 2011-11-30 13:51:51 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String realmName;

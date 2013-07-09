@@ -35,7 +35,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
- * @version $Id$
  */
 public class FxfUtil {
 	protected static Logger log = LogUtil.getLogger(FxfUtil.class);

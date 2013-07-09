@@ -28,10 +28,8 @@ import org.apache.xmlbeans.GDate;
  * Utilities for formatting and parsing dates.
  * 
  * @author Johan Verrips IOS
- * @version $Id$
  */
 public class DateUtils {
-	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.18 $ $Date: 2012-12-13 10:40:18 $";
 	protected static Logger log = LogUtil.getLogger(DateUtils.class);
 	
 

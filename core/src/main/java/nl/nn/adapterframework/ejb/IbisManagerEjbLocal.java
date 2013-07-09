@@ -24,7 +24,6 @@ import nl.nn.adapterframework.configuration.IbisManager;
  *
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public interface IbisManagerEjbLocal extends IbisManager, EJBLocalObject {
 	

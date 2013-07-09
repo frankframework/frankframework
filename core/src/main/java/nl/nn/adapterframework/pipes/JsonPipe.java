@@ -43,7 +43,6 @@ import org.json.XML;
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
- * @version $Id$
  * @author Martijn Onstwedder
  */
 

@@ -38,7 +38,6 @@ import com.sap.mw.jco.JCO;
  *
  * @author  Gerrit van Brakel
  * @since   4.8
- * @version $Id$
  */
 public class JcoResourceHolder extends ResourceHolderSupport {
 //	private static final Logger logger = LogUtil.getLogger(JcoResourceHolder.class);

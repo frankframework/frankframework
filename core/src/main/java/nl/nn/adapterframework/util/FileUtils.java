@@ -45,7 +45,6 @@ import org.apache.log4j.Logger;
  * Utilities for batch file handling.
  * 
  * @author John Dekker
- * @version $Id$
  */
 public class FileUtils {
 	static Logger log = LogUtil.getLogger(FileUtils.class);

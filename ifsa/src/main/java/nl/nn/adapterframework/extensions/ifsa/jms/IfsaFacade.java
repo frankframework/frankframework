@@ -78,7 +78,6 @@ import com.ing.ifsa.IFSATextMessage;
  * 
  * @author Johan Verrips / Gerrit van Brakel
  * @since 4.2
- * @version $Id$
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
     protected Logger log = LogUtil.getLogger(this);

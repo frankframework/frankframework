@@ -30,10 +30,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Keeps statistics (min, max, count etc).
  * 
  * @author Johan Verrips / Gerrit van Brakel
- * @version $Id$
  */
 public class StatisticsKeeper implements ItemList {
-	public static final String version="$RCSfile: StatisticsKeeper.java,v $ $Revision: 1.5 $ $Date: 2011-11-30 13:51:48 $";
 
 	private static final boolean calculatePercentiles=true;
 	

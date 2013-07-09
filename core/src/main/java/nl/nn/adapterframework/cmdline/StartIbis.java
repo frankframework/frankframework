@@ -24,7 +24,6 @@ import nl.nn.adapterframework.configuration.IbisManager;
  * Works only for pulling listeners.
  * 
  * @author  Johan Verrips
- * @version $Id$
  */
 public class StartIbis {
 

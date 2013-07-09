@@ -18,7 +18,6 @@ package nl.nn.adapterframework.core;
 /**
  * Exception thrown when the <code>doPipe()</code> method
  * of a {@link IPipe Pipe} runs in error.
- * @version $Id$
  * @author  Johan Verrips
  */
 public class PipeRunException extends IbisException {

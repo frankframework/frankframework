@@ -19,7 +19,6 @@ package nl.nn.adapterframework.core;
  * Exception thrown if a {@link IManagable ManagedObject} like an Adapter or Receiver is in
  * an unexpected or illegal state.
  * 
- * @version $Id$
  * @author Gerrit van Brakel
  */
 public class ManagedStateException extends IbisException {

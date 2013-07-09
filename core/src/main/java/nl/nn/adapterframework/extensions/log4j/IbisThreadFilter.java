@@ -25,7 +25,6 @@ import org.apache.log4j.varia.StringMatchFilter;
  * expression on the name of the current thread.
  * 
  * @author Peter Leeuwenburgh
- * @version $Id$
  */
 
 public class IbisThreadFilter extends StringMatchFilter {

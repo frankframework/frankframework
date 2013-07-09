@@ -41,11 +41,9 @@ import java.io.IOException;
  * <pre></code>
  * </p>
  * Creation date: (26-02-2003 12:42:00)
- * @version $Id$
  * @author Johan Verrips IOS
  */
 public class ShowLogging extends ActionBase {
-	public static final String version="$RCSfile: ShowLogging.java,v $ $Revision: 1.7 $ $Date: 2011-11-30 13:51:46 $";
 	
 	boolean showDirectories = AppConstants.getInstance().getBoolean("logging.showdirectories", false);
 	

@@ -76,7 +76,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * Otherwise errors like the following might occur:
  *   NoClassDefFoundException: com/sun/mail/util/MailDateFormat 
  * 
- * @version $Id$
  * @author Johan Verrips/Gerrit van Brakel
  * @deprecated Please replace with nl.nn.adapterframework.senders.MailSender
  */

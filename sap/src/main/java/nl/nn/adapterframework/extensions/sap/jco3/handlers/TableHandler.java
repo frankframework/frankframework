@@ -31,7 +31,6 @@ import com.sap.conn.jco.JCoTable;
  * 
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class TableHandler extends Handler {
 

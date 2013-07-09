@@ -37,10 +37,8 @@ import org.apache.struts.action.DynaActionForm;
  * This handler updates the root log level, the log maxMessageLength and the value in the AppConstants named "log.logIntermediaryResults".
  *
  * @author  Johan Verrips IOS
- * @version $Id$
  */
 public class LogHandler extends ActionBase {
-	public static final String version = "$RCSfile: LogHandler.java,v $ $Revision: 1.8 $ $Date: 2011-11-30 13:51:45 $";
 	
 	 public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {

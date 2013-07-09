@@ -22,7 +22,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 
 /**
  * @author Jaco de Groot
- * @version $Id$
  */
 public interface ListenerProcessor {
 

@@ -22,7 +22,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * Extension of the {@link XmlSwitch XmlSwitch}: an xml switch that can use parameters. The parameters
  * will be used to set them on the transformer instance.
  * @author Johan Verrips
- * @version $Id$
  * @deprecated please use plain XmlSwitch, that now supports parameters too (since 4.2d)
  */
 public class XmlParamSwitch extends XmlSwitch {

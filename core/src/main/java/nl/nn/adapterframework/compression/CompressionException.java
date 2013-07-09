@@ -22,7 +22,6 @@ import nl.nn.adapterframework.core.IbisException;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.10  
- * @version $Id$
  */
 public class CompressionException extends IbisException {
 

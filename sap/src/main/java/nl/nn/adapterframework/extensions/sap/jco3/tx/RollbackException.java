@@ -18,7 +18,6 @@ package nl.nn.adapterframework.extensions.sap.jco3.tx;
 /**
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class RollbackException extends RuntimeException {
 

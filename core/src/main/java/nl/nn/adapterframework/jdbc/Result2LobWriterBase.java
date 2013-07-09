@@ -60,10 +60,8 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 public abstract class Result2LobWriterBase extends ResultWriter {
-	public static final String version = "$RCSfile: Result2LobWriterBase.java,v $  $Revision: 1.8 $ $Date: 2012-06-01 10:52:52 $";
 	
 	protected Map openStreams = Collections.synchronizedMap(new HashMap());
 	protected Map openConnections = Collections.synchronizedMap(new HashMap());

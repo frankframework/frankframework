@@ -57,10 +57,8 @@ import org.apache.log4j.Logger;
  * </table>
  *
  * @author  Gerrit van Brakel
- * @version $Id$
  */
 public class JavaListener implements IPushingListener, RequestProcessor, HasPhysicalDestination {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.32 $ $Date: 2012-03-16 15:35:44 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;

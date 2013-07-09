@@ -20,7 +20,6 @@ package nl.nn.adapterframework.core;
  * This is used for instance in ShowConfiguration, to show the Senders of receivers
  * that have one
  * 
- * @version HasSender.java,v 1.3 2004/03/23 16:42:59 L190409 Exp $
  * @author Gerrit van Brakel
  */
 public interface HasSender extends INamedObject {

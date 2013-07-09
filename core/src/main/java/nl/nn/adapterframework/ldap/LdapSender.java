@@ -237,10 +237,8 @@ import org.apache.commons.lang.StringUtils;
  *  
  * @author Gerrit van Brakel
  * 
- * @version $Id$
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.37 $ $Date: 2012-06-01 10:52:50 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";

@@ -80,10 +80,8 @@ import org.apache.commons.lang.StringUtils;
  * </p>
  * 
  * @author  Gerrit van Brakel
- * @version $Id$
  */
 public class FileLineIteratorPipe extends StreamLineIteratorPipe {
-	public static final String version = "$RCSfile: FileLineIteratorPipe.java,v $  $Revision: 1.9 $ $Date: 2012-06-01 10:52:49 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;

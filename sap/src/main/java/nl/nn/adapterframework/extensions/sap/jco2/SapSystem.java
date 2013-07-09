@@ -50,7 +50,6 @@ import com.sap.mw.jco.JCO;
  * @since 4.1.1
  */
 public class SapSystem extends GlobalListItem  implements JCO.ServerStateChangedListener  {
-	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.1 $ $Date: 2012-02-06 14:33:05 $";
 
 	private int maxConnections = 10;
 

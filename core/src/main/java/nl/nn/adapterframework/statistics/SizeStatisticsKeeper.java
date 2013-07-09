@@ -18,7 +18,6 @@ package nl.nn.adapterframework.statistics;
 /**
  * @author  Gerrit van Brakel
  * @since  
- * @version $Id$
  */
 public class SizeStatisticsKeeper extends StatisticsKeeper {
 

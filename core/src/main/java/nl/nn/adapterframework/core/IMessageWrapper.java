@@ -22,7 +22,6 @@ import java.util.Map;
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 public interface IMessageWrapper {
 	

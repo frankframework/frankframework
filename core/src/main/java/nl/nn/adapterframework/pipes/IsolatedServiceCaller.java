@@ -33,10 +33,8 @@ import org.springframework.core.task.TaskExecutor;
  * 
  * @author  Gerrit van Brakel
  * @since   4.3
- * @version $Id$
  */
 public class IsolatedServiceCaller {
-	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.15 $ $Date: 2011-11-30 13:51:50 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	/**

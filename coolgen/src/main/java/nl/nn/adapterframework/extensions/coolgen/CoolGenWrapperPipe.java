@@ -64,10 +64,8 @@ import nl.nn.coolgen.proxy.XmlProxyException;
  * </table>
  * </p>
  * @author Johan Verrips
- * @version $Id$
  */
 public class CoolGenWrapperPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: CoolGenWrapperPipe.java,v $ $Revision: 1.8 $ $Date: 2012-06-01 10:52:59 $";
 
     private String clientId;
     private String clientPassword;

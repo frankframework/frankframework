@@ -42,7 +42,6 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * between all IBIS objects that have the same ApplicationID.
  * 
  * @author Gerrit van Brakel
- * @version $Id$
  */
 public class IfsaMessagingSource extends MessagingSource {
 

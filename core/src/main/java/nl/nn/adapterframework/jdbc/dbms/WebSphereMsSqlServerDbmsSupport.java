@@ -35,7 +35,6 @@ import nl.nn.adapterframework.util.StreamUtil;
 /**
  * @author  Gerrit van Brakel
  * @since  
- * @version $Id$
  */
 public class WebSphereMsSqlServerDbmsSupport extends MsSqlServerDbmsSupport {
 

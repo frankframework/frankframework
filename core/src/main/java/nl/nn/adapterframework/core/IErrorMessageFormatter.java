@@ -20,7 +20,6 @@ package nl.nn.adapterframework.core;
  * describing the error at hand in a format that the receiver expects. 
  * By implementing this interface, it is possible to customize messages.
  * 
- * @version $Id$
  * @author Johan Verrips
  */
 public interface IErrorMessageFormatter {

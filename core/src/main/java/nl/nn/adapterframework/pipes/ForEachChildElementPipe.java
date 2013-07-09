@@ -105,11 +105,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * 
  * @author Gerrit van Brakel
  * @since 4.6.1
- * 
- * $Id$
  */
 public class ForEachChildElementPipe extends IteratingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.28 $ $Date: 2012-06-01 10:52:49 $";
 
 	private String elementXPathExpression=null;
 	private boolean processFile=false;

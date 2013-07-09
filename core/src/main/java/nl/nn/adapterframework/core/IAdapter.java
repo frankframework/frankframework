@@ -27,7 +27,6 @@ import java.util.Iterator;
  * The Adapter is the class that is responsible for configuring, initializing and
  * accessing/activating IReceivers, Pipelines, statistics etc.
  *
- * @version $Id$
  **/
 public interface IAdapter extends IManagable {
 

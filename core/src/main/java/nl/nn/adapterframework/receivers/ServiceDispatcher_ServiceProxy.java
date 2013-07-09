@@ -29,12 +29,10 @@ import java.util.Vector;
 /**
  * WebService proxy class that can be used in applications that need to communciate with
  * the IBIS Adapterframework via a webservice.
- * @version $Id$
  * @Author Johan Verrips
  */
 
 public class ServiceDispatcher_ServiceProxy {
-	public static final String version = "$RCSfile: ServiceDispatcher_ServiceProxy.java,v $  $Revision: 1.12 $ $Date: 2011-11-30 13:51:54 $";
 
 	private URL url = null;
 	

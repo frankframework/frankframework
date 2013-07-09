@@ -27,7 +27,6 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * @author Jaco de Groot
- * @version $Id$
  */
 public class InputOutputPipeProcessor extends PipeProcessorBase {
 

@@ -57,7 +57,6 @@ import java.util.*;
  * </table>
  * <br>
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
- * @version $Id$
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */

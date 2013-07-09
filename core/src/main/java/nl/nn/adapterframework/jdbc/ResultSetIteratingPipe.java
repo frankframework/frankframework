@@ -101,7 +101,6 @@ import nl.nn.adapterframework.core.SenderException;
  * </p> 
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 

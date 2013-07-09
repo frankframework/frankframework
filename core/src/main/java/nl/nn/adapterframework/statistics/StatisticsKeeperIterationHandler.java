@@ -25,7 +25,6 @@ import nl.nn.adapterframework.core.SenderException;
  * 
  * @author  Gerrit van Brakel
  * @since  
- * @version $Id$
  */
 public interface StatisticsKeeperIterationHandler {
 

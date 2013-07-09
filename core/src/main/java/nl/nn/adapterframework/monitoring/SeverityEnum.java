@@ -25,7 +25,6 @@ import org.apache.commons.lang.enums.Enum;
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 public class SeverityEnum extends Enum {
 

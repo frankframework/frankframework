@@ -24,7 +24,6 @@ package nl.nn.adapterframework.cache;
  * 
  * @author  Gerrit van Brakel
  * @since   4.11
- * @version $Id$
  */
 public interface ICacheEnabled {
 

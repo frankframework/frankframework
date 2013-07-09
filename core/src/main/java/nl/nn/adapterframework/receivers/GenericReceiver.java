@@ -26,12 +26,10 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
  * be set from the configuration file.
  * For configuration options, see {@link ReceiverBase}.
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  * @since   4.1
  */
 public class GenericReceiver extends ReceiverBase {
-	public static final String version="$RCSfile: GenericReceiver.java,v $ $Revision: 1.7 $ $Date: 2011-11-30 13:51:54 $";
 
 	public void setListener(IListener listener) {
 		super.setListener(listener);

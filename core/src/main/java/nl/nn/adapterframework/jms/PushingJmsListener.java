@@ -107,7 +107,6 @@ import org.apache.commons.lang.StringUtils;
  *
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount {
 

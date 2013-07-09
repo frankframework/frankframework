@@ -44,10 +44,8 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  * J2EE api.
  * 
  * @author Tim van der Leeuw
- * @version $Id$
  */
 public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParameters, INamedObject, HasPhysicalDestination {
-    public static final String version = "$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.6 $ $Date: 2011-11-30 13:51:58 $";
     
     protected ParameterList paramList = null;
     public void configure() throws ConfigurationException {

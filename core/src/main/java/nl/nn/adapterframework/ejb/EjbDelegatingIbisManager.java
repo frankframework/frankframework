@@ -29,7 +29,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 /**
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
     private final static Logger log = LogUtil.getLogger(EjbDelegatingIbisManager.class);

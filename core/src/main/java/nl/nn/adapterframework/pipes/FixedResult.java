@@ -80,11 +80,9 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
- * @version $Id$
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.25 $ $Date: 2012-06-01 10:52:49 $";
 	
     private String fileName;
     private String returnString;

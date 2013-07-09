@@ -37,7 +37,6 @@ import java.util.*;
  *
  * @author  Gerrit van Brakel
  * @since   4.9
- * @version $Id$
  */
 public class MonitorManager implements EventHandler {
 	protected Logger log = LogUtil.getLogger(this);

@@ -54,11 +54,9 @@ import org.apache.struts.upload.FormFile;
  * &lt;message&gt;This is a Message&lt;/message&gt;
  * </pre></code><br/>
  * 
- * @version $Id$
  * @author  Johan Verrips
  */
 public final class SendJmsMessageExecute extends ActionBase {
-	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.15 $ $Date: 2011-11-30 13:51:46 $";
 	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	

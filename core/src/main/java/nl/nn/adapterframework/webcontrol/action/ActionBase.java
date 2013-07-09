@@ -50,12 +50,10 @@ import org.apache.struts.util.MessageResources;
  * 
  * This action is ment to be extended by individual actions in the project.
  * 
- * @version $Id$
  * @author  Johan Verrips
  * @see     org.apache.struts.action.Action
  */
 public abstract class ActionBase extends Action {
-	public static final String version="$RCSfile: ActionBase.java,v $ $Revision: 1.12 $ $Date: 2011-11-30 13:51:46 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     protected Locale locale;

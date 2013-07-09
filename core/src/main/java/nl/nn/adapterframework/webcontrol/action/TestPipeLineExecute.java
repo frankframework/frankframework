@@ -59,10 +59,8 @@ import org.apache.struts.upload.FormFile;
  * @see nl.nn.adapterframework.configuration.Configuration
  * @see nl.nn.adapterframework.core.Adapter
  * @see nl.nn.adapterframework.core.PipeLine
- * @version $Id$
  */
 public final class TestPipeLineExecute extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.22 $ $Date: 2012-06-01 10:52:59 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,

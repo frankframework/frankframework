@@ -23,10 +23,8 @@ import java.util.Map;
  *
  * @author  Gerrit van Brakel
  * @since   4.2
- * @version $Id$
  */
 public interface IMessageHandler {
-	public static final String version = "$RCSfile: IMessageHandler.java,v $ $Revision: 1.7 $ $Date: 2011-11-30 13:51:55 $";
 	
 	/**
 	 * Will use listener to perform getIdFromRawMessage(), getStringFromRawMessage and afterMessageProcessed 

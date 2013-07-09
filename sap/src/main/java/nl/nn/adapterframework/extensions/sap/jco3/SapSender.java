@@ -64,10 +64,8 @@ import com.sap.conn.jco.JCoFunction;
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class SapSender extends SapSenderBase {
-	public static final String version="$RCSfile: SapSender.java,v $  $Revision: 1.1 $ $Date: 2012-02-06 14:33:04 $";
 	
 	private String functionName=null;
 	private String functionNameParam="functionName";

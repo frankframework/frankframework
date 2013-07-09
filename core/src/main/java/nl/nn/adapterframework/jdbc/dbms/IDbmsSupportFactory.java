@@ -20,7 +20,6 @@ import java.sql.Connection;
 /**
  * @author  Gerrit van Brakel
  * @since  
- * @version $Id$
  */
 public interface IDbmsSupportFactory {
 

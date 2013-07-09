@@ -19,7 +19,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 
 /**
  * Semaphorer-variant that supports exclusive and 
- * @version $Id$
  * @since   4.9
  * @see     Semaphore
  */

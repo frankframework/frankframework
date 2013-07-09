@@ -50,7 +50,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  *
  * @author  Gerrit van Brakel
  * @since   4.4.5
- * @version $Id$
  * @deprecated Please replace with nl.nn.adapterframework.senders.IbisJavaSender
  */
 public class IbisJavaSender extends nl.nn.adapterframework.senders.IbisJavaSender {

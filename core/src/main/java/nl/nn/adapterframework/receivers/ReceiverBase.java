@@ -193,7 +193,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * </ul>
  * </p>
  *
- * @version $Id$
  * @author     Gerrit van Brakel
  * @since 4.2
  */

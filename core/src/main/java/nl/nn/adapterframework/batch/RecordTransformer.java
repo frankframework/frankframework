@@ -71,10 +71,8 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * 
  * @author  John Dekker
- * @version $Id$
  */
 public class RecordTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.21 $ $Date: 2012-06-01 10:52:48 $";
 
 	private String outputSeparator;
 

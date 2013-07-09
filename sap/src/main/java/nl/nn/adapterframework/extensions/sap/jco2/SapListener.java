@@ -54,11 +54,9 @@ import com.sap.mw.jco.JCO;
  * </p>
  * @author  Gerrit van Brakel
  * @since   4.2
- * @version $Id$
  * @see   http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.1 $ $Date: 2012-02-06 14:33:05 $";
 
 	private String progid;	 // progid of the RFC-destination
         	

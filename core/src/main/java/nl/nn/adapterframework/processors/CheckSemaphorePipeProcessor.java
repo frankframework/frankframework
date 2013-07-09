@@ -28,7 +28,6 @@ import nl.nn.adapterframework.util.Semaphore;
 
 /**
  * @author Jaco de Groot
- * @version $Id$
  */
 public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 

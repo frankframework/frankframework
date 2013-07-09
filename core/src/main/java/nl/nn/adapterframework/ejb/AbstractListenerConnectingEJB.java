@@ -27,7 +27,6 @@ import org.springframework.jndi.JndiLookupFailureException;
 /**
  *
  * @author Tim van der Leeuw
- * @version $Id$
  */
 abstract public class AbstractListenerConnectingEJB extends AbstractEJBBase {
 	protected Logger log = LogUtil.getLogger(this);

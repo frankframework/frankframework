@@ -19,10 +19,8 @@ import nl.nn.adapterframework.core.IbisException;
 
 /**
  * @author John Dekker
- * @version $Id$
  */
 public class FtpConnectException extends IbisException {
-	public static final String version = "$RCSfile: FtpConnectException.java,v $  $Revision: 1.5 $ $Date: 2011-11-30 13:52:04 $";
 
 	public FtpConnectException() {
 		super();

@@ -86,10 +86,8 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 public class StreamLineIteratorPipe extends IteratingPipe {
-	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.12 $ $Date: 2012-06-01 10:52:49 $";
 
 	private String endOfLineString;
 	

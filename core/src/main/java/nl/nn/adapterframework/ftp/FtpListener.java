@@ -87,7 +87,6 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * </p>
  *
  * @author  John Dekker
- * @version $Id$
  */
 public class FtpListener extends FtpSession implements IPullingListener, INamedObject, RunStateEnquiring {
 

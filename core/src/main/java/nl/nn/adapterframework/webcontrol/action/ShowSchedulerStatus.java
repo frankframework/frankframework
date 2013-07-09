@@ -34,7 +34,6 @@ import org.quartz.SchedulerException;
 /**
  * Retrieves the Scheduler metadata and the jobgroups with there jobs
  * from the Scheduler.
- * @version $Id$
  * @author  Johan Verrips
  */
 

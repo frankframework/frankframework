@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class AlterTracingConfiguration extends ActionBase {
-	public static final String version="$RCSfile: AlterTracingConfiguration.java,v $ $Revision: 1.3 $ $Date: 2011-11-30 13:51:46 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,

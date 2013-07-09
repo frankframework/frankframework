@@ -44,7 +44,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * </p>
   * 
  * @author John Dekker
- * @version $Id$
  * @deprecated please use plain GenericMessageSendingPipe, that has same functionality (since 4.2d)
  */
 public class PostboxSenderPipe extends GenericMessageSendingPipe  {

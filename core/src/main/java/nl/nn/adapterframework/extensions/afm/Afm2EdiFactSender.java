@@ -47,7 +47,6 @@ import org.w3c.dom.NodeList;
  * @author: Erik van de Wetering, fine tuned and wrapped for Ibis by Gerrit van Brakel
  */
 public class Afm2EdiFactSender implements ISender {
-	public static final String version="$RCSfile: Afm2EdiFactSender.java,v $ $Revision: 1.7 $ $Date: 2011-11-30 13:52:05 $";
 	protected Logger logger = LogUtil.getLogger(this);
 
 	public final static String VERWERKTAG = "VRWRKCD";

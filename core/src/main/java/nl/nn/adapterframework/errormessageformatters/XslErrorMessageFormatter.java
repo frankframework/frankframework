@@ -53,11 +53,9 @@ import org.apache.commons.lang.StringUtils;
  * </p>
  *
  * Hint:  use <code>xpathExression="/errorMessage/@message"</code> for a single compact string errormessage.
- * @version $Id$
  * @author Johan Verrips IOS
  */
 public class XslErrorMessageFormatter extends ErrorMessageFormatter {
-	public static final String version = "$RCSfile: XslErrorMessageFormatter.java,v $ $Revision: 1.11 $ $Date: 2012-06-01 10:52:57 $";
 
 	protected ParameterList paramList = null;
 

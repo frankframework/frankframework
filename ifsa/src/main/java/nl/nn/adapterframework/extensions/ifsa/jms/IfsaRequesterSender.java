@@ -82,7 +82,6 @@ import com.ing.ifsa.IFSATimeOutMessage;
  *
  * @author Johan Verrips / Gerrit van Brakel
  * @since  4.2
- * @version $Id$
 */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters, HasStatistics {
 

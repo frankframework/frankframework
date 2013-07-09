@@ -27,10 +27,8 @@ import nl.nn.adapterframework.core.ISecurityHandler;
  * 
  * @author  Gerrit van Brakel
  * @since   4.3
- * @version $Id$
  */
 public class HttpSecurityHandler implements ISecurityHandler {
-	public static final String version = "$RCSfile: HttpSecurityHandler.java,v $ $Revision: 1.4 $ $Date: 2012-06-01 10:52:50 $";
 
 	HttpServletRequest request;
 	

@@ -29,7 +29,6 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 public abstract class LobLineIteratingPipeBase extends JdbcIteratingPipeBase {
 

@@ -21,7 +21,6 @@ import nl.nn.adapterframework.soap.SoapWrapper;
 /**
  * ErrorMessageFormatter that returns a soap fault message.
  * 
- * @version $Id$
  * @author  Peter Leeuwenburgh
  */
 public class SoapErrorMessage extends ErrorMessageFormatter {

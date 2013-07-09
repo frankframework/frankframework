@@ -113,7 +113,6 @@ import org.springframework.transaction.TransactionDefinition;
  * </table>
  * </p>
  * 
- * @version $Id$
  * @author     Johan Verrips / Gerrit van Brakel
  *
  * @see nl.nn.adapterframework.core.PipeLineSession

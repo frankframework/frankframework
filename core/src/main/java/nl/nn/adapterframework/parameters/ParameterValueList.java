@@ -27,7 +27,6 @@ import nl.nn.adapterframework.core.ParameterException;
  * List of parametervalues.
  * 
  * @author Gerrit van Brakel
- * @version $Id$
  */
 public class ParameterValueList {
 	

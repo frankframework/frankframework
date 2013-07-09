@@ -87,10 +87,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * </table>
  * </p>
  * @author Gerrit van Brakel
- * @version $Id$
  */
 public class Adios2XmlPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: Adios2XmlPipe.java,v $ $Revision: 1.15 $ $Date: 2012-06-01 10:52:52 $";
 
 	private Hashtable rubriek2nummer;	 
 	private Hashtable record2nummer;

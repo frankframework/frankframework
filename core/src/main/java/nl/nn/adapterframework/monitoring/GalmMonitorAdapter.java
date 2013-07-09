@@ -36,7 +36,6 @@ import nl.nn.adapterframework.util.Misc;
  *  
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 public class GalmMonitorAdapter extends MonitorAdapterBase {
 	protected Logger galmLog = LogUtil.getLogger("GALM");

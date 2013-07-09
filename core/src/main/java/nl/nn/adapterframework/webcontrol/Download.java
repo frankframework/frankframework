@@ -39,7 +39,6 @@ import org.apache.log4j.Logger;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.8
- * @version $Id$
  */
 public class Download extends HttpServlet {
 	protected static Logger log = LogUtil.getLogger(Download.class);

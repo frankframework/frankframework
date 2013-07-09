@@ -32,7 +32,6 @@ import org.apache.struts.action.ActionMapping;
  * @author  Peter Leeuwenburgh
  */
 public final class TracingHandler extends ActionBase {
-	public static final String version="$RCSfile: TracingHandler.java,v $ $Revision: 1.4 $ $Date: 2011-11-30 13:51:46 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,

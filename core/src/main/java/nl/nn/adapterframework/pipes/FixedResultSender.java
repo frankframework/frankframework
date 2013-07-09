@@ -25,7 +25,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * 
  * @author  Gerrit van Brakel
  * @since   4.6.0
- * @version $Id$
  * @deprecated Please replace with nl.nn.adapterframework.senders.FixedResultSender
  */
 public class FixedResultSender extends nl.nn.adapterframework.senders.FixedResultSender {

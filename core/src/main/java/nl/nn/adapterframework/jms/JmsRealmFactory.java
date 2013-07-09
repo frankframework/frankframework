@@ -31,12 +31,10 @@ import org.apache.log4j.Logger;
  * Singleton that has the different jmsRealms.   <br/>
  * Typical use: JmsRealmFactory.getInstance().&lt;method to execute&gt;
  * <br/>
- * @version $Id$
  * @author Johan Verrips IOS
  * @see JmsRealm
  */
 public class JmsRealmFactory {
-	public static final String version="$RCSfile: JmsRealmFactory.java,v $ $Revision: 1.9 $ $Date: 2011-11-30 13:51:51 $";
 	private Logger log;
 
 

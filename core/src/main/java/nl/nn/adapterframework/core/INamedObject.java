@@ -18,7 +18,6 @@ package nl.nn.adapterframework.core;
 /**
  * The <code>INamedObject</code> is implemented by all objects that have a name
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  */
 public interface INamedObject {

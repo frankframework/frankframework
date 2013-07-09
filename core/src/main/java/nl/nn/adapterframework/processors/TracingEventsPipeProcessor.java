@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 
 /**
  * @author Jaco de Groot
- * @version $Id$
  */
 public class TracingEventsPipeProcessor extends PipeProcessorBase {
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");

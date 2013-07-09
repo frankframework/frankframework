@@ -21,7 +21,6 @@ package nl.nn.adapterframework.core;
  * by getThrowable() otherwise the reply should be returned by getReply().
  *    
  * @author Jaco de Groot
- * @version $Id$
  */
 public abstract class RequestReplyExecutor implements Runnable {
 	protected String correlationID;

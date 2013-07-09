@@ -49,13 +49,11 @@ import org.apache.struts.action.ActionMapping;
 /**
  * Show counts per day of each slot in the ibisstore.
  * 
- * @author  Gerrit van Brakel
- * @version $Id$ 
+ * @author  Gerrit van Brakel 
  * @since	4.9.7
  */
 
 public class ShowIbisstoreSummary extends ActionBase {
-	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.10 $ $Date: 2012-04-04 09:45:52 $";
 
 	public static final String SHOWIBISSTORECOOKIE="ShowIbisstoreSummaryCookieName";
 	public static final String SHOWIBISSTOREQUERYKEY="ibisstore.summary.query";

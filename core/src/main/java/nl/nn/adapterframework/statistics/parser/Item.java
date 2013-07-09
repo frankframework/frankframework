@@ -20,7 +20,6 @@ package nl.nn.adapterframework.statistics.parser;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.9
- * @version $Id$
  */
 public class Item {
 	

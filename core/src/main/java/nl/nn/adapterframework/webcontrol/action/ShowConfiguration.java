@@ -41,7 +41,6 @@ import org.apache.struts.action.DynaActionForm;
 /**
  * Shows the configuration (with resolved variables).
  * 
- * @version $Id$
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.configuration.Configuration
  */

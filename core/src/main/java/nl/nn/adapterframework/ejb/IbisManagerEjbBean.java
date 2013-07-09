@@ -37,7 +37,6 @@ import org.springframework.transaction.PlatformTransactionManager;
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, IbisManager {
     private final static Logger log = LogUtil.getLogger(IbisManagerEjbBean.class);

@@ -47,7 +47,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * 
  * @author: Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 public class Result2StringWriter extends ResultWriter {
 	

@@ -23,7 +23,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 public interface IMonitorAdapter {
 

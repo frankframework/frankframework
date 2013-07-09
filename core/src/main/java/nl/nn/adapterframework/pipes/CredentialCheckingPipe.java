@@ -28,7 +28,6 @@ import org.apache.commons.lang.StringUtils;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
- * @version $Id$
  */
 public class CredentialCheckingPipe extends FixedForwardPipe {
 

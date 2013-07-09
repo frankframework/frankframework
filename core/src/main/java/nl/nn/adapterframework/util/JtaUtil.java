@@ -35,12 +35,10 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 /**
  * Utility functions for JTA 
- * @version $Id$
  * @author Gerrit van Brakel
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.24 $ $Date: 2011-11-30 13:51:49 $";
 	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";

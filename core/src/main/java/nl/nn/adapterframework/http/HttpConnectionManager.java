@@ -27,7 +27,6 @@ import org.apache.log4j.Logger;
 /**
  * @author  Gerrit van Brakel
  * @since   4.9
- * @version $Id$
  */
 public class HttpConnectionManager extends MultiThreadedHttpConnectionManager {
 	protected Logger log = LogUtil.getLogger(this);

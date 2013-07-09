@@ -37,10 +37,8 @@ import org.apache.struts.action.ActionMapping;
 /**
  * <code>Action</code> to retrieve the Tracing configuration.
  * @author  Peter Leeuwenburgh
- * @version $Id$
  */
 public final class ShowTracingConfiguration extends ActionBase {
-	public static final String version="$RCSfile: ShowTracingConfiguration.java,v $ $Revision: 1.5 $ $Date: 2011-11-30 13:51:46 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,

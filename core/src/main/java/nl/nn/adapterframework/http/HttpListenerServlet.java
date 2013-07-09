@@ -39,7 +39,6 @@ import org.apache.log4j.Logger;
  * 
  * @author  Gerrit van Brakel
  * @since   4.4.x (still experimental)
- * @version $Id$
  */
 public class HttpListenerServlet extends HttpServlet {
 	protected Logger log=LogUtil.getLogger(this);

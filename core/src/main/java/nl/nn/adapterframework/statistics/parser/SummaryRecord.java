@@ -27,7 +27,6 @@ import org.apache.log4j.Logger;
  * Record use to gather statistics data from a file.
  * @author  Gerrit van Brakel
  * @since   4.9.10
- * @version $Id$
  */
 public class SummaryRecord extends Basics {
 	protected Logger log = LogUtil.getLogger(this);

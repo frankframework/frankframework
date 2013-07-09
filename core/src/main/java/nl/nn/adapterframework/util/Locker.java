@@ -72,7 +72,6 @@ import org.apache.commons.lang.StringUtils;
  *  </pre>
  * 
  * @author  Peter Leeuwenburgh
- * @version $Id$
  */
 public class Locker extends JdbcFacade {
 

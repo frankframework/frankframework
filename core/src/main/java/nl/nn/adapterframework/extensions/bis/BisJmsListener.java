@@ -142,7 +142,6 @@ import org.apache.commons.lang.StringUtils;
  * </p>
  * 
  * @author  Peter Leeuwenburgh
- * @version $Id$
  * @deprecated Please use JmsListener combined with BisWrapperPipe
  */
 public class BisJmsListener extends JmsListener {

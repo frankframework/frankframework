@@ -58,7 +58,6 @@ import nl.nn.adapterframework.util.AppConstants;
  * 
  * @author  Gerrit van Brakel
  * @since   4.11
- * @version $Id$
  */
 public class EhCache extends CacheAdapterBase {
 	

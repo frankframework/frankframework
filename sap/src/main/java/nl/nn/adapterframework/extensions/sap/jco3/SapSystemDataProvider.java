@@ -30,7 +30,6 @@ import com.sap.conn.jco.ext.Environment;
 /**
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class SapSystemDataProvider implements DestinationDataProvider {
 	private Logger log = LogUtil.getLogger(this);

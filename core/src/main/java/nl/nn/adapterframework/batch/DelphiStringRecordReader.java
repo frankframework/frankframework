@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
  * 
  * @author  Gerrit van Brakel
  * @since   4.10
- * @version $Id$
  */
 public class DelphiStringRecordReader extends Reader {
 	protected Logger log = LogUtil.getLogger(this);

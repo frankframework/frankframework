@@ -90,7 +90,6 @@ import org.apache.commons.lang.StringUtils;
  * </p>
  * @author  Gerrit van Brakel
  * @since   4.8
- * @version $Id$
  */
 public class FxfListener extends JmsListener implements IBulkDataListener, ITransactionRequirements {
 

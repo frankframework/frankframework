@@ -26,7 +26,6 @@ import com.sap.conn.jco.JCoParameterList;
  * 
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class RootHandler extends Handler {
 

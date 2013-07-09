@@ -53,10 +53,8 @@ import org.apache.commons.lang.StringUtils;
  * @author  John Dekker
  * @author  Jaco de Groot (***@dynasol.nl)
  * @author  Gerrit van Brakel
- * @version $Id$
  */
 public class MoveFilePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.11 $ $Date: 2013-02-27 08:32:00 $";
 
 	private String directory;
 	private String filename;

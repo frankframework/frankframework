@@ -52,10 +52,8 @@ import org.apache.log4j.Logger;
  * </ul>
  * 
  * @author  Johan Verrips
- * @version $Id$
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.20 $ $Date: 2011-11-30 13:51:58 $";
     protected Logger log = LogUtil.getLogger(this);
 
 	public static final String KEY_CONTEXT = "KEY_CONTEXT";

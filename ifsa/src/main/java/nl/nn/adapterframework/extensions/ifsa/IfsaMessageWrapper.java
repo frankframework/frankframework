@@ -28,7 +28,6 @@ import nl.nn.adapterframework.core.ListenerException;
  * 
  * @author  Gerrit van Brakel
  * @since   4.3
- * @version $Id$
  */
 public class IfsaMessageWrapper implements Serializable, IMessageWrapper {
 

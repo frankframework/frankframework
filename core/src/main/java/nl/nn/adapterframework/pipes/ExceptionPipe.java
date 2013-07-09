@@ -39,7 +39,6 @@ import org.apache.commons.lang.StringUtils;
  * </p>
  * 
  * @author  Gerrit van Brakel
- * @version $Id$
  */
 
 public class ExceptionPipe extends FixedForwardPipe {

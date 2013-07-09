@@ -31,7 +31,6 @@ import org.apache.log4j.Logger;
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 abstract public class AbstractJmsConfigurator {
 	protected Logger log=LogUtil.getLogger(this);

@@ -28,7 +28,6 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author  Gerrit van Brakel
  * @since   4.4.5
- * @version $Id$
  */
 public class TracingUtil {
 	private static Logger log = LogUtil.getLogger(TracingUtil.class);

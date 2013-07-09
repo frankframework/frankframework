@@ -35,7 +35,6 @@ import org.apache.commons.lang.StringUtils;
  * IfsaProviderRequesterSender, and some common utility methods.
  * 
  * @author Tim van der Leeuw
- * @version $Id$
  * 
  */
 abstract public class IfsaEjbBase {

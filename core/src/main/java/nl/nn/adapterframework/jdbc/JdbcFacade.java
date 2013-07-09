@@ -57,7 +57,6 @@ import org.apache.commons.lang.StringUtils;
  * 
  * 
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  * @since 	4.1
  */

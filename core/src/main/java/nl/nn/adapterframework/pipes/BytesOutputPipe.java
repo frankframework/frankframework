@@ -152,7 +152,6 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * 
  * @author  Jaco de Groot (***@dynasol.nl)
  * @since   4.9
- * @version $Id$
  */
 public class BytesOutputPipe extends FixedForwardPipe {
 

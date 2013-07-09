@@ -56,7 +56,6 @@ import org.apache.log4j.Logger;
  * 
  * @author  Gerrit van Brakel
  * @since   4.1
- * @version $Id$
  */
 public class JdbcUtil {
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);

@@ -33,7 +33,6 @@ import org.apache.commons.lang.StringUtils;
  * Functions to read and write from one stream to another.
  * 
  * @author  Gerrit van Brakel
- * @version $Id$
  */
 public class StreamUtil {
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";

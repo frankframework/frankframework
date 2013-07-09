@@ -34,7 +34,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Functions to manipulate the configuration. 
  *
  * @author  Peter Leeuwenburgh
- * @version $Id$
  */
 public class ConfigurationUtils {
 	private static final String CONFIGURATION_STUB4TESTTOOL_KEY = "stub4testtool.configuration";

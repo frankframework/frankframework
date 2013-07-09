@@ -20,7 +20,6 @@ package nl.nn.adapterframework.ejb;
  *
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public interface IbisManagerEjbLocalHome extends javax.ejb.EJBLocalHome {
     /**

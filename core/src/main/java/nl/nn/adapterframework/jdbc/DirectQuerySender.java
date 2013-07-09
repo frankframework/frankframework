@@ -66,7 +66,6 @@ import java.sql.SQLException;
  * </table>
  * </p>
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  * @since 	4.1
  */

@@ -27,7 +27,6 @@ import org.xml.sax.Attributes;
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public class ListenerFactory extends GenericFactory {
     public static final String JMS_LISTENER_CLASSNAME_SUFFIX = ".JmsListener";

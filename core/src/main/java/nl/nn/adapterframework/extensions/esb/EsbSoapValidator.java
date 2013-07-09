@@ -28,7 +28,6 @@ import nl.nn.adapterframework.soap.SoapValidator;
  * This is a SoapValidator, but it presupposes ESB wrapping of the body.
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
- * @version $Id$
  */
 public class EsbSoapValidator extends SoapValidator {
 

@@ -40,12 +40,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Some utilities for working with BIS. 
  * 
  * @author Peter Leeuwenburgh
- * @version $Id$
  * @deprecated Please use BisWrapperPipe
  */
 
 public class BisUtils {
-	public static final String version = "$RCSfile: BisUtils.java,v $ $Revision: 1.6 $ $Date: 2011-11-30 13:52:00 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private final static String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";

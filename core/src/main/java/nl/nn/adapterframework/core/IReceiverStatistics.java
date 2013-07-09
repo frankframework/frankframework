@@ -21,7 +21,6 @@ import java.util.Iterator;
  * by implementing this interface that process- and idle statistics may be available for 
  * displaying.
  * 
- * @version $Id$
  * @author Gerrit van Brakel
  */
 public interface IReceiverStatistics  {

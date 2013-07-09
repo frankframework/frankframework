@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 /**
  * Enumeration of states for IManagable
- * @version $Id$
  * @author Gerrit van Brakel
  */
 public class RunStateEnum extends Enum {

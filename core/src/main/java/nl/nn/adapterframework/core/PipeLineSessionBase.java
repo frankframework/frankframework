@@ -28,12 +28,10 @@ import org.apache.commons.lang.NotImplementedException;
 /**
  * Basic implementation of <code>IPipeLineSession</code>.
  * 
- * @version $Id$
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */
 public class PipeLineSessionBase extends HashMap implements IPipeLineSession {
-	public static final String version="$RCSfile: PipeLineSessionBase.java,v $ $Revision: 1.1 $ $Date: 2012-06-01 10:52:52 $";
 
 	private ISecurityHandler securityHandler = null;
 

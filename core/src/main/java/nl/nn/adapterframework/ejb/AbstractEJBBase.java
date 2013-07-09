@@ -34,7 +34,6 @@ import org.springframework.jndi.JndiLookupFailureException;
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 abstract public class AbstractEJBBase {
     public static final String COMP_ENV_JNDI_PREFIX = "java:comp/env/";

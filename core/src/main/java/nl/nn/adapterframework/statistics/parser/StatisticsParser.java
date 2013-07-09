@@ -43,7 +43,6 @@ import org.xml.sax.InputSource;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.10
- * @version $Id$
  */
 public class StatisticsParser {
 	protected Logger log = LogUtil.getLogger(this);

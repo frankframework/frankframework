@@ -25,7 +25,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * Interface for handling a transformed record.
  * 
  * @author  John Dekker
- * @version $Id$
  */
 public interface IResultHandler extends INamedObject {
 

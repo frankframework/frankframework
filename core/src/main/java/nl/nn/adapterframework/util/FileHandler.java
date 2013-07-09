@@ -87,7 +87,6 @@ import org.apache.log4j.Logger;
  * 
  * @author J. Dekker
  * @author Jaco de Groot (***@dynasol.nl)
- * @version $Id$
  *
  */
 public class FileHandler {

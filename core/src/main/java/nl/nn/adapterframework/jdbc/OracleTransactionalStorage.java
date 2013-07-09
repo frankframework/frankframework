@@ -71,13 +71,11 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  *  </pre>
  * If these objects do not exist, Ibis will try to create them if the attribute createTable="true".
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  * @since 	4.3
  * @deprecated The functionality of the OracleTransactionalStorage has been incorporated in de JdbcTransactionalStorage.
  */
 public class OracleTransactionalStorage extends JdbcTransactionalStorage {
-	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.16 $ $Date: 2011-11-30 13:51:43 $";
 
 	public void configure() throws ConfigurationException {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();

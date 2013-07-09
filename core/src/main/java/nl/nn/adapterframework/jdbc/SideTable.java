@@ -27,7 +27,6 @@ import org.apache.log4j.Logger;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.8
- * @version $Id$
  */
 public class SideTable {
 	protected Logger log = LogUtil.getLogger(this);

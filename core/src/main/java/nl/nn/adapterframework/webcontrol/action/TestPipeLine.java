@@ -37,13 +37,11 @@ import org.apache.struts.action.DynaActionForm;
  * Test the Pipeline of an adapter.
  * 
  * @author  Johan Verrips
- * @version $Id$
  * @see nl.nn.adapterframework.configuration.Configuration
  * @see nl.nn.adapterframework.core.Adapter
  * @see nl.nn.adapterframework.core.PipeLine
  */
 public final class TestPipeLine extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLine.java,v $ $Revision: 1.8 $ $Date: 2011-11-30 13:51:46 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	

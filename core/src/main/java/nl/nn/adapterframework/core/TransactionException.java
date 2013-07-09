@@ -18,7 +18,6 @@ package nl.nn.adapterframework.core;
 /**
  * Wrapper for numerous transaction handling related exceptions.
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  * @since   4.1
  */

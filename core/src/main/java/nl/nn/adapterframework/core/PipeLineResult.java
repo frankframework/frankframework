@@ -24,7 +24,6 @@ package nl.nn.adapterframework.core;
  * so that the receiver knows whether or not the request was successfully
  * processed, and might -for instance- not commit a received message.
  * <br/>
- * @version $Id$
  * @author Johan Verrips
  */
 public class PipeLineResult {

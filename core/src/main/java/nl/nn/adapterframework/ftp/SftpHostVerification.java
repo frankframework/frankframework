@@ -27,7 +27,6 @@ import com.sshtools.j2ssh.transport.publickey.SshPublicKey;
  * Utility class that handles events concerning hosts.
  * 
  * @author  John Dekker
- * @version $Id$
  */
 public class SftpHostVerification extends AbstractKnownHostsKeyVerification {
 	private Logger log = LogUtil.getLogger(this);

@@ -29,7 +29,6 @@ import nl.nn.adapterframework.core.SenderException;
  * 
  * @author  Gerrit van Brakel
  * @since   4.11
- * @version $Id$
  */
 public class InputStreamReaderFactory implements IInputStreamReaderFactory {
 

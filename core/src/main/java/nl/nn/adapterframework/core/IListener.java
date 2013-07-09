@@ -24,10 +24,8 @@ import java.util.Map;
  * 
  * @author  Gerrit van Brakel
  * @since   4.2
- * @version $Id$
  */
 public interface IListener extends INamedObject {
-	public static final String version = "$RCSfile: IListener.java,v $ $Revision: 1.9 $ $Date: 2011-11-30 13:51:55 $";
 
 	/**
 	 * <code>configure()</code> is called once at startup of the framework in the <code>configure()</code> method 

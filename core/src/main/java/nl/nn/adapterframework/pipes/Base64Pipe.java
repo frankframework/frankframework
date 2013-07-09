@@ -50,7 +50,6 @@ import org.apache.commons.lang.StringUtils;
  * 
  * @author  Gerrit van Brakel / Jaco de Groot (***@dynasol.nl)
  * @since   4.4
- * @version $Id$
  */
 public class Base64Pipe extends FixedForwardPipe {
 

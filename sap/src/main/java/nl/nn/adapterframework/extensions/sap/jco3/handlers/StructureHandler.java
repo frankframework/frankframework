@@ -29,7 +29,6 @@ import com.sap.conn.jco.JCoStructure;
  * </pre>
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class StructureHandler extends RecordHandler {
 

@@ -20,7 +20,6 @@ import java.util.Date;
 /**
  * Keeps a list of <code>MessageKeeperMessage</code>s.
  * <br/>
- * @version $Id$
  * @author  Johan Verrips IOS
  * @see MessageKeeperMessage
  */

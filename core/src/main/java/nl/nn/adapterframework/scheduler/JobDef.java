@@ -355,7 +355,6 @@ import org.springframework.transaction.TransactionStatus;
  * </p>
  * 
  * @author  Johan  Verrips
- * @version $Id$
  */
 public class JobDef {
 	protected Logger log=LogUtil.getLogger(this);

@@ -38,11 +38,9 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 /**
- * @version $Id$
  * @author Johan Verrips
  */
 public class BrowseQueueExecute extends ActionBase {
-	public static final String version="$RCSfile: BrowseQueueExecute.java,v $ $Revision: 1.9 $ $Date: 2011-11-30 13:51:46 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,

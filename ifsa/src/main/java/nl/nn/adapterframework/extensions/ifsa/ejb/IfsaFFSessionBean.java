@@ -24,7 +24,6 @@ import javax.ejb.SessionBean;
 /**
  *
  * @author Tim van der Leeuw
- * @version $Id$
  */
 public class IfsaFFSessionBean extends IfsaEjbBeanBase implements SessionBean, FireForgetService {
 

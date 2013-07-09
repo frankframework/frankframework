@@ -26,7 +26,6 @@ package nl.nn.adapterframework.configuration;
  * prototype.
  * 
  * @author Tim van der Leeuw
- * @version $Id$
  */
 public class ConfigurationDigesterFactory
     extends AbstractSpringPoweredDigesterFactory {

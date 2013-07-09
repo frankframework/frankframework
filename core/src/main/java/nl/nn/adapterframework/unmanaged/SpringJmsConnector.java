@@ -61,7 +61,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * </p>
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public class SpringJmsConnector extends AbstractJmsConfigurator implements IListenerConnector, IThreadCountControllable, BeanFactoryAware, ExceptionListener, SessionAwareMessageListener {
 

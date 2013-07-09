@@ -25,7 +25,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * 
  * @author  Gerrit van Brakel
  * @since   4.11
- * @version $Id$
  */
 public interface ICacheAdapter {
 

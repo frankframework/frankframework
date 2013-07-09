@@ -21,7 +21,6 @@ package nl.nn.adapterframework.core;
  * 
  * @author  Gerrit van Brakel
  * @since   6.4.1
- * @version $Id$
  */
 public interface IDataIterator {
 	

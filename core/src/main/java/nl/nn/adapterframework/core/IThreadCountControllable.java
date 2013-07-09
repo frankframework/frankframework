@@ -23,7 +23,6 @@ package nl.nn.adapterframework.core;
  * 
  * @author  Gerrit van Brakel
  * @since  
- * @version $Id$
  */
 public interface IThreadCountControllable {
 

@@ -50,7 +50,6 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 public class JdbcTableListener extends JdbcListener {
 	

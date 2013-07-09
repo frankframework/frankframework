@@ -33,7 +33,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * @author L180564 - Johan Verrips
  */
 public class DelayPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: DelayPipe.java,v $  $Revision: 1.7 $ $Date: 2012-06-01 10:52:49 $";
 
 	private long delayTime=5000;
 	

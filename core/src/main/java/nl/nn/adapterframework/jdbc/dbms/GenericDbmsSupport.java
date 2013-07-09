@@ -34,7 +34,6 @@ import org.apache.log4j.Logger;
 /**
  * @author  Gerrit van Brakel
  * @since  
- * @version $Id$
  */
 public class GenericDbmsSupport implements IDbmsSupport {
 	protected Logger log = LogUtil.getLogger(this.getClass());

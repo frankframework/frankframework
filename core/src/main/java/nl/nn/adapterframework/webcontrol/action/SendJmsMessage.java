@@ -37,11 +37,9 @@ import org.apache.struts.action.DynaActionForm;
  * Send a message with JMS.
  * 
  * @author  Johan Verrips
- * @version $Id$
  * @see nl.nn.adapterframework.configuration.Configuration
  */
 public final class SendJmsMessage extends ActionBase {
-	public static final String version = "$RCSfile: SendJmsMessage.java,v $ $Revision: 1.6 $ $Date: 2011-11-30 13:51:46 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,

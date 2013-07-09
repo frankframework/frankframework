@@ -52,7 +52,6 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.26 $ $Date: 2012-08-10 11:29:11 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerFactory tFactory;

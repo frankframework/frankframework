@@ -35,7 +35,6 @@ import org.apache.log4j.Logger;
  * 
  * @author  Gerrit van Brakel
  * @since   4.8
- * @version $Id$
  */
 public class ProcessUtil {
 	private static Logger log = LogUtil.getLogger(ProcessUtil.class);

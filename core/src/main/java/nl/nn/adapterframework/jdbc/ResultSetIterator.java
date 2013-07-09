@@ -36,7 +36,6 @@ import org.apache.log4j.Logger;
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 class ResultSetIterator implements IDataIterator {
 	protected Logger log = LogUtil.getLogger(this);

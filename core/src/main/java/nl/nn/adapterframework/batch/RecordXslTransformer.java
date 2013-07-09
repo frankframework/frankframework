@@ -40,11 +40,9 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * </p>
  * 
  * @author  John Dekker
- * @version $Id$
  * @deprecated Please replace by RecordXmlTransformer.
  */
 public class RecordXslTransformer extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.17 $ $Date: 2011-11-30 13:51:57 $";
 
 	public void configure() throws ConfigurationException {
 		super.configure();

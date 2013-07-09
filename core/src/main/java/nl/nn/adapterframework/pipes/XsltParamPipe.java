@@ -21,7 +21,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 /**
  * {@link XsltPipe XsltPipe} aware of parameters. 
  * @author Johan Verrips
- * @version $Id$
  * @deprecated please use plain XsltPipe, that now supports parameters too(since 4.2d)
  */
 public class XsltParamPipe extends XsltPipe {

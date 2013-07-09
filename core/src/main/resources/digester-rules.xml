@@ -1,5 +1,4 @@
 <digester-rules>
-	<!-- $Id$ -->
 
     <!-- Objects created using a factory-create-rule are created via the Spring Beans Factory.
          Objects created using an object-create-rule are created directly by the Apache Digester,

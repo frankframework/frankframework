@@ -26,7 +26,6 @@ import javax.ejb.SessionBean;
 /**
  *
  * @author Tim van der Leeuw
- * @version $Id$
  */
 public class IfsaRRSessionBean extends IfsaEjbBeanBase implements SessionBean, RequestReplyService
 {

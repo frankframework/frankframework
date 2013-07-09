@@ -207,7 +207,6 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>paradigm</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
- * @version $Id$
  * @author Peter Leeuwenburgh
  */
 public class EsbSoapWrapperPipe extends SoapWrapperPipe {

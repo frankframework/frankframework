@@ -18,7 +18,6 @@ package nl.nn.adapterframework.core;
 /**
  * Exception thrown by implementations of methods of listeners.
  * 
- * @version $Id$
  * @author Gerrit van Brakel
  */
 public class ListenerException extends IbisException {

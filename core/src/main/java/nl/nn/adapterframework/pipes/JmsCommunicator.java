@@ -59,7 +59,6 @@ import nl.nn.adapterframework.jms.JmsSender;
  * <tr><td>"timeout"</td><td>no data was received (timeout on listening), while a receiver was specified.</td></tr>
  * </table>
  * </p>
- * @version $Id$
  * @author Johan Verrips
  * @deprecated please use GenericMessageSendingPipe with JmsSender (and if necessary JmsListener), that has same functionality
  */

@@ -23,7 +23,6 @@ import nl.nn.adapterframework.core.IbisException;
  * @see nl.nn.adapterframework.core.IbisException
  *
  * @author Gerrit van Brakel
- * @version $Id$
  */
 public class IfsaException extends IbisException {
 	public IfsaException() {

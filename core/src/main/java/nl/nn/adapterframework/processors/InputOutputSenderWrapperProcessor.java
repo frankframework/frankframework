@@ -25,7 +25,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * @author  Gerrit van Brakel
  * @since   4.11
- * @version $Id$
  */
 public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBase {
 

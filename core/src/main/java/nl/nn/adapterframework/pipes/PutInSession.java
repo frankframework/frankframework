@@ -39,13 +39,11 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
- * @version $Id$
  * @author Johan Verrips
  *
  * @see PipeLineSession
  */
 public class PutInSession extends FixedForwardPipe {
-	public static final String version = "$RCSfile: PutInSession.java,v $ $Revision: 1.7 $ $Date: 2012-06-01 10:52:50 $";
 	
     private String sessionKey;
 	private String value;

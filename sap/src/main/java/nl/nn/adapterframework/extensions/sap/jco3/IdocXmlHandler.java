@@ -44,7 +44,6 @@ import com.sap.conn.jco.JCoException;
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class IdocXmlHandler extends DefaultHandler {
 	protected Logger log = LogUtil.getLogger(this.getClass());

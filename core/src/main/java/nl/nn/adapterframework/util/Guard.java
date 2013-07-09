@@ -22,7 +22,6 @@ import nl.nn.adapterframework.core.TimeOutException;
  *
  * @author  Gerrit van Brakel
  * @since   4.9
- * @version $Id$
  */
 public class Guard {
 	

@@ -18,12 +18,10 @@ package nl.nn.adapterframework.core;
 /**
  * Defines listening behaviour of message driven receivers.
  * 
- * @version $Id$
  * @author Gerrit van Brakel
  * @since 4.2
  */
 public interface IPushingListener extends IListener {
-	public static final String version = "$RCSfile: IPushingListener.java,v $ $Revision: 1.6 $ $Date: 2011-11-30 13:51:55 $";
 
 
 	/**

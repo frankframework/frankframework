@@ -20,7 +20,6 @@ package nl.nn.adapterframework.configuration;
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public class RecordHandlingFlowFactory
     extends AbstractSpringPoweredDigesterFactory {

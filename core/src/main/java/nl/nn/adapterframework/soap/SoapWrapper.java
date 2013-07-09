@@ -53,7 +53,6 @@ import org.w3c.dom.Document;
  * Utility class that wraps and unwraps messages from (and into) a SOAP Envelope.
  * 
  * @author Gerrit van Brakel
- * @version $Id$
  */
 public class SoapWrapper {
 	protected Logger log = LogUtil.getLogger(this);

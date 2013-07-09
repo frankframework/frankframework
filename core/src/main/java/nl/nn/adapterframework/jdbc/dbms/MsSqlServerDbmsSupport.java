@@ -25,7 +25,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * @author  Gerrit van Brakel
  * @since  
- * @version $Id$
  */
 public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 

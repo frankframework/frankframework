@@ -46,10 +46,8 @@ import org.apache.log4j.Logger;
  * </p>
  * 
  * @author  John Dekker
- * @version $Id$
  */
 public final class RecordHandlingFlow {
-	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.17 $ $Date: 2012-04-03 08:13:12 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String recordKey;

@@ -24,7 +24,6 @@ import nl.nn.adapterframework.util.DateUtils;
  * @deprecated Please note that the information returned by this ErrorMessageFormatter is not very 
  * informative. Consider using one of {@Link ErrorMessageFormatter} or {@Link XslErrorMessageFormatter}
  * 
- * @version $Id$
  * @author Johan Verrips IOS
  */
 public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {

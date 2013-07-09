@@ -44,11 +44,9 @@ import org.apache.log4j.Logger;
  * &lt;/errorMessage&gt;
  * </pre></code>
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  */
 public class ErrorMessageFormatter implements IErrorMessageFormatter {
-	public static final String version = "$RCSfile: ErrorMessageFormatter.java,v $ $Revision: 1.11 $ $Date: 2011-11-30 13:52:03 $";
     protected Logger log = LogUtil.getLogger(this);
 	
 	/**

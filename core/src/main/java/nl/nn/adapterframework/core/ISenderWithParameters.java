@@ -21,7 +21,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 /**
  * The <code>IParameterizedSender</code> allows Senders to declare that they accept and may use {@link nl.nn.adapterframework.parameters.Parameter parameters} 
  * 
- * @version HasSender.java,v 1.3 2004/03/23 16:42:59 L190409 Exp $
  * @author  Gerrit van Brakel
  */
 public interface ISenderWithParameters extends ISender, IWithParameters {

@@ -38,7 +38,6 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author John Dekker
  */
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FieldPositionRecordHandlerManager.java,v $  $Revision: 1.13 $ $Date: 2012-06-01 10:52:48 $";
 
 	private int fieldNr;
 	private String separator;

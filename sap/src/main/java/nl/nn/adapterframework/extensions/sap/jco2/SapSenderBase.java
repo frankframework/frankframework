@@ -51,7 +51,6 @@ import com.sap.mw.jco.JCO;
  * 
  * @author  Gerrit van Brakel
  * @since   4.8
- * @version $Id$
  */
 public abstract class SapSenderBase extends SapFunctionFacade implements ISenderWithParameters {
 

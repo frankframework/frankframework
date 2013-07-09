@@ -28,7 +28,6 @@ import org.apache.log4j.Logger;
  * 
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class JCoVersion {
 	private final static Logger LOG = LogUtil.getLogger(JCoVersion.class);

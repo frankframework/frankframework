@@ -19,7 +19,6 @@ package nl.nn.adapterframework.batch;
  * @author John Dekker
  */
 public class OutputfieldsPart {
-	public static final String version = "$RCSfile: OutputfieldsPart.java,v $  $Revision: 1.5 $ $Date: 2011-11-30 13:51:56 $";
 	private String value;
 	private String description;
 	

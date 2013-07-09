@@ -45,7 +45,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 public class GetPrincipalPipe extends FixedForwardPipe {
 	

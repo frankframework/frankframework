@@ -49,7 +49,6 @@ import org.apache.log4j.Logger;
  * This functionality is developed because developers don't have rigths for the Ibis Console in the IUFWeb environment.
  * 
  * @author  Peter Leeuwenburgh
- * @version $Id$
  */
 public class DumpIbisConsole extends HttpServlet {
 	private Logger log = LogUtil.getLogger(this);

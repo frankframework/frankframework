@@ -40,11 +40,9 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.DynaActionForm;
 
 /**
- * @author m168309
- * @version $Id$ 
+ * @author m168309 
  */
 public final class ExecuteJdbcQueryExecute extends ActionBase {
-	public static final String version = "$RCSfile: ExecuteJdbcQueryExecute.java,v $ $Revision: 1.7 $ $Date: 2012-07-19 12:16:12 $";
 	public static final String DB2XML_XSLT="xml/xsl/dbxml2csv.xslt";
 
 	public ActionForward execute(

@@ -40,7 +40,6 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * @author  Gerrit van Brakel 
  * @since   4.4.x (still experimental)
- * @version $Id$
  */
 public class HttpListener extends PushingListenerAdapter implements HasPhysicalDestination {
 

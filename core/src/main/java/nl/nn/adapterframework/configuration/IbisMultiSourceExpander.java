@@ -29,7 +29,6 @@ import org.apache.log4j.Logger;
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public class IbisMultiSourceExpander implements VariableExpander {
     private final static Logger log = LogUtil.getLogger(IbisMultiSourceExpander.class);

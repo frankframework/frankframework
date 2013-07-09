@@ -45,7 +45,6 @@ import com.sap.mw.jco.JCO;
  * 
  * @author  Gerrit van Brakel
  * @since   4.8
- * @version $Id$
  */
 public class IdocSender extends SapSenderBase {
 

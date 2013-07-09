@@ -50,7 +50,6 @@ import org.apache.commons.lang.StringUtils;
  * </p>
  * 
  * @author J. Dekker
- * @version $Id$
  */
 public class Text2XmlPipe extends FixedForwardPipe {
 	private String xmlTag;

@@ -34,8 +34,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Shows the environment variables.
  * 
- * @author  Peter Leeuwenburgh
- * @version $Id$ 
+ * @author  Peter Leeuwenburgh 
  * @since	4.4
  */
 

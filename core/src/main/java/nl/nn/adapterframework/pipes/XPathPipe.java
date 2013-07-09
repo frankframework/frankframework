@@ -38,7 +38,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * </p>
  * 
  * @author J. Dekker
- * @version $Id$
  * @deprecated Please use XsltPipe, that has the same functionality
  */
 public class XPathPipe extends XsltPipe {

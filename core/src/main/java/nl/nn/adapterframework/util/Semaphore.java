@@ -34,7 +34,6 @@ package nl.nn.adapterframework.util;
  * all in one atomic uninterruptible instruction. This is done by the {@link #release()} method.</p>
  *
  * @author  Gerrit van Brakel 
- * @version $Id$
  */
 public class Semaphore {
     private int counter;

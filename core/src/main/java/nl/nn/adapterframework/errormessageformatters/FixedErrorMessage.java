@@ -42,7 +42,6 @@ import org.apache.commons.lang.SystemUtils;
  * 
  * @author  Peter Leeuwenburgh
  * @since   4.3
- * @version $Id$
  */
 public class FixedErrorMessage extends ErrorMessageFormatter {
 	private String fileName = null;

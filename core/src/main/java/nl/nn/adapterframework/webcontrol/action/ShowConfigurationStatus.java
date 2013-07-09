@@ -52,10 +52,8 @@ import org.apache.struts.action.ActionMapping;
  * Prepare the main screen of the IbisConsole.
  * 
  * @author	Johan Verrips
- * @version $Id$
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.30 $ $Date: 2013-03-13 14:40:02 $";
 
 	private int maxMessageSize = AppConstants.getInstance().getInt("adapter.message.max.size",0); 
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);

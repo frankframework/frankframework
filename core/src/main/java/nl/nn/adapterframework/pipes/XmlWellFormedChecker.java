@@ -42,7 +42,6 @@ import nl.nn.adapterframework.validation.AbstractXmlValidator;
  * <br>
  * @author  Peter Leeuwenburgh
  * @since	4.4.5
- * @version $Id$
  */
 
 public class XmlWellFormedChecker extends FixedForwardPipe {

@@ -21,7 +21,6 @@ package nl.nn.adapterframework.core;
  * 
  * @author  Gerrit van Brakel
  * @since   4.6.0  
- * @version $Id$
  */
 public interface IPipeLineExitHandler extends INamedObject {
 

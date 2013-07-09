@@ -50,7 +50,6 @@ import nl.nn.adapterframework.validation.XercesXmlValidator;
  * 
  * @author  Gerrit van Brakel
  * @since  
- * @version $Id$
  */
 public class XmlValidatorSender extends XercesXmlValidator implements ISenderWithParameters {
 

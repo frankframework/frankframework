@@ -20,7 +20,6 @@ package nl.nn.adapterframework.monitoring;
  *  
  * @author  Gerrit van Brakel
  * @since   4.9
- * @version $Id$
  */
 public interface EventHandler {
 	

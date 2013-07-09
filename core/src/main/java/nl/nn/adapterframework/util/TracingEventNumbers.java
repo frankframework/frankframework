@@ -20,7 +20,6 @@ package nl.nn.adapterframework.util;
  * 
  * @author L190409
  * @since  
- * @version $Id$
  */
 public interface TracingEventNumbers {
 

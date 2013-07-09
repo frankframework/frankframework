@@ -39,7 +39,6 @@ import com.ibm.ws.security.auth.WSCredentialImpl;
  * 
  * @author  Gerrit van Brakel
  * @since   4.8
- * @version $Id$
  */
 public class SsoUtil {
 	private static Logger log = LogUtil.getLogger(SsoUtil.class);

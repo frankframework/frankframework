@@ -38,10 +38,8 @@ import com.ing.ifsa.api.ServiceURI;
  *
  * @author Tim van der Leeuw
  * @since 4.8
- * @version $Id$
  */
 public class IfsaProviderListener extends IfsaEjbBase implements IPortConnectedListener {
-    public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.8 $ $Date: 2012-06-01 10:52:50 $";
     
     private IMessageHandler handler;
     private IbisExceptionListener exceptionListener;

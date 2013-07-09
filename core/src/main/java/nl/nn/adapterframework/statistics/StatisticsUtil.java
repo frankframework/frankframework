@@ -23,7 +23,6 @@ import java.io.IOException;
  * Some utilities for working with statistics files. 
  * 
  * @author  Peter Leeuwenburgh
- * @version $Id$
  */
 public class StatisticsUtil {
 

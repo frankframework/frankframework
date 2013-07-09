@@ -26,7 +26,6 @@ import nl.nn.adapterframework.core.PipeRunException;
  * 
  * @author  Gerrit van Brakel
  * @since   4.11
- * @version $Id$
  */
 public class CachePipeLineProcessor extends PipeLineProcessorBase {
 	

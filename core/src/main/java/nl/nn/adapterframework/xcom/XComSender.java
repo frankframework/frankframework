@@ -67,7 +67,6 @@ import org.apache.commons.lang.StringUtils;
  * @author John Dekker
  */
 public class XComSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.17 $ $Date: 2012-06-01 10:52:59 $";
 
 	private File workingDir;
 	private String name;

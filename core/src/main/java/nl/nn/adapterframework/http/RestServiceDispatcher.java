@@ -35,7 +35,6 @@ import org.apache.log4j.Logger;
  * the <code>ServiceClient</code> interface.<br/>
  * This class is exposed as a webservice, to be able to provide a single point
  * of entry to all adapters that have a ServiceListener as a IReceiver.
- * @version $Id$
  */
 public class RestServiceDispatcher  {
 	protected Logger log = LogUtil.getLogger(this);

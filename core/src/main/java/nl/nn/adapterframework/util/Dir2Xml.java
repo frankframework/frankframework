@@ -26,10 +26,8 @@ import org.apache.log4j.Logger;
  * List the contents of a directory as XML.
  * 
  * @author Johan Verrips IOS
- * @version $Id$
  */
 public class Dir2Xml  {
-	public static final String version="$RCSfile: Dir2Xml.java,v $ $Revision: 1.11 $ $Date: 2011-11-30 13:51:48 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
   	private String path;

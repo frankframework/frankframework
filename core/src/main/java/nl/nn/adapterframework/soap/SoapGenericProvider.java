@@ -39,11 +39,9 @@ import org.apache.soap.util.Provider;
 /**
  * Soap Provider that accepts any message and routes it to a listener with a corresponding TargetObjectNamespacURI.
  * 
- * @version $Id$
  * @author Gerrit van Brakel
  */
 public class SoapGenericProvider implements Provider {
-	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.11 $ $Date: 2012-06-11 13:10:01 $";
 	protected Logger log=LogUtil.getLogger(this);
 	
 	private final String TARGET_OBJECT_URI_KEY = "TargetObjectNamespaceURI";

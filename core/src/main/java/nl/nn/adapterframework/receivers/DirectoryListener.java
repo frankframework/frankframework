@@ -75,7 +75,6 @@ import org.xml.sax.helpers.DefaultHandler;
  * </p>
  *
  * @author  John Dekker
- * @version $Id$
  */
 public class DirectoryListener implements IPullingListener, INamedObject, HasPhysicalDestination {
 	protected Logger log = LogUtil.getLogger(this);

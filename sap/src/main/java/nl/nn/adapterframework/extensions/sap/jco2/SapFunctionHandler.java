@@ -22,7 +22,6 @@ import com.sap.mw.idoc.IDoc;
  * The interface clients (users) of a SAP function must implement.
  *
  * @author  Gerrit van Brakel
- * @version $Id$
  */
 public interface SapFunctionHandler {
 

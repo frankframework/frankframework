@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.core;
 
 /**
- * @version $Id$
  * @author Johan Verrips
  */
 public class MessageBrowseException extends IbisException {

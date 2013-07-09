@@ -41,7 +41,6 @@ import nl.nn.adapterframework.jms.JmsListener;
  * </table></p>
  * 
  * @author  Peter Leeuwenburgh
- * @version $Id$
  */
 public class EsbJmsListener extends JmsListener {
 	private final static String REQUEST_REPLY = "RR";

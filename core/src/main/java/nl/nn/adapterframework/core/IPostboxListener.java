@@ -22,7 +22,6 @@ import java.util.Map;
  * from a postbox.
  *
  * @author  John Dekker
- * @version $Id$
   */
 public interface IPostboxListener extends IPullingListener {
 	/**

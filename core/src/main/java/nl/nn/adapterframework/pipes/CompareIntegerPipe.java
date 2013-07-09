@@ -70,7 +70,6 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>equals</td><td>when v1 = v1</td></tr>
  * </table>
  * </p>
- * @version $Id$
  * @author     Richard Punt / Gerrit van Brakel
  */
 public class CompareIntegerPipe extends AbstractPipe {

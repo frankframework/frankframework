@@ -20,7 +20,6 @@ package nl.nn.adapterframework.util;
  *
  * Calls a {@link TimerListener#onTimeout() onTimeOut()}-event handler when
  * a certain time has passed. 
- * @version $Id$
  * 
  */
 public class Timer {        

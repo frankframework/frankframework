@@ -57,10 +57,8 @@ import org.apache.commons.lang.StringUtils;
  * </p>
  * 
  * @author  Milan Tomc
- * @version $Id$
  */
 public class LdapChallengePipe extends AbstractPipe {
-	public static String version = "$RCSfile: LdapChallengePipe.java,v $  $Revision: 1.12 $ $Date: 2012-06-01 10:52:50 $";
 
 	private String ldapProviderURL=null;
 	private String initialContextFactoryName=null;

@@ -30,11 +30,9 @@ import org.apache.log4j.Logger;
  * Jmx helper class, to make JMX MBeans from {@link nl.nn.adapterframework.core.Adapter Adapters}.
  *
  * @author Johan Verrips
- * @version $Id$
  * @since 4.1.1
  */
 public class JmxMbeanHelper {
-    public static final String version = "$RCSfile: JmxMbeanHelper.java,v $ $Revision: 1.11 $ $Date: 2011-11-30 13:51:56 $";
     private static final Logger LOG = LogUtil.getLogger(JmxMbeanHelper.class);
 
 

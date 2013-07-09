@@ -51,7 +51,6 @@ import org.apache.log4j.Logger;
 
 /**
  * Miscellanous conversion functions.
- * @version $Id$
  */
 public class Misc {
 	static Logger log = LogUtil.getLogger(Misc.class);

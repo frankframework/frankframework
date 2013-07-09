@@ -74,7 +74,6 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * </p>
  * 
- * @version $Id$
  * @since   4.9
  * @author  Gerrit van Brakel
  */

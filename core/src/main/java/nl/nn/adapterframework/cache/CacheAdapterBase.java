@@ -50,7 +50,6 @@ import org.apache.log4j.Logger;
  * 
  * @author  Gerrit van Brakel
  * @since   4.11
- * @version $Id$
  */
 public abstract class CacheAdapterBase implements ICacheAdapter {
 	protected Logger log = LogUtil.getLogger(this);

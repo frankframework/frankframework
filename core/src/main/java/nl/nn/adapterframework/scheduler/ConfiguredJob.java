@@ -40,7 +40,6 @@ import org.quartz.JobExecutionException;
  * is stored in the job data map. As the configuration is not serializable, due to the nature of the
  * adapters, the quartz database support cannot be used.
  * </p>
- * @version $Id$
  *
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.core.IAdapter

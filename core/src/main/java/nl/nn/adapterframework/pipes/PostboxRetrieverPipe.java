@@ -61,10 +61,8 @@ import nl.nn.adapterframework.core.PipeStartException;
  * </p>
   * 
  * @author  John Dekker
- * @version $Id$
  */
 public class PostboxRetrieverPipe  extends FixedForwardPipe {
-	public static final String version = "$RCSfile: PostboxRetrieverPipe.java,v $ $Revision: 1.9 $ $Date: 2012-06-01 10:52:49 $";
 
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";

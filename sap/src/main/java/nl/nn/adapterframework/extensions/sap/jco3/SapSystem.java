@@ -60,7 +60,6 @@ import com.sap.conn.jco.JCoRepository;
  * @since   5.0
  */
 public class SapSystem extends GlobalListItem {
-	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.2 $ $Date: 2012-03-12 15:23:00 $";
 
 	private String host;
 	private String ashost;

@@ -22,10 +22,8 @@ import java.util.Map;
  * that are 'message driven'
  * 
  * @author  Gerrit van Brakel
- * @version $Id$
  */
 public interface IPullingListener extends IListener {
-	public static final String version = "$RCSfile: IPullingListener.java,v $ $Revision: 1.10 $ $Date: 2011-11-30 13:51:55 $";
 
 	/**
 	 * Prepares a thread for receiving messages.

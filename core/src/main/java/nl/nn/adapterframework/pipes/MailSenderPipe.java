@@ -61,12 +61,10 @@ import nl.nn.adapterframework.senders.MailSender;
  * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if a listener was specified.</td></tr>
  * </table>
  * </p>
- * @version $Id$
  * @author Johan Verrips
  */
 
 public class MailSenderPipe extends MessageSendingPipe {
-	public static final String version = "$RCSfile: MailSenderPipe.java,v $ $Revision: 1.8 $ $Date: 2011-11-30 13:51:50 $";
 		
 	public MailSenderPipe() {
 		super();

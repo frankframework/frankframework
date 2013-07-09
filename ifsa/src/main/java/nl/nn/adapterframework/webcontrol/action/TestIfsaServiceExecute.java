@@ -46,10 +46,8 @@ import org.apache.struts.upload.FormFile;
  * 
  * @author  Gerrit van Brakel / Johan Verrips
  * @since   4.3
- * @version $Id$
  */
 public final class TestIfsaServiceExecute extends ActionBase {
-	public static final String version = "$RCSfile: TestIfsaServiceExecute.java,v $ $Revision: 1.12 $ $Date: 2011-11-30 13:51:45 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,

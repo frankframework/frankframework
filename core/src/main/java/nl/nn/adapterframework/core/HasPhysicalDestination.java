@@ -20,7 +20,6 @@ package nl.nn.adapterframework.core;
  * This is used for instance in ShowConfiguration, to show the physical destination of receivers
  * that have one.
  * 
- * @version $Id$
  * @author Gerrit van Brakel
  */
 public interface HasPhysicalDestination extends INamedObject {

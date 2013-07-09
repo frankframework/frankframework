@@ -28,7 +28,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <code>Pipe</code>s return a <code>PipeRunResult</code> with the information
  * as above.
  * 
- * @version $Id$
  * @author Johan Verrips
  * @see PipeForward
  * @see nl.nn.adapterframework.pipes.AbstractPipe#doPipe

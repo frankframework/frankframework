@@ -38,10 +38,8 @@ import org.xml.sax.SAXException;
  * Determines the parameter values of the specified parameter during runtime
  * 
  * @author Gerrit van Brakel
- * @version $Id$
  */
 public class ParameterResolutionContext {
-	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.19 $ $Date: 2012-06-01 10:52:57 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String input;

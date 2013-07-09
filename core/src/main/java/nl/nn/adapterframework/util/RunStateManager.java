@@ -20,11 +20,9 @@ import org.apache.log4j.Logger;
 /**
  * Utility class to support run-state management.
  * 
- * @version $Id$
  * @author Gerrit van Brakel
  */
 public class RunStateManager implements RunStateEnquirer {
-	public static final String version="$RCSfile: RunStateManager.java,v $ $Revision: 1.10 $ $Date: 2011-12-08 09:26:46 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private RunStateEnum runState = RunStateEnum.STOPPED;

@@ -58,7 +58,6 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * 
  * @author  Peter Leeuwenburgh
  * @since   4.9
- * @version $Id$
  */
 
 public class DomainTransformerPipe extends FixedForwardPipe {

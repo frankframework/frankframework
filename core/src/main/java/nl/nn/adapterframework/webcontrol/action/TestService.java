@@ -35,10 +35,8 @@ import org.apache.struts.action.DynaActionForm;
  * Testing a service prefill.
  * 
  * @author Johan Verrips
- * @version $Id$
  */
 public class TestService extends ActionBase {
-	public static final String version = "$RCSfile: TestService.java,v $ $Revision: 1.6 $ $Date: 2011-11-30 13:51:46 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,

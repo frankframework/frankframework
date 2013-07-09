@@ -56,10 +56,8 @@ import com.sap.conn.jco.JCoStructure;
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.9 $ $Date: 2012-05-31 10:27:55 $";
 	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
 
 	private String name;

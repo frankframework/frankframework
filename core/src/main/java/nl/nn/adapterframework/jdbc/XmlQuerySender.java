@@ -88,7 +88,6 @@ import org.w3c.dom.Element;
  * </table>
  * </p>
  * 
- * @version $Id$
  * @author  Peter Leeuwenburgh
  */
 public class XmlQuerySender extends DirectQuerySender {

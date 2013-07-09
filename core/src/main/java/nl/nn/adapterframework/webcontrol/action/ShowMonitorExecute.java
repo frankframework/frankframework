@@ -38,7 +38,6 @@ import org.apache.struts.upload.FormFile;
 /**
  * Extension to transactionalstorage browser, that enables delete and repost.
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  * @since   4.3
  */

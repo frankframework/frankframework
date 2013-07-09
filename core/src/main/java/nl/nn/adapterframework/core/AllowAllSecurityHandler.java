@@ -24,10 +24,8 @@ import org.apache.commons.lang.NotImplementedException;
  * 
  * @author  Gerrit van Brakel
  * @since   4.3
- * @version $Id$
  */
 public class AllowAllSecurityHandler implements ISecurityHandler {
-	public static final String version = "$RCSfile: AllowAllSecurityHandler.java,v $ $Revision: 1.4 $ $Date: 2012-06-01 10:52:52 $";
 
 	public boolean isUserInRole(String role, IPipeLineSession session) {
 		return true;

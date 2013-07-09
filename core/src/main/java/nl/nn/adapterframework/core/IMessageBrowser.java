@@ -21,10 +21,8 @@ import java.util.Date;
 /**
  * @author  Gerrit van Brakel
  * @since   4.3
- * @version $Id$
  */
 public interface IMessageBrowser extends IXAEnabled {
-	public static final String version = "$RCSfile: IMessageBrowser.java,v $ $Revision: 1.8 $ $Date: 2011-11-30 13:51:55 $";
 
 	/**
 	 * Gets an enumeration of messages. This includes setting up connections, sessions etc.

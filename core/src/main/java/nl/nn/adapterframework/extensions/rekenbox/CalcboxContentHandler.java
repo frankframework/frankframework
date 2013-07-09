@@ -13,25 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-/* $Log: CalcboxContentHandler.java,v $
-/* Revision 1.6  2012-03-14 11:23:57  europe\m168309
-/* use getTransformerFactory() from XmlUtils instead of own code
-/*
-/* Revision 1.5  2012/02/03 11:18:29  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
-/* for XSLT 1.0 the class com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl is used to be backward compatible with WAS5 (only for java vendor IBM and java version >= 1.5)
-/*
-/* Revision 1.4  2012/02/01 11:35:39  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
-/* for XSLT 1.0 the class com.sun.org.apache.xalan.internal.processor.TransformerFactoryImpl is used to be backward compatible with WAS5
-/*
-/* Revision 1.3  2011/11/30 13:52:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
-/* adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
-/*
-/* Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
-/* Upgraded from WebSphere v5.1 to WebSphere v6.1
-/*
-/* Revision 1.1  2008/11/25 10:17:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
-/* first version
-/* */
 package nl.nn.adapterframework.extensions.rekenbox;
 
 import nl.nn.adapterframework.util.XmlUtils;
@@ -63,7 +44,6 @@ import java.io.StringReader;
 
 /**
  * @author Jaco de Groot
- * @version $Id$
  */
 public class CalcboxContentHandler implements ContentHandler {
   int level = 0;

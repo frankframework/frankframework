@@ -33,7 +33,6 @@ import org.apache.log4j.Logger;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.10
- * @version $Id$
  */
 public class ZipWriter {
 	protected Logger log = LogUtil.getLogger(this);

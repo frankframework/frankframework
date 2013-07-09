@@ -46,7 +46,6 @@ import nl.nn.adapterframework.util.AppConstants;
  * @since 4.2
  */
 public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
-	public static final String version="$RCSfile: IbisWebServiceSender.java,v $ $Revision: 1.9 $ $Date: 2011-11-30 13:52:01 $";
 
 	private String name;
 	private String ibisHost = "localhost";

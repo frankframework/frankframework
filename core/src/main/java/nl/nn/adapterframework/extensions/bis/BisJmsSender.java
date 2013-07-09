@@ -62,7 +62,6 @@ import org.w3c.dom.Element;
  * </p>
  * 
  * @author  Peter Leeuwenburgh
- * @version $Id$
  * @deprecated Please use JmsSender combined with BisWrapperPipe
  */
 public class BisJmsSender extends JmsSender {

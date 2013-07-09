@@ -39,7 +39,6 @@ import com.tibco.tibjms.TibjmsTopicConnectionFactory;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
- * @version $Id$
  */
 public class TibcoMessagingSourceFactory extends JmsMessagingSourceFactory {
 

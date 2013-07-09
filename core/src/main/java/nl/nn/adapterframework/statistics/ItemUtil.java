@@ -23,7 +23,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * Utility functions to process statistics items.
  * @author  Gerrit van Brakel
  * @since   4.9.9
- * @version $Id$
  */
 public class ItemUtil {
 

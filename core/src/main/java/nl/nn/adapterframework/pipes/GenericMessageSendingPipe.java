@@ -83,13 +83,11 @@ import nl.nn.adapterframework.util.ClassUtils;
  * </table>
  * </p>
  * 
- * @version $Id$
  * @author  Dennis van Loon
  * @since   4.1.1
  */
 
 public class GenericMessageSendingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.15 $ $Date: 2013-03-13 14:51:23 $";
 
 	public void setListener(ICorrelatedPullingListener listener) {
 		super.setListener(listener);

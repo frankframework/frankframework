@@ -30,7 +30,6 @@ import java.util.Map;
  * The messageId is stored under the key identified by <code>messageId</code>.
  * </p>
  * 
- * @version $Id$
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */

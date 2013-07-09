@@ -22,10 +22,8 @@ import java.util.Map;
  * 
  * @author  Gerrit van Brakel
  * @since   4.0
- * @version $Id$
  */
 public interface ICorrelatedPullingListener extends IPullingListener{
-	public static final String version = "$RCSfile: ICorrelatedPullingListener.java,v $ $Revision: 1.7 $ $Date: 2011-11-30 13:51:55 $";
 
 	/**
 	 * Retrieves messages from queue or other channel,  but retrieves only

@@ -65,10 +65,8 @@ import nl.nn.adapterframework.util.FileUtils;
  * Each line will be handled by this recordHandler and resultHandler.
  * 
  * @author  John Dekker
- * @version $Id$
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.21 $ $Date: 2012-06-01 10:52:48 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;

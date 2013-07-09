@@ -21,7 +21,6 @@ import nl.nn.adapterframework.core.IbisException;
  * Exception thrown by classes in the sap-package (implementation) to notify
  * various problems.
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0

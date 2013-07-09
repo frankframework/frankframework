@@ -26,7 +26,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * 
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class SapSystem {
 	private int jcoVersion = -1;

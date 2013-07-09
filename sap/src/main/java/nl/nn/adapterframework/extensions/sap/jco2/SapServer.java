@@ -29,7 +29,6 @@ import com.sap.mw.jco.JCO;
  * 
  * @author  Gerrit van Brakel
  * @since   4.2
- * @version $Id$
  */
 public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionListener, JCO.ServerErrorListener {
 	protected Logger log = LogUtil.getLogger(this);

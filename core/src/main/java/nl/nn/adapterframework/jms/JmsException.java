@@ -22,7 +22,6 @@ import nl.nn.adapterframework.core.IbisException;
  * 
  * @author  Gerrit van Brakel
  * @since   4.4
- * @version $Id$
  */
 public class JmsException extends IbisException {
 	public JmsException() {

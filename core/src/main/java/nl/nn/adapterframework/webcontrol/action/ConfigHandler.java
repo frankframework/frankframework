@@ -28,7 +28,6 @@ import java.io.IOException;
 
 /**
  * This handler adjusts the way the configuration is shown (original or loaded).
- * @version $Id$
  * @author  Peter Leeuwenburgh
  */
 

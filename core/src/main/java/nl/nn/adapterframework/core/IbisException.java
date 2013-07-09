@@ -31,7 +31,6 @@ import org.xml.sax.SAXParseException;
 /**
  * Base Exception with compact but informative getMessage().
  * 
- * @version $Id$
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {

@@ -31,7 +31,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * 
  * @author  Jaco de Groot
  * @since   5.0
- * @version $Id$
  */
 public class SapSender implements ISenderWithParameters {
 	private int jcoVersion = -1;

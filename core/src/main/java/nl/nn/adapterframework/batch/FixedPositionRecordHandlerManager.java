@@ -39,7 +39,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
  * @author John Dekker
  */
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.16 $ $Date: 2012-06-01 10:52:49 $";
 
 	private int startPosition;
 	private int endPosition=-1;

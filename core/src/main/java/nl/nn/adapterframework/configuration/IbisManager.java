@@ -26,7 +26,6 @@ import org.springframework.transaction.PlatformTransactionManager;
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public interface IbisManager {
     public static final String DFLT_CONFIGURATION = "Configuration.xml";

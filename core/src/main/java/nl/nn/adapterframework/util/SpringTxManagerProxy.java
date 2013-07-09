@@ -30,7 +30,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
- * @version $Id$
  */
 public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFactoryAware {
 	private static final Logger log = LogUtil.getLogger(SpringTxManagerProxy.class);

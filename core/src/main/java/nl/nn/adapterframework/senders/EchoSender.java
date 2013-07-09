@@ -32,7 +32,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
- * @version $Id$
  */
 public class EchoSender extends SenderWithParametersBase {
 	

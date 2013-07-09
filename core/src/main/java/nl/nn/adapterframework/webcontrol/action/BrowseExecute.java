@@ -48,12 +48,10 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 /**
  * Extension to transactionalstorage browser, that enables delete and repost.
  * 
- * @version $Id$
  * @author  Gerrit van Brakel
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.19 $ $Date: 2012-06-01 10:52:59 $";
     
     protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     

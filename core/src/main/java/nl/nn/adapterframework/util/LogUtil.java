@@ -36,10 +36,8 @@ import org.apache.log4j.xml.DOMConfigurator;
  * 
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot (***@dynasol.nl)
- * @version $Id$
  */
 public class LogUtil {
-	public static final String version="$RCSfile: LogUtil.java,v $  $Revision: 1.9 $ $Date: 2011-11-30 13:51:48 $";
 	public static final String DEBUG_LOG_PREFIX = "Ibis LogUtil class ";
 	public static final String DEBUG_LOG_SUFFIX = "";
 	public static final String WARN_LOG_PREFIX = DEBUG_LOG_PREFIX;

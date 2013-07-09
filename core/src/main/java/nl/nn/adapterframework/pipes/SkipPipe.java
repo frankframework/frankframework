@@ -31,11 +31,9 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * </p>
  * 
  * @author Jaco de Groot (***@dynasol.nl)
- * @version $Id$
  *
  */
 public class SkipPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: SkipPipe.java,v $ $Revision: 1.5 $ $Date: 2012-06-01 10:52:49 $";
 
 	private int skip = 0;
 	private int length = -1;

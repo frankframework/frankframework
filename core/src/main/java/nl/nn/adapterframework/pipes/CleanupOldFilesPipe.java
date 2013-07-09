@@ -47,7 +47,6 @@ import org.apache.commons.lang.StringUtils;
  * @since:  4.2
  */
 public class CleanupOldFilesPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.8 $ $Date: 2012-06-01 10:52:49 $";
 	
 	private String filePattern;
 	private boolean subdirectories=false;

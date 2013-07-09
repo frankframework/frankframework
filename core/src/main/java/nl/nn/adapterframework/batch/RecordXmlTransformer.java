@@ -55,10 +55,8 @@ import org.apache.commons.lang.StringUtils;
  * </p>
  * 
  * @author  John Dekker / Gerrit van Brakel
- * @version $Id$
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.19 $ $Date: 2012-06-01 10:52:48 $";
 
 	private String rootTag="record";
 	private String xpathExpression=null;

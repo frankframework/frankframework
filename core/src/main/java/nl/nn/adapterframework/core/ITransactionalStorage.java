@@ -26,10 +26,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @see nl.nn.adapterframework.receivers.PullingReceiverBase
  * @author  Gerrit van Brakel
  * @since   4.1
- * @version $Id$
 */
 public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
-	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.12 $ $Date: 2011-11-30 13:51:55 $";
 
 	/**
 	 * Prepares the object for operation. After this

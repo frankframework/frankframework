@@ -113,7 +113,6 @@ import org.w3c.dom.Element;
  * Otherwise errors like the following might occur:
  *   NoClassDefFoundException: com/sun/mail/util/MailDateFormat 
  * 
- * @version $Id$
  * @author Johan Verrips/Gerrit van Brakel
  */
 

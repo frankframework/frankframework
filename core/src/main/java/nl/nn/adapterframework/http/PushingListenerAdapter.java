@@ -46,7 +46,6 @@ import org.apache.log4j.Logger;
  * </table>
  * @author  Gerrit van Brakel 
  * @since   4.12
- * @version $Id$
  */
 public class PushingListenerAdapter implements IPushingListener, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);

@@ -22,7 +22,6 @@ import nl.nn.adapterframework.core.IbisException;
  * 
  * @author  Gerrit van Brakel
  * @since  
- * @version $Id$
  */
 public class TracingException extends IbisException {
 

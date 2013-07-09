@@ -23,7 +23,6 @@ import java.util.List;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.8
- * @version $Id$
  */
 public class AdapterFilter {
 	

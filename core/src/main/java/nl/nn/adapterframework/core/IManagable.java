@@ -19,7 +19,6 @@ import nl.nn.adapterframework.util.RunStateEnum;
 /**
  * Models starting and stopping of objects that support such behaviour.
  * 
- * @version $Id$
  * @author Gerrit van Brakel
  * @since 4.0
  */

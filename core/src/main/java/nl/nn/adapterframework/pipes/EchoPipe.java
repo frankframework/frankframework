@@ -36,7 +36,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
- * @version $Id$
  * @author  Gerrit van Brakel
  * @since   4.2
  */

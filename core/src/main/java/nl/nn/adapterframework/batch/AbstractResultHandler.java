@@ -46,7 +46,6 @@ import org.apache.log4j.Logger;
  * </p>
  * 
  * @author  John Dekker
- * @version $Id$
  */
 public abstract class AbstractResultHandler implements IResultHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);

@@ -50,7 +50,6 @@ import org.apache.commons.lang.StringUtils;
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
- * @version $Id$
  */
 public abstract class ResultWriter extends AbstractResultHandler {
 	

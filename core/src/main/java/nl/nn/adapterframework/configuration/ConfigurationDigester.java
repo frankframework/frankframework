@@ -63,12 +63,10 @@ import org.xml.sax.*;
 
 &lt;/IOS-Adaptering&gt;
 </pre></code>
- * @version $Id$
  * @author Johan Verrips
  * @see Configuration
  */
 abstract public class ConfigurationDigester {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.40 $ $Date: 2012-08-23 11:57:44 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 

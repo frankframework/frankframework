@@ -20,7 +20,6 @@ package nl.nn.adapterframework.core;
  * in a postbox
  *
  * @author John Dekker
- * @version $Id$
  */
 public interface IPostboxSender extends ISenderWithParameters {
 }

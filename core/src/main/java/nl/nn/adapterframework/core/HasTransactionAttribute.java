@@ -36,12 +36,10 @@ package nl.nn.adapterframework.core;
  * 											      <tr><td>T1</td>  <td>error</td></tr>
  *  </table> 
  * 
- * @version HasSender.java,v 1.3 2004/03/23 16:42:59 L190409 Exp $
  * @author  Gerrit van Brakel
  * @since   4.5
  */
 public interface HasTransactionAttribute {
-	public static final String version = "$RCSfile: HasTransactionAttribute.java,v $ $Revision: 1.5 $ $Date: 2011-11-30 13:51:55 $";
 
 	public String getTransactionAttribute();
 	public int getTransactionAttributeNum();

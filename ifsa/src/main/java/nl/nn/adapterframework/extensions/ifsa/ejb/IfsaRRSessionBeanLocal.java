@@ -21,7 +21,6 @@ import javax.ejb.EJBLocalObject;
 /**
  *
  * @author Tim van der Leeuw
- * @version $Id$
  */
 public interface IfsaRRSessionBeanLocal extends RequestReplyService, EJBLocalObject {
 

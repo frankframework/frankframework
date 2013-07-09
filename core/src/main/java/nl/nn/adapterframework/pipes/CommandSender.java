@@ -33,7 +33,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * </table>
  * </p>
  * 
- * @version $Id$
  * @since   4.8
  * @author  Gerrit van Brakel
  * @deprecated Please replace with nl.nn.adapterframework.senders.CommandSender

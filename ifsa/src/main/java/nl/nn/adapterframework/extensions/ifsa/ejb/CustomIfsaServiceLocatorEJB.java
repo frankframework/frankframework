@@ -34,7 +34,6 @@ import org.apache.log4j.Logger;
  * Service Dispatcher session bean for all IFSA service URLs.
  * 
  * @author Tim van der Leeuw
- * @version $Id$
  */
 public class CustomIfsaServiceLocatorEJB extends ServiceLocatorEJB {
     private final static Logger log = LogUtil.getLogger(CustomIfsaServiceLocatorEJB.class);

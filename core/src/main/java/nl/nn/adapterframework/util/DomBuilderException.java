@@ -21,7 +21,6 @@ public class DomBuilderException extends NestableException {
 	
 /**
  * DomBuilderException constructor comment.
- * <p>$Id$</p>
  */
 public DomBuilderException() {
 	super();

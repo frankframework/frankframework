@@ -89,7 +89,6 @@ import org.apache.commons.lang.StringUtils;
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.10
- * @version $Id$
  */
 public class ZipWriterPipe extends FixedForwardPipe {
 
