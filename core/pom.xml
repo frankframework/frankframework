@@ -6,7 +6,7 @@
     <artifactId>ibis-parent</artifactId>
     <version>5.0.29-SNAPSHOT</version>
   </parent>
-  <artifactId>ibis-adapterframework</artifactId>
+  <artifactId>ibis-adapterframework-core</artifactId>
   <name>Ibis AdapterFramework core</name>
 
   <properties>

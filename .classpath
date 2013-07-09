@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="tibco/src/main/java"/>
-	<classpathentry kind="src" path="adapterframework/src/main/resources"/>
+	<classpathentry kind="src" path="core/src/main/java"/>
+	<classpathentry kind="src" path="core/src/main/resources"/>
+	<classpathentry kind="src" path="coolgen/src/main/java"/>
 	<classpathentry kind="src" path="ibm/src/main/java"/>
 	<classpathentry kind="src" path="ifsa/src/main/java"/>
-	<classpathentry kind="src" path="adapterframework/src/main/java"/>
 	<classpathentry kind="src" path="sap/src/main/java"/>
-	<classpathentry kind="src" path="coolgen/src/main/java"/>
+	<classpathentry kind="src" path="tibco/src/main/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="core/lib/j2ee.jar"/>
 	<classpathentry kind="lib" path="coolgen/lib/NNCoolgenJavaProxies.jar"/>
 	<classpathentry kind="lib" path="ibm/lib/com.ibm.mqjms.jar"/>
 	<classpathentry kind="lib" path="ibm/lib/com.ibm.ws.runtime_6.1.0.jar"/>
@@ -24,6 +25,5 @@
 	<classpathentry kind="lib" path="sap/lib/sapjco3.jar"/>
 	<classpathentry kind="lib" path="tibco/lib/tibjms.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
-	<classpathentry kind="lib" path="adapterframework/lib/j2ee.jar"/>
 	<classpathentry kind="output" path="webapp/src/main/webapp/WEB-INF/classes"/>
 </classpath>

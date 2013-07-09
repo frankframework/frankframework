@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
     <wb-module deploy-name="Ibis">
         <wb-resource deploy-path="/" source-path="/webapp/src/main/webapp"/>
-        <wb-resource deploy-path="/WEB-INF/classes" source-path="/adapterframework/src/main/java"/>
-        <wb-resource deploy-path="/WEB-INF/classes" source-path="/adapterframework/src/main/resources"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/core/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/core/src/main/resources"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/coolgen/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/ibm/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/ifsa/src/main/java"/>
