@@ -16,7 +16,7 @@
   <dependencies>
     <dependency>
       <groupId>org.ibissource</groupId>
-      <artifactId>ibis-adapterframework</artifactId>
+      <artifactId>ibis-adapterframework-core</artifactId>
     </dependency>
 
     <!--dependency>

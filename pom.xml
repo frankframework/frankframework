@@ -13,7 +13,7 @@
   </properties>
 
   <modules>
-    <module>adapterframework</module>
+    <module>core</module>
     <module>sap</module>
     <module>ifsa</module>
     <module>coolgen</module>
@@ -28,7 +28,7 @@
     <dependencies>
       <dependency>
         <groupId>org.ibissource</groupId>
-        <artifactId>ibis-adapterframework</artifactId>
+        <artifactId>ibis-adapterframework-core</artifactId>
         <version>5.0.29-SNAPSHOT</version>
       </dependency>
       <dependency>
