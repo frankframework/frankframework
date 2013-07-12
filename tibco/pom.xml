@@ -10,7 +10,7 @@
   <name>Ibis AdapterFramework support for TIBCO</name>
 
   <properties>
-    <ibis.dependencies>${basedir}/lib</ibis.dependencies>
+    <iaf-lib.basedir>${basedir}/../../iaf-lib</iaf-lib.basedir>
   </properties>
 
   <dependencies>
@@ -22,7 +22,7 @@
       <groupId>com.tibco.tibjms</groupId>
       <artifactId>tibjms</artifactId>
       <version>0</version>
-      <systemPath>${ibis.dependencies}/tibjms.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/tibco/tibjms.jar</systemPath>
       <scope>system</scope>
     </dependency>
     <dependency>

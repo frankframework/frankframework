@@ -10,7 +10,7 @@
   <name>Ibis AdapterFramework support for CoolGen</name>
 
   <properties>
-    <ibis.dependencies>${basedir}/lib</ibis.dependencies>
+    <iaf-lib.basedir>${basedir}/../../iaf-lib</iaf-lib.basedir>
   </properties>
 
   <dependencies>
@@ -22,7 +22,7 @@
       <groupId>nl.nn.coolgen</groupId>
       <artifactId>coolgen</artifactId>
       <version>0</version>
-      <systemPath>${ibis.dependencies}/NNCoolgenJavaProxies.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/coolgen/NNCoolgenJavaProxies.jar</systemPath>
       <scope>system</scope>
     </dependency>
  </dependencies>

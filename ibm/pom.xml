@@ -10,7 +10,7 @@
   <name>Ibis AdapterFramework support for IBM</name>
 
   <properties>
-    <ibis.dependencies>${basedir}/lib</ibis.dependencies>
+    <iaf-lib.basedir>${basedir}/../../iaf-lib</iaf-lib.basedir>
   </properties>
 
   <dependencies>
@@ -23,7 +23,7 @@
       <groupId>com.ibm.websphere</groupId>
       <artifactId>admin</artifactId>
       <version>0</version>
-      <systemPath>${ibis.dependencies}/admin.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/ibm/admin.jar</systemPath>
       <scope>system</scope>
     </dependency>
 
@@ -31,7 +31,7 @@
       <groupId>com.ibm.websphere</groupId>
       <artifactId>sas</artifactId>
       <version>0</version>
-      <systemPath>${ibis.dependencies}/sas.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/ibm/sas.jar</systemPath>
       <scope>system</scope>
     </dependency>
 
@@ -40,7 +40,7 @@
       <groupId>com.ibm.websphere</groupId>
       <artifactId>wssec</artifactId>
       <version>0</version>
-      <systemPath>${ibis.dependencies}/wssec.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/ibm/wssec.jar</systemPath>
       <scope>system</scope>
     </dependency-->
 
@@ -48,7 +48,7 @@
       <groupId>com.ibm.websphere</groupId>
       <artifactId>jms</artifactId>
       <version>6.1.0</version>
-      <systemPath>${ibis.dependencies}/com.ibm.ws.runtime_6.1.0.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/ibm/com.ibm.ws.runtime_6.1.0.jar</systemPath>
       <scope>system</scope>
     </dependency>
 
@@ -57,7 +57,7 @@
       <groupId>com.ibm.mq</groupId>
       <artifactId>jms</artifactId>
       <version>1.0.2b</version>
-      <systemPath>${ibis.dependencies}/com.ibm.mqjms.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/ibm/com.ibm.mqjms.jar</systemPath>
       <scope>system</scope>
     </dependency>
     <dependency>

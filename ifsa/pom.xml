@@ -10,7 +10,7 @@
   <name>Ibis AdapterFramework support for IFSA</name>
 
   <properties>
-    <ibis.dependencies>${basedir}/lib</ibis.dependencies>
+    <iaf-lib.basedir>${basedir}/../../iaf-lib</iaf-lib.basedir>
   </properties>
 
   <dependencies>
@@ -23,7 +23,7 @@
       <groupId>com.ing.ifsa</groupId>
       <artifactId>IFSACommon</artifactId>
       <version>0</version>
-      <systemPath>${ibis.dependencies}/IFSACommon.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/ifsa/IFSACommon.jar</systemPath>
       <scope>system</scope>
     </dependency>
 
@@ -31,7 +31,7 @@
       <groupId>com.ing.ifsa</groupId>
       <artifactId>IFSARequestorEJB</artifactId>
       <version>0</version>
-      <systemPath>${ibis.dependencies}/IFSARequestorEJB.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/ifsa/IFSARequestorEJB.jar</systemPath>
       <scope>system</scope>
     </dependency>
 
@@ -39,7 +39,7 @@
       <groupId>com.ing.ifsa</groupId>
       <artifactId>jmsXA</artifactId>
       <version>22.10.055(beta)</version>
-      <systemPath>${ibis.dependencies}/ifsajmsXA-22.10.055(beta).jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/ifsa/ifsajmsXA-22.10.055(beta).jar</systemPath>
       <scope>system</scope>
     </dependency>
 
@@ -47,7 +47,7 @@
       <groupId>com.ing.ifsa</groupId>
       <artifactId>jcil</artifactId>
       <version>2.2</version>
-      <systemPath>${ibis.dependencies}/ifsajcil.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/ifsa/ifsajcil.jar</systemPath>
       <scope>system</scope>
     </dependency>
 
@@ -55,7 +55,7 @@
       <groupId>com.ing.ifsa</groupId>
       <artifactId>j2ee</artifactId>
       <version>0</version>
-      <systemPath>${ibis.dependencies}/ifsaj2ee.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/ifsa/ifsaj2ee.jar</systemPath>
       <scope>system</scope>
     </dependency>
 
@@ -64,7 +64,7 @@
       <groupId>com.ing.mettserver</groupId>
       <artifactId>mettserver</artifactId>
       <version>0</version>
-      <systemPath>${ibis.dependencies}/mett-server.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/ifsa/mett-server.jar</systemPath>
       <scope>system</scope>
     </dependency>
     <dependency>

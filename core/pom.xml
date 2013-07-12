@@ -10,7 +10,6 @@
   <name>Ibis AdapterFramework core</name>
 
   <properties>
-    <ibis.dependencies>${basedir}/lib</ibis.dependencies>
     <saxon.version>8.7</saxon.version>
   </properties>
 

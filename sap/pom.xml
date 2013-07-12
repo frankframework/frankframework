@@ -10,8 +10,8 @@
   <name>Ibis AdapterFramework support for SAP</name>
 
   <properties>
-    <ibis.dependencies>${basedir}/lib</ibis.dependencies>
- </properties>
+    <iaf-lib.basedir>${basedir}/../../iaf-lib</iaf-lib.basedir>
+  </properties>
 
   <dependencies>
 
@@ -24,7 +24,7 @@
       <groupId>com.sap</groupId>
       <artifactId>jco3</artifactId>
       <version>3</version>
-      <systemPath>${ibis.dependencies}/sapjco3.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/sap/sapjco3.jar</systemPath>
       <scope>system</scope>
     </dependency>
 
@@ -32,7 +32,7 @@
       <groupId>com.sap</groupId>
       <artifactId>idoc3</artifactId>
       <version>3</version>
-      <systemPath>${ibis.dependencies}/sapidoc3.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/sap/sapidoc3.jar</systemPath>
       <scope>system</scope>
     </dependency>
 
@@ -40,7 +40,7 @@
       <groupId>com.sap</groupId>
       <artifactId>mw</artifactId>
       <version>3</version>
-      <systemPath>${ibis.dependencies}/sap-mw3.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/sap/sap-mw3.jar</systemPath>
       <scope>system</scope>
     </dependency-->
 
@@ -48,7 +48,7 @@
       <groupId>com.sap</groupId>
       <artifactId>jco2</artifactId>
       <version>2.0</version>
-      <systemPath>${ibis.dependencies}/sapjco.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/sap/sapjco.jar</systemPath>
       <scope>system</scope>
     </dependency>
 
@@ -56,7 +56,7 @@
       <groupId>com.sap</groupId>
       <artifactId>idoc1</artifactId>
       <version>1.0.1</version>
-      <systemPath>${ibis.dependencies}/sapidoc-1.0.1.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/sap/sapidoc-1.0.1.jar</systemPath>
       <scope>system</scope>
     </dependency>
 
@@ -64,7 +64,7 @@
       <groupId>com.sap</groupId>
       <artifactId>idoc-jco</artifactId>
       <version>1.0.2</version>
-      <systemPath>${ibis.dependencies}/sapidocjco-1.0.2.jar</systemPath>
+      <systemPath>${iaf-lib.basedir}/sap/sapidocjco-1.0.2.jar</systemPath>
       <scope>system</scope>
     </dependency>
 
