@@ -161,8 +161,9 @@ public class MessagingSource  {
 				// In case of BTM.
 				managedConnectionFacory = ClassUtils.invokeGetter(qcf, "getResource", true);
 			}
-			result+=ClassUtils.reflectionToString(managedConnectionFacory, "perties"); //catches properties as well as Properties... 
+			// result+=ClassUtils.reflectionToString(managedConnectionFacory, "perties"); //catches properties as well as Properties... 
 			// result+=ClassUtils.reflectionToString(qcf, "factory");
+			result+=managedConnectionFacory.toString();
 			if (result.contains("activemq")) {
 				result += "[" + ClassUtils.invokeGetter(managedConnectionFacory,"getBrokerURL",true) + "]";
 			}
