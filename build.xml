@@ -1,7 +1,7 @@
 <project default="jar">
 	<!-- ================================================================== -->
 	<target name="init">
-		<property name="build.dir" value="C:/Temp/AdapterFramework/build"/>
+		<property name="build.dir" value="D:/Temp/AdapterFramework/build"/>
 		<delete dir="${build.dir}"/>
 		<mkdir dir="${build.dir}"/>
 		<property file="WebContent/WEB-INF/classes/AppConstants.properties" prefix="ac"/>
