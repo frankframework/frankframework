@@ -52,12 +52,20 @@
 				</tr>
 				<xtags:forEach select="jmsRealms/jmsRealm">
 					<tr ref="spannedRow">
-						<td><xtags:valueOf select="@name"/></td>
-						<td><xtags:valueOf select="@datasourceName"/></td>
-						<td><xtags:valueOf select="@queueConnectionFactoryName"/></td>
-						<td><xtags:valueOf select="@topicConnectionFactoryName"/></td>
-						<td><xtags:valueOf select="@info"/></td>
+						<xtags:variable id="count" select="count(info)"/>
+						<td rowspan="<%=count%>"><xtags:valueOf select="@name"/></td>
+						<td rowspan="<%=count%>"><xtags:valueOf select="@datasourceName"/></td>
+						<td rowspan="<%=count%>"><xtags:valueOf select="@queueConnectionFactoryName"/></td>
+						<td rowspan="<%=count%>"><xtags:valueOf select="@topicConnectionFactoryName"/></td>
+						<td><xtags:valueOf select="info[1]"/></td>
 					</tr>
+						<xtags:forEach select="info[position()>1]">
+							<tr>
+								<td>
+									<xtags:valueOf select="."/>
+								</td>
+							</tr>
+						</xtags:forEach>
 				</xtags:forEach>
 			</tbody>
 		</contentTable>
