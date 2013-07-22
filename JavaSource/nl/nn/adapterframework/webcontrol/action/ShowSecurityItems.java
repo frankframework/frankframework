@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -28,8 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -58,7 +55,6 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -68,9 +64,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.w3c.dom.Element;
-
-import com.ibm.websphere.csi.J2EEName;
-import com.ibm.ws.threadContext.ComponentMetaDataAccessorImpl;
 
 /**
  * Shows the used certificate.
@@ -117,8 +110,6 @@ public final class ShowSecurityItems extends ActionBase {
 			XmlBuilder adapterXML = new XmlBuilder("adapter");
 			registeredAdapters.addSubElement(adapterXML);
 
-			RunStateEnum adapterRunState = adapter.getRunState();
-
 			adapterXML.addAttribute("name", adapter.getName());
 
 			Iterator recIt = adapter.getReceiverIterator();
@@ -128,8 +119,6 @@ public final class ShowSecurityItems extends ActionBase {
 					IReceiver receiver = (IReceiver) recIt.next();
 					XmlBuilder receiverXML = new XmlBuilder("receiver");
 					receiversXML.addSubElement(receiverXML);
-
-					RunStateEnum receiverRunState = receiver.getRunState();
 
 					receiverXML.addAttribute("name", receiver.getName());
 
@@ -379,8 +368,6 @@ public final class ShowSecurityItems extends ActionBase {
 						jr.addSubElement(infoElem);
 					}
 				}
-
-				logQcf(jmsRealm);
 			}
 			tcfName = js.getTopicConnectionFactoryName();
 			if (StringUtils.isNotEmpty(tcfName)) {
@@ -408,54 +395,6 @@ public final class ShowSecurityItems extends ActionBase {
 			connectionPoolProperties = "*** ERROR ***";
 		}
 		return connectionPoolProperties;
-	}
-	
-	private void logQcf(String jmsRealmName) {
-		log.debug("QCF ["+jmsRealmName+"]");
-
-		for (int j = 0; j < config.getRegisteredAdapters().size(); j++) {
-			Adapter adapter = (Adapter) config.getRegisteredAdapter(j);
-			Iterator recIt = adapter.getReceiverIterator();
-			if (recIt.hasNext()) {
-				while (recIt.hasNext()) {
-					IReceiver receiver = (IReceiver) recIt.next();
-					if (receiver instanceof ReceiverBase ) {
-						ReceiverBase rb = (ReceiverBase) receiver;
-						IListener listener=rb.getListener();
-						try {
-							String jrn = (String)ClassUtils.invokeGetter(listener,"getJmsRealName",true);
-							if (jrn!=null && jrn.equals(jmsRealmName)) {
-								log.debug("adapter ["+adapter.getName()+"]");
-								log.debug("receiver ["+receiver.getName()+"]");
-								if (receiver instanceof IThreadCountControllable) {
-									IThreadCountControllable tcc = (IThreadCountControllable)receiver;
-									if (tcc.isThreadCountReadable()) {
-										log.debug("receiver_numThreads ["+tcc.getMaxThreadCount()+"]");
-									}
-								}
-								log.debug("listener ["+listener.getName()+"]");
-								
-							}
-						} catch (NoSuchMethodException nse) {
-							// continue
-						} catch (Exception e) {
-							log.warn("error getting jmsRealm ["+e+"]");
-						}
-					}
-				}
-			}
-/*
-			PipeLine pipeline = adapter.getPipeLine();
-			for (int i = 0; i < pipeline.getPipes().size(); i++) {
-				IPipe pipe = pipeline.getPipe(i);
-				String pipename = pipe.getName();
-				if (pipe instanceof MessageSendingPipe) {
-					MessageSendingPipe msp = (MessageSendingPipe) pipe;
-					ISender sender = msp.getSender();
-				}
-			}
-*/
-		}
 	}
 	
 	private void addAuthEntries(XmlBuilder securityItems) {
