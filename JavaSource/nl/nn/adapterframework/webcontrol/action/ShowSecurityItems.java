@@ -303,7 +303,9 @@ public final class ShowSecurityItems extends ActionBase {
 		String confResString;
 		try {
 			confResString = Misc.getConfigurationResources();
-			confResString = XmlUtils.removeNamespaces(confResString);
+			if (confResString!=null) {
+				confResString = XmlUtils.removeNamespaces(confResString);
+			}
 		} catch (IOException e) {
 			log.warn("error getting configuration resources ["+e+"]");
 			confResString = null;

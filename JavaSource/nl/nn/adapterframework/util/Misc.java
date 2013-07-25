@@ -50,7 +50,6 @@ import java.util.zip.Inflater;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.ibm.websphere.management.AdminClientFactory;
 import com.ibm.websphere.management.AdminService;
 import com.ibm.websphere.management.AdminServiceFactory;
 import com.ibm.ws.threadContext.ComponentMetaDataAccessorImpl;
@@ -505,17 +504,27 @@ public class Misc {
 	}
 
 	public static String getDeployedApplicationBindings() throws IOException {
-		String appBndFile =
-		getApplicationDeploymentDescriptorPath()
-				+ File.separator
-				+ "ibm-application-bnd.xmi";
+		String addp = getApplicationDeploymentDescriptorPath();
+		if (addp==null) {
+			log.debug("applicationDeploymentDescriptorPath not found");
+			return null;
+		}
+		String appBndFile = addp + File.separator + "ibm-application-bnd.xmi";
 		log.debug("deployedApplicationBindingsFile [" + appBndFile + "]");
 		return fileToString(appBndFile);
 	}
 
 	public static String getApplicationDeploymentDescriptorPath() throws IOException {
-		String appName = ComponentMetaDataAccessorImpl.getComponentMetaDataAccessor().getComponentMetaData().getJ2EEName().getApplication(); 
-		AdminService adminService = AdminServiceFactory.getAdminService();
+		String appName; 
+		String cellName; 
+		try {
+			appName = ComponentMetaDataAccessorImpl.getComponentMetaDataAccessor().getComponentMetaData().getJ2EEName().getApplication(); 
+			AdminService adminService = AdminServiceFactory.getAdminService();
+			cellName = adminService.getCellName();
+		} catch (NoClassDefFoundError e) {
+			log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: "+e.getMessage());
+			return null;
+		}
 		String appPath =
 			System.getProperty("user.install.root")
 				+ File.separator
@@ -523,7 +532,7 @@ public class Misc {
 				+ File.separator
 				+ "cells"
 				+ File.separator
-				+ adminService.getCellName()
+				+ cellName
 				+ File.separator
 				+ "applications"
 				+ File.separator
@@ -539,16 +548,29 @@ public class Misc {
 	}
 
 	public static String getApplicationDeploymentDescriptor () throws IOException {
-		String appFile =
-			getApplicationDeploymentDescriptorPath()
-				+ File.separator
-				+ "application.xml";
+		String addp = getApplicationDeploymentDescriptorPath();
+		if (addp==null) {
+			log.debug("applicationDeploymentDescriptorPath not found");
+			return null;
+		}
+		String appFile = addp + File.separator + "application.xml";
 		log.debug("applicationDeploymentDescriptorFile [" + appFile + "]");
 		return fileToString(appFile);
 	}
 
 	public static String getConfigurationResources() throws IOException {
-		AdminService adminService = AdminServiceFactory.getAdminService();
+		String nodeName;
+		String cellName;
+		String processName;
+		try {
+			AdminService adminService = AdminServiceFactory.getAdminService();
+			cellName = adminService.getCellName();
+			nodeName = adminService.getNodeName();
+			processName = adminService.getProcessName();
+		} catch (NoClassDefFoundError e) {
+			log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: "+e.getMessage());
+			return null;
+		}
 		String appFile =
 			System.getProperty("user.install.root")
 				+ File.separator
@@ -556,15 +578,15 @@ public class Misc {
 				+ File.separator
 				+ "cells"
 				+ File.separator
-				+ adminService.getCellName()
+				+ cellName
 				+ File.separator
 				+ "nodes"
 				+ File.separator
-				+ adminService.getNodeName()
+				+ nodeName
 				+ File.separator
 				+ "servers"
 				+ File.separator
-				+ adminService.getProcessName()
+				+ processName
 				+ File.separator
 				+ "resources.xml";
 		log.debug("configurationResourcesFile [" + appFile + "]");
