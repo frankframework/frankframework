@@ -54,7 +54,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename}</td><td>stylesheet may return a String representing the forward to look up</td><td><i>a stylesheet that returns the name of the root-element</i></td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>XPath-expression that returns a String representing the forward to look up</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the input message from. (N.B. same as <code>getInputFromSessionKey</code>)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNotFoundForwardName(String) notFoundForwardName}</td><td>Forward returned when the pipename derived from the stylesheet could not be found.</i></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setEmptyForwardName(String) emptyForwardName}</td><td>Forward returned when the content, on which the switch is performed, is empty. If <code>emptyForwardName</code> is not specified, <code>notFoundForwardName</code> is used.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setNotFoundForwardName(String) notFoundForwardName}</td><td>Forward returned when the pipename derived from the stylesheet could not be found.</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -79,6 +80,7 @@ public class XmlSwitch extends AbstractPipe {
     private String serviceSelectionStylesheetFilename=null;
 	private String sessionKey=null;
     private String notFoundForwardName=null;
+    private String emptyForwardName=null;
 
 	/**
 	 * If no {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} is specified, the
@@ -91,6 +93,14 @@ public class XmlSwitch extends AbstractPipe {
 //				throw new ConfigurationException(getLogPrefix(null)+"has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.");
 				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 				String msg = getLogPrefix(null)+"has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.";
+				configWarnings.add(log, msg);
+			}
+		}
+		if (getEmptyForwardName()!=null) {
+			if (findForward(getEmptyForwardName())==null){
+//				throw new ConfigurationException(getLogPrefix(null)+"has a emptyForwardName attribute. However, this forward ["+getEmptyForwardName()+"] is not configured.");
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				String msg = getLogPrefix(null)+"has a emptyForwardName attribute. However, this forward ["+getEmptyForwardName()+"] is not configured.";
 				configWarnings.add(log, msg);
 			}
 		}
@@ -188,14 +198,21 @@ public class XmlSwitch extends AbstractPipe {
 
 		log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
 
-		if (findForward(forward) != null) {
+		
+		if (StringUtils.isEmpty(forward) && getEmptyForwardName()!=null) {
 			throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
-			pipeForward=findForward(forward);
-		}
-		else {
-			log.info(getLogPrefix(session)+"determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
-			throwEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
-			pipeForward=findForward(getNotFoundForwardName());
+			pipeForward=findForward(getEmptyForwardName());
+		} else {
+			
+			if (findForward(forward) != null) {
+				throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
+				pipeForward=findForward(forward);
+			}
+			else {
+				log.info(getLogPrefix(session)+"determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
+				throwEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
+				pipeForward=findForward(getNotFoundForwardName());
+			}
 		}
 		
 		if (pipeForward==null) {
@@ -221,7 +238,14 @@ public class XmlSwitch extends AbstractPipe {
 	public String getNotFoundForwardName(){
 		return notFoundForwardName;
 	}
-	
+
+	public void setEmptyForwardName(String empty){
+		emptyForwardName=empty;
+	}
+	public String getEmptyForwardName(){
+		return emptyForwardName;
+	}
+
 	public String getXpathExpression() {
 		return xpathExpression;
 	}
