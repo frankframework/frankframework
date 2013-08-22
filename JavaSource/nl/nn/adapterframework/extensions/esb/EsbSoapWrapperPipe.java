@@ -583,6 +583,9 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		if (sender != null && sender instanceof EsbJmsSender) {
 			EsbJmsSender ejSender = (EsbJmsSender)sender;
 			String physicalDestination = ejSender.getPhysicalDestinationShortName();
+			if (physicalDestination==null) {
+				physicalDestination="?";
+			}
 			Parameter p = new Parameter();
 			p.setName(PHYSICALDESTINATION);
 			p.setValue(physicalDestination);
@@ -599,18 +602,22 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 				return false;
 			}
 			String physicalDestination = ejListener.getPhysicalDestinationShortName();
-			int pos = physicalDestination.lastIndexOf(".");
-			pos++;
-			if (pos > 0 && pos < physicalDestination.length()) {
-				String pds = physicalDestination.substring(0, pos);
-				String paradigm = physicalDestination.substring(pos);
-				if (paradigm.equals("Request") || paradigm.equals("Solicit")) {
-					physicalDestination = pds + "Response";
-				} else {
-					physicalDestination = pds + "?";
-				}
+			if (physicalDestination==null) {
+				physicalDestination="?";
 			} else {
-				physicalDestination = physicalDestination + ".?";
+				int pos = physicalDestination.lastIndexOf(".");
+				pos++;
+				if (pos > 0 && pos < physicalDestination.length()) {
+					String pds = physicalDestination.substring(0, pos);
+					String paradigm = physicalDestination.substring(pos);
+					if (paradigm.equals("Request") || paradigm.equals("Solicit")) {
+						physicalDestination = pds + "Response";
+					} else {
+						physicalDestination = pds + "?";
+					}
+				} else {
+					physicalDestination = physicalDestination + ".?";
+				}
 			}
 			Parameter p = new Parameter();
 			p.setName(PHYSICALDESTINATION);
