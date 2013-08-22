@@ -37,6 +37,7 @@ import org.apache.http.auth.AuthSchemeFactory;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.NTLMEngine;
@@ -217,6 +218,9 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 			}
 		} catch (Exception e) {
 			if (e instanceof SocketTimeoutException) {
+				throw new TimeOutException(e);
+			} 
+			if (e instanceof ConnectTimeoutException) {
 				throw new TimeOutException(e);
 			} 
 			throw new SenderException(e);
