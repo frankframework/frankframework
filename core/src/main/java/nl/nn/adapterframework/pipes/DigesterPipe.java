@@ -40,12 +40,12 @@ import org.apache.commons.digester.xmlrules.DigesterLoader;
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setDigesterRulesFile(String) digesterRulesFile}</td><td>name of file that containts the rules for xml parsing</td><td>(none)</td></tr>
  * </table>
- 
+
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
- * </table></p> 
+ * </table></p>
  * @author Richard Punt
  * @since 4.0.1 : adjustments to support multi-threading
  */
@@ -55,31 +55,33 @@ public class DigesterPipe extends FixedForwardPipe {
 	private String digesterRulesFile;
 	private URL rulesURL;
 
-	public void configure() throws ConfigurationException {
+	@Override
+    public void configure() throws ConfigurationException {
 		super.configure();
 
 		try {
      		 rulesURL = ClassUtils.getResourceURL(this, digesterRulesFile);
  			 DigesterLoader.createDigester(rulesURL); // load rules to check if they can be loaded when needed
 		} catch (Exception e) {
-			throw new ConfigurationException(getLogPrefix(null)+"Digester rules file ["+digesterRulesFile+"] not found", e); 
+			throw new ConfigurationException(getLogPrefix(null)+"Digester rules file ["+digesterRulesFile+"] not found", e);
 		}
 		log.debug(getLogPrefix(null)+"End of configuration");
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
+	@Override
+    public PipeRunResult doPipe(Object input, IPipeLineSession session)
 		throws PipeRunException {
 
 		//Multi threading: instantiate digester for each request as the digester is NOT thread-safe.
-		//TODO: make a pool of digesters		
+		//TODO: make a pool of digesters
 		Digester digester = DigesterLoader.createDigester(rulesURL);
-			
+
 		try {
 			ByteArrayInputStream xmlInputStream =
 				new ByteArrayInputStream(input.toString().getBytes());
 
 			return new PipeRunResult(getForward(), digester.parse(xmlInputStream));
-				
+
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"exception in digesting", e);
 		}
@@ -87,7 +89,7 @@ public class DigesterPipe extends FixedForwardPipe {
 
 
 	/**
-	 * Sets the location of the resource with digester rules used for processing messages. 
+	 * Sets the location of the resource with digester rules used for processing messages.
 	 */
 	public void setDigesterRulesFile(String digesterRulesFile) {
 		this.digesterRulesFile = digesterRulesFile;

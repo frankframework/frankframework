@@ -22,15 +22,17 @@ public class BasicAdapterServiceImpl implements AdapterService {
 
     private final Map<String, IAdapter> adapters = new LinkedHashMap<String, IAdapter>(); // insertion order map
 
-
+    //@Override
     public IAdapter getAdapter(String name) {
         return adapters.get(name);
     }
 
+    //@Override
     public Map<String, IAdapter> getAdapters() {
         return Collections.unmodifiableMap(adapters);
     }
 
+    //@Override
     public void registerAdapter(IAdapter adapter) throws ConfigurationException {
         if (adapter.getName() == null) {
             throw new ConfigurationException("Adapter has no name");

@@ -15,21 +15,15 @@
 */
 package nl.nn.adapterframework.util;
 
+import javax.naming.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-
-import javax.naming.Binding;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 
 import org.apache.commons.digester.substitution.VariableExpander;
 import org.apache.commons.lang.StringUtils;
@@ -129,7 +123,6 @@ public final class AppConstants extends Properties implements Serializable{
 	   that the {@link SecurityException} is hidden.
 
 	   @param key The key to search for.
-	   @param def The default value to return.
 	   @return the string value of the system property, or the default
 	   value if there is no property with that key.
 
@@ -222,10 +215,11 @@ public final class AppConstants extends Properties implements Serializable{
 	            if (StringUtils.isNotEmpty(credentials))
 	                env.put(Context.SECURITY_CREDENTIALS, credentials);
 
-	            if (env.size() > 0)
+	            if (env.size() > 0) {
 	                context = new InitialContext(env);
-	            else
+                } else {
 	                context = new InitialContext();
+                }
 
 	             NamingEnumeration nEnumeration =
 	                context.listBindings(

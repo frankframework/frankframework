@@ -15,11 +15,11 @@
 */
 package nl.nn.adapterframework.extensions.fxf;
 
-import java.io.File;
-import java.util.Properties;
-
 import nl.nn.adapterframework.configuration.AppConstantsPropertyPlaceholderConfigurer;
 import nl.nn.adapterframework.util.LogUtil;
+
+import java.io.File;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -27,14 +27,15 @@ import org.apache.log4j.Logger;
  * Initialise the fxf.dir property when not already available from the
  * AppConstants and make it available to the Ibis configuration and the Spring
  * configuration.
- * 
+ *
  * @author Jaco de Groot
  */
 public class FxfPropertyPlaceholderConfigurer
 		extends AppConstantsPropertyPlaceholderConfigurer {
 	protected Logger log = LogUtil.getLogger(this);
 
-	protected void convertProperties(Properties props) {
+	@Override
+    protected void convertProperties(Properties props) {
 		String fxfDir = appConstants.getResolvedProperty("fxf.dir");
 		if (fxfDir == null) {
 			// Use default location, see was.policy too

@@ -15,17 +15,6 @@
 */
 package nl.nn.adapterframework.webcontrol;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Date;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -34,7 +23,16 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.StringResolver;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -50,7 +48,7 @@ import org.apache.log4j.Logger;
  *   <li>digester-rules - the name of the digester-rules file</li>
  *   <li>autoStart - when TRUE : automatically start the adapters</li>
  * </ul>
- * 
+ *
  * @author  Johan Verrips
  */
 public class ConfigurationServlet extends HttpServlet {
@@ -62,7 +60,7 @@ public class ConfigurationServlet extends HttpServlet {
     //static final String EJB_SPRING_CONTEXT = "springContextEjbWeb.xml";
     static final String DFLT_CONFIGURATION = "Configuration.xml";
     static final String DFLT_AUTOSTART = "TRUE";
-    
+
     public String lastErrorMessage=null;
 
     public boolean areAdaptersStopped() {
@@ -91,11 +89,12 @@ public class ConfigurationServlet extends HttpServlet {
         }
         return true;
     }
-    
+
     /**
      * Shuts down the configuration, meaning that all adapters are stopped.
      * @since 4.0
      */
+    @Override
     public void destroy() {
         log.info("************** Configuration shutting down **************");
         try {
@@ -116,7 +115,7 @@ public class ConfigurationServlet extends HttpServlet {
         }
         log.info("************** Configuration shut down successfully **************");
     }
-    
+
     public static void noCache(HttpServletResponse response) {
 		response.setDateHeader("Expires",1);
 		response.setDateHeader("Last-Modified",new Date().getTime());
@@ -124,19 +123,20 @@ public class ConfigurationServlet extends HttpServlet {
 		response.setHeader("Pragma","no-cache");
     }
 
-	public void init() throws ServletException {
+	@Override
+    public void init() throws ServletException {
 		super.init();
 		setUploadPathInServletContext();
 		loadConfig();
 		log.debug("Servlet init finished");
 	}
- 
+
     private void setUploadPathInServletContext() {
 		try {
 			// set the directory for struts upload, that is used for instance in 'test a pipeline'
 	        ServletContext context = getServletContext();
 	        String path=AppConstants.getInstance().getResolvedProperty("upload.dir");
-	        
+
 	        // if the path is not found
 	        if (StringUtils.isEmpty(path)) {
 	        	path="/tmp";
@@ -161,6 +161,7 @@ public class ConfigurationServlet extends HttpServlet {
      * @param  request  the request
      * @param  response  the response
      */
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)  throws IOException, ServletException {
         String commandIssuedBy = " remoteHost [" + request.getRemoteHost() + "]";
         commandIssuedBy += " remoteAddress [" + request.getRemoteAddr() + "]";
@@ -185,7 +186,7 @@ public class ConfigurationServlet extends HttpServlet {
         out.println("</html>");
 
     }
- 
+
 	private boolean loadConfig() {
 		if (areAdaptersStopped()) {
 			IbisContext ibisContext = new IbisContext();
@@ -209,33 +210,28 @@ public class ConfigurationServlet extends HttpServlet {
 			return false;
 		}
 	}
-  
 
-    
+
+
     public Configuration getConfiguration() {
-        ServletContext ctx = getServletContext();
-        Configuration config = null;
         IbisManager ibisManager = getIbisManager();
         if (ibisManager != null) {
-            config = ibisManager.getConfiguration();
+            return ibisManager.getConfiguration();
         }
-        return config;
+        return null;
     }
-    
+
 	public IbisContext getIbisContext() {
 		ServletContext ctx = getServletContext();
-		IbisContext context = null;
-		context = (IbisContext) ctx.getAttribute(AppConstants.getInstance().getResolvedProperty(KEY_CONTEXT));
-		return context;
+        return (IbisContext) ctx.getAttribute(AppConstants.getInstance().getResolvedProperty(KEY_CONTEXT));
 	}
-    
+
     public IbisManager getIbisManager() {
         IbisContext ibisContext = getIbisContext();
-        IbisManager manager = null;
         if (ibisContext != null) {
-			manager = ibisContext.getIbisManager();
+			return ibisContext.getIbisManager();
         }
-        return manager;
+        return null;
     }
-    
+
 }

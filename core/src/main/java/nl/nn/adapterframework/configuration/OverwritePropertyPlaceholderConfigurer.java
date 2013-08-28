@@ -20,7 +20,7 @@ import java.util.Properties;
  /**
  * Overwrite a property available to the Ibis configuration and the Spring
  * configuration. When the property isn't present it will be added.
- * 
+ *
  * @author Jaco de Groot
  */
 public class OverwritePropertyPlaceholderConfigurer
@@ -28,7 +28,8 @@ public class OverwritePropertyPlaceholderConfigurer
 	private String propertyName;
 	private String propertyValue;
 
-	protected void convertProperties(Properties props) {
+	@Override
+    protected void convertProperties(Properties props) {
 		appConstants.put(propertyName, propertyValue);
 		props.put(propertyName, propertyValue);
 	}
