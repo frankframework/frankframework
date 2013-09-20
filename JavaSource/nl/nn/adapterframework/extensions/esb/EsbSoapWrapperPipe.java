@@ -20,7 +20,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -43,6 +43,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td></td><td>if direction=<code>wrap</code> and mode=<code>bis</code>:</td><td>/xml/xsl/esb/bisSoapBody.xsl</td></tr>
  * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion')</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setRetrievePhysicalDestination(boolean) retrievePhysicalDestination}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code></td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setUseFixedValues(boolean) useFixedValues}</td><td>If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)</td><td><code>false</code></td></tr>
  * </table></p>
  * <p>
  * <b>/xml/xsl/esb/soapHeader.xsl:</b>
@@ -237,7 +238,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	protected final static String EXTERNALREFTOMESSAGEID = "externalRefToMessageId";
 	protected final static String TIMESTAMP = "timestamp";
 
-
+	private boolean useFixedValues=false; 
 
     public static enum Mode  {
         I2T,
@@ -296,6 +297,11 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			addParameters();
 		}
 		super.configure();
+		if (isUseFixedValues()) {
+			if (!ConfigurationUtils.stubConfiguration()) {
+				throw new ConfigurationException(getLogPrefix(null)+"returnFixedDate only allowed in stub mode");
+			}
+		}
 	}
 
     private String getParameterValue(String key) {
@@ -499,14 +505,22 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 				p.setXpathExpression("MessageHeader/HeaderFields/ConversationId");
 				p.setRemoveNamespaces(true);
 			} else {
-				p.setPattern("{hostname}_{uid}");
+				if (isUseFixedValues()) {
+					p.setPattern("{fixedhostname}_{fixeduid}");
+				} else {
+					p.setPattern("{hostname}_{uid}");
+				}
 			}
 			addParameter(p);
 		}
 		if (parameterList.findParameter(MESSAGEID)==null) {
 			p = new Parameter();
 			p.setName(MESSAGEID);
-			p.setPattern("{hostname}_{uid}");
+			if (isUseFixedValues()) {
+				p.setPattern("{fixedhostname}_{fixeduid}");
+			} else {
+				p.setPattern("{hostname}_{uid}");
+			}
 			addParameter(p);
 		}
 		if (mode == Mode.BIS) {
@@ -531,7 +545,11 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		if (parameterList.findParameter(TIMESTAMP)==null) {
 			p = new Parameter();
 			p.setName(TIMESTAMP);
-			p.setPattern("{now,date,yyyy-MM-dd'T'HH:mm:ss}");
+			if (isUseFixedValues()) {
+				p.setPattern("{fixeddate,date,yyyy-MM-dd'T'HH:mm:ss}");
+			} else {
+				p.setPattern("{now,date,yyyy-MM-dd'T'HH:mm:ss}");
+			}
 			addParameter(p);
 		}
 	}
@@ -626,5 +644,13 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			return true;
 		}
 		return false;
+	}
+
+	public void setUseFixedValues(boolean b) {
+		useFixedValues = b;
+	}
+
+	public boolean isUseFixedValues() {
+		return useFixedValues;
 	}
 }
