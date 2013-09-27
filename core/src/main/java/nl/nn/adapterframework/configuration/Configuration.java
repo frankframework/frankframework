@@ -53,7 +53,6 @@ public class Configuration {
     private URL configurationURL;
     private URL digesterRulesURL;
     private String configurationName = "";
-    private boolean enableJMX=false;
     private StatisticsKeeperIterationHandler statisticsHandler=null;
 
     private AppConstants appConstants;
@@ -62,24 +61,6 @@ public class Configuration {
 
     private static Date statisticsMarkDateMain=new Date();
 	private static Date statisticsMarkDateDetails=statisticsMarkDateMain;
-
-    /**
-     *Set JMX extensions as enabled or not. Default is that JMX extensions are NOT enabled.
-     * @param enable
-     * @since 4.1.1
-     */
-    public void setEnableJMX(boolean enable){
-    	enableJMX=enable;
-    }
-
-	/**
-	 * Are JMX extensions enabled?
-     * @since 4.1.1
-	 * @return boolean
-	 */
-    public boolean isEnableJMX(){
-    	return enableJMX;
-    }
 
 	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
 		Object root = hski.start(now,mainMark,detailMark);
