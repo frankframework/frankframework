@@ -15,16 +15,26 @@
 */
 package nl.nn.adapterframework.soap;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -45,9 +55,10 @@ public class SoapGenericProvider implements Provider {
 	protected Logger log=LogUtil.getLogger(this);
 	
 	private final String TARGET_OBJECT_URI_KEY = "TargetObjectNamespaceURI";
+	private final String URN_GET_ACTIVATED_CONFIGURATION = "urn:getLoadedConfiguration";
 
 	private ServiceDispatcher sd=null;
-	//private SoapWrapper soapWrapper=null;
+	private SoapWrapper soapWrapper=null;
 
 	public void locate(DeploymentDescriptor dd, Envelope env, Call call, String methodName, String targetObjectURI, SOAPContext reqContext)
 		throws SOAPException {
@@ -62,22 +73,24 @@ public class SoapGenericProvider implements Provider {
 		if (sd==null) {
 			sd= ServiceDispatcher.getInstance();
 		}
-		/*if (soapWrapper==null) {
+		if (ConfigurationUtils.stubConfiguration() && soapWrapper==null) {
 			try {
 				soapWrapper = SoapWrapper.getInstance();
 			} catch (ConfigurationException e) {
 				throw new SOAPException(Constants.FAULT_CODE_SERVER, "cannot instantiate SoapWrapper");
 			}
-		}*/
+		}
 		if (StringUtils.isEmpty(targetObjectURI)) {
 			String msg="no targetObjectURI specified";
 			log.warn(msg);
 			throw new SOAPException(Constants.FAULT_CODE_SERVER, msg);
 		}
-		if (!sd.isRegisteredServiceListener(targetObjectURI)){
-			String msg="no receiver registered for targetObjectURI ["+targetObjectURI+"]";
-			log.warn(msg);
-			throw new SOAPException(Constants.FAULT_CODE_SERVER, msg);
+		if (!ConfigurationUtils.stubConfiguration() || !targetObjectURI.equalsIgnoreCase(URN_GET_ACTIVATED_CONFIGURATION)) {
+			if (!sd.isRegisteredServiceListener(targetObjectURI)){
+				String msg="no receiver registered for targetObjectURI ["+targetObjectURI+"]";
+				log.warn(msg);
+				throw new SOAPException(Constants.FAULT_CODE_SERVER, msg);
+			}
 		}
 		reqContext.setProperty(TARGET_OBJECT_URI_KEY, targetObjectURI);
 	}
@@ -89,14 +102,19 @@ public class SoapGenericProvider implements Provider {
 			if (log.isDebugEnabled()){
 				log.debug("Invoking service for targetObjectURI=[" +targetObjectURI+"]");
 			}
-			//String message=soapWrapper.getBody(reqContext.getBodyPart(0).getContent().toString());
-			String message=reqContext.getBodyPart(0).getContent().toString();
-			HttpServletRequest httpRequest=(HttpServletRequest) reqContext.getProperty(Constants.BAG_HTTPSERVLETREQUEST);
-			ISecurityHandler securityHandler = new HttpSecurityHandler(httpRequest);
-			Map messageContext= new HashMap();
-			messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
-			String result=sd.dispatchRequest(targetObjectURI, null, message, messageContext);
-			//resContext.setRootPart( soapWrapper.putInEnvelope(result,null), Constants.HEADERVAL_CONTENT_TYPE_UTF8);
+			String result=null;
+			if (ConfigurationUtils.stubConfiguration() && targetObjectURI.equalsIgnoreCase(URN_GET_ACTIVATED_CONFIGURATION)) {
+				result = getActivatedConfiguration(reqContext);
+			} else {
+				//String message=soapWrapper.getBody(reqContext.getBodyPart(0).getContent().toString());
+				String message=reqContext.getBodyPart(0).getContent().toString();
+				HttpServletRequest httpRequest=(HttpServletRequest) reqContext.getProperty(Constants.BAG_HTTPSERVLETREQUEST);
+				ISecurityHandler securityHandler = new HttpSecurityHandler(httpRequest);
+				Map messageContext= new HashMap();
+				messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
+				result=sd.dispatchRequest(targetObjectURI, null, message, messageContext);
+				//resContext.setRootPart( soapWrapper.putInEnvelope(result,null), Constants.HEADERVAL_CONTENT_TYPE_UTF8);
+			}
 			resContext.setRootPart( result, Constants.HEADERVAL_CONTENT_TYPE_UTF8);
 				
 		 }
@@ -110,6 +128,30 @@ public class SoapGenericProvider implements Provider {
 			throw se;
 		 }
 	}
-	
-}
 
+	private String getActivatedConfiguration(SOAPContext context) {
+		String result = null;
+		HttpServletRequest httpRequest=(HttpServletRequest) context.getProperty(Constants.BAG_HTTPSERVLETREQUEST);
+		HttpSession session = httpRequest.getSession();
+        String attributeKey=AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
+        IbisContext ibisContext = (IbisContext) session.getServletContext().getAttribute(attributeKey);
+        if (ibisContext != null) {
+        	IbisManager ibisManager = ibisContext.getIbisManager();
+			if (ibisManager!=null) {
+				Configuration config = ibisManager.getConfiguration();
+				if (config!=null) {
+				    URL configURL = config.getConfigurationURL();
+					try {
+						result = ConfigurationUtils.getOriginalConfiguration(configURL);
+						result = StringResolver.substVars(result, AppConstants.getInstance());
+						result = ConfigurationUtils.getActivatedConfiguration(result);
+						result = ConfigurationUtils.getStubbedConfiguration(result);
+					} catch (ConfigurationException e) {
+					 	log.warn("GenericSoapProvider caught exception:",e);
+					}
+				}
+			}
+        } 
+        return soapWrapper.putInEnvelope(result, null);
+	}
+}
