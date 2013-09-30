@@ -88,6 +88,7 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setPattern(String) pattern}</td><td>Value of parameter is determined using substitution and formating. The expression can contain references to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. {now}, {uid}, {hostname} and {fixeddate} are named constants that can be used in the expression. If fname is a parameter or session variable that resolves to Eric, then the pattern 'Hi {fname}, hoe gaat het?' resolves to 'Hi Eric, hoe gaat het?'. A guid can be generated using {hostname}_{uid}, see also <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html</a> for more information about (g)uid's.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValue(String) value}</td><td>A fixed value</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHidden(boolean) hidden}</td><td>if set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setMinLength(String) minLength}</td><td>if set (>=0) and the length of the value of the parameter deceeds this minimum length, the value is padded</td><td>-1</td></tr>
  * <tr><td>{@link #setMaxLength(String) maxLength}</td><td>if set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length</td><td>-1</td></tr>
  * <tr><td>{@link #setMinInclusive(String) minInclusive}</td><td>used in combination with type <code>number</code>; if set and the value of the parameter exceeds this minimum value, this minimum value is taken</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxInclusive(String) maxInclusive}</td><td>used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken</td><td>&nbsp;</td></tr>
@@ -136,6 +137,9 @@ public class Parameter implements INamedObject, IWithParameters {
 	public final static String TYPE_DATETIME_PATTERN="yyyy-MM-dd HH:mm:ss";
 	public final static String TYPE_TIMESTAMP_PATTERN=DateUtils.FORMAT_FULL_GENERIC;
 
+	public final static String FIXEDUID ="0a1b234c--56de7fa8_9012345678b_-9cd0";
+	public final static String FIXEDHOSTNAME ="MYHOST000012345";
+	
 	private String name = null;
 	private String type = null;
 	private String sessionKey = null;
@@ -148,6 +152,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	private String formatString = null;
 	private String decimalSeparator = null;
 	private String groupingSeparator = null;
+	private int minLength = -1;
 	private int maxLength = -1;
 	private String minInclusiveString = null;
 	private String maxInclusiveString = null;
@@ -333,6 +338,12 @@ public class Parameter implements INamedObject, IWithParameters {
 			result=getDefaultValue();
 		}
 		if (result !=null && result instanceof String) {
+			if (getMinLength()>=0) {
+				if (result.toString().length()<getMinLength()) {
+					log.debug("Padding parameter ["+getName()+"] because length ["+result.toString().length()+"] deceeds minLength ["+getMinLength()+"]" );
+					result = StringUtils.rightPad(result.toString(), getMinLength());
+				}
+			}
 			if (getMaxLength()>=0) {
 				if (result.toString().length()>getMaxLength()) {
 					log.debug("Trimming parameter ["+getName()+"] because length ["+result.toString().length()+"] exceeds maxLength ["+getMaxLength()+"]" );
@@ -484,6 +495,16 @@ public class Parameter implements INamedObject, IWithParameters {
 					throw new ParameterException("Cannot parse fixed date ["+PutSystemDateInSession.FIXEDDATETIME+"] with format ["+PutSystemDateInSession.FORMAT_FIXEDDATETIME+"]",e);
 				}
 				substitutionValue = d;
+			} else if ("fixeduid".equals(name.toLowerCase())) {
+				if (!ConfigurationUtils.stubConfiguration()) {
+					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
+				}
+				substitutionValue = FIXEDUID;
+			} else if ("fixedhostname".equals(name.toLowerCase())) {
+				if (!ConfigurationUtils.stubConfiguration()) {
+					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
+				}
+				substitutionValue = FIXEDHOSTNAME;
 			}
 		}
 		if (substitutionValue == null) {
@@ -618,6 +639,13 @@ public class Parameter implements INamedObject, IWithParameters {
 	}
 	public boolean isRemoveNamespaces() {
 		return removeNamespaces;
+	}
+
+	public void setMinLength(int i) {
+		minLength = i;
+	}
+	public int getMinLength() {
+		return minLength;
 	}
 
 	public void setMaxLength(int i) {
