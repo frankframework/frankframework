@@ -15,13 +15,17 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.util.Properties;
 
-import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Hierarchy;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -54,10 +58,8 @@ public class LogUtil {
 			l4jxml = null;
 			System.out.println(DEBUG_LOG_PREFIX + "did not find " + LOG4J_XML_FILE + ", will try " + LOG4J_PROPS_FILE + " instead" + DEBUG_LOG_SUFFIX);
 		} else {
-			String lineSeparator = SystemUtils.LINE_SEPARATOR;
-			if (null == lineSeparator) lineSeparator = "\n";
 			try {
-				l4jxml = Misc.resourceToString(url, lineSeparator, false);
+				l4jxml = resourceToString(url);
 			} catch (IOException e) {
 				l4jxml = null;
 				System.out.println(DEBUG_LOG_PREFIX + "could not read " + url + " (" + e.getClass().getName() + ": " + e.getMessage() + "), will try " + LOG4J_PROPS_FILE + " instead" + DEBUG_LOG_SUFFIX);
@@ -141,4 +143,21 @@ public class LogUtil {
 		return properties;
 	}
 
+	private static String resourceToString(URL url) throws IOException {
+		char[] buff = new char[1024];
+		Writer stringWriter = new StringWriter();
+		InputStream stream = url.openStream();
+		try {
+			Reader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+			int n;
+			while ((n = reader.read(buff))!=-1) {
+				stringWriter.write(buff, 0, n);
+			}
+			return stringWriter.toString();
+		}
+		finally {
+			stringWriter.close();
+			stream.close();
+		}
+	}
 }
