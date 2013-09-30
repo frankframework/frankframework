@@ -158,6 +158,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 			adapterXML.addAttribute("configured", ""+adapter.configurationSucceeded());
 			adapterXML.addAttribute("upSince", adapter.getStatsUpSince());
 			adapterXML.addAttribute("lastMessageDate", adapter.getLastMessageDate());
+			adapterXML.addAttribute("messagesInProcess", ""+adapter.getNumOfMessagesInProcess());
 			adapterXML.addAttribute("messagesProcessed", ""+adapter.getNumOfMessagesProcessed());
 			adapterXML.addAttribute("messagesInError", ""+adapter.getNumOfMessagesInError());
 		
