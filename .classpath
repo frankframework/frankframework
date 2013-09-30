@@ -24,6 +24,7 @@
 	<classpathentry kind="lib" path="/iaf-lib/sap/sapjco.jar"/>
 	<classpathentry kind="lib" path="/iaf-lib/sap/sapjco3.jar"/>
 	<classpathentry kind="lib" path="/iaf-lib/tibco/tibjms.jar"/>
+	<classpathentry kind="lib" path="/iaf-lib/tibco/tibjmsadmin.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="output" path="webapp/src/main/webapp/WEB-INF/classes"/>
 </classpath>
