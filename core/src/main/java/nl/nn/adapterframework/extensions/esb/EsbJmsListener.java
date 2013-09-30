@@ -86,4 +86,8 @@ public class EsbJmsListener extends JmsListener {
 	public String getMessageProtocol() {
 		return messageProtocol;
 	}
+
+	public boolean isSynchronous() {
+		return getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY);
+	}
 }

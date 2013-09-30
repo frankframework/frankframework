@@ -20,6 +20,9 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
@@ -39,6 +42,8 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>{@link #setSoapBodyStyleSheet(String) soapBodyStyleSheet}</td><td>if direction=<code>wrap</code> and mode=<code>reg</code>:</td><td>/xml/xsl/esb/soapBody.xsl</td></tr>
  * <tr><td></td><td>if direction=<code>wrap</code> and mode=<code>bis</code>:</td><td>/xml/xsl/esb/bisSoapBody.xsl</td></tr>
  * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion')</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setRetrievePhysicalDestination(boolean) retrievePhysicalDestination}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code></td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setUseFixedValues(boolean) useFixedValues}</td><td>If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)</td><td><code>false</code></td></tr>
  * </table></p>
  * <p>
  * <b>/xml/xsl/esb/soapHeader.xsl:</b>
@@ -78,7 +83,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>applicationFunction</td><td>&nbsp;</td></tr>
  * <tr><td>messagingLayer</td><td>ESB</td></tr>
  * <tr><td>serviceLayer</td><td>&nbsp;</td></tr>
- * <tr><td>destination</td><td>if not empty this parameters contains the preceding parameters above as described in 'Location' in the table above</td></tr>
+ * <tr><td>destination</td><td>if not empty this parameter contains the preceding parameters as described in 'Location' in the table above</td></tr>
  * <tr><td>fromId</td><td>property 'instance.name'</td></tr>
  * <tr><td>cpaId</td><td>if $paradigm equals 'Response' then copied from the original (received) SOAP Header, else 'n/a'</td></tr>
  * <tr><td>conversationId</td><td>if $paradigm equals 'Response' then copied from the original (received) SOAP Header, else parameter pattern '{hostname}_{uid}'</td></tr>
@@ -223,6 +228,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	protected final static String MESSAGINGLAYER = "messagingLayer";
 	protected final static String SERVICELAYER = "serviceLayer";
 	protected final static String DESTINATION = "destination";
+	protected final static String PHYSICALDESTINATION = "physicalDestination";
 	protected final static String FROMID= "fromId";
 	protected final static String CPAID = "cpaId";
 	protected final static String CONVERSATIONID = "conversationId";
@@ -231,7 +237,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	protected final static String EXTERNALREFTOMESSAGEID = "externalRefToMessageId";
 	protected final static String TIMESTAMP = "timestamp";
 
-
+	private boolean useFixedValues=false; 
 
     public static enum Mode  {
         I2T,
@@ -244,6 +250,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 
 	private Mode mode = Mode.REG;
 	private boolean addOutputNamespace = false;
+	private boolean retrievePhysicalDestination = true;
 
     @Override
 	public void configure() throws ConfigurationException {
@@ -289,6 +296,11 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			addParameters();
 		}
 		super.configure();
+		if (isUseFixedValues()) {
+			if (!ConfigurationUtils.stubConfiguration()) {
+				throw new ConfigurationException(getLogPrefix(null)+"returnFixedDate only allowed in stub mode");
+			}
+		}
 	}
 
     private String getParameterValue(String key) {
@@ -349,68 +361,108 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
         return getParameterValue(APPLICATIONFUNCTION);
     }
 
-	private void stripDestination() {
+	private void stripDestination() throws ConfigurationException {
 		ParameterList parameterList = getParameterList();
-		Parameter p = parameterList.findParameter(DESTINATION);
-		if (p!=null) {
-			String destination = p.getValue();
-			//In case the messaging layer is ESB, the destination syntax is:
-			// Destination = [MessagingLayer].[BusinessDomain].[ServiceLayer].[ServiceName].[ServiceContext].[ServiceContextVersion].[OperationName].[OperationVersion].[Paradigm]
-			//In case the messaging layer is P2P, the destination syntax is:
-			// Destination = [MessagingLayer].[BusinessDomain].[ApplicationName].[ApplicationFunction].[Paradigm]
-			boolean p2p = false;
-			StringTokenizer st = new StringTokenizer(destination,".");
-			int count = 0;
-			while (st.hasMoreTokens()) {
-				count++;
-				String str = st.nextToken();
-				p = new Parameter();
-				switch (count) {
-		        	case 1:
-		        		if (str.equals("P2P")) {
-		        			p2p = true;
-		        		}
-		        		p.setName(MESSAGINGLAYER);
-		        		break;
-		        	case 2:
-		        		p.setName(BUSINESSDOMAIN);
-		        		break;
-		        	case 3:
-		        		if (p2p) {
-			        		p.setName(APPLICATIONNAME);
-		        		} else {
-			        		p.setName(SERVICELAYER);
-		        		}
-		        		break;
-		        	case 4:
-		        		if (p2p) {
-			        		p.setName(APPLICATIONFUNCTION);
-		        		} else {
-			        		p.setName(SERVICENAME);
-		        		}
-		        		break;
-		        	case 5:
-		        		if (p2p) {
+		Parameter pd = parameterList.findParameter(DESTINATION);
+		Parameter ppd = parameterList.findParameter(PHYSICALDESTINATION);
+		String destination = null;
+		if (isRetrievePhysicalDestination()) {
+			if (ppd!=null) {
+				destination = ppd.getValue();
+			} else if (pd!=null) {
+				destination = pd.getValue();
+			}
+		} else {
+			if (pd!=null) {
+				destination = pd.getValue();
+			}
+		}
+		Parameter p;
+		if (StringUtils.isNotEmpty(destination)) { 
+			if (destination.startsWith("ESB.") || destination.startsWith("P2P.")) {
+				//In case the messaging layer is ESB, the destination syntax is:
+				// Destination = [MessagingLayer].[BusinessDomain].[ServiceLayer].[ServiceName].[ServiceContext].[ServiceContextVersion].[OperationName].[OperationVersion].[Paradigm]
+				//In case the messaging layer is P2P, the destination syntax is:
+				// Destination = [MessagingLayer].[BusinessDomain].[ApplicationName].[ApplicationFunction].[Paradigm]
+				boolean p2p = false;
+				StringTokenizer st = new StringTokenizer(destination,".");
+				int count = 0;
+				while (st.hasMoreTokens()) {
+					count++;
+					String str = st.nextToken();
+					p = new Parameter();
+					switch (count) {
+			        	case 1:
+			        		if (str.equals("P2P")) {
+			        			p2p = true;
+							}
+			        		p.setName(MESSAGINGLAYER);
+			        		break;
+			        	case 2:
+			        		p.setName(BUSINESSDOMAIN);
+			        		break;
+			        	case 3:
+			        		if (p2p) {
+				        		p.setName(APPLICATIONNAME);
+			        		} else {
+				        		p.setName(SERVICELAYER);
+			        		}
+			        		break;
+			        	case 4:
+			        		if (p2p) {
+				        		p.setName(APPLICATIONFUNCTION);
+			        		} else {
+				        		p.setName(SERVICENAME);
+			        		}
+			        		break;
+			        	case 5:
+			        		if (p2p) {
+				        		p.setName(PARADIGM);
+			        		} else {
+				        		p.setName(SERVICECONTEXT);
+			        		}
+			        		break;
+			        	case 6:
+		        			p.setName(SERVICECONTEXTVERSION);
+			        		break;
+			        	case 7:
+			        		p.setName(OPERATIONNAME);
+			        		break;
+			        	case 8:
+			        		p.setName(OPERATIONVERSION);
+			        		break;
+			        	case 9:
 			        		p.setName(PARADIGM);
-		        		} else {
-			        		p.setName(SERVICECONTEXT);
-		        		}
-		        		break;
-		        	case 6:
-		        		p.setName(SERVICECONTEXTVERSION);
-		        		break;
-		        	case 7:
-		        		p.setName(OPERATIONNAME);
-		        		break;
-		        	case 8:
-		        		p.setName(OPERATIONVERSION);
-		        		break;
-		        	case 9:
-		        		p.setName(PARADIGM);
-		        		break;
-		        	default:
+			        		break;
+			        	default:
+					}
+					p.setValue(str);
+					addParameter(p);
 				}
-				p.setValue(str);
+			} else {
+				p = new Parameter();
+				p.setName(MESSAGINGLAYER);
+				p.setValue("P2P");
+				addParameter(p);
+				//
+				p = new Parameter();
+				p.setName(BUSINESSDOMAIN);
+				p.setValue("?");
+				addParameter(p);
+				//
+				p = new Parameter();
+				p.setName(APPLICATIONNAME);
+				p.setValue("?");
+				addParameter(p);
+				//
+				p = new Parameter();
+				p.setName(APPLICATIONFUNCTION);
+				p.setValue(destination.replaceAll("\\W", "_"));
+				addParameter(p);
+				//
+				p = new Parameter();
+				p.setName(PARADIGM);
+				p.setValue("?");
 				addParameter(p);
 			}
 		}
@@ -452,14 +504,22 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 				p.setXpathExpression("MessageHeader/HeaderFields/ConversationId");
 				p.setRemoveNamespaces(true);
 			} else {
-				p.setPattern("{hostname}_{uid}");
+				if (isUseFixedValues()) {
+					p.setPattern("{fixedhostname}_{fixeduid}");
+				} else {
+					p.setPattern("{hostname}_{uid}");
+				}
 			}
 			addParameter(p);
 		}
 		if (parameterList.findParameter(MESSAGEID)==null) {
 			p = new Parameter();
 			p.setName(MESSAGEID);
-			p.setPattern("{hostname}_{uid}");
+			if (isUseFixedValues()) {
+				p.setPattern("{fixedhostname}_{fixeduid}");
+			} else {
+				p.setPattern("{hostname}_{uid}");
+			}
 			addParameter(p);
 		}
 		if (mode == Mode.BIS) {
@@ -484,7 +544,11 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		if (parameterList.findParameter(TIMESTAMP)==null) {
 			p = new Parameter();
 			p.setName(TIMESTAMP);
-			p.setPattern("{now,date,yyyy-MM-dd'T'HH:mm:ss}");
+			if (isUseFixedValues()) {
+				p.setPattern("{fixeddate,date,yyyy-MM-dd'T'HH:mm:ss}");
+			} else {
+				p.setPattern("{now,date,yyyy-MM-dd'T'HH:mm:ss}");
+			}
 			addParameter(p);
 		}
 	}
@@ -524,4 +588,68 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return false;
 	}
 
+	public void setRetrievePhysicalDestination(boolean b) {
+		retrievePhysicalDestination = b;
+	}
+
+	public boolean isRetrievePhysicalDestination() {
+		return retrievePhysicalDestination;
+	}
+	
+	public boolean retrievePhysicalDestinationFromSender (ISender sender) {
+		if (sender != null && sender instanceof EsbJmsSender) {
+			EsbJmsSender ejSender = (EsbJmsSender)sender;
+			String physicalDestination = ejSender.getPhysicalDestinationShortName();
+			if (physicalDestination==null) {
+				physicalDestination="?";
+			}
+			Parameter p = new Parameter();
+			p.setName(PHYSICALDESTINATION);
+			p.setValue(physicalDestination);
+			addParameter(p);
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean retrievePhysicalDestinationFromListener (IListener listener) {
+		if (listener != null && listener instanceof EsbJmsListener) {
+			EsbJmsListener ejListener = (EsbJmsListener) listener; 
+			if (!ejListener.isSynchronous()) {
+				return false;
+			}
+			String physicalDestination = ejListener.getPhysicalDestinationShortName();
+			if (physicalDestination==null) {
+				physicalDestination="?";
+			} else {
+				int pos = physicalDestination.lastIndexOf(".");
+				pos++;
+				if (pos > 0 && pos < physicalDestination.length()) {
+					String pds = physicalDestination.substring(0, pos);
+					String paradigm = physicalDestination.substring(pos);
+					if (paradigm.equals("Request") || paradigm.equals("Solicit")) {
+						physicalDestination = pds + "Response";
+					} else {
+						physicalDestination = pds + "?";
+					}
+				} else {
+					physicalDestination = physicalDestination + ".?";
+				}
+			}
+			Parameter p = new Parameter();
+			p.setName(PHYSICALDESTINATION);
+			p.setValue(physicalDestination);
+			addParameter(p);
+			return true;
+		}
+		return false;
+	}
+
+	public void setUseFixedValues(boolean b) {
+		useFixedValues = b;
+	}
+
+	public boolean isUseFixedValues() {
+		return useFixedValues;
+	}
 }

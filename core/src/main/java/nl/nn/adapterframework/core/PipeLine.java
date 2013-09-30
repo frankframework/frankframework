@@ -17,6 +17,7 @@ package nl.nn.adapterframework.core;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -24,9 +25,12 @@ import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
+import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.processors.PipeLineProcessor;
+import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.SizeStatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -384,6 +388,23 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 			pf.setName("success");
 			getOutputWrapper().registerForward(pf);
 			getOutputWrapper().setName(OUTPUT_WRAPPER_NAME);
+			if (getOutputWrapper() instanceof EsbSoapWrapperPipe) {
+				EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe)getOutputWrapper();
+				boolean stop = false;
+				Iterator recIt = adapter.getReceiverIterator();
+				if (recIt.hasNext()) {
+					while (recIt.hasNext() && !stop) {
+						IReceiver receiver = (IReceiver) recIt.next();
+						if (receiver instanceof ReceiverBase ) {
+							ReceiverBase rb = (ReceiverBase) receiver;
+							IListener listener = rb.getListener();
+							if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {
+								stop = true;
+							}
+						}
+					}
+				}
+			}
 			if (adapter!=null && getOutputWrapper() instanceof IExtendedPipe) {
 				((IExtendedPipe)getOutputWrapper()).configure(this);
 			} else {
