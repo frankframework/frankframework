@@ -46,8 +46,13 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
+import com.ibm.websphere.management.AdminService;
+import com.ibm.websphere.management.AdminServiceFactory;
+import com.ibm.ws.threadContext.ComponentMetaDataAccessorImpl;
 
 /**
  * Miscellanous conversion functions.
@@ -497,41 +502,36 @@ public class Misc {
 		}
 	}
 
-	public static String getDeployedApplicationName() {
-		URL url= ClassUtils.getResourceURL(Misc.class, "");
-		String path = url.getPath();
-		log.debug("classloader resource [" + path + "]");
-		StringTokenizer st = new StringTokenizer(path, File.separator);
-		String appName = null;
-		while (st.hasMoreTokens() && appName == null) {
-			String token = st.nextToken();
-			if (StringUtils.upperCase(token).endsWith(".EAR")) {
-				appName = token.substring(0,token.length()-4);
-			}
+	public static String getDeployedApplicationBindings() throws IOException {
+		String addp = getApplicationDeploymentDescriptorPath();
+		if (addp==null) {
+			log.debug("applicationDeploymentDescriptorPath not found");
+			return null;
 		}
-		log.debug("deployedApplicationName [" + appName + "]");
-		return appName;
-	}
-
-	public static String getDeployedApplicationBindings(String appName) throws IOException {
-		String appBndFile =
-		getApplicationDeploymentDescriptorPath(appName)
-				+ File.separator
-				+ "ibm-application-bnd.xmi";
+		String appBndFile = addp + File.separator + "ibm-application-bnd.xmi";
 		log.debug("deployedApplicationBindingsFile [" + appBndFile + "]");
 		return fileToString(appBndFile);
 	}
 
-	public static String getApplicationDeploymentDescriptorPath(String appName) throws IOException {
+	public static String getApplicationDeploymentDescriptorPath() throws IOException {
+		String appName; 
+		String cellName; 
+		try {
+			appName = ComponentMetaDataAccessorImpl.getComponentMetaDataAccessor().getComponentMetaData().getJ2EEName().getApplication(); 
+			AdminService adminService = AdminServiceFactory.getAdminService();
+			cellName = adminService.getCellName();
+		} catch (NoClassDefFoundError e) {
+			log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: "+e.getMessage());
+			return null;
+		}
 		String appPath =
-//			"${WAS_HOME}"
-			"${user.install.root}"
+			System.getProperty("user.install.root")
 				+ File.separator
 				+ "config"
 				+ File.separator
 				+ "cells"
 				+ File.separator
-				+ "${WAS_CELL}"
+				+ cellName
 				+ File.separator
 				+ "applications"
 				+ File.separator
@@ -543,18 +543,52 @@ public class Misc {
 				+ appName
 				+ File.separator
 				+ "META-INF";
-		Properties props = Misc.getEnvironmentVariables();
-		props.putAll(System.getProperties());
-		String resolvedAppPath = StringResolver.substVars(appPath, props);
-		return resolvedAppPath;
+		return appPath;
 	}
 
-	public static String getApplicationDeploymentDescriptor (String appName) throws IOException {
+	public static String getApplicationDeploymentDescriptor () throws IOException {
+		String addp = getApplicationDeploymentDescriptorPath();
+		if (addp==null) {
+			log.debug("applicationDeploymentDescriptorPath not found");
+			return null;
+		}
+		String appFile = addp + File.separator + "application.xml";
+		log.debug("applicationDeploymentDescriptorFile [" + appFile + "]");
+		return fileToString(appFile);
+	}
+
+	public static String getConfigurationResources() throws IOException {
+		String nodeName;
+		String cellName;
+		String processName;
+		try {
+			AdminService adminService = AdminServiceFactory.getAdminService();
+			cellName = adminService.getCellName();
+			nodeName = adminService.getNodeName();
+			processName = adminService.getProcessName();
+		} catch (NoClassDefFoundError e) {
+			log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: "+e.getMessage());
+			return null;
+		}
 		String appFile =
-			getApplicationDeploymentDescriptorPath(appName)
+			System.getProperty("user.install.root")
 				+ File.separator
-				+ "application.xml";
-		log.debug("applicationDeploymentDescriptor [" + appFile + "]");
+				+ "config"
+				+ File.separator
+				+ "cells"
+				+ File.separator
+				+ cellName
+				+ File.separator
+				+ "nodes"
+				+ File.separator
+				+ nodeName
+				+ File.separator
+				+ "servers"
+				+ File.separator
+				+ processName
+				+ File.separator
+				+ "resources.xml";
+		log.debug("configurationResourcesFile [" + appFile + "]");
 		return fileToString(appFile);
 	}
 

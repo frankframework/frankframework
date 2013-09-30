@@ -22,8 +22,10 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -33,9 +35,11 @@ import javax.xml.transform.Transformer;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasSender;
+import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.ftp.FtpSender;
 import nl.nn.adapterframework.http.HttpSender;
@@ -46,11 +50,11 @@ import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -65,11 +69,12 @@ import org.w3c.dom.Element;
  * Shows the used certificate.
  * 
  * @author  Peter Leeuwenburgh
- * @since	4.8 
+ * @since	4.8
  */
 
 public final class ShowSecurityItems extends ActionBase {
 	public static final String AUTHALIAS_XSLT = "xml/xsl/authAlias.xsl";
+	public static final String GETCONNPOOLPROP_XSLT = "xml/xsl/getConnectionPoolProperties.xsl";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -82,14 +87,13 @@ public final class ShowSecurityItems extends ActionBase {
 
 		XmlBuilder securityItems = new XmlBuilder("securityItems");
 		addRegisteredAdapters(securityItems);
-		String appName = Misc.getDeployedApplicationName();
-		addApplicationDeploymentDescriptor(securityItems, appName);
-		addSecurityRoleBindings(securityItems, appName);
+		addApplicationDeploymentDescriptor(securityItems);
+		addSecurityRoleBindings(securityItems);
 		addJmsRealms(securityItems);
 		addAuthEntries(securityItems);
 
 		request.setAttribute("secItems", securityItems.toXML());
-
+		
 		// Forward control to the specified success URI
 		log.debug("forward to success");
 		return (mapping.findForward("success"));
@@ -104,8 +108,6 @@ public final class ShowSecurityItems extends ActionBase {
 			XmlBuilder adapterXML = new XmlBuilder("adapter");
 			registeredAdapters.addSubElement(adapterXML);
 
-			RunStateEnum adapterRunState = adapter.getRunState();
-
 			adapterXML.addAttribute("name", adapter.getName());
 
 			Iterator recIt = adapter.getReceiverIterator();
@@ -115,8 +117,6 @@ public final class ShowSecurityItems extends ActionBase {
 					IReceiver receiver = (IReceiver) recIt.next();
 					XmlBuilder receiverXML = new XmlBuilder("receiver");
 					receiversXML.addSubElement(receiverXML);
-
-					RunStateEnum receiverRunState = receiver.getRunState();
 
 					receiverXML.addAttribute("name", receiver.getName());
 
@@ -265,44 +265,50 @@ public final class ShowSecurityItems extends ActionBase {
 		}
 	}
 
-	private void addApplicationDeploymentDescriptor(XmlBuilder securityItems, String appName) {
-		if (appName != null) {
-			XmlBuilder appDD = new XmlBuilder("applicationDeploymentDescriptor");
-			appDD.addAttribute("appName", appName);
-			String appDDString = null;
-			try {
-				appDDString = Misc.getApplicationDeploymentDescriptor(appName);
-				appDDString = XmlUtils.skipXmlDeclaration(appDDString);
-				appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
-				appDDString = XmlUtils.removeNamespaces(appDDString);
-			} catch (IOException e) {
-				appDDString = "*** ERROR ***";
-			}
-			appDD.setValue(appDDString, false);
-			securityItems.addSubElement(appDD);
+	private void addApplicationDeploymentDescriptor(XmlBuilder securityItems) {
+		XmlBuilder appDD = new XmlBuilder("applicationDeploymentDescriptor");
+		String appDDString = null;
+		try {
+			appDDString = Misc.getApplicationDeploymentDescriptor();
+			appDDString = XmlUtils.skipXmlDeclaration(appDDString);
+			appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
+			appDDString = XmlUtils.removeNamespaces(appDDString);
+		} catch (IOException e) {
+			appDDString = "*** ERROR ***";
 		}
+		appDD.setValue(appDDString, false);
+		securityItems.addSubElement(appDD);
 	}
 
-	private void addSecurityRoleBindings(XmlBuilder securityItems, String appName) {
-		if (appName != null) {
-			XmlBuilder appBnd = new XmlBuilder("securityRoleBindings");
-			appBnd.addAttribute("appName", appName);
-			String appBndString = null;
-			try {
-				appBndString = Misc.getDeployedApplicationBindings(appName);
-				appBndString = XmlUtils.removeNamespaces(appBndString);
-			} catch (IOException e) {
-				appBndString = "*** ERROR ***";
-			}
-			appBnd.setValue(appBndString, false);
-			securityItems.addSubElement(appBnd);
+	private void addSecurityRoleBindings(XmlBuilder securityItems) {
+		XmlBuilder appBnd = new XmlBuilder("securityRoleBindings");
+		String appBndString = null;
+		try {
+			appBndString = Misc.getDeployedApplicationBindings();
+			appBndString = XmlUtils.removeNamespaces(appBndString);
+		} catch (IOException e) {
+			appBndString = "*** ERROR ***";
 		}
+		appBnd.setValue(appBndString, false);
+		securityItems.addSubElement(appBnd);
 	}
 
 	private void addJmsRealms(XmlBuilder securityItems) {
 		List jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		XmlBuilder jrs = new XmlBuilder("jmsRealms");
 		securityItems.addSubElement(jrs);
+
+		String confResString;
+		try {
+			confResString = Misc.getConfigurationResources();
+			if (confResString!=null) {
+				confResString = XmlUtils.removeNamespaces(confResString);
+			}
+		} catch (IOException e) {
+			log.warn("error getting configuration resources ["+e+"]");
+			confResString = null;
+		}
+		
 		for (int j = 0; j < jmsRealms.size(); j++) {
 			String jmsRealm = (String) jmsRealms.get(j);
 
@@ -325,7 +331,17 @@ public final class ShowSecurityItems extends ActionBase {
 				jrs.addSubElement(jr);
 				jr.addAttribute("name", jmsRealm);
 				jr.addAttribute("datasourceName", dsName);
-				jr.addAttribute("info", dsInfo);
+				XmlBuilder infoElem = new XmlBuilder("info");
+				infoElem.setValue(dsInfo);
+				jr.addSubElement(infoElem);
+				if (confResString!=null) {
+					String connectionPoolProperties = getConnectionPoolProperties(confResString, "JDBC", dsName);
+					if (StringUtils.isNotEmpty(connectionPoolProperties)) {
+						infoElem = new XmlBuilder("info");
+						infoElem.setValue(connectionPoolProperties);
+						jr.addSubElement(infoElem);
+					}
+				}
 			}
 
 			JmsSender js = new JmsSender();
@@ -341,7 +357,17 @@ public final class ShowSecurityItems extends ActionBase {
 				jrs.addSubElement(jr);
 				jr.addAttribute("name", jmsRealm);
 				jr.addAttribute("queueConnectionFactoryName", qcfName);
-				jr.addAttribute("info", qcfInfo);
+				XmlBuilder infoElem = new XmlBuilder("info");
+				infoElem.setValue(qcfInfo);
+				jr.addSubElement(infoElem);
+				if (confResString!=null) {
+					String connectionPoolProperties = getConnectionPoolProperties(confResString, "JMS", qcfName);
+					if (StringUtils.isNotEmpty(connectionPoolProperties)) {
+						infoElem = new XmlBuilder("info");
+						infoElem.setValue(connectionPoolProperties);
+						jr.addSubElement(infoElem);
+					}
+				}
 			}
 			tcfName = js.getTopicConnectionFactoryName();
 			if (StringUtils.isNotEmpty(tcfName)) {
@@ -353,6 +379,24 @@ public final class ShowSecurityItems extends ActionBase {
 		}
 	}
 
+	private String getConnectionPoolProperties(String confResString, String providerType, String jndiName) {
+		String connectionPoolProperties = null;
+		try {
+			URL url = ClassUtils.getResourceURL(this, GETCONNPOOLPROP_XSLT);
+			if (url != null) {
+				Transformer t = XmlUtils.createTransformer(url, true);
+				Map parameters = new Hashtable();
+				parameters.put("providerType", providerType);
+				parameters.put("jndiName", jndiName);
+				XmlUtils.setTransformerParameters(t, parameters);
+				connectionPoolProperties = XmlUtils.transformXml(t, confResString);
+			}
+		} catch (Exception e) {
+			connectionPoolProperties = "*** ERROR ***";
+		}
+		return connectionPoolProperties;
+	}
+	
 	private void addAuthEntries(XmlBuilder securityItems) {
 		XmlBuilder aes = new XmlBuilder("authEntries");
 		securityItems.addSubElement(aes);
