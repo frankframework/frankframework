@@ -125,6 +125,18 @@ public class JmsRealm {
     public String getProviderURL() {
         return providerURL;
     }
+    public String getConnectionFactoryName() {
+    	if (queueConnectionFactoryName!=null) {
+    		return queueConnectionFactoryName;
+    	} else if (queueConnectionFactoryNameXA!=null) {
+    		return queueConnectionFactoryNameXA;
+    	} else if (topicConnectionFactoryName!=null) {
+    		return topicConnectionFactoryName;
+    	} else if (topicConnectionFactoryNameXA!=null) {
+    		return topicConnectionFactoryNameXA;
+    	}
+    	return null;
+    }
 	/**
 	 * The name of the QueueConnectionFactory <br/>
 	 */
