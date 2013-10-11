@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
+import java.sql.Connection;
+
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.util.JdbcUtil;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -41,6 +44,10 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 		}
 		// see http://publib.boulder.ibm.com/infocenter/dzichelp/v2r2/index.jsp?topic=/com.ibm.db29.doc.sqlref/db2z_sql_skiplockeddata.htm
 		return selectQuery+" FOR UPDATE SKIP LOCKED DATA";
+	}
+
+	public String getSchema(Connection conn) throws JdbcException {
+		return JdbcUtil.executeStringQuery(conn, "SELECT CURRENT SERVER FROM SYSIBM.SYSDUMMY1");
 	}
 
 }
