@@ -175,7 +175,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 					try {
 						if (trace && log.isDebugEnabled()) log.debug("executing query for ["+query+"]");
 						rs = stmt.executeQuery(query);
-						if (rs.isAfterLast() || !rs.next()) {
+						if (!rs.next()) {
 							return null;
 						}
 						Object result;

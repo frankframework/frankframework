@@ -23,10 +23,10 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * preliminary version of Db2DbmsSupport.
+ * Support for DB2.
  * 
- * @author  Gerrit van Brakel
- * @since  
+ * @author Gerrit van Brakel
+ * @author Jaco de Groot
  */
 public class Db2DbmsSupport extends GenericDbmsSupport {
 
@@ -42,8 +42,14 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
-		// see http://publib.boulder.ibm.com/infocenter/dzichelp/v2r2/index.jsp?topic=/com.ibm.db29.doc.sqlref/db2z_sql_skiplockeddata.htm
-		return selectQuery+" FOR UPDATE SKIP LOCKED DATA";
+		// Tried FOR UPDATE SKIP LOCKED (DATA) with DB2 version 10.5 on Linux
+		// but generates a SqlSyntaxErrorException. 
+		// http://publib.boulder.ibm.com/infocenter/dzichelp/v2r2/topic/com.ibm.db2z10.doc/src/alltoc/db2z_10_prodhome.htm
+		// http://publib.boulder.ibm.com/infocenter/dzichelp/v2r2/topic/com.ibm.db2z10.doc.sqlref/src/tpc/db2z_sql_selectstatement.htm#db2z_sql_selectstatement
+		// http://publib.boulder.ibm.com/infocenter/dzichelp/v2r2/topic/com.ibm.db2z10.doc.sqlref/src/tpc/db2z_sql_updateclause.htm
+		// http://publib.boulder.ibm.com/infocenter/dzichelp/v2r2/topic/com.ibm.db2z10.doc.sqlref/src/tpc/db2z_sql_skiplockeddata.htm
+		// http://www.ibm.com/developerworks/data/library/techarticle/dm-0907oracleappsondb2/#code-hd
+		return selectQuery+" FOR UPDATE";
 	}
 
 	public String getSchema(Connection conn) throws JdbcException {
