@@ -19,8 +19,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
@@ -43,10 +48,21 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * </table>
+ * </p>
+ * <p>
+ * <table border="1">
+ * <b>Parameters:</b>
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr><td>url</td><td>string</td><td>When a parameter with name serviceId is present, it is used instead of the serviceId specified by the attribute</td></tr>
+ * <tr><td>authAlias</td><td>string</td><td>When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute</td></tr>
+ * <tr><td>userName</td><td>string</td><td>When a parameter with name userName is present, it is used instead of the userName specified by the attribute</td></tr>
+ * <tr><td>password</td><td>string</td><td>When a parameter with name password is present, it is used instead of the password specified by the attribute</td></tr>
+ * </table>
  * </p>
  * 
  * @author Peter Leeuwenburgh
- * @version $Id: GetTibcoQueues.java,v 1.1 2013/08/29 07:51:19 m168309 Exp $
+ * @version $Id$
  */
 
 public class GetTibcoQueues extends FixedForwardPipe {
@@ -57,11 +73,45 @@ public class GetTibcoQueues extends FixedForwardPipe {
 
 	public PipeRunResult doPipe(Object input, IPipeLineSession session)
 			throws PipeRunException {
-		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+		String url_work;
+		String authAlias_work;
+		String userName_work;
+		String password_work;
+
+		ParameterValueList pvl = null;
+		if (getParameterList() != null) {
+			ParameterResolutionContext prc = new ParameterResolutionContext(
+					(String) input, session);
+			try {
+				pvl = prc.getValues(getParameterList());
+			} catch (ParameterException e) {
+				throw new PipeRunException(this, getLogPrefix(session)
+						+ "exception on extracting parameters", e);
+			}
+		}
+
+		url_work = getParameterValue(pvl, "url");
+		if (url_work == null) {
+			url_work = getUrl();
+		}
+		authAlias_work = getParameterValue(pvl, "authAlias");
+		if (authAlias_work == null) {
+			authAlias_work = getAuthAlias();
+		}
+		userName_work = getParameterValue(pvl, "userName");
+		if (userName_work == null) {
+			userName_work = getUserName();
+		}
+		password_work = getParameterValue(pvl, "password");
+		if (password_work == null) {
+			password_work = getPassword();
+		}
+		
+		CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
 		TibjmsAdmin admin = null;
 		XmlBuilder qInfosXml = new XmlBuilder("qInfos");
 		try {
-			admin = new TibjmsAdmin(getUrl(), cf.getUsername(), cf.getPassword());
+			admin = new TibjmsAdmin(url_work, cf.getUsername(), cf.getPassword());
 
 			Map aclMap = new HashMap();
 			ACLEntry[] aclEntries = admin.getACLEntries();
@@ -133,6 +183,20 @@ public class GetTibcoQueues extends FixedForwardPipe {
 			}
 		}
 		return new PipeRunResult(getForward(), qInfosXml.toXML());
+	}
+
+	private String getParameterValue(ParameterValueList pvl,
+			String parameterName) {
+		ParameterList parameterList = getParameterList();
+		if (pvl != null && parameterList != null) {
+			for (int i = 0; i < parameterList.size(); i++) {
+				Parameter parameter = parameterList.getParameter(i);
+				if (parameter.getName().equalsIgnoreCase(parameterName)) {
+					return pvl.getParameterValue(i).asStringValue(null);
+				}
+			}
+		}
+		return null;
 	}
 
 	public String getUrl() {
