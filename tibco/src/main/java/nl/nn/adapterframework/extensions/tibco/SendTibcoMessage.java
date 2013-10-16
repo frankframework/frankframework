@@ -26,7 +26,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import com.tibco.tibjms.admin.TibjmsAdmin;
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -183,6 +183,19 @@ public class SendTibcoMessage extends FixedForwardPipe {
 			} else {
 				msg.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
 				msgProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
+			}
+			String soapAction = null;
+			if (queueName_work.contains(".")) {
+				String[] q = StringUtils.split(queueName_work, ".");
+				if (q[0].equalsIgnoreCase("P2P") && q.length>=4) {
+					soapAction = q[2] + "_" + q[3];
+				} else if (q[0].equalsIgnoreCase("ESB") && q.length>=8) {
+					soapAction = q[6] + "_" + q[7];
+				}
+			}
+			if (soapAction != null) {
+				log.debug(getLogPrefix(session) + "setting [SoapAction] property to value [" + soapAction + "]");
+				msg.setStringProperty("SoapAction", soapAction);
 			}
 			msgProducer.send(msg);
 			if (log.isDebugEnabled()) {
