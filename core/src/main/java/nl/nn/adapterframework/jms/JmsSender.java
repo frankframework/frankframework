@@ -22,7 +22,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
@@ -194,7 +193,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		}
 		try {
 			s = createSession();
-			mp = getMessageProducer(s, getDestination());
+			mp = getMessageProducer(s, getDestination(prc));
 			Destination replyQueue = null;
 
 			// create message
@@ -297,6 +296,10 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 			}
 			closeSession(s);
 		}
+	}
+
+	public Destination getDestination(ParameterResolutionContext prc) throws JmsException, NamingException, JMSException {
+		return getDestination();
 	}
 
 	/**

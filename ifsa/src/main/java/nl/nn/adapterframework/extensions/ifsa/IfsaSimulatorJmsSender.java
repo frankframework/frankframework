@@ -15,9 +15,15 @@
  */
 package nl.nn.adapterframework.extensions.ifsa;
 
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.naming.NamingException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.AppConstants;
 
 /**
@@ -31,7 +37,7 @@ import nl.nn.adapterframework.util.AppConstants;
  *   <li>rr_request</li>
  *   <li>rr_reply</li>
  *   <li>ff_request</li>
- * </ul></td><td>&nbsp;</td></tr>
+ * </ul> When messageType=rr_reply, the destination is retrieved from session key <code>replyTo</code></td><td>&nbsp;</td></tr>
  * </table></p>
  * <p><b>added parameters:</b>
  * <table border="1">
@@ -273,7 +279,29 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 		p.setType(Parameter.TYPE_INTEGER);
 		addParameter(p);
 		
-		super.configure();
+		if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {
+ 			if (paramList!=null) {
+ 				paramList.configure();
+ 			}
+		} else {
+ 			super.configure();
+		}
+	}
+
+	public Destination getDestination() throws NamingException, JMSException, JmsException  {
+    	if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {
+ 			return null;
+    	} else {
+ 		   return super.getDestination();
+    	}
+	}
+
+	public Destination getDestination(ParameterResolutionContext prc) throws JmsException, NamingException, JMSException {
+		if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {
+			return (Destination) prc.getSession().get("replyTo");
+		} else {
+			return super.getDestination(prc);
+		}
 	}
 
 	public void setMessageType(String string) {
