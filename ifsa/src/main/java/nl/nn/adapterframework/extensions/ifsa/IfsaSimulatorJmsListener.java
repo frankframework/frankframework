@@ -30,7 +30,8 @@ import java.util.Map;
  */
 public class IfsaSimulatorJmsListener extends JmsListener {
 
-	protected String retrieveIdFromMessage(Message message, Map threadContext) throws ListenerException {
+	@Override
+    protected String retrieveIdFromMessage(Message message, Map threadContext) throws ListenerException {
 		String cid = super.retrieveIdFromMessage(message, threadContext);
 
 		String ifsa_bif_id = null;
