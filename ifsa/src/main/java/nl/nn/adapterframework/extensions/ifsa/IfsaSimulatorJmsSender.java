@@ -15,16 +15,16 @@
  */
 package nl.nn.adapterframework.extensions.ifsa;
 
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.naming.NamingException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.AppConstants;
+
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.naming.NamingException;
 
 /**
  * Extension of JmsSender which only adds parameters to simulate IFSA.
@@ -68,7 +68,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>JMS_IBM_MsgType</td><td>integer</td><td></td><td></td><td></td><td><code>rr_request: </code>1<br/><code>rr_reply: </code>2<br/><code>ff_request: </code>8</td><td></td><td></td></tr>
  * </table>
  * </p>
- * 
+ *
  * @author  Peter Leeuwenburgh
  * @version $Id$
  */
@@ -198,7 +198,7 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 		}
 		p.setMinLength(60);
 		addParameter(p);
-		
+
 		p = new Parameter();
 		p.setName("ifsa_ori_format");
 		p.setDefaultValue("");
@@ -238,7 +238,7 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 		}
 		p.setMinLength(48);
 		addParameter(p);
-		
+
 		p = new Parameter();
 		p.setName("ifsa_priority");
 		if (getMessageType().equalsIgnoreCase(RR_REQUEST)) {
@@ -278,7 +278,7 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 		}
 		p.setType(Parameter.TYPE_INTEGER);
 		addParameter(p);
-		
+
 		if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {
  			if (paramList!=null) {
  				paramList.configure();
