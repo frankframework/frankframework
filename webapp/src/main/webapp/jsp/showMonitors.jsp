@@ -70,8 +70,7 @@
  	<logic:iterate id="m" indexId="index"  name="MonitorForm"  property="monitorManager.monitors" >
  		<bean:size id="triggerCount" name="m" property="triggers"/>
 		<tr>
-			<xtags:element name="td">
-				<xtags:attribute name="rowspan"><bean:write name="triggerCount"/></xtags:attribute>
+			<td rowspan="<bean:write name="triggerCount"/>">
 				<imagelink 
 					href="showMonitorExecute.do"
 					type="delete"
@@ -88,9 +87,8 @@
 					<parameter name="action">edit</parameter>
 					<parameter name="index"><bean:write name="index"/></parameter>
 				</imagelink>
-			</xtags:element>
-			<xtags:element name="td">
-				<xtags:attribute name="rowspan"><bean:write name="triggerCount"/></xtags:attribute>
+			</td>
+			<td rowspan="<bean:write name="triggerCount"/>">
 					<table>
 					 	<logic:iterate id="d" indexId="dIndex" name="MonitorForm" property="monitorManager.destinations" >
 					 		<tr><td>
@@ -101,18 +99,15 @@
 							</td></tr>
 						</logic:iterate>
 					</table>
-			</xtags:element>
-			<xtags:element name="td">
-				<xtags:attribute name="rowspan"><bean:write name="triggerCount"/></xtags:attribute>
+			</td>
+			<td rowspan="<bean:write name="triggerCount"/>">
 				<bean:write name="m" property="name" />
-			</xtags:element>
-			<xtags:element name="td">
-				<xtags:attribute name="rowspan"><bean:write name="triggerCount"/></xtags:attribute>
+			</td>
+			<td rowspan="<bean:write name="triggerCount"/>">
 				<bean:write name="m" property="type" />
-			</xtags:element>
+			</td>
 			
-			<xtags:element name="td">
-				<xtags:attribute name="rowspan"><bean:write name="triggerCount"/></xtags:attribute>
+			<td rowspan="<bean:write name="triggerCount"/>">
 				<logic:equal name="m" property="raised" value="true" >
 					<img src="images/raised.gif" title="raised"/>
 					(<imagelink 
@@ -135,29 +130,25 @@
 						<parameter name="index"><bean:write name="index" /></parameter>
 					</imagelink>)
 				</logic:notEqual>
-			</xtags:element>
-			<xtags:element name="td">
-				<xtags:attribute name="rowspan"><bean:write name="triggerCount"/></xtags:attribute>
+			</td>
+			<td rowspan="<bean:write name="triggerCount"/>">
 				<bean:write name="m" property="stateChangeDtStr" />
-			</xtags:element>
-			<xtags:element name="td">
-				<xtags:attribute name="rowspan"><bean:write name="triggerCount"/></xtags:attribute>
+			</td>
+			<td rowspan="<bean:write name="triggerCount"/>">
 				<logic:notEmpty name="m" property="lastHitStr">
 					<bean:write name="m" property="additionalHitCount" /> since last raise;<br/>
 					last hit <bean:write name="m" property="lastHitStr" /><br/>
 				</logic:notEmpty>
-			</xtags:element>
-			<xtags:element name="td">
-				<xtags:attribute name="rowspan"><bean:write name="triggerCount"/></xtags:attribute>
+			</td>
+			<td rowspan="<bean:write name="triggerCount"/>">
 				<logic:notEmpty name="m" property="alarmSource">
 					<bean:write name="m" property="alarmSource.adapter.name" /> / 
 					<bean:write name="m" property="alarmSource.eventSourceName" />
 				</logic:notEmpty>
-			</xtags:element>
-			<xtags:element name="td">
-				<xtags:attribute name="rowspan"><bean:write name="triggerCount"/></xtags:attribute>
+			</td>
+			<td rowspan="<bean:write name="triggerCount"/>">
 				<bean:write name="m" property="alarmSeverity" />
-			</xtags:element>
+			</td>
 
 			<logic:greaterThan name="triggerCount" value="0">
 		 		<td>

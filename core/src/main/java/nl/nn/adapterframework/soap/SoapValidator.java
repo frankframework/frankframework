@@ -49,7 +49,7 @@ public class SoapValidator extends XmlValidator {
             validator.addRootValidation(Arrays.asList("Envelope", "Body", soapBody));
         }
         if (StringUtils.isNotEmpty(soapHeader)) {
-            validator.addRootValidation(Arrays.asList("Envelope", "Body", soapHeader));
+            validator.addRootValidation(Arrays.asList("Envelope", "Header", soapHeader));
         }
     }
 

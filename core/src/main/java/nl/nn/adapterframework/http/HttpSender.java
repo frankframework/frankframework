@@ -67,9 +67,9 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrlParam(String) urlParam}</td><td>parameter that is used to obtain url; overrides url-attribute.</td><td>url</td></tr>
  * <tr><td>{@link #setMethodType(String) methodType}</td><td>type of method to be executed, either 'GET' or 'POST'</td><td>GET</td></tr>
- * <tr><td>{@link #setContentType(String) contentType}</td><td>conent-type of the request, only for POST methods</td><td>text/html; charset=UTF-8</td></tr>
+ * <tr><td>{@link #setContentType(String) contentType}</td><td>content-type of the request, only for POST methods</td><td>text/html; charset=UTF-8</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout in ms of obtaining a connection/result. 0 means no timeout</td><td>10000</td></tr>
- * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>the maximum number of concurrent connections</td><td>2</td></tr>
+ * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>the maximum number of concurrent connections</td><td>10</td></tr>
  * <tr><td>{@link #setMaxExecuteRetries(int) maxExecuteRetries}</td><td>the maximum number of times it the execution is retried</td><td>1</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
@@ -182,6 +182,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private String authAlias;
 	private String userName;
 	private String password;
+	private String authDomain;
 
 	private String proxyHost;
 	private int    proxyPort=80;
@@ -339,7 +340,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
 			if (!StringUtils.isEmpty(cf.getUsername())) {
 				httpState.setAuthenticationPreemptive(true);
-				credentials = new UsernamePasswordCredentials(cf.getUsername(), cf.getPassword());
+				String uname;
+				if (StringUtils.isNotEmpty(getAuthDomain())) {
+					uname = getAuthDomain() + "\\" + cf.getUsername();
+				} else {
+					uname = cf.getUsername();
+				}
+				credentials = new UsernamePasswordCredentials(uname, cf.getPassword());
 			}
 			if (StringUtils.isNotEmpty(getProxyHost())) {
 				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
@@ -691,7 +698,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		password = string;
 	}
 
-	
+	public String getAuthDomain() {
+		return authDomain;
+	}
+	public void setAuthDomain(String string) {
+		authDomain = string;
+	}
+
 	public String getProxyHost() {
 		return proxyHost;
 	}

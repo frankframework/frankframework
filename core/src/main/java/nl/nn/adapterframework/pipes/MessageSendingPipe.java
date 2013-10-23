@@ -41,6 +41,8 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.extensions.esb.EsbJmsSender;
+import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -148,7 +150,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>"illegalResult"</td><td>the received data does not comply with <code>checkXmlWellFormed</code> or <code>checkRootTag</code>.</td></tr>
  * </table>
  * </p>
- * @author  Gerrit van Brakel</p>
+ * @author  Gerrit van Brakel
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
@@ -387,6 +389,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getInputWrapper().registerForward(pf);
+			if (getInputWrapper() instanceof EsbSoapWrapperPipe) {
+				EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe)getInputWrapper();
+				ISender sender = getSender();
+				eswPipe.retrievePhysicalDestinationFromSender(sender);
+			}
 			if (getInputWrapper() instanceof IExtendedPipe) {
 				((IExtendedPipe)getInputWrapper()).configure(getPipeLine());
 			} else {

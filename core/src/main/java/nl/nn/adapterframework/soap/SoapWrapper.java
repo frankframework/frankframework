@@ -77,7 +77,7 @@ public class SoapWrapper {
 	
 	private void init() throws ConfigurationException {
 		try {
-			extractBody        = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractBodyXPath,"xml"));
+			extractBody        = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractBodyXPath,"xml",false,null,false));
 			extractHeader      = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractHeaderXPath,"xml"));
 			extractFaultCount  = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractFaultCountXPath,"text"));
 			extractFaultCode   = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractFaultCodeXPath,"text"));
@@ -121,8 +121,7 @@ public class SoapWrapper {
 		}
 	}
 
-	
-	public String getBody(String message) throws DomBuilderException, TransformerException, IOException {
+	public String getBody(String message) throws DomBuilderException, TransformerException, IOException  {
 		return extractBody.transform(message,null,true);
 	}
 	public String getBody(InputStream request) throws TransformerException, IOException {

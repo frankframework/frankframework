@@ -142,7 +142,7 @@
 						<subHeader>Configured</subHeader>
 						<subHeader>up since</subHeader>
 						<subHeader>Messages with error</subHeader>
-						<subHeader>Messages processed</subHeader>
+						<subHeader>Messages processed/in process</subHeader>
 						<subHeader>Actions</subHeader>
 					</tr>
 
@@ -167,7 +167,7 @@
 						<td><booleanImage value="<xtags:valueOf select="@configured"/>"/></td>
 						<td><xtags:valueOf select="@upSince"/></td>
 						<td align="right"><xtags:valueOf select="@messagesInError"/></td>
-						<td align="right"><xtags:valueOf select="@messagesProcessed"/></td>
+						<td align="right"><xtags:valueOf select="@messagesProcessed"/>/<xtags:valueOf select="@messagesInProcess"/></td>
 						<td>
 							<xtags:variable id="adapterName" select="@name"/>
 							<xtags:variable id="adapterIsStarted" select="@started"/>

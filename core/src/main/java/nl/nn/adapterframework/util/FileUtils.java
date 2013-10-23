@@ -348,6 +348,23 @@ public class FileUtils {
 		return result.toArray(new File[0]);
 	}
 
+	public static File getFirstFile(String directory, long minStability) {
+		File dir = new File(directory);
+		String[] fileNames = dir.list();
+
+		long lastChangedAllowed=minStability>0?new Date().getTime()-minStability:0;
+
+		for (int i = 0; i < fileNames.length; i++) {
+			File file = new File(directory, fileNames[i]);
+			if (file.isFile()) {
+				if (minStability>0 && file.lastModified()<=lastChangedAllowed) {
+					return file;
+				}
+			}
+		}
+		return null;
+	}
+
 	public static List getListFromNames(String names, char seperator) {
 		StringTokenizer st = new StringTokenizer(names, "" + seperator);
 		LinkedList list = new LinkedList();

@@ -18,6 +18,7 @@
 			<tbody>
 				<tr>
 					<subHeader>Role</subHeader>
+					<subHeader></subHeader>
 					<subHeader>SpecialSubjects</subHeader>
 					<subHeader>Groups</subHeader>
 				</tr>
@@ -27,6 +28,7 @@
 					<xtags:variable id="srole" select="ancestor::*/applicationDeploymentDescriptor/application/security-role[@id=$role]/role-name"/>
 					<tr ref="spannedRow">
 						<td rowspan="<%=count%>"><xtags:valueOf select="$srole"/></td>
+						<td rowspan="<%=count%>"><booleanImage value="<%=request.isUserInRole(srole)%>"/></td>
 						<td rowspan="<%=count%>"><xtags:valueOf select="specialSubjects/@name"/></td>
 						<td><xtags:valueOf select="groups[1]/@name"/></td>
 					</tr>
@@ -52,12 +54,20 @@
 				</tr>
 				<xtags:forEach select="jmsRealms/jmsRealm">
 					<tr ref="spannedRow">
-						<td><xtags:valueOf select="@name"/></td>
-						<td><xtags:valueOf select="@datasourceName"/></td>
-						<td><xtags:valueOf select="@queueConnectionFactoryName"/></td>
-						<td><xtags:valueOf select="@topicConnectionFactoryName"/></td>
-						<td><xtags:valueOf select="@info"/></td>
+						<xtags:variable id="count" select="count(info)"/>
+						<td rowspan="<%=count%>"><xtags:valueOf select="@name"/></td>
+						<td rowspan="<%=count%>"><xtags:valueOf select="@datasourceName"/></td>
+						<td rowspan="<%=count%>"><xtags:valueOf select="@queueConnectionFactoryName"/></td>
+						<td rowspan="<%=count%>"><xtags:valueOf select="@topicConnectionFactoryName"/></td>
+						<td><xtags:valueOf select="info[1]"/></td>
 					</tr>
+						<xtags:forEach select="info[position()>1]">
+							<tr>
+								<td>
+									<xtags:valueOf select="."/>
+								</td>
+							</tr>
+						</xtags:forEach>
 				</xtags:forEach>
 			</tbody>
 		</contentTable>

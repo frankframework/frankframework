@@ -11,8 +11,11 @@
 		- disable all elements jmsRealm which have an attribute queueConnectionFactoryName (if combined with the attribute datasourceName a new jmsRealm for this datasourceName is created)
 		- add the attribute returnFixedDate with value true to all pipe elements PutSystemDateInSession
 		- replace the value '{now,...,...}' of the attribute pattern in all param elements with the value '{fixeddate,...,...}'
+		- add the attribute useFixedValues with value true to all pipe, inputWrapper and outputWrapper elements SoapWrapperPipe
 		- stub the pipe element FtpFileRetrieverPipe by a pipe element GenericMessageSendingPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
 		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements GenericMessageSendingPipe and ForEachChildElementPipe
+		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Request' to all pipe and inputWrapper elements SoapWrapperPipe with attribute direction=wrap 
+		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Response' to all outputWrapper elements SoapWrapperPipe with attribute direction=wrap 
 	-->
 	<xsl:template match="/">
 		<xsl:apply-templates select="*|@*|comment()|processing-instruction()" />
@@ -172,6 +175,45 @@
 					<xsl:apply-templates select="@*" />
 					<xsl:attribute name="returnFixedDate">true</xsl:attribute>
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+				</xsl:element>
+			</xsl:when>
+			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe'">
+				<xsl:element name="pipe">
+					<xsl:apply-templates select="@*" />
+					<xsl:attribute name="useFixedValues">true</xsl:attribute>
+					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+					<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination'])=0">
+						<xsl:element name="param">
+							<xsl:attribute name="name">destination</xsl:attribute>
+							<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Request</xsl:attribute>
+						</xsl:element>
+					</xsl:if>
+				</xsl:element>
+			</xsl:when>
+			<xsl:when test="name()='inputWrapper' and @className='nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe'">
+				<xsl:element name="inputWrapper">
+					<xsl:apply-templates select="@*" />
+					<xsl:attribute name="useFixedValues">true</xsl:attribute>
+					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+					<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination'])=0">
+						<xsl:element name="param">
+							<xsl:attribute name="name">destination</xsl:attribute>
+							<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Request</xsl:attribute>
+						</xsl:element>
+					</xsl:if>
+				</xsl:element>
+			</xsl:when>
+			<xsl:when test="name()='outputWrapper' and @className='nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe'">
+				<xsl:element name="outputWrapper">
+					<xsl:apply-templates select="@*" />
+					<xsl:attribute name="useFixedValues">true</xsl:attribute>
+					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+					<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination'])=0">
+						<xsl:element name="param">
+							<xsl:attribute name="name">destination</xsl:attribute>
+							<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Response</xsl:attribute>
+						</xsl:element>
+					</xsl:if>
 				</xsl:element>
 			</xsl:when>
 			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe'">
