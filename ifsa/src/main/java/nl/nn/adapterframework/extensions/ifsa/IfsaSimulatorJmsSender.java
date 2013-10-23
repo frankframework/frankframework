@@ -70,7 +70,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * </p>
  * 
  * @author  Peter Leeuwenburgh
- * @version $Id: IfsaSimulatorJmsSender.java,v 1.4 2013/09/13 12:12:32 m168309 Exp $
+ * @version $Id$
  */
 public class IfsaSimulatorJmsSender extends JmsSender {
 	private final static String RR_REQUEST = "rr_request";

@@ -15,25 +15,24 @@
  */
 package nl.nn.adapterframework.extensions.ifsa;
 
-import java.util.Map;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.jms.JmsListener;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
-
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.jms.JmsListener;
+import java.util.Map;
 
 /**
  * Extension of JmsListener which only stores IFSA variables with their value to simulate IFSA.
  *
  * @author  Peter Leeuwenburgh
- * @version $Id: IfsaSimulatorJmsListener.java,v 1.1 2013/09/06 12:15:10 m168309 Exp $
+ * @version $Id$
  */
 public class IfsaSimulatorJmsListener extends JmsListener {
 
 	protected String retrieveIdFromMessage(Message message, Map threadContext) throws ListenerException {
 		String cid = super.retrieveIdFromMessage(message, threadContext);
-		
+
 		String ifsa_bif_id = null;
 		String ifsa_source = null;
 		String ifsa_node_id = null;
@@ -46,7 +45,7 @@ public class IfsaSimulatorJmsListener extends JmsListener {
 		} catch (JMSException ignore) {
 			log.debug("error getting IFSA jms properties", ignore);
 		}
-		
+
 		threadContext.put("ifsa_bif_id",ifsa_bif_id);
 		threadContext.put("ifsa_source",ifsa_source);
 		threadContext.put("ifsa_node_id",ifsa_node_id);
