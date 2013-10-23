@@ -50,9 +50,6 @@ import java.util.zip.Inflater;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.ibm.websphere.management.AdminService;
-import com.ibm.websphere.management.AdminServiceFactory;
-import com.ibm.ws.threadContext.ComponentMetaDataAccessorImpl;
 
 /**
  * Miscellanous conversion functions.
@@ -89,7 +86,7 @@ public class Misc {
 		return createSimpleUUID();
 	}
 
-	
+
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
     public static String asHex(byte[] buf)
@@ -102,7 +99,7 @@ public class Misc {
         }
         return new String(chars);
     }
-	
+
 	static private byte[] getIPAddress() {
 		InetAddress inetAddress = null;
 
@@ -148,25 +145,25 @@ public class Misc {
 	public static void fileToWriter(String filename, Writer writer) throws IOException {
 		readerToWriter(new FileReader(filename), writer);
 	}
-	
+
 	public static void fileToStream(String filename, OutputStream output) throws IOException {
 		streamToStream(new FileInputStream(filename), output);
 	}
-	
+
 	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
 		streamToStream(input,output,true);
 	}
 	public static void streamToStream(InputStream input, OutputStream output, boolean closeInput) throws IOException {
 		if (input!=null) {
-			byte buffer[]=new byte[BUFFERSIZE]; 
-				
+			byte buffer[]=new byte[BUFFERSIZE];
+
 			int bytesRead;
 			while ((bytesRead=input.read(buffer,0,BUFFERSIZE))>0) {
 				output.write(buffer,0,bytesRead);
 			}
 			if (closeInput) {
 				input.close();
-			} 
+			}
 		}
 	}
 
@@ -175,8 +172,8 @@ public class Misc {
 	}
 	public static void readerToWriter(Reader reader, Writer writer, boolean closeInput) throws IOException {
 		if (reader!=null) {
-			char buffer[]=new char[BUFFERSIZE]; 
-				
+			char buffer[]=new char[BUFFERSIZE];
+
 			int charsRead;
 			while ((charsRead=reader.read(buffer,0,BUFFERSIZE))>0) {
 				writer.write(buffer,0,charsRead);
@@ -211,7 +208,7 @@ public class Misc {
 			reader.close();
 		}
 	}
-	
+
 
 	public static String readerToString(Reader reader, String endOfLineString, boolean xmlEncode) throws IOException {
 		StringBuffer sb = new StringBuffer();
@@ -262,7 +259,7 @@ public class Misc {
 	public static String resourceToString(URL resource) throws IOException {
 		return resourceToString(resource, null, false);
 	}
-	
+
 	public static String resourceToString(URL resource, String endOfLineString) throws IOException {
 		return resourceToString(resource, endOfLineString, false);
 	}
@@ -279,23 +276,23 @@ public class Misc {
 
 	/**
 	 * String replacer.
-	 * 
+	 *
 	 * @param source	is the original string
 	 * @param from		is the string to be replaced
 	 * @param to		is the string which will used to replace
 	 * @return
 	 */
-	public static String replace (String source, String from, String to) {   
+	public static String replace (String source, String from, String to) {
 		int start = source.indexOf(from);
-		if (start==-1) { 
+		if (start==-1) {
 			return source;
-		} 
+		}
 		int fromLength = from.length();
 		char [] sourceArray = source.toCharArray();
-		
+
 		StringBuffer buffer = new StringBuffer();
 		int srcPos=0;
-		
+
 		while (start != -1) {
 			buffer.append (sourceArray, srcPos, start-srcPos);
 			buffer.append (to);
@@ -328,7 +325,7 @@ public class Misc {
 	}
 
 	public static byte[] gzip(byte[] input) throws IOException {
-		
+
 		// Create an expandable byte array to hold the compressed data.
 		// You cannot use an array that's the same size as the orginal because
 		// there is no guarantee that the compressed data will be smaller than
@@ -349,12 +346,12 @@ public class Misc {
 	}
 
 	public static byte[] gunzip(byte[] input) throws DataFormatException, IOException {
-    
+
 		// Create an expandable byte array to hold the decompressed data
 		ByteArrayInputStream bis = new ByteArrayInputStream(input);
 		GZIPInputStream gz = new GZIPInputStream(bis);
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(input.length);
-   
+
 		// Decompress the data
 		byte[] buf = new byte[1024];
 		while (gz.available()>0) {
@@ -364,7 +361,7 @@ public class Misc {
 			 }
 		}
 		bos.close();
-    
+
 		// Get the decompressed data
 		return bos.toByteArray();
 	}
@@ -374,7 +371,7 @@ public class Misc {
 		return compress(input.getBytes(DEFAULT_INPUT_STREAM_ENCODING));
 	}
 	public static byte[] compress(byte[] input) throws IOException {
-		
+
 		// Create the compressor with highest level of compression
 		Deflater compressor = new Deflater();
 		compressor.setLevel(Deflater.BEST_COMPRESSION);
@@ -400,7 +397,7 @@ public class Misc {
 		// Get the compressed data
 		return bos.toByteArray();
 	}
-	
+
 	public static String decompressToString(byte[] input) throws DataFormatException, IOException {
 		return byteArrayToString(decompress(input),"\n",false);
 	}
@@ -409,10 +406,10 @@ public class Misc {
 		// Create the decompressor and give it the data to compress
 		Inflater decompressor = new Inflater();
 		decompressor.setInput(input);
-    
+
 		// Create an expandable byte array to hold the decompressed data
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(input.length);
-    
+
 		// Decompress the data
 		byte[] buf = new byte[1024];
 		while (!decompressor.finished()) {
@@ -420,11 +417,11 @@ public class Misc {
 			 bos.write(buf, 0, count);
 		}
 			 bos.close();
-    
+
 		// Get the decompressed data
 		return bos.toByteArray();
 	}
-	
+
 	public static Properties getEnvironmentVariables() throws IOException {
 		Properties props = new Properties();
 
@@ -480,7 +477,7 @@ public class Misc {
 		String localHost=null;
 		// String localIP="";
 		try {
-			InetAddress localMachine = InetAddress.getLocalHost();	
+			InetAddress localMachine = InetAddress.getLocalHost();
 			//localIP = localMachine.getHostAddress();
 			localHost = localMachine.getHostName();
 		} catch(UnknownHostException uhe) {
@@ -514,36 +511,12 @@ public class Misc {
 	}
 
 	public static String getApplicationDeploymentDescriptorPath() throws IOException {
-		String appName; 
-		String cellName; 
 		try {
-			appName = ComponentMetaDataAccessorImpl.getComponentMetaDataAccessor().getComponentMetaData().getJ2EEName().getApplication(); 
-			AdminService adminService = AdminServiceFactory.getAdminService();
-			cellName = adminService.getCellName();
-		} catch (NoClassDefFoundError e) {
-			log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: "+e.getMessage());
-			return null;
-		}
-		String appPath =
-			System.getProperty("user.install.root")
-				+ File.separator
-				+ "config"
-				+ File.separator
-				+ "cells"
-				+ File.separator
-				+ cellName
-				+ File.separator
-				+ "applications"
-				+ File.separator
-				+ appName
-				+ ".ear"
-				+ File.separator
-				+ "deployments"
-				+ File.separator
-				+ appName
-				+ File.separator
-				+ "META-INF";
-		return appPath;
+            return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getApplicationDeploymentDescriptorPath").invoke(null);
+		} catch (Exception e) {
+            log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: " + e.getMessage());
+            return null;
+        }
 	}
 
 	public static String getApplicationDeploymentDescriptor () throws IOException {
@@ -558,38 +531,12 @@ public class Misc {
 	}
 
 	public static String getConfigurationResources() throws IOException {
-		String nodeName;
-		String cellName;
-		String processName;
-		try {
-			AdminService adminService = AdminServiceFactory.getAdminService();
-			cellName = adminService.getCellName();
-			nodeName = adminService.getNodeName();
-			processName = adminService.getProcessName();
-		} catch (NoClassDefFoundError e) {
-			log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: "+e.getMessage());
-			return null;
-		}
-		String appFile =
-			System.getProperty("user.install.root")
-				+ File.separator
-				+ "config"
-				+ File.separator
-				+ "cells"
-				+ File.separator
-				+ cellName
-				+ File.separator
-				+ "nodes"
-				+ File.separator
-				+ nodeName
-				+ File.separator
-				+ "servers"
-				+ File.separator
-				+ processName
-				+ File.separator
-				+ "resources.xml";
-		log.debug("configurationResourcesFile [" + appFile + "]");
-		return fileToString(appFile);
+        try {
+            return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationResources").invoke(null);
+        } catch (Exception e) {
+            log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: " + e.getMessage());
+            return null;
+        }
 	}
 
 	public static long toFileSize(String value, long defaultValue) {
@@ -627,15 +574,15 @@ public class Misc {
 		long divider = 1024*1024*1024;
 		String suffix = null;
 		if (value>=divider) {
-			suffix = "GB"; 
+			suffix = "GB";
 		} else {
 			divider = 1024*1024;
 			if (value>=divider) {
-				suffix = "MB"; 
+				suffix = "MB";
 			} else {
 				divider = 1024;
 				if (value>=divider) {
-					suffix = "KB"; 
+					suffix = "KB";
 				}
 			}
 		}
