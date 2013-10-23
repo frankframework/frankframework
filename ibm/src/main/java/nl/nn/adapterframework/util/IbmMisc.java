@@ -12,7 +12,7 @@ import com.ibm.ws.threadContext.ComponentMetaDataAccessorImpl;
 
 /**
  * @author Michiel Meeuwissen
- * @since
+ * @since 5.0.29
  */
 public class IbmMisc {
     private static final Logger LOG = LogUtil.getLogger(Misc.class);
