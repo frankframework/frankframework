@@ -48,7 +48,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * @since   4.8
  */
 public class DefaultIbisManager implements IbisManager {
-    protected Logger log=LogUtil.getLogger(this);
+    protected Logger log = LogUtil.getLogger(this);
 
     public static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
 

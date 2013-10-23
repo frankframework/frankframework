@@ -37,7 +37,7 @@ import org.apache.log4j.xml.DOMConfigurator;
  * Convenience functions for logging.
  * Enables a separate log4j configuartion for each Ibis-instance.
  * Searches first for log4j4ibis.properties on the classpath. If not found, then searches for log4j.properties.
- * 
+ *
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot (***@dynasol.nl)
  */
@@ -50,11 +50,10 @@ public class LogUtil {
 	public static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 
 	private static Hierarchy hierarchy=null;
-	
+
 	static {
-		String l4jxml;
-		URL url = LogUtil.class.getClassLoader().getResource(LOG4J_XML_FILE);
-		if (url==null) {
+		String l4jxml;		URL url = LogUtil.class.getClassLoader().getResource(LOG4J_XML_FILE);
+		if (url == null) {
 			l4jxml = null;
 			System.out.println(DEBUG_LOG_PREFIX + "did not find " + LOG4J_XML_FILE + ", will try " + LOG4J_PROPS_FILE + " instead" + DEBUG_LOG_SUFFIX);
 		} else {
@@ -91,15 +90,15 @@ public class LogUtil {
 		}
 	}
 
-	public static Logger getRootLogger() { 
+	public static Logger getRootLogger() {
 		if (hierarchy == null) {
 			return Logger.getRootLogger();
 		} else {
 			return hierarchy.getRootLogger();
 		}
 	}
-	
-	public static Logger getLogger(String name) { 
+
+	public static Logger getLogger(String name) {
 		Logger logger = null;
 		if (hierarchy == null) {
 			logger = Logger.getLogger(name);
@@ -109,11 +108,11 @@ public class LogUtil {
 		return logger;
 	}
 
-	public static Logger getLogger(Class clazz) { 
+	public static Logger getLogger(Class clazz) {
 		return getLogger(clazz.getName());
 	}
 
-	public static Logger getLogger(Object owner) { 
+	public static Logger getLogger(Object owner) {
 		return getLogger(owner.getClass());
 	}
 

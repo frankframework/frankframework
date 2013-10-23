@@ -1,5 +1,5 @@
 <!DOCTYPE IOS-Adaptering [
-	<!ENTITY HelloWorld SYSTEM "./ConfigurationHelloWorld.xml">
+	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
 ]>
 <IOS-Adaptering configurationName="IBIS AdapterFramework (IAF) configuration for VOORBEELD">
   <!--

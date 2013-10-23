@@ -93,7 +93,7 @@ abstract public class ConfigurationDigester {
      */
     abstract protected Digester createDigester();
 
-	public class XmlErrorHandler implements ErrorHandler  {
+	private class XmlErrorHandler implements ErrorHandler  {
 		public void warning(SAXParseException exception) throws SAXParseException {
 			log.error(exception);
 			throw(exception);
@@ -108,7 +108,7 @@ abstract public class ConfigurationDigester {
 		}
 	}
 
-	public class NameTrackingEntityResolver implements EntityResolver {
+	private class NameTrackingEntityResolver implements EntityResolver {
 
 		EntityResolver resolver;
 
@@ -127,71 +127,59 @@ abstract public class ConfigurationDigester {
 		}
 	}
 
+    public Digester getDigester() throws SAXNotSupportedException, SAXNotRecognizedException {
+        Digester digester = createDigester();
+        //digester.setUseContextClassLoader(true);
 
-	public void digestConfiguration(Object stackTop, URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException {
+        digester.setEntityResolver(new NameTrackingEntityResolver(digester.getEntityResolver()));
 
-		if (digesterRulesURL==null) {
-			digesterRulesURL = ClassUtils.getResourceURL(stackTop, DIGESTER_RULES_DEFAULT);
-		}
-		if (configurationFileURL == null) {
-			configurationFileURL = ClassUtils.getResourceURL(stackTop, IbisManager.DFLT_CONFIGURATION);
-		}
-		if (configurationFileURL == null) {
-			configWarnings.add(log, "Could not find " + IbisManager.DFLT_CONFIGURATION);
-			return;
-		}
-		Digester digester = createDigester();
-		//digester.setUseContextClassLoader(true);
+        // push config on the stack
+        digester.push(this.configuration);
+        URL digesterRulesURL = ClassUtils.getResourceURL(this, getDigesterRules());
+        //digester.push("URL", configurationFileURL);
+        // digester-rules.xml bevat de rules voor het digesten
 
-		digester.setEntityResolver(new NameTrackingEntityResolver(digester.getEntityResolver()));
+            FromXmlRuleSet ruleSet = new FromXmlRuleSet(digesterRulesURL);
 
-		// push config on the stack
-		digester.push(stackTop);
-		digester.push("URL", configurationFileURL);
-		try {
-			// digester-rules.xml bevat de rules voor het digesten
+            digester.addRuleSet(ruleSet);
 
-			FromXmlRuleSet ruleSet = new FromXmlRuleSet(digesterRulesURL);
+            Rule attributeChecker = new AttributeCheckingRule();
 
-			digester.addRuleSet(ruleSet);
-
-			Rule attributeChecker = new AttributeCheckingRule();
-
-			digester.addRule("*/jmsRealms", attributeChecker);
-			digester.addRule("*/jmsRealm", attributeChecker);
-			digester.addRule("*/sapSystem", attributeChecker);
-			digester.addRule("*/adapter", attributeChecker);
-			digester.addRule("*/pipeline", attributeChecker);
-			digester.addRule("*/errorMessageFormatter", attributeChecker);
-			digester.addRule("*/receiver", attributeChecker);
-			digester.addRule("*/sender", attributeChecker);
-			digester.addRule("*/listener", attributeChecker);
-			digester.addRule("*/postboxSender", attributeChecker);
-			digester.addRule("*/postboxListener", attributeChecker);
-			digester.addRule("*/errorSender", attributeChecker);
-			digester.addRule("*/messageLog", attributeChecker);
-			digester.addRule("*/inProcessStorage", attributeChecker);
-			digester.addRule("*/errorStorage", attributeChecker);
-			digester.addRule("*/pipe", attributeChecker);
-			digester.addRule("*/readerFactory", attributeChecker);
-			digester.addRule("*/manager", attributeChecker);
-			digester.addRule("*/manager/flow", attributeChecker);
-			digester.addRule("*/recordHandler", attributeChecker);
-			digester.addRule("*/resultHandler", attributeChecker);
-			digester.addRule("*/forward", attributeChecker);
-			digester.addRule("*/child", attributeChecker);
-			digester.addRule("*/param", attributeChecker);
-			digester.addRule("*/pipeline/exits/exit", attributeChecker);
-			digester.addRule("*/scheduler/job", attributeChecker);
-			digester.addRule("*/locker", attributeChecker);
-			digester.addRule("*/statistics", attributeChecker);
-			digester.addRule("*/handler", attributeChecker);
-			digester.addRule("*/cache", attributeChecker);
-			digester.addRule("*/inputValidator", attributeChecker);
-			digester.addRule("*/outputValidator", attributeChecker);
-			digester.addRule("*/inputWrapper", attributeChecker);
-			digester.addRule("*/outputWrapper", attributeChecker);
-			MonitorManager.getInstance().setDigesterRules(digester);
+            digester.addRule("*/jmsRealms", attributeChecker);
+            digester.addRule("*/jmsRealm", attributeChecker);
+            digester.addRule("*/sapSystem", attributeChecker);
+            digester.addRule("*/adapter", attributeChecker);
+            digester.addRule("*/pipeline", attributeChecker);
+            digester.addRule("*/errorMessageFormatter", attributeChecker);
+            digester.addRule("*/receiver", attributeChecker);
+            digester.addRule("*/sender", attributeChecker);
+            digester.addRule("*/listener", attributeChecker);
+            digester.addRule("*/postboxSender", attributeChecker);
+            digester.addRule("*/postboxListener", attributeChecker);
+            digester.addRule("*/errorSender", attributeChecker);
+            digester.addRule("*/messageLog", attributeChecker);
+            digester.addRule("*/inProcessStorage", attributeChecker);
+            digester.addRule("*/errorStorage", attributeChecker);
+            digester.addRule("*/pipe", attributeChecker);
+            digester.addRule("*/readerFactory", attributeChecker);
+            digester.addRule("*/manager", attributeChecker);
+            digester.addRule("*/manager/flow", attributeChecker);
+            digester.addRule("*/recordHandler", attributeChecker);
+            digester.addRule("*/resultHandler", attributeChecker);
+            digester.addRule("*/forward", attributeChecker);
+            digester.addRule("*/child", attributeChecker);
+            digester.addRule("*/param", attributeChecker);
+            digester.addRule("*/pipeline/exits/exit", attributeChecker);
+            digester.addRule("*/scheduler/job", attributeChecker);
+            digester.addRule("*/locker", attributeChecker);
+            digester.addRule("*/statistics", attributeChecker);
+            digester.addRule("*/handler", attributeChecker);
+            digester.addRule("*/cache", attributeChecker);
+            digester.addRule("*/inputValidator", attributeChecker);
+            digester.addRule("*/outputValidator", attributeChecker);
+            digester.addRule("*/inputWrapper", attributeChecker);
+            digester.addRule("*/outputWrapper", attributeChecker);
+            MonitorManager.getInstance().setDigesterRules(digester);
 
 // Resolving variables is now done by Digester
 //			// ensure that lines are seperated, usefulls when a parsing error occurs
@@ -206,16 +194,34 @@ abstract public class ConfigurationDigester {
 //			Variant var=new Variant(resolvedConfig);
 //			InputSource is=var.asXmlInputSource();
 
-			boolean validation = AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY, false);
-			if (validation) {
-				digester.setValidating(true);
-				digester.setNamespaceAware(true);
-				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
-				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource",   "AdapterFramework.xsd");
-				XmlErrorHandler xeh = new XmlErrorHandler();
-				digester.setErrorHandler(xeh);
-			}
+            boolean validation = AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY, false);
+            if (validation) {
+                digester.setValidating(true);
+                digester.setNamespaceAware(true);
+                digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
+                digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", "AdapterFramework.xsd");
+                XmlErrorHandler xeh = new XmlErrorHandler();
+                digester.setErrorHandler(xeh);
+            }
 
+        return digester;
+    }
+
+	private void digestConfiguration(URL configurationFileURL) throws ConfigurationException, SAXNotSupportedException, SAXNotRecognizedException {
+
+        URL digesterRulesURL = ClassUtils.getResourceURL(this, getDigesterRules());
+        Object stackTop = this.configuration;
+
+		if (configurationFileURL == null) {
+			configurationFileURL = ClassUtils.getResourceURL(stackTop, IbisManager.DFLT_CONFIGURATION);
+		}
+		if (configurationFileURL == null) {
+			configWarnings.add(log, "Could not find " + IbisManager.DFLT_CONFIGURATION);
+			return;
+		}
+
+        Digester digester = getDigester();
+        try {
 			fillConfigWarnDefaultValueExceptions(configurationFileURL);
 
 			String lineSeparator = SystemUtils.LINE_SEPARATOR;
@@ -244,7 +250,7 @@ abstract public class ConfigurationDigester {
 		}
 	}
 
-	public void fillConfigWarnDefaultValueExceptions(URL configurationFileURL) throws Exception {
+	private  void fillConfigWarnDefaultValueExceptions(URL configurationFileURL) throws Exception {
 		URL xsltSource = ClassUtils.getResourceURL(this, attributesGetter_xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource ["+stub4testtool_xslt+"]");
@@ -275,32 +281,27 @@ abstract public class ConfigurationDigester {
 		}
 	}
 
-	public void include(Object stackTop) throws ConfigurationException {
+	private void include() throws ConfigurationException, SAXNotSupportedException, SAXNotRecognizedException {
 		URL includedConfigUrl = ClassUtils.getResourceURL(this, getConfigurationFile());
 		if (includedConfigUrl == null) {
 			throw new ConfigurationException("cannot find resource ["+getConfigurationFile()+"] to include");
 		}
-		URL digesterRules = ClassUtils.getResourceURL(this, getDigesterRules());
-		if (stackTop == null) {
-			stackTop = this.configuration;
-		}
-		digestConfiguration(stackTop, digesterRules, includedConfigUrl);
+
+		digestConfiguration(includedConfigUrl);
 	}
 
-	public Configuration unmarshalConfiguration() throws ConfigurationException
-	{
+	private Configuration unmarshalConfiguration() throws ConfigurationException, SAXNotSupportedException, SAXNotRecognizedException {
 		return unmarshalConfiguration(getDigesterRules(), getConfigurationFile());
 	}
 
-    public Configuration unmarshalConfiguration(String digesterRulesFile, String configurationFile) throws ConfigurationException
-    {
+    private  Configuration unmarshalConfiguration(String digesterRulesFile, String configurationFile) throws ConfigurationException, SAXNotSupportedException, SAXNotRecognizedException {
 		return unmarshalConfiguration(ClassUtils.getResourceURL(this, digesterRulesFile), ClassUtils.getResourceURL(this, configurationFile));
     }
 
-    public Configuration unmarshalConfiguration(URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException{
+    public Configuration unmarshalConfiguration(URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException, SAXNotSupportedException, SAXNotRecognizedException {
         configuration.setDigesterRulesURL(digesterRulesURL);
         configuration.setConfigurationURL(configurationFileURL);
-		digestConfiguration(configuration,digesterRulesURL,configurationFileURL);
+		digestConfiguration(configurationFileURL);
 		MonitorManager.getInstance().configure(configuration);
 
         log.info("************** Configuration completed **************");
