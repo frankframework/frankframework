@@ -26,6 +26,13 @@
       <scope>system</scope>
     </dependency>
     <dependency>
+      <groupId>com.tibco.tibjms</groupId>
+      <artifactId>tibjmsadmin</artifactId>
+      <version>0</version>
+      <systemPath>${iaf-lib.basedir}/tibco/tibjmsadmin.jar</systemPath>
+      <scope>system</scope>
+    </dependency>
+    <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
     </dependency>
