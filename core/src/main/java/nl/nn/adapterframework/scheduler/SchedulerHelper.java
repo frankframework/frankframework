@@ -15,39 +15,35 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import java.text.ParseException;
-
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.LogUtil;
 
+import java.text.ParseException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.quartz.CronTrigger;
-import org.quartz.JobDetail;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.Trigger;
+import org.quartz.*;
 
 /**
  * The SchedulerHelper encapsulates the quarz scheduler.
- * 
+ *
  * @author John Dekker
  */
 public class SchedulerHelper {
 	protected static Logger log = LogUtil.getLogger(SchedulerHelper.class);
-	
+
     private Scheduler scheduler;
-    
+
 	public void scheduleJob(IbisManager ibisManager, JobDef jobdef) throws Exception {
 		JobDetail jobDetail = jobdef.getJobDetail(ibisManager);
 
 		scheduleJob(jobdef.getName(), jobDetail, jobdef.getCronExpression(), true);
 	}
-	
+
 	public void scheduleJob(String jobName, JobDetail jobDetail, String cronExpression, boolean overwrite) throws SchedulerException, ParseException {
 		scheduleJob(jobName, Scheduler.DEFAULT_GROUP, jobDetail, cronExpression, overwrite);
 	}
-	
+
 	public void scheduleJob(String jobName, String jobGroup, JobDetail jobDetail, String cronExpression, boolean overwrite) throws SchedulerException, ParseException {
 		Scheduler sched = getScheduler();
 
@@ -67,7 +63,7 @@ public class SchedulerHelper {
 			log.warn("no cronexpression for job [" + jobName + "], cannot schedule");
 		}
 	}
-	
+
 	public Trigger getTrigger(String jobName) throws SchedulerException {
 		return getTrigger(jobName, Scheduler.DEFAULT_GROUP);
 	}
@@ -82,37 +78,37 @@ public class SchedulerHelper {
 
 	public JobDetail getJobForTrigger(String jobName, String jobGroup) throws SchedulerException {
 		Scheduler sched = getScheduler();
-		
+
 		Trigger t = sched.getTrigger(jobName, jobGroup);
 		String name = t.getJobName();
 		String group = t.getJobGroup();
-		
+
 		return sched.getJobDetail(name, group);
 	}
-	
+
 	public void deleteTrigger(String jobName) throws SchedulerException {
 		deleteTrigger(jobName, Scheduler.DEFAULT_GROUP);
 	}
-	
+
 	public void deleteTrigger(String jobName, String jobGroup) throws SchedulerException {
 		getScheduler().unscheduleJob(jobName, jobGroup);
 	}
-	
+
 	public Scheduler getScheduler() throws SchedulerException {
-		return scheduler;		
+		return scheduler;
 	}
-    
+
     public void setScheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
     }
-    
+
 	public void startScheduler() throws SchedulerException {
 		Scheduler scheduler = getScheduler();
-		if (!scheduler.isStarted()) {
+		if (scheduler != null && !scheduler.isStarted()) {
 			log.info("Starting Scheduler");
 			scheduler.start();
 		}
 	}
-	
-	
+
+
 }
