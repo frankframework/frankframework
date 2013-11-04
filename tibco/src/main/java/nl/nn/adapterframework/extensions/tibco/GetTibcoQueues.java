@@ -48,6 +48,7 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSkipTemporaryQueues(boolean) skipTemporaryQueues}</td><td>>when set to <code>true</code>, temporary queues are skipped</td><td>false</td></tr>
  * </table>
  * </p>
  * <p>
@@ -62,7 +63,7 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
  * </p>
  * 
  * @author Peter Leeuwenburgh
- * @version $Id$
+ * @version $Id: GetTibcoQueues.java,v 1.5 2013/11/04 13:08:24 m168309 Exp $
  */
 
 public class GetTibcoQueues extends FixedForwardPipe {
@@ -70,6 +71,7 @@ public class GetTibcoQueues extends FixedForwardPipe {
 	private String authAlias;
 	private String userName;
 	private String password;
+	private boolean skipTemporaryQueues = false;
 
 	public PipeRunResult doPipe(Object input, IPipeLineSession session)
 			throws PipeRunException {
@@ -132,44 +134,68 @@ public class GetTibcoQueues extends FixedForwardPipe {
 
 			QueueInfo[] qInfos = admin.getQueues();
 			for (int i = 0; i < qInfos.length; i++) {
-				XmlBuilder qInfoXml = new XmlBuilder("qInfo");
 				QueueInfo qInfo = qInfos[i];
-				XmlBuilder qNameXml = new XmlBuilder("qName");
-				String qName = qInfo.getName();
-				qNameXml.setCdataValue(qName);
-				qInfoXml.addSubElement(qNameXml);
-				XmlBuilder pendingMsgCountXml = new XmlBuilder("pendingMsgCount");
-				long pendingMsgCount = qInfo.getPendingMessageCount();
-				pendingMsgCountXml.setValue(Long.toString(pendingMsgCount));
-				qInfoXml.addSubElement(pendingMsgCountXml);
-				XmlBuilder pendingMsgSizeXml = new XmlBuilder("pendingMsgSize");
-				long pendingMsgSize = qInfo.getPendingMessageSize();
-				pendingMsgSizeXml.setValue(Misc.toFileSize(pendingMsgSize));
-				qInfoXml.addSubElement(pendingMsgSizeXml);
-				XmlBuilder receiverCountXml = new XmlBuilder("receiverCount");
-				int receiverCount = qInfo.getReceiverCount();
-				receiverCountXml.setValue(Integer.toString(receiverCount));
-				qInfoXml.addSubElement(receiverCountXml);
-				XmlBuilder inTotalMsgsXml = new XmlBuilder("inTotalMsgs");
-				long inTotalMsgs = qInfo.getInboundStatistics()
-						.getTotalMessages();
-				inTotalMsgsXml.setValue(Long.toString(inTotalMsgs));
-				qInfoXml.addSubElement(inTotalMsgsXml);
-				XmlBuilder outTotalMsgsXml = new XmlBuilder("outTotalMsgs");
-				long outTotalMsgs = qInfo.getOutboundStatistics()
-						.getTotalMessages();
-				outTotalMsgsXml.setValue(Long.toString(outTotalMsgs));
-				qInfoXml.addSubElement(outTotalMsgsXml);
-				XmlBuilder isBridgedXml = new XmlBuilder("isBridged");
-				BridgeTarget[] bta = qInfo.getBridgeTargets();
-				isBridgedXml.setValue(bta.length==0?"false":"true");
-				qInfoXml.addSubElement(isBridgedXml);
-				qInfosXml.addSubElement(qInfoXml);
-				XmlBuilder aclXml = new XmlBuilder("acl");
-				aclXml.setValue((String)aclMap.get(qName));
-				qInfoXml.addSubElement(aclXml);
+				if (skipTemporaryQueues && qInfo.isTemporary()) {
+					//skip
+				} else {
+					XmlBuilder qInfoXml = new XmlBuilder("qInfo");
+					XmlBuilder qNameXml = new XmlBuilder("qName");
+					String qName = qInfo.getName();
+					qNameXml.setCdataValue(qName);
+					qInfoXml.addSubElement(qNameXml);
+					XmlBuilder pendingMsgCountXml = new XmlBuilder("pendingMsgCount");
+					long pendingMsgCount = qInfo.getPendingMessageCount();
+					pendingMsgCountXml.setValue(Long.toString(pendingMsgCount));
+					qInfoXml.addSubElement(pendingMsgCountXml);
+					XmlBuilder pendingMsgSizeXml = new XmlBuilder("pendingMsgSize");
+					long pendingMsgSize = qInfo.getPendingMessageSize();
+					pendingMsgSizeXml.setValue(Misc.toFileSize(pendingMsgSize));
+					qInfoXml.addSubElement(pendingMsgSizeXml);
+					XmlBuilder receiverCountXml = new XmlBuilder("receiverCount");
+					int receiverCount = qInfo.getReceiverCount();
+					receiverCountXml.setValue(Integer.toString(receiverCount));
+					qInfoXml.addSubElement(receiverCountXml);
+					XmlBuilder inTotalMsgsXml = new XmlBuilder("inTotalMsgs");
+					long inTotalMsgs = qInfo.getInboundStatistics()
+							.getTotalMessages();
+					inTotalMsgsXml.setValue(Long.toString(inTotalMsgs));
+					qInfoXml.addSubElement(inTotalMsgsXml);
+					XmlBuilder outTotalMsgsXml = new XmlBuilder("outTotalMsgs");
+					long outTotalMsgs = qInfo.getOutboundStatistics()
+							.getTotalMessages();
+					outTotalMsgsXml.setValue(Long.toString(outTotalMsgs));
+					qInfoXml.addSubElement(outTotalMsgsXml);
+					XmlBuilder isStaticXml = new XmlBuilder("isStatic");
+					isStaticXml.setValue(qInfo.isStatic()?"true":"false");
+					qInfoXml.addSubElement(isStaticXml);
+					XmlBuilder prefetchXml = new XmlBuilder("prefetch");
+					int prefetch = qInfo.getPrefetch();
+					prefetchXml.setValue(Integer.toString(prefetch));
+					qInfoXml.addSubElement(prefetchXml);
+					XmlBuilder isBridgedXml = new XmlBuilder("isBridged");
+					BridgeTarget[] bta = qInfo.getBridgeTargets();
+					isBridgedXml.setValue(bta.length==0?"false":"true");
+					qInfoXml.addSubElement(isBridgedXml);
+					if (bta.length!=0) {
+	 					XmlBuilder bridgeTargetsXml = new XmlBuilder("bridgeTargets");
+	 					String btaString = null;
+	 					for (int j = 0; j < bta.length; j++) {
+	 						BridgeTarget bridgeTarget = bta[j];
+	 						if (btaString==null) {
+		 						btaString = bridgeTarget.toString();
+	 						} else {
+		 						btaString = btaString + "; " + bridgeTarget.toString();
+	 						}
+	 					}
+							bridgeTargetsXml.setCdataValue(btaString);
+		 					qInfoXml.addSubElement(bridgeTargetsXml);
+					}
+					qInfosXml.addSubElement(qInfoXml);
+					XmlBuilder aclXml = new XmlBuilder("acl");
+					aclXml.setValue((String)aclMap.get(qName));
+					qInfoXml.addSubElement(aclXml);
+				}
 			}
-
 		} catch (TibjmsAdminException e) {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ " Exception on getting Tibco queues", e);
@@ -229,5 +255,13 @@ public class GetTibcoQueues extends FixedForwardPipe {
 
 	public void setPassword(String string) {
 		password = string;
+	}
+
+	public boolean isSkipTemporaryQueues() {
+		return skipTemporaryQueues;
+	}
+
+	public void setSkipTemporaryQueues(boolean b) {
+		skipTemporaryQueues = b;
 	}
 }
