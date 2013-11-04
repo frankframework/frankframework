@@ -102,6 +102,13 @@ public class RestServiceDispatcher  {
 		if (etagKey!=null) context.put(etagKey,etag);
 		if (contentTypeKey!=null) context.put(contentTypeKey,contentType);
 		if (log.isDebugEnabled()) log.debug("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
+
+		if (listener instanceof RestListener) {
+			RestListener restListener = (RestListener) listener;
+			String ctName = Thread.currentThread().getName();
+			Thread.currentThread().setName(restListener.getName() + "["+ctName+"]");
+		}
+		
 		String result=listener.processRequest(null, request, context);
 		if (result==null) {
 			log.warn("result is null!");
