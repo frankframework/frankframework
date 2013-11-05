@@ -33,6 +33,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -231,6 +232,13 @@ public final class ShowConfigurationStatus extends ActionBase {
 								log.warn(e);
 								receiverXML.addAttribute("messageLogCount", "error");
 							}
+						}
+						boolean isRestListener = (listener instanceof RestListener);
+						receiverXML.addAttribute("isRestListener", isRestListener);
+						if (isRestListener) {
+							RestListener rl = (RestListener) listener;
+							String path = getServlet().getServletContext().getInitParameter("restListenerPathPrefix") + "/" + rl.getUriPattern();
+							receiverXML.addAttribute("restUriPattern", path);
 						}
 					}
 
