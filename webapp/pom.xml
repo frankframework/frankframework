@@ -6,13 +6,10 @@
     <artifactId>ibis-parent</artifactId>
     <version>5.0.29-SNAPSHOT</version>
   </parent>
+
   <artifactId>ibis-webapp</artifactId>
   <name>Ibis AdapterFramework webapp</name>
   <packaging>war</packaging>
-
-  <properties>
-    <ibis.version>${project.version}</ibis.version>
-  </properties>
 
   <dependencies>
     <dependency>
@@ -39,24 +36,23 @@
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-ibm</artifactId>
     </dependency>
-
-    <!-- a number of classes are mentioned in spring configuration -->
     <dependency>
-      <groupId>cglib</groupId>
-      <artifactId>cglib-nodep</artifactId>
-      <version>2.1_3</version>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-btm</artifactId>
+      <version>2.1.3</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.glassfish.main.transaction</groupId>
-      <artifactId>javax.transaction</artifactId>
-      <version>3.1.2.2</version>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-xtags</artifactId>
+      <version>1.0</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>jaxen</groupId>
+      <groupId>org.codehaus</groupId>
       <artifactId>jaxen</artifactId>
-      <version>1.1.4</version>
+      <version>1.1.6</version>
     </dependency>
   </dependencies>
+
 </project>

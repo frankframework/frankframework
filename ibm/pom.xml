@@ -6,64 +6,31 @@
     <artifactId>ibis-parent</artifactId>
     <version>5.0.29-SNAPSHOT</version>
   </parent>
+
   <artifactId>ibis-adapterframework-ibm</artifactId>
   <name>Ibis AdapterFramework support for IBM</name>
-
-  <properties>
-    <iaf-lib.basedir>${basedir}/../../iaf-lib</iaf-lib.basedir>
-  </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-core</artifactId>
     </dependency>
-
-    <!--dependency>
-      <groupId>com.ibm.websphere</groupId>
-      <artifactId>admin</artifactId>
-      <version>0</version>
-      <systemPath>${iaf-lib.basedir}/ibm/admin.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.ibm.websphere</groupId>
-      <artifactId>sas</artifactId>
-      <version>0</version>
-      <systemPath>${iaf-lib.basedir}/ibm/sas.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-
-
-    <dependency>
-      <groupId>com.ibm.websphere</groupId>
-      <artifactId>wssec</artifactId>
-      <version>0</version>
-      <systemPath>${iaf-lib.basedir}/ibm/wssec.jar</systemPath>
-      <scope>system</scope>
-    </dependency-->
-
-    <dependency>
-      <groupId>com.ibm.websphere</groupId>
-      <artifactId>jms</artifactId>
-      <version>6.1.0</version>
-      <systemPath>${iaf-lib.basedir}/ibm/com.ibm.ws.runtime_6.1.0.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-
-
-    <dependency>
-      <groupId>com.ibm.mq</groupId>
-      <artifactId>jms</artifactId>
-      <version>1.0.2b</version>
-      <systemPath>${iaf-lib.basedir}/ibm/com.ibm.mqjms.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-jms_1.1_spec</artifactId>
-      <version>1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm</groupId>
+      <artifactId>ws-runtime</artifactId>
+      <version>6.1.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm</groupId>
+      <artifactId>mqjms</artifactId>
+      <version>6.0.2.8</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
+
 </project>
