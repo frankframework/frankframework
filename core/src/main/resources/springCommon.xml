@@ -4,10 +4,8 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     default-autowire="byName"
     xsi:schemaLocation=
-        "
-        http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
-		    http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
-		 "
+        "http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd"
     >
 
   <bean
@@ -39,12 +37,6 @@
 
 
   <!-- IBIS Beans -->
-  <!--
-  <bean id="adapterService" class="nl.nn.adapterframework.configuration.DirectoryScanningAdapterServiceImpl"
-      >
-    <constructor-arg value="/Users/michiel/ibis/Ibis4VoorbeeldWEB/WebContent/WEB-INF/classes/"/>
-  </bean>
-  -->
   <bean id="adapterService" class="nl.nn.adapterframework.configuration.BasicAdapterServiceImpl"
       >
   </bean>
