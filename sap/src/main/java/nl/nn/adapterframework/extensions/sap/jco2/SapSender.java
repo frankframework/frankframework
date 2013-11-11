@@ -27,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import com.sap.mw.jco.JCO;
 
 /**
- * Implementation of {@link ISender} that calls a SAP RFC-function.
+ * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that calls a SAP RFC-function.
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>

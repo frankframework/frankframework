@@ -189,7 +189,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	/**
 	 * Validate the XML string
 	 * @param input a String
-	 * @param session a {@link nl.nn.adapterframework.core.PipeLineSession Pipelinesession}
+	 * @param session a {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession}
 	 * @return MonitorEvent declared in{@link AbstractXmlValidator}
 	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
 	 * @throws PipeRunException

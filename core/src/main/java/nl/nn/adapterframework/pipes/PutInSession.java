@@ -41,7 +41,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * </p>
  * @author Johan Verrips
  *
- * @see PipeLineSession
+ * @see IPipeLineSession
  */
 public class PutInSession extends FixedForwardPipe {
 	
@@ -73,14 +73,14 @@ public class PutInSession extends FixedForwardPipe {
 	}
 	/**
 	 * The name of the key in the <code>PipeLineSession</code> to store the input in
-	 * @see nl.nn.adapterframework.core.PipeLineSession
+	 * @see nl.nn.adapterframework.core.IPipeLineSession
 	 */
 	public String getSessionKey() {
 		return sessionKey;
 	}
 	/**
 	 * The name of the key in the <code>PipeLineSession</code> to store the input in
-	 * @see nl.nn.adapterframework.core.PipeLineSession
+	 * @see nl.nn.adapterframework.core.IPipeLineSession
 	 */
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
@@ -88,7 +88,7 @@ public class PutInSession extends FixedForwardPipe {
 
 	/**
 	 * The value to store the in the <code>PipeLineSession</code>
-	 * @see nl.nn.adapterframework.core.PipeLineSession
+	 * @see nl.nn.adapterframework.core.IPipeLineSession
 	 */
 	public void setValue(String value) {
 		this.value = value;

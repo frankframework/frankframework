@@ -20,7 +20,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPushingListener;
 
 /**
- * Implementation of a {@link IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
+ * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
  * to receive REST messages.
  * <p><b>Configuration:</b>
  * <table border="1">

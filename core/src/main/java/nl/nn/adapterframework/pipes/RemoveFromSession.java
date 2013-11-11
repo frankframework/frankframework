@@ -26,13 +26,13 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Removes a key specified by <code>{@link #setSessionKey(String) sessionKey}</code>
- * from the {@link PipeLineSession}.
+ * from the {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession}.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to remove. If this key is empty the input message is interpretted as key. For multiple keys use ',' as delimiter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the result of this pipe will be the same as the input. Otherwise the content of the removed key is returned (and '[null]' when the key is not found)</td><td>true</td></tr>
@@ -47,7 +47,7 @@ import org.apache.commons.lang.StringUtils;
  * </p>
  * @author Peter Leeuwenburgh
  *
- * @see PipeLineSession
+ * @see IPipeLineSession
  */
 
  public class RemoveFromSession  extends FixedForwardPipe {
@@ -108,14 +108,14 @@ public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeR
 }
 /**
  * The name of the key in the <code>PipeLineSession</code> to store the input in
- * {@link PipeLineSession}
+ * {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession}
  */
 public String getSessionKey() {
 	return sessionKey;
 }
 /**
  * The name of the key in the <code>PipeLineSession</code> to store the input in
- * @see nl.nn.adapterframework.core.PipeLineSession
+ * @see nl.nn.adapterframework.core.IPipeLineSession
  * 
  * @param newSessionKey String
  */

@@ -19,7 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 
 /**
- * FixedResultSender, same behaviour as {@link FixedResult}, but now as a ISender.
+ * FixedResultSender, same behaviour as {@link nl.nn.adapterframework.pipes.FixedResult FixedResult}, but now as a ISender.
  * 
  * @deprecated This sender has been moved to the {@link nl.nn.adapterframework.senders.FixedResultSender senders}-package.
  * 

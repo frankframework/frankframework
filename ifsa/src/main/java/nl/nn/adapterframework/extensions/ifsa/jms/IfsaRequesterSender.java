@@ -52,7 +52,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
 
 
 /**
- * {@link ISender} that sends a message to an IFSA service and, in case the messageprotocol is RR (Request-Reply)
+ * {@link nl.nn.adapterframework.core.ISender sender} that sends a message to an IFSA service and, in case the messageprotocol is RR (Request-Reply)
  * it waits for an reply-message.
  * <br>
  *

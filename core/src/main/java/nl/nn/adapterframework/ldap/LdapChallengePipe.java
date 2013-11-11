@@ -83,7 +83,7 @@ public class LdapChallengePipe extends AbstractPipe {
 
 	/** 
 	 * Checks to see if the supplied parameteres of the pipe can login to LDAP 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)
 	 */
 	public PipeRunResult doPipe(Object msg, IPipeLineSession pls) throws PipeRunException {
 

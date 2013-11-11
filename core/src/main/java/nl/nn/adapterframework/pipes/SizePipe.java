@@ -28,7 +28,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 public class SizePipe extends FixedForwardPipe {
 
 	/**
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)
+* @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
 	 */
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		try {
