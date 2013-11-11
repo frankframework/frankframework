@@ -28,6 +28,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -112,6 +113,8 @@ public class GetTibcoQueues extends FixedForwardPipe {
 		CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
 		TibjmsAdmin admin = null;
 		XmlBuilder qInfosXml = new XmlBuilder("qInfos");
+		qInfosXml.addAttribute("url", url_work);
+		qInfosXml.addAttribute("timestamp", DateUtils.getIsoTimeStamp());
 		try {
 			admin = new TibjmsAdmin(url_work, cf.getUsername(), cf.getPassword());
 
