@@ -6,78 +6,49 @@
     <artifactId>ibis-parent</artifactId>
     <version>5.0.29-SNAPSHOT</version>
   </parent>
+
   <artifactId>ibis-adapterframework-core</artifactId>
   <name>Ibis AdapterFramework core</name>
 
-  <properties>
-    <saxon.version>8.7</saxon.version>
-  </properties>
-
   <dependencies>
-
-    <!-- provided dependencies, probably by the application container -->
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>2.4</version>
-      <scope>provided</scope>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
     </dependency>
-
     <dependency>
-      <groupId>org.apache.openjpa</groupId>
-      <artifactId>openjpa-all</artifactId>
-      <version>2.0.0-M3</version>
-      <scope>provided</scope>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jms_1.1_spec</artifactId>
     </dependency>
-    <!-- doesn't provide implementation, not useable for junit testing.
-         http://svetzal.wordpress.com/2009/12/26/java-ee-6-untestable/
-         <dependency>
-         <groupId>javax</groupId>
-         <artifactId>javaee-api</artifactId>
-         <version>6.0</version>
-         <scope>provided</scope>
-         </dependency>
-
-      <dependency>
-          <groupId>org.glassfish</groupId>
-          <artifactId>javax.javaee</artifactId>
-          <version>3.0-b54</version>
-          <scope>test</scope>
-      </dependency>
--->
-
+    <dependency>
+      <groupId>javax.ejb</groupId>
+      <artifactId>ejb-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.transaction</groupId> 
+      <artifactId>transaction-api</artifactId> 
+      <version>1.1</version> 
+      <scope>compile</scope>
+    </dependency>
     <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
       <version>1.4.5</version>
     </dependency>
-
-    <dependency>
-      <groupId>javax.ejb</groupId>
-      <artifactId>ejb-api</artifactId>
-      <version>3.0</version>
-    </dependency>
-
     <!-- commons -->
-
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
     </dependency>
-
-
     <dependency>
       <groupId>commons-pool</groupId>
       <artifactId>commons-pool</artifactId>
       <version>1.5.5</version>
     </dependency>
-
     <dependency>
       <groupId>commons-digester</groupId>
       <artifactId>commons-digester</artifactId>
       <version>1.8.1</version>
     </dependency>
-
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
@@ -88,34 +59,23 @@
       <artifactId>commons-httpclient</artifactId>
       <version>3.1</version>
     </dependency>
-
      <dependency>
       <groupId>commons-net</groupId>
       <artifactId>commons-net</artifactId>
       <version>1.4.1</version>
     </dependency>
-
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>1.4</version>
       <scope>test</scope>
     </dependency>
-
     <!-- xml related -->
-
     <dependency>
       <groupId>net.sf.saxon</groupId>
-      <artifactId>saxon</artifactId>
-      <version>${saxon.version}</version>
+      <artifactId>Saxon-HE</artifactId>
+      <version>9.4.0.7</version>
     </dependency>
-
-    <dependency>
-      <groupId>net.sf.saxon</groupId>
-      <artifactId>saxon-dom</artifactId>
-      <version>${saxon.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>net.java.dev.stax-utils</groupId>
       <artifactId>stax-utils</artifactId>
@@ -127,34 +87,27 @@
         </exclusion>
       </exclusions>
     </dependency>
-
-
     <dependency>
       <groupId>dom4j</groupId>
       <artifactId>dom4j</artifactId>
       <version>1.6.1</version>
     </dependency>
-
     <dependency>
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
       <version>2.9.1</version> <!-- all kind of things don't work with newer versions -->
     </dependency>
-
-
     <!-- frameworks -->
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring</artifactId>
       <version>2.0.5</version>
     </dependency>
-
     <dependency>
       <groupId>struts</groupId>
       <artifactId>struts</artifactId>
       <version>1.2.9</version>
     </dependency>
-
     <!-- webservices related -->
     <dependency>
       <groupId>com.sun.xml.ws</groupId>
@@ -176,102 +129,58 @@
       <artifactId>soap</artifactId>
       <version>2.3.1</version>
     </dependency>
-
     <dependency>
-      <groupId>nl.nn.wsdl</groupId>
+      <groupId>org.ibissource</groupId>
       <artifactId>ibis-wsdl4j</artifactId>
       <version>1.6.2</version>
     </dependency>
-
     <dependency>
-      <groupId>opensymphony</groupId>
+      <groupId>org.quartz-scheduler</groupId>
       <artifactId>quartz</artifactId>
-      <version>1.6.0</version>
+      <version>1.6.6</version>
     </dependency>
-
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-    </dependency>
-
     <dependency>
       <groupId>sshtools</groupId>
       <artifactId>j2ssh-core</artifactId>
       <version>0.2.2</version>
     </dependency>
-
     <dependency>
       <groupId>net.sf.ehcache</groupId>
       <artifactId>ehcache</artifactId>
       <version>1.5.0</version>
     </dependency>
-
-
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
       <version>20080701</version>
     </dependency>
-
-
     <dependency>
-      <groupId>nl.nn.xalan</groupId>
+      <groupId>org.ibissource</groupId>
       <artifactId>ibis-xalan</artifactId>
-      <version>0.1</version>
+      <version>2.7.1</version>
     </dependency>
     <dependency>
-      <groupId>nl.nn.xalan</groupId>
+      <groupId>org.ibissource</groupId>
       <artifactId>ibis-xalan-serializer</artifactId>
-      <version>0.1</version>
+      <version>2.7.1</version>
     </dependency>
-
-
-    <!-- WTF -->
     <dependency>
       <groupId>com.sun.org.apache</groupId>
       <artifactId>jaxp-ri</artifactId>
       <version>1.4</version>
       <scope>provided</scope>
     </dependency>
-
-    <!-- nl.nn -->
     <dependency>
       <groupId>nl.nn.adapterframework</groupId>
       <artifactId>service-dispatcher</artifactId>
       <version>1.3</version>
     </dependency>
-
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-webspheremq</artifactId>
       <version>1.0</version>
       <scope>compile</scope>
     </dependency>
-
-
-   <!-- Test scoped dependencies -->
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.8.2</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- not only used in testing....
-    <dependency>
-      <groupId>xmlunit</groupId>
-      <artifactId>xmlunit</artifactId>
-      <version>1.2</version>
-      <scope>test</scope>
-    </dependency>
-    -->
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>1.8.5</version>
-      <scope>test</scope>
-    </dependency>
-
     <dependency>
       <groupId>xmlunit</groupId>
       <artifactId>xmlunit</artifactId>
@@ -283,11 +192,10 @@
       <version>2.5.0</version>
     </dependency>
     <dependency>
-      <groupId>net.sf.saxon</groupId>
-      <artifactId>Saxon-HE</artifactId>
-      <version>9.4.0.7</version>
+      <groupId>cglib</groupId>
+      <artifactId>cglib-nodep</artifactId>
+      <version>2.1_3</version>
     </dependency>
-
     <dependency>
       <groupId>jcifs</groupId>
       <artifactId>jcifs</artifactId>
@@ -303,81 +211,31 @@
       <artifactId>httpclient</artifactId>
       <version>4.3.1</version>
     </dependency>
-
-
-    <!-- a number of classes are mentioned in spring configuration -->
+    <!-- Test scoped dependencies -->
     <dependency>
-      <groupId>cglib</groupId>
-      <artifactId>cglib-nodep</artifactId>
-      <version>2.1_3</version>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.8.2</version>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>1.8.5</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>commons-dbcp</groupId>
       <artifactId>commons-dbcp</artifactId>
       <version>1.4</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.hsqldb</groupId>
       <artifactId>hsqldb</artifactId>
       <version>2.3.0</version>
       <scope>test</scope>
     </dependency>
-
-
-
-
   </dependencies>
-  <build>
-    <defaultGoal>install</defaultGoal>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>2.1.1</version>
-        <configuration>
-          <archiveClasses>true</archiveClasses>
-          <attachClasses>true</attachClasses>
-          <failOnMissingWebXml>false</failOnMissingWebXml>
-          <classesClassifier>classes</classesClassifier>
-        </configuration>
-      </plugin>
-      <!--
-      <plugin>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>2.1.2</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.8</version>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      -->
-    </plugins>
-  </build>
+
 </project>

@@ -1,17 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
- <parent>
-   <groupId>org.ibissource</groupId>
-   <artifactId>ibis-parent</artifactId>
-   <version>5.0.29-SNAPSHOT</version>
+  <parent>
+    <groupId>org.ibissource</groupId>
+    <artifactId>ibis-parent</artifactId>
+    <version>5.0.29-SNAPSHOT</version>
   </parent>
+
   <artifactId>ibis-adapterframework-tibco</artifactId>
   <name>Ibis AdapterFramework support for TIBCO</name>
-
-  <properties>
-    <iaf-lib.basedir>${basedir}/../../iaf-lib</iaf-lib.basedir>
-  </properties>
 
   <dependencies>
     <dependency>
@@ -19,27 +16,19 @@
       <artifactId>ibis-adapterframework-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.tibco.tibjms</groupId>
+      <groupId>com.tibco</groupId>
       <artifactId>tibjms</artifactId>
-      <version>0</version>
-      <systemPath>${iaf-lib.basedir}/tibco/tibjms.jar</systemPath>
-      <scope>system</scope>
+      <version>4.4.0</version>
     </dependency>
     <dependency>
-      <groupId>com.tibco.tibjms</groupId>
+      <groupId>com.tibco</groupId>
       <artifactId>tibjmsadmin</artifactId>
-      <version>0</version>
-      <systemPath>${iaf-lib.basedir}/tibco/tibjmsadmin.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
+      <version>5.1.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-jms_1.1_spec</artifactId>
-      <version>1.1</version>
     </dependency>
   </dependencies>
+
 </project>

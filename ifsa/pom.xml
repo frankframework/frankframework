@@ -6,74 +6,22 @@
     <artifactId>ibis-parent</artifactId>
     <version>5.0.29-SNAPSHOT</version>
   </parent>
+
   <artifactId>ibis-adapterframework-ifsa</artifactId>
   <name>Ibis AdapterFramework support for IFSA</name>
-
-  <properties>
-    <iaf-lib.basedir>${basedir}/../../iaf-lib</iaf-lib.basedir>
-  </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-core</artifactId>
     </dependency>
-
     <dependency>
-      <groupId>com.ing.ifsa</groupId>
-      <artifactId>IFSACommon</artifactId>
-      <version>0</version>
-      <systemPath>${iaf-lib.basedir}/ifsa/IFSACommon.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.ing.ifsa</groupId>
-      <artifactId>IFSARequestorEJB</artifactId>
-      <version>0</version>
-      <systemPath>${iaf-lib.basedir}/ifsa/IFSARequestorEJB.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.ing.ifsa</groupId>
-      <artifactId>jmsXA</artifactId>
-      <version>22.10.055(beta)</version>
-      <systemPath>${iaf-lib.basedir}/ifsa/ifsajmsXA-22.10.055(beta).jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.ing.ifsa</groupId>
-      <artifactId>jcil</artifactId>
-      <version>2.2</version>
-      <systemPath>${iaf-lib.basedir}/ifsa/ifsajcil.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.ing.ifsa</groupId>
-      <artifactId>j2ee</artifactId>
-      <version>0</version>
-      <systemPath>${iaf-lib.basedir}/ifsa/ifsaj2ee.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-
-
-    <dependency>
-      <groupId>com.ing.mettserver</groupId>
-      <artifactId>mettserver</artifactId>
-      <version>0</version>
-      <systemPath>${iaf-lib.basedir}/ifsa/mett-server.jar</systemPath>
-      <scope>system</scope>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
     </dependency>
     <dependency>
       <groupId>javax.ejb</groupId>
@@ -90,30 +38,43 @@
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-jms_1.1_spec</artifactId>
-      <version>1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ing</groupId>
+      <artifactId>ifsa-common</artifactId>
+      <version>0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.ing</groupId>
+      <artifactId>ifsa-j2ee</artifactId>
+      <version>22.10.004</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.ing</groupId>
+      <artifactId>ifsa-jcil</artifactId>
+      <version>22.10.041</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.ing</groupId>
+      <artifactId>ifsa-jms-xa</artifactId>
+      <version>22.10.055</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.ing</groupId>
+      <artifactId>ifsa-requestor-ejb</artifactId>
+      <version>0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.ing</groupId>
+      <artifactId>mett-server</artifactId>
+      <version>1.0.0</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
-  <build>
-    <defaultGoal>install</defaultGoal>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
-        </configuration>
-      </plugin>
-   </plugins>
-  </build>
-  <repositories>
-    <repository>
-      <id>Java.Net</id>
-      <url>http://download.java.net/maven/2</url>
-    </repository>
-    <repository>
-      <id>ibiblio</id>
-      <url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
-    </repository>
-  </repositories>
+
 </project>

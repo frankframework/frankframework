@@ -6,71 +6,49 @@
     <artifactId>ibis-parent</artifactId>
     <version>5.0.29-SNAPSHOT</version>
   </parent>
+
   <artifactId>ibis-adapterframework-sap</artifactId>
   <name>Ibis AdapterFramework support for SAP</name>
 
-  <properties>
-    <iaf-lib.basedir>${basedir}/../../iaf-lib</iaf-lib.basedir>
-  </properties>
-
   <dependencies>
-
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-core</artifactId>
     </dependency>
-
-    <dependency>
-      <groupId>com.sap</groupId>
-      <artifactId>jco3</artifactId>
-      <version>3</version>
-      <systemPath>${iaf-lib.basedir}/sap/sapjco3.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.sap</groupId>
-      <artifactId>idoc3</artifactId>
-      <version>3</version>
-      <systemPath>${iaf-lib.basedir}/sap/sapidoc3.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-
-    <!--dependency>
-      <groupId>com.sap</groupId>
-      <artifactId>mw</artifactId>
-      <version>3</version>
-      <systemPath>${iaf-lib.basedir}/sap/sap-mw3.jar</systemPath>
-      <scope>system</scope>
-    </dependency-->
-
-    <dependency>
-      <groupId>com.sap</groupId>
-      <artifactId>jco2</artifactId>
-      <version>2.0</version>
-      <systemPath>${iaf-lib.basedir}/sap/sapjco.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.sap</groupId>
-      <artifactId>idoc1</artifactId>
-      <version>1.0.1</version>
-      <systemPath>${iaf-lib.basedir}/sap/sapidoc-1.0.1.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.sap</groupId>
-      <artifactId>idoc-jco</artifactId>
-      <version>1.0.2</version>
-      <systemPath>${iaf-lib.basedir}/sap/sapidocjco-1.0.2.jar</systemPath>
-      <scope>system</scope>
-    </dependency>
-
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.sap.jco2</groupId>
+      <artifactId>sapidoc</artifactId>
+      <version>1.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sap.jco2</groupId>
+      <artifactId>sapidocjco</artifactId>
+      <version>1.0.2</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sap.jco2</groupId>
+      <artifactId>sapjco</artifactId>
+      <version>2.1.5</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sap.jco3</groupId>
+      <artifactId>sapidoc</artifactId>
+      <version>3</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sap.jco3</groupId>
+      <artifactId>sapjco</artifactId>
+      <version>3.0.8</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
+
 </project>
