@@ -314,6 +314,11 @@
 												<parameter name="receiverName"><%=java.net.URLEncoder.encode(receiverName)%></parameter>
 
 											 </imagelink>
+							<% } if ( "true".equalsIgnoreCase(isRestListener) ) { %>
+											<imagelink
+												href="<%=restUriPattern%>"
+												type="showashtml"
+												alt="<%=receiverName%>"/>
 							<% } if ( "true".equalsIgnoreCase(hasErrorStorage) ) { %>
 											<imagelink
 												href="browser.do"
