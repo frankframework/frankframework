@@ -24,7 +24,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 
 
 /**
- * {@link nl.nn.adapterframework.batch.IResulthandler Resulthandler} that writes the transformed record to a BLOB.
+ * {@link nl.nn.adapterframework.batch.IResultHandler ResultHandler} that writes the transformed record to a BLOB.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">

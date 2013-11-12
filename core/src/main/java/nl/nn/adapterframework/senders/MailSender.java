@@ -55,7 +55,7 @@ import org.apache.xerces.impl.dv.util.Base64;
 import org.w3c.dom.Element;
 
 /**
- * {@link ISender} that sends a mail specified by an XML message. <br/>
+ * {@link nl.nn.adapterframework.core.ISender sender} that sends a mail specified by an XML message. <br/>
  *
  * Sample email.xml:<br/><code><pre>
  *	&lt;email&gt;

@@ -30,7 +30,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
 /**
- * Baseclass of a {@link IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
+ * Baseclass of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
  * to receive messages from Servlets.
  * <p><b>Configuration:</b>
  * <table border="1">

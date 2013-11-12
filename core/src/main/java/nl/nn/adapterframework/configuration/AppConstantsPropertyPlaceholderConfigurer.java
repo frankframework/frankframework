@@ -15,15 +15,15 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import java.util.Properties;
-
 import nl.nn.adapterframework.util.AppConstants;
+
+import java.util.Properties;
 
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
 /**
  * Make AppConstants properties available to the Spring configuration.
- * 
+ *
  * @author Jaco de Groot
  */
 public class AppConstantsPropertyPlaceholderConfigurer
@@ -33,8 +33,9 @@ public class AppConstantsPropertyPlaceholderConfigurer
 	public AppConstantsPropertyPlaceholderConfigurer() {
 		setIgnoreUnresolvablePlaceholders(true);
 	}
-	
-	protected void convertProperties(Properties props) {
+
+	@Override
+    protected void convertProperties(Properties props) {
 		props.putAll(appConstants);
 	}
 

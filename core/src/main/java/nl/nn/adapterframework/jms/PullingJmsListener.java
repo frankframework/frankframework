@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listener}-class for {@link nl.nn.adapterframework.receivers.JmsReceiver JmsReceiver}.
+ * A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listener}-class.
  * <br/>
  *
  * <p><b>Configuration:</b>

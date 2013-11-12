@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 
 
 /**
- * Baseclass for batch {@link nl.nn.adapterframework.batch.IResulthandler Resulthandler} that writes the transformed record to a LOB.
+ * Baseclass for batch {@link nl.nn.adapterframework.batch.IResultHandler resultHandler} that writes the transformed record to a LOB.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">

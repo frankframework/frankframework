@@ -26,7 +26,7 @@ public interface IPipe extends INamedObject {
 /**
  * <code>configure()</code> is called once after the {@link PipeLine} is registered
  * at the {@link Adapter}. Purpose of this method is to reduce
- * creating connections to databases etc. in the {@link #doPipe(Object, PipeLineSession) doPipe()} method.
+ * creating connections to databases etc. in the {@link #doPipe(Object, IPipeLineSession) doPipe()} method.
  * As much as possible class-instantiating should take place in the
  * <code>configure()</code> method, to improve performance.
  */ 
@@ -39,7 +39,7 @@ void configure() throws ConfigurationException;
 PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunException;
 
 /**
- * Indicates the maximum number of treads that may call {@link #doPipe(Object, PipeLineSession) doPipe()} simultaneously.
+ * Indicates the maximum number of treads that may call {@link #doPipe(Object, IPipeLineSession) doPipe()} simultaneously.
  * A value of 0 indicates an unlimited number of threads.
  * Pipe implementations that are not thread-safe, i.e. where <code>doPipe()</code> may only be
  * called by one thread at a time, should make sure getMaxThreads always returns a value of 1.

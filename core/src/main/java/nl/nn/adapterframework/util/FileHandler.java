@@ -192,7 +192,7 @@ public class FileHandler {
 		void configure() throws ConfigurationException;
 		/*
 		 * transform the in and return the result
-		 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)
+* @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
 		 */
 		byte[] go(byte[] in, IPipeLineSession session) throws Exception;
 	}

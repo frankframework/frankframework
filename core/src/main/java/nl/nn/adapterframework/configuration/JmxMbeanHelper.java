@@ -100,6 +100,8 @@ public class JmxMbeanHelper {
                     server.unregisterMBean(name);
                 }
                 server.registerMBean(mbean, name);
+            } catch (InstanceAlreadyExistsException iae) {
+                LOG.warn("Could not register mbean " + iae.getMessage());
             } catch (Exception e) {
                 throw new ConfigurationException(e);
             }

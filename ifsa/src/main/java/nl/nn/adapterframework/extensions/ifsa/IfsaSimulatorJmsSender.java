@@ -16,9 +16,15 @@
 package nl.nn.adapterframework.extensions.ifsa;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.AppConstants;
+
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.naming.NamingException;
 
 /**
  * Extension of JmsSender which only adds parameters to simulate IFSA.
@@ -31,7 +37,7 @@ import nl.nn.adapterframework.util.AppConstants;
  *   <li>rr_request</li>
  *   <li>rr_reply</li>
  *   <li>ff_request</li>
- * </ul></td><td>&nbsp;</td></tr>
+ * </ul> When messageType=rr_reply, the destination is retrieved from session key <code>replyTo</code></td><td>&nbsp;</td></tr>
  * </table></p>
  * <p><b>added parameters:</b>
  * <table border="1">
@@ -62,9 +68,9 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>JMS_IBM_MsgType</td><td>integer</td><td></td><td></td><td></td><td><code>rr_request: </code>1<br/><code>rr_reply: </code>2<br/><code>ff_request: </code>8</td><td></td><td></td></tr>
  * </table>
  * </p>
- * 
+ *
  * @author  Peter Leeuwenburgh
- * @version $Id: IfsaSimulatorJmsSender.java,v 1.4 2013/09/13 12:12:32 m168309 Exp $
+ * @version $Id$
  */
 public class IfsaSimulatorJmsSender extends JmsSender {
 	private final static String RR_REQUEST = "rr_request";
@@ -192,7 +198,7 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 		}
 		p.setMinLength(60);
 		addParameter(p);
-		
+
 		p = new Parameter();
 		p.setName("ifsa_ori_format");
 		p.setDefaultValue("");
@@ -232,7 +238,7 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 		}
 		p.setMinLength(48);
 		addParameter(p);
-		
+
 		p = new Parameter();
 		p.setName("ifsa_priority");
 		if (getMessageType().equalsIgnoreCase(RR_REQUEST)) {
@@ -272,8 +278,30 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 		}
 		p.setType(Parameter.TYPE_INTEGER);
 		addParameter(p);
-		
-		super.configure();
+
+		if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {
+ 			if (paramList!=null) {
+ 				paramList.configure();
+ 			}
+		} else {
+ 			super.configure();
+		}
+	}
+
+	public Destination getDestination() throws NamingException, JMSException, JmsException  {
+    	if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {
+ 			return null;
+    	} else {
+ 		   return super.getDestination();
+    	}
+	}
+
+	public Destination getDestination(ParameterResolutionContext prc) throws JmsException, NamingException, JMSException {
+		if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {
+			return (Destination) prc.getSession().get("replyTo");
+		} else {
+			return super.getDestination(prc);
+		}
 	}
 
 	public void setMessageType(String string) {

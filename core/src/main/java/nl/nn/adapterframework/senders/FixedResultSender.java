@@ -39,7 +39,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
 /**
- * FixedResultSender, same behaviour as {@link FixedResult}, but now as a ISender.
+ * FixedResultSender, same behaviour as {@link nl.nn.adapterframework.pipes.FixedResult FixedResult}, but now as a ISender.
  *
  * <p><b>Configuration:</b>
  * <table border="1">

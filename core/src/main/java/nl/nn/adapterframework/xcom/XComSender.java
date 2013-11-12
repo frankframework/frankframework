@@ -15,6 +15,12 @@
 */
 package nl.nn.adapterframework.xcom;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.*;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.FileUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -23,16 +29,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -63,7 +59,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setPassword(String) password}</td><td>Password of user on remote system</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
- *  
+ *
  * @author John Dekker
  */
 public class XComSender extends SenderWithParametersBase {
@@ -88,34 +84,34 @@ public class XComSender extends SenderWithParametersBase {
 	private String configFile = null;
 	private String workingDirName = ".";
 	private String xcomtcp = "xcomtcp";
-	
+
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.core.ISender#configure()
 	 */
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isNotEmpty(fileOption) &&
-				! "CREATE".equals(fileOption) && ! "APPEND".equals(fileOption) && 
+				! "CREATE".equals(fileOption) && ! "APPEND".equals(fileOption) &&
 				! "REPLACE".equals(fileOption)
 		) {
 			throw new ConfigurationException("Attribute [fileOption] has incorrect value " + fileOption + ", should be one of CREATE | APPEND or REPLACE");
 		}
 		if (! StringUtils.isEmpty(compress) &&
-				! "YES".equals(compress) && ! "COMPACT".equals(compress) && 
-				! "LZLARGE".equals(compress) && ! "LZMEDIUM".equals(compress) && 
-				! "LZSMALL".equals(compress) && ! "RLE".equals(compress) && 
-				! "NO".equals(compress)  
+				! "YES".equals(compress) && ! "COMPACT".equals(compress) &&
+				! "LZLARGE".equals(compress) && ! "LZMEDIUM".equals(compress) &&
+				! "LZSMALL".equals(compress) && ! "RLE".equals(compress) &&
+				! "NO".equals(compress)
 		) {
 			throw new ConfigurationException("Attribute [compress] has incorrect value " + compress + ", should be one of YES | NO | RLE | COMPACT | LZLARGE | LZMEDIUM | LZSMALL");
 		}
 		if (! StringUtils.isEmpty(codeflag) &&
-				! "EBCDIC".equals(codeflag) && ! "ASCII".equals(codeflag)  
+				! "EBCDIC".equals(codeflag) && ! "ASCII".equals(codeflag)
 		) {
 			throw new ConfigurationException("Attribute [codeflag] has incorrect value " + fileOption + ", should be ASCII or EBCDIC");
 		}
-		if (! StringUtils.isEmpty(carriageflag) &&
-				! "YES".equals(carriageflag) && ! "VLR".equals(carriageflag) && 
-				! "VLR2".equals(carriageflag) && ! "MPACK".equals(carriageflag) && 
-				! "XPACK".equals(carriageflag) && ! "NO".equals(carriageflag)  
+        if (! StringUtils.isEmpty(carriageflag) &&
+				! "YES".equals(carriageflag) && ! "VLR".equals(carriageflag) &&
+				! "VLR2".equals(carriageflag) && ! "MPACK".equals(carriageflag) &&
+				! "XPACK".equals(carriageflag) && ! "NO".equals(carriageflag)
 		) {
 			throw new ConfigurationException("Attribute [cariageflag] has incorrect value " + compress + ", should be one of YES | NO | VRL | VRL2 | MPACK | XPACK");
 		}
@@ -155,16 +151,16 @@ public class XComSender extends SenderWithParametersBase {
 		for (Iterator filenameIt = getFileList(message).iterator(); filenameIt.hasNext(); ) {
 			String filename = (String)filenameIt.next();
 			log.debug("Start sending " + filename);
-		
+
 			// get file to send
 			File localFile = new File(filename);
-			
+
 			// execute command in a new operating process
 			try {
 				String cmd = getCommand(prc.getSession(), localFile, true);
-				
+
 				Process p = Runtime.getRuntime().exec(cmd, null, workingDir);
-	
+
 				// read the output of the process
 				BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				StringBuffer output = new StringBuffer();
@@ -172,17 +168,17 @@ public class XComSender extends SenderWithParametersBase {
 				while ((line = br.readLine()) != null) {
 					output.append(line);
 				}
-	
+
 				// wait until the process is completely finished
 				try {
 					p.waitFor();
 				}
 				catch(InterruptedException e) {
 				}
-	
+
 				log.debug("output for " + localFile.getName() + " = " + output.toString());
 				log.debug(localFile.getName() + " exits with " + p.exitValue());
-				
+
 				// throw an exception if the command returns an error exit value
 				if (p.exitValue() != 0) {
 					throw new SenderException("XComSender failed for file " + localFile.getAbsolutePath() + "\r\n" + output.toString());
@@ -194,11 +190,11 @@ public class XComSender extends SenderWithParametersBase {
 		}
 		return message;
 	}
-	
+
 	private String getCommand(IPipeLineSession session, File localFile, boolean inclPasswd) throws SenderException {
 		try {
 			StringBuffer sb = new StringBuffer();
-			
+
 			sb.append(xcomtcp). append(" -c1");
 
 			if (StringUtils.isNotEmpty(configFile)) {
@@ -208,25 +204,25 @@ public class XComSender extends SenderWithParametersBase {
 			if (StringUtils.isNotEmpty(remoteSystem)) {
 				sb.append(" REMOTE_SYSTEM=").append(remoteSystem);
 			}
-				
-			if (localFile != null) {			
+
+			if (localFile != null) {
 				sb.append(" LOCAL_FILE=").append(localFile.getAbsolutePath());
-	
+
 				sb.append(" REMOTE_FILE=");
-				if (! StringUtils.isEmpty(remoteDirectory)) 
+				if (! StringUtils.isEmpty(remoteDirectory))
 					sb.append(remoteDirectory);
 				if (StringUtils.isEmpty(remoteFilePattern))
 					sb.append(localFile.getName());
-				else 
+				else
 					sb.append(FileUtils.getFilename(paramList, session, localFile, remoteFilePattern));
 			}
-				
+
 			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserid(), password);
-	
-						
+
+
 			// optional parameters
-			if (StringUtils.isNotEmpty(fileOption)) 
-				sb.append(" FILE_OPTION=").append(fileOption);	 
+			if (StringUtils.isNotEmpty(fileOption))
+				sb.append(" FILE_OPTION=").append(fileOption);
 			if (queue != null)
 				sb.append(" QUEUE=").append(queue.booleanValue() ? "YES" : "NO");
 			if (tracelevel != null)
@@ -235,26 +231,26 @@ public class XComSender extends SenderWithParametersBase {
 				sb.append(" TRUNCATION=").append(truncation.booleanValue() ? "YES" : "NO");
 			if (! StringUtils.isEmpty(port))
 				sb.append(" PORT=" + port);
-			if (! StringUtils.isEmpty(logfile)) 
+			if (! StringUtils.isEmpty(logfile))
 				sb.append(" XLOGFILE=" + logfile);
-			if (! StringUtils.isEmpty(compress)) 
+			if (! StringUtils.isEmpty(compress))
 				sb.append(" COMPRESS=").append(compress);
-			if (! StringUtils.isEmpty(codeflag)) 
+			if (! StringUtils.isEmpty(codeflag))
 				sb.append(" CODE_FLAG=").append(codeflag);
-			if (! StringUtils.isEmpty(carriageflag)) 
+			if (! StringUtils.isEmpty(carriageflag))
 				sb.append(" CARRIAGE_FLAG=").append(carriageflag);
-			if (! StringUtils.isEmpty(cf.getUsername())) 
+			if (! StringUtils.isEmpty(cf.getUsername()))
 				sb.append(" USERID=").append(cf.getUsername());
-			if (inclPasswd && ! StringUtils.isEmpty(cf.getPassword())) 
+			if (inclPasswd && ! StringUtils.isEmpty(cf.getPassword()))
 				sb.append(" PASSWORD=").append(cf.getPassword());
-				
+
 			return sb.toString();
 		}
 		catch(ParameterException e) {
 			throw new SenderException(e);
 		}
 	}
-	
+
 	public String getXcomtcp() {
 		return xcomtcp;
 	}
@@ -281,7 +277,7 @@ public class XComSender extends SenderWithParametersBase {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public String getFileOption() {
 		return fileOption;
 	}

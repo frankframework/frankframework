@@ -234,6 +234,8 @@
 							<xtags:variable id="hasInprocessStorage" select="@hasInprocessStorage"/>
 							<xtags:variable id="hasErrorStorage" select="@hasErrorStorage"/>
 							<xtags:variable id="hasMessageLog" select="@hasMessageLog"/>
+							<xtags:variable id="isRestListener" select="@isRestListener"/>
+							<xtags:variable id="restUriPattern" select="@restUriPattern"/>
 							 <tr >
 								<td></td>
 								<td class="receiverRow">

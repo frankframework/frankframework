@@ -21,12 +21,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 /**
- * Builds a XML-element with attributes and sub-elements. 
+ * Builds a XML-element with attributes and sub-elements.
  * In fact it represents an XML element. Attributes can be added
  * with the addAttribute method, the content can be set with the setValue method.
  * Subelements can be added with the addSubElement method.
  * the toXML function returns the node and subnodes as an indented xml string.
  * @author Johan Verrips
+ * @deprecated Use a standard solution like sax or stax.
  **/
 public class XmlBuilder {
 
@@ -205,5 +206,5 @@ public class XmlBuilder {
 		else
 			return toXML();
 	}
-  
+
 }

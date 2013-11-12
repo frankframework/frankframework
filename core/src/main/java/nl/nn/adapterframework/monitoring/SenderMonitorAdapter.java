@@ -29,7 +29,7 @@ import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * IMonitorAdapter that uses a {@link ISender} to send its message.
+ * IMonitorAdapter that uses a {@link nl.nn.adapterframework.core.ISender sender} to send its message.
  * 
  * @author  Gerrit van Brakel
  * @since   4.9

@@ -20,16 +20,19 @@ import java.util.Properties;
  /**
  * Make a lower case variant of the instance.name property (instance.name.lc)
  * available to the Ibis configuration and the Spring configuration.
- * 
+ *
  * @author Jaco de Groot
  */
-public class LowerCasePropertyPlaceholderConfigurer
-		extends AppConstantsPropertyPlaceholderConfigurer {
+public class LowerCasePropertyPlaceholderConfigurer extends AppConstantsPropertyPlaceholderConfigurer {
 
-	protected void convertProperties(Properties props) {
-		String lowerCase = appConstants.getProperty("instance.name").toLowerCase();
-		appConstants.put("instance.name.lc", lowerCase);
-		props.put("instance.name.lc", lowerCase);
-	}
+	@Override
+    protected void convertProperties(Properties props) {
+        String instanceName = appConstants.getProperty("instance.name");
+        if (instanceName != null) {
+            String lowerCase = instanceName.toLowerCase();
+            appConstants.put("instance.name.lc", lowerCase);
+            props.put("instance.name.lc", lowerCase);
+        }
+    }
 
 }

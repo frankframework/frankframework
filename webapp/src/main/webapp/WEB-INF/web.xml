@@ -10,6 +10,10 @@
     a pipeline, are fired.
     </description>
  
+    <context-param>
+        <param-name>restListenerPathPrefix</param-name>
+        <param-value>rest</param-value>
+    </context-param>
  
    <servlet>
        <servlet-name>QuartzInitializer</servlet-name>

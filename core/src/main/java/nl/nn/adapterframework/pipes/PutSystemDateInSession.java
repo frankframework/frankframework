@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Puts the system date/time under a key in the {@link nl.nn.adapterframework.core.PipeLineSession pipeLineSession}.
+ * Puts the system date/time under a key in the {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession}.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -41,7 +41,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setTimeZone(String) timeZone}</td><td>the time zone to use for the formatter</td><td>the default time zone for the JVM</td></tr>
  * <tr><td>{@link #setSleepWhenEqualToPrevious(long) sleepWhenEqualToPrevious}</td><td>set to a time in millisecond to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in this virtual machine. The thread will sleep for the specified time before recalculating a new value. Set the timezone to a value without daylight saving time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back. <b>Note:</b> When you're looking for a guid parameter for you XSLT it might be better to use &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link nl.nn.adapterframework.parameters.Parameter}</a></td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setReturnFixedDate(boolean) returnFixedDate}</td><td>If <code>true</code>, the date/time returned will always be December 17, 2001, 09:30:47 (for testing purposes only). It is overridden by the value of the pipeLineSession key <code>stub4testtool.fixeddate</code> when it exists</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * </table>
  * </p>
@@ -149,14 +149,14 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	
 	/**
 	 * The name of the key in the <code>PipeLineSession</code> to store the systemdate in
-	 * @see nl.nn.adapterframework.core.PipeLineSession
+	 * @see nl.nn.adapterframework.core.IPipeLineSession
 	 */
 	public String getSessionKey() {
 		return sessionKey;
 	}
 	/**
 	 * The name of the key in the <code>PipeLineSession</code> to store the systemdate in
-	 * @see nl.nn.adapterframework.core.PipeLineSession
+	 * @see nl.nn.adapterframework.core.IPipeLineSession
 	 */
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;

@@ -51,7 +51,7 @@ import org.apache.commons.lang.StringUtils;
  * </ul></td><td>"straigth"</td></tr>
  * <tr><td>{@link #setExecutableExtension(String) executableExtension}</td><td>extension of rekenbox-executable</td><td>exe</td></tr>
  * <tr><td>{@link #setCleanup(boolean) cleanup}</td><td>if true, input and output files are removed after the call to the rekenbox is finished</td><td>true</td></tr>
- * <tr><td>{@link #setRekenboxSessionKey(String) rekenboxSessionKey}</td><td>key in {@link nl.nn.adapterframework.core.PipeLineSession pipeLineSession} to store rekenbox name in</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRekenboxSessionKey(String) rekenboxSessionKey}</td><td>key in {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession} to store rekenbox name in</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDataFilenamePrefix(String) dataFilenamePrefix}</td><td>first part of filenames that communicate requests and replies to rekenbox</td><td>rb</td></tr>
  * <tr><td>{@link #setMaxRequestNumber(long) maxRequestNumber}</td><td>maximal number that will be concatenated to dataFilenamePrefix</td><td>1000</td></tr>
  * </table>

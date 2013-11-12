@@ -313,7 +313,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * Move the input file to a done directory when transformation is finished
 	 * and return the names of the generated files. 
 	 * 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)
 	 */
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String streamId = getStreamId(input, session);

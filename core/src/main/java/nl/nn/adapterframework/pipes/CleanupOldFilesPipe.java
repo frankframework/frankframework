@@ -36,7 +36,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.CleanupOldFilesPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setFilePattern(String) filePattern}</td><td>files that match this pattern will be deleted. Parameters of the pipe are applied to this pattern. If this attribute is not set, the input of the pipe is interpreted as the file to be removed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSubdirectories(boolean) subdirectories}</td><td>when <code>true</code>, files  in subdirectories will be deleted, too</td><td>false</td></tr>
  * <tr><td>{@link #setLastModifiedDelta(long) lastModifiedDelta}</td><td>time in milliseconds that must have passed at least before a file will be deleted</td><td>0</td></tr>

@@ -45,7 +45,7 @@
 			<fileset dir="webapp/src/main/webapp/WEB-INF/lib">
 				<include name="**/*.jar"/>
 			</fileset>
-			<fileset dir="../iaf-lib/iaf-lib">
+			<fileset dir="../iaf-lib">
 				<include name="**/*.jar"/>
 			</fileset>
 		</path>

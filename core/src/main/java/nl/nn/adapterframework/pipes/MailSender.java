@@ -19,7 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 
 /**
- * {@link ISender} that sends a mail specified by an XML message. <br/>
+ * {@link nl.nn.adapterframework.core.ISender sender} that sends a mail specified by an XML message. <br/>
  *
  * Sample email.xml:<br/><code><pre>
  *	&lt;email&gt;
