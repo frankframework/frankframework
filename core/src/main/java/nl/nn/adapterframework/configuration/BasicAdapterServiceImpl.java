@@ -41,29 +41,29 @@ public class BasicAdapterServiceImpl implements AdapterService {
             throw new ConfigurationException("Adapter [" + adapter.getName() + "] already registered.");
         }
         adapters.put(adapter.getName(), adapter);
-        try {
+//        try {
             // Throws javax.management.InstanceAlreadyExistsException when testing on
             // WebSphere 7. This code has probably never been enabled as previously it was
             // part of Configuration.java and was surrounded with "if (isEnableJMX())" with
             // enableJMX being false by default.
-            LOG.debug("Registering adapter [" + adapter.getName() + "] to the JMX server");
-            JmxMbeanHelper.hookupAdapter(adapter);
-            LOG.info("[" + adapter.getName() + "] registered to the JMX server");
-        } catch (Throwable t) {
-            LOG.warn(t.getMessage());
-        }
+//            LOG.debug("Registering adapter [" + adapter.getName() + "] to the JMX server");
+//            JmxMbeanHelper.hookupAdapter(adapter);
+//            LOG.info("[" + adapter.getName() + "] registered to the JMX server");
+//        } catch (Throwable t) {
+//            LOG.warn(t.getMessage());
+//        }
         adapter.configure();
     }
 
     protected void unRegisterAdapter(String name) {
         IAdapter removed = adapters.remove(name);
-        if (removed != null) {
-            try {
-                JmxMbeanHelper.unhookAdapter(removed);
-            } catch (Throwable t) {
-                LOG.warn(t.getMessage());
-            }
-        }
+//        if (removed != null) {
+//            try {
+//                JmxMbeanHelper.unhookAdapter(removed);
+//            } catch (Throwable t) {
+//                LOG.warn(t.getMessage());
+//            }
+//        }
     }
 
 }
