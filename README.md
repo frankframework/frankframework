@@ -6,7 +6,8 @@ Version 5.3:
 - Better DB2 support.
 - Some steps towards making a release with Maven.
 - First steps towards dynamic adapters.
-- [...](https://github.com/ibissource/iaf/compare/v5_2...v5_3)
+
+[More info...](https://github.com/ibissource/iaf/compare/v5_2...v5_3)
 
 
 
