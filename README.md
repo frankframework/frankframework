@@ -6,7 +6,7 @@ Version 5.3:
 - Better DB2 support.
 - Some steps towards making a release with Maven.
 - First steps towards dynamic adapters.
-- [https://github.com/ibissource/iaf/compare/v5_2...v5_3](...)
+- [...](https://github.com/ibissource/iaf/compare/v5_2...v5_3)
 
 
 
@@ -15,7 +15,7 @@ Ibis AdapterFramework
 
 Build adapters using XML configuration. Build application using adapters.
 
-(http://www.integrationpartners.nl/wp-content/uploads/2013/04/IAF-framework3-1024x569.jpg)
+![Ibis AdapterFramework](http://www.integrationpartners.nl/wp-content/uploads/2013/04/IAF-framework3-1024x569.jpg)
 
 Small XML configuration example which defines an adapter:
 
