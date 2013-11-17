@@ -14,17 +14,6 @@
     <ibissource.maven.repository.proprietary.file>file:../mvn-repo-proprietary</ibissource.maven.repository.proprietary.file>
   </properties>
 
-  <modules>
-    <module>coolgen</module>
-    <module>core</module>
-    <module>example</module>
-    <module>ibm</module>
-    <module>ifsa</module>
-    <module>sap</module>
-    <module>tibco</module>
-    <module>webapp</module>
-  </modules>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -179,4 +168,35 @@
     </site>
   </distributionManagement>
 
+  <profiles>
+    <profile>
+      <id>iaf-without-proprietary-dependencies</id>
+      <activation>
+        <file>
+          <missing>${ibissource.maven.repository.proprietary.file}</missing>
+        </file>
+      </activation>
+      <modules>
+        <module>core</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>iaf-with-proprietary-dependencies</id>
+      <activation>
+        <file>
+          <exists>${ibissource.maven.repository.proprietary.file}</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>coolgen</module>
+        <module>core</module>
+        <module>example</module>
+        <module>ibm</module>
+        <module>ifsa</module>
+        <module>sap</module>
+        <module>tibco</module>
+        <module>webapp</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>
