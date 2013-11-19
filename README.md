@@ -6,6 +6,8 @@ Version 5.3:
 - Better DB2 support.
 - Some steps towards making a release with Maven.
 - First steps towards dynamic adapters.
+- Specific java class, which returns Tibco queue information in a xml, is extended with more information.
+- On the main page of the IBIS console ("Show configurationStatus") for each RestListener a clickable icon is added (this replaces separate bookmarks).
 
 [More info...](https://github.com/ibissource/iaf/compare/v5_2...v5_3)
 
