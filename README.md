@@ -18,7 +18,7 @@ Ibis AdapterFramework
 
 Build adapters using XML configuration. Build application using adapters.
 
-![Ibis AdapterFramework](http://www.integrationpartners.nl/wp-content/uploads/2013/04/IAF-framework3-1024x569.jpg)
+![Ibis AdapterFramework](IAF.png)
 
 Small XML configuration example which defines an adapter:
 
