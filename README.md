@@ -37,6 +37,12 @@ Small XML configuration example which defines an adapter:
 	</adapter>
 
 
+Communication
+=============
+
+The ibis community can be contacted via https://groups.google.com/d/forum/ibissource. You can join this mailing list by 
+sending a message to ibissource+subscribe@googlegroups.com
+
 
 Travis
 ======
