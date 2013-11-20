@@ -23,7 +23,7 @@ import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 
 
 /**
- * {@link nl.nn.adapterframework.batch.IResulthandler Resulthandler} that writes the transformed record to a CLOB.
+ * {@link nl.nn.adapterframework.batch.IResultHandler ResultHandler} that writes the transformed record to a CLOB.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">

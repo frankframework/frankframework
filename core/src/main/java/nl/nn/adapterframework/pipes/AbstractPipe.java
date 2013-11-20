@@ -57,9 +57,9 @@ import org.springframework.transaction.TransactionDefinition;
  * As much as possible, class instantiating should take place in the
  * {@link nl.nn.adapterframework.core.IPipe#configure()} method.
  * The object remains alive while the framework is running. When the pipe is to be run,
- * the {@link nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession) doPipe} method is activated.
+ * the {@link nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession) doPipe} method is activated.
  * <p>
- * For the duration of the processing of a message by the {@link nl.nn.adapterframework.core.PipeLine pipeline} has a {@link nl.nn.adapterframework.core.PipeLineSession session}.
+ * For the duration of the processing of a message by the {@link nl.nn.adapterframework.core.PipeLine pipeline} has a {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession}.
  * <br/>
  * By this mechanism, pipes may communicate with one another.<br/>
  * However, use this functionality with caution, as it is not desirable to make pipes dependend
@@ -75,7 +75,7 @@ import org.springframework.transaction.TransactionDefinition;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.AbstractPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setActive(boolean) active}</td><td>controls whether Pipe is included in configuration. When set <code>false</code> or set to something else as "true", (even set to the empty string), the Pipe is not included in the configuration</td><td>true</td></tr>
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified, then the message is logged informatory</td><td>-1</td></tr>
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
@@ -115,7 +115,7 @@ import org.springframework.transaction.TransactionDefinition;
  * 
  * @author     Johan Verrips / Gerrit van Brakel
  *
- * @see nl.nn.adapterframework.core.PipeLineSession
+ * @see nl.nn.adapterframework.core.IPipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers, EventThrowing {
 	protected Logger log = LogUtil.getLogger(this);
@@ -208,7 +208,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * This is where the action takes place. Pipes may only throw a PipeRunException,
 	 * to be handled by the caller of this object.
-	 * @deprecated use {@link #doPipe(Object,PipeLineSession)} instead
+	 * @deprecated use {@link #doPipe(Object,IPipeLineSession)} instead
 	 */
 	public PipeRunResult doPipe (Object input) throws PipeRunException {
 		throw new PipeRunException(this, "Pipe should implement method doPipe()");
@@ -363,7 +363,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 
 	/**
-	 * Indicates the maximum number of treads ;that may call {@link #doPipe(Object, PipeLineSession)} simultaneously in case
+	 * Indicates the maximum number of treads ;that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously in case
 	 *  A value of 0 indicates an unlimited number of threads.
 	 */
 	public void setMaxThreads(int newMaxThreads) {

@@ -29,7 +29,7 @@ import com.sap.conn.idoc.jco.JCoIDoc;
 import com.sap.conn.jco.JCoDestination;
 
 /**
- * Implementation of {@link ISender} that sends an IDoc to SAP.
+ * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that sends an IDoc to SAP.
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>

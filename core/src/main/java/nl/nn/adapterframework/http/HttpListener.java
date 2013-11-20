@@ -23,7 +23,7 @@ import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Implementation of a {@link IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
+ * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
  * to receive messages from HTTP requests.
  * <p><b>Configuration:</b>
  * <table border="1">

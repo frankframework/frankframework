@@ -1,12 +1,58 @@
-[![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
-
-
-Ibis framework
+Latest release
 ==============
 
-Look at [README.eclipse](README.eclipse) for an explanation on how to build this in eclipse.
+Version 5.3:
+
+- Better DB2 support.
+- Some steps towards making a release with Maven.
+- First steps towards dynamic adapters.
+- Specific java class, which returns Tibco queue information in a xml, is extended with more information.
+- On the main page of the IBIS console ("Show configurationStatus") for each RestListener a clickable icon is added (this replaces separate bookmarks).
+
+[More info...](https://github.com/ibissource/iaf/compare/v5_2...v5_3)
 
 
-## Releases
 
-I documented [here](RELEASE.md) how to make a release with mvn/git.
+Ibis AdapterFramework
+=====================
+
+Build adapters using XML configuration. Build application using adapters.
+
+![Ibis AdapterFramework](IAF.png)
+
+Small XML configuration example which defines an adapter:
+
+	<adapter name="HelloWorld" description="Little example">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="HelloWorld">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="HelloWorld"/>
+		</receiver>
+		<pipeline firstPipe="HelloWorld">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResult" returnString="Hello World">
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+
+
+
+Travis
+======
+
+IAF @ Travis: [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+
+
+Eclipse
+=======
+
+Look at [README.eclipse](README.eclipse) for an explanation on how to build this in eclipse (needs te be updated).
+
+
+
+How to make a release
+=====================
+
+I documented [here](RELEASE.md) how to make a release with mvn/git (needs to be updated).

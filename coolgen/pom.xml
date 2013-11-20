@@ -6,12 +6,9 @@
     <artifactId>ibis-parent</artifactId>
     <version>5.0.29-SNAPSHOT</version>
   </parent>
+
   <artifactId>ibis-adapterframework-coolgen</artifactId>
   <name>Ibis AdapterFramework support for CoolGen</name>
-
-  <properties>
-    <iaf-lib.basedir>${basedir}/../../iaf-lib</iaf-lib.basedir>
-  </properties>
 
   <dependencies>
     <dependency>
@@ -19,12 +16,10 @@
       <artifactId>ibis-adapterframework-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>nl.nn.coolgen</groupId>
+      <groupId>nl.nn</groupId>
       <artifactId>coolgen</artifactId>
       <version>0</version>
-      <systemPath>${iaf-lib.basedir}/coolgen/NNCoolgenJavaProxies.jar</systemPath>
-      <scope>system</scope>
     </dependency>
- </dependencies>
+  </dependencies>
 
 </project>

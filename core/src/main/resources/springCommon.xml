@@ -4,10 +4,8 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     default-autowire="byName"
     xsi:schemaLocation=
-        "
-        http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
-		    http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
-		 "
+        "http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd"
     >
 
   <bean

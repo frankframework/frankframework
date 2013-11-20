@@ -234,6 +234,8 @@
 							<xtags:variable id="hasInprocessStorage" select="@hasInprocessStorage"/>
 							<xtags:variable id="hasErrorStorage" select="@hasErrorStorage"/>
 							<xtags:variable id="hasMessageLog" select="@hasMessageLog"/>
+							<xtags:variable id="isRestListener" select="@isRestListener"/>
+							<xtags:variable id="restUriPattern" select="@restUriPattern"/>
 							 <tr >
 								<td></td>
 								<td class="receiverRow">
@@ -312,6 +314,11 @@
 												<parameter name="receiverName"><%=java.net.URLEncoder.encode(receiverName)%></parameter>
 
 											 </imagelink>
+							<% } if ( "true".equalsIgnoreCase(isRestListener) ) { %>
+											<imagelink
+												href="<%=restUriPattern%>"
+												type="showashtml"
+												alt="<%=receiverName%>"/>
 							<% } if ( "true".equalsIgnoreCase(hasErrorStorage) ) { %>
 											<imagelink
 												href="browser.do"
