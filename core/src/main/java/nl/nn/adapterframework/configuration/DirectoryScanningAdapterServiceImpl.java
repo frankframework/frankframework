@@ -52,7 +52,7 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
 
                 DirectoryScanningAdapterServiceImpl.this.scan();
             }
-        }, 60, 60, TimeUnit.SECONDS);
+        }, 0, 60, TimeUnit.SECONDS);
     }
 
 
@@ -95,12 +95,18 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
 
 
     IAdapter read(URL url) throws IOException, SAXException {
-        ConfigurationDigester configurationDigester = (ConfigurationDigester) applicationContext.getBean("configurationDigester"); // somewhy proper dependency injection gives circular dependency problems
+        try {
+            ConfigurationDigester configurationDigester = (ConfigurationDigester) applicationContext.getBean("configurationDigester"); // somewhy proper dependency injection gives circular dependency problems
 
-        Digester digester = configurationDigester.createDigester();
-        digester.parse(url);
-        // Does'nt work. I probably don't know how it is supposed to work.
-        return (IAdapter) digester.getRoot();
+            Digester digester = configurationDigester.getDigester();
+
+            digester.parse(url);
+            // Does'nt work. I probably don't know how it is supposed to work.
+            return (IAdapter) digester.getRoot();
+        } catch (Throwable t) {
+            LOG.error("For " + url + ": " + t.getMessage());
+            return null;
+        }
     }
 
   /*  public void setConfigurationDigester(ConfigurationDigester configurationDigester) {

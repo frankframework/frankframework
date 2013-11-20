@@ -67,7 +67,7 @@ import org.xml.sax.*;
  * @see Configuration
  */
 abstract public class ConfigurationDigester {
-    protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
+    private static final Logger LOG = LogUtil.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
 	//private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -84,7 +84,9 @@ abstract public class ConfigurationDigester {
 
 	private Configuration configuration;
 
-	String lastResolvedEntity=null;
+    private Digester digester;
+
+	String lastResolvedEntity = null;
 
     /**
      * This method is runtime implemented by Spring Framework to
@@ -95,15 +97,15 @@ abstract public class ConfigurationDigester {
 
 	private class XmlErrorHandler implements ErrorHandler  {
 		public void warning(SAXParseException exception) throws SAXParseException {
-			log.error(exception);
+			LOG.error(exception);
 			throw(exception);
 		}
 		public void error(SAXParseException exception) throws SAXParseException {
-			log.error(exception);
+			LOG.error(exception);
 			throw(exception);
 		}
 		public void fatalError(SAXParseException exception) throws SAXParseException {
-			log.error(exception);
+			LOG.error(exception);
 			throw(exception);
 		}
 	}
@@ -128,15 +130,16 @@ abstract public class ConfigurationDigester {
 	}
 
     public Digester getDigester() throws SAXNotSupportedException, SAXNotRecognizedException {
-        Digester digester = createDigester();
-        //digester.setUseContextClassLoader(true);
+        if (digester == null) {
+            digester = createDigester();
+            //digester.setUseContextClassLoader(true);
 
-        digester.setEntityResolver(new NameTrackingEntityResolver(digester.getEntityResolver()));
+            digester.setEntityResolver(new NameTrackingEntityResolver(digester.getEntityResolver()));
 
-        // push config on the stack
-        digester.push(this.configuration);
-        URL digesterRulesURL = ClassUtils.getResourceURL(this, getDigesterRules());
-        //digester.push("URL", configurationFileURL);
+            // push config on the stack
+            digester.push(this.configuration);
+            URL digesterRulesURL = ClassUtils.getResourceURL(this, getDigesterRules());
+            //digester.push("URL", configurationFileURL);
         // digester-rules.xml bevat de rules voor het digesten
 
             FromXmlRuleSet ruleSet = new FromXmlRuleSet(digesterRulesURL);
@@ -203,7 +206,7 @@ abstract public class ConfigurationDigester {
                 XmlErrorHandler xeh = new XmlErrorHandler();
                 digester.setErrorHandler(xeh);
             }
-
+        }
         return digester;
     }
 
@@ -216,7 +219,7 @@ abstract public class ConfigurationDigester {
 			configurationFileURL = ClassUtils.getResourceURL(stackTop, IbisManager.DFLT_CONFIGURATION);
 		}
 		if (configurationFileURL == null) {
-			configWarnings.add(log, "Could not find " + IbisManager.DFLT_CONFIGURATION);
+			configWarnings.add(LOG, "Could not find " + IbisManager.DFLT_CONFIGURATION);
 			return;
 		}
 
@@ -245,7 +248,7 @@ abstract public class ConfigurationDigester {
             if (configuration != null) {
 				configuration.setConfigurationException(e);
 			}
-			log.error(e);
+			LOG.error(e);
 			throw e;
 		}
 	}
@@ -304,7 +307,7 @@ abstract public class ConfigurationDigester {
 		digestConfiguration(configurationFileURL);
 		MonitorManager.getInstance().configure(configuration);
 
-        log.info("************** Configuration completed **************");
+        LOG.info("************** Configuration completed **************");
 		return configuration;
     }
 
