@@ -64,7 +64,7 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
  * </p>
  * 
  * @author Peter Leeuwenburgh
- * @version $Id: GetTibcoQueues.java,v 1.5 2013/11/04 13:08:24 m168309 Exp $
+ * @version $Id$
  */
 
 public class GetTibcoQueues extends FixedForwardPipe {
