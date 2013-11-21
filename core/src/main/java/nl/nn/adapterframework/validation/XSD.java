@@ -205,25 +205,36 @@ public class XSD implements Comparable<XSD> {
                     el.getName().equals(SchemaUtils.INCLUDE)
                     ) {
                     Attribute schemaLocation = el.getAttributeByName(SchemaUtils.SCHEMALOCATION);
-                    String namespace = this.namespace;
-                    boolean addNamespaceToSchema = this.addNamespaceToSchema;
-                    if (el.getName().equals(SchemaUtils.IMPORT)) {
-                        Attribute attribute =
-                                el.getAttributeByName(SchemaUtils.NAMESPACE);
-                        if (attribute != null) {
-                            namespace = attribute.getValue();
-                        } else {
-                            namespace = targetNamespace;
+                    if (schemaLocation != null) {
+                        String namespace = this.namespace;
+                        boolean addNamespaceToSchema = this.addNamespaceToSchema;
+                        boolean isXmlNamespace = false;
+                        if (el.getName().equals(SchemaUtils.IMPORT)) {
+                            Attribute attribute =
+                                    el.getAttributeByName(SchemaUtils.NAMESPACE);
+                            if (attribute != null) {
+                                namespace = attribute.getValue();
+                                if ("http://www.w3.org/XML/1998/namespace".equals(namespace)) {
+                                    // E.g. used in SOAP 1.2 XSD:
+                                    // <xs:import namespace="http://www.w3.org/XML/1998/namespace" 
+                                    // schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+                                    isXmlNamespace = true;
+                                }
+                            } else {
+                                namespace = targetNamespace;
+                            }
+                            addNamespaceToSchema = false;
                         }
-                        addNamespaceToSchema = false;
-                    }
-                    XSD x = new XSD(
-                            ClassUtils.getResourceURL(getBaseUrl() + schemaLocation.getValue()),
-                            namespace, addNamespaceToSchema, getBaseUrl(),
-                            false
-                            );
-                    if (xsds.add(x)) {
-                        x.getXsdsRecursive(xsds);
+                        if (!isXmlNamespace) {
+                            XSD x = new XSD(
+                                    ClassUtils.getResourceURL(getBaseUrl() + schemaLocation.getValue()),
+                                    namespace, addNamespaceToSchema, getBaseUrl(),
+                                    false
+                                    );
+                            if (xsds.add(x)) {
+                                x.getXsdsRecursive(xsds);
+                            }
+                        }
                     }
                 }
                 break;
