@@ -4,13 +4,13 @@
                   xmlns:ns1="urn:webservice1" targetNamespace="urn:webservice1/wsdl/">
   <wsdl:documentation><![CDATA[test]]></wsdl:documentation>
   <wsdl:types>
-    <xsd:schema targetNamespace="urn:webservice1">
-      <xsd:include schemaLocation="WsdlTest/test.xsd"/>
+    <xsd:schema xmlns="urn:webservice1" targetNamespace="urn:webservice1" elementFormDefault="qualified">
+      <xsd:element name="a">
+      </xsd:element>
+      <xsd:element name="b">
+      </xsd:element>
     </xsd:schema>
   </wsdl:types>
-  <wsdl:message name="PipeLineInput">
-    <wsdl:part name="a" element="ns1:a"/>
-  </wsdl:message>
   <wsdl:message name="PipeLineOutput">
     <wsdl:part name="b" element="ns1:b"/>
   </wsdl:message>
@@ -25,7 +25,7 @@
     <wsdl:operation name="Process">
       <soap:operation style="document" soapAction="defaultAction"/>
       <wsdl:input>
-        <soap:body parts="a" use="literal"/>
+        <soap:body parts="" use="literal"/>
         <!--
         <ns1:a use="literal"/>
         -->

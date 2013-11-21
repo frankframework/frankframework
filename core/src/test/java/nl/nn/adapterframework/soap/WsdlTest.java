@@ -9,6 +9,7 @@ import nl.nn.adapterframework.pipes.XmlValidatorTest;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.JavaxXmlValidator;
+import nl.nn.adapterframework.validation.XercesXmlValidator;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -51,7 +52,7 @@ public class WsdlTest {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][]{
-           // {XercesXmlValidator.class},
+            {XercesXmlValidator.class},
             {JavaxXmlValidator.class}
         };
         return Arrays.asList(data);
@@ -93,7 +94,6 @@ public class WsdlTest {
 	}
 
     @Test
-	// FAILS!
     public void noroottag() throws XMLStreamException, IOException, SAXException, ParserConfigurationException, URISyntaxException, ConfigurationException, NamingException {
         PipeLine simple = mockPipeLine(
             getXmlValidatorInstance(null, "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
@@ -117,6 +117,7 @@ public class WsdlTest {
 						"WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd"),
             "http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail", "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail");
         Wsdl wsdl = new Wsdl(pipe).init();
+        wsdl.setUseIncludes(true);
         test(wsdl, "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail.test.wsdl");
 
     }

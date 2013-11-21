@@ -5,8 +5,8 @@
     xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation=
         "
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd
+		http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
 		"
     >
   <bean id="txManagerReal" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
@@ -19,6 +19,13 @@
     </property>
   </bean>
 
+  <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+    <property name="driverClassName" value="org.h2.Driver"/>
+    <property name="url" value="jdbc:h2:mem:"/>
+  </bean>
+
+  <!--
+  Generated an error (running with jdk 1.5 and hsqldb 2.3.0): Error loading class [org.apache.commons.dbcp.BasicDataSource] for bean with name 'dataSource' defined in class path resource [springTEST.xml]: problem with class file or dependent class; nested exception is java.lang.UnsupportedClassVersionError: Bad version number in .class file
   <bean id="dataSource"
         class="org.apache.commons.dbcp.BasicDataSource">
     <property name="driverClassName" value="org.hsqldb.jdbc.JDBCDriver">
@@ -30,6 +37,6 @@
     <property name="password" value="">
     </property>
   </bean>
-
+  -->
 
 </beans>

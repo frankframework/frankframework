@@ -42,26 +42,25 @@ public class SoapValidatorTest {
 
     @Test
     public void validate11() throws ConfigurationException, IOException, PipeRunException {
-        XmlValidator xml = getSoapValidator();
+        XmlValidator xml = getSoapValidator(true);
         xml.doPipe(getTestXml("/valid_soap.xml"), new PipeLineSessionBase());
 
     }
 
     @Test
     public void validate12() throws ConfigurationException, IOException, PipeRunException {
-        SoapValidator xml = getSoapValidator();
+        SoapValidator xml = getSoapValidator(true);
         System.out.println("1 " + new Date());
-        xml.doPipe(getTestXml("/valid_soap_1.2.xml"), new PipeLineSessionBase());
+        xml.doPipe(getTestXml("/valid_soap.xml"), new PipeLineSessionBase());
         System.out.println("2" + new Date());
-        xml.doPipe(getTestXml("/valid_soap_1.2.xml"), new PipeLineSessionBase());
+        xml.doPipe(getTestXml("/valid_soap.xml"), new PipeLineSessionBase());
         System.out.println("3" + new Date());
 
     }
 
     @Test
     public void validate12_explicitversion() throws ConfigurationException, IOException, PipeRunException {
-        SoapValidator xml = getSoapValidator();
-        xml.setVersion("1.2");
+        SoapValidator xml = getSoapValidator(true, "1.2");
         xml.doPipe(getTestXml("/valid_soap_1.2.xml"), new PipeLineSessionBase());
     }
 
@@ -117,7 +116,21 @@ public class SoapValidatorTest {
     }
 
     private SoapValidator getSoapValidator() throws ConfigurationException {
+        return getSoapValidator(false);
+    }
+
+    private SoapValidator getSoapValidator(boolean addNamespaceToSchema) throws ConfigurationException {
+        return getSoapValidator(addNamespaceToSchema, null);
+    }
+
+    private SoapValidator getSoapValidator(boolean addNamespaceToSchema, String soapVersion) throws ConfigurationException {
         SoapValidator validator = new SoapValidator();
+        if (addNamespaceToSchema) {
+            validator.setAddNamespaceToSchema(addNamespaceToSchema);
+        }
+        if (soapVersion != null) {
+            validator.setVersion(soapVersion);
+        }
         validator.setSchemaLocation(
             "http://www.ing.com/CSP/XSD/General/Message_2 " +
             "/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/Message_2.xsd " +

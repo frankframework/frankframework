@@ -4,8 +4,11 @@
                   xmlns:ns1="urn:webservice1" targetNamespace="urn:webservice1/wsdl/">
   <wsdl:documentation><![CDATA[test]]></wsdl:documentation>
   <wsdl:types>
-    <xsd:schema targetNamespace="urn:webservice1">
-      <xsd:include schemaLocation="WsdlTest/test.xsd"/>
+    <xsd:schema xmlns="urn:webservice1" targetNamespace="urn:webservice1" elementFormDefault="qualified">
+      <xsd:element name="a">
+      </xsd:element>
+      <xsd:element name="b">
+      </xsd:element>
     </xsd:schema>
   </wsdl:types>
   <wsdl:message name="PipeLineInput">

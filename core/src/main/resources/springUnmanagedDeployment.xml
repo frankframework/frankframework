@@ -13,6 +13,8 @@
         <!-- Auto-wiring wires up bean named taskExecutor as threadpool implementation -->
         <property name="autoStartup" value="false"/>
         <property name="transactionManager" ref="txManager"/>
+        <!-- Prevent a dataSource bean being wired up when present (causing Quartz to look for table QRTZ_LOCKS) -->
+        <property name="dataSource"><null/></property>
     </bean>
     
     <!-- IBIS Beans -->

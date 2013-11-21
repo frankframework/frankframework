@@ -34,25 +34,12 @@ public class WsdlXmlValidatorTest {
     @Test
     public void wsdlValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
-        val.setValidateSoapEnvelope(null);
         val.setWsdl(SIMPLE);
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
-        val.validate("<TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest>", session);
+        val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
     }
-
-    @Test
-    public void wsdlInValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-        WsdlXmlValidator val = new WsdlXmlValidator();
-        val.setValidateSoapEnvelope("false");
-        val.setWsdl(SIMPLE);
-        val.setThrowException(true);
-        val.registerForward(new PipeForward("success", null));
-        val.configure();
-        val.validate("<TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest>", session);
-    }
-
 
     @Test
     public void getInputSchemaWithInclude() throws IOException, WSDLException, ConfigurationException {
@@ -66,34 +53,31 @@ public class WsdlXmlValidatorTest {
     @Test
     public void wsdlValidateWithInclude() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
-        val.setValidateSoapEnvelope("false");
         val.setWsdl(SIMPLE_WITH_INCLUDE);
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
-        val.validate("<TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest>", session);
+        val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
     }
 
     @Test
     public void wsdlValidateWithReference() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
-        val.setValidateSoapEnvelope(null);
         val.setWsdl(SIMPLE_WITH_REFERENCE);
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
-        val.validate("<TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest>", session);
+        val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
     }
 
     @Test(expected = XmlValidatorException.class)
     public void wsdlValidateWithReferenceFail() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
-        val.setValidateSoapEnvelope(null);
         val.setWsdl(SIMPLE_WITH_REFERENCE);
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
-        val.validate("<TradePriceRequestERROR xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequestERROR>", session);
+        val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbolERROR>foo</tickerSymbolERROR></TradePriceRequest></Body></Envelope>", session);
     }
 
 
