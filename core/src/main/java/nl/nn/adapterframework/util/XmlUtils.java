@@ -62,6 +62,7 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 
 import org.apache.commons.lang.StringUtils;
@@ -322,15 +323,9 @@ public class XmlUtils {
 		Document document;
 		InputSource src;
 
-		DocumentBuilderFactory factory;
-		if (xslt2) {
-			factory = new net.sf.saxon.dom.DocumentBuilderFactoryImpl();
-			if (!namespaceAware) {
-				log.info("Saxon parser is always namespace aware, so setting namespaceAware=false is ignored");
-			}
-		} else {
-			factory = DocumentBuilderFactory.newInstance();
-			factory.setNamespaceAware(namespaceAware);
+		DocumentBuilderFactory factory = getDocumentBuilderFactory(xslt2);
+		if (xslt2 && !namespaceAware) {
+			log.info("Saxon parser is always namespace aware, so setting namespaceAware=false is ignored");
 		}
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -667,7 +662,7 @@ public class XmlUtils {
 			throws DomBuilderException {
 		Variant in = new Variant(xmlString);
 		InputSource is = in.asXmlInputSource();
-		SAXParserFactory factory = SAXParserFactory.newInstance();
+		SAXParserFactory factory = getSAXParserFactory();
 		factory.setNamespaceAware(namespaceAware);
 		try {
 			XMLReader xmlReader = factory.newSAXParser().getXMLReader();
@@ -732,8 +727,28 @@ public class XmlUtils {
 			// Use a Xalan version with different package names to prevent the
 			// WebSphere Xalan version being used and prevent differences
 			// in XML transformations between WebSphere 5 and WebSphere 6.
-			return new nl.nn.org.apache.xalan.processor.TransformerFactoryImpl();
+			if (AppConstants.getInstance().getString(IbisContext.APPLICATION_SERVER_TYPE, "").startsWith("WAS")) {
+				return new nl.nn.org.apache.xalan.processor.TransformerFactoryImpl();
+			} else {
+				return new org.apache.xalan.processor.TransformerFactoryImpl();
+			}
 		}
+	}
+
+	public static synchronized DocumentBuilderFactory getDocumentBuilderFactory() {
+		return getDocumentBuilderFactory(false);
+	}
+
+	public static synchronized DocumentBuilderFactory getDocumentBuilderFactory(boolean xslt2) {
+		if (xslt2) {
+			return new net.sf.saxon.dom.DocumentBuilderFactoryImpl();
+		} else {
+			return new org.apache.xerces.jaxp.DocumentBuilderFactoryImpl();
+		}
+	}
+
+	public static synchronized SAXParserFactory getSAXParserFactory() {
+		return new org.apache.xerces.jaxp.SAXParserFactoryImpl();
 	}
 
 	/**
@@ -1268,8 +1283,7 @@ public class XmlUtils {
 		throws DomBuilderException {
 		String result = "";
 		try {
-			DocumentBuilderFactory factory =
-				DocumentBuilderFactory.newInstance();
+			DocumentBuilderFactory factory = getDocumentBuilderFactory();
 			Document document;
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			builder.setEntityResolver(new ClassPathEntityResolver());
@@ -1292,13 +1306,17 @@ public class XmlUtils {
 				+ AppConstants.getInstance().getProperty("application.version")).append(SystemUtils.LINE_SEPARATOR);
 		sb.append("XML tool version info:").append(SystemUtils.LINE_SEPARATOR);
 
-		SAXParserFactory spFactory = SAXParserFactory.newInstance();
+		SAXParserFactory spFactory = getSAXParserFactory();
 		sb.append("SAXParserFactory-class =").append(spFactory.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
-		DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-		sb.append("DocumentBuilderFactory-class =").append(domFactory.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
+		DocumentBuilderFactory domFactory1 = getDocumentBuilderFactory(false);
+		sb.append("DocumentBuilderFactory1-class =").append(domFactory1.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
+		DocumentBuilderFactory domFactory2 = getDocumentBuilderFactory(true);
+		sb.append("DocumentBuilderFactory2-class =").append(domFactory2.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
 
-		TransformerFactory tFactory = getTransformerFactory();
-		sb.append("TransformerFactory-class =").append(tFactory.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
+		TransformerFactory tFactory1 = getTransformerFactory(false);
+		sb.append("TransformerFactory1-class =").append(tFactory1.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
+		TransformerFactory tFactory2 = getTransformerFactory(true);
+		sb.append("TransformerFactory2-class =").append(tFactory2.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
 
 		sb.append("Apache-XML tool version info:").append(SystemUtils.LINE_SEPARATOR);
 
@@ -1309,7 +1327,13 @@ public class XmlUtils {
 		}
 
 		try {
- 			sb.append("Xalan-Version=" + nl.nn.org.apache.xalan.Version.getVersion() + SystemUtils.LINE_SEPARATOR);
+			String xalanVersion;
+			if (AppConstants.getInstance().getString(IbisContext.APPLICATION_SERVER_TYPE, "").startsWith("WAS")) {
+				xalanVersion = nl.nn.org.apache.xalan.Version.getVersion();
+			} else {
+				xalanVersion = org.apache.xalan.Version.getVersion();
+			}
+ 			sb.append("Xalan-Version=" + xalanVersion + SystemUtils.LINE_SEPARATOR);
 		}  catch (Throwable t) {
 			sb.append("Xalan-Version not found (").append(t.getClass().getName()).append(": ").append(t.getMessage()).append(")").append(SystemUtils.LINE_SEPARATOR);
 		}
@@ -1436,7 +1460,7 @@ public class XmlUtils {
 
 	public static String cdataToText(String input) {
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilderFactory factory = getDocumentBuilderFactory();
 			factory.setCoalescing(true);
 			StringReader sr = new StringReader(input);
 			InputSource src = new InputSource(sr);

@@ -15,18 +15,15 @@
 */
 package nl.nn.adapterframework.util;
 
-import javax.naming.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.apache.commons.digester.substitution.VariableExpander;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 /**
  * Singleton class that has the constant values for this application. <br/>
@@ -34,61 +31,6 @@ import org.apache.log4j.Logger;
  * by the <code>propertiesFileName</code> field</p>
  * <p>If a property exits with the name <code>ADDITIONAL.PROPERTIES.FILE</code>
  * that file is loaded also</p>
- * <p>Properties may also be retrieved by retrieving the environment entries of the container
- * (since 4.0.1).  See table below for additional parameters. </p>
- *
- 	<table>
-	<tr><th>Property</th><th>Description</th><th>Type></th><th>Default Value</th></tr>
-	<tr>
-		<td>ADDITIONAL.PROPERTIES.FILE</TD>
-		<td>Location of a file to load additionally.</td>
-		<td>String
-		<td>-not specified-</td>
-	</tr>
-	<tr>
-		<td>environment.entries.load</td>
-		<td>should environment entries be loaded from the container</td>
-		<td>Boolean</td>
-		<td>true</td>
-	</tr>
-	<tr>
-		<td>environment.entries.bindingname</td>
-		<td>Name where the bindings are stored</td>
-		<td>String</td>
-		<td>java:comp/env</td>
-	</tr>
-	<tr>
-		<td>environment.entries.factory.initial</td>
-		<td>Jndi setting: initial context factory</td>
-		<td>String</td>
-		<td>not specified</td>
-		</tr>
-	<tr>
-		<td>environment.entries.provider.url</td>
-		<td>Jndi setting: provider url</td>
-		<td>String</td>
-		<td>not specified</td>
-		</tr>
-	<tr>
-		<td>environment.entries.security.principal</td>
-		<td>Jndi setting: user id</td>
-		<td>String</td>
-		<td>not specified</td>
-		</tr>
-	<tr>
-		<td>environment.entries.security.credentials</td>
-		<td>Jndi setting: password</td>
-		<td>String</td>
-		<td>not specified</td>
-	</tr>
-	<tr>
-		<td>environment.entries.factory.url.pkgs</td>
-		<td>Jndi setting: package prefixes to use when loading in URL context factories</td>
-		<td>String</td>
-		<td>not specified</td>
-	</tr>
-	</table>
-<p></p>
 
  * @author Johan Verrips
  *
@@ -142,7 +84,7 @@ public final class AppConstants extends Properties implements Serializable{
 	 * @see nl.nn.adapterframework.util.StringResolver
 	 */
 	public String getResolvedProperty(String key) {
-        String value = null;
+		String value = null;
         value=getSystemProperty(key); // first try custom properties
         if (value==null) {
 			value = getProperty(key); // then try DeploymentSpecifics and appConstants
@@ -186,54 +128,11 @@ public final class AppConstants extends Properties implements Serializable{
 	    return new StringTokenizer(list, ",");
 	}
 	/**
-	 * Load loads first the properties from the file specified by propertiesFileName and any propertiesfile specified
-	 * there-in. After that (if the property environment.entries.load is TRUE), it reads the environment entries in het
-	 * jndi.  Each new property load overrides existing properties, so the first file may contain application defaults,
-	 * then per deployment and at last environment entries in the JNDI.
+	 * Load loads the properties from the file specified by propertiesFileName and any propertiesfile specified
+	 * there-in.
 	 */
 	public void load() {
 	    load(propertiesFileName);
-	    if (getBoolean("environment.entries.load", true)) {
-	        try {
-	            String factory = getString("environment.entries.factory.initial", null);
-	            String providerUrl = getString("environment.entries.provider.url", null);
-	            String principal = getString("environment.entries.security.principal", null);
-	            String credentials =   getString("environment.entries.security.credentials", null);
-	            String urlPkgPrefixes =   getString("environment.entries.factory.url.pkgs", null);
-
-	            InitialContext context;
-
-	            Hashtable env = new Hashtable();
-	            if (StringUtils.isNotEmpty(factory))
-	                env.put(Context.INITIAL_CONTEXT_FACTORY, factory);
-	            if (StringUtils.isNotEmpty(urlPkgPrefixes))
-	                env.put(Context.URL_PKG_PREFIXES, urlPkgPrefixes);
-	            if (StringUtils.isNotEmpty(providerUrl))
-	                env.put(Context.PROVIDER_URL, providerUrl);
-	            if (StringUtils.isNotEmpty(principal))
-	                env.put(Context.SECURITY_PRINCIPAL, principal);
-	            if (StringUtils.isNotEmpty(credentials))
-	                env.put(Context.SECURITY_CREDENTIALS, credentials);
-
-	            if (env.size() > 0) {
-	                context = new InitialContext(env);
-                } else {
-	                context = new InitialContext();
-                }
-
-	             NamingEnumeration nEnumeration =
-	                context.listBindings(
-	                    getString("environment.entries.bindingname", "java:comp/env"));
-	            while (nEnumeration.hasMore()) {
-	                Binding binding = (Binding) nEnumeration.next();
-	                this.put(binding.getName(), binding.getObject());
-	            }
-	            nEnumeration.close();
-	            context.close();
-	        } catch (NamingException ne) {
-	            log.error("Error occured retrieving environment entries ", ne);
-	        }
-	    }
 	}
 	/**
 	 * Load the contents of a propertiesfile.

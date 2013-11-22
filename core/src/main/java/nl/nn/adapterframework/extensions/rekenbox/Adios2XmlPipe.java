@@ -35,6 +35,7 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -250,8 +251,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		
 		 	try {
 			    handler = new Xml2AdiosHandler();
-			    // Use the default (non-validating) parser 
-				SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+				SAXParserFactory parserFactory = XmlUtils.getSAXParserFactory();
 				saxParser = parserFactory.newSAXParser();
 		 	} catch (Throwable e) {
 			 	throw new ConfigurationException(getLogPrefix(null)+"cannot configure a parser", e);

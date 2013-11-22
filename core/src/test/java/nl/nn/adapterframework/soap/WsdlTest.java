@@ -7,6 +7,7 @@ import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.pipes.XmlValidatorTest;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.JavaxXmlValidator;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
@@ -196,7 +197,7 @@ public class WsdlTest {
 
     }
     static DocumentBuilder createDocumentBuilder() throws ParserConfigurationException {
-        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory docBuilderFactory = XmlUtils.getDocumentBuilderFactory();
         docBuilderFactory.setNamespaceAware(true);
         DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
         return docBuilder;
