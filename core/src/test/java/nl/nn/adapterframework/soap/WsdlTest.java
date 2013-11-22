@@ -7,6 +7,7 @@ import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.pipes.XmlValidatorTest;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.JavaxXmlValidator;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
