@@ -1,6 +1,10 @@
 Latest release
 ==============
 
+First next version:
+
+- First steps towards running IBISes on TIBCO AMX (as WebApp in Composite)
+
 Version 5.3:
 
 - Better DB2 support.
