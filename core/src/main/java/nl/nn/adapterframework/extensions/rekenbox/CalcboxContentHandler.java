@@ -52,7 +52,7 @@ public class CalcboxContentHandler implements ContentHandler {
 	private String stringResult = null; 
 
   CalcboxContentHandler(String string) throws Exception {
-		document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+		document = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder().newDocument();
 		document.createElement("TEST");
 		
 		StringWriter sw = new StringWriter();

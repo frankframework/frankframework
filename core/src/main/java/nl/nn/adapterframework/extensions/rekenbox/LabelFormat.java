@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.Variant;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -94,7 +95,7 @@ public class LabelFormat extends FixedForwardPipe {
 				
 				Variant v = new Variant(input); 
 
-				DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+				DocumentBuilder documentBuilder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder();
 				Document document = documentBuilder.parse(new InputSource(new StringReader(v.asString())));
 
 				result = XmlToLabelFormat.doTransformation(document).toString();
