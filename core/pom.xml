@@ -155,14 +155,24 @@
       <version>20080701</version>
     </dependency>
     <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-xalan</artifactId>
+      <groupId>xalan</groupId>
+      <artifactId>xalan</artifactId>
+      <version>2.7.1</version>
+    </dependency>
+    <dependency>
+      <groupId>xalan</groupId>
+      <artifactId>serializer</artifactId>
       <version>2.7.1</version>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
+      <artifactId>ibis-xalan</artifactId>
+      <version>2.7.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ibissource</groupId>
       <artifactId>ibis-xalan-serializer</artifactId>
-      <version>2.7.1</version>
+      <version>2.7.1.1</version>
     </dependency>
     <dependency>
       <groupId>com.sun.org.apache</groupId>
