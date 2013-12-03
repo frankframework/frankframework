@@ -50,13 +50,14 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSkipTemporaryQueues(boolean) skipTemporaryQueues}</td><td>>when set to <code>true</code>, temporary queues are skipped</td><td>false</td></tr>
+ * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>when <code>true</code>, a PipeRunException is thrown. Otherwise the output is only logged as an error (and returned in a XML string).</td><td>true</td></tr>
  * </table>
  * </p>
  * <p>
  * <table border="1">
  * <b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>url</td><td>string</td><td>When a parameter with name serviceId is present, it is used instead of the serviceId specified by the attribute</td></tr>
+ * <tr><td>url</td><td>string</td><td>When a parameter with name serviceId is present, it is used instead of the url specified by the attribute</td></tr>
  * <tr><td>authAlias</td><td>string</td><td>When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute</td></tr>
  * <tr><td>userName</td><td>string</td><td>When a parameter with name userName is present, it is used instead of the userName specified by the attribute</td></tr>
  * <tr><td>password</td><td>string</td><td>When a parameter with name password is present, it is used instead of the password specified by the attribute</td></tr>
@@ -73,6 +74,7 @@ public class GetTibcoQueues extends FixedForwardPipe {
 	private String userName;
 	private String password;
 	private boolean skipTemporaryQueues = false;
+	private boolean throwException = true;
 
 	public PipeRunResult doPipe(Object input, IPipeLineSession session)
 			throws PipeRunException {
@@ -200,8 +202,15 @@ public class GetTibcoQueues extends FixedForwardPipe {
 				}
 			}
 		} catch (TibjmsAdminException e) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ " Exception on getting Tibco queues", e);
+			String msg = getLogPrefix(session) + " Exception on getting Tibco queues for url [" + url_work + "]";
+			if (isThrowException()) {
+				throw new PipeRunException(this, msg, e);
+			} else {
+				String msgString = msg + ": " + e.getMessage();
+				log.error(msgString);
+				String msgCdataString = "<![CDATA[" + msgString + "]]>";
+				return new PipeRunResult(getForward(), "<error>" + msgCdataString + "</error>");
+			}
 		} finally {
 			try {
 				if (admin != null) {
@@ -266,5 +275,13 @@ public class GetTibcoQueues extends FixedForwardPipe {
 
 	public void setSkipTemporaryQueues(boolean b) {
 		skipTemporaryQueues = b;
+	}
+
+	public void setThrowException(boolean b) {
+		throwException = b;
+	}
+
+	public boolean isThrowException() {
+		return throwException;
 	}
 }
