@@ -37,6 +37,7 @@ import com.tibco.tibjms.admin.BridgeTarget;
 import com.tibco.tibjms.admin.QueueInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;
 import com.tibco.tibjms.admin.TibjmsAdminException;
+import com.tibco.tibjms.admin.UserInfo;
 
 /**
  * Returns all Tibco queues (including information about these queues) in a XML string.
@@ -120,6 +121,7 @@ public class GetTibcoQueues extends FixedForwardPipe {
 		try {
 			admin = new TibjmsAdmin(url_work, cf.getUsername(), cf.getPassword());
 
+			Map userMap = new HashMap();
 			Map aclMap = new HashMap();
 			ACLEntry[] aclEntries = admin.getACLEntries();
 			for (int j = 0; j < aclEntries.length; j++) {
@@ -127,7 +129,25 @@ public class GetTibcoQueues extends FixedForwardPipe {
 				String destination = aclEntry.getDestination().getName();
 				String principal = aclEntry.getPrincipal().getName();
 				String permissions = aclEntry.getPermissions().toString();
-				String pp = principal + "=" + permissions;
+				String principalDescription = null;
+				if (principal!=null) {
+					if (userMap.containsKey(principal)) {
+						principalDescription = (String)userMap.get(principal);
+					} else {
+						UserInfo principalUserInfo = admin.getUser(principal);
+						if (principalUserInfo!=null) {
+							principalDescription = principalUserInfo.getDescription();
+							userMap.put(principal, principalDescription);
+						}
+					}
+				}
+				String pp;
+				if (principalDescription!=null) {
+					pp = principal + " (" + principalDescription + ")=" + permissions;
+				} else {
+					pp = principal + "=" + permissions;
+					
+				}
 				if (aclMap.containsKey(destination)) {
 					String ppe = (String) aclMap.get(destination);
 					aclMap.remove(destination);
