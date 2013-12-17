@@ -94,10 +94,10 @@ import org.apache.log4j.Logger;
  *
  */
 public final class AppConstants extends Properties implements Serializable{
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
-	public final static String propertiesFileName="AppConstants.properties";
-	private static AppConstants self=null;
+	public final static String propertiesFileName = "AppConstants.properties";
+	private static AppConstants self = null;
 	private String additionalPropertiesFileKey="ADDITIONAL.PROPERTIES.FILE";
 
     private VariableExpander variableExpander;
@@ -231,8 +231,8 @@ public final class AppConstants extends Properties implements Serializable{
 	            nEnumeration.close();
 	            context.close();
 	        } catch (NamingException ne) {
-	            log.error("Error occured retrieving environment entries ", ne);
-	        }
+	            log.error("Error occured retrieving environment entries " + ne.getClass() + " " + ne.getMessage());
+            }
 	    }
 	}
 	/**
