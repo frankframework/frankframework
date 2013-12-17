@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.LogUtil;
+
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester.AbstractObjectCreationFactory;
@@ -62,7 +62,6 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
     private static IbisContext ibisContext;
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
-	private static final boolean DEBUG=false;
 
     public AbstractSpringPoweredDigesterFactory() {
         super();
@@ -262,7 +261,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      * bean-name returned by <code>getSuggestedBeanName()</code>, that is often
      * implemented by prefixing the element name with 'proto-'
      *
-     * @param ClassName
+     * @param className
      * @return
      * @throws ClassNotFoundException
      * @throws InstantiationException
@@ -277,7 +276,9 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
         // No explicit classname given; get bean from Spring Factory
         if (className == null) {
-        	if (DEBUG && log.isDebugEnabled()) log.debug("createBeanFromClassName(): className is null");
+            if (log.isDebugEnabled()) {
+                log.debug("createBeanFromClassName(): className is null");
+            }
             beanName = getSuggestedBeanName();
             beanClass = null;
         } else {
@@ -287,18 +288,24 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
             if (matchingBeans.length == 1) {
                 // Only 1 bean of this type, so create it
                 beanName = matchingBeans[0];
-               	if (DEBUG && log.isDebugEnabled()) log.debug("createBeanFromClassName(): only bean ["+beanName+"] matches class ["+beanClass.getName()+"]");
+                if (log.isDebugEnabled()) {
+                    log.debug("createBeanFromClassName(): only bean ["+beanName+"] matches class ["+beanClass.getName()+"]");
+                }
             } else if (matchingBeans.length > 1) {
                 // multiple beans; find if there's one with the
                 // same name as from 'getBeanName'.
                 beanName = getSuggestedBeanName();
-               	if (DEBUG && log.isDebugEnabled()) log.debug("createBeanFromClassName(): multiple beans match class ["+beanClass.getName()+"], using suggested ["+beanName+"]");
+                if (log.isDebugEnabled()) {
+                    log.debug("createBeanFromClassName(): multiple beans match class ["+beanClass.getName()+"], using suggested ["+beanName+"]");
+                }
             } else {
                 // No beans matching the type.
                 // Create instance, and if the instance implements
                 // Spring's BeanFactoryAware interface, use it to
                 // set BeanFactory attribute on this Bean.
-               	if (DEBUG && log.isDebugEnabled()) log.debug("createBeanFromClassName(): no beans match class ["+beanClass.getName()+"]");
+                if (log.isDebugEnabled()) {
+                    log.debug("createBeanFromClassName(): no beans match class ["+beanClass.getName()+"]");
+                }
 //               	try {
 //	               	Object o=ibisContext.getBean(getSuggestedBeanName(), beanClass);
 //	               	if (o!=null) {
