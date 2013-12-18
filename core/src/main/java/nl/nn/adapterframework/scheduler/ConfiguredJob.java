@@ -53,6 +53,8 @@ public class ConfiguredJob extends BaseJob implements Job  {
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
 			IbisManager ibisManager = (IbisManager)dataMap.get("manager");
 			JobDef jobDef = (JobDef)dataMap.get("jobdef");
+			String ctName = Thread.currentThread().getName();
+			Thread.currentThread().setName(jobDef.getName() + "["+ctName+"]");
 			log.info(getLogPrefix(jobDef) + "executing");
 			jobDef.executeJob(ibisManager);
 			log.debug(getLogPrefix(jobDef) + "completed");
