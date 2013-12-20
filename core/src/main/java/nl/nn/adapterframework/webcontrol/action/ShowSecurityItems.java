@@ -26,6 +26,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -39,8 +40,9 @@ import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.extensions.sap.SapListener;
+import nl.nn.adapterframework.extensions.sap.SapSender;
 import nl.nn.adapterframework.ftp.FtpSender;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.WebServiceSender;
@@ -86,20 +88,23 @@ public final class ShowSecurityItems extends ActionBase {
 		}
 
 		XmlBuilder securityItems = new XmlBuilder("securityItems");
-		addRegisteredAdapters(securityItems);
+		Vector sapSystems = new Vector();
+		addRegisteredAdapters(securityItems, sapSystems);
 		addApplicationDeploymentDescriptor(securityItems);
 		addSecurityRoleBindings(securityItems);
 		addJmsRealms(securityItems);
+		addSapSystems(securityItems, sapSystems);
 		addAuthEntries(securityItems);
 
 		request.setAttribute("secItems", securityItems.toXML());
+		log.debug("SECITEMS ["+securityItems.toXML()+"]");
 		
 		// Forward control to the specified success URI
 		log.debug("forward to success");
 		return (mapping.findForward("success"));
 	}
 
-	private void addRegisteredAdapters(XmlBuilder securityItems) {
+	private void addRegisteredAdapters(XmlBuilder securityItems, Vector sapSystems) {
 		XmlBuilder registeredAdapters = new XmlBuilder("registeredAdapters");
 		securityItems.addSubElement(registeredAdapters);
 		for (int j = 0; j < config.getRegisteredAdapters().size(); j++) {
@@ -124,6 +129,17 @@ public final class ShowSecurityItems extends ActionBase {
 						ISender sender = ((HasSender) receiver).getSender();
 						if (sender != null) {
 							receiverXML.addAttribute("senderName", sender.getName());
+						}
+					}
+					if (receiver instanceof ReceiverBase) {
+						ReceiverBase rb = (ReceiverBase) receiver;
+						IListener listener = rb.getListener();
+						if (listener instanceof SapListener) {
+							SapListener sapListener = (SapListener) listener;
+							Object o = sapListener.getSapSystem(); 
+							if (!sapSystems.contains(o)) {
+								sapSystems.add(o);
+							}
 						}
 					}
 				}
@@ -216,6 +232,14 @@ public final class ShowSecurityItems extends ActionBase {
 										CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
 										String keystoreType = s.getCertificateType();
 										addCertificateInfo(certElem, certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain");
+									}
+								}
+							} else {
+								if (sender instanceof SapSender) {
+									SapSender sapSender = (SapSender) sender;
+									Object o = sapSender.getSapSystem(); 
+									if (!sapSystems.contains(o)) {
+										sapSystems.add(o);
 									}
 								}
 							}
@@ -396,7 +420,32 @@ public final class ShowSecurityItems extends ActionBase {
 		}
 		return connectionPoolProperties;
 	}
-	
+
+
+	private void addSapSystems(XmlBuilder securityItems, Vector sapSystems) {
+		XmlBuilder sss = new XmlBuilder("sapSystems");
+		securityItems.addSubElement(sss);
+		Iterator iter = sapSystems.iterator();
+		while (iter.hasNext()) {
+			XmlBuilder ss = new XmlBuilder("sapSystem");
+			sss.addSubElement(ss);
+			Object o = iter.next();
+			if (o instanceof nl.nn.adapterframework.extensions.sap.jco3.SapSystem) {
+				nl.nn.adapterframework.extensions.sap.jco3.SapSystem sapSystem3 = (nl.nn.adapterframework.extensions.sap.jco3.SapSystem) o;
+				ss.addAttribute("name", sapSystem3.getName());
+				XmlBuilder infoElem = new XmlBuilder("info");
+				infoElem.setCdataValue(sapSystem3.toString());
+				ss.addSubElement(infoElem);
+			} else {
+				nl.nn.adapterframework.extensions.sap.jco2.SapSystem sapSystem2 = (nl.nn.adapterframework.extensions.sap.jco2.SapSystem) o;
+				ss.addAttribute("name", sapSystem2.getName());
+				XmlBuilder infoElem = new XmlBuilder("info");
+				infoElem.setCdataValue(sapSystem2.toString());
+				ss.addSubElement(infoElem);
+			}
+		}
+	}
+
 	private void addAuthEntries(XmlBuilder securityItems) {
 		XmlBuilder aes = new XmlBuilder("authEntries");
 		securityItems.addSubElement(aes);

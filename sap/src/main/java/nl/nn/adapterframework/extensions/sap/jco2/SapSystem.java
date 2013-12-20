@@ -15,12 +15,18 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco2;
 
+import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.Iterator;
 
+import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.GlobalListItem;
 
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.sap.mw.idoc.IDoc;
@@ -231,9 +237,12 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
     }
     
 	public String toString() {
-	  return  ToStringBuilder.reflectionToString(this);
-
-	}
+		//return ToStringBuilder.reflectionToString(this);
+		return (new ReflectionToStringBuilder(this) {
+			protected boolean accept(Field f) {
+				return super.accept(f) && !f.getName().equals("passwd");
+			}
+		}).toString();	}
 
 	public String getGwhost() {
 		return gwhost;

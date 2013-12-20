@@ -15,12 +15,15 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco3;
 
+import java.lang.reflect.Field;
 import java.util.Iterator;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.GlobalListItem;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.sap.conn.idoc.IDocRepository;
@@ -167,8 +170,12 @@ public class SapSystem extends GlobalListItem {
 	}
 
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
+		//return ToStringBuilder.reflectionToString(this);
+		return (new ReflectionToStringBuilder(this) {
+			protected boolean accept(Field f) {
+				return super.accept(f) && !f.getName().equals("passwd");
+			}
+		}).toString();	}
 
 	public void setHost(String host) {
 		this.host = host;

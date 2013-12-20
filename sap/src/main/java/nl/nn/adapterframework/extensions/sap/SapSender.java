@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.sap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -32,7 +33,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public class SapSender implements ISenderWithParameters {
+public class SapSender implements ISenderWithParameters, HasPhysicalDestination {
 	private int jcoVersion = -1;
 	private nl.nn.adapterframework.extensions.sap.jco3.SapSender sapSender3;
 	private nl.nn.adapterframework.extensions.sap.jco2.SapSender sapSender2;
@@ -235,4 +236,27 @@ public class SapSender implements ISenderWithParameters {
 		}
 	}
 
+	public Object getSapSystem() {
+		if (jcoVersion == 3) {
+			try {
+				return sapSender3.getSapSystem();
+			} catch (Exception e) {
+				return null;
+			}
+		} else {
+			try {
+				return sapSender2.getSapSystem();
+			} catch (Exception e) {
+				return null;
+			}
+		}
+	}
+
+	public String getPhysicalDestinationName() {
+		if (jcoVersion == 3) {
+			return sapSender3.getSapSystemName();
+		} else {
+			return sapSender2.getSapSystemName();
+		}
+	}
 }

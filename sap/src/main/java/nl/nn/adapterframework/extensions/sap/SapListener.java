@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.sap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
@@ -34,7 +35,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public class SapListener implements IPushingListener {
+public class SapListener implements IPushingListener, HasPhysicalDestination {
 	private int jcoVersion = 3;
 	private nl.nn.adapterframework.extensions.sap.jco3.SapListener sapListener3;
 	private nl.nn.adapterframework.extensions.sap.jco2.SapListener sapListener2;
@@ -203,4 +204,27 @@ public class SapListener implements IPushingListener {
 		}
 	}
 
+	public Object getSapSystem() {
+		if (jcoVersion == 3) {
+			try {
+				return sapListener3.getSapSystem();
+			} catch (Exception e) {
+				return null;
+			}
+		} else {
+			try {
+				return sapListener2.getSapSystem();
+			} catch (Exception e) {
+				return null;
+			}
+		}
+	}
+
+	public String getPhysicalDestinationName() {
+		if (jcoVersion == 3) {
+			return sapListener3.getSapSystemName();
+		} else {
+			return sapListener2.getSapSystemName();
+		}
+	}
 }
