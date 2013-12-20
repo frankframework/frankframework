@@ -4,6 +4,7 @@ Latest release
 First next version:
 
 - First steps towards running IBISes on TIBCO AMX (as WebApp in Composite)
+- added "Used SapSystems" to console function "Show Security Items"
 
 Version 5.3:
 
