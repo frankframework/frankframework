@@ -97,7 +97,6 @@ public final class ShowSecurityItems extends ActionBase {
 		addAuthEntries(securityItems);
 
 		request.setAttribute("secItems", securityItems.toXML());
-		log.debug("SECITEMS ["+securityItems.toXML()+"]");
 		
 		// Forward control to the specified success URI
 		log.debug("forward to success");
