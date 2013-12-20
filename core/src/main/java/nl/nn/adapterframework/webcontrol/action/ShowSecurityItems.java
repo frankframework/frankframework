@@ -67,6 +67,8 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.w3c.dom.Element;
 
+import com.sap.conn.jco.JCoException;
+
 /**
  * Shows the used certificate.
  * 
@@ -433,7 +435,11 @@ public final class ShowSecurityItems extends ActionBase {
 				nl.nn.adapterframework.extensions.sap.jco3.SapSystem sapSystem3 = (nl.nn.adapterframework.extensions.sap.jco3.SapSystem) o;
 				ss.addAttribute("name", sapSystem3.getName());
 				XmlBuilder infoElem = new XmlBuilder("info");
-				infoElem.setCdataValue(sapSystem3.toString());
+				try {
+					infoElem.setCdataValue(sapSystem3.getDestination().toString());
+				} catch (JCoException e) {
+					infoElem.setCdataValue("*** ERROR ***");
+				}
 				ss.addSubElement(infoElem);
 			} else {
 				nl.nn.adapterframework.extensions.sap.jco2.SapSystem sapSystem2 = (nl.nn.adapterframework.extensions.sap.jco2.SapSystem) o;
