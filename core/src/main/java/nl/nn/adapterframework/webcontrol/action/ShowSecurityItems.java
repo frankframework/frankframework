@@ -41,8 +41,8 @@ import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.extensions.sap.SapListener;
-import nl.nn.adapterframework.extensions.sap.SapSender;
+//import nl.nn.adapterframework.extensions.sap.SapListener;
+//import nl.nn.adapterframework.extensions.sap.SapSender;
 import nl.nn.adapterframework.ftp.FtpSender;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.WebServiceSender;
@@ -67,7 +67,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.w3c.dom.Element;
 
-import com.sap.conn.jco.JCoException;
+//import com.sap.conn.jco.JCoException;
 
 /**
  * Shows the used certificate.
@@ -95,7 +95,7 @@ public final class ShowSecurityItems extends ActionBase {
 		addApplicationDeploymentDescriptor(securityItems);
 		addSecurityRoleBindings(securityItems);
 		addJmsRealms(securityItems);
-		addSapSystems(securityItems, sapSystems);
+//		addSapSystems(securityItems, sapSystems);
 		addAuthEntries(securityItems);
 
 		request.setAttribute("secItems", securityItems.toXML());
@@ -132,6 +132,7 @@ public final class ShowSecurityItems extends ActionBase {
 							receiverXML.addAttribute("senderName", sender.getName());
 						}
 					}
+/*
 					if (receiver instanceof ReceiverBase) {
 						ReceiverBase rb = (ReceiverBase) receiver;
 						IListener listener = rb.getListener();
@@ -143,6 +144,7 @@ public final class ShowSecurityItems extends ActionBase {
 							}
 						}
 					}
+*/
 				}
 				adapterXML.addSubElement(receiversXML);
 			}
@@ -236,6 +238,7 @@ public final class ShowSecurityItems extends ActionBase {
 									}
 								}
 							} else {
+/*
 								if (sender instanceof SapSender) {
 									SapSender sapSender = (SapSender) sender;
 									Object o = sapSender.getSapSystem(); 
@@ -243,6 +246,7 @@ public final class ShowSecurityItems extends ActionBase {
 										sapSystems.add(o);
 									}
 								}
+*/
 							}
 						}
 					}
@@ -422,7 +426,7 @@ public final class ShowSecurityItems extends ActionBase {
 		return connectionPoolProperties;
 	}
 
-
+/*
 	private void addSapSystems(XmlBuilder securityItems, Vector sapSystems) {
 		XmlBuilder sss = new XmlBuilder("sapSystems");
 		securityItems.addSubElement(sss);
@@ -450,7 +454,7 @@ public final class ShowSecurityItems extends ActionBase {
 			}
 		}
 	}
-
+*/
 	private void addAuthEntries(XmlBuilder securityItems) {
 		XmlBuilder aes = new XmlBuilder("authEntries");
 		securityItems.addSubElement(aes);
