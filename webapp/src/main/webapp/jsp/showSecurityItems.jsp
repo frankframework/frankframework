@@ -73,6 +73,22 @@
 		</contentTable>
 		<br/><br/>
 		<contentTable>
+			<caption>Used SapSystems</caption>
+			<tbody>
+				<tr>
+					<subHeader>Name</subHeader>
+					<subHeader>Info</subHeader>
+				</tr>
+				<xtags:forEach select="sapSystems/sapSystem">
+					<tr ref="spannedRow">
+						<td><xtags:valueOf select="@name"/></td>
+						<td><xtags:valueOf select="info"/></td>
+					</tr>
+				</xtags:forEach>
+			</tbody>
+		</contentTable>
+		<br/><br/>
+		<contentTable>
 			<caption>Used Authentication Entries</caption>
 			<tbody>
 				<tr>

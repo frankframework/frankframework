@@ -54,8 +54,10 @@ public class SapSystem {
 	public void registerItem(Object dummyParent) {
 		if (jcoVersion == 3) {
 			sapSystem3.registerItem(dummyParent);
+			SapSystemFactory.getInstance().registerSapSystem(sapSystem3, sapSystem3.getName());
 		} else {
 			sapSystem2.registerItem(dummyParent);
+			SapSystemFactory.getInstance().registerSapSystem(sapSystem2, sapSystem2.getName());
 		}
 	}
 
