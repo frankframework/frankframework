@@ -14,6 +14,24 @@
         <param-name>restListenerPathPrefix</param-name>
         <param-value>rest</param-value>
     </context-param>
+
+	<filter>
+	    <filter-name>LoginFilter</filter-name>
+	    <filter-class>nl.nn.adapterframework.webcontrol.LoginFilter</filter-class>
+		<init-param>
+			<param-name>allowedExtentions</param-name>
+			<param-value>css js gif jpg png</param-value> 
+		</init-param>
+		<init-param>
+			<param-name>allowedPaths</param-name>
+			<param-value>/index.jsp /showConfigurationStatus.do /showConfiguration.do /configHandler.do /showAdapterStatistics.do /showTracingConfiguration.do /showLogging.do /browseQueue.do /browseQueueExecute.do /browseJdbcTable.do /showSchedulerStatus.do /FileViewerServlet /DumpIbisConsole /showEnvironmentVariables.do /browser.do /showSecurityItems.do /showMonitors.do /showEvents.do /editMonitor.do /editTrigger.do /showIbisstoreSummary.do /Download</param-value> 
+		</init-param>
+	</filter>
+	
+	<filter-mapping>
+	    <filter-name>LoginFilter</filter-name>
+	    <url-pattern>/*</url-pattern>
+	</filter-mapping>
  
    <servlet>
        <servlet-name>QuartzInitializer</servlet-name>
