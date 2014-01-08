@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.webcontrol;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,8 +35,6 @@ import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
-
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * Simple Java Servlet Filter as security constraints workaround for applicationServerType="TIBCOAMX" and otapStage={"ACC", "PRD"}.
