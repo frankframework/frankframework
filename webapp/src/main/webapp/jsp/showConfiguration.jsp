@@ -35,9 +35,6 @@
 <br/><br/>
 
 	<html:form action="/logHandler.do">
-	<% Logger log = Logger.getRootLogger();
-		  String curlevel=log.getLevel().toString();
-	  %>
 
 			<contentTable>
 				<caption>Dynamic parameters</caption>
