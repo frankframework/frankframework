@@ -50,7 +50,7 @@ public class EncapsulatingReader extends FilterReader {
 		if (!encodePrintable || XmlUtils.isPrintableUnicodeChar(c)) {
 			return c;
 		} else {
-			return 0x00BF;
+			return XmlUtils.REPLACE_NON_XML_CHAR;
 		}
 	}
 

@@ -112,6 +112,7 @@ public class XmlUtils {
 	private static Boolean autoReload = null;
 	private static Integer buffersize=null;
 
+	public static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
 	public static String IDENTITY_TRANSFORM =
@@ -825,7 +826,9 @@ public class XmlUtils {
 	}
 
 	/**
-	   * Conversion of special xml signs
+	   * Conversion of special xml signs. Please note that non valid xml chars
+	   * are not changed, hence you might want to use
+	   * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
 	   **/
 	private static String escapeChar(char c) {
 		switch (c) {
@@ -1138,22 +1141,21 @@ public class XmlUtils {
 	}
 
 	/**
-	 * Replaces non-unicode-characters by '0x00BF'.
+	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark).
 	 */
 	public static String encodeCdataString(String string) {
-		return replaceNonValidXmlCharacters(string, (char) 0x00BF);
+		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, false);
 	}
 
-	public static boolean isPrintableUnicodeChar(char c) {
-		return (c == 0x0009)
-			|| (c == 0x000A)
-			|| (c == 0x000D)
-			|| (c >= 0x0020 && c <= 0xD7FF)
-			|| (c >= 0xE000 && c <= 0xFFFD)
-			|| (c >= 0x0010000 && c <= 0x0010FFFF);
+	/**
+	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark)
+	 * appended with #, the character number and ;.
+	 */
+	public static String replaceNonValidXmlCharacters(String string) {
+		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, true);
 	}
 
-	public static String replaceNonValidXmlCharacters(String string, char to) {
+	public static String replaceNonValidXmlCharacters(String string, char to, boolean appendCharNum) {
 		if (string==null) {
 			return null;
 		} else {
@@ -1166,7 +1168,11 @@ public class XmlUtils {
 				if (isPrintableUnicodeChar(c)) {
 					encoded.append(c);
 				} else {
-					encoded.append(to);
+					if (appendCharNum) {
+						encoded.append(to + "#" + (int)c + ";"); 
+					} else {
+						encoded.append(to);
+					}
 				}
 			}
 			return encoded.toString();
@@ -1185,6 +1191,15 @@ public class XmlUtils {
 			}
 		}
 		return encoded.toString();
+	}
+
+	public static boolean isPrintableUnicodeChar(char c) {
+		return (c == 0x0009)
+			|| (c == 0x000A)
+			|| (c == 0x000D)
+			|| (c >= 0x0020 && c <= 0xD7FF)
+			|| (c >= 0xE000 && c <= 0xFFFD)
+			|| (c >= 0x0010000 && c <= 0x0010FFFF);
 	}
 
 	/**

@@ -22,6 +22,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
@@ -74,7 +75,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 	    XmlBuilder errorXml = new XmlBuilder("errorMessage");
 	    errorXml.addAttribute("timestamp", new Date().toString());
 	    errorXml.addAttribute("originator", originator);
-	    errorXml.addAttribute("message", message);
+	    errorXml.addAttribute("message", XmlUtils.replaceNonValidXmlCharacters(message));
 	
 	    if (location!=null) {
 		    XmlBuilder locationXml = new XmlBuilder("location");
@@ -86,7 +87,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 	    if (details != null && !details.equals("")) {
 		    XmlBuilder detailsXml = new XmlBuilder("details");
 	    	//detailsXml.setCdataValue(details);
-	    	detailsXml.setValue(details, true);
+	    	detailsXml.setValue(XmlUtils.replaceNonValidXmlCharacters(details), true);
 		    errorXml.addSubElement(detailsXml);
 		}
 			
