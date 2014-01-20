@@ -38,6 +38,10 @@ public class Dir2Xml  {
 	}
 	  
 	public String getDirList(boolean includeDirectories) {
+		return getDirList(includeDirectories, -1);
+	}
+	  
+	public String getDirList(boolean includeDirectories, int maxItems) {
 		WildCardFilter filter = new WildCardFilter(wildcard);
 		File dir = new File(path);
 		File files[] = dir.listFiles(filter);
@@ -47,6 +51,10 @@ public class Dir2Xml  {
 		int count = (files == null ? 0 : files.length);
 		XmlBuilder dirXml = new XmlBuilder("directory");
 		dirXml.addAttribute("name", path);
+		dirXml.addAttribute("count", count);
+		if (maxItems >= 0 && count > maxItems) {
+			count = maxItems;
+		}
 		if (includeDirectories) {
 			File parent = dir.getParentFile();
 			if (parent != null) {
