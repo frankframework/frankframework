@@ -18,6 +18,7 @@ Next version:
 - prevent OutOfMemoryError in console function "Adapter Logging" caused by a lot of files in a directory
 
 [More info...](https://github.com/ibissource/iaf/compare/v5_3...HEAD)
+
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 
@@ -46,8 +47,8 @@ Small XML configuration example which defines an adapter:
 	</adapter>
 
 
-Communication
-=============
+Mailing list and IRC
+====================
 
 The Ibis community can be contacted via
 https://groups.google.com/d/forum/ibissource. You can join this mailing list by 
@@ -61,11 +62,29 @@ somebody online on IRC using the
 Eclipse
 =======
 
-Look at [README.eclipse](README.eclipse) for an explanation on how to build this in eclipse (needs te be updated).
+- Download [Eclipse Kepler](http://www.eclipse.org/downloads/packages/eclipse-ide-java-ee-developers/keplersr1)
+- Unzip and start Eclipse.
+- Window, Preferences, Team, Git, History, Follow Renames.
+- In Git Repositories view clone:
+	- https://github.com/ibissource/mvn-repo.git
+	- https://github.com/ibissource/iaf.git
+- Right click iaf, Import projects...
+- In Navigator view:
+	- Right click pom.xml, Run As, Maven build..., Skip Tests, Run.
+- Refresh the project, build problems should be resolved.
+- When Tomcat has been added to the Servers view it should be possible to add
+  the project to the server and start it up.
 
 
 
-How to make a release
-=====================
+IntelliJ
+========
 
-I documented [here](RELEASE.md) how to make a release with mvn/git (needs to be updated).
+- Clone this any way you like. E.g. at the commandline: git clone git@github.com:ibissource/maven-parent.git
+- File -> Open project, and select the pom.xml which just appeared.
+- To use git via intellij you need to install the git and/or github plugin.
+- You can add a tomcat configuration via Run-> Edit Configuration -> + -> Tomcat Server -> Local -> Add example webapp under deployments tab.
+- Run it 
+
+to check out via intellij doesn't work very well because of lacking support for submodules: 
+(see http://youtrack.jetbrains.com/issue/IDEA-64024)
