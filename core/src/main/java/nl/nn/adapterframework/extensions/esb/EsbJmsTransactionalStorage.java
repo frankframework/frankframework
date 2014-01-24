@@ -170,4 +170,8 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 		parameterValues.put("msg", rawMessageText);
 		return parameterValues;
 	}
+
+	public int getMessageCount() throws ListenerException {
+		return -1;
+	}
 }

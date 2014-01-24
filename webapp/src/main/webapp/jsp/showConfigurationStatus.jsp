@@ -320,6 +320,11 @@
 												type="showashtml"
 												alt="<%=receiverName%>"/>
 							<% } if ( "true".equalsIgnoreCase(hasErrorStorage) ) { %>
+									<xtags:choose>
+										<xtags:when test="@errorStorageCount=-1">
+											<img src="images/browseErrorStore.gif" title="errorStore"/>
+										</xtags:when>
+										<xtags:otherwise>
 											<imagelink
 												href="browser.do"
 												type="browseErrorStore"
@@ -330,17 +335,26 @@
 												<parameter name="adapterName"><%=java.net.URLEncoder.encode(adapterName)%></parameter>
 												<parameter name="receiverName"><%=java.net.URLEncoder.encode(receiverName)%></parameter>
 											 </imagelink> (<xtags:valueOf select="@errorStorageCount"/>)
+										</xtags:otherwise>
+									</xtags:choose>
 							<% } if ( "true".equalsIgnoreCase(hasMessageLog) ) { %>
-									<imagelink
-										href="browser.do"
-										type="browseMessageLog"
-										alt="show contents of messageLog"
-										>
-										<parameter name="storageType">messagelog</parameter>
-										<parameter name="action">show</parameter>
-										<parameter name="adapterName"><%=java.net.URLEncoder.encode(adapterName)%></parameter>
-										<parameter name="receiverName"><%=java.net.URLEncoder.encode(receiverName)%></parameter>
-									 </imagelink> (<xtags:valueOf select="@messageLogCount"/>)
+									<xtags:choose>
+										<xtags:when test="@messageLogCount=-1">
+											<img src="images/browseMessageLog.gif" title="messageLog"/>
+										</xtags:when>
+										<xtags:otherwise>
+											<imagelink
+												href="browser.do"
+												type="browseMessageLog"
+												alt="show contents of messageLog"
+												>
+												<parameter name="storageType">messagelog</parameter>
+												<parameter name="action">show</parameter>
+												<parameter name="adapterName"><%=java.net.URLEncoder.encode(adapterName)%></parameter>
+												<parameter name="receiverName"><%=java.net.URLEncoder.encode(receiverName)%></parameter>
+											 </imagelink> (<xtags:valueOf select="@messageLogCount"/>)
+										</xtags:otherwise>
+									</xtags:choose>
 								<% } %>
 								</td>
 							</tr>
@@ -357,6 +371,7 @@
 						<xtags:forEach select="pipes/pipe[@sender!='' and (@isJdbcSender='true'=false() or @hasMessageLog='true')]">
 							<xtags:variable id="pipeName" select="@name"/>
 							<xtags:variable id="hasMessageLog" select="@hasMessageLog"/>
+							<xtags:variable id="messageLogCount" select="@messageLogCount"/>
 							 <tr >
 								<td></td>
 								<td colspan="3" class="receiverRow"><xtags:valueOf select="@name"/></td>
@@ -369,16 +384,23 @@
 								</td>
 								<td>
 								<%  if ( "true".equalsIgnoreCase(hasMessageLog) ) { %>
-									<imagelink
-										href="browser.do"
-										type="browseMessageLog"
-										alt="show contents of messageLog"
-										>
-										<parameter name="storageType">messagelog</parameter>
-										<parameter name="action">show</parameter>
-										<parameter name="adapterName"><%=java.net.URLEncoder.encode(adapterName)%></parameter>
-										<parameter name="pipeName"><%=java.net.URLEncoder.encode(pipeName)%></parameter>
-									 </imagelink> (<xtags:valueOf select="@messageLogCount"/>)
+									<xtags:choose>
+										<xtags:when test="@messageLogCount=-1">
+											<img src="images/browseMessageLog.gif" title="messageLog"/>
+										</xtags:when>
+										<xtags:otherwise>
+											<imagelink
+												href="browser.do"
+												type="browseMessageLog"
+												alt="show contents of messageLog"
+												>
+												<parameter name="storageType">messagelog</parameter>
+												<parameter name="action">show</parameter>
+												<parameter name="adapterName"><%=java.net.URLEncoder.encode(adapterName)%></parameter>
+												<parameter name="pipeName"><%=java.net.URLEncoder.encode(pipeName)%></parameter>
+											 </imagelink> (<xtags:valueOf select="@messageLogCount"/>)
+										</xtags:otherwise>
+									</xtags:choose>
 								<% } else { %>&#160;<% } %>
 								</td>
 							</tr>
