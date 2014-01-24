@@ -46,6 +46,7 @@ Small XML configuration example which defines an adapter:
 		</pipeline>
 	</adapter>
 
+JavaDocs: http://www.ibissource.org/iaf/maven/apidocs/index.html
 
 Mailing list and IRC
 ====================
@@ -62,15 +63,14 @@ somebody online on IRC using the
 Eclipse
 =======
 
-- Download [Eclipse Kepler](http://www.eclipse.org/downloads/packages/eclipse-ide-java-ee-developers/keplersr1)
+- Download
+  [Eclipse Kepler](http://www.eclipse.org/downloads/packages/eclipse-ide-java-ee-developers/keplersr1)
 - Unzip and start Eclipse.
 - Window, Preferences, Team, Git, History, Follow Renames.
-- In Git Repositories view clone:
-	- https://github.com/ibissource/mvn-repo.git
-	- https://github.com/ibissource/iaf.git
+- In Git Repositories view clone https://github.com/ibissource/iaf.git
 - Right click iaf, Import projects...
-- In Navigator view:
-	- Right click pom.xml, Run As, Maven build..., Skip Tests, Run.
+- In Navigator view right click pom.xml, Run As, Maven build..., Skip Tests,
+  Run.
 - Refresh the project, build problems should be resolved.
 - When Tomcat has been added to the Servers view it should be possible to add
   the project to the server and start it up.
@@ -80,6 +80,7 @@ Eclipse
 IntelliJ
 ========
 
+(needs to be updated as maven-parent isn't used anymore)
 - Clone this any way you like. E.g. at the commandline: git clone git@github.com:ibissource/maven-parent.git
 - File -> Open project, and select the pom.xml which just appeared.
 - To use git via intellij you need to install the git and/or github plugin.
@@ -88,3 +89,12 @@ IntelliJ
 
 to check out via intellij doesn't work very well because of lacking support for submodules: 
 (see http://youtrack.jetbrains.com/issue/IDEA-64024)
+
+
+
+Command-line interface
+======================
+
+git clone https://github.com/ibissource/iaf
+cd iaf/core
+mvn -DskipTests
