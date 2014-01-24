@@ -95,6 +95,6 @@ to check out via intellij doesn't work very well because of lacking support for 
 Command-line interface
 ======================
 
-git clone https://github.com/ibissource/iaf
-cd iaf/core
-mvn -DskipTests
+- git clone https://github.com/ibissource/iaf
+- cd iaf/core
+- mvn -DskipTests
