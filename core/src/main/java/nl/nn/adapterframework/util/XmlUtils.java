@@ -753,8 +753,10 @@ public class XmlUtils {
 	}
 
 	/**
-	 * translates special characters to xml equivalents
-	 * like <b>&gt;</b> and <b>&amp;</b>
+	 * Translates special characters to xml equivalents
+	 * like <b>&gt;</b> and <b>&amp;</b>. Please note that non valid xml chars
+	 * are not changed, hence you might want to use
+	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
 	 */
 	public static String encodeChars(String string) {
 		if (string==null) {
@@ -766,8 +768,10 @@ public class XmlUtils {
 		return encodeChars(characters,0,length);
 	}
 	/**
-	 * translates special characters to xml equivalents
-	 * like <b>&gt;</b> and <b>&amp;</b>
+	 * Translates special characters to xml equivalents
+	 * like <b>&gt;</b> and <b>&amp;</b>. Please note that non valid xml chars
+	 * are not changed, hence you might want to use
+	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
 	 */
 	public static String encodeChars(char[] chars, int offset, int length) {
 
