@@ -46,8 +46,12 @@ Small XML configuration example which defines an adapter:
 Communication
 =============
 
-The ibis community can be contacted via https://groups.google.com/d/forum/ibissource. You can join this mailing list by 
-sending a message to ibissource+subscribe@googlegroups.com
+The Ibis community can be contacted via
+https://groups.google.com/d/forum/ibissource. You can join this mailing list by 
+sending a message to ibissource+subscribe@googlegroups.com. Or try to find
+somebody online on [IRC](http://irc.codehaus.org/?channels=ibis&uio=d4):
+
+<iframe src="http://irc.codehaus.org/?channels=ibis&uio=d4" width="647" height="400"></iframe>
 
 
 Travis
