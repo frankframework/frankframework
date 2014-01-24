@@ -1,12 +1,6 @@
 Latest release
 ==============
 
-First next version:
-
-- First steps towards running IBISes on TIBCO AMX (as WebApp in Composite)
-- added "Used SapSystems" to console function "Show Security Items"
-- prevent OutOfMemoryError in console function "Adapter Logging" caused by a lot of files in a directory
-
 Version 5.3:
 
 - Better DB2 support.
@@ -16,6 +10,15 @@ Version 5.3:
 - On the main page of the IBIS console ("Show configurationStatus") for each RestListener a clickable icon is added (this replaces separate bookmarks).
 
 [More info...](https://github.com/ibissource/iaf/compare/v5_2...v5_3)
+
+Next version:
+
+- First steps towards running IBISes on TIBCO AMX (as WebApp in Composite)
+- added "Used SapSystems" to console function "Show Security Items"
+- prevent OutOfMemoryError in console function "Adapter Logging" caused by a lot of files in a directory
+
+[More info...](https://github.com/ibissource/iaf/compare/v5_3...HEAD)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 
 
@@ -49,15 +52,11 @@ Communication
 The Ibis community can be contacted via
 https://groups.google.com/d/forum/ibissource. You can join this mailing list by 
 sending a message to ibissource+subscribe@googlegroups.com. Or try to find
-somebody online on [IRC](http://irc.codehaus.org/?channels=ibis&uio=d4):
+somebody online on IRC a
+[web interface](http://irc.codehaus.org/?channels=ibis&uio=d4) or
+[IRC client](irc://irc.codehaus.org/ibis).
 
-<iframe src="http://irc.codehaus.org/?channels=ibis&uio=d4" width="647" height="400"></iframe>
-
-
-Travis
-======
-
-IAF @ Travis: [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+<iframe src="http://irc.codehaus.org/?channels=ibis&uio=d4" width="647" height="400">&nbsp;</iframe>
 
 
 
