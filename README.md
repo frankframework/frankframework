@@ -5,6 +5,7 @@ First next version:
 
 - First steps towards running IBISes on TIBCO AMX (as WebApp in Composite)
 - added "Used SapSystems" to console function "Show Security Items"
+- prevent OutOfMemoryError in console function "Adapter Logging" caused by a lot of files in a directory
 
 Version 5.3:
 

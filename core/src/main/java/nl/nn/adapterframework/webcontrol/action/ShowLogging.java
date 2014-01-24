@@ -17,6 +17,7 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Dir2Xml;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
@@ -26,6 +27,7 @@ import org.apache.struts.action.ActionMapping;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 /**
@@ -46,6 +48,7 @@ import java.io.IOException;
 public class ShowLogging extends ActionBase {
 	
 	boolean showDirectories = AppConstants.getInstance().getBoolean("logging.showdirectories", false);
+	int maxItems = AppConstants.getInstance().getInt("logging.items.max", 500); 
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -67,7 +70,16 @@ public class ShowLogging extends ActionBase {
 	    if (wildcard!=null) dx.setWildCard(wildcard);
 	    String listresult;
 	    try {
-		    listresult=dx.getDirList(showDirectories);
+		    listresult=dx.getDirList(showDirectories, maxItems);
+		    if (listresult!=null) {
+			    String countStr = XmlUtils.buildDomDocument(listresult).getDocumentElement().getAttribute("count");
+			    if (countStr!=null) {
+			    	int count = Integer.parseInt(countStr);
+			    	if (count > maxItems) {
+			    		error("total number of items ("+count+") exceeded maximum number, only showing first "+maxItems+" items", null);
+			    	}
+			    }
+		    }
 	    } catch (Exception e) {
 			error("error occured on getting directory list",e);
 		    log.warn("returning empty result for directory listing");
