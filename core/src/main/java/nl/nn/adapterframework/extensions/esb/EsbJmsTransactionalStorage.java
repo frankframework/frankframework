@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 /**
  * ESB (Enterprise Service Bus) extension of JmsTransactionalStorage.
  *
- * <p>Depending on the <code>type</code> of the <code>TransactionalStorage</çode> one of the following messages is sent:
+ * <p>Depending on the <code>type</code> of the <code>TransactionalStorage</code> one of the following messages is sent:
  * <ul>
  *   <li><code>errorStore</code>: ESB.Infrastructure.US.Log.BusinessLog.2.ExceptionLog.1.Action</li>
  *   <li><code>messageLog</code>: ESB.Infrastructure.US.Log.BusinessLog.2.AuditLog.1.Action</li>
