@@ -173,7 +173,7 @@
       <id>iaf-without-proprietary-dependencies</id>
       <activation>
         <file>
-          <missing>../mvn-repo-proprietary</missing>
+          <missing>../mvn-repo-proprietary/.project</missing>
         </file>
       </activation>
       <modules>
@@ -184,7 +184,7 @@
       <id>iaf-with-proprietary-dependencies</id>
       <activation>
         <file>
-          <exists>../mvn-repo-proprietary</exists>
+          <exists>../mvn-repo-proprietary/.project</exists>
         </file>
       </activation>
       <modules>
