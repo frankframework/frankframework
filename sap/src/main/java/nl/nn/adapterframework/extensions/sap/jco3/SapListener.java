@@ -79,10 +79,10 @@ import com.sap.conn.jco.server.JCoServerTIDHandler;
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted to xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted from xml. 
  * </p>
- * @author  Gerrit van Brakel
- * @author  Jaco de Groot
- * @since   5.0
- * @see   http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm
+ * @author Gerrit van Brakel
+ * @author Jaco de Groot
+ * @since 5.0
+ * @see "http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm"
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, JCoServerFunctionHandler, JCoServerTIDHandler, JCoIDocHandlerFactory, JCoIDocHandler, JCoQueuedIDocHandler, JCoServerExceptionListener, JCoServerErrorListener, ServerDataProvider {
 
