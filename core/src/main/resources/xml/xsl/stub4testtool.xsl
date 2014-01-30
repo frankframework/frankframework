@@ -60,12 +60,12 @@
 							<xsl:attribute name="throwException">false</xsl:attribute>
 						</xsl:if>
 					</xsl:element>
-					<xsl:for-each select="parent::*[name()='adapter']/receiver/errorStorage">
+					<xsl:for-each select="parent::*[name()='adapter']/receiver/errorStorage[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage']">
 						<xsl:if test="position()=1">
 							<xsl:copy-of select="." />
 						</xsl:if>
 					</xsl:for-each>
-					<xsl:for-each select="parent::*[name()='adapter']/receiver/messageLog">
+					<xsl:for-each select="parent::*[name()='adapter']/receiver/messageLog[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage']">
 						<xsl:if test="position()=1">
 							<xsl:copy-of select="." />
 						</xsl:if>
@@ -249,6 +249,9 @@
 					</xsl:attribute>
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 				</xsl:element>
+			</xsl:when>
+			<xsl:when test="(name()='errorStorage' or name()='messageLog') and parent::*[name()='pipe'] and @className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage'=false()">
+				<xsl:call-template name="disable" />
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:call-template name="copy" />
