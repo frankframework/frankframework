@@ -159,13 +159,17 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 			}
 		}
 		String rawMessageText;
-		try {
-			TextMessage textMessage = null;
-			textMessage = (TextMessage) message;
-			rawMessageText = textMessage.getText();
-		} catch (ClassCastException e) {
-			log.error("message was not of type TextMessage, but ["+message.getClass().getName()+"]", e);
+		if (message instanceof String) {
 			rawMessageText = message.toString();
+		} else {
+			try {
+				TextMessage textMessage = null;
+				textMessage = (TextMessage) message;
+				rawMessageText = textMessage.getText();
+			} catch (ClassCastException e) {
+				log.error("message was not of type TextMessage, but ["+message.getClass().getName()+"]", e);
+				rawMessageText = message.toString();
+			}
 		}
 		parameterValues.put("msg", rawMessageText);
 		return parameterValues;
