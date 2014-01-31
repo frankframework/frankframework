@@ -6,8 +6,9 @@
 	<xsl:param name="messageId"/>
 	<xsl:param name="timestamp"/>
 	<xsl:param name="msgMessageId"/>
+	<xsl:param name="msgCorrelationId"/>
 	<xsl:param name="msgTimestamp"/>
-	<xsl:param name="senderId"/>
+	<xsl:param name="slotId"/>
 	<xsl:param name="errorText"/>
 	<xsl:param name="msg"/>
 	<xsl:template match="/">
@@ -51,17 +52,18 @@
 						<MessageId>
 							<xsl:value-of select="$msgMessageId"/>
 						</MessageId>
+						<CPAId>
+							<xsl:value-of select="$msgCorrelationId"/>
+						</CPAId>
 						<ApplicationName>
 							<xsl:value-of select="$fromId"/>
 						</ApplicationName>
+						<ApplicationFunction>
+							<xsl:value-of select="$slotId"/>
+						</ApplicationFunction>
 						<Timestamp>
 							<xsl:value-of select="$msgTimestamp"/>
 						</Timestamp>
-						<xsl:if test="string-length($senderId)&gt;0">
-							<SenderId>
-								<xsl:value-of select="$senderId"/>
-							</SenderId>
-						</xsl:if>
 					</Header>
 					<Exception>
 						<Code/>
