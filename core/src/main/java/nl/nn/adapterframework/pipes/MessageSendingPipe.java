@@ -352,6 +352,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 		if (messageLog!=null) {
 			messageLog.configure();
+			if (messageLog instanceof HasPhysicalDestination) {
+				String msg = getLogPrefix(null)+"has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName();
+				log.info(msg);
+				if (getAdapter() != null)
+					getAdapter().getMessageKeeper().add(msg);
+			}
 			if (StringUtils.isNotEmpty(getAuditTrailXPath())) {
 				auditTrailTp = TransformerPool.configureTransformer(getLogPrefix(null),getAuditTrailNamespaceDefs(), getAuditTrailXPath(), null,"text",false,null);
 			}
