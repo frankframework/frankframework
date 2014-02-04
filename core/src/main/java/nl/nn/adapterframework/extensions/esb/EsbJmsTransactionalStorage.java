@@ -191,9 +191,9 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 			parameterValues.put("errorText", comments);
 		} else {
 			if (getType().equalsIgnoreCase("L")) {
-				parameterValues.put("msgType", "received");
-			} else {
 				parameterValues.put("msgType", "sent");
+			} else {
+				parameterValues.put("msgType", "received");
 			}
 		}
 		String rawMessageText;
