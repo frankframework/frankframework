@@ -30,7 +30,9 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.util.AppConstants;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -107,6 +109,12 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	}
 
 	public String getConnectionFactoryInfo(ConnectionFactory connectionFactory) {
+		if (AppConstants.getInstance().getString(IbisContext.APPLICATION_SERVER_TYPE, "").equals("TIBCOAMX")) {
+			// Workaround to prevent the following exception:
+			// [org.apache.geronimo.connector.outbound.MCFConnectionInterceptor] - Error occurred creating ManagedConnection for org.apache.geronimo.connector.outbound.ConnectionInfo@#######
+			// javax.resource.ResourceException: JMSJCA-E084: Failed to create session: The JNDI name is null
+			return null;
+		}
 		String info=null;
 		Connection connection = null;
 		try {
