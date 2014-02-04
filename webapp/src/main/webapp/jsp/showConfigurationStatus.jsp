@@ -322,7 +322,7 @@
 							<% } if ( "true".equalsIgnoreCase(hasErrorStorage) ) { %>
 									<xtags:choose>
 										<xtags:when test="@errorStorageCount=-1">
-											<img src="images/browseErrorStore.gif" title="errorStore"/>
+											<image type="browseErrorStore" alt="errorStore"/>
 										</xtags:when>
 										<xtags:otherwise>
 											<imagelink
@@ -340,7 +340,7 @@
 							<% } if ( "true".equalsIgnoreCase(hasMessageLog) ) { %>
 									<xtags:choose>
 										<xtags:when test="@messageLogCount=-1">
-											<img src="images/browseMessageLog.gif" title="messageLog"/>
+											<image type="browseMessageLog" alt="messageLog"/>
 										</xtags:when>
 										<xtags:otherwise>
 											<imagelink
@@ -386,7 +386,7 @@
 								<%  if ( "true".equalsIgnoreCase(hasMessageLog) ) { %>
 									<xtags:choose>
 										<xtags:when test="@messageLogCount=-1">
-											<img src="images/browseMessageLog.gif" title="messageLog"/>
+											<image type="browseMessageLog" alt="messageLog"/>
 										</xtags:when>
 										<xtags:otherwise>
 											<imagelink

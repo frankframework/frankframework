@@ -357,6 +357,10 @@
 		</xsl:element>
 	</xsl:template>
 
+	<xsl:template match="image">
+		<xsl:call-template name="buildIcon" />
+	</xsl:template>
+
 	<xsl:template name="determineImage">
 		<xsl:param name="type"/>
 		<xsl:choose>
