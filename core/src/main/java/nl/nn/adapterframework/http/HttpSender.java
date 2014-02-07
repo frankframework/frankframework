@@ -20,8 +20,11 @@ import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -98,11 +101,12 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setEncodeMessages(boolean) encodeMessages}</td><td>specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.</td><td>false</td></tr>
  * <tr><td>{@link #setParamsInUrl(boolean) paramsInUrl}</td><td>when false and <code>methodeType=POST</code>, request parameters are put in the request body instead of in the url</td><td>true</td></tr>
  * <tr><td>{@link #setInputMessageParam(String) inputMessageParam}</td><td>(only used when <code>methodeType=POST</code> and <code>paramsInUrl=false</code>) name of the request parameter which is used to put the input message in</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setHeadersParams(String) headersParams}</td><td>Comma separated list of parameter names which should be set as http headers</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIgnoreRedirects(boolean) ignoreRedirects}</td><td>when true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
- * <p>Any parameters present are appended to the request as request-parameters</p>
+ * <p>Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers</p>
  * 
  * <p><b>Expected message format:</b></p>
  * <p>GET methods expect a message looking like this</p>
@@ -202,6 +206,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private String truststoreType="jks";
 	private String trustManagerAlgorithm=null;
 	private String inputMessageParam=null;
+	private String headersParams=null;
 	
 	private boolean allowSelfSignedCertificates = false;
 	private boolean verifyHostname=true;
@@ -385,7 +390,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		return true;
 	}
 
-	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) {
+	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters, Map<String, String> headersParamsMap) {
 		if (parameters!=null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
 		}
@@ -394,21 +399,25 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"skipping ["+paramList.get(i)+"]");
 				continue;
 			}
-			if (parametersAppended) {
-				path.append("&");
-			} else {
-				path.append("?");
-				parametersAppended = true;
-			}
 			ParameterValue pv = parameters.getParameterValue(i);
-			String parameterToAppend=pv.getDefinition().getName()+"="+URLEncoder.encode(pv.asStringValue(""));
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
-			path.append(parameterToAppend);
+			if (headersParamsMap.keySet().contains(pv.getDefinition().getName())) {
+				headersParamsMap.put(pv.getDefinition().getName(), pv.asStringValue(""));
+			} else {
+				if (parametersAppended) {
+					path.append("&");
+				} else {
+					path.append("?");
+					parametersAppended = true;
+				}
+				String parameterToAppend=pv.getDefinition().getName()+"="+URLEncoder.encode(pv.asStringValue(""));
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
+				path.append(parameterToAppend);
+			}
 		}
 		return parametersAppended;
 	}
 
-	protected HttpMethod getMethod(URI uri, String message, ParameterValueList parameters) throws SenderException {
+	protected HttpMethod getMethod(URI uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap) throws SenderException {
 		try { 
 			boolean queryParametersAppended = false;
 			if (isEncodeMessages()) {
@@ -423,26 +432,31 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			
 			if (getMethodType().equals("GET")) {
 				if (parameters!=null) {
-					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters);
+					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters,headersParamsMap);
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
 				}
 				GetMethod result = new GetMethod(path+(parameters==null? message:""));
+				for (String param: headersParamsMap.keySet()) {
+					result.addRequestHeader(param, headersParamsMap.get(param));
+				}
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+result.getQueryString()+"]");
 				return result;
-			} 
-			if (getMethodType().equals("POST")) {
+			} else if (getMethodType().equals("POST")) {
 				PostMethod postMethod = new PostMethod(path.toString());
 				if (StringUtils.isNotEmpty(getContentType())) {
 					postMethod.setRequestHeader("Content-Type",getContentType());
 				}
 				if (parameters!=null) {
 					StringBuffer msg = new StringBuffer(message);
-					appendParameters(true,msg,parameters);
+					appendParameters(true,msg,parameters,headersParamsMap);
 					if (StringUtils.isEmpty(message) && msg.length()>1) {
 						message=msg.substring(1);
 					} else {
 						message=msg.toString();
 					}
+				}
+				for (String param: headersParamsMap.keySet()) {
+					postMethod.addRequestHeader(param, headersParamsMap.get(param));
 				}
 				postMethod.setRequestBody(message);
 			
@@ -455,7 +469,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 
 	}
 
-	protected PostMethod getPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters) throws SenderException {
+	protected PostMethod getPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap) throws SenderException {
 		try {
 			PostMethod hmethod = new PostMethod(uri.getPath());
 			if (StringUtils.isNotEmpty(getInputMessageParam())) {
@@ -467,8 +481,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 					ParameterValue pv = parameters.getParameterValue(i);
 					String name = pv.getDefinition().getName();
 					String value = pv.asStringValue("");
-					hmethod.addParameter(name,value);
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+					if (headersParamsMap.keySet().contains(name)) {
+						hmethod.addRequestHeader(name,value);
+						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended header ["+name+"] with value ["+value+"]");
+					} else {
+						hmethod.addParameter(name,value);
+						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+					}
 				}
 			}
 			return hmethod;
@@ -534,10 +553,18 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				uri=staticUri;
 			}
 
+			Map<String, String> headersParamsMap = new HashMap<String, String>();
+			if (headersParams != null) {
+				StringTokenizer st = new StringTokenizer(headersParams, ",");
+				while (st.hasMoreElements()) {
+					headersParamsMap.put(st.nextToken(), null);
+				}
+			}
+
 			if (!isParamsInUrl()) {
-				httpmethod=getPostMethodWithParamsInBody(uri, message, pvl);
+				httpmethod=getPostMethodWithParamsInBody(uri, message, pvl, headersParamsMap);
 			} else {
-				httpmethod=getMethod(uri, message, pvl);
+				httpmethod=getMethod(uri, message, pvl, headersParamsMap);
 				if (!"POST".equals(getMethodType())) {
 					httpmethod.setFollowRedirects(isFollowRedirects());
 				}
@@ -869,6 +896,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public String getInputMessageParam() {
 		return inputMessageParam;
+	}
+
+	public void setHeadersParams(String headersParams) {
+		this.headersParams = headersParams;
+	}
+	public String getHeadersParams() {
+		return headersParams;
 	}
 
 	public void setIgnoreRedirects(boolean b) {
