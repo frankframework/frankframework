@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -112,14 +113,14 @@ public class WebServiceSender extends HttpSender {
 	public String getLogPrefix() {
 		return "WebServiceSender ["+getName()+"] to ["+getPhysicalDestinationName()+"] ";
 	}
- 
- 	public WebServiceSender() {
- 		super();
- 		setMethodType("POST");
-		setContentType("text/xml;charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING);
- 	}
- 
 
+	public WebServiceSender() {
+		super();
+		setMethodType("POST");
+		setContentType("text/xml;charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (isSoap()) {
@@ -143,7 +144,8 @@ public class WebServiceSender extends HttpSender {
 		}
 	}
 
-	protected HttpMethod getMethod(URI uri, String message, ParameterValueList parameters) throws SenderException {
+	@Override
+	protected HttpMethod getMethod(URI uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap) throws SenderException {
 		
 		String serviceNamespaceURI;
 		if (serviceNamespaceURIParameter!=null) {
@@ -171,7 +173,7 @@ public class WebServiceSender extends HttpSender {
 		}
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
 
-		HttpMethod method = super.getMethod(uri, soapmsg,parameters);
+		HttpMethod method = super.getMethod(uri, soapmsg, parameters, headersParamsMap);
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"setting Content-Type and SOAPAction header ["+soapActionURI+"]");
 		method.addRequestHeader("SOAPAction",soapActionURI);
 		return method;
