@@ -9,7 +9,7 @@ Version 5.3:
 - Specific java class, which returns Tibco queue information in a xml, is extended with more information.
 - On the main page of the IBIS console ("Show configurationStatus") for each RestListener a clickable icon is added (this replaces separate bookmarks).
 
-[More info...](https://github.com/ibissource/iaf/compare/v5_2...v5_3)
+[Commits](https://github.com/ibissource/iaf/compare/v5_2...v5_3)
 
 Next version:
 
@@ -17,7 +17,9 @@ Next version:
 - added "Used SapSystems" to console function "Show Security Items"
 - prevent OutOfMemoryError in console function "Adapter Logging" caused by a lot of files in a directory
 
-[More info...](https://github.com/ibissource/iaf/compare/v5_3...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v5_3...HEAD)
+
+[JavaDocs](http://www.ibissource.org/iaf/maven/apidocs/index.html)
 
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
@@ -46,7 +48,7 @@ Small XML configuration example which defines an adapter:
 		</pipeline>
 	</adapter>
 
-JavaDocs: http://www.ibissource.org/iaf/maven/apidocs/index.html
+
 
 Mailing list and IRC
 ====================
@@ -69,8 +71,10 @@ Eclipse
 - Window, Preferences, Team, Git, History, Follow Renames.
 - In Git Repositories view clone https://github.com/ibissource/iaf.git
 - Right click iaf, Import projects...
-- In Navigator view right click pom.xml, Run As, Maven build..., Skip Tests,
-  Run.
+- In Navigator view right click pom.xml, Run As, Maven build..., JRE, make sure
+  a JDK instead of JRE is used (install one when not available). To make sure
+  that all code is Java 5 compatible use JDK 1.5.
+- Run.
 - Refresh the project, build problems should be resolved.
 - When Tomcat has been added to the Servers view it should be possible to add
   the project to the server and start it up.
