@@ -1,7 +1,18 @@
-Latest release
-==============
+Releases
+========
 
-Version 5.3:
+Upcoming:
+
+- First steps towards running IBISes on TIBCO AMX (as WebApp in Composite)
+- added "Used SapSystems" to console function "Show Security Items"
+- prevent OutOfMemoryError in console function "Adapter Logging" caused by a lot of files in a directory
+
+[![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+[Commits](https://github.com/ibissource/iaf/compare/v5_3...HEAD)
+[JavaDocs](http://www.ibissource.org/iaf/maven/apidocs/index.html)
+
+5.3:
 
 - Better DB2 support.
 - Some steps towards making a release with Maven.
@@ -10,16 +21,6 @@ Version 5.3:
 - On the main page of the IBIS console ("Show configurationStatus") for each RestListener a clickable icon is added (this replaces separate bookmarks).
 
 [Commits](https://github.com/ibissource/iaf/compare/v5_2...v5_3)
-
-Next version:
-
-- First steps towards running IBISes on TIBCO AMX (as WebApp in Composite)
-- added "Used SapSystems" to console function "Show Security Items"
-- prevent OutOfMemoryError in console function "Adapter Logging" caused by a lot of files in a directory
-
-[Commits](https://github.com/ibissource/iaf/compare/v5_3...HEAD)
-[JavaDocs](http://www.ibissource.org/iaf/maven/apidocs/index.html)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 
 
