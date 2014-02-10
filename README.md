@@ -18,9 +18,7 @@ Next version:
 - prevent OutOfMemoryError in console function "Adapter Logging" caused by a lot of files in a directory
 
 [Commits](https://github.com/ibissource/iaf/compare/v5_3...HEAD)
-
 [JavaDocs](http://www.ibissource.org/iaf/maven/apidocs/index.html)
-
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 
