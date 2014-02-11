@@ -102,7 +102,7 @@ public class FileViewerServlet extends HttpServlet  {
 	}
 
 
-	public static void transformReader(Reader reader, String filename, Map parameters, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl, String instanceName, String title) throws DomBuilderException, TransformerException, IOException { 
+	public static void transformReader(Reader reader, String filename, Map parameters, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl, String title) throws DomBuilderException, TransformerException, IOException { 
 		PrintWriter out = response.getWriter();
 		Reader fileReader = new EncapsulatingReader(reader, input_prefix, input_postfix, true);
 		URL xsltSource = ClassUtils.getResourceURL( FileViewerServlet.class, stylesheetUrl);
@@ -114,11 +114,11 @@ public class FileViewerServlet extends HttpServlet  {
 			XmlUtils.transformXml(transformer, new StreamSource(fileReader),out);
 			out.close();
 		} else {
-			showReaderContents(fileReader,filename,"text",response,instanceName,title);
+			showReaderContents(fileReader,filename,"text",response,title);
 		}
 	}
 
-	public static void transformSource(Source source, String filename, Map parameters, HttpServletResponse response, String stylesheetUrl, String instanceName, String title) throws DomBuilderException, TransformerException, IOException { 
+	public static void transformSource(Source source, String filename, Map parameters, HttpServletResponse response, String stylesheetUrl, String title) throws DomBuilderException, TransformerException, IOException { 
 		PrintWriter out = response.getWriter();
 		URL xsltSource = ClassUtils.getResourceURL( FileViewerServlet.class, stylesheetUrl);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
@@ -129,7 +129,7 @@ public class FileViewerServlet extends HttpServlet  {
 		out.close();
 	}
 
-	public static void showReaderContents(Reader reader, String filename, String type, HttpServletResponse response, String instanceName, String title) throws DomBuilderException, TransformerException, IOException {
+	public static void showReaderContents(Reader reader, String filename, String type, HttpServletResponse response, String title) throws DomBuilderException, TransformerException, IOException {
 		PrintWriter out = response.getWriter();
 		if (type==null) {
 			response.setContentType("text/html");
@@ -142,7 +142,7 @@ public class FileViewerServlet extends HttpServlet  {
 	
 			out.println("<html>");
 			out.println("<head>");
-			out.println("<title>"+instanceName+"@"+Misc.getHostname()+" - "+title+"</title>");
+			out.println("<title>"+AppConstants.getInstance().getResolvedProperty("instance.name.lc")+"@"+Misc.getHostname()+" - "+title+"</title>");
 			out.println("<link rel=\"stylesheet\" type=\"text/css\" href=\""+AppConstants.getInstance().getProperty(fvConfigKey+".css")+"\">");
 			out.println("</head>");
 			out.println("<body>");
@@ -221,7 +221,7 @@ public class FileViewerServlet extends HttpServlet  {
 					response.setContentType("text/plain");
 					stylesheetUrl=log4j_text_xslt;
 	        	}
-				transformReader(new FileReader(fileName), fileName, null, response, log4j_prefix, log4j_postfix, stylesheetUrl, request.getContextPath().substring(1),fileName);
+				transformReader(new FileReader(fileName), fileName, null, response, log4j_prefix, log4j_postfix, stylesheetUrl, fileName);
 	        } else {
 				boolean statsFlag = "xml".equalsIgnoreCase(stats) || "true".equalsIgnoreCase(stats);
 				if (statsFlag) {
@@ -258,13 +258,13 @@ public class FileViewerServlet extends HttpServlet  {
 						response.setContentType("text/html");
 						Source s= XmlUtils.stringToSourceForSingleUse(extract);
 						String stylesheetUrl=stats_html_xslt;
-						transformSource(s,fileName,parameters,response,stylesheetUrl,request.getContextPath().substring(1),fileName);
+						transformSource(s,fileName,parameters,response,stylesheetUrl,fileName);
 					}
 
 				} else {
 //					Reader r=new BufferedReader(new InputStreamReader(new FileInputStream(fileName),"ISO-8859-1"));
 //					showReaderContents(r, fileName, type, response, request.getContextPath().substring(1),fileName);
-					showReaderContents(new FileReader(fileName), fileName, type, response, request.getContextPath().substring(1),fileName);
+					showReaderContents(new FileReader(fileName), fileName, type, response, fileName);
 				}
 	        }
 	    } catch (IOException e) {
