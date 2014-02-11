@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.ibissource</groupId>
-  <artifactId>ibis-parent</artifactId>
+  <artifactId>ibis-adapterframework-parent</artifactId>
   <version>5.4-SNAPSHOT</version>
   <name>Ibis AdapterFramework parent</name>
   <packaging>pom</packaging>
