@@ -210,7 +210,7 @@ public class Browse extends ActionBase {
 				if (StringUtils.isEmpty(type)) {
 					type=viewAs;
 				}
-				FileViewerServlet.showReaderContents(new StringReader(msg),"msg"+messageId,type,response, request.getContextPath().substring(1),"message ["+messageId+"]");
+				FileViewerServlet.showReaderContents(new StringReader(msg),"msg"+messageId,type,response,"message ["+messageId+"]");
 				return null;
 			} else {
 				IMessageBrowsingIterator mbi=mb.getIterator(startDate,endDate,"true".equals(forceDescStr));
