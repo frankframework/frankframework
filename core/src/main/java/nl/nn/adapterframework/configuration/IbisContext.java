@@ -109,7 +109,7 @@ public class IbisContext {
 	 * @throws BeansException If the Factory can not be created.
 	 *
 	 */
-	static public ApplicationContext createApplicationContext(String springContext) throws BeansException {
+	private static ApplicationContext createApplicationContext(String springContext) throws BeansException {
 		// Reading in Spring Context
 		if (springContext == null) {
 		    springContext = getSpringContextFileName();
@@ -124,6 +124,14 @@ public class IbisContext {
 	public void destroyConfig() {
 		((ConfigurableApplicationContext)applicationContext).close();
 	}
+
+    /**
+     * @since 5.0.29
+     */
+    public ApplicationContext getApplicationContext() {
+        return applicationContext;
+    }
+
 
 //	public Object getAutoWiredObject(Class clazz) throws ConfigurationException {
 //		return getAutoWiredObject(clazz, null);

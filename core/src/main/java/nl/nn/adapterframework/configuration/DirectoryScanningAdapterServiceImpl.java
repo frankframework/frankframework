@@ -55,6 +55,21 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
         }, 0, 60, TimeUnit.SECONDS);
     }
 
+    @Override
+    public Map<String, IAdapter> getAdapters() {
+        if (lastScan == 0) {
+            synchronized(this) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    LOG.error(e.getMessage());
+                }
+            }
+
+        }
+        return super.getAdapters();
+    }
+
 
 
     protected synchronized void scan()  {
@@ -83,6 +98,8 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
                         LOG.error(e.getMessage(), e);
                     } catch (IOException e) {
                         LOG.error(e.getMessage(), e);
+                    } catch (InterruptedException e) {
+                        LOG.error(e.getMessage(), e);
                     }
                 }
             } else {
@@ -91,20 +108,24 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
 
         }
         lastScan = System.currentTimeMillis();
+        notify();
     }
 
 
-    IAdapter read(URL url) throws IOException, SAXException {
+    synchronized IAdapter read(URL url) throws IOException, SAXException, InterruptedException {
+        if (applicationContext == null) {
+            wait();
+        }
         try {
             ConfigurationDigester configurationDigester = (ConfigurationDigester) applicationContext.getBean("configurationDigester"); // somewhy proper dependency injection gives circular dependency problems
 
             Digester digester = configurationDigester.getDigester();
-
-            digester.parse(url);
+            digester.push(this);
+            digester.parse(url.openStream());
             // Does'nt work. I probably don't know how it is supposed to work.
             return (IAdapter) digester.getRoot();
         } catch (Throwable t) {
-            LOG.error("For " + url + ": " + t.getMessage());
+            LOG.error("For " + url + ": " + t.getMessage(), t);
             return null;
         }
     }
@@ -113,8 +134,9 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
         this.configurationDigester = configurationDigester;
     }*/
 
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public synchronized void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+        notify();
 
     }
 }

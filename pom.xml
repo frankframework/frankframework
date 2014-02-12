@@ -84,6 +84,38 @@
         <version>1.1</version>
         <scope>provided</scope>
       </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-digester3</artifactId>
+        <version>3.2</version>
+      <!--  <classifier>with-deps</classifier>-->
+
+      </dependency>
+      <dependency>
+        <groupId>commons-httpclient</groupId>
+        <artifactId>commons-httpclient</artifactId>
+        <version>3.1</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-pool</groupId>
+        <artifactId>commons-pool</artifactId>
+        <version>1.5.5</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.4</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-net</groupId>
+        <artifactId>commons-net</artifactId>
+        <version>1.4.1</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.mail</groupId>
+        <artifactId>mail</artifactId>
+        <version>1.4.5</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -132,6 +164,17 @@
     </repository>
   </repositories>
 
+  <modules>
+    <module>coolgen</module>
+    <module>core</module>
+    <module>example</module>
+    <module>ibm</module>
+    <module>ifsa</module>
+    <module>sap</module>
+    <module>tibco</module>
+    <module>webapp</module>
+  </modules>
+
   <reporting>
     <plugins>
       <!--
@@ -150,7 +193,7 @@
     <connection>scm:git:git://github.com/ibissource/iaf.git</connection>
     <developerConnection>scm:git:git://github.com/ibissource/iaf.git</developerConnection>
     <url>https://github.com/ibissource/iaf</url>
-      <tag>5.0.28</tag>
+    <tag>5.0.28</tag>
   </scm>
 
   <distributionManagement>
@@ -178,6 +221,7 @@
       </activation>
       <modules>
         <module>core</module>
+        <module>webapp</module>
       </modules>
     </profile>
     <profile>

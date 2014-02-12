@@ -271,6 +271,9 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
     protected Object createBeanFromClassName(String className)
     	throws ClassNotFoundException, InstantiationException, IllegalAccessException, ConfigurationException {
 
+        if (ibisContext == null) {
+            throw new IllegalStateException("No ibisContext set. Call setIbisContext first.");
+        }
         String beanName;
         Class beanClass;
 
@@ -341,8 +344,9 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
 	protected Map<String, String> copyAttrsToMap(Attributes attrs) {
 		Map<String, String> map = new HashMap<String, String>(attrs.getLength());
-		for (int i=0;i<attrs.getLength();++i) {
-			map.put(attrs.getQName(i), attrs.getValue(i));
+		for (int i = 0; i < attrs.getLength(); ++i) {
+            String value = attrs.getValue(i);
+			map.put(attrs.getQName(i), value);
 		}
 		return map;
 	}

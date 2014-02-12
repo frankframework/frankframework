@@ -24,7 +24,7 @@ public class BasicAdapterServiceImpl implements AdapterService {
 
     //@Override
     public IAdapter getAdapter(String name) {
-        return adapters.get(name);
+        return getAdapters().get(name);
     }
 
     //@Override

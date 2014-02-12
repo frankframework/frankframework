@@ -1,27 +1,33 @@
 package nl.nn.adapterframework.configuration;
 
-import java.net.URL;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Michiel Meeuwissen
- * @since 2.0.59
+ * @since 5.4
  */
 public class DirectoryScanningAdapterServiceImplTest {
 
 
+    @SuppressWarnings("ConstantConditions")
     @Test
     public void test() {
         IbisContext ibisContext = new IbisContext();
-        ibisContext.initConfig("/springContextTEST.xml", IbisManager.DFLT_CONFIGURATION, "false");
+        ibisContext.initContext("/springContextTEST.xml");
 
-        URL directory = getClass().getClassLoader().getResource("watcheddirectory");
-   /*     System.out.println(directory.getFile());
-        AdapterService adapterService = new DirectoryScanningAdapterServiceImpl(directory.getFile(),
-                ibisContext.getIbisManager().getConfiguration());*/
+        String directory = getClass().getClassLoader().getResource("watcheddirectory").getFile();
+        System.out.println("Watching " + directory);
+        DirectoryScanningAdapterServiceImpl adapterService = new DirectoryScanningAdapterServiceImpl(directory);
+        adapterService.setApplicationContext(ibisContext.getApplicationContext());
 
-    //assertEquals(1, adapterService.getAdapters().size());
-    //assertEquals("TODO", adapterService.getAdapter("TODO").getName());
+        assertEquals(1, adapterService.getAdapters().size());
+
+        adapterService.getAdapter("HelloWorld").getName();
+
+        //assertEquals("TODO", adapterService.getAdapter("TODO").getName());
     }
+
+
 }

@@ -76,8 +76,8 @@ abstract public class ConfigurationDigester {
 	private static final String CONFIGURATION_VALIDATION_KEY = "validate.configuration";
 	private static final String CONFIGURATION_STUB4TESTTOOL_KEY = "stub4testtool.configuration";
 
-	private static String stub4testtool_xslt = "/xml/xsl/stub4testtool.xsl";
-	private static String attributesGetter_xslt = "/xml/xsl/AttributesGetter.xsl";
+	private static final String stub4testtool_xslt = "/xml/xsl/stub4testtool.xsl";
+	private static final String attributesGetter_xslt = "/xml/xsl/AttributesGetter.xsl";
 
 	private String configurationFile = null;
 	private String digesterRulesFile = DIGESTER_RULES_DEFAULT;
