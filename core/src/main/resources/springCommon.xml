@@ -39,7 +39,8 @@
   <!-- IBIS Beans -->
   <bean id="adapterService" class="nl.nn.adapterframework.configuration.DirectoryScanningAdapterServiceImpl"
       >
-    <constructor-arg value="/Users/michiel/ibis/Ibis4VoorbeeldWEB/WebContent/WEB-INF/classes/adapters"/>
+    <constructor-arg value="${adapterServiceWatchedDirectory}" />
+    <property name="rateInSeconds" value="${adapterServiceCheckRateInSeconds}" />
   </bean>
   <!--
   <bean id="adapterService" class="nl.nn.adapterframework.configuration.BasicAdapterServiceImpl"

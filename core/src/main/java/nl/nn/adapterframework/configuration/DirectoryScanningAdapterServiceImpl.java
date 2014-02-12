@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.digester.Digester;
@@ -45,16 +46,36 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
 
     private ApplicationContext applicationContext;
 
+    private ScheduledFuture<?> future;
+
+
+    private int rateInSeconds = 60;
+
 
     public DirectoryScanningAdapterServiceImpl(String directory) {
         this.directory = new File(directory);
-        EXECUTOR.scheduleAtFixedRate(new Runnable() {
+        schedule();
+    }
+
+    private void schedule() {
+        if (future != null) {
+            future.cancel(false);
+        }
+        future = EXECUTOR.scheduleAtFixedRate(new Runnable() {
             public void run() {
 
                 DirectoryScanningAdapterServiceImpl.this.scan();
             }
-        }, 0, 60, TimeUnit.SECONDS);
+        }, 0, rateInSeconds, TimeUnit.SECONDS);
     }
+
+
+    public void setRateInSeconds(int rate) {
+        this.rateInSeconds = rate;
+        schedule();
+    }
+
+
 
     @Override
     public Map<String, IAdapter> getAdapters() {
@@ -74,7 +95,7 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
 
 
     protected synchronized void scan()  {
-        LOG.info("Scanning " + directory);
+        LOG.debug("Scanning " + directory);
         if (directory.exists()) {
             if (directory.isDirectory()) {
 
@@ -91,6 +112,7 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
                         for (IAdapter a : removedAdapter.getValue()) {
                             unRegisterAdapter(a.getName());
                         }
+                        watched.remove(removedAdapter.getKey());
                     }
                 }
                 for (File file : files) {
@@ -100,17 +122,21 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
                             LOG.warn("Could not digest " + file);
                             continue;
                         }
-                        if (file.lastModified() > lastScan) {
+                        if (file.lastModified() > lastScan || ! watched.containsKey(file)) {
                             if (watched.containsKey(file)) {
                                 for (IAdapter adapterName : watched.get(file)) {
                                     unRegisterAdapter(adapterName.getName());
                                 }
                             }
+                            for (Map.Entry<String, IAdapter> entry : adapters.entrySet()) {
+                                if (super.getAdapters().get(entry.getValue().getName()) == null) {
+                                    registerAdapter(entry.getValue());
+                                } else {
+                                    LOG.warn("Cannot register adapter " + entry.getValue().getName() + " because it is registered already");
+                                }
+                            }
+                            watched.put(file, adapters.values());
                         }
-                        for (Map.Entry<String, IAdapter> entry : adapters.entrySet()) {
-                            registerAdapter(entry.getValue());
-                        }
-                        watched.put(file, adapters.values());
                     } catch (MalformedURLException e) {
                         LOG.error(e.getMessage(), e);
                     } catch (ConfigurationException e) {
