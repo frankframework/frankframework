@@ -110,7 +110,7 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
                     for (Map.Entry<File, Collection<IAdapter>> removedAdapter : toRemove.entrySet()) {
                         LOG.info("File " + removedAdapter.getKey() + " not found any more, unregistering adapters" + removedAdapter.getValue());
                         for (IAdapter a : removedAdapter.getValue()) {
-                            unRegisterAdapter(a.getName());
+                            stopAndUnRegister(a);
                         }
                         watched.remove(removedAdapter.getKey());
                     }
@@ -124,13 +124,13 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
                         }
                         if (file.lastModified() > lastScan || ! watched.containsKey(file)) {
                             if (watched.containsKey(file)) {
-                                for (IAdapter adapterName : watched.get(file)) {
-                                    unRegisterAdapter(adapterName.getName());
+                                for (IAdapter adapter : watched.get(file)) {
+                                    stopAndUnRegister(adapter);
                                 }
                             }
                             for (Map.Entry<String, IAdapter> entry : adapters.entrySet()) {
                                 if (super.getAdapters().get(entry.getValue().getName()) == null) {
-                                    registerAdapter(entry.getValue());
+                                    registerAndStart(entry.getValue());
                                 } else {
                                     LOG.warn("Cannot register adapter " + entry.getValue().getName() + " because it is registered already");
                                 }
@@ -159,6 +159,17 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
         notify();
     }
 
+    protected void stopAndUnRegister(IAdapter adapter) {
+        adapter.stopRunning();
+        unRegisterAdapter(adapter.getName());
+    }
+
+    protected void registerAndStart(IAdapter adapter) throws ConfigurationException {
+        registerAdapter(adapter);
+        if (adapter.isAutoStart()) {
+            adapter.startRunning();
+        }
+    }
 
     synchronized Map<String, IAdapter> read(URL url) throws IOException, SAXException, InterruptedException {
         if (applicationContext == null) {
