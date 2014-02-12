@@ -89,9 +89,7 @@ IntelliJ
 - To use git via intellij you need to install the git and/or github plugin.
 - You can add a tomcat configuration via Run-> Edit Configuration -> + -> Tomcat Server -> Local -> Add example webapp under deployments tab.
 - Run it 
-
-to check out via intellij doesn't work very well because of lacking support for submodules: 
-(see http://youtrack.jetbrains.com/issue/IDEA-64024)
+ 
 
 
 
