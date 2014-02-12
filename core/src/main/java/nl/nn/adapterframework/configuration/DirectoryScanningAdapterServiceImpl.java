@@ -2,6 +2,7 @@ package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.RunStateEnum;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -31,7 +32,7 @@ import org.xml.sax.SAXException;
 public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl implements ApplicationContextAware {
 
     private static final Logger LOG = LogUtil.getLogger(DirectoryScanningAdapterServiceImpl.class);
-    private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
+    private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(2);
     private static final FileFilter IS_XML =  new FileFilter() {
         public boolean accept (File pathname){
             return pathname.getName().endsWith(".xml");
@@ -162,15 +163,21 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
     }
 
     protected void stopAndUnRegister(IAdapter adapter) {
-        adapter.stopRunning();
+        if (adapter.getRunState() != RunStateEnum.STARTED) {
+            adapter.stopRunning();
+        }
         unRegisterAdapter(adapter.getName());
     }
 
-    protected void registerAndStart(IAdapter adapter) throws ConfigurationException {
+    protected void registerAndStart(final IAdapter adapter) throws ConfigurationException {
         registerAdapter(adapter);
-        if (adapter.isAutoStart()) {
-            adapter.startRunning();
-        }
+        EXECUTOR.execute(new Runnable() {
+            public void run() {
+                if (adapter.isAutoStart() && adapter.getRunState() != RunStateEnum.STARTED) {
+                    adapter.startRunning();
+                }
+            }
+        });
     }
 
     synchronized Map<String, IAdapter> read(URL url) throws IOException, SAXException, InterruptedException {
