@@ -8,6 +8,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -38,7 +39,7 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
 
     private long lastScan = 0l;
 
-    private final Map<File, String> watched = new HashMap<File, String>();
+    private final Map<File, Collection<IAdapter>> watched = new HashMap<File, Collection<IAdapter>>();
 
     private final File directory;
 
@@ -76,20 +77,40 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
         LOG.info("Scanning " + directory);
         if (directory.exists()) {
             if (directory.isDirectory()) {
-                for (File file : directory.listFiles(IS_XML)) {
+
+                File[] files = directory.listFiles(IS_XML);
+
+                {
+                    Map<File, Collection<IAdapter>> toRemove = new HashMap<File, Collection<IAdapter>>();
+                    toRemove.putAll(watched);
+                    for (File file : files ) {
+                        toRemove.remove(file);
+                    }
+                    for (Map.Entry<File, Collection<IAdapter>> removedAdapter : toRemove.entrySet()) {
+                        LOG.info("File " + removedAdapter.getKey() + " not found any more, unregistering adapters" + removedAdapter.getValue());
+                        for (IAdapter a : removedAdapter.getValue()) {
+                            unRegisterAdapter(a.getName());
+                        }
+                    }
+                }
+                for (File file : files) {
                     try {
-                        IAdapter adapter = read(file.toURI().toURL());
-                        if (adapter == null) {
+                        Map<String, IAdapter> adapters = read(file.toURI().toURL());
+                        if (adapters == null) {
                             LOG.warn("Could not digest " + file);
                             continue;
                         }
                         if (file.lastModified() > lastScan) {
                             if (watched.containsKey(file)) {
-                                unRegisterAdapter(watched.get(file));
+                                for (IAdapter adapterName : watched.get(file)) {
+                                    unRegisterAdapter(adapterName.getName());
+                                }
                             }
-                            registerAdapter(adapter);
-                            watched.put(file, adapter.getName());
                         }
+                        for (Map.Entry<String, IAdapter> entry : adapters.entrySet()) {
+                            registerAdapter(entry.getValue());
+                        }
+                        watched.put(file, adapters.values());
                     } catch (MalformedURLException e) {
                         LOG.error(e.getMessage(), e);
                     } catch (ConfigurationException e) {
@@ -102,6 +123,7 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
                         LOG.error(e.getMessage(), e);
                     }
                 }
+
             } else {
                 LOG.warn("" + directory + " is not a directory");
             }
@@ -112,7 +134,7 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
     }
 
 
-    synchronized IAdapter read(URL url) throws IOException, SAXException, InterruptedException {
+    synchronized Map<String, IAdapter> read(URL url) throws IOException, SAXException, InterruptedException {
         if (applicationContext == null) {
             wait();
         }
@@ -120,10 +142,11 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
             ConfigurationDigester configurationDigester = (ConfigurationDigester) applicationContext.getBean("configurationDigester"); // somewhy proper dependency injection gives circular dependency problems
 
             Digester digester = configurationDigester.getDigester();
-            digester.push(this);
+            AdapterService catcher = new AdapterServiceImpl();
+            digester.push(catcher);
             digester.parse(url.openStream());
             // Does'nt work. I probably don't know how it is supposed to work.
-            return (IAdapter) digester.getRoot();
+            return catcher.getAdapters();
         } catch (Throwable t) {
             LOG.error("For " + url + ": " + t.getMessage(), t);
             return null;
@@ -139,4 +162,5 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
         notify();
 
     }
+
 }

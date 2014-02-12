@@ -3,44 +3,21 @@ package nl.nn.adapterframework.configuration;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.LogUtil;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 
 /**
- * Straight forward implemenation of {@link AdapterService}, which is only filled by calls to {@link #registerAdapter(nl.nn.adapterframework.core.IAdapter)}, typically by digester rules via {@link Configuration#registerAdapter(nl.nn.adapterframework.core.IAdapter)}
- *
+ * This implemention of {@link AdapterService} also registers the adapters to Jmx, and configures the registered Adapters.
+
  * @author Michiel Meeuwissen
  * @since 5.0.29
  */
-public class BasicAdapterServiceImpl implements AdapterService {
+public class BasicAdapterServiceImpl extends AdapterServiceImpl {
 
     private static final Logger LOG = LogUtil.getLogger(BasicAdapterServiceImpl.class);
 
-
-    private final Map<String, IAdapter> adapters = new LinkedHashMap<String, IAdapter>(); // insertion order map
-
-    //@Override
-    public IAdapter getAdapter(String name) {
-        return getAdapters().get(name);
-    }
-
-    //@Override
-    public Map<String, IAdapter> getAdapters() {
-        return Collections.unmodifiableMap(adapters);
-    }
-
-    //@Override
+    @Override
     public void registerAdapter(IAdapter adapter) throws ConfigurationException {
-        if (adapter.getName() == null) {
-            throw new ConfigurationException("Adapter has no name");
-        }
-        if (adapters.containsKey(adapter.getName())) {
-            throw new ConfigurationException("Adapter [" + adapter.getName() + "] already registered.");
-        }
-        adapters.put(adapter.getName(), adapter);
+        super.registerAdapter(adapter);
         try {
             // Throws javax.management.InstanceAlreadyExistsException when testing on
             // WebSphere 7. This code has probably never been enabled as previously it was
@@ -55,8 +32,9 @@ public class BasicAdapterServiceImpl implements AdapterService {
         adapter.configure();
     }
 
-    protected void unRegisterAdapter(String name) {
-        IAdapter removed = adapters.remove(name);
+    @Override
+    protected IAdapter unRegisterAdapter(String name) {
+        IAdapter removed = super.unRegisterAdapter(name);
         if (removed != null) {
             try {
                 JmxMbeanHelper.unhookAdapter(removed);
@@ -64,6 +42,7 @@ public class BasicAdapterServiceImpl implements AdapterService {
                 LOG.warn(t.getMessage());
             }
         }
+        return removed;
     }
 
 }

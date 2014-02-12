@@ -37,14 +37,15 @@
 
 
   <!-- IBIS Beans -->
-  <!-- Issue #2
   <bean id="adapterService" class="nl.nn.adapterframework.configuration.DirectoryScanningAdapterServiceImpl"
       >
-    <constructor-arg value="/Users/michiel/ibis/Ibis4VoorbeeldWEB/WebContent/WEB-INF/classes/"/>
-  </bean>-->
+    <constructor-arg value="/Users/michiel/ibis/Ibis4VoorbeeldWEB/WebContent/WEB-INF/classes/adapters"/>
+  </bean>
+  <!--
   <bean id="adapterService" class="nl.nn.adapterframework.configuration.BasicAdapterServiceImpl"
       >
   </bean>
+  -->
   <bean name="configuration" class="nl.nn.adapterframework.configuration.Configuration"
         autowire="byName"
         init-method="init">

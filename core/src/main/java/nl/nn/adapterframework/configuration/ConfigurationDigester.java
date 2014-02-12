@@ -84,7 +84,6 @@ abstract public class ConfigurationDigester {
 
 	private Configuration configuration;
 
-    private Digester digester;
 
 	String lastResolvedEntity = null;
 
@@ -130,8 +129,7 @@ abstract public class ConfigurationDigester {
 	}
 
     public Digester getDigester() throws SAXNotSupportedException, SAXNotRecognizedException {
-        if (digester == null) {
-            digester = createDigester();
+        Digester digester = createDigester();
             //digester.setUseContextClassLoader(true);
 
             digester.setEntityResolver(new NameTrackingEntityResolver(digester.getEntityResolver()));
@@ -206,7 +204,7 @@ abstract public class ConfigurationDigester {
                 XmlErrorHandler xeh = new XmlErrorHandler();
                 digester.setErrorHandler(xeh);
             }
-        }
+
         return digester;
     }
 
