@@ -15,16 +15,16 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import java.util.Map;
-
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
+
+import java.util.Map;
 
 import org.xml.sax.Attributes;
 
 /**
  * Factory for instantiating listeners from the Digester framework.
  * Instantiates correlated listener in the context of a MessageSendingPipe.
- * 
+ *
  * @author  Tim van der Leeuw
  * @since   4.8
  */
@@ -32,8 +32,9 @@ public class ListenerFactory extends GenericFactory {
     public static final String JMS_LISTENER_CLASSNAME_SUFFIX = ".JmsListener";
     protected static final String CORRELATED_LISTENER_CLASSNAME = "nl.nn.adapterframework.jms.PullingJmsListener";
 
-	protected Map copyAttrsToMap(Attributes attrs) {
-		Map map = super.copyAttrsToMap(attrs); 
+	@Override
+    protected Map copyAttrsToMap(Attributes attrs) {
+		Map map = super.copyAttrsToMap(attrs);
 		String className = attrs.getValue("className");
 		if (className != null && getDigester().peek() instanceof MessageSendingPipe && className.endsWith(JMS_LISTENER_CLASSNAME_SUFFIX)) {
 			if (log.isDebugEnabled()) {

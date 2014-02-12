@@ -2,9 +2,50 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
-            http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
-            ">
-    <import resource="springUnmanagedDeployment.xml"/>
-    <import resource="springCommon.xml"/>
-    <import resource="springTEST.xml"/>
+          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+  <!--
+  <import resource="springUnmanagedDeployment.xml"/>
+
+  <import resource="springCommon.xml"/>
+  -->
+
+  <bean name="proto-adapter" class="nl.nn.adapterframework.core.Adapter"
+        autowire="byName" scope="prototype">
+  </bean>
+
+  <bean name="proto-receiver" class="nl.nn.adapterframework.receivers.GenericReceiver"
+        autowire="byName" scope="prototype">
+  </bean>
+
+
+  <bean name="proto-pipeline" class="nl.nn.adapterframework.core.PipeLine"
+        autowire="byName" scope="prototype">
+  </bean>
+
+
+  <bean name="variableExpander" class="org.apache.commons.digester.substitution.MultiVariableExpander">
+  </bean>
+
+  <bean name="digester" class="org.apache.commons.digester.Digester"
+        autowire="byName" scope="prototype">
+    <property name="substitutor">
+      <bean class="org.apache.commons.digester.substitution.VariableSubstitutor">
+        <constructor-arg ref="variableExpander"/>
+      </bean>
+    </property>
+    <property name="useContextClassLoader" value="true"/>
+    <property name="entityResolver">
+      <bean class="nl.nn.adapterframework.util.ClassPathEntityResolver"/>
+    </property>
+  </bean>
+
+  <bean name="configurationDigester" class="nl.nn.adapterframework.configuration.ConfigurationDigester"
+        autowire="byName">
+    <lookup-method name="createDigester" bean="digester"/>
+  </bean>
+
+  <bean  name="ibisManager" class="org.mockito.Mockito" factory-method="mock">
+    <constructor-arg value="nl.nn.adapterframework.configuration.IbisManager"/>
+  </bean>
+  <import resource="springTEST.xml"/>
 </beans>

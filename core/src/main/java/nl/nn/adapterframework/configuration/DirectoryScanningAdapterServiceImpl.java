@@ -24,7 +24,7 @@ import org.xml.sax.SAXException;
 /**
  * An implementation of {@link AdapterService} that watches a directory with XML's, every XML representing exactly one adapter.
  * @author Michiel Meeuwissen
- * @since 2.0.59
+ * @since 5.4
  */
 public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl implements ApplicationContextAware {
 
@@ -52,7 +52,22 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
 
                 DirectoryScanningAdapterServiceImpl.this.scan();
             }
-        }, 60, 60, TimeUnit.SECONDS);
+        }, 0, 60, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public Map<String, IAdapter> getAdapters() {
+        if (lastScan == 0) {
+            synchronized(this) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    LOG.error(e.getMessage());
+                }
+            }
+
+        }
+        return super.getAdapters();
     }
 
 
@@ -83,6 +98,8 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
                         LOG.error(e.getMessage(), e);
                     } catch (IOException e) {
                         LOG.error(e.getMessage(), e);
+                    } catch (InterruptedException e) {
+                        LOG.error(e.getMessage(), e);
                     }
                 }
             } else {
@@ -91,24 +108,35 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
 
         }
         lastScan = System.currentTimeMillis();
+        notify();
     }
 
 
-    IAdapter read(URL url) throws IOException, SAXException {
-        ConfigurationDigester configurationDigester = (ConfigurationDigester) applicationContext.getBean("configurationDigester"); // somewhy proper dependency injection gives circular dependency problems
+    synchronized IAdapter read(URL url) throws IOException, SAXException, InterruptedException {
+        if (applicationContext == null) {
+            wait();
+        }
+        try {
+            ConfigurationDigester configurationDigester = (ConfigurationDigester) applicationContext.getBean("configurationDigester"); // somewhy proper dependency injection gives circular dependency problems
 
-        Digester digester = configurationDigester.createDigester();
-        digester.parse(url);
-        // Does'nt work. I probably don't know how it is supposed to work.
-        return (IAdapter) digester.getRoot();
+            Digester digester = configurationDigester.getDigester();
+            digester.push(this);
+            digester.parse(url.openStream());
+            // Does'nt work. I probably don't know how it is supposed to work.
+            return (IAdapter) digester.getRoot();
+        } catch (Throwable t) {
+            LOG.error("For " + url + ": " + t.getMessage(), t);
+            return null;
+        }
     }
 
   /*  public void setConfigurationDigester(ConfigurationDigester configurationDigester) {
         this.configurationDigester = configurationDigester;
     }*/
 
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public synchronized void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+        notify();
 
     }
 }

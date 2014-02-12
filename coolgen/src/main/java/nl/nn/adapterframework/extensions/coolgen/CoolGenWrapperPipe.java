@@ -15,19 +15,6 @@
 */
 package nl.nn.adapterframework.extensions.coolgen;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.URL;
-
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -40,6 +27,18 @@ import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.coolgen.proxy.CoolGenXMLProxy;
 import nl.nn.coolgen.proxy.XmlProxyException;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.URL;
 
 /**
  * Perform the call to a CoolGen proxy with pre- and post transformations.
@@ -95,7 +94,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 		}
 
 	}
-	
+
     public CoolGenXMLProxy createProxy(String proxyName)
         throws ConfigurationException {
         CoolGenXMLProxy proxy;
@@ -113,135 +112,136 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
         }
         return proxy;
     }
-/**
- * create the required XSLT-transformers.
- *
- * <p>Transformers are created using the URIs supplied in:
- * <ul>
- * <li>{@link #setPreProcStylesheetName(String) preProcStylesheetName}</li>
- * <li>{@link #setPostProcStylesheetName(String) postProcStylesheetName}</li>
- * <li>{@link #setProxyInputSchema(String) proxyInputSchema}</li>
- * <ul>
- * For the proxyInputSchema a transformer is created to check the conformance to the schema
- * the URI supplieds points to.
- *
- * Creation of the proxy itself is done in the {@link #start()} method, to be able to recreate it
- * by restarting the adapter.
- */
-public void createTransformers() throws ConfigurationException {
+    /**
+     * create the required XSLT-transformers.
+     *
+     * <p>Transformers are created using the URIs supplied in:
+     * <ul>
+     * <li>{@link #setPreProcStylesheetName(String) preProcStylesheetName}</li>
+     * <li>{@link #setPostProcStylesheetName(String) postProcStylesheetName}</li>
+     * <li>{@link #setProxyInputSchema(String) proxyInputSchema}</li>
+     * <ul>
+     * For the proxyInputSchema a transformer is created to check the conformance to the schema
+     * the URI supplieds points to.
+     *
+     * Creation of the proxy itself is done in the {@link #start()} method, to be able to recreate it
+     * by restarting the adapter.
+     */
+    public void createTransformers() throws ConfigurationException {
 
-    // Create transformers
-    if (preProcStylesheetName != null) {
-        try {
+        // Create transformers
+        if (preProcStylesheetName != null) {
+            try {
 
-            URL preprocUrl = ClassUtils.getResourceURL(this, preProcStylesheetName);
+                URL preprocUrl = ClassUtils.getResourceURL(this, preProcStylesheetName);
 
-            if (preprocUrl == null)
-                throw new ConfigurationException(
-                        getLogPrefix(null)+"cannot find resource for preProcTransformer, URL-String ["
-                        + preProcStylesheetName
+                if (preprocUrl == null)
+                    throw new ConfigurationException(
+                            getLogPrefix(null)+"cannot find resource for preProcTransformer, URL-String ["
+                                    + preProcStylesheetName
+                                    + "]");
+
+                log.debug(getLogPrefix(null)+"creating preprocTransformer from URL ["
+                        + preprocUrl.toString()
                         + "]");
-
-            log.debug(getLogPrefix(null)+"creating preprocTransformer from URL ["
-                    + preprocUrl.toString()
-                    + "]");
-            preProcTransformer = XmlUtils.createTransformer(preprocUrl);
-        } catch (IOException e) {
-            throw new ConfigurationException(
-                getLogPrefix(null)+"cannot retrieve [" + preProcStylesheetName + "]",
-                e);
-        } catch (javax.xml.transform.TransformerConfigurationException te) {
-            throw new ConfigurationException(
-                getLogPrefix(null)+"got error creating transformer from file ["
-                    + preProcStylesheetName
-                    + "]",
-                te);
+                preProcTransformer = XmlUtils.createTransformer(preprocUrl);
+            } catch (IOException e) {
+                throw new ConfigurationException(
+                        getLogPrefix(null)+"cannot retrieve [" + preProcStylesheetName + "]",
+                        e);
+            } catch (javax.xml.transform.TransformerConfigurationException te) {
+                throw new ConfigurationException(
+                        getLogPrefix(null)+"got error creating transformer from file ["
+                                + preProcStylesheetName
+                                + "]",
+                        te);
+            }
         }
-    }
-    if (postProcStylesheetName != null) {
-        try {
+        if (postProcStylesheetName != null) {
+            try {
 
-            URL postprocUrl = ClassUtils.getResourceURL(this, postProcStylesheetName);
-            if (postprocUrl == null)
+                URL postprocUrl = ClassUtils.getResourceURL(this, postProcStylesheetName);
+                if (postprocUrl == null)
+                    throw new ConfigurationException(
+                            getLogPrefix(null)+"cannot find resource for postProcTransformer, URL-String ["
+                                    + postProcStylesheetName
+                                    + "]");
+
+                log.debug(
+                        getLogPrefix(null)+"creating postprocTransformer from URL ["
+                                + postprocUrl.toString()
+                                + "]");
+                postProcTransformer = XmlUtils.createTransformer(postprocUrl);
+            } catch (IOException e) {
                 throw new ConfigurationException(
-                    getLogPrefix(null)+"cannot find resource for postProcTransformer, URL-String ["
-                        + postProcStylesheetName
-                        + "]");
+                        getLogPrefix(null)+"cannot retrieve [" + postProcStylesheetName + "]",
+                        e);
+            } catch (javax.xml.transform.TransformerConfigurationException te) {
+                throw new ConfigurationException(
+                        getLogPrefix(null)+"got error creating transformer from file ["
+                                + postProcStylesheetName
+                                + "]",
+                        te);
+            }
+        }
+
+        if (proxyInputSchema != null) {
+            String stylesheet;
+            URL schemaUrl = ClassUtils.getResourceURL(this, proxyInputSchema);
+
+            if (schemaUrl == null)
+                throw new ConfigurationException(
+                        getLogPrefix(null)+"cannot find resource for proxyInputSchema, URL-String ["
+                                + proxyInputSchema
+                                + "]");
 
             log.debug(
-                getLogPrefix(null)+"creating postprocTransformer from URL ["
-                    + postprocUrl.toString()
-                    + "]");
-            postProcTransformer = XmlUtils.createTransformer(postprocUrl);
-        } catch (IOException e) {
-            throw new ConfigurationException(
-                getLogPrefix(null)+"cannot retrieve [" + postProcStylesheetName + "]",
-                e);
-        } catch (javax.xml.transform.TransformerConfigurationException te) {
-            throw new ConfigurationException(
-                getLogPrefix(null)+"got error creating transformer from file ["
-                    + postProcStylesheetName
+                    getLogPrefix(null)+"creating CoolGenInputViewSchema from URL ["
+                            + schemaUrl.toString()
+                            + "]");
+
+            // construct a xslt-stylesheet to perform validation to supplied schema
+            stylesheet =
+                    "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">";
+            stylesheet += "	<xsl:template match=\"/*\">";
+            stylesheet += "		<xsl:copy>";
+            stylesheet += "			<xsl:attribute name=\"xsi:noNamespaceSchemaLocation\">"
+                    + schemaUrl.toString()
+                    + "</xsl:attribute>";
+            stylesheet += "			<xsl:apply-templates select=\"node()\"/>";
+            stylesheet += "		</xsl:copy>";
+            stylesheet += "	</xsl:template>";
+            stylesheet += "	<xsl:template match=\"@*|node()\">";
+            stylesheet += "		<xsl:copy>";
+            stylesheet += "			<xsl:apply-templates select=\"@*|node()\"/>";
+            stylesheet += "		</xsl:copy>";
+            stylesheet += "	</xsl:template>";
+            stylesheet += "</xsl:stylesheet>";
+
+            try {
+                proxyInputFixTransformer = XmlUtils.createTransformer(stylesheet);
+            } catch (javax.xml.transform.TransformerConfigurationException te) {
+                throw new ConfigurationException(
+                        getLogPrefix(null)+"got error creating transformer from string ["
+                                + stylesheet
                     + "]",
-                te);
+                        te);
+            }
         }
     }
-
-    if (proxyInputSchema != null) {
-        String stylesheet;
-        URL schemaUrl = ClassUtils.getResourceURL(this, proxyInputSchema);
-
-        if (schemaUrl == null)
-            throw new ConfigurationException(
-                getLogPrefix(null)+"cannot find resource for proxyInputSchema, URL-String ["
-                    + proxyInputSchema
-                    + "]");
-
-        log.debug(
-            getLogPrefix(null)+"creating CoolGenInputViewSchema from URL ["
-                + schemaUrl.toString()
-                + "]");
-
-        // construct a xslt-stylesheet to perform validation to supplied schema
-        stylesheet =
-            "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">";
-        stylesheet += "	<xsl:template match=\"/*\">";
-        stylesheet += "		<xsl:copy>";
-        stylesheet += "			<xsl:attribute name=\"xsi:noNamespaceSchemaLocation\">"
-            + schemaUrl.toString()
-            + "</xsl:attribute>";
-        stylesheet += "			<xsl:apply-templates select=\"node()\"/>";
-        stylesheet += "		</xsl:copy>";
-        stylesheet += "	</xsl:template>";
-        stylesheet += "	<xsl:template match=\"@*|node()\">";
-        stylesheet += "		<xsl:copy>";
-        stylesheet += "			<xsl:apply-templates select=\"@*|node()\"/>";
-        stylesheet += "		</xsl:copy>";
-        stylesheet += "	</xsl:template>";
-        stylesheet += "</xsl:stylesheet>";
-
-        try {
-            proxyInputFixTransformer = XmlUtils.createTransformer(stylesheet);
-        } catch (javax.xml.transform.TransformerConfigurationException te) {
-            throw new ConfigurationException(
-                getLogPrefix(null)+"got error creating transformer from string ["
-                    + stylesheet
-                    + "]",
-                te);
-        }
-    }
-}
-/**
- * Transform the input (optionally), check the conformance to the schema (optionally),
- * call the required proxy, transform the output (optionally)
- */
-public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+    /**
+     * Transform the input (optionally), check the conformance to the schema (optionally),
+     * call the required proxy, transform the output (optionally)
+     */
+    public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 
     Writer proxyResult;
     String proxypreProc = null;
     Variant inputVar;
     String wrapperResult = "";
     CoolGenXMLProxy proxy;
-    
+
+
     ActionListener actionListener = new ActionListener() {
         /**
          * @see java.awt.event.ActionListener#actionPerformed(ActionEvent)
@@ -262,7 +262,7 @@ public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeR
     // TEMPORARY FIX:
     // create proxy before every request, to work around broken connections caused by restarting the comm-bridge
     // should be solved in another way in a more definitive implementation
-        
+
     try {
         log.info(getLogPrefix(session)+"instantiating proxy ["+proxyClassName+"] as a temporary fix for broken comm-bridge connections");
         proxy = createProxy(proxyClassName);
@@ -294,7 +294,7 @@ public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeR
 
         proxyResult = new StringWriter(10 * 1024);
 
-        
+
         // Try to execute the service-preProc as per proxy
 
         try {
@@ -353,7 +353,7 @@ public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeR
 	public String getClientId() {
 	    return clientId;
 	}
-	
+
 	public void setClientPassword(java.lang.String newClientPassword) {
 		clientPassword = newClientPassword;
 	}
@@ -374,14 +374,14 @@ public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeR
 	public String getPostProcStylesheetName() {
 	    return postProcStylesheetName;
 	}
-	
+
 	public String getProxyClassName() {
 	    return proxyClassName;
 	}
 	public String getProxyInputSchema() {
 	    return proxyInputSchema;
 	}
-	
+
 	public void setProxyInputSchema(String newProxyInputSchema) {
 		proxyInputSchema = newProxyInputSchema;
 	}

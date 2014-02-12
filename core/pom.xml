@@ -24,15 +24,14 @@
       <artifactId>ejb-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>javax.transaction</groupId> 
-      <artifactId>transaction-api</artifactId> 
-      <version>1.1</version> 
+      <groupId>javax.transaction</groupId>
+      <artifactId>transaction-api</artifactId>
+      <version>1.1</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
-      <version>1.4.5</version>
     </dependency>
     <!-- commons -->
     <dependency>
@@ -42,27 +41,26 @@
     <dependency>
       <groupId>commons-pool</groupId>
       <artifactId>commons-pool</artifactId>
-      <version>1.5.5</version>
     </dependency>
     <dependency>
       <groupId>commons-digester</groupId>
       <artifactId>commons-digester</artifactId>
-      <version>1.8.1</version>
     </dependency>
-    <dependency>
+    <!--<dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-digester3</artifactId>
+    </dependency>
+    --><dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
     </dependency>
      <dependency>
       <groupId>commons-net</groupId>
       <artifactId>commons-net</artifactId>
-      <version>1.4.1</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
