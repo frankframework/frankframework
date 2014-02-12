@@ -24,9 +24,7 @@ public class DirectoryScanningAdapterServiceImplTest {
 
         assertEquals(1, adapterService.getAdapters().size());
 
-        adapterService.getAdapter("HelloWorld").getName();
-
-        //assertEquals("TODO", adapterService.getAdapter("TODO").getName());
+        assertEquals("HelloWorld", adapterService.getAdapter("HelloWorld").getName());
     }
 
 
