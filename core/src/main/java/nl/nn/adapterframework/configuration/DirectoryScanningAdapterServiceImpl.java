@@ -154,6 +154,8 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
                 LOG.warn("" + directory + " is not a directory");
             }
 
+        } else {
+            LOG.debug("" + directory + " does not exist");
         }
         lastScan = System.currentTimeMillis();
         notify();
