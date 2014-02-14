@@ -19,10 +19,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageHandler;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPushingListener;
+import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -30,10 +34,10 @@ import nl.nn.adapterframework.dispatcher.DispatcherException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
+import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
 
@@ -145,6 +149,17 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("JavaListener [" + getName() + "] processing correlationId [" + correlationId + "]");
+		}
+		if (context != null) {
+			Object object = context.get("httpRequest");
+			if (object != null) {
+				if (object instanceof HttpServletRequest) {
+					ISecurityHandler securityHandler = new HttpSecurityHandler((HttpServletRequest)object);
+					context.put(IPipeLineSession.securityHandlerKey, securityHandler);
+				} else {
+					log.warn("No securityHandler added for httpRequest [" + object.getClass() + "]");
+				}
+			}
 		}
 		if (throwException) {
 			return handler.processRequest(this, correlationId, message, context);
