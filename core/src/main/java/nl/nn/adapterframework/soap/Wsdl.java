@@ -523,6 +523,15 @@ class Wsdl {
         return "${wsdl." + getName() + ".soapAction}";
     }
 
+    protected String getLocation(String defaultLocation) {
+        AppConstants appConstants = AppConstants.getInstance();
+        String sa = appConstants.getResolvedProperty("wsdl." + getName() + ".location");
+        if (sa != null) return sa;
+        sa = appConstants.getResolvedProperty("wsdl.location");
+        if (sa != null) return sa;
+        return defaultLocation;
+    }
+
     protected void binding(XMLStreamWriter w) throws XMLStreamException, IOException {
         for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
             if (listener instanceof WebServiceListener) {
@@ -638,7 +647,7 @@ class Wsdl {
             w.writeAttribute("name", "SoapHttp");
             w.writeAttribute("binding", "ibis:SoapBinding"); {
                 w.writeEmptyElement(SOAP_WSDL, "address");
-                w.writeAttribute("location", servlet);
+                w.writeAttribute("location", getLocation(servlet));
 
             }
             w.writeEndElement();
@@ -660,7 +669,7 @@ class Wsdl {
                 w.writeEmptyElement(SOAP_WSDL, "address");
                 String destinationName = listener.getDestinationName();
                 if (destinationName != null) {
-                    w.writeAttribute("location", destinationName);
+                    w.writeAttribute("location", getLocation(destinationName));
                 }
                 if (esbSoap) {
                     writeEsbSoapJndiContext(w, listener);
