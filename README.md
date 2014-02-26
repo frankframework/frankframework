@@ -6,6 +6,7 @@ Upcoming:
 - First steps towards running IBISes on TIBCO AMX (as WebApp in Composite)
 - added "Used SapSystems" to console function "Show Security Items"
 - prevent OutOfMemoryError in console function "Adapter Logging" caused by a lot of files in a directory
+- added facility to hide properties in console functions "Show configuration" and "Show Environment variables"
 
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
