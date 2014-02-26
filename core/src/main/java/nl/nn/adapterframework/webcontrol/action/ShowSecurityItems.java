@@ -408,8 +408,8 @@ public final class ShowSecurityItems extends ActionBase {
 			Method factoryGetRegisteredSapSystemsNamesAsList = c.getMethod("getRegisteredSapSystemsNamesAsList");
 			sapSystems = (List) factoryGetRegisteredSapSystemsNamesAsList.invoke(sapSystemFactory, null);
 			factoryGetSapSystemInfo = c.getMethod("getSapSystemInfo", String.class);
-		} catch (Exception e) {
-            log.debug("Caught Error: " + e.getMessage());
+		} catch (Throwable t) {
+			log.warn("could not extract sapSystem info", t);
 		}
 		
         if (sapSystems!=null) {
