@@ -313,6 +313,9 @@ public class Misc {
 		return part1+separator+part2;
 	}
 
+	public static String hide(String string) {
+		return StringUtils.repeat("*", string.length());
+	}
 
 	public static String byteArrayToString(byte[] input, String endOfLineString, boolean xmlEncode) throws IOException{
 		ByteArrayInputStream bis = new ByteArrayInputStream(input);

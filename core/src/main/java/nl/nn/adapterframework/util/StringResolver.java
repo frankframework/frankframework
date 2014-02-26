@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -69,7 +70,7 @@ public class StringResolver {
 	  * none is found, it looks in the second object.
 	  * 
 	  */ 
-	public static String substVars(String val, Map props1, Map props2)
+	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide)
         throws IllegalArgumentException {
 
         StringBuffer sbuf = new StringBuffer();
@@ -121,7 +122,10 @@ public class StringResolver {
 					}
 
                     if (replacement != null) {
-                        // Do variable substitution on the replacement string
+                   		if (propsToHide != null && propsToHide.contains(key)) {
+                   		replacement = Misc.hide(replacement);
+                    	}
+                    	// Do variable substitution on the replacement string
                         // such that we can solve "Hello ${x1}" as "Hello p2" 
                         // the where the properties are
 						// x1=${x2}
@@ -135,6 +139,11 @@ public class StringResolver {
         }
     }
 
+	public static String substVars(String val, Map props1, Map props2)
+	        throws IllegalArgumentException {
+		return substVars(val, props1, props2, null);
+    }
+	
 	public static String substVars(String val, Map props)
 		throws IllegalArgumentException {
 		return substVars(val, props, null);

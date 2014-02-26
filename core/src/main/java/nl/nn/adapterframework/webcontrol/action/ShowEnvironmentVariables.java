@@ -22,8 +22,12 @@ import org.apache.struts.action.ActionMapping;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 
 import nl.nn.adapterframework.util.Misc;
@@ -40,7 +44,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class ShowEnvironmentVariables extends ActionBase {
 
-	public void addPropertiesToXmlBuilder(XmlBuilder container, Properties props, String setName) {
+	public void addPropertiesToXmlBuilder(XmlBuilder container, Properties props, String setName, List<String> propsToHide) {
 		Enumeration enumeration = props.keys();
 		XmlBuilder propertySet = new XmlBuilder("propertySet");
 		propertySet.addAttribute("name", setName);
@@ -50,32 +54,42 @@ public class ShowEnvironmentVariables extends ActionBase {
 			String propName = (String) enumeration.nextElement();
 			XmlBuilder property = new XmlBuilder("property");
 			property.addAttribute("name", XmlUtils.encodeCdataString(propName));
-			property.setCdataValue(XmlUtils.encodeCdataString(props.getProperty(propName)));
+			String propValue = props.getProperty(propName);
+        	if (propsToHide != null && propsToHide.contains(propName)) {
+        		propValue = Misc.hide(propValue);
+        	}
+			property.setCdataValue(XmlUtils.encodeCdataString(propValue));
 			propertySet.addSubElement(property);
 		}
 
 	}
-	
+
+	public void addPropertiesToXmlBuilder(XmlBuilder container, Properties props, String setName) {
+		addPropertiesToXmlBuilder(container, props, setName, null);
+	}
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		// Initialize action
 		initAction(request);
 		// Retrieve environment variables for browsing
 
+		List<String> propsToHide = new ArrayList<String>();
+		String propertiesHideString = AppConstants.getInstance().getString("properties.hide", null);
+		if (propertiesHideString!=null) {
+			propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
+		}
+		
 		XmlBuilder envVars = new XmlBuilder("environmentVariables");
 
-		addPropertiesToXmlBuilder(envVars,AppConstants.getInstance(),"Application Constants");
-		addPropertiesToXmlBuilder(envVars,System.getProperties(),"System Properties");
+		addPropertiesToXmlBuilder(envVars,AppConstants.getInstance(),"Application Constants",propsToHide);
+		addPropertiesToXmlBuilder(envVars,System.getProperties(),"System Properties",propsToHide);
 		
 		try {
 			addPropertiesToXmlBuilder(envVars,Misc.getEnvironmentVariables(),"Environment Variables");
 		} catch (Throwable t) {
 			log.warn("caught Throwable while getting EnvironmentVariables",t);
 		}
-		
-		if (log.isDebugEnabled()) {
-			log.debug("envVars: [" + envVars.toXML() + "]");
-		}
+	
 		request.setAttribute("envVars", envVars.toXML());
 
 		// Forward control to the specified success URI

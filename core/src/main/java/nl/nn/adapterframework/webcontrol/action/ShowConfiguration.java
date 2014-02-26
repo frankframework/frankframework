@@ -17,6 +17,8 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -102,7 +104,12 @@ public final class ShowConfiguration extends ActionBase {
 	    try {
 			result=ConfigurationUtils.getOriginalConfiguration(configURL);
 			if (!AppConstants.getInstance().getBoolean("showConfiguration.original", false)) {
-				result=StringResolver.substVars(result, AppConstants.getInstance());
+				List<String> propsToHide = new ArrayList<String>();
+				String propertiesHideString = AppConstants.getInstance().getString("properties.hide", null);
+				if (propertiesHideString!=null) {
+					propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
+				}
+				result=StringResolver.substVars(result, AppConstants.getInstance(), null, propsToHide);
 				result = ConfigurationUtils.getActivatedConfiguration(result);
 				if (ConfigurationUtils.stubConfiguration()) {
 					result = ConfigurationUtils.getStubbedConfiguration(result);
