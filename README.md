@@ -71,9 +71,11 @@ Eclipse
 - Window, Preferences, Team, Git, History, Follow Renames.
 - In Git Repositories view clone https://github.com/ibissource/iaf.git
 - Right click iaf, Import projects...
-- In Navigator view right click pom.xml, Run As, Maven build..., JRE, make sure
-  a JDK instead of JRE is used (install one when not available). To make sure
-  that all code is Java 5 compatible use JDK 1.5.
+- In Navigator view right click pom.xml, Run As, Maven build...
+- JRE: Make sure a JDK instead of JRE is used (install one when not available).
+  To make sure that all code is Java 5 compatible use JDK 1.5.
+- Refresh: Select Refresh resources upon completion and The folder containing
+  the selected resource.
 - Run.
 - Refresh the project, build problems should be resolved.
 - When Tomcat has been added to the Servers view it should be possible to add
