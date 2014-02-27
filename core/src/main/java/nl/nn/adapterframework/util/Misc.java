@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -45,7 +46,6 @@ import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
-
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -167,6 +167,22 @@ public class Misc {
 		}
 	}
 
+	public static void streamToFile(InputStream inputStream, File file)
+			throws IOException {
+		OutputStream fileOut = null;
+		try {
+			fileOut = new FileOutputStream(file);
+			Misc.streamToStream(inputStream, fileOut);
+		} finally {
+			try {
+				if (fileOut != null) {
+					fileOut.close();
+				}
+			} catch (IOException e) {
+				log.warn("exception closing outputstream", e);
+			}
+		}
+	}
 	public static void readerToWriter(Reader reader, Writer writer) throws IOException {
 		readerToWriter(reader,writer,true);
 	}
