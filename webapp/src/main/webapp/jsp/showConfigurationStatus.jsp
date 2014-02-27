@@ -236,6 +236,7 @@
 							<xtags:variable id="hasMessageLog" select="@hasMessageLog"/>
 							<xtags:variable id="isRestListener" select="@isRestListener"/>
 							<xtags:variable id="restUriPattern" select="@restUriPattern"/>
+							<xtags:variable id="restMethod" select="@restMethod"/>
 							 <tr >
 								<td></td>
 								<td class="receiverRow">
@@ -314,7 +315,7 @@
 												<parameter name="receiverName"><%=java.net.URLEncoder.encode(receiverName)%></parameter>
 
 											 </imagelink>
-							<% } if ( "true".equalsIgnoreCase(isRestListener) ) { %>
+							<% } if ( "true".equalsIgnoreCase(isRestListener) && "GET".equalsIgnoreCase(restMethod) ) { %>
 											<imagelink
 												href="<%=restUriPattern%>"
 												type="showashtml"

@@ -239,6 +239,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 							RestListener rl = (RestListener) listener;
 							String path = getServlet().getServletContext().getInitParameter("restListenerPathPrefix") + "/" + rl.getUriPattern();
 							receiverXML.addAttribute("restUriPattern", path);
+							receiverXML.addAttribute("restMethod", rl.getMethod());
 						}
 					}
 
