@@ -50,7 +50,7 @@ import java.util.zip.ZipOutputStream;
  * @author  Michiel Meeuwissen
  * @author  Jaco de Groot
  */
-class Wsdl {
+public class Wsdl {
     protected static final String WSDL                  = "http://schemas.xmlsoap.org/wsdl/";
     protected static final String SOAP_WSDL             = "http://schemas.xmlsoap.org/wsdl/soap/";
     protected static final String SOAP_HTTP             = "http://schemas.xmlsoap.org/soap/http";
@@ -100,7 +100,7 @@ class Wsdl {
 
     private List<String> warnings = new ArrayList<String>();
 
-    Wsdl(PipeLine pipeLine) {
+    public Wsdl(PipeLine pipeLine) {
         this.pipeLine = pipeLine;
         this.name = this.pipeLine.getAdapter().getName();
         if (this.name == null) {
