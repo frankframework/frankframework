@@ -15,9 +15,12 @@
 */
 package nl.nn.adapterframework.webcontrol;
 
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -27,6 +30,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -190,6 +194,23 @@ public class FileViewerServlet extends HttpServlet  {
 		out.close();
 	}
 
+	public static void showInputStreamContents(InputStream inputStream, String filename, String type, HttpServletResponse response) throws DomBuilderException, TransformerException, IOException {
+		ServletOutputStream outputStream = response.getOutputStream();
+		if (type.equalsIgnoreCase("zip")) {
+			response.setContentType("application/zip");
+			String lastPart;
+			try {
+				File f= new File(filename);
+				lastPart=f.getName();
+			} catch (Throwable t) {
+				lastPart=filename;
+			}
+			response.setHeader("Content-Disposition","attachment; filename=\""+lastPart+"\"");
+			Misc.streamToStream(inputStream, outputStream);;
+		}
+		outputStream.close();
+	}
+
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	    try {
 	
@@ -262,11 +283,15 @@ public class FileViewerServlet extends HttpServlet  {
 					}
 
 				} else {
-//					Reader r=new BufferedReader(new InputStreamReader(new FileInputStream(fileName),"ISO-8859-1"));
-//					showReaderContents(r, fileName, type, response, request.getContextPath().substring(1),fileName);
-					showReaderContents(new FileReader(fileName), fileName, type, response, fileName);
+					if (type.equalsIgnoreCase("zip")) {
+						showInputStreamContents(new DataInputStream(new FileInputStream(fileName)), fileName, type, response);
+					} else {
+//						Reader r=new BufferedReader(new InputStreamReader(new FileInputStream(fileName),"ISO-8859-1"));
+//						showReaderContents(r, fileName, type, response, request.getContextPath().substring(1),fileName);
+						showReaderContents(new FileReader(fileName), fileName, type, response, fileName);
+					}
 				}
-	        }
+			}
 	    } catch (IOException e) {
 		    log.error("FileViewerServlet caught IOException" , e);
 		    throw e;
