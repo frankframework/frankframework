@@ -15,11 +15,12 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,6 +29,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -234,7 +237,51 @@ public class FileUtils {
 		tmpFile.deleteOnExit();
 		return tmpFile;
 	}
-	
+
+	public static File createTempDir() throws IOException {
+		return createTempDir(null);
+	}
+	public static File createTempDir(File baseDir) throws IOException {
+		return createTempDir(baseDir, null);
+	}
+	public static File createTempDir(File baseDir, String subDir) throws IOException {
+		return createTempDir(baseDir, subDir, null, null);
+	}
+	public static File createTempDir(File baseDir, String subDir, String prefix, String suffix) throws IOException {
+		if (baseDir == null) {
+			String baseDirStr = AppConstants.getInstance().getString("ibis.tmpdir", null);
+			if (baseDirStr == null) {
+				throw new IOException("Property [ibis.tmpdir] is not specified");
+			}
+			baseDir = new File(baseDirStr);
+
+		}
+		if (!baseDir.exists()) {
+			if (!baseDir.mkdirs()) {
+				throw new IOException("Unable to create temp directory ["
+						+ baseDir.getPath() + "]");
+			}
+		}
+		String baseName = System.currentTimeMillis() + "-";
+		int tempDirAttempts = 50;
+		File tempDir = null;
+		for (int counter = 0; counter < tempDirAttempts; counter++) {
+			String tempSubDir = (prefix != null ? prefix : "") + baseName
+					+ counter + (suffix != null ? suffix : "")
+					+ (subDir != null ? File.separator + subDir : "");
+			tempDir = new File(baseDir, tempSubDir);
+			if (tempDir.mkdirs()) {
+				// Do not use deleteOnExit() even if you explicitly delete it later.
+				// Google 'deleteonexit is evil' for more info, but the gist of the problem is:
+				// 1.deleteOnExit() only deletes for normal JVM shutdowns, not crashes or killing the JVM process.
+				// 2.deleteOnExit() only deletes on JVM shutdown - not good for long running server processes because:
+				// 3.The most evil of all - deleteOnExit() consumes memory for each temp file entry. If your process is running for months, or creates a lot of temp files in a short time, you consume memory and never release it until the JVM shuts down
+ 				return tempDir;
+			}
+		}
+		throw new IOException("Failed to create temp directory within ["
+				+ tempDirAttempts + "] attempts (last attempt is [" + tempDir.getPath() + "])");
+	}
 	
 	public static void makeBackups(File targetFile, int numBackups)  {
 		if (numBackups<=0 || !targetFile.exists()) {
@@ -348,6 +395,17 @@ public class FileUtils {
 		return result.toArray(new File[0]);
 	}
 
+	public static File getFirstFile(File directory) {
+		String[] fileNames = directory.list();
+
+		for (int i = 0; i < fileNames.length; i++) {
+			File file = new File(directory, fileNames[i]);
+			if (file.isFile()) {
+				return file;
+			}
+		}
+		return null;
+	}
 	public static File getFirstFile(String directory, long minStability) {
 		File dir = new File(directory);
 		String[] fileNames = dir.list();
@@ -515,5 +573,40 @@ public class FileUtils {
 			}
 		}
 		return encodedFileName.toString();
+	}
+
+	public static void unzipStream(InputStream inputStream, File dir)
+			throws IOException {
+		ZipInputStream zis = new ZipInputStream(new BufferedInputStream(
+				inputStream));
+		try {
+			ZipEntry ze;
+			while ((ze = zis.getNextEntry()) != null) {
+				String filename = ze.getName();
+				File zipFile = new File(dir, filename);
+				if (ze.isDirectory()) {
+					if (!zipFile.exists()) {
+						log.debug("creating directory [" + zipFile.getPath()
+								+ "] for ZipEntry [" + ze.getName() + "]");
+						if (!zipFile.mkdir()) {
+							throw new IOException(zipFile.getPath()
+									+ " could not be created");
+						}
+					}
+				} else {
+					FileOutputStream fos = new FileOutputStream(zipFile);
+					log.debug("writing ZipEntry [" + ze.getName()
+							+ "] to file [" + zipFile.getPath() + "]");
+					Misc.streamToStream(zis, fos, false);
+					fos.close();
+				}
+			}
+		} finally {
+			try {
+				zis.close();
+			} catch (IOException e) {
+				log.warn("exception closing unzip", e);
+			}
+		}
 	}
 }
