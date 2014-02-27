@@ -16,8 +16,10 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -31,6 +33,11 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -54,8 +61,11 @@ public class RestListenerServlet extends HttpServlet {
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		String path=request.getPathInfo();
-		String body=Misc.streamToString(request.getInputStream(),"\n",false);
-		
+		String body = "";
+		if (request.getMethod().equalsIgnoreCase("GET")) {
+			body=Misc.streamToString(request.getInputStream(),"\n",false);
+		}
+			
 		String etag=request.getHeader("etag");
 		String contentType=request.getHeader("accept");
 
@@ -71,6 +81,32 @@ public class RestListenerServlet extends HttpServlet {
 			String paramvalue = request.getParameter(paramname);
 			if (log.isDebugEnabled()) log.debug("setting parameter ["+paramname+"] to ["+paramvalue+"]");
 			messageContext.put(paramname, paramvalue);
+		}
+		if (request.getMethod().equalsIgnoreCase("POST")) {
+			try {
+				DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
+				ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
+				List<FileItem> items = servletFileUpload.parseRequest(request);
+		        for (FileItem item : items) {
+		            if (item.isFormField()) {
+		                // Process regular form field (input type="text|radio|checkbox|etc", select, etc).
+		                // skip
+		            } else {
+		                // Process form file field (input type="file").
+		                String fieldName = item.getFieldName();
+		                String fieldNameName = fieldName + "Name";
+		                String fileName = FilenameUtils.getName(item.getName());
+		    			if (log.isDebugEnabled()) log.debug("setting parameter ["+fieldNameName+"] to ["+fileName+"]");
+		    			messageContext.put(fieldNameName, fileName);
+		                InputStream inputStream = item.getInputStream();
+		    			if (log.isDebugEnabled()) log.debug("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
+		    			messageContext.put(fieldName, inputStream);
+		            }
+		        }
+			} catch (FileUploadException e) {
+				log.warn("RestListenerServlet caught FileUploadException, will rethrow as ServletException",e);
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
+			}
 		}
 		try {
 			log.debug("RestListenerServlet calling service ["+path+"]");
