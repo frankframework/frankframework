@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-*/
+ */
 package nl.nn.adapterframework.validation;
 
 import java.io.IOException;
@@ -44,153 +44,166 @@ import org.xml.sax.InputSource;
  * The representation of a XSD.
  * 
  * @author Michiel Meeuwissen
- * @author  Jaco de Groot
+ * @author Jaco de Groot
  */
 public class XSD implements Comparable<XSD> {
-    private static final Logger LOG = LogUtil.getLogger(XSD.class);
+	private static final Logger LOG = LogUtil.getLogger(XSD.class);
 
-    private static String TEST_RESOURCE_IN_THE_ROOT = "Configuration.xml";
+	private static String TEST_RESOURCE_IN_THE_ROOT = "Configuration.xml";
 
-    public final URL url;
-    public final String namespace;
-    public final boolean addNamespaceToSchema;
-    public final String parentLocation;
-    public final boolean isRootXsd;
-    public final String targetNamespace;
-    public final List<String> rootTags = new ArrayList<String>();
+	public final URL url;
+	public final String namespace;
+	public final boolean addNamespaceToSchema;
+	public final String parentLocation;
+	public final boolean isRootXsd;
+	public final String targetNamespace;
+	public final List<String> rootTags = new ArrayList<String>();
 
-    public XSD(URL url, String namespace, boolean addNamespaceToSchema,
+	public XSD(URL url, String namespace, boolean addNamespaceToSchema,
             String parentLocation, boolean isRootXsd) throws IOException, XMLStreamException {
-        this.url = url;
-        this.namespace = namespace;
-        this.addNamespaceToSchema = addNamespaceToSchema;
-        this.parentLocation = parentLocation;
-        this.isRootXsd = isRootXsd;
-        String tns = null;
+		this.url = url;
+		this.namespace = namespace;
+		this.addNamespaceToSchema = addNamespaceToSchema;
+		this.parentLocation = parentLocation;
+		this.isRootXsd = isRootXsd;
+		String tns = null;
         if (url == null) throw new IllegalArgumentException("No resource " + url + " found");
-        InputStream in = url.openStream();
-        XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in,
-                XmlUtils.STREAM_FACTORY_ENCODING);
-        int elementDepth = 0;
-        while (er.hasNext()) {
-            XMLEvent e = er.nextEvent();
-            switch (e.getEventType()) {
-            case XMLStreamConstants.START_ELEMENT:
-                elementDepth++;
-                StartElement el = e.asStartElement();
-                if (el.getName().equals(SchemaUtils.SCHEMA)) {
-                    Attribute a = el.getAttributeByName(SchemaUtils.TNS);
-                    if (a != null) {
-                        tns = a.getValue();
-                    }
-                } else if (el.getName().equals(SchemaUtils.ELEMENT)) {
-                    if (elementDepth == 2) {
+		InputStream in = url.openStream();
+		XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in,
+				XmlUtils.STREAM_FACTORY_ENCODING);
+		int elementDepth = 0;
+		while (er.hasNext()) {
+			XMLEvent e = er.nextEvent();
+			switch (e.getEventType()) {
+			case XMLStreamConstants.START_ELEMENT:
+				elementDepth++;
+				StartElement el = e.asStartElement();
+				if (el.getName().equals(SchemaUtils.SCHEMA)) {
+					Attribute a = el.getAttributeByName(SchemaUtils.TNS);
+					if (a != null) {
+						tns = a.getValue();
+					}
+				} else if (el.getName().equals(SchemaUtils.ELEMENT)) {
+					if (elementDepth == 2) {
                         rootTags.add(el.getAttributeByName(SchemaUtils.NAME).getValue());
-                    }
-                }
-                break;
-            case XMLStreamConstants.END_ELEMENT:
-                elementDepth--;
-                break;
-            }
-        }
-        this.targetNamespace = tns;
-    }
+					}
+				}
+				break;
+			case XMLStreamConstants.END_ELEMENT:
+				elementDepth--;
+				break;
+			}
+		}
+		this.targetNamespace = tns;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof XSD) {
-            XSD other = (XSD) o;
-            if (compareTo(other) == 0) {
-                return true;
-            }
-        }
-        return false;
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof XSD) {
+			XSD other = (XSD) o;
+			if (compareTo(other) == 0) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-    @Override
-    public int hashCode() {
-        return namespace.hashCode();
-    }
+	@Override
+	public int hashCode() {
+		return namespace.hashCode();
+	}
 
-    @Override
-    public String toString() {
-        return namespace + " " + url;
-    }
+	@Override
+	public String toString() {
+		return namespace + " " + url;
+	}
 
-    public int compareTo(XSD x) {
+	public int compareTo(XSD x) {
         if (x == null) return 1;
-        if (namespace != null && x.namespace != null) {
-            int c = namespace.compareTo(x.namespace);
+		if (namespace != null && x.namespace != null) {
+			int c = namespace.compareTo(x.namespace);
             if (c != 0) return c;
-        }
-        if (url.toString().compareTo(x.url.toString()) != 0) {
-            // Compare XSD content to prevent copies of the same XSD showing up
-            // more than once in the WSDL. For example the
-            // CommonMessageHeader.xsd used by the EsbSoapValidator will
-            // normally also be imported by the XSD for the business response
-            // message (for the Result part).
-            try {
-                InputSource control = new InputSource(url.openStream());
-                InputSource test = new InputSource(x.url.openStream());
-                Diff diff = new Diff(control, test);
-                if (diff.similar()) {
-                    return 0;
-                }
-            } catch (Exception e) {
-                LOG.warn("Exception during XSD compare", e);
-            }
-        }
-        return url.toString().compareTo(x.url.toString());
-    }
+		}
+		if (url.toString().compareTo(x.url.toString()) != 0) {
+			// Compare XSD content to prevent copies of the same XSD showing up
+			// more than once in the WSDL. For example the
+			// CommonMessageHeader.xsd used by the EsbSoapValidator will
+			// normally also be imported by the XSD for the business response
+			// message (for the Result part).
+			try {
+				InputSource control = new InputSource(url.openStream());
+				InputSource test = new InputSource(x.url.openStream());
+				Diff diff = new Diff(control, test);
+				if (diff.similar()) {
+					return 0;
+				}
+			} catch (Exception e) {
+				LOG.warn("Exception during XSD compare", e);
+			}
+		}
+		return url.toString().compareTo(x.url.toString());
+	}
 
-    /**
+	/**
      * Tries to determin the base url wich must be used for relative resolving of resources.
-     * @TODO Too much ad hoc logic here
+	 * @TODO Too much ad hoc logic here
      * @return An url representing the 'directory' of the current XSD. Ending in /.
-     */
-    public String getBaseUrl() {
-        String u = url.toString();
-        String baseUrl;
-        if (url.toString().startsWith("file:")) {
+	 */
+	public String getBaseUrl() {
+		String u = url.toString();
+		String baseUrl;
+		if (url.toString().startsWith("file:")) {
             URL testRoot = XSD.class.getResource("/" + TEST_RESOURCE_IN_THE_ROOT);
-            if (testRoot != null) {
-                baseUrl = u.substring(
-                    testRoot.toString().length()
-                        - TEST_RESOURCE_IN_THE_ROOT.length());
-            } else {
+			if (testRoot != null) {
+				String testRootBase = testRoot.toString().substring(
+						0,
+						testRoot.toString().length()
+								- TEST_RESOURCE_IN_THE_ROOT.length());
+				if (u.startsWith(testRootBase)) {
+					baseUrl = u.substring(testRoot.toString().length()
+							- TEST_RESOURCE_IN_THE_ROOT.length());
+				} else {
+					baseUrl = u;
+				}
+			} else {
                 throw new IllegalStateException(TEST_RESOURCE_IN_THE_ROOT + " not found");
-            }
-        } else {
-            baseUrl = u.substring(u.indexOf("!/") + 2);
-        }
-        String classes = "WEB-INF/classes/";
-        int index= baseUrl.indexOf(classes);
-        if (index > -1) {
-            baseUrl = baseUrl.substring(index + classes.length());
-        }
-        baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
-        return baseUrl;
-    }
+			}
+		} else {
+			baseUrl = u.substring(u.indexOf("!/") + 2);
+		}
+		String classes = "WEB-INF/classes/";
+		int index = baseUrl.indexOf(classes);
+		if (index > -1) {
+			baseUrl = baseUrl.substring(index + classes.length());
+		}
+		baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
+		return baseUrl;
+	}
 
-    public String getName() {
-        String u = url.toString();
-        int slash = u.lastIndexOf('/');
-        u = u.substring(slash + 1);
-        try {
-            return URLDecoder.decode(u, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            // cannot happen, UTF-8 is supported
-            return u;
-        }
-    }
+	private String getChildUrl(URL parentUrl, String schemaLocation) {
+		String parentU = parentUrl.toString();
+		String parentBaseUrl = parentU.substring(0, parentU.lastIndexOf('/') + 1);
+		return parentBaseUrl + schemaLocation;
+	}
+
+	public String getName() {
+		String u = url.toString();
+		int slash = u.lastIndexOf('/');
+		u = u.substring(slash + 1);
+		try {
+			return URLDecoder.decode(u, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			// cannot happen, UTF-8 is supported
+			return u;
+		}
+	}
 
     public Set<XSD> getXsdsRecursive()
             throws IOException, XMLStreamException {
-        return getXsdsRecursive(new HashSet<XSD>());
-    }
+		return getXsdsRecursive(new HashSet<XSD>());
+	}
 
-    public Set<XSD> getXsdsRecursive(Set<XSD> xsds)
+	public Set<XSD> getXsdsRecursive(Set<XSD> xsds)
             throws IOException, XMLStreamException {
         InputStream in = url.openStream();
         if (in == null) return null;
@@ -226,8 +239,8 @@ public class XSD implements Comparable<XSD> {
                             addNamespaceToSchema = false;
                         }
                         if (!isXmlNamespace) {
-                            XSD x = new XSD(
-                                    ClassUtils.getResourceURL(getBaseUrl() + schemaLocation.getValue()),
+                        	XSD x = new XSD(
+                                    ClassUtils.getResourceURL(getChildUrl(url, schemaLocation.getValue())),
                                     namespace, addNamespaceToSchema, getBaseUrl(),
                                     false
                                     );
