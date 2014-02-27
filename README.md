@@ -7,6 +7,14 @@ Upcoming:
 - added "Used SapSystems" to console function "Show Security Items"
 - prevent OutOfMemoryError in console function "Adapter Logging" caused by a lot of files in a directory
 - added facility to hide properties in console functions "Show configuration" and "Show Environment variables"
+- Fixed problems with XSD's using special imports.
+- Removed unused code which generates a NPE on JBoss Web/7.0.13.Final.
+- Replace non valid xml characters when formatting error message.
+- Made it possible to add http headers when using a HttpSender.
+- Fixed exception in file viewer when context root of IAF instance is /.
+- Bugfix addRootNamespace.
+- Made it possible to override the address location in the generated WSDL.
+- Possibility to dynamically load adapters.
 
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
