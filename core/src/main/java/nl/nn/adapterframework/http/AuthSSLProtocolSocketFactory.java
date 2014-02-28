@@ -171,8 +171,8 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 	public AuthSSLProtocolSocketFactory(
     		final URL keystoreUrl, final String keystorePassword, final String keystoreType, final String keyManagerAlgorithm,
     		final URL truststoreUrl, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm,
-    		final boolean allowSelfSignedCertificates, final boolean verifyHostname) {
-		super(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, trustManagerAlgorithm, allowSelfSignedCertificates, verifyHostname);
+    		final boolean allowSelfSignedCertificates, final boolean verifyHostname, final boolean ignoreCertificateExpiredException) {
+		super(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, trustManagerAlgorithm, allowSelfSignedCertificates, verifyHostname, ignoreCertificateExpiredException);
 	}
     
     private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password, String algorithm)
@@ -367,10 +367,18 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 		}
 
 		public void checkServerTrusted(X509Certificate[] certificates, String authType) throws CertificateException {
-			if (certificates != null) {
-				for (int i = 0; i < certificates.length; i++) {
-					X509Certificate certificate = certificates[i];
-					certificate.checkValidity();
+			try {
+				if (certificates != null) {
+					for (int i = 0; i < certificates.length; i++) {
+						X509Certificate certificate = certificates[i];
+						certificate.checkValidity();
+					}
+				}
+			} catch (CertificateException e) {
+				if (ignoreCertificateExpiredException) {
+					log.warn("error occurred during checking trusted server: " + e.getMessage());
+				} else {
+					throw e;
 				}
 			}
 		}

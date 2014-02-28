@@ -72,8 +72,8 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
 	public AuthSSLProtocolSocketFactoryForJsse10x(
 			final URL keystoreUrl, final String keystorePassword, final String keystoreType, final String keyManagerAlgorithm,
 			final URL truststoreUrl, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm,
-			final boolean allowSelfSignedCertificates, final boolean verifyHostname) {
-		super(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, trustManagerAlgorithm, allowSelfSignedCertificates, verifyHostname);
+			final boolean allowSelfSignedCertificates, final boolean verifyHostname, final boolean ignoreCertificateExpiredException) {
+		super(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, trustManagerAlgorithm, allowSelfSignedCertificates, verifyHostname, ignoreCertificateExpiredException);
 		addProvider("sun.security.provider.Sun");
 		addProvider("com.sun.net.ssl.internal.ssl.Provider");
 		System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");

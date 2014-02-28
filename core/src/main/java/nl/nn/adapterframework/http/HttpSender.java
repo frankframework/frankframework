@@ -103,6 +103,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setInputMessageParam(String) inputMessageParam}</td><td>(only used when <code>methodeType=POST</code> and <code>paramsInUrl=false</code>) name of the request parameter which is used to put the input message in</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHeadersParams(String) headersParams}</td><td>Comma separated list of parameter names which should be set as http headers</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIgnoreRedirects(boolean) ignoreRedirects}</td><td>when true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful</td><td>false</td></tr>
+ * <tr><td>{@link #setIgnoreCertificateExpiredException(boolean) ignoreCertificateExpiredException}</td><td>when true,  the CertificateExpiredException is ignored</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -216,6 +217,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private boolean encodeMessages=false;
 	private boolean paramsInUrl=true;
 	private boolean ignoreRedirects=false;
+	private boolean ignoreCertificateExpiredException=false;
 
 	protected Parameter urlParameter;
 	
@@ -328,12 +330,12 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 						socketfactory = new AuthSSLProtocolSocketFactoryForJsse10x(
 							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
 							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(),
-							isAllowSelfSignedCertificates(), isVerifyHostname());
+							isAllowSelfSignedCertificates(), isVerifyHostname(), isIgnoreCertificateExpiredException());
 					} else {
 						socketfactory = new AuthSSLProtocolSocketFactory(
 							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
 							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(),
-							isAllowSelfSignedCertificates(), isVerifyHostname());
+							isAllowSelfSignedCertificates(), isVerifyHostname(), isIgnoreCertificateExpiredException());
 					}
 					socketfactory.initSSLContext();	
 				} catch (Throwable t) {
@@ -910,6 +912,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public boolean isIgnoreRedirects() {
 		return ignoreRedirects;
+	}
+
+	public void setIgnoreCertificateExpiredException(boolean b) {
+		ignoreCertificateExpiredException = b;
+	}
+	public boolean isIgnoreCertificateExpiredException() {
+		return ignoreCertificateExpiredException;
 	}
 
 	public void setParamsInUrl(boolean b) {

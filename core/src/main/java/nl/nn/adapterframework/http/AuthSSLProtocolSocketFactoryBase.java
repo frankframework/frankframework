@@ -162,6 +162,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 	protected String trustManagerAlgorithm = null;
 	protected Object sslContext = null;
 	protected boolean verifyHostname=true;
+	protected boolean ignoreCertificateExpiredException=false;
 
     /**
      * Constructor for AuthSSLProtocolSocketFactory. Either a keystore or truststore file
@@ -186,7 +187,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
     public AuthSSLProtocolSocketFactoryBase (
     		final URL keystoreUrl, final String keystorePassword, final String keystoreType, final String keyManagerAlgorithm,
     		final URL truststoreUrl, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm,
-    		final boolean allowSelfSignedCertificates, final boolean verifyHostname) {
+    		final boolean allowSelfSignedCertificates, final boolean verifyHostname, final boolean ignoreCertificateExpiredException) {
         super();
         this.allowSelfSignedCertificates = allowSelfSignedCertificates;
         this.keystoreUrl = keystoreUrl;
@@ -198,12 +199,13 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 		this.truststoreType = truststoreType;
 		this.trustManagerAlgorithm = trustManagerAlgorithm;
         this.verifyHostname = verifyHostname;
+        this.ignoreCertificateExpiredException = ignoreCertificateExpiredException;
     }
 
 	public static AuthSSLProtocolSocketFactoryBase createSocketFactory(
 		final URL certificateUrl, final String certificateAuthAlias, final String certificatePassword, final String certificateType, final String keyManagerAlgorithm, 
 		final URL truststoreUrl, final String truststoreAuthAlias, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm, 
-		final boolean allowSelfSignedCertificates, final boolean verifyHostname, boolean jdk13Compatible)
+		final boolean allowSelfSignedCertificates, final boolean verifyHostname, final boolean ignoreCertificateExpiredException, boolean jdk13Compatible)
  			throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException 
  	{
 
@@ -226,7 +228,8 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 					truststoreType,
 					trustManagerAlgorithm,
 					allowSelfSignedCertificates,
-					verifyHostname);
+					verifyHostname,
+					ignoreCertificateExpiredException);
 		}
 		else {
 			factory =
@@ -240,7 +243,8 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 					truststoreType,
 					trustManagerAlgorithm,
 					allowSelfSignedCertificates,
-					verifyHostname);
+					verifyHostname,
+					ignoreCertificateExpiredException);
 		}
 
 		return factory;

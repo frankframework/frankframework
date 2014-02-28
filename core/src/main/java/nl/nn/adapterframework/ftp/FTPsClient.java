@@ -230,6 +230,7 @@ public class FTPsClient extends FTPClient {
 			session.getTrustManagerAlgorithm(),
 			session.isAllowSelfSignedCertificates(),
 			session.isVerifyHostname(),
+			false,
 			session.isJdk13Compatibility());
 			
 		factory.setProtocol(getProtocol());
