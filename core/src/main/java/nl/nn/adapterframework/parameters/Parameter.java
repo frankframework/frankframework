@@ -422,9 +422,14 @@ public class Parameter implements INamedObject, IWithParameters {
 	}
 
 	private String hide(String string) {
-		String hiddenString = "";
-		for (int i = 0; i < string.toString().length(); i++) {
-			hiddenString = hiddenString + "*";
+		String hiddenString;
+		if (string == null) {
+			hiddenString = null;
+		} else {
+			hiddenString = "";
+			for (int i = 0; i < string.toString().length(); i++) {
+				hiddenString = hiddenString + "*";
+			}
 		}
 		return hiddenString;
 	}
