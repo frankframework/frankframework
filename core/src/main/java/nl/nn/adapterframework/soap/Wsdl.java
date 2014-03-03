@@ -69,7 +69,6 @@ public class Wsdl {
 
     private boolean indent = true;
     private boolean useIncludes = false;
-    private String bindingNamespacePrefix = "ibis";
 
     private final String name;
     private final String filename;
@@ -84,6 +83,7 @@ public class Wsdl {
     private LinkedHashMap<XSD, String> prefixByXsd;
     private LinkedHashMap<String, String> namespaceByPrefix;
 
+    private String wsdlNamespacePrefix = "ibis";
     private String wsdlInputMessageName = "PipeLineInput";
     private String wsdlOutputMessageName = "PipeLineOutput";
     private String wsdlPortTypeName = "PipeLine";
@@ -281,12 +281,20 @@ public class Wsdl {
         this.useIncludes = useIncludes;
     }
 
-    public String getBindingNamespacePrefix() {
-        return bindingNamespacePrefix;
+    public String getWsdlNamespacePrefix() {
+        return wsdlNamespacePrefix;
     }
 
-    public void setBindingNamespacePrefix(String bindingNamespacePrefix) {
-        this.bindingNamespacePrefix = bindingNamespacePrefix;
+    public void setWsdlNamespacePrefix(String wsdlNamespacePrefix) {
+        this.wsdlNamespacePrefix = wsdlNamespacePrefix;
+    }
+
+    public String getWsdlInputMessageName() {
+        return wsdlInputMessageName;
+    }
+
+    public void setWsdlInputMessageName(String wsdlInputMessageName) {
+        this.wsdlInputMessageName = wsdlInputMessageName;
     }
 
     public Wsdl init() throws IOException, XMLStreamException {
@@ -406,7 +414,7 @@ public class Wsdl {
         } else {
             w.setPrefix("jms",  SOAP_JMS);
         }
-        w.setPrefix(getBindingNamespacePrefix(), getTargetNamespace());
+        w.setPrefix(getWsdlNamespacePrefix(), getTargetNamespace());
         for (String prefix: namespaceByPrefix.keySet()) {
             w.setPrefix(prefix, namespaceByPrefix.get(prefix));
         }
@@ -417,7 +425,7 @@ public class Wsdl {
             if (esbSoap) {
                 w.writeNamespace("jndi", ESB_SOAP_JNDI);
             }
-            w.writeNamespace(getBindingNamespacePrefix(), getTargetNamespace());
+            w.writeNamespace(getWsdlNamespacePrefix(), getTargetNamespace());
             for (String prefix: namespaceByPrefix.keySet()) {
                 w.writeNamespace(prefix, namespaceByPrefix.get(prefix));
             }
@@ -509,10 +517,10 @@ public class Wsdl {
             w.writeStartElement(WSDL, "operation");
             w.writeAttribute("name", wsdlOperationName); {
                 w.writeEmptyElement(WSDL, "input");
-                w.writeAttribute("message", getBindingNamespacePrefix() + ":" + wsdlInputMessageName);
+                w.writeAttribute("message", getWsdlNamespacePrefix() + ":" + wsdlInputMessageName);
                 if (outputValidator != null) {
                     w.writeEmptyElement(WSDL, "output");
-                    w.writeAttribute("message", getBindingNamespacePrefix() + ":" + wsdlOutputMessageName);
+                    w.writeAttribute("message", getWsdlNamespacePrefix() + ":" + wsdlOutputMessageName);
                 }
             }
             w.writeEndElement();
@@ -554,7 +562,7 @@ public class Wsdl {
     protected void httpBinding(XMLStreamWriter w) throws XMLStreamException, IOException {
         w.writeStartElement(WSDL, "binding");
         w.writeAttribute("name", "SoapBinding");
-        w.writeAttribute("type", getBindingNamespacePrefix() + ":" + wsdlPortTypeName); {
+        w.writeAttribute("type", getWsdlNamespacePrefix() + ":" + wsdlPortTypeName); {
             w.writeEmptyElement(SOAP_WSDL, "binding");
             w.writeAttribute("transport", SOAP_HTTP);
             w.writeAttribute("style", "document");
@@ -598,7 +606,7 @@ public class Wsdl {
             w.writeEmptyElement(SOAP_WSDL, "header");
             w.writeAttribute("part", getIbisName(tags.iterator().next()));
             w.writeAttribute("use",     "literal");
-            w.writeAttribute("message", getBindingNamespacePrefix() + ":" + wsdlMessageName);
+            w.writeAttribute("message", getWsdlNamespacePrefix() + ":" + wsdlMessageName);
         }
     }
 
@@ -624,7 +632,7 @@ public class Wsdl {
     protected void jmsBinding(XMLStreamWriter w) throws XMLStreamException, IOException {
         w.writeStartElement(WSDL, "binding");
         w.writeAttribute("name", "SoapBinding");
-        w.writeAttribute("type", getBindingNamespacePrefix() + ":" + wsdlPortTypeName); {
+        w.writeAttribute("type", getWsdlNamespacePrefix() + ":" + wsdlPortTypeName); {
             w.writeEmptyElement(SOAP_WSDL, "binding");
             w.writeAttribute("style", "document");
             if (esbSoap) {
@@ -654,7 +662,7 @@ public class Wsdl {
         w.writeAttribute("name", WsdlUtils.getNCName(getName())); {
             w.writeStartElement(WSDL, "port");
             w.writeAttribute("name", "SoapHttp");
-            w.writeAttribute("binding", getBindingNamespacePrefix() + ":SoapBinding"); {
+            w.writeAttribute("binding", getWsdlNamespacePrefix() + ":SoapBinding"); {
                 w.writeEmptyElement(SOAP_WSDL, "address");
                 w.writeAttribute("location", getLocation(servlet));
 
@@ -674,7 +682,7 @@ public class Wsdl {
             }
             w.writeStartElement(WSDL, "port");
             w.writeAttribute("name", "SoapJMS");
-            w.writeAttribute("binding", getBindingNamespacePrefix() + ":SoapBinding"); {
+            w.writeAttribute("binding", getWsdlNamespacePrefix() + ":SoapBinding"); {
                 w.writeEmptyElement(SOAP_WSDL, "address");
                 String destinationName = listener.getDestinationName();
                 if (destinationName != null) {
