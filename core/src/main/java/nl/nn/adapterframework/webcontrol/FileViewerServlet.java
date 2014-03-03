@@ -174,6 +174,14 @@ public class FileViewerServlet extends HttpServlet  {
 		}
 		if (type.equalsIgnoreCase("xml")) {
 			response.setContentType("application/xml");
+			String lastPart;
+			try {
+				File f= new File(filename);
+				lastPart=f.getName();
+			} catch (Throwable t) {
+				lastPart=filename;
+			}
+			response.setHeader("Content-Disposition","inline; filename=\""+lastPart+"\"");
 			LineNumberReader lnr;
 			if (filename.indexOf("_xml.log")>=0) {
 				Reader fileReader = new EncapsulatingReader(reader, log4j_prefix, log4j_postfix, true);
