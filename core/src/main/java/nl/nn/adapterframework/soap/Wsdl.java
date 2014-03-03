@@ -297,6 +297,14 @@ public class Wsdl {
         this.wsdlInputMessageName = wsdlInputMessageName;
     }
 
+    public String getWsdlOutputMessageName() {
+        return wsdlOutputMessageName;
+    }
+
+    public void setWsdlOutputMessageName(String wsdlOutputMessageName) {
+        this.wsdlOutputMessageName = wsdlOutputMessageName;
+    }
+
     public Wsdl init() throws IOException, XMLStreamException {
         init(false);
         return this;
