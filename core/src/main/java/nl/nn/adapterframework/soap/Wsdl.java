@@ -102,7 +102,11 @@ public class Wsdl {
     private List<String> warnings = new ArrayList<String>();
 
     public Wsdl(PipeLine pipeLine) {
-        this.pipeLine = pipeLine;
+    	this(pipeLine, null);
+    }
+
+    public Wsdl(PipeLine pipeLine, String defaultOperationName) {
+    	this.pipeLine = pipeLine;
         this.name = this.pipeLine.getAdapter().getName();
         if (this.name == null) {
             throw new IllegalArgumentException("The adapter '" + pipeLine.getAdapter() + "' has no name");
@@ -111,6 +115,12 @@ public class Wsdl {
         if (inputValidator == null) {
             throw new IllegalStateException("The adapter '" + getName() + "' has no input validator");
         }
+    	if (defaultOperationName != null) {
+    		wsdlInputMessageName = defaultOperationName + "_Input";
+    		wsdlOutputMessageName = defaultOperationName + "_Output";
+    		wsdlPortTypeName = defaultOperationName + "_PortType";
+    		wsdlOperationName = defaultOperationName;
+    	}
         outputValidator = (XmlValidator)pipeLine.getOutputValidator();
         String filename = name;
         AppConstants appConstants = AppConstants.getInstance();
@@ -287,14 +297,6 @@ public class Wsdl {
 
     public void setWsdlNamespacePrefix(String wsdlNamespacePrefix) {
         this.wsdlNamespacePrefix = wsdlNamespacePrefix;
-    }
-
-    public String getWsdlInputMessageName() {
-        return wsdlInputMessageName;
-    }
-
-    public void setWsdlInputMessageName(String wsdlInputMessageName) {
-        this.wsdlInputMessageName = wsdlInputMessageName;
     }
 
     public Wsdl init() throws IOException, XMLStreamException {
