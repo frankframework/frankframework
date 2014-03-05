@@ -35,7 +35,7 @@
 		</jar>
 	</target>
 	<!-- ================================================================== -->
-	<target name="javadoc" description="Create the javadoc documentation">
+	<target name="javadoc" description="Create the javadoc documentation" depends="init">
 		<property name="javadoc.dir" value="${build.dir}/api"/>
 		<delete dir="${javadoc.dir}"/>
 		<mkdir dir="${javadoc.dir}"/>
