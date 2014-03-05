@@ -40,6 +40,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setFilePattern(String) filePattern}</td><td>files that match this pattern will be deleted. Parameters of the pipe are applied to this pattern. If this attribute is not set, the input of the pipe is interpreted as the file to be removed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSubdirectories(boolean) subdirectories}</td><td>when <code>true</code>, files  in subdirectories will be deleted, too</td><td>false</td></tr>
  * <tr><td>{@link #setLastModifiedDelta(long) lastModifiedDelta}</td><td>time in milliseconds that must have passed at least before a file will be deleted</td><td>0</td></tr>
+ * <tr><td>{@link #setDeleteEmptySubdirectories(boolean) deleteEmptySubdirectories}</td><td>when <code>true</code>, empty subdirectories will be deleted, too</td><td>false</td></tr>
  * </table>
  * </p>
  * 
@@ -51,6 +52,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	private String filePattern;
 	private boolean subdirectories=false;
 	private long lastModifiedDelta=0;
+	private boolean deleteEmptySubdirectories=false;
 
 	private _FileFilter fileFilter = new _FileFilter();
 	private _DirFilter dirFilter = new _DirFilter();
@@ -75,8 +77,11 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 				for (Iterator fileIt = delFiles.iterator(); fileIt.hasNext();) {
 					File file = (File)fileIt.next();
 					String curfilename=file.getName();
-					file.delete();
-					log.info(getLogPrefix(session)+"deleted file ["+file.getAbsolutePath()+"]");
+					if (file.delete()) {
+						log.info(getLogPrefix(session)+"deleted file ["+file.getAbsolutePath()+"]");
+					} else {
+						log.warn(getLogPrefix(session)+"could not delete file ["+file.getAbsolutePath()+"]");
+					}
 				}
 			} else {
 				log.info(getLogPrefix(session)+"no files match pattern ["+filename+"]");
@@ -115,6 +120,16 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 			for (int i = 0; i < files.length; i++) {
 				getFilesForDeletion(result, files[i]);
 			}		
+
+			if (isDeleteEmptySubdirectories()) {
+				if (directory.isDirectory() && directory.list().length==0) {
+					if (directory.delete()) {
+						log.info("deleted empty directory ["+directory.getAbsolutePath()+"]");
+					} else {
+						log.warn("could not delete empty directory ["+directory.getAbsolutePath()+"]");
+					}
+				}
+			}
 		}
 	}
 
@@ -135,7 +150,6 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		}
 	}
 
-
 	public void setFilePattern(String string) {
 		filePattern = string;
 	}
@@ -155,5 +169,12 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	}
 	public boolean isSubdirectories() {
 		return subdirectories;
+	}
+
+	public void setDeleteEmptySubdirectories(boolean b) {
+		deleteEmptySubdirectories = b;
+	}
+	public boolean isDeleteEmptySubdirectories() {
+		return deleteEmptySubdirectories;
 	}
 }
