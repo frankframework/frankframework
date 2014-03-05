@@ -15,11 +15,14 @@
 */
 package nl.nn.adapterframework.jms;
 
+import java.util.Iterator;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.BeanMap;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 /**
@@ -79,24 +82,30 @@ public class JmsRealm {
     }
 
 	/**
- 	 * copies matching properties to any other class
- 	 */ 
+	 * copies matching properties to any other class
+	 */
 	public void copyRealm(Object destination) {
-		
 		String logPrefixDest=destination.getClass().getName()+" ";
-		
 		if (destination instanceof INamedObject) {
 			INamedObject namedDestination = (INamedObject) destination;
 			logPrefixDest += "["+namedDestination.getName()+"] ";
 		}
-
-	    try {
-		    PropertyUtils.copyProperties(destination, this);
-	    }catch (Exception e) {
+		try {
+			BeanMap thisBeanMap = new BeanMap(this);
+			BeanMap destinationBeanMap = new BeanMap(destination);
+			Iterator<String> iterator = thisBeanMap.keyIterator();
+			while (iterator.hasNext()) {
+				String key = iterator.next();
+				Object value = thisBeanMap.get(key);
+				if (value != null && !key.equals("class") && destinationBeanMap.containsKey(key)) {
+					PropertyUtils.setProperty(destination, key, value);
+				}
+			}
+		}catch (Exception e) {
 			log.error(logPrefixDest+"unable to copy properties of JmsRealm", e);
 		}
-		log.info(logPrefixDest+"loaded properties from jmsRealm ["+toString()+"]");				    
-    }
+		log.info(logPrefixDest+"loaded properties from jmsRealm ["+toString()+"]");
+	}
 
  	/**
  	 * copies matching properties from a JmsRealm to any other class
