@@ -86,6 +86,14 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 			} else {
 				log.info(getLogPrefix(session)+"no files match pattern ["+filename+"]");
 			}
+
+			if (isDeleteEmptySubdirectories()) {
+				File file = new File(filename);
+				if (file.exists()) {
+					deleteEmptySubdirectories(getLogPrefix(session), file, 0);
+				}
+			}
+			
 			return new PipeRunResult(getForward(), input);
 		}
 		catch(Exception e) {
@@ -120,16 +128,24 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 			for (int i = 0; i < files.length; i++) {
 				getFilesForDeletion(result, files[i]);
 			}		
+		}
+	}
 
-			if (isDeleteEmptySubdirectories()) {
-				if (directory.isDirectory() && directory.list().length==0) {
-					if (directory.delete()) {
-						log.info("deleted empty directory ["+directory.getAbsolutePath()+"]");
-					} else {
-						log.warn("could not delete empty directory ["+directory.getAbsolutePath()+"]");
-					}
+	private void deleteEmptySubdirectories(String logPrefix, File directory, int level) {
+		if (directory.isDirectory()) {
+			File[] dirs = directory.listFiles(dirFilter);
+			for (int i = 0; i < dirs.length; i++) {
+				deleteEmptySubdirectories(logPrefix, dirs[i], level+1);
+			}
+			if (level>0 && directory.list().length==0) {
+				if (directory.delete()) {
+					log.info(logPrefix+"deleted empty directory ["+directory.getAbsolutePath()+"]");
+				} else {
+					log.warn(logPrefix+"could not delete empty directory ["+directory.getAbsolutePath()+"]");
 				}
 			}
+		} else {
+			log.warn(logPrefix+"file ["+directory.getAbsolutePath()+"] is not a directory, cannot delete subdirectories");
 		}
 	}
 
