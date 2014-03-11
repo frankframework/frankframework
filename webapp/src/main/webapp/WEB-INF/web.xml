@@ -24,7 +24,7 @@
 		</init-param>
 		<init-param>
 			<param-name>allowedPaths</param-name>
-			<param-value>/index.jsp /showConfigurationStatus.do /showConfiguration.do /configHandler.do /showAdapterStatistics.do /showTracingConfiguration.do /showLogging.do /browseQueue.do /browseQueueExecute.do /browseJdbcTable.do /showSchedulerStatus.do /FileViewerServlet /DumpIbisConsole /showEnvironmentVariables.do /browser.do /showSecurityItems.do /showMonitors.do /showEvents.do /editMonitor.do /editTrigger.do /showIbisstoreSummary.do /Download</param-value> 
+			<param-value>/index.jsp /showConfigurationStatus.do /showConfiguration.do /configHandler.do /showAdapterStatistics.do /showTracingConfiguration.do /showLogging.do /browseQueue.do /browseQueueExecute.do /browseJdbcTable.do /showSchedulerStatus.do /FileViewerServlet /DumpIbisConsole /showEnvironmentVariables.do /browser.do /showSecurityItems.do /showMonitors.do /showEvents.do /editMonitor.do /editTrigger.do /showIbisstoreSummary.do /Download /testtool /jsp/view.jsp /servlet/rpcrouter</param-value>
 		</init-param>
 	</filter>
 	
