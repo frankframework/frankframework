@@ -3,7 +3,14 @@ Releases
 
 Upcoming:
 
-- 
+- Better support for Active Directory and other LdapSender improvements.
+    - Make "filter" on LDAP error/warning messages work for AD too.
+    - Added unicodePwd encoding.
+    - Added changeUnicodePwd operation.
+    - Added challenge operation to LdapSender (LdapChallengePipe has been deprecated).
+    - Made it possible to specify principal and credentials as parameters.
+    - Set errorSessionKey to errorReason by default.
+    - Cleaned debug logging code and exclude password from being logged.
 
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 

@@ -16,12 +16,15 @@
 package nl.nn.adapterframework.ldap;
 
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
+import javax.naming.Context;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -31,10 +34,12 @@ import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
@@ -71,25 +76,31 @@ import org.apache.commons.lang.StringUtils;
  * <li><code>deepSearch</code>: search for an entry in the complete tree below the specified root</li>
  * <li><code>getSubContexts</code>: get a list of the direct children of the specifed root</li>
  * <li><code>getTree</code>: get a copy of the complete tree below the specified root</li>
+ * <li><code>challenge</code>: check username and password against LDAP specifying principal and credential using parameters</li>
+ * <li><code>changeUnicodePwd</code>: typical user change-password operation (one of the two methods to modify the unicodePwd attribute in AD (http://support.microsoft.com/kb/263991))</li>
  * </ul></td><td>read</td></tr>
  * <tr><td>{@link #setManipulationSubject(String) manipulationSubject}</td><td>specifies subject to perform operation on. Must be one of 'enrty' or 'attribute'</td><td>attribute</td></tr>
- * <tr><td>{@link #setErrorSessionKey(String) errorSessionKey}</td><td>key of session variable used to store cause of errors</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setErrorSessionKey(String) errorSessionKey}</td><td>key of session variable used to store cause of errors</td><td>errorReason</td></tr>
  * <tr><td>{@link #setSearchTimeout(int) searchTimeout}</td><td>specifies the time (in ms) that is spent searching for results for operation Search</td><td>20000 ms</td></tr>
- * <tr><td>{@link #setUsePooling(boolean) usePooling}</td><td>specifies whether connection pooling is used or not</td><td>true</td></tr>
+ * <tr><td>{@link #setUsePooling(boolean) usePooling}</td><td>specifies whether connection pooling is used or not</td><td>true when principal not set as parameter, false otherwise</td></tr>
  * <tr><td>{@link #setInitialContextFactoryName(String) initialContextFactoryName}</td><td>class to use as initial context factory</td><td>com.sun.jndi.ldap.LdapCtxFactory</td></tr>
  * <tr><td>{@link #setAttributesToReturn(String) attributesToReturn}</td>  <td>comma separated list of attributes to return. when no are attributes specified, all the attributes from the object read are returned.</td><td><i>all attributes</i></td></tr>
  * <tr><td>{@link #setMaxEntriesReturned(int) maxEntriesReturned}</td>  <td>The maximum number of entries to be returned by a search query, or 0 for unlimited</td><td><i>0 (unlimited)</i></td></tr>
+ * <tr><td>{@link #setUnicodePwd(boolean) unicodePwd}</td>  <td>When true the attributes passed by the input xml are scanned for an attribute with id unicodePwd, when found the value of this attribute will be encoded as required by Active Directory (a UTF-16 encoded Unicode string containing the password surrounded by quotation marks) before sending it to the LDAP server</td><td>false</td></tr>
  * <tr><td>{@link #setJndiAuthAlias(String) jndiAuthAlias}</td><td>Authentication alias, may be used to override principal and credential-settings</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
- * If there is only one parameter in the configaration of the pipe it will represent entryName (RDN) of interest.
- * The name of the parameter MUST be entryName (since version 4.6.0).
- * <p> 
- * If there are more then one parameter then the names are compulsory, in the following manner:
- * <ul>
- * <li>Object of interest must have the name [entryName] and must be present</li>
- * <li>filter expression (handy with searching - see RFC2254) - must have the name [filterExpression]</li>
- * </ul>
+ * 
+ * <p>
+ * <b>Parameters:</b>
+ * <table border="1">
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr><td>entryName</td><td>Represents entryName (RDN) of interest.</td></tr>
+ * <tr><td>filterExpression</td><td>Filter expression (handy with searching - see RFC2254).</td></tr>
+ * <tr><td>principal</td><td>Will overwrite jndiAuthAlias, principal and credential attributes together with parameter credentials which is expected to be present too. This will also have the effect of usePooling being set to false and the LDAP connection being made at runtime only (skipped at configuration time).</td></tr>
+ * <tr><td>credentials</td><td>See parameter principal. It's advised to set attribute hidden to true for parameter credentials.</td></tr>
+ * </table>
+ * </p>
  * 
  * <p>
  * current requirements for input and configuration
@@ -110,7 +121,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>delete</td><td>
  * <ul>
  * 	  <li>parameter 'entryName', resolving to RDN of entry to delete</li>
- * 	  <li>no specific inputmessage required</li>
+ * 	  <li>when manipulationSubject is set to attribute: xml-inputmessage containing attributes to be deleted</li>
  * </ul>
  * </td></tr>
  * <tr><td>getTree</td><td>
@@ -143,6 +154,19 @@ import org.apache.commons.lang.StringUtils;
  * <ul>
  * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
  * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
+ * </ul>
+ * </td></tr>
+ * <tr><td>challenge</td><td>
+ * <ul>
+ * 	  <li>parameter 'principal', resolving to RDN of user who's password should be verified</li>
+ * 	  <li>parameter 'credentials', password to verify</li>
+ * </ul>
+ * </td></tr>
+ * <tr><td>changeUnicodePwd</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of user who's password should be changed</li>
+ * 	  <li>parameter 'oldPassword', current password, will be encoded as required by Active Directory (a UTF-16 encoded Unicode string containing the password surrounded by quotation marks) before sending it to the LDAP server. It's advised to set attribute hidden to true for parameter.</li>
+ * 	  <li>parameter 'newPassword', new password, will be encoded as required by Active Directory (a UTF-16 encoded Unicode string containing the password surrounded by quotation marks) before sending it to the LDAP server. It's advised to set attribute hidden to true for parameter.</li>
  * </ul>
  * </td></tr>
  * </table>
@@ -236,7 +260,7 @@ import org.apache.commons.lang.StringUtils;
  * </ul>
  *  
  * @author Gerrit van Brakel
- * 
+ * @author Jaco de Groot
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
@@ -257,6 +281,8 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	public static final String OPERATION_DEEP_SEARCH = "deepSearch";
 	public static final String OPERATION_SUB_CONTEXTS = "getSubContexts";
 	public static final String OPERATION_GET_TREE = "getTree";
+	public static final String OPERATION_CHALLENGE = "challenge";
+	public static final String OPERATION_CHANGE_UNICODE_PWD = "changeUnicodePwd";
 
 	public static final String MANIPULATION_ENTRY = "entry";
 	public static final String MANIPULATION_ATTRIBUTE = "attribute";
@@ -266,11 +292,13 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	private static final String DEFAULT_RESULT_READ = "<LdapResult>No such object</LdapResult>";
 			
 	private static final String DEFAULT_RESULT_DELETE = "<LdapResult>Delete Success - Never Existed</LdapResult>";
-	private static final String DEFAULT_RESULT_CREATE_OK= "<LdapResult>Create Success - Already There</LdapResult>";
-	private static final String DEFAULT_RESULT_CREATE_NOK= "<LdapResult>Create FAILED - Entry with given name already exists</LdapResult>";
-	private static final String DEFAULT_RESULT_UPDATE_NOK= "<LdapResult>Update FAILED</LdapResult>";
-		
-		
+	private static final String DEFAULT_RESULT_CREATE_OK = "<LdapResult>Create Success - Already There</LdapResult>";
+	private static final String DEFAULT_RESULT_CREATE_NOK = "<LdapResult>Create FAILED - Entry with given name already exists</LdapResult>";
+	private static final String DEFAULT_RESULT_UPDATE_NOK = "<LdapResult>Update FAILED</LdapResult>";
+	private static final String DEFAULT_RESULT_CHALLENGE_OK = DEFAULT_RESULT;
+	private static final String DEFAULT_RESULT_CHALLENGE_NOK = "<LdapResult>Challenge FAILED - Invalid credentials</LdapResult>";
+	private static final String DEFAULT_RESULT_CHANGE_UNICODE_PWD_OK = DEFAULT_RESULT;
+	private static final String DEFAULT_RESULT_CHANGE_UNICODE_PWD_NOK = "<LdapResult>Change unicodePwd FAILED - Invalid old and/or new password</LdapResult>";
 
 	private String name;
 	private String operation = OPERATION_READ;
@@ -278,13 +306,14 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	private String ldapProviderURL;
 	private String attributesToReturn;
 	private boolean usePooling=true;
-	private String errorSessionKey=null;
+
+	private String errorSessionKey="errorReason";
 	private int maxEntriesReturned=0;
+	private boolean unicodePwd = false;
 
 	protected ParameterList paramList = null;
+	private boolean principalParameterFound = false;
 	private Hashtable jndiEnv=null;
-	
-//	private TransformerPool entryNameExtractor=null;
 
 	public LdapSender() {
 		super();
@@ -292,7 +321,8 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 
 	public void configure() throws ConfigurationException {
-		if (paramList == null || !entryNameParameterPresent()) {
+		if (paramList == null ||
+				(paramList.findParameter(ENTRYNAME) == null && !getOperation().equals(OPERATION_CHALLENGE))) {
 			throw new ConfigurationException("[" + getName()+ "] Required parameter with the name [entryName] not found!");
 		}
 		paramList.configure();
@@ -305,7 +335,9 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				|| getOperation().equals(OPERATION_UPDATE)
 				|| getOperation().equals(OPERATION_DELETE)
 				|| getOperation().equals(OPERATION_SUB_CONTEXTS)
-				|| getOperation().equals(OPERATION_GET_TREE))) {
+				|| getOperation().equals(OPERATION_GET_TREE)
+				|| getOperation().equals(OPERATION_CHALLENGE)
+				|| getOperation().equals(OPERATION_CHANGE_UNICODE_PWD))) {
 			throw new ConfigurationException("attribute opereration ["	+ getOperation()
 												+ "] must be one of ("
 												+ OPERATION_READ+ ","
@@ -315,7 +347,9 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 												+ OPERATION_SEARCH+ ","
 												+ OPERATION_DEEP_SEARCH+ ","
 												+ OPERATION_SUB_CONTEXTS+ ","
-												+ OPERATION_GET_TREE+ ")");
+												+ OPERATION_GET_TREE+ ","
+												+ OPERATION_CHALLENGE+ ","
+												+ OPERATION_CHANGE_UNICODE_PWD+ ")");
 		}
 		if (getOperation().equals(OPERATION_CREATE)
 			|| getOperation().equals(OPERATION_DELETE)) {
@@ -329,55 +363,48 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				throw new ConfigurationException("["+ getClass().getName()	+ "] manipulationSubject invalid for update operation (must be ['"
 						+ MANIPULATION_ATTRIBUTE	+ "'], which is default - remove from <pipe>)");
 		}
-//		if(attributesToReturn != null) setAttribubtesParameter();
-//		if (StringUtils.isNotEmpty(getDigesterRulesFile())) {
-//			try {
-//				rulesURL = ClassUtils.getResourceURL(this, getDigesterRulesFile());
-//				DigesterLoader.createDigester(rulesURL);
-//				// load rules to check if they can be loaded when needed
-//			} catch (Exception e) {
-//				throw new ConfigurationException("["+ getClass().getName()	+ "] Digester rules file ["	+ getDigesterRulesFile() + "] not found", e);
-//			}
-//		}
-
-//		fillSyntax();
-
-		DirContext dirContext=null;
-		try {
-			dirContext = getDirContext();
-		} catch (Exception e) {
-			throw new ConfigurationException("["+ getClass().getName() + "] Context could not be found ", e);
-		} finally {
-			if (dirContext!=null) {
-				try {
-					dirContext.close();
-				} catch (NamingException e) {
-					log.warn("["+ getClass().getName() + "] Context could not be closed", e);
-				}
+		if (getOperation().equals(OPERATION_CHALLENGE)) {
+			if (paramList.findParameter("principal") == null)
+				throw new ConfigurationException("principal should be specified using a parameter when using operation challenge");
+		}
+		Parameter credentials = paramList.findParameter("credentials");
+		if (credentials != null && !credentials.isHidden()) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			configWarnings.add(log, "It's advised to set attribute hidden to true for parameter credentials.");
+		}
+		Parameter oldPassword = paramList.findParameter("oldPassword");
+		if (oldPassword != null && !oldPassword.isHidden()) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			configWarnings.add(log, "It's advised to set attribute hidden to true for parameter oldPassword.");
+		}
+		Parameter newPassword = paramList.findParameter("newPassword");
+		if (newPassword != null && !newPassword.isHidden()) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			configWarnings.add(log, "It's advised to set attribute hidden to true for parameter newPassword.");
+		}
+		if (paramList.findParameter("principal") != null) {
+			if (paramList.findParameter("credentials") == null) {
+				throw new ConfigurationException("principal set as parameter, but no credentials parameter found");
+			}
+			principalParameterFound = true;
+			setUsePooling(false);
+		} else {
+			DirContext dirContext=null;
+			try {
+				dirContext = getDirContext(null);
+			} catch (Exception e) {
+				throw new ConfigurationException("["+ getClass().getName() + "] Context could not be found ", e);
+			} finally {
+				closeDirContext(dirContext);
 			}
 		}
 	}
 
-	/**
-	 * Checks if the param with the name entryName is present. This param represents the RDN of the object in de active directory.
-	 */
-	private boolean entryNameParameterPresent() {
-		
-		boolean result = false;
-		
-		Iterator it = paramList.iterator();
-		while (it.hasNext())
-		{
-			Parameter p = (Parameter)it.next();
-			if (p.getName().equals(ENTRYNAME)) {
-				result = true;
-				break;
-			}
+	public void storeLdapException(Throwable t, ParameterResolutionContext prc) {
+		IPipeLineSession pls = null;
+		if (prc != null) {
+			pls = prc.getSession();
 		}
-		return result;
-	}
-
-	public void storeLdapException(Throwable t, IPipeLineSession pls) {
 		if (StringUtils.isNotEmpty(getErrorSessionKey()) && pls!=null && t!=null) {
 			XmlBuilder ldapError=new XmlBuilder("ldapError");
 			ldapError.addAttribute("class",ClassUtils.nameOf(t));
@@ -493,173 +520,284 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 //		}
 //	}
 
-	private String performOperationRead(DirContext dirContext, String entryName, IPipeLineSession pls) throws SenderException {
+	private String performOperationRead(String entryName, ParameterResolutionContext prc, Map paramValueMap) throws SenderException, ParameterException {
+		DirContext dirContext = null;
 		try{
-			return attributesToXml(dirContext.getAttributes(entryName, getAttributesReturnedParameter())).toXML();				
+			dirContext = getDirContext(paramValueMap);
+			return attributesToXml(dirContext.getAttributes(entryName, getAttributesReturnedParameter())).toXML();
 		} catch(NamingException e) {
-			storeLdapException(e,pls);
-			if(	e.getMessage().startsWith("[LDAP: error code 32 - No Such Object") ) {
+			// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
+			//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations. 
+			// Sun:
+			//   [LDAP: error code 32 - No Such Object...
+			if(e.getMessage().startsWith("[LDAP: error code 32 - ") ) {
 				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] found nothing - no such entryName: " + entryName);
 				return DEFAULT_RESULT_READ;	
 			} else {
+				storeLdapException(e, prc);
 				throw new SenderException("Exception in operation [" + getOperation()+ "] entryName=["+entryName+"]", e);	
 			}
+		} finally {
+			closeDirContext(dirContext);
 		}
 	}
 
-	private String performOperationUpdate(DirContext dirContext, String entryName, IPipeLineSession pls, Attributes attrs) throws SenderException {
+	private String performOperationUpdate(String entryName, ParameterResolutionContext prc, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
 		if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
 			NamingEnumeration na = attrs.getAll();
 			while(na.hasMoreElements()) {
 				Attribute a = (Attribute)na.nextElement();
+				log.debug("Update attribute: " + a.getID());
 				NamingEnumeration values;
 				try {
 					values = a.getAll();
 				} catch (NamingException e1) {
-					storeLdapException(e1,pls);
+					storeLdapException(e1, prc);
 					throw new SenderException("cannot obtain values of Attribute ["+a.getID()+"]",e1);
 				}
 				while(values.hasMoreElements()) {
 					Attributes partialAttrs = new BasicAttributes();
-					Attribute singleValuedAttribute = new BasicAttribute(a.getID(),values.nextElement());
+					Attribute singleValuedAttribute;
+					String id = a.getID();
+					Object value = values.nextElement();
+					if (log.isDebugEnabled()) {
+						if (id.toLowerCase().contains("password") || id.toLowerCase().contains("pwd")) {
+							log.debug("Update value: ***");
+						} else {
+							log.debug("Update value: " + value);
+						}
+					}
+					if (unicodePwd && "unicodePwd".equalsIgnoreCase(id)) {
+						singleValuedAttribute = new BasicAttribute(id, encodeUnicodePwd(value));
+					} else {
+						singleValuedAttribute = new BasicAttribute(id, value);
+					}
 					partialAttrs.put(singleValuedAttribute);
+					DirContext dirContext = null;
 					try {
+						dirContext = getDirContext(paramValueMap);
 						dirContext.modifyAttributes(entryName,	DirContext.REPLACE_ATTRIBUTE, partialAttrs);
 					} catch(NamingException e) {
-						storeLdapException(e,pls);
 						String msg;
-						if (e.getMessage().startsWith("[LDAP: error code 32 - No Such Object") ) {
+						// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
+						//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations. 
+						// Sun:
+						//   [LDAP: error code 32 - No Such Object...
+						if (e.getMessage().startsWith("[LDAP: error code 32 - ")) {
 							msg="Operation [" + getOperation()+ "] failed - wrong entryName ["+ entryName+"]";	
 						} else {
 							msg="Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]";									
 						}
 						//result = DEFAULT_RESULT_UPDATE_NOK;
+						storeLdapException(e, prc);
 						throw new SenderException(msg,e);
+					} finally {
+						closeDirContext(dirContext);
 					}
 				}
 			}
 			return DEFAULT_RESULT;
 		} else {
+			DirContext dirContext = null;
 			try {
+				dirContext = getDirContext(paramValueMap);
 				//dirContext.rename(newEntryName, oldEntryName);
 				//result = DEFAULT_RESULT;
 				dirContext.rename(entryName, entryName);
 				return "<LdapResult>Deze functionaliteit is nog niet beschikbaar - naam niet veranderd.</LdapResult>";
 			} catch (NamingException e) {
-				storeLdapException(e,pls);
-				log.error("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
-				if(!e.getMessage().startsWith("[LDAP: error code 68 - Entry Already Exists]")) {
+				// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
+				//   68 LDAP_ALREADY_EXISTS Indicates that the add operation attempted to add an entry that already exists, or that the modify operation attempted to rename an entry to the name of an entry that already exists.
+				// Sun:
+				//   [LDAP: error code 68 - Entry Already Exists]
+				if(!e.getMessage().startsWith("[LDAP: error code 68 - ")) {
+					storeLdapException(e, prc);
 					throw new SenderException(e);
 				}
 				return DEFAULT_RESULT_CREATE_NOK;
+			} finally {
+				closeDirContext(dirContext);
 			}
 		}
 	}
 
-	private String performOperationCreate(DirContext dirContext, String entryName, IPipeLineSession pls, Attributes attrs) throws SenderException {
+	private String performOperationCreate(String entryName, ParameterResolutionContext prc, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
 		if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
 			String result=null;
 			NamingEnumeration na = attrs.getAll();
-			while(na.hasMoreElements())
-			{
+			while(na.hasMoreElements()) {
 				Attribute a = (Attribute)na.nextElement();
+				log.debug("Create attribute: " + a.getID());
 				NamingEnumeration values;
 				try {
 					values = a.getAll();
 				} catch (NamingException e1) {
-					storeLdapException(e1,pls);
+					storeLdapException(e1, prc);
 					throw new SenderException("cannot obtain values of Attribute ["+a.getID()+"]",e1);
 				}
-				while(values.hasMoreElements())
-				{
+				while(values.hasMoreElements()) {
 					Attributes partialAttrs = new BasicAttributes();
-					Attribute singleValuedAttribute = new BasicAttribute(a.getID(),values.nextElement());
+					Attribute singleValuedAttribute;
+					String id = a.getID();
+					Object value = values.nextElement();
+					if (log.isDebugEnabled()) {
+						if (id.toLowerCase().contains("password") || id.toLowerCase().contains("pwd")) {
+							log.debug("Create value: ***");
+						} else {
+							log.debug("Create value: " + value);
+						}
+					}
+					if (unicodePwd && "unicodePwd".equalsIgnoreCase(id)) {
+						singleValuedAttribute = new BasicAttribute(id, encodeUnicodePwd(value));
+					} else {
+						singleValuedAttribute = new BasicAttribute(id, value);
+					}
 					partialAttrs.put(singleValuedAttribute);
-					try{
-						dirContext.modifyAttributes(entryName,	DirContext.ADD_ATTRIBUTE, partialAttrs);
-					}catch(NamingException e){
-						if(	e.getMessage().startsWith("[LDAP: error code 20 - Attribute Or Value Exists]") )
-						{
+					DirContext dirContext = null;
+					try {
+						dirContext = getDirContext(paramValueMap);
+						dirContext.modifyAttributes(entryName, DirContext.ADD_ATTRIBUTE, partialAttrs);
+					} catch(NamingException e){
+						// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
+						//   20 LDAP_TYPE_OR_VALUE_EXISTS Indicates that the attribute value specified in a modify or add operation already exists as a value for that attribute.
+						// Sun:
+						//   [LDAP: error code 20 - Attribute Or Value Exists]
+						if (e.getMessage().startsWith("[LDAP: error code 20 - ")) {
 							if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());	
 							result = DEFAULT_RESULT_CREATE_OK;
-						}
-						else{		
-							storeLdapException(e,pls);
+						} else {
+							storeLdapException(e, prc);
 							throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e );
 						}
+					} finally {
+						closeDirContext(dirContext);
 					}
 				}
 			}
 			if (result!=null) {
 				return result;
 			} 
-			return DEFAULT_RESULT;		
+			return DEFAULT_RESULT;
 		} else {
+			DirContext dirContext = null;
 			try {
+				if (unicodePwd) {
+					Enumeration enumeration = attrs.getIDs();
+					while (enumeration.hasMoreElements()) {
+						String id = (String)enumeration.nextElement();
+						if ("unicodePwd".equalsIgnoreCase(id)) {
+							Attribute attr = attrs.get(id);
+							for (int i = 0; i < attr.size(); i++) {
+								attr.set(i, encodeUnicodePwd(attr.get(i)));
+							}
+						} 
+					}
+				}
+				dirContext = getDirContext(paramValueMap);
 				dirContext.bind(entryName, null, attrs);
 				return DEFAULT_RESULT;
 			} catch (NamingException e) {
-				storeLdapException(e,pls);
 				// if (log.isDebugEnabled()) log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
 				if (log.isDebugEnabled()) log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]: "+ e.getMessage());
-				if(e.getMessage().startsWith("[LDAP: error code 68 - Entry Already Exists]")) {
+				// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
+				//   68 LDAP_ALREADY_EXISTS Indicates that the add operation attempted to add an entry that already exists, or that the modify operation attempted to rename an entry to the name of an entry that already exists.
+				// Sun:
+				//   [LDAP: error code 68 - Entry Already Exists]
+				if(e.getMessage().startsWith("[LDAP: error code 68 - ")) {
 					return DEFAULT_RESULT_CREATE_OK;
 				} else {
+					storeLdapException(e, prc);
 					throw new SenderException(e);
 				}
+			} finally {
+				closeDirContext(dirContext);
 			}
 		}
 		
 	}
 	
-	private String performOperationDeleteAttributes(DirContext dirContext, String entryName, IPipeLineSession pls, Attributes attrs) throws SenderException {
-		NamingEnumeration na = attrs.getAll();
-		String result=null;
-		while(na.hasMoreElements()) {
-			Attribute a = (Attribute)na.nextElement();
-			NamingEnumeration values;
-			try {
-				values = a.getAll();
-			} catch (NamingException e1) {
-				storeLdapException(e1,pls);
-				throw new SenderException("cannot obtain values of Attribute ["+a.getID()+"]",e1);
-			}
-			while(values.hasMoreElements()) {
-				Attributes partialAttrs = new BasicAttributes();
-				Attribute singleValuedAttribute = new BasicAttribute(a.getID(),values.nextElement());
-				partialAttrs.put(singleValuedAttribute);
+	private String performOperationDelete(String entryName, ParameterResolutionContext prc, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
+		if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
+			String result=null;
+			NamingEnumeration na = attrs.getAll();
+			while(na.hasMoreElements()) {
+				Attribute a = (Attribute)na.nextElement();
+				log.debug("Delete attribute: " + a.getID());
+				NamingEnumeration values;
 				try {
-					dirContext.modifyAttributes(entryName,	DirContext.REMOVE_ATTRIBUTE, partialAttrs);
-				} catch(NamingException e) {
-					if(	e.getMessage().startsWith("[LDAP: error code 16 - No Such Attribute") ||
-						e.getMessage().startsWith("[LDAP: error code 32 - No Such Object")) 
-					{
-						if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
-						result = DEFAULT_RESULT_DELETE;
+					values = a.getAll();
+				} catch (NamingException e1) {
+					storeLdapException(e1, prc);
+					throw new SenderException("cannot obtain values of Attribute ["+a.getID()+"]",e1);
+				}
+				while(values.hasMoreElements()) {
+					Attributes partialAttrs = new BasicAttributes();
+					Attribute singleValuedAttribute;
+					String id = a.getID();
+					Object value = values.nextElement();
+					if (log.isDebugEnabled()) {
+						if (id.toLowerCase().contains("password") || id.toLowerCase().contains("pwd")) {
+							log.debug("Delete value: ***");
+						} else {
+							log.debug("Delete value: " + value);
+						}
+					}
+					if (unicodePwd && "unicodePwd".equalsIgnoreCase(id)) {
+						singleValuedAttribute = new BasicAttribute(id, encodeUnicodePwd(value));
 					} else {
-						storeLdapException(e,pls);
-						throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
+						singleValuedAttribute = new BasicAttribute(id, value);
+					}
+					partialAttrs.put(singleValuedAttribute);
+					DirContext dirContext = null;
+					try {
+						dirContext = getDirContext(paramValueMap);
+						dirContext.modifyAttributes(entryName,	DirContext.REMOVE_ATTRIBUTE, partialAttrs);
+					} catch(NamingException e) {
+						// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
+						//   16 LDAP_NO_SUCH_ATTRIBUTE Indicates that the attribute specified in the modify or compare operation does not exist in the entry.
+						//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations. 
+						// Sun:
+						//   [LDAP: error code 16 - No Such Attribute...
+						//   [LDAP: error code 32 - No Such Object...
+						// AD:
+						//   [LDAP: error code 16 - 00002085: AtrErr: DSID-03151F03, #1...
+						if (e.getMessage().startsWith("[LDAP: error code 16 - ")
+								|| e.getMessage().startsWith("[LDAP: error code 32 - ")) {
+							if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
+							result = DEFAULT_RESULT_DELETE;
+						} else {
+							storeLdapException(e, prc);
+							throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
+						}
+					} finally {
+						closeDirContext(dirContext);
 					}
 				}
 			}
-		}
-		if (result!=null) {
-			return result;
-		} 
-		return DEFAULT_RESULT;
-	}
-
-	private String performOperationDeleteEntry(DirContext dirContext, String entryName, IPipeLineSession pls) throws SenderException {
-		try {
-			dirContext.unbind(entryName);
+			if (result!=null) {
+				return result;
+			} 
 			return DEFAULT_RESULT;
-		} catch (NamingException e) {
-			storeLdapException(e,pls);
-			if(	e.getMessage().startsWith("[LDAP: error code 32 - No Such Object")) {
-				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
-				return DEFAULT_RESULT_DELETE;
-			} else {
-				throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
+		} else {
+			DirContext dirContext = null;
+			try {
+				dirContext = getDirContext(paramValueMap);
+				dirContext.unbind(entryName);
+				return DEFAULT_RESULT;
+			} catch (NamingException e) {
+				// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
+				//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations. 
+				// Sun:
+				//   [LDAP: error code 32 - No Such Object...
+				if (e.getMessage().startsWith("[LDAP: error code 32 - ")) {
+					if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
+					return DEFAULT_RESULT_DELETE;
+				} else {
+					storeLdapException(e, prc);
+					throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
+				}
+			} finally {
+				closeDirContext(dirContext);
 			}
 		}
 	}
@@ -674,31 +812,99 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 //		retobj - If true, return the object bound to the name of the entry; if false, do not return object.
 //		attrs - The identifiers of the attributes to return along with the entry. If null, return all attributes. If empty return no attributes.
 
-	private String performOperationSearch(DirContext dirContext, String entryName, IPipeLineSession pls, String filterExpression, int scope) throws SenderException {
+	private String performOperationSearch(String entryName, ParameterResolutionContext prc, Map paramValueMap, String filterExpression, int scope) throws SenderException, ParameterException {
 		int timeout=getSearchTimeout();
 		SearchControls controls = new SearchControls(scope, getMaxEntriesReturned(), timeout, 
 													 getAttributesReturnedParameter(), false, false);
 //		attrs = parseAttributesFromMessage(message);
+		DirContext dirContext = null;
 		try {
+			dirContext = getDirContext(paramValueMap);
 			return searchResultsToXml( dirContext.search(entryName, filterExpression, controls) ).toXML();
 		} catch (NamingException e) {
-			storeLdapException(e,pls);
+			storeLdapException(e, prc);
 			throw new SenderException("exception searching using filter ["+filterExpression+"]", e);
+		} finally {
+			closeDirContext(dirContext);
 		}
 	}
 
-	private String performOperationGetSubContexts(DirContext dirContext, String entryName, IPipeLineSession pls) throws SenderException {
-		String[] subs = getSubContextList(dirContext, entryName);
+	private String performOperationGetSubContexts(String entryName, ParameterResolutionContext prc, Map paramValueMap) throws SenderException, ParameterException {
+		DirContext dirContext = null;
 		try {
+			dirContext = getDirContext(paramValueMap);
+			String[] subs = getSubContextList(dirContext, entryName, prc);
 			return subContextsToXml(entryName, subs, dirContext).toXML();
 		} catch (NamingException e) {
-			storeLdapException(e,pls);
+			storeLdapException(e, prc);
 			throw new SenderException(e);
+		} finally {
+			closeDirContext(dirContext);
 		}
 	}
 		
-	private String performOperationGetTree(DirContext dirContext, String entryName, IPipeLineSession pls) throws SenderException {
-		return getTree(dirContext, entryName, pls).toXML();
+	private String performOperationGetTree(String entryName, ParameterResolutionContext prc, Map paramValueMap) throws SenderException, ParameterException {
+		DirContext dirContext = null;
+		try {
+			dirContext = getDirContext(paramValueMap);
+			return getTree(dirContext, entryName, prc, paramValueMap).toXML();
+		} finally {
+			closeDirContext(dirContext);
+		}
+	}
+
+	private String performOperationChallenge(String principal, ParameterResolutionContext prc, Map paramValueMap) throws SenderException, ParameterException {
+		DirContext dirContext = null;
+		try{
+			// Use loopkupDirContext instead of getDirContext to prevent
+			// NamingException (with error code 49) being converted to
+			// SenderException.
+			dirContext = loopkupDirContext(paramValueMap);
+			attributesToXml(dirContext.getAttributes(principal, getAttributesReturnedParameter())).toXML();
+			return DEFAULT_RESULT_CHALLENGE_OK;
+		} catch(NamingException e) {
+			// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
+			//   49 LDAP_INVALID_CREDENTIALS Indicates that during a bind operation one of the following occurred: The client passed either an incorrect DN or password, or the password is incorrect because it has expired, intruder detection has locked the account, or another similar reason. This is equivalent to AD error code 52e.
+			if(e.getMessage().startsWith("[LDAP: error code 49 - ") ) {
+				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] invalid credentials for: " + principal);
+				return DEFAULT_RESULT_CHALLENGE_NOK;	
+			} else {
+				storeLdapException(e, prc);
+				throw new SenderException("Exception in operation [" + getOperation()+ "] principal=["+principal+"]", e);	
+			}
+		} finally {
+			closeDirContext(dirContext);
+		}
+	}
+
+	private String performOperationChangeUnicodePwd(String entryName, ParameterResolutionContext prc, Map paramValueMap) throws SenderException, ParameterException {
+		ModificationItem[] modificationItems = new ModificationItem[2];
+		modificationItems[0] = new ModificationItem(
+				DirContext.REMOVE_ATTRIBUTE,
+				new BasicAttribute("unicodePwd", encodeUnicodePwd((String)paramValueMap.get("oldPassword"))));
+		modificationItems[1] = new ModificationItem(
+				DirContext.ADD_ATTRIBUTE,
+				new BasicAttribute("unicodePwd", encodeUnicodePwd((String)paramValueMap.get("newPassword"))));
+		DirContext dirContext = null;
+		try{
+			dirContext = getDirContext(paramValueMap);
+			dirContext.modifyAttributes(entryName, modificationItems);
+			return DEFAULT_RESULT_CHANGE_UNICODE_PWD_OK;
+		} catch(NamingException e) {
+			// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
+			//   19 LDAP_CONSTRAINT_VIOLATION Indicates that the attribute value specified in a modify, add, or modify DN operation violates constraints placed on the attribute. The constraint can be one of size or content (string only, no binary).
+			// AD:
+			//   [LDAP: error code 19 - 0000052D: AtrErr: DSID-03191041, #1...
+			if(e.getMessage().startsWith("[LDAP: error code 19 - ") ) {
+				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] old password doesn't match or new password doesn't comply with policy for: " + entryName);
+				return DEFAULT_RESULT_CHANGE_UNICODE_PWD_NOK;
+			} else {
+				storeLdapException(e, prc);
+				throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
+			}
+		} finally {
+			closeDirContext(dirContext);
+		}
 	}
 
 	/**
@@ -706,87 +912,54 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 *  
 	 * @return - Depending on operation, DEFAULT_RESULT or read/search result (always XML)
 	 */
-	public String performOperation( String message,	ParameterResolutionContext prc)
-		throws SenderException, ParameterException {
-		
-		String entryName=null;
-		
-		if (paramList!=null && prc!=null){
-			entryName = (String)prc.getValueMap(paramList).get("entryName");
+	public String performOperation(String message, ParameterResolutionContext prc)
+			throws SenderException, ParameterException {
+		Map paramValueMap = null;
+		String entryName = null;
+		if (paramList != null && prc != null){
+			paramValueMap = prc.getValueMap(paramList);
+			entryName = (String)paramValueMap.get("entryName");
 			if (log.isDebugEnabled()) log.debug("entryName=["+entryName+"]");
-		} else {
-//			try {
-//				entryName = entryNameExtractor.transform(message,null);
-//			} catch (Exception e) {
-//				throw new SenderException(e);
-//			}
 		}
-		
-		if (entryName == null || StringUtils.isEmpty(entryName)) {
+		if ((entryName == null || StringUtils.isEmpty(entryName))
+				&&  !getOperation().equals(OPERATION_CHALLENGE)) {
 			throw new SenderException("entryName must be defined through params, operation ["+ getOperation()+ "]");
 		}
-		IPipeLineSession pls=null;
-		if (prc!=null) {
-			pls=prc.getSession();
-		}
-		DirContext dirContext = getDirContext();
-
-		try {// **************** READ **************** 
-			if (getOperation().equals(OPERATION_READ)) {
-				return performOperationRead(dirContext,entryName,pls);
-			} // **************** UPDATE ****************  
-			else if (getOperation().equals(OPERATION_UPDATE)) {
-				return performOperationUpdate(dirContext,entryName,pls,parseAttributesFromMessage(message));
-			}// **************** CREATE **************** 
-			else if (getOperation().equals(OPERATION_CREATE)) {
-				return performOperationCreate(dirContext,entryName,pls,parseAttributesFromMessage(message));
-			}// **************** DELETE **************** 
-			else if (getOperation().equals(OPERATION_DELETE)) {
-				if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
-					return performOperationDeleteAttributes(dirContext,entryName,pls,parseAttributesFromMessage(message));
-				} else {
-					return performOperationDeleteEntry(dirContext,entryName,pls);
-				}
-			} // **************** SEARCH ****************			
-			else if (getOperation().equals(OPERATION_SEARCH)) {
-				return performOperationSearch(dirContext,entryName,pls,(String) prc.getValueMap(paramList).get(FILTER), SearchControls.ONELEVEL_SCOPE);
-			} // **************** DEEP_SEARCH ****************			
-			else if (getOperation().equals(OPERATION_DEEP_SEARCH)) {
-				return performOperationSearch(dirContext,entryName,pls,(String) prc.getValueMap(paramList).get(FILTER), SearchControls.SUBTREE_SCOPE);
-			} // **************** SUB_CONTEXTS ****************
-			else if (getOperation().equals(OPERATION_SUB_CONTEXTS)) {
-				return performOperationGetSubContexts(dirContext,entryName,pls);
-			} // **************** GET_TREE ****************
-			else if (getOperation().equals(OPERATION_GET_TREE)) {
-				return performOperationGetTree(dirContext,entryName,pls);
-			}
-			else {
-				throw new SenderException("unknown operation [" + getOperation() + "]");
-			}
-		} finally {
-			if (dirContext!=null) {
-				try {
-					dirContext.close();
-				} catch (NamingException e) {
-					log.warn("Exception closing DirContext",e);
-				}
-			}
+		if (getOperation().equals(OPERATION_READ)) {
+			return performOperationRead(entryName, prc, paramValueMap);
+		} else if (getOperation().equals(OPERATION_UPDATE)) {
+			return performOperationUpdate(entryName, prc, paramValueMap, parseAttributesFromMessage(message));
+		} else if (getOperation().equals(OPERATION_CREATE)) {
+			return performOperationCreate(entryName, prc, paramValueMap, parseAttributesFromMessage(message));
+		} else if (getOperation().equals(OPERATION_DELETE)) {
+			return performOperationDelete(entryName, prc, paramValueMap, parseAttributesFromMessage(message));
+		} else if (getOperation().equals(OPERATION_SEARCH)) {
+			return performOperationSearch(entryName, prc, paramValueMap, (String)paramValueMap.get(FILTER), SearchControls.ONELEVEL_SCOPE);
+		} else if (getOperation().equals(OPERATION_DEEP_SEARCH)) {
+			return performOperationSearch(entryName, prc, paramValueMap, (String)paramValueMap.get(FILTER), SearchControls.SUBTREE_SCOPE);
+		} else if (getOperation().equals(OPERATION_SUB_CONTEXTS)) {
+			return performOperationGetSubContexts(entryName, prc, paramValueMap);
+		} else if (getOperation().equals(OPERATION_GET_TREE)) {
+			return performOperationGetTree(entryName, prc, paramValueMap);
+		} else if (getOperation().equals(OPERATION_CHALLENGE)) {
+			return performOperationChallenge((String)paramValueMap.get("principal"), prc, paramValueMap);
+		} else if (getOperation().equals(OPERATION_CHANGE_UNICODE_PWD)) {
+			return performOperationChangeUnicodePwd(entryName, prc, paramValueMap);
+		} else {
+			throw new SenderException("unknown operation [" + getOperation() + "]");
 		}
 	}
-	
-	
-	
-	
+
 	/** 
 	 * Return xml element containing all of the subcontexts of the parent context with their attributes. 
 	 * @return tree xml.
 	 */ 
-	private XmlBuilder getTree(DirContext parentContext, String context, IPipeLineSession pls)
+	private XmlBuilder getTree(DirContext parentContext, String context, ParameterResolutionContext prc, Map paramValueMap)
 	{
 		XmlBuilder contextElem = new XmlBuilder("context");
 		contextElem.addAttribute("name", context);
 		
-		String[] subCtxList = getSubContextList(parentContext, context);
+		String[] subCtxList = getSubContextList(parentContext, context, prc);
 		try	{
 			if (subCtxList.length == 0) {
 				XmlBuilder attrs = attributesToXml(parentContext.getAttributes(context, getAttributesReturnedParameter()));
@@ -795,13 +968,13 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			else {
 				for (int i = 0; i < subCtxList.length; i++)
 				{
-					contextElem.addSubElement( getTree((DirContext)parentContext.lookup(context), subCtxList[i], pls) );
+					contextElem.addSubElement( getTree((DirContext)parentContext.lookup(context), subCtxList[i], prc, paramValueMap) );
 				}
 				contextElem.addSubElement( attributesToXml(parentContext.getAttributes(context, getAttributesReturnedParameter())));
 			}
 
 		} catch (NamingException e) {
-			storeLdapException(e,pls);
+			storeLdapException(e, prc);
 			log.error("Exception in operation [" + getOperation()+ "]: ", e);
 		}
 
@@ -832,7 +1005,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 * Return a list of all of the subcontexts of the current context, which is relative to parentContext. 
 	 * @return an array of Strings containing a list of the subcontexts for a current context.
 	 */ 
-	public String[] getSubContextList (DirContext parentContext, String relativeContext) {
+	public String[] getSubContextList (DirContext parentContext, String relativeContext, ParameterResolutionContext prc) {
 		String[] retValue = null;
 
 		try {
@@ -855,6 +1028,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			retValue = contextList;
 
 		} catch (NamingException e) {
+			storeLdapException(e, prc);
 			log.error("Exception in operation [" + getOperation()+ "] ", e);
 		}
 		
@@ -946,41 +1120,60 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 	/**
 	 * Retrieves the DirContext from the JNDI environment and sets the <code>providerURL</code> back to <code>ldapProviderURL</code> if specified.
+	 * @throws ParameterException 
 	 * 
 	 */
-	protected synchronized DirContext loopkupDirContext() throws NamingException {
-
+	protected synchronized DirContext loopkupDirContext(Map paramValueMap) throws NamingException, ParameterException {
+		DirContext dirContext;
 		if (jndiEnv==null) {
-			jndiEnv = getJndiEnv();
-			//jndiEnv.put("com.sun.jndi.ldap.trace.ber", System.err);//ldap response in log for debug purposes
+			Hashtable newJndiEnv = getJndiEnv();
+			//newJndiEnv.put("com.sun.jndi.ldap.trace.ber", System.err);//ldap response in log for debug purposes
 			if (getLdapProviderURL() != null) {
 				//Overwriting the (realm)providerURL if specified in configuration
-				jndiEnv.put("java.naming.provider.url", getLdapProviderURL());
+				newJndiEnv.put("java.naming.provider.url", getLdapProviderURL());
+			}
+			if (principalParameterFound) {
+				newJndiEnv.put(Context.SECURITY_PRINCIPAL, paramValueMap.get("principal"));
+				newJndiEnv.put(Context.SECURITY_CREDENTIALS, paramValueMap.get("credentials"));
 			}
 			if (isUsePooling()) {
 				// Enable connection pooling
-				jndiEnv.put("com.sun.jndi.ldap.connect.pool", "true");
+				newJndiEnv.put("com.sun.jndi.ldap.connect.pool", "true");
 				//see http://java.sun.com/products/jndi/tutorial/ldap/connect/config.html 
-//				jndiEnv.put("com.sun.jndi.ldap.connect.pool.maxsize", "20" );
-//				jndiEnv.put("com.sun.jndi.ldap.connect.pool.prefsize", "10" );
-//				jndiEnv.put("com.sun.jndi.ldap.connect.pool.timeout", "300000" );
+//				newJndiEnv.put("com.sun.jndi.ldap.connect.pool.maxsize", "20" );
+//				newJndiEnv.put("com.sun.jndi.ldap.connect.pool.prefsize", "10" );
+//				newJndiEnv.put("com.sun.jndi.ldap.connect.pool.timeout", "300000" );
 			} else {
-				// Enable connection pooling
-				jndiEnv.put("com.sun.jndi.ldap.connect.pool", "false");
+				// Disable connection pooling
+				newJndiEnv.put("com.sun.jndi.ldap.connect.pool", "false");
 			}
-			if (log.isDebugEnabled()) log.debug("created environment for LDAP provider URL [" + jndiEnv.get("java.naming.provider.url") + "]");
+			if (log.isDebugEnabled()) log.debug("created environment for LDAP provider URL [" + newJndiEnv.get("java.naming.provider.url") + "]");
+			dirContext = (DirContext) new InitialDirContext(newJndiEnv);
+			if (!principalParameterFound) {
+				jndiEnv = newJndiEnv;
+			}
+		} else {
+			dirContext = (DirContext) new InitialDirContext(jndiEnv);
 		}
-			
-		DirContext dirContext = (DirContext) new InitialDirContext(jndiEnv);
 		return dirContext;
 //		return (DirContext) dirContextTemplate.lookup(""); 	// return copy to be thread-safe
 	}
 
-	protected DirContext getDirContext() throws SenderException {
+	protected DirContext getDirContext(Map paramValueMap) throws SenderException, ParameterException {
 		try {
-			return loopkupDirContext();
+			return loopkupDirContext(paramValueMap);
 		} catch (NamingException e) {
 			throw new SenderException("cannot create InitialDirContext for ldapProviderURL ["+ getLdapProviderURL()	+ "]",e);
+		}
+	}
+
+	protected void closeDirContext(DirContext dirContext) {
+		if (dirContext!=null) {
+			try {
+				dirContext.close();
+			} catch (NamingException e) {
+				log.warn("Exception closing DirContext", e);
+			}
 		}
 	}
 
@@ -1059,6 +1252,23 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		return entriesElem;
 	}
 
+	/**
+	 * For more information see:
+	 * http://msdn.microsoft.com/en-us/library/cc223248.aspx and
+	 * http://stackoverflow.com/questions/15335614/changing-active-directory-user-password-from-java-program
+	 * http://blogs.msdn.com/b/alextch/archive/2012/05/15/how-to-set-active-directory-password-from-java-application.aspx
+	 * @throws SenderException 
+	 */
+	private byte[] encodeUnicodePwd(Object value) throws SenderException {
+		log.debug("Encode unicodePwd value");
+		String quotedPassword = "\"" + value + "\"";
+		try {
+			return quotedPassword.getBytes("UTF-16LE");
+		} catch (UnsupportedEncodingException e) {
+			throw new SenderException(e);
+		}
+	}
+
 	public void addParameter(Parameter p) {
 		if (paramList == null) {
 			paramList = new ParameterList();
@@ -1128,6 +1338,13 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 	public int getMaxEntriesReturned() {
 		return maxEntriesReturned;
+	}
+
+	public void setUnicodePwd(boolean b) {
+		unicodePwd = b;
+	}
+	public boolean getUnicodePwd() {
+		return unicodePwd;
 	}
 
 }

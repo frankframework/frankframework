@@ -18,6 +18,7 @@ package nl.nn.adapterframework.ldap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -25,7 +26,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.AbstractPipe;
-
+import nl.nn.adapterframework.util.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -56,6 +57,7 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * </p>
  * 
+ * @deprecated
  * @author  Milan Tomc
  */
 public class LdapChallengePipe extends AbstractPipe {
@@ -67,6 +69,8 @@ public class LdapChallengePipe extends AbstractPipe {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		configWarnings.add(log, "LdapChallengePipe is deprecated, please use LdapSender with operation challenge and check for returned message <LdapResult>Success</LdapResult>");
 		if (StringUtils.isEmpty(ldapProviderURL) && getParameterList().findParameter("ldapProviderURL")==null) {
 			throw new ConfigurationException("ldapProviderURL must be specified, either as attribute or as parameter");
 		}
@@ -83,7 +87,7 @@ public class LdapChallengePipe extends AbstractPipe {
 
 	/** 
 	 * Checks to see if the supplied parameteres of the pipe can login to LDAP 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
 	 */
 	public PipeRunResult doPipe(Object msg, IPipeLineSession pls) throws PipeRunException {
 
@@ -92,9 +96,10 @@ public class LdapChallengePipe extends AbstractPipe {
 		String ldapProviderURL;
 		String credentials;
 		String principal;
-					
+		
+		ParameterResolutionContext prc;
 		try {
-			ParameterResolutionContext prc = new ParameterResolutionContext((String)msg, pls);
+			prc = new ParameterResolutionContext((String)msg, pls);
 			Map paramMap = prc.getValueMap(getParameterList());
 			if (StringUtils.isNotEmpty(getLdapProviderURL())) {
 				ldapProviderURL = getLdapProviderURL();
@@ -113,12 +118,12 @@ public class LdapChallengePipe extends AbstractPipe {
 		}
 		if (StringUtils.isEmpty(principal)) {
 //			throw new PipeRunException(this, "principal is empty");
-			handleError(ldapSender,pls,34,"Principal is Empty");
+			handleError(ldapSender,prc,34,"Principal is Empty");
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
 		if (StringUtils.isEmpty(credentials)) {
 //			throw new PipeRunException(this, "credentials are empty");			
-			handleError(ldapSender,pls,49,"Credentials are Empty");
+			handleError(ldapSender,prc,49,"Credentials are Empty");
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
 			
@@ -141,7 +146,7 @@ public class LdapChallengePipe extends AbstractPipe {
 			log.debug("Succesfully looked up context for principal ["+principal+"]");
 		} catch (Exception e) {
 			if (StringUtils.isNotEmpty(getErrorSessionKey())) {
-				ldapSender.storeLdapException(e,pls);
+				ldapSender.storeLdapException(e, prc);
 			} else {
 				log.warn("LDAP error looking up context for principal ["+principal+"]", e);
 			}
@@ -151,9 +156,9 @@ public class LdapChallengePipe extends AbstractPipe {
 		return new PipeRunResult(findForward("success"), msg);
 	}
 	
-	protected void handleError(LdapSender ldapSender, IPipeLineSession pls, int code, String message) {
+	protected void handleError(LdapSender ldapSender, ParameterResolutionContext prc, int code, String message) {
 		Throwable t = new ConfigurationException(LdapSender.LDAP_ERROR_MAGIC_STRING+code+"-"+message+"]");
-		ldapSender.storeLdapException(t,pls);
+		ldapSender.storeLdapException(t, prc);
 	}
 
 	public void setLdapProviderURL(String string) {
