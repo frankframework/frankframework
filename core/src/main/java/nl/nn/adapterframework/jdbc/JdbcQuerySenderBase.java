@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.jms.JMSException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -353,11 +355,11 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return paramListString;
 	}
 
-	protected String getResult(ResultSet resultset) throws JdbcException, SQLException, IOException {
+	protected String getResult(ResultSet resultset) throws JdbcException, SQLException, IOException, JMSException {
 		return getResult(resultset,null,null);
 	}
 
-	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
+	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException, JMSException {
 		String result=null;
 		if (isScalar()) {
 			if (resultset.next()) {
@@ -531,6 +533,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",e );
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",e );
+		} catch (JMSException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",e );
 		} finally {
 			try {
 				if (resultset!=null) {
@@ -542,7 +546,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 	
-	protected String executePackageQuery(Connection connection, PreparedStatement statement, String message) throws SenderException, JdbcException, IOException {
+	protected String executePackageQuery(Connection connection, PreparedStatement statement, String message) throws SenderException, JdbcException, IOException, JMSException {
 		Object[] paramArray = new Object[10];
 		String callMessage = fillParamArray(paramArray, message);
 		ResultSet resultset = null;
@@ -672,6 +676,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		} catch (JdbcException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command",e );
 		} catch (IOException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing a SQL command",e );
+		} catch (JMSException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command",e );
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix() + "got exception evaluating parameters", e);

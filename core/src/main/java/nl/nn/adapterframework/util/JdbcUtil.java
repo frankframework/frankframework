@@ -43,6 +43,9 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
+import javax.jms.JMSException;
+import javax.jms.TextMessage;
+
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
@@ -307,7 +310,7 @@ public class JdbcUtil {
 		}
 	}
 	
-	public static String getValue(final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws JdbcException, IOException, SQLException {
+	public static String getValue(final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws JdbcException, IOException, SQLException, JMSException {
         switch(rsmeta.getColumnType(colNum))
         {
 	        case Types.LONGVARBINARY :
@@ -470,17 +473,17 @@ public class JdbcUtil {
 		throw new IOException("cannot stream Clob to ["+target.getClass().getName()+"]");
 	}
 	
-	public static String getBlobAsString(final ResultSet rs, int columnIndex, String charset, boolean xmlEncode, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
+	public static String getBlobAsString(final ResultSet rs, int columnIndex, String charset, boolean xmlEncode, boolean blobIsCompressed) throws IOException, JdbcException, SQLException, JMSException {
 		return getBlobAsString(rs, columnIndex, charset, xmlEncode, blobIsCompressed, false, false);
 	}
 
-	public static String getBlobAsString(final ResultSet rs, int columnIndex, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
+	public static String getBlobAsString(final ResultSet rs, int columnIndex, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException, JMSException {
 		return getBlobAsString(rs.getBlob(columnIndex),columnIndex+"",charset, xmlEncode, blobIsCompressed, blobSmartGet, encodeBlobBase64);
 	}
-	public static String getBlobAsString(final ResultSet rs, String columnName, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
+	public static String getBlobAsString(final ResultSet rs, String columnName, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException, JMSException {
 		return getBlobAsString(rs.getBlob(columnName),columnName,charset, xmlEncode, blobIsCompressed, blobSmartGet, encodeBlobBase64);
 	}
-	public static String getBlobAsString(Blob blob, String column, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
+	public static String getBlobAsString(Blob blob, String column, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException, JMSException {
 		if (encodeBlobBase64) {
 			InputStream blobStream = JdbcUtil.getBlobInputStream(blob, column, blobIsCompressed);
 			return Misc.streamToString(new Base64InputStream(blobStream,true),null,false);
@@ -536,6 +539,8 @@ public class JdbcUtil {
 			if (objectOK) {
 				if (result instanceof IMessageWrapper) {
 					rawMessage = ((IMessageWrapper)result).getText();
+				} else if (result instanceof TextMessage) {
+					rawMessage = ((TextMessage)result).getText();
 				} else {
 					rawMessage = (String)result;
 				}
