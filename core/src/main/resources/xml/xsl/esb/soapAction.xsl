@@ -18,7 +18,7 @@
 					<xsl:variable name="applicationName" select="substring-before($toLoc3,$dot)"/>
 					<xsl:variable name="toLoc4" select="substring-after($toLoc3,$dot)"/>
 					<xsl:variable name="applicationFunction" select="substring-before($toLoc4,$dot)"/>
-					<xsl:value-of select="concat($applicationName,$us,$applicationFunction)"/>
+					<xsl:value-of select="$applicationFunction"/>
 				</xsl:when>
 				<xsl:otherwise>
 					<!-- $messagingLayer.$businessDomain.$serviceLayer.$serviceName.$serviceContext.$serviceContextVersion.$operationName.$operationVersion.$paradigm -->
