@@ -97,7 +97,7 @@ import org.springframework.transaction.TransactionStatus;
  * <p>
  * <table border="1">
  * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.scheduler.Locker locker}</td><td>optional: the job will only be executed if a lock could be set successfully</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.util.Locker locker}</td><td>optional: the job will only be executed if a lock could be set successfully</td></tr>
  * </table>
  * </p>
  * <p> 
@@ -549,8 +549,8 @@ public class JobDef {
 								objectId = getLocker().lock();
 							} catch (Exception e) {
 								String msg = "error while setting lock: " + e.getMessage();
-								getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
-								log.error(getLogPrefix()+msg);
+								getMessageKeeper().add(msg, MessageKeeperMessage.INFO_LEVEL);
+								log.info(getLogPrefix()+msg);
 							}
 							if (objectId!=null) {
 								TimeoutGuard tg = new TimeoutGuard("Job "+getName());
@@ -569,8 +569,8 @@ public class JobDef {
 									getLocker().unlock(objectId);
 								} catch (Exception e) {
 									String msg = "error while removing lock: " + e.getMessage();
-									getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
-									log.error(getLogPrefix()+msg);
+									getMessageKeeper().add(msg, MessageKeeperMessage.WARN_LEVEL);
+									log.warn(getLogPrefix()+msg);
 								}
 							}
 						}

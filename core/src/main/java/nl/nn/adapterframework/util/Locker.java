@@ -148,11 +148,12 @@ public class Locker extends JdbcFacade {
 				stmt.executeUpdate();
 				log.debug("lock ["+objectIdWithSuffix+"] set");
 			} catch (SQLException e) {
-				log.debug(getLogPrefix()+"error executing query ["+insertQuery+"] (as part of locker)", e);
+				log.debug(getLogPrefix()+"error executing insert query (as part of locker): " + e.getMessage());
 				if (numRetries == -1 || r < numRetries) {
 					log.debug(getLogPrefix()+"will try again");
 					objectIdWithSuffix = null;
 				} else {
+					log.debug(getLogPrefix()+"will not try again");
 					throw e;
 				}
 			} finally {
