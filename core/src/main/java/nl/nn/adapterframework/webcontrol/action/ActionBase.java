@@ -53,7 +53,7 @@ import org.apache.struts.util.MessageResources;
  * @author  Johan Verrips
  * @see     org.apache.struts.action.Action
  */
-public abstract class ActionBase extends Action {
+public class ActionBase extends Action {
 	protected Logger log = LogUtil.getLogger(this);
 
     protected Locale locale;

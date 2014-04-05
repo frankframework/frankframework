@@ -3,6 +3,7 @@ Releases
 
 Upcoming:
 
+- Alpha version of new design Ibis console.
 - Better support for Active Directory and other LdapSender improvements.
     - Make "filter" on LDAP error/warning messages work for AD too.
     - Added unicodePwd encoding.

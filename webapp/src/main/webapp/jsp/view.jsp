@@ -12,13 +12,30 @@
 <%@ page language="java" %>
 
 <%
+	String view=request.getParameter("view");
+	String theme = request.getParameter("theme");
+	if (theme != null) {
+		session.setAttribute("nl.nn.adapterframework.webcontrol.Theme", theme);
+	} else {
+		theme = (String)session.getAttribute("nl.nn.adapterframework.webcontrol.Theme");
+		if (theme == null) {
+			theme = "classic";
+		}
+	}
+	
 	String contenttype="text/html";
 	String output=request.getParameter("output");
-	if ("xml".equals(output)) {
+	if ("xml".equals(output) || "bootstrap".equals(theme)) {
 		response.setContentType("text/xml;charset=UTF-8");
+		if ("bootstrap".equals(theme)) {
+			String stylesheet = "bootstrap/xsl/" + view.substring(5, view.length() - 4) + ".xsl";
 %>
-	<page>
-		<%
+			<?xml-stylesheet href="<%=stylesheet%>" type="text/xsl"?>
+<%
+		}
+%>
+		<page>
+<%
 			String attribute=request.getParameter("attribute");
 			if (attribute!=null) {
 				Object value=request.getAttribute(attribute);
@@ -27,10 +44,26 @@
 				for(Enumeration enumeration=request.getAttributeNames();enumeration.hasMoreElements();) {
 					String name=(String)enumeration.nextElement();
 					Object value=request.getAttribute(name);
-					out.println("<attribute name=\""+name+"\" class=\""+value.getClass().getName()+"\">"+(value instanceof String?(String)value:XmlUtils.encodeChars(ToStringBuilder.reflectionToString(value)))+"</attribute>");		
+					String string;
+					if (value instanceof String) {
+						string = (String)value;
+					} else {
+						string = XmlUtils.encodeChars(ToStringBuilder.reflectionToString(value));
+					}
+					if ("configXML".equals(name)) {
+						string = "<![CDATA[" + XmlUtils.encodeCdataString(string) + "]]>";
+					}
+					out.println("<attribute name=\""+name+"\" class=\""+value.getClass().getName()+"\">"+string+"</attribute>");		
 				}
 				%>
 				<%@ include file="requestToXml.jsp" %>
+				<machineName><%=Misc.getHostname()%></machineName>
+				<fileSystem>
+					<totalSpace><%=Misc.getFileSystemTotalSpace()%></totalSpace>
+					<freeSpace><%=Misc.getFileSystemFreeSpace()%></freeSpace>
+				</fileSystem>
+				<%=AppConstants.getInstance().toXml(true)%>
+				<%=ProcessMetrics.toXml()%>
 <%
 			}
 %>
@@ -38,12 +71,6 @@
 <%
 	} else {
 		response.setContentType("text/html;charset=UTF-8");
-%>
-
-
-
-<%
-	String view=request.getParameter("view");
 %>
 
 <xtags:parse id="doc1">
@@ -114,7 +141,7 @@
 		<%} else if (view.equals("/jsp/editTrigger.jsp")) {%>
 			<jsp:include page="/jsp/editTrigger.jsp" flush="true"/> 
 		<%} else {%>
-			<%=view%> not configured in view.jsp
+			<page><%=view%> not configured in view.jsp</page>
 		<%}%>
 
 	</abstractPage>  

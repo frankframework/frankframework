@@ -194,13 +194,11 @@
                 type="nl.nn.adapterframework.webcontrol.action.ShowConfigurationStatus" 
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/showConfigurationStatus.jsp"/>
-        
         </action>
         <action path="/adapterHandler" 
                 type="nl.nn.adapterframework.webcontrol.action.AdapterHandler"
                 validate="false">
             <forward name="success" path="/showConfigurationStatus.do" redirect="true" contextRelative="true"/>
-        
         </action>
         <action path="/showConfiguration" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowConfiguration"
@@ -208,7 +206,6 @@
                 name="ConfigurationPropertiesForm"
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/showConfiguration.jsp"/>
-        
         </action>
         <action path="/configHandler" 
                 type="nl.nn.adapterframework.webcontrol.action.ConfigHandler"
@@ -221,7 +218,6 @@
                 name="MonitorForm"
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/showMonitors.jsp"/>
-        
         </action>
         <action path="/showMonitorExecute" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowMonitorExecute"
@@ -229,8 +225,7 @@
                 name="MonitorForm"
                 validate="false">
             <forward name="success" path="/showMonitors.do" redirect="true" contextRelative="true"/>
-        
-        </action>
+       </action>
        <action path="/editMonitor" 
                 type="nl.nn.adapterframework.webcontrol.action.EditMonitor"
                 scope="session" 
@@ -273,13 +268,11 @@
                 name="MonitorForm"
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/showEvents.jsp"/>
-        
         </action>
         <action path="/showAdapterStatistics" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowAdapterStatistics"
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/showAdapterStatistics.jsp"/>
-        
         </action>
         <action path="/showTracingConfiguration" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowTracingConfiguration"
@@ -325,14 +318,11 @@
             <forward name="success" path="/showTracingConfiguration.do"/>
         	<forward name="cancel" path="/showTracingConfiguration.do" />
         </action>
-
         <action path="/showLogging" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowLogging"
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/showLogging.jsp"/>
-        
         </action>
-        
         <action path="/sendJmsMessage" 
                 type="nl.nn.adapterframework.webcontrol.action.SendJmsMessage"
                 scope="session" 
@@ -349,7 +339,6 @@
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/sendJmsMessage.jsp"/>
         </action>
-
         <action path="/testIfsaService" 
                 type="nl.nn.adapterframework.webcontrol.action.TestIfsaService"
                 scope="session" 
@@ -366,7 +355,6 @@
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/testIfsaService.jsp"/>
         </action>
-
         <action path="/testPipeLine" 
                 type="nl.nn.adapterframework.webcontrol.action.TestPipeLine"
                 scope="session" 
@@ -383,7 +371,6 @@
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/testPipeLine.jsp" redirect="false" contextRelative="false"/>
         </action>
-        
         <action path="/testService" 
                 type="nl.nn.adapterframework.webcontrol.action.TestService"
                 scope="session" 
@@ -400,7 +387,6 @@
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/testService.jsp"/>
         </action>
-        
 		<action	path="/browseQueue" 
        			type="nl.nn.adapterframework.webcontrol.action.BrowseQueue" 
        			name="browseQueueForm" 
@@ -409,7 +395,6 @@
        			input="/jsp/view.jsp?view=/jsp/browseQueue.jsp">
         	<forward name="success" path="/jsp/view.jsp?view=/jsp/browseQueue.jsp" />
         </action>
-        
 		<action path="/browseQueueExecute" 
 				type="nl.nn.adapterframework.webcontrol.action.BrowseQueueExecute" 
 				name="browseQueueForm" 
@@ -419,21 +404,18 @@
         	<forward name="success" path="/jsp/view.jsp?view=/jsp/queueContents.jsp" />
         	<forward name="cancel" path="/showConfigurationStatus.do" />
         </action>        
-   
 		<action path="/browser" 
 				type="nl.nn.adapterframework.webcontrol.action.Browse" 
 				validate="false" name="browseQueueForm" scope="session">
         	<forward name="success" path="/jsp/view.jsp?view=/jsp/browse.jsp" />
         	<forward name="cancel" path="/showConfigurationStatus.do" />
         </action>        
-
 		<action path="/browserExecute" 
 				type="nl.nn.adapterframework.webcontrol.action.BrowseExecute" 
 				validate="false" name="browseQueueForm" scope="session">
         	<forward name="success" path="/jsp/view.jsp?view=/jsp/browse.jsp" />
         	<forward name="cancel" path="/showConfigurationStatus.do" />
         </action>        
-
 		<action	path="/browseJdbcTable" 
        			type="nl.nn.adapterframework.webcontrol.action.BrowseJdbcTable" 
        			name="browseJdbcTableForm" 
@@ -442,7 +424,6 @@
        			input="/jsp/view.jsp?view=/jsp/browseJdbcTable.jsp">
         	<forward name="success" path="/jsp/view.jsp?view=/jsp/browseJdbcTable.jsp" />
         </action>
-        
 		<action path="/browseJdbcTableExecute" 
 				type="nl.nn.adapterframework.webcontrol.action.BrowseJdbcTableExecute" 
 				name="browseJdbcTableForm" 
@@ -452,7 +433,6 @@
         	<forward name="success" path="/jsp/view.jsp?view=/jsp/jdbcTableContents.jsp" />
         	<forward name="cancel" path="/showConfigurationStatus.do" />
         </action>        
-
         <action path="/logHandler" 
                 type="nl.nn.adapterframework.webcontrol.action.LogHandler"
                 scope="session" 
@@ -479,7 +459,6 @@
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/showSecurityItems.jsp"/>
         </action>
-
         <action path="/executeJdbcQuery" 
                 type="nl.nn.adapterframework.webcontrol.action.ExecuteJdbcQuery"
                 scope="session" 
@@ -502,6 +481,21 @@
                 name="executeJdbcQueryForm"
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/showIbisstoreSummary.jsp"/>
+        </action>
+        <action path="/showWsdls" 
+                type="nl.nn.adapterframework.webcontrol.action.ActionBase" 
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/showWsdls.jsp"/>
+        </action>
+        <action path="/testTool" 
+                type="nl.nn.adapterframework.webcontrol.action.ActionBase" 
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/testTool.jsp"/>
+        </action>
+        <action path="/consoleGuide" 
+                type="nl.nn.adapterframework.webcontrol.action.ActionBase" 
+                validate="false">
+            <forward name="success" path="/jsp/view.jsp?view=/jsp/consoleGuide.jsp"/>
         </action>
 
 
