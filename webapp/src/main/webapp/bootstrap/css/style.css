@@ -1,0 +1,152 @@
+html {
+	height: 100%;
+}
+
+body {
+	height: 100%;
+	padding: 70px 10px 10px 10px;
+	background-color: rgb(245,245,245);	
+}
+
+.panel-body img {
+	margin-right: 5px;
+}
+
+.panel-primary.env-val {
+	border: 0;	
+}
+
+.panel pre, .panel .nav-tabs {
+	border-top: 0;	
+	border-radius: 0;
+}
+
+.env-val caption {
+	text-align: left;
+}
+
+caption {
+	font-weight: bold;	
+}
+
+a {
+	text-decoration: underline;
+}
+
+.nav-tabs a {
+	text-decoration: none;
+}
+
+.nav-tabs > li.active > a, .nav-tabs > li.active > a:hover, .nav-tabs > li.active > a:focus {
+color: #2C3E50;
+/*border-color: #cccccc;
+border-bottom: 0;*/
+	}
+	
+
+a:hover {
+	text-decoration: overline;
+}
+
+a.btn {
+	text-decoration: none;
+}
+
+.navbar-grey {
+	background-color: rgb(236, 240, 241);;
+}
+
+.navbar-collapse .nav > li a.active { 
+	border: 2px solid silver;
+	border-radius: 4px;	
+}
+
+.nav-tabs > li.active > a, .nav-tabs > li.active > a:hover, .nav-tabs > li.active > a:focus {
+	cursor: pointer !important;	
+}
+
+#myTab li a.active {
+	background-color: #ECF0F1;
+	border-top: 1px solid #cccccc;
+	border-left: 1px solid #cccccc;
+	border-right: 1px solid #cccccc;
+}
+
+.navbar-collapse .nav > li > a {
+	padding: 0;
+}
+
+.navbar-collapse .nav > li {
+	padding: 15px 5px 0 0;
+}
+
+.navbar-default .navbar-brand {
+	font-size: 14px;
+	color: rgb(0,0,0);
+}
+
+.navbar-right {
+	padding-right: 10px;
+}
+
+.label-environment {
+	display: inline-block;
+	margin-top: 1px;
+	padding: 10px;
+	text-transform: uppercase;
+}
+
+.github {
+	padding-top: 20px;
+}
+
+.github img {
+	padding-right: 10px;
+}
+
+legend {	
+	display: none;
+}
+
+.btn {
+	margin: 0 2px 0 0;	
+}
+
+.form-horizontal .control-label {
+	font-weight: bold;
+}
+
+.summary {
+	display: inline-block;
+	width: 48%;
+}
+
+.summary-left {
+}
+
+.summary-right {
+	float: right;
+}
+
+.summary td, .summary th.td {
+	text-align: center;
+}
+
+.actions-img {
+	margin: 0 5px 0 5px;
+}
+
+
+.table-header {
+	background-color: #DCF0F1;
+}
+
+p.error {
+	color: rgb(231, 76, 60);
+}
+
+iframe {
+	height: 100%;
+	width: 100%;
+}
+
