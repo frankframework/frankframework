@@ -259,9 +259,6 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
      * Name of the WebSphere listener port that this JMS Listener binds to. Optional.
      *
      * This property is only used in EJB Deployment mode and has no effect otherwise.
-     * If it is not set in EJB Deployment Mode, then the listener port name is
-     * constructed by the {@link nl.nn.adapterframework.ejb.EjbListenerPortConnector} from
-     * the Listener name, Adapter name and the Receiver name.
      *
      * @param listenerPort Name of the listener port, as configured in the application
      * server.
@@ -272,11 +269,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	/**
 	 * Name of the WebSphere listener port that this JMS Listener binds to. Optional.
 	 *
-	 * This property is only used in EJB Deployment mode and has no effect otherwise.
-	 * If it is not set in EJB Deployment Mode, then the listener port name is
-	 * constructed by the {@link nl.nn.adapterframework.ejb.EjbListenerPortConnector} from
-	 * the Listener name, Adapter name and the Receiver name.
-	 *
+	 * This property is only used in EJB Deployment mode and has no effect otherwise.	 *
 	 * @return The name of the WebSphere Listener Port, as configured in the
 	 * application server.
 	 */

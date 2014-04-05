@@ -69,7 +69,7 @@ import org.apache.commons.lang.StringUtils;
  * can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
  * Each line will be handled by this recordHandler and resultHandler.
  * 
- * @author: John Dekker / Gerrit van Brakel
+ * @author John Dekker / Gerrit van Brakel
  * @since   4.7
  */
 public class StreamTransformerPipe extends FixedForwardPipe {

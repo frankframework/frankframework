@@ -268,7 +268,7 @@ public class Parameter implements INamedObject, IWithParameters {
 
 	/**
 	 * determines the raw value 
-	 * @param p
+	 * @param alreadyResolvedParameters
 	 * @return the raw value as object
 	 * @throws IbisException
 	 */

@@ -73,7 +73,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * </table>
  * </p>
  *  
- * @author: John Dekker
+ * @author John Dekker
  */
 public class FtpSender extends SenderWithParametersBase {
 

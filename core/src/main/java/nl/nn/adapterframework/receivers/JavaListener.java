@@ -272,11 +272,6 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		return handler;
 	}
 
-
-	/**
-	 * @return the name under which the java receiver registers the java proxy in JNDI
-	 */
-
 	public void setServiceName(String jndiName) {
 		this.serviceName = jndiName;
 	}

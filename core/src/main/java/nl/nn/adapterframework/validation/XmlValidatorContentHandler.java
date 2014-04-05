@@ -50,7 +50,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	/**
 	 *
-	 * @param grammarsValidation
+	 * @param validNamespaces validNamespacesgrammarsValidation
 	 * @param rootValidations
 	 *         contains path's (just a single element in case of the root of the
 	 *         entire xml) to root elements which should be checked upon

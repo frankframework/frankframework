@@ -83,8 +83,6 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      * the factory, then a bean is selected from those with this
      * given suggestedBeanName. If no such bean exists, an error is thrown
      * because the factory can not select between multiple beans.
-     *
-     * @return
      */
     abstract public String getSuggestedBeanName();
 
@@ -148,7 +146,6 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      * before creating the object from the Spring factory.
      *
      * @param attrs
-     * @return
      * @throws Exception
      */
     protected Object createObject(Map<String, String> attrs) throws Exception {
@@ -262,7 +259,6 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      * implemented by prefixing the element name with 'proto-'
      *
      * @param className
-     * @return
      * @throws ClassNotFoundException
      * @throws InstantiationException
      * @throws IllegalAccessException

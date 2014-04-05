@@ -24,7 +24,6 @@ import nl.nn.adapterframework.util.Locker;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setActive(boolean) active}</td><td>controls whether the Pipe is included in configuration. When set <code>false</code> or set to something else as "true", (even set to the empty string), the Pipe is not included in the configuration</td><td>true</td></tr>
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setGetInputFromFixedValue(String) getInputFromFixedValue}</td><td>when set, this fixed value is taken as input, instead of regular input</td><td>&nbsp;</td></tr>
@@ -36,7 +35,7 @@ import nl.nn.adapterframework.util.Locker;
  * <p>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.scheduler.Locker locker}</td><td>optional: the pipe will only be executed if a lock could be set successfully</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.util.Locker locker}</td><td>optional: the pipe will only be executed if a lock could be set successfully</td></tr>
  * </table>
  * </p>
  * 
@@ -91,7 +90,7 @@ public interface IExtendedPipe extends IPipe {
 	public void registerEvent(String description);
 	/**
 	 * Throw an event for flexible monitoring.
-	 * @param description
+	 * @param event
 	 */
 	public void throwEvent(String event);
 

@@ -177,7 +177,6 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * @return
 	 */
 	public boolean isNamespaceAware() {
 		return namespaceAware;

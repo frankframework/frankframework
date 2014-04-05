@@ -23,7 +23,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 /**
  * The <code>ITransactionalStorage</code> is responsible for storing and 
  * retrieving-back messages under transaction control.
- * @see nl.nn.adapterframework.receivers.PullingReceiverBase
+ * @see nl.nn.adapterframework.receivers.ReceiverBase
  * @author  Gerrit van Brakel
  * @since   4.1
 */

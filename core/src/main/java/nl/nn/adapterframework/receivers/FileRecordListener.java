@@ -43,8 +43,7 @@ import org.apache.log4j.Logger;
 
 /**
  * File {@link nl.nn.adapterframework.core.IPullingListener listener} that looks in a directory for files according to a wildcard. When a file is
- * found, it is read in a String object and parsed to records. When used in a receiver like 
- * {@link FileRecordReceiver } these records are to be processed by the adapter.
+ * found, it is read in a String object and parsed to records. 
  * After reading the file, the file is renamed and moved to a directory.
  * 
  * <p><b>Configuration:</b>

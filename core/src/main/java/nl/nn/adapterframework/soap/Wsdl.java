@@ -368,7 +368,7 @@ public class Wsdl {
 
     /**
      * Generates a zip file (and writes it to the given outputstream), containing the WSDL and all referenced XSD's.
-     * @see {@link #wsdl(java.io.OutputStream, String)}
+     * @see #wsdl(java.io.OutputStream, String)
      */
     public void zip(OutputStream stream, String servletName) throws IOException, XMLStreamException, NamingException {
         ZipOutputStream out = new ZipOutputStream(stream);

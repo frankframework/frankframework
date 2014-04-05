@@ -242,7 +242,6 @@ public class XsltPipe extends FixedForwardPipe {
 
 	/**
 	 * set the "omit xml declaration" on the transfomer. Defaults to true.
-	 * @return true or false
 	 */
 	public void setOmitXmlDeclaration(boolean b) {
 		omitXmlDeclaration = b;

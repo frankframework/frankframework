@@ -73,7 +73,6 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 	}
 
 	/**
-	 * @return
 	 */
 	public PlatformTransactionManager getRealTxManager() {
 		// This can be called from multiple threads, however

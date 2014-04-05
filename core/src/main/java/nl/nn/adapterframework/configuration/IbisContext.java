@@ -51,7 +51,6 @@ public class IbisContext {
 	/**
 	 * Initialize Ibis with all default parameters.
 	 *
-	 * @return
 	 */
 	public boolean initConfig() {
 	    return initConfig(getSpringContextFileName(), IbisManager.DFLT_CONFIGURATION, IbisContext.DFLT_AUTOSTART);
@@ -69,7 +68,6 @@ public class IbisContext {
      * @param springContext
      * @param configurationFile
      * @param autoStart
-     * @return
      */
     public boolean initConfig(String springContext, String configurationFile, String autoStart) {
 		initContext(springContext);

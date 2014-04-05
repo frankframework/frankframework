@@ -21,8 +21,7 @@ import javax.jms.Destination;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
 /**
- * Interface specifying method to configure a JMS receiver or some sort
- * from a provided {@link nl.nn.adapterframework.jms.ConnectionBase appConnection} instance.
+ * Interface specifying method to configure a JMS receiver or some sort.
  * 
  * @author  Tim van der Leeuw
  * @since   4.8

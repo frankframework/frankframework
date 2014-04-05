@@ -36,15 +36,15 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setKeyXPath(String) keyXPath}</td><td>xpath expression to extract cache key from request message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeyXPathOutputType(String) keyXPathOutputType}</td><td>output type of xpath expression to extract cache key from request message, must be 'xml' or 'text'</td><td>text</td></tr>
  * <tr><td>{@link #setKeyNamespaceDefs(String) keyNamespaceDefs}</td><td>namespace defintions for keyXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setKeyStyleSheet(String) keyStyleSheet}</td><td>stylesheet to extract cache key from request message. Use in combination with {@link #setCacheEmptyKeys(String) cacheEmptyKeys} to inhibit caching for certain groups of request messages</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setKeyStyleSheet(String) keyStyleSheet}</td><td>stylesheet to extract cache key from request message. Use in combination with {@link #setCacheEmptyKeys(boolean) cacheEmptyKeys} to inhibit caching for certain groups of request messages</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeyInputSessionKey(String) keyInputSessionKey}</td><td>session key to use as input for transformation of request message to key by keyXPath or keyStyleSheet</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCacheEmptyKeys(String) cacheEmptyKeys}</td><td>controls whether empty keys are used for caching. When set true, cache entries with empty keys can exist.</td><td>false</td></tr>
- * <tr><td>{@link #setValueXPath(String) valueXPath}</td><td>xpath expression to extract value to be cached key from response message. Use in combination with {@link #setCacheEmptyValues(String) cacheEmptyValues} to inhibit caching for certain groups of response messages</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setValueKeyXPathOutputType(String) valueXPathOutputType}</td><td>output type of xpath expression to extract value to be cached key from response message, must be 'xml' or 'text'</td><td>xml</td></tr>
+ * <tr><td>{@link #setCacheEmptyKeys(boolean) cacheEmptyKeys}</td><td>controls whether empty keys are used for caching. When set true, cache entries with empty keys can exist.</td><td>false</td></tr>
+ * <tr><td>{@link #setValueXPath(String) valueXPath}</td><td>xpath expression to extract value to be cached key from response message. Use in combination with {@link #setCacheEmptyValues(boolean) cacheEmptyValues} to inhibit caching for certain groups of response messages</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setValueKeyXPathOutputType() valueXPathOutputType}</td><td>output type of xpath expression to extract value to be cached key from response message, must be 'xml' or 'text'</td><td>xml</td></tr>
  * <tr><td>{@link #setValueNamespaceDefs(String) valueNamespaceDefs}</td><td>namespace defintions for valueXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValueStyleSheet(String) valueStyleSheet}</td><td>stylesheet to extract value to be cached from response message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValueInputSessionKey(String) valueInputSessionKey}</td><td>session key to use as input for transformation of response message to cached value by valueXPath or valueStyleSheet</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCacheEmptyValues(String) cacheEmptyValues}</td><td>controls whether empty values will be cached. When set true, empty cache entries can exist for any key.</td><td>false</td></tr>
+ * <tr><td>{@link #setCacheEmptyValues(boolean) cacheEmptyValues}</td><td>controls whether empty values will be cached. When set true, empty cache entries can exist for any key.</td><td>false</td></tr>
  * </table>
  * </p>
  * 

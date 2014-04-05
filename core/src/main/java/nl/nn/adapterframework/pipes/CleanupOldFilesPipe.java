@@ -44,8 +44,8 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * </p>
  * 
- * @author: John Dekker
- * @since:  4.2
+ * @author John Dekker
+ * @since  4.2
  */
 public class CleanupOldFilesPipe extends FixedForwardPipe {
 	

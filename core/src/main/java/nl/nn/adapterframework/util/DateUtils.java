@@ -172,7 +172,6 @@ public class DateUtils {
 	 * @param 	from	String	date format from.
 	 * @param 	to		String	date format to.
 	 * @param 	value	String	date to reformat.
-	 * @return
 	 */
 	public static String convertDate(String from, String to, String value) throws ParseException {
 		log.debug("convertDate from " + from + " to " + to + " value " + value);
@@ -208,7 +207,6 @@ public class DateUtils {
 	 * @param 	years
 	 * @param 	months
 	 * @param 	days
-	 * @return
 	 */
 	public static String changeDate(String date, int years, int months, int days) throws ParseException {
 		return changeDate(date, years, months, days, "yyyy-MM-dd");
@@ -225,7 +223,6 @@ public class DateUtils {
 	 * @param 	months	int
 	 * @param 	days	int
 	 * @param 	dateFormat	A String representing the date format of date.
-	 * @return  
 	 */
 	public static String changeDate(String date, int years, int months, int days, String dateFormat) throws ParseException {
 		if (log.isDebugEnabled()) log.debug("changeDate date " + date + " years " + years + " months " + months + " days " + days);

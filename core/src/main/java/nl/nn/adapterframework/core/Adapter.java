@@ -68,7 +68,7 @@ import org.springframework.core.task.TaskExecutor;
  * <tr><td>{@link #setDescription(String) description}</td><td>description of the Adapter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAutoStart(boolean) autoStart}</td><td>controls whether Adapters starts when configuration loads</td><td>true</td></tr>
  * <tr><td>{@link #setActive(boolean) active}</td>  <td>controls whether Adapter is included in configuration. When set <code>false</code> or set to something else as "true", (even set to the empty string), the receiver is not included in the configuration</td><td>true</td></tr>
- * <tr><td>{@link #setErrorMessageFormatter(String) errorMessageFormatter}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setErrorMessageFormatter(IErrorMessageFormatter) errorMessageFormatter}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setErrorState(String) errorState}</td><td>If an error occurs during
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set to this state</td><td>ERROR</td></tr>
  * <tr><td>{@link #setMessageKeeperSize(int) messageKeeperSize}</td><td>number of message displayed in IbisConsole</td><td>10</td></tr>
@@ -85,7 +85,7 @@ import org.springframework.core.task.TaskExecutor;
  * @author Johan Verrips
  * @see    nl.nn.adapterframework.core.IReceiver
  * @see    nl.nn.adapterframework.core.PipeLine
- * @see    nl.nn.adapterframework.util.StatisticsKeeper
+ * @see    nl.nn.adapterframework.statistics.StatisticsKeeper
  * @see    nl.nn.adapterframework.util.DateUtils
  * @see    nl.nn.adapterframework.util.MessageKeeper
  * @see    nl.nn.adapterframework.core.PipeLineResult
@@ -440,8 +440,8 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 	/**
 	 * Return the total processing duration as a StatisticsKeeper
-	 * @see nl.nn.adapterframework.util.StatisticsKeeper
-	 * @return nl.nn.adapterframework.util.StatisticsKeeper
+	 * @see nl.nn.adapterframework.statistics.StatisticsKeeper
+	 * @return nl.nn.adapterframework.statistics.StatisticsKeeper
 	 */
 	public StatisticsKeeper getStatsMessageProcessingDuration() {
 		return statsMessageProcessingDuration;
@@ -649,7 +649,7 @@ public class Adapter implements IAdapter, NamedBean {
 		this.name = name;
 	}
 	/**
-	 * Start the adapter. The thread-name will be set tot the adapter's name.
+	 * Start the adapter. The thread-name will be set to the adapter's name.
 	 * The run method, called by t.start(), will call the startRunning method
 	 * of the IReceiver. The Adapter will be a new thread, as this interface
 	 * extends the <code>Runnable</code> interface. The actual starting is done

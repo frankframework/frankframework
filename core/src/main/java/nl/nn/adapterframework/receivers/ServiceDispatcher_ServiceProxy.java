@@ -29,7 +29,7 @@ import java.util.Vector;
 /**
  * WebService proxy class that can be used in applications that need to communciate with
  * the IBIS Adapterframework via a webservice.
- * @Author Johan Verrips
+ * @author Johan Verrips
  */
 
 public class ServiceDispatcher_ServiceProxy {
@@ -41,8 +41,8 @@ public class ServiceDispatcher_ServiceProxy {
 	
   /**
 	 * Dispatch a request.
-	 * @param meth1_inType1 ServiceName
-	 * @param meth1_inType2 Message
+	 * @param servicename ServiceName
+	 * @param message Message
 	 * @return String the result
 	 * @throws SOAPException
 	 */
@@ -78,9 +78,9 @@ public class ServiceDispatcher_ServiceProxy {
 	
   /**
    * Dispatch a request.
-   * @param meth1_inType1 ServiceName
-   * @param meth1_inType2 CorrelationID
-   * @param meth1_inType3 Message
+   * @param servicename ServiceName
+   * @param correlationId CorrelationID
+   * @param message Message
    * @return String the result
    * @throws SOAPException
    */

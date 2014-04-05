@@ -64,8 +64,8 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * </p>
  * 
- * @author: John Dekker
- * @author: Jaco de Groot (***@dynasol.nl)
+ * @author John Dekker
+ * @author Jaco de Groot (***@dynasol.nl)
  */
 public class CompressPipe extends FixedForwardPipe {
 

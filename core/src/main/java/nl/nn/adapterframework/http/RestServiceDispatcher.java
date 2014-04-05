@@ -58,8 +58,8 @@ public class RestServiceDispatcher  {
 
 	/**
 	 * Dispatch a request.
-	 * @param serviceName the name of the IReceiver object
-	 * @param correlationId the correlationId of this request;
+	 * @param uri the name of the IReceiver object
+	 * @param method the correlationId of this request;
 	 * @param request the <code>String</code> with the request/input
 	 * @return String with the result of processing the <code>request</code> throught the <code>serviceName</code>
      */

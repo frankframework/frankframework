@@ -35,7 +35,6 @@ import org.apache.log4j.Logger;
  *
  * @author Johan Verrips
  * @see ServiceClient
- * @see ServiceListener
  */
 public class ServiceDispatcher  {
 	protected Logger log = LogUtil.getLogger(this);

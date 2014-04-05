@@ -50,7 +50,6 @@ import org.apache.log4j.Logger;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setCharset(String) charset}</td><td>The charset to be used when transforming a string to a byte array and/or the other way around</td><td>The value of the system property file.encoding</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirectory(String) directory}</td><td>base directory where files are stored in or read from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFileName(String) fileName}</td><td>The name of the file to use</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFileNameSessionKey(String) fileNameSessionKey}</td><td>The session key that contains the name of the file to use (only used if fileName is not set)</td><td>&nbsp;</td></tr>
@@ -75,13 +74,6 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>(only used when actions=delete) when set to <code>true</code>, the directory from which a file is deleted is also deleted when it contains no other files</td><td>false</td></tr>
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code> or <code>bytes</code></td><td>"string"</td></tr>
  * <tr><td>{@link #setFileSource(String) fileSource}</td><td>(action=read) either <code>filesystem</code> or <code>classpath</code></td><td>"filesystem"</td></tr>
- * </table>
- * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
  * 
@@ -613,7 +605,7 @@ public class FileHandler {
 	}
 
 	/**
-	 * @param suffix of the file that is written
+	 * @param filename of the file that is written
 	 */
 	public void setFileName(String filename) {
 		this.fileName = filename;
@@ -623,7 +615,7 @@ public class FileHandler {
 	}
 
 	/**
-	 * @param the session key that contains the name of the file to be created
+	 * @param filenameSessionKey the session key that contains the name of the file to be created
 	 */
 	public void setFileNameSessionKey(String filenameSessionKey) {
 		this.fileNameSessionKey = filenameSessionKey;

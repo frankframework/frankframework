@@ -90,7 +90,6 @@ public class ProcessUtil {
 	 *  
 	 * @param timeout timeout in seconds, or 0 to wait indefinetely until the process ends
 	 * @param command 
-	 * @return
 	 * @throws TimeOutException
 	 * @throws SenderException
 	 */

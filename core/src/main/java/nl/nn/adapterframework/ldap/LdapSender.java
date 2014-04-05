@@ -1049,7 +1049,6 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 * @see javax.naming.directory.BasicAttributes
 	 * @see javax.naming.directory.Attribute
 	 * @see javax.naming.directory.BasicAttribute  
-	 * @return
 	 */
 	private Attributes parseAttributesFromMessage(String message) throws SenderException {
 

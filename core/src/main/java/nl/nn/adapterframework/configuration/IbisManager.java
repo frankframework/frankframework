@@ -51,7 +51,7 @@ public interface IbisManager {
     /**
      * Start an already configured IBIS instance.
      * 
-     * Use {@link loadConfigurationFile} to configure the instance.
+     * Use {@link #loadConfigurationFile(String)} to configure the instance.
      */
     void startIbis();
     /**
@@ -91,7 +91,6 @@ public interface IbisManager {
     /**
      * Get string representing the deployment mode: "Unmanaged" or "EJB".
      * 
-     * @return
      */
     String getDeploymentModeString();
     /**
@@ -100,7 +99,6 @@ public interface IbisManager {
      * <dt>0</dt><dd>Unmanaged (legacy) deployment mode, also known as Web Deployment mode.</dd>
      * <dt>1</dt><dd>EJB deployment mode</dd>
      * </dl>
-     * @return
      */
     int getDeploymentMode();
     /**

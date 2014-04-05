@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.batch;
 
+import java.util.List;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -60,8 +62,6 @@ public interface IResultHandler extends INamedObject {
 	/**
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
-	 * @param mustPrefix boolean indicates if the prefix must be written
-	 * @param hasPreviousRecord boolean indicates if a previous record has been written, in case a suffix has to be written first
 	 * @throws Exception
 	 */
 	void openRecordType(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception;
@@ -84,7 +84,7 @@ public interface IResultHandler extends INamedObject {
 	boolean hasPrefix();
 
 	/**
-	 * @return true causes groups of identical records, indicated by {@link IRecordHandler.isNewRecordType newRecordType} to appear in a block. 
+	 * @return true causes groups of identical records, indicated by {@link IRecordHandler#isNewRecordType(IPipeLineSession, boolean, List, List) newRecordType} to appear in a block. 
 	 */
 	boolean isBlockByRecordType();
 	

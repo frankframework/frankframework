@@ -83,7 +83,7 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
  * </table>
  * </p>
  * 
- * @author: John Dekker
+ * @author John Dekker
  * @since   4.4
  */
 public class FtpFileRetrieverPipe extends FixedForwardPipe {

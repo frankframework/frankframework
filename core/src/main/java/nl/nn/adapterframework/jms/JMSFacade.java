@@ -994,14 +994,13 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 	/**
 	 * Set the time-to-live in milliseconds of a message
-	 * @param exp time in milliseconds
+	 * @param ttl exp time in milliseconds
 	 */
 	public void setMessageTimeToLive(long ttl){
 		this.messageTimeToLive=ttl;
 	}
 	/**
 	 * Get the  time-to-live in milliseconds of a message
-	 * @param exp time in milliseconds
 	 */
 	public long getMessageTimeToLive(){
 		return this.messageTimeToLive;

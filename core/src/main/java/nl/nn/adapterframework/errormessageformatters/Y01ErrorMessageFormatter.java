@@ -22,7 +22,7 @@ import nl.nn.adapterframework.util.DateUtils;
  * ErrorMessageFormatter for JUICE, introduced with the Y01-project.
  * 
  * @deprecated Please note that the information returned by this ErrorMessageFormatter is not very 
- * informative. Consider using one of {@Link ErrorMessageFormatter} or {@Link XslErrorMessageFormatter}
+ * informative. Consider using one of {@link ErrorMessageFormatter} or {@link XslErrorMessageFormatter}
  * 
  * @author Johan Verrips IOS
  */

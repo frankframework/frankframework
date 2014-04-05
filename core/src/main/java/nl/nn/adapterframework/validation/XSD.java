@@ -146,7 +146,7 @@ public class XSD implements Comparable<XSD> {
 
 	/**
      * Tries to determin the base url wich must be used for relative resolving of resources.
-	 * @TODO Too much ad hoc logic here
+	 * TODO Too much ad hoc logic here
      * @return An url representing the 'directory' of the current XSD. Ending in /.
 	 */
 	public String getBaseUrl() {

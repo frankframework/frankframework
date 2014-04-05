@@ -32,7 +32,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link IPostboxSender sender}</td><td>specification of postbox sender to send messages with</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.IPostboxSender sender}</td><td>specification of postbox sender to send messages with</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>

@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * 
  *  @author Johan Verrips
  *  @see IAdapter
- *  @see IAdapter#processMessage(String, String)
+ *  @see IAdapter#processMessage(String, String, IPipeLineSession)
  *  @see ISender
  *  @see PipeLineResult
  *

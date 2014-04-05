@@ -60,7 +60,7 @@ public class ParameterValue {
 	}
 
 	/**
-	 * @param object
+	 * @param value
 	 */
 	public void setValue(Object value) {
 		this.value = value;

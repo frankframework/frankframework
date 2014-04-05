@@ -143,7 +143,6 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 	 * 
 	 * @param rawMessage - Original message received, can not be <code>null</code>
 	 * @param threadContext - Thread context to be populated, can not be <code>null</code>
-	 * @param session - JMS Session under which message was received; can be <code>null</code>
 	 */
 	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		TextMessage message = null;

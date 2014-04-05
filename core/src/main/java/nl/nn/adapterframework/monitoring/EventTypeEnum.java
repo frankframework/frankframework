@@ -35,7 +35,7 @@ public class EventTypeEnum extends Enum {
 
 	/**
 	 * RunStateEnum constructor 
-	 * @param arg1 Value of new enumeration item
+	 * @param stateDescriptor Value of new enumeration item
 	 */
 	protected EventTypeEnum(String stateDescriptor) {
 		super(stateDescriptor);

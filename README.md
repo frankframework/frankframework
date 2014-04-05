@@ -11,6 +11,7 @@ Upcoming:
     - Made it possible to specify principal and credentials as parameters.
     - Set errorSessionKey to errorReason by default.
     - Cleaned debug logging code and exclude password from being logged.
+- Fixed a lot of javadoc warnings.
 
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 

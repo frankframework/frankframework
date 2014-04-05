@@ -57,8 +57,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * <tr><td>{@link #setWildcard(String) wildcard}</td><td>Filter of files to look for in inputDirectory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setExcludeWildcard(String) excludeWildcard}</td><td>Filter of files to be excluded when looking in inputDirectory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFileTimeSensitive(boolean) fileTimeSensitive}</td><td>when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before</td><td>false</td></tr>
- * <tr><td>{@link #setFileList(int) fileList}</td><td>When set a list if files in xml format (&lt;files&gt;&lt;file&gt;/file/name&lt;/file&gt;&lt;file&gt;/another/file/name&lt;/file&gt;&lt;/files&gt;) is passed to the pipleline instead of 1 file name when the specified amount of files is present in the input directory. When set to -1 the list of files is passed to the pipleline whenever one of more files are present.</td><td></td></tr>
- * <tr><td>{@link #setFileListForcedAfter(long) fileListForcedAfter}</td><td>When set along with fileList a list of files is passed to the pipleline when the specified amount of ms has passed since the first file for a new list of files was found even if the amount of files specified by fileList isn't present in the input directory yet</td><td></td></tr>
+ * <tr><td>{@link #setFileList(Integer) fileList}</td><td>When set a list of files in xml format (&lt;files&gt;&lt;file&gt;/file/name&lt;/file&gt;&lt;file&gt;/another/file/name&lt;/file&gt;&lt;/files&gt;) is passed to the pipleline instead of 1 file name when the specified amount of files is present in the input directory. When set to -1 the list of files is passed to the pipleline whenever one of more files are present.</td><td></td></tr>
+ * <tr><td>{@link #setFileListForcedAfter(Long) fileListForcedAfter}</td><td>When set along with fileList a list of files is passed to the pipleline when the specified amount of ms has passed since the first file for a new list of files was found even if the amount of files specified by fileList isn't present in the input directory yet</td><td></td></tr>
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Directory where files are stored <i>while</i> being processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputFilenamePattern(String) outputFilenamePattern}</td><td>Pattern for the name using the MessageFormat.format method. Params: 0=inputfilename, 1=inputfile extension, 2=unique uuid, 3=current date</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProcessedDirectory(String) processedDirectory}</td><td>Directory where files are stored <i>after</i> being processed</td><td>&nbsp;</td></tr>
@@ -105,7 +105,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	private long minStableTime = 1000;
 	
 	/**
-	 * Configure does some basic checks (directoryProcessedFiles is a directory,  inputDirectory is a directory, wildcard is filled etc.);
+	 * Configure does some basic checks (outputDirectory is a directory, inputDirectory is a directory, wildcard is filled etc.);
 	 *
 	 */
 	public void configure() throws ConfigurationException {
@@ -227,8 +227,8 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	}
 
 	/**
-	 * Returns the name of the file in process (the {@link #archiveFile(File) archived} file) concatenated with the
-	 * record number. As te {@link #archiveFile(File) archivedFile} method always renames to a 
+	 * Returns the name of the file in process (the {@link #archiveFile(IPipeLineSession session, File file) archived} file) concatenated with the
+	 * record number. As the {@link #archiveFile(IPipeLineSession session, File file) archivedFile} method always renames to a 
 	 * unique file, the combination of this filename and the recordnumber is unique, enabling tracing in case of errors
 	 * in the processing of the file.
 	 * Override this method for your specific needs! 
@@ -392,7 +392,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	public Integer getFileList() {
 		return fileList;
 	}
-
+	
 	public void setFileListForcedAfter(Long fileListForcedAfter) {
 		this.fileListForcedAfter = fileListForcedAfter;
 	}
@@ -401,17 +401,10 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return fileListForcedAfter;
 	}
 
-	/**
-	 * Sets the directory to store processed files in
-	 * @param directoryProcessedFiles The directoryProcessedFiles to set
-	 */
-	public void setOutputDirectory(String inprocessDirectory) {
-		this.outputDirectory = inprocessDirectory;
+	public void setOutputDirectory(String outputDirectory) {
+		this.outputDirectory = outputDirectory;
 	}
-	/**
-	 * Returns the directory in whiche processed files are stored.
-	 * @return String
-	 */
+
 	public String getOutputDirectory() {
 		return outputDirectory;
 	}

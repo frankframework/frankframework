@@ -55,7 +55,7 @@ public class GenericFactory extends AbstractSpringPoweredDigesterFactory {
      * Return name of current element prefixed with the string "proto-" as
      * bean-name.
      *
-     * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#getBeanName()
+     * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#getSuggestedBeanName()
      */
     @Override
     public String getSuggestedBeanName() {

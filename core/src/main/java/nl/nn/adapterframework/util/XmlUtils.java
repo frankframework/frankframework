@@ -1515,7 +1515,6 @@ public class XmlUtils {
 	 * @param tag
 	 * @param attrs
 	 * @param nsps
-	 * @return
 	 */
 	public static StartElement mergeAttributes(StartElement tag,
 			Iterator<? extends Attribute> attrs,

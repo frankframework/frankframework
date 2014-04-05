@@ -25,13 +25,13 @@ import java.util.Iterator;
  */
 public interface IReceiverStatistics  {
 /**
- * @return an iterator of {@link nl.nn.adapterframework.util.StatisticsKeeper}s describing the durations of time that
+ * @return an iterator of {@link nl.nn.adapterframework.statistics.StatisticsKeeper}s describing the durations of time that
  * the receiver has been waiting between messages.
  */
 Iterator getIdleStatisticsIterator();
 
 /**
- * @return an iterator of {@link nl.nn.adapterframework.util.StatisticsKeeper}s describing the durations of time that
+ * @return an iterator of {@link nl.nn.adapterframework.statistics.StatisticsKeeper}s describing the durations of time that
  * the receiver has been waiting for the adapter to process messages.
  */
 Iterator getProcessStatisticsIterator();

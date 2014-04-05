@@ -34,7 +34,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setFind(String) find}</td><td>string to search for</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReplace(String) replace}</td><td>string that will replace each of the strings found</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLineSeparatorSymbol(String) lineSeparatorSymbol}</td><td>Sets the string the representation in find and replace of the line separator</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplaceNonXmlChars(boolean) replaceNonXmlChars}</td><td>Replace all non XML chars (not in the <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char">character range as specified by the XML specification</a>) with {@link #setReplaceNonValidXmlChar(String) replaceNonXmlChar}</td><td>true</td></tr>
+ * <tr><td>{@link #setReplaceNonXmlChars(boolean) replaceNonXmlChars}</td><td>Replace all non XML chars (not in the <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char">character range as specified by the XML specification</a>) with {@link nl.nn.adapterframework.util.XmlUtils#replaceNonValidXmlCharacters(String, char, boolean) replaceNonXmlChar}</td><td>true</td></tr>
  * <tr><td>{@link #setReplaceNonXmlChar(String) replaceNonXmlChar}</td><td>character that will replace each non valid XML character (empty character is also possible)</td><td>0x00BF (inverted question mark)</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>

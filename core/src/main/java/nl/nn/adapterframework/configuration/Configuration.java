@@ -176,8 +176,7 @@ public class Configuration {
         return adapter.getReceiverByName(receiverName) != null;
     }
     /**
-     * Register an adapter with the configuration.  If JMX is {@link #setEnableJMX(boolean) enabled},
-     * the adapter will be visible and managable as an MBEAN.
+     * Register an adapter with the configuration.
      * @param adapter
      * @throws ConfigurationException
      */

@@ -296,7 +296,7 @@ public class Misc {
 	 * @param source	is the original string
 	 * @param from		is the string to be replaced
 	 * @param to		is the string which will used to replace
-	 * @return
+
 	 */
 	public static String replace (String source, String from, String to) {
 		int start = source.indexOf(from);

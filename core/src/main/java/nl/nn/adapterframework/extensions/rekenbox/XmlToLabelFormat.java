@@ -144,8 +144,7 @@ public class XmlToLabelFormat /*extends AbstractTransformer*/
      * Input must be of type <code>org.w3c.dom.Element</code> or 
      * <code>org.w3c.dom.Document</code>; output will be of type
      * <code>java.lang.String</code>.
-     * 
-     * @see IMessageTransformer#doTransformation(Message, Map, Object)
+
      */
     public static Object doTransformation(/*Message message, Map scratchpad,*/ Object data)
             throws Exception

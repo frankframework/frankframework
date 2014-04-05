@@ -44,7 +44,7 @@ import org.w3c.dom.NodeList;
  * </table>
  * </p>
  *  
- * @author: Erik van de Wetering, fine tuned and wrapped for Ibis by Gerrit van Brakel
+ * @author Erik van de Wetering, fine tuned and wrapped for Ibis by Gerrit van Brakel
  */
 public class Afm2EdiFactSender implements ISender {
 	protected Logger logger = LogUtil.getLogger(this);

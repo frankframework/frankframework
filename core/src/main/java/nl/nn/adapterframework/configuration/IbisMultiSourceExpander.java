@@ -111,7 +111,6 @@ public class IbisMultiSourceExpander implements VariableExpander {
 
 	/**
 	 * @param varName
-	 * @return
 	 */
 	protected String getValue(String varName) {
         for (Iterator iter = sources.iterator(); iter.hasNext();) {
