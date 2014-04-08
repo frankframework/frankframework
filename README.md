@@ -13,10 +13,11 @@ Upcoming:
     - Set errorSessionKey to errorReason by default.
     - Cleaned debug logging code and exclude password from being logged.
 - Fixed a lot of javadoc warnings.
+- Introduction of XmlFileElementIteratorPipe; streamed processing of (very large) xml files
 
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
-[Commits](https://github.com/ibissource/iaf/compare/v5_3...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v5_4...HEAD)
 [JavaDocs](http://www.ibissource.org/iaf/maven/apidocs/index.html)
 
 5.4:
@@ -34,7 +35,7 @@ Upcoming:
 - Made it possible to override the address location in the generated WSDL.
 - Possibility to dynamically load adapters.
 
-[Commits](https://github.com/ibissource/iaf/compare/v5_4...v5_3)
+[Commits](https://github.com/ibissource/iaf/compare/v5_3...v5_4)
 
 5.3:
 
