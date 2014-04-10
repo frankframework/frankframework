@@ -99,7 +99,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * 
  * For an Oracle database the following objects are used by default:
  *  <pre>
-	CREATE TABLE <schema_owner>.IBISSTORE
+	CREATE TABLE &lt;schema_owner&gt;.IBISSTORE
 	(
 	MESSAGEKEY NUMBER(10),
 	TYPE CHAR(1 CHAR),
@@ -115,13 +115,13 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 	CONSTRAINT PK_IBISSTORE PRIMARY KEY (MESSAGEKEY)
 	);
 	
-	CREATE INDEX <schema_owner>.IX_IBISSTORE ON <schema_owner>.IBISSTORE (TYPE, SLOTID, MESSAGEDATE);
-	CREATE INDEX <schema_owner>.IX_IBISSTORE_02 ON <schema_owner>.IBISSTORE (EXPIRYDATE);
-	CREATE SEQUENCE <schema_owner>.SEQ_IBISSTORE;
+	CREATE INDEX &lt;schema_owner&gt;.IX_IBISSTORE ON &lt;schema_owner&gt;.IBISSTORE (TYPE, SLOTID, MESSAGEDATE);
+	CREATE INDEX &lt;schema_owner&gt;.IX_IBISSTORE_02 ON &lt;schema_owner&gt;.IBISSTORE (EXPIRYDATE);
+	CREATE SEQUENCE &lt;schema_owner&gt;.SEQ_IBISSTORE;
 
-	GRANT DELETE, INSERT, SELECT, UPDATE ON <schema_owner>.IBISSTORE TO <rolenaam>;
-	GRANT SELECT ON <schema_owner>.SEQ_IBISSTORE TO <rolenaam>;
-	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO <rolenaam>;
+	GRANT DELETE, INSERT, SELECT, UPDATE ON &lt;schema_owner&gt;.IBISSTORE TO &lt;rolename&gt;;
+	GRANT SELECT ON &lt;schema_owner&gt;.SEQ_IBISSTORE TO &lt;rolename&gt;;
+	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO &lt;rolename&gt;;
 	
 	COMMIT;
  *  </pre>
