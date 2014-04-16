@@ -91,18 +91,13 @@ Eclipse
 =======
 
 - Download
-  [Eclipse Kepler](http://www.eclipse.org/downloads/packages/eclipse-ide-java-ee-developers/keplersr1)
+  [Eclipse Kepler SR2](http://eclipse.org/downloads/packages/eclipse-ide-java-ee-developers/keplersr2)
 - Unzip and start Eclipse.
-- Window, Preferences, Team, Git, History, Follow Renames.
 - In Git Repositories view clone https://github.com/ibissource/iaf.git
 - Right click iaf, Import projects...
 - In Navigator view right click pom.xml, Run As, Maven build...
 - JRE: Make sure a JDK instead of JRE is used (install one when not available).
   To make sure that all code is Java 5 compatible use JDK 1.5.
-- Refresh: Select Refresh resources upon completion and The folder containing
-  the selected resource.
-- Run.
-- Refresh the project, build problems should be resolved.
 - When Tomcat has been added to the Servers view it should be possible to add
   the project to the server and start it up.
 
