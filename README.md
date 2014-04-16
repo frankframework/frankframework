@@ -93,13 +93,25 @@ Eclipse
 - Download
   [Eclipse Kepler SR2](http://eclipse.org/downloads/packages/eclipse-ide-java-ee-developers/keplersr2)
 - Unzip and start Eclipse.
-- In Git Repositories view clone https://github.com/ibissource/iaf.git
-- Right click iaf, Import projects...
-- In Navigator view right click pom.xml, Run As, Maven build...
-- JRE: Make sure a JDK instead of JRE is used (install one when not available).
-  To make sure that all code is Java 5 compatible use JDK 1.5.
-- When Tomcat has been added to the Servers view it should be possible to add
-  the project to the server and start it up.
+- Close Welcome.
+- Make sure Maven is able to access the internet. E.g. when behind a proxy:
+  Window, Preferences, Maven, User Settings, settings.xml should exist and
+  contain proxy configuration.
+- Window, Open Perspective, Other..., Git, OK, Clone a Git repository,
+  URI: https://github.com/ibissource/iaf.git, Next, Next, Finish.
+- Right click iaf, Import projects..., Next, Finish.
+- Window, Open Perspective, Other..., Java EE.
+- Servers, No servers are available. Click this link to create a new server...,
+  Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a
+  Tomcat installation (when not available download
+  [Tomcat](http://tomcat.apache.org/) (version 7.0.22 is known to work, but
+  other version are expected to work too)), OK, Finish.
+- Double click Tomcat v7.0 Server at localhost, Open launch configuration,
+  Arguments, VM arguments, add -Dapplication.server.type=TOMCAT6, OK, Modules,
+  Add Web Module..., iaf-example, OK, File, Save
+- Right click Tomcat v7.0 Server at localhost, Start.
+- Browse the IAF console at
+  [http://localhost:8081/iaf-example/](http://localhost:8081/iaf-example/).
 
 
 
@@ -110,8 +122,7 @@ IntelliJ
 - File -> Open project, and select the pom.xml which just appeared.
 - To use git via intellij you need to install the git and/or github plugin.
 - You can add a tomcat configuration via Run-> Edit Configuration -> + -> Tomcat Server -> Local -> Add example webapp under deployments tab.
-- Run it 
- 
+- Run it
 
 
 
@@ -120,4 +131,4 @@ Command-line interface
 
 - git clone https://github.com/ibissource/iaf
 - cd iaf/core
-- mvn -DskipTests
+- mvn

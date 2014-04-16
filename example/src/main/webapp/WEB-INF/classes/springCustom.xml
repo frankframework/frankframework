@@ -1,38 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans
-    xmlns="http://www.springframework.org/schema/beans"
-    xmlns:util="http://www.springframework.org/schema/util"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="
-       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-                http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation=
+		"
+		http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
+		"
+	>
+	<!--
+	Overwrite this file on the classpath to import custom Spring configuration.
+	-->
 
-    "
-    >
-  <!--
-  Overwrite this file on the classpath to import custom Spring configuration.
-  -->
+	<!--
+	<bean id="txManagerReal" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource">
+			<ref bean="dataSource"/>
+		</property>
+		<property name="transactionSynchronization">
+			<util:constant
+				static-field="org.springframework.transaction.support.AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION"
+			/>
+		</property>
+	</bean>
+	-->
 
-<!--  <bean id="txManagerReal" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-    <property name="dataSource">
-      <ref bean="dataSource"/>
-    </property>
-    <property name="transactionSynchronization">
-      <util:constant
-          static-field="org.springframework.transaction.support.AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION"/>
-    </property>
-  </bean>-->
-
-  <bean id="defaultDataSource"
-        class="org.apache.commons.dbcp.BasicDataSource">
-    <property name="driverClassName" value="org.hsqldb.jdbc.JDBCDriver">
-    </property>
-    <property name="url" value="jdbc:hsqldb:mem:test">
-    </property>
-    <property name="username" value="sa">
-    </property>
-    <property name="password" value="">
-    </property>
-  </bean>
+	<bean
+		id="defaultDataSource"
+		class="org.apache.commons.dbcp.BasicDataSource"
+		>
+		<property name="driverClassName" value="org.hsqldb.jdbc.JDBCDriver"/>
+		<property name="url" value="jdbc:hsqldb:mem:test"/>
+		<property name="username" value="sa"/>
+		<property name="password" value=""/>
+	</bean>
 
 </beans>

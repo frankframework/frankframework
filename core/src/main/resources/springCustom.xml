@@ -9,5 +9,5 @@
 	>
 	<!--
 	Overwrite this file on the classpath to import custom Spring configuration.
-	-->    
+	-->
 </beans>
