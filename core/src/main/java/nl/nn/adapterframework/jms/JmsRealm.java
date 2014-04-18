@@ -134,7 +134,7 @@ public class JmsRealm {
     public String getProviderURL() {
         return providerURL;
     }
-    public String getConnectionFactoryName() {
+    public String retrieveConnectionFactoryName() {
     	if (queueConnectionFactoryName!=null) {
     		return queueConnectionFactoryName;
     	} else if (queueConnectionFactoryNameXA!=null) {

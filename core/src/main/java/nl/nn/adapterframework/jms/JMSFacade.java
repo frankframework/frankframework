@@ -486,7 +486,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	    if (jmsRealm==null) {
 	    	log.warn("Could not find jmsRealm ["+getJmsRealName()+"]");
 	    } else {
-			result+=" on ("+jmsRealm.getConnectionFactoryName()+")";
+			result+=" on ("+jmsRealm.retrieveConnectionFactoryName()+")";
 		}
 		return result;
 	}
