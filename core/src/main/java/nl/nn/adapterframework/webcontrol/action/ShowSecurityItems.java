@@ -32,7 +32,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.Adapter;
@@ -53,10 +52,8 @@ import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
-import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -481,39 +478,22 @@ public final class ShowSecurityItems extends ActionBase {
 
 	private void addServerProps(XmlBuilder securityItems) {
 		XmlBuilder serverProps = new XmlBuilder("serverProps");
-		String confSrvString;
-		try {
-			confSrvString = Misc.getConfigurationServer();
-		} catch (IOException e) {
-			log.warn("error getting configuration server ["+e+"]");
-			confSrvString = null;
-		}
-		if (confSrvString!=null) {
-			confSrvString = XmlUtils.removeNamespaces(confSrvString);
 			XmlBuilder transactionService = new XmlBuilder("transactionService");
 			serverProps.addSubElement(transactionService);
-			String xPath = "Server/components/services/@totalTranLifetimeTimeout";
-			String totalTranLifetimeTimeout;
+			String totalTransactionLifetimeTimeout;
 			try {
-				totalTranLifetimeTimeout = executeXPath(xPath, confSrvString);
+				totalTransactionLifetimeTimeout = Misc.getTotalTransactionLifetimeTimeout();
 			} catch (Exception e) {
-				totalTranLifetimeTimeout = "*** ERROR ***";
+				totalTransactionLifetimeTimeout = "*** ERROR ***";
 			}
-			transactionService.addAttribute("totalTranLifetimeTimeout", totalTranLifetimeTimeout);
-			xPath = "Server/components/services/@propogatedOrBMTTranLifetimeTimeout";
-			String propogatedOrBMTTranLifetimeTimeout;
+			transactionService.addAttribute("totalTransactionLifetimeTimeout", totalTransactionLifetimeTimeout);
+			String maximumTransactionTimeout;
 			try {
-				propogatedOrBMTTranLifetimeTimeout = executeXPath(xPath, confSrvString);
+				maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
 			} catch (Exception e) {
-				propogatedOrBMTTranLifetimeTimeout = "*** ERROR ***";
+				maximumTransactionTimeout = "*** ERROR ***";
 			}
-			transactionService.addAttribute("propogatedOrBMTTranLifetimeTimeout", propogatedOrBMTTranLifetimeTimeout);
-		}
+			transactionService.addAttribute("maximumTransactionTimeout", maximumTransactionTimeout);
 		securityItems.addSubElement(serverProps);
-	}
-
-	private String executeXPath(String xPath, String string) throws DomBuilderException, TransformerException, IOException {
-		TransformerPool tp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(xPath));
-		return tp.transform(string, null);
 	}
 }

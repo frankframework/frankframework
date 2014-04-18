@@ -155,11 +155,11 @@
 				<xtags:forEach select="serverProps/transactionService">
 					<tr ref="spannedRow">
 						<td>Total transaction lifetime timeout (in seconds)</td>
-						<td><xtags:valueOf select="@totalTranLifetimeTimeout"/></td>
+						<td><xtags:valueOf select="@totalTransactionLifetimeTimeout"/></td>
 					</tr>
 					<tr ref="spannedRow">
 						<td>Maximum transaction timeout (in seconds)</td>
-						<td><xtags:valueOf select="@propogatedOrBMTTranLifetimeTimeout"/></td>
+						<td><xtags:valueOf select="@maximumTransactionTimeout"/></td>
 					</tr>
 				</xtags:forEach>
 			</tbody>

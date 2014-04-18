@@ -47,6 +47,11 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -715,6 +720,57 @@ public class Misc {
 		} catch ( Exception e ) {
 			log.debug("Caught Exception",e);
 			return null;
+		}
+	}
+
+	public static String getTotalTransactionLifetimeTimeout() throws IOException, DomBuilderException, TransformerException {
+		String confSrvString = getConfigurationServer();
+		if (confSrvString==null) {
+			return null;
+		}
+		confSrvString = XmlUtils.removeNamespaces(confSrvString);
+		String xPath = "Server/components/services/@totalTranLifetimeTimeout";
+		TransformerPool tp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(xPath));
+		return tp.transform(confSrvString, null);
+	}
+
+	public static String getMaximumTransactionTimeout() throws IOException, DomBuilderException, TransformerException {
+		String confSrvString = getConfigurationServer();
+		if (confSrvString==null) {
+			return null;
+		}
+		confSrvString = XmlUtils.removeNamespaces(confSrvString);
+		String xPath = "Server/components/services/@propogatedOrBMTTranLifetimeTimeout";
+		TransformerPool tp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(xPath));
+		return tp.transform(confSrvString, null);
+	}
+
+	public static String getSystemTransactionTimeout() {
+		String totalTransactionLifetimeTimeout;
+		String maximumTransactionTimeout;
+		try {
+			totalTransactionLifetimeTimeout = Misc.getTotalTransactionLifetimeTimeout();
+		} catch (Exception e) {
+			log.warn("Exception getting totalTransactionLifetimeTimeout",e);
+			totalTransactionLifetimeTimeout = null;
+		}
+		try {
+			maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
+		} catch (Exception e) {
+			log.warn("Exception getting maximumTransactionTimeout",e);
+			maximumTransactionTimeout = null;
+		}
+		if (totalTransactionLifetimeTimeout==null || maximumTransactionTimeout==null) {
+			return null;
+		} else {
+			if (StringUtils.isNumeric(totalTransactionLifetimeTimeout) && StringUtils.isNumeric(maximumTransactionTimeout)) {
+				int ttlf = Integer.parseInt(totalTransactionLifetimeTimeout);
+				int mtt = Integer.parseInt(maximumTransactionTimeout);
+				int stt = Math.min(ttlf, mtt);
+				return String.valueOf(stt);
+			} else {
+				return null;
+			}
 		}
 	}
 }

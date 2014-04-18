@@ -642,6 +642,18 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 //						warn(getLogPrefix()+"sets transacted=true, but errorStorage is not. Transactional integrity is not guaranteed"); 
 //					}
 				}
+
+				if (getTransactionTimeout()>0) {
+					String systemTransactionTimeout = Misc.getSystemTransactionTimeout();
+					if (systemTransactionTimeout!=null && StringUtils.isNumeric(systemTransactionTimeout)) {
+						int stt = Integer.parseInt(systemTransactionTimeout);
+						if (getTransactionTimeout()>stt) {
+							ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+							String msg = getLogPrefix()+"has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the system transaction timeout ["+stt+"]";
+							configWarnings.add(log, msg);
+						}
+					}
+				}
 			} 
 
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {

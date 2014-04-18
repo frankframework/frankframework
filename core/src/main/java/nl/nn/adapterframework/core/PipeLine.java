@@ -25,7 +25,6 @@ import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
@@ -415,6 +414,18 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 
 		requestSizeStats = new SizeStatisticsKeeper("- pipeline in");
 
+		if (isTransacted() && getTransactionTimeout()>0) {
+			String systemTransactionTimeout = Misc.getSystemTransactionTimeout();
+			if (systemTransactionTimeout!=null && StringUtils.isNumeric(systemTransactionTimeout)) {
+				int stt = Integer.parseInt(systemTransactionTimeout);
+				if (getTransactionTimeout()>stt) {
+					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+					String msg = "Pipeline of [" + owner.getName() + "] has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the system transaction timeout ["+stt+"]";
+					configWarnings.add(log, msg);
+				}
+			}
+		}
+		
 		int txOption = this.getTransactionAttributeNum();
 		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+getTransactionAttribute()+"], timeout ["+getTransactionTimeout()+"]");
 		txDef = SpringTxManagerProxy.getTransactionDefinition(txOption,getTransactionTimeout());
@@ -662,6 +673,15 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}
+
+	public boolean isTransacted() {
+//		return transacted;
+		int txAtt = getTransactionAttributeNum();
+		return  txAtt==TransactionDefinition.PROPAGATION_REQUIRED || 
+				txAtt==TransactionDefinition.PROPAGATION_REQUIRES_NEW ||
+				txAtt==TransactionDefinition.PROPAGATION_MANDATORY;
+	}
+
 	/**
 	 * the exit state of the pipeline on which the receiver will commit the transaction.
 	 */
