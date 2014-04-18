@@ -32,6 +32,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.Adapter;
@@ -49,12 +50,13 @@ import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -91,6 +93,7 @@ public final class ShowSecurityItems extends ActionBase {
 		addJmsRealms(securityItems);
 		addSapSystems(securityItems);
 		addAuthEntries(securityItems);
+		addServerProps(securityItems);
 
 		request.setAttribute("secItems", securityItems.toXML());
 
@@ -409,7 +412,7 @@ public final class ShowSecurityItems extends ActionBase {
 			sapSystems = (List) factoryGetRegisteredSapSystemsNamesAsList.invoke(sapSystemFactory, null);
 			factoryGetSapSystemInfo = c.getMethod("getSapSystemInfo", String.class);
 		} catch (Throwable t) {
-			log.warn("could not extract sapSystem info", t);
+            log.debug("Caught NoClassDefFoundError, just no sapSystem available: " + t.getMessage());
 		}
 		
         if (sapSystems!=null) {
@@ -474,5 +477,43 @@ public final class ShowSecurityItems extends ActionBase {
 			ae.addAttribute("userName", userName);
 			ae.addAttribute("passWord", passWord);
 		}
+	}
+
+	private void addServerProps(XmlBuilder securityItems) {
+		XmlBuilder serverProps = new XmlBuilder("serverProps");
+		String confSrvString;
+		try {
+			confSrvString = Misc.getConfigurationServer();
+		} catch (IOException e) {
+			log.warn("error getting configuration server ["+e+"]");
+			confSrvString = null;
+		}
+		if (confSrvString!=null) {
+			confSrvString = XmlUtils.removeNamespaces(confSrvString);
+			XmlBuilder transactionService = new XmlBuilder("transactionService");
+			serverProps.addSubElement(transactionService);
+			String xPath = "Server/components/services/@totalTranLifetimeTimeout";
+			String totalTranLifetimeTimeout;
+			try {
+				totalTranLifetimeTimeout = executeXPath(xPath, confSrvString);
+			} catch (Exception e) {
+				totalTranLifetimeTimeout = "*** ERROR ***";
+			}
+			transactionService.addAttribute("totalTranLifetimeTimeout", totalTranLifetimeTimeout);
+			xPath = "Server/components/services/@propogatedOrBMTTranLifetimeTimeout";
+			String propogatedOrBMTTranLifetimeTimeout;
+			try {
+				propogatedOrBMTTranLifetimeTimeout = executeXPath(xPath, confSrvString);
+			} catch (Exception e) {
+				propogatedOrBMTTranLifetimeTimeout = "*** ERROR ***";
+			}
+			transactionService.addAttribute("propogatedOrBMTTranLifetimeTimeout", propogatedOrBMTTranLifetimeTimeout);
+		}
+		securityItems.addSubElement(serverProps);
+	}
+
+	private String executeXPath(String xPath, String string) throws DomBuilderException, TransformerException, IOException {
+		TransformerPool tp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(xPath));
+		return tp.transform(string, null);
 	}
 }

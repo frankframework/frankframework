@@ -50,7 +50,7 @@ public class IbmMisc {
         final String cellName = adminService.getCellName();
         final String nodeName = adminService.getNodeName();
         final String processName = adminService.getProcessName();
-        String appFile =
+        String crFile =
                 System.getProperty("user.install.root")
                         + File.separator
                         + "config"
@@ -68,7 +68,34 @@ public class IbmMisc {
                         + processName
                         + File.separator
                         + "resources.xml";
-        LOG.debug("configurationResourcesFile [" + appFile + "]");
-        return Misc.fileToString(appFile);
+        LOG.debug("configurationResourcesFile [" + crFile + "]");
+        return Misc.fileToString(crFile);
+    }
+
+    public static String getConfigurationServer() throws IOException {
+        final AdminService adminService = AdminServiceFactory.getAdminService();
+        final String cellName = adminService.getCellName();
+        final String nodeName = adminService.getNodeName();
+        final String processName = adminService.getProcessName();
+        String csFile =
+                System.getProperty("user.install.root")
+                        + File.separator
+                        + "config"
+                        + File.separator
+                        + "cells"
+                        + File.separator
+                        + cellName
+                        + File.separator
+                        + "nodes"
+                        + File.separator
+                        + nodeName
+                        + File.separator
+                        + "servers"
+                        + File.separator
+                        + processName
+                        + File.separator
+                        + "server.xml";
+        LOG.debug("configurationServerFile [" + csFile + "]");
+        return Misc.fileToString(csFile);
     }
 }

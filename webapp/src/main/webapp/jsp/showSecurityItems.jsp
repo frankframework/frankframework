@@ -144,6 +144,26 @@
 				</xtags:forEach>
 			</tbody>
 		</contentTable>
+		<br/><br/>
+		<contentTable>
+			<caption>Transaction Service</caption>
+			<tbody>
+				<tr>
+					<subHeader>Property</subHeader>
+					<subHeader>Value</subHeader>
+				</tr>
+				<xtags:forEach select="serverProps/transactionService">
+					<tr ref="spannedRow">
+						<td>Total transaction lifetime timeout (in seconds)</td>
+						<td><xtags:valueOf select="@totalTranLifetimeTimeout"/></td>
+					</tr>
+					<tr ref="spannedRow">
+						<td>Maximum transaction timeout (in seconds)</td>
+						<td><xtags:valueOf select="@propogatedOrBMTTranLifetimeTimeout"/></td>
+					</tr>
+				</xtags:forEach>
+			</tbody>
+		</contentTable>
 	</xtags:forEach>
 </page>
 

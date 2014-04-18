@@ -558,6 +558,15 @@ public class Misc {
         }
 	}
 
+	public static String getConfigurationServer() throws IOException {
+        try {
+            return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServer").invoke(null);
+        } catch (Exception e) {
+            log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: " + e.getMessage());
+            return null;
+        }
+	}
+
 	public static long toFileSize(String value, long defaultValue) {
 		if(value == null)
 		  return defaultValue;
