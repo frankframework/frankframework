@@ -57,6 +57,11 @@
       <artifactId>commons-dbcp</artifactId>
       <version>1.4</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jms_1.1_spec</artifactId>
+      <scope>runtime</scope><!-- Overwrite <scope>provided</scope> in parent pom. -->
+    </dependency>
   </dependencies>
 
 </project>

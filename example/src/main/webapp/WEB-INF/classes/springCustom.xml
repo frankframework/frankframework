@@ -9,9 +9,8 @@
 		http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
 		"
 	>
-	<!--
-	Overwrite this file on the classpath to import custom Spring configuration.
-	-->
+
+	<import resource="springIbisTestTool.xml"/>
 
 	<!--
 	<bean id="txManagerReal" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
