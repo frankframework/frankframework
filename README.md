@@ -15,6 +15,7 @@ Upcoming:
 - Fixed a lot of javadoc warnings.
 - Introduction of XmlFileElementIteratorPipe; streamed processing of (very large) xml files
 - Better integration of Maven and Eclipse (using Kepler SR2).
+- added "Transaction Service" to console function "Show Security Items"
 
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
