@@ -14,7 +14,7 @@
 		- add the attribute useFixedValues with value true to all pipe, inputWrapper and outputWrapper elements SoapWrapperPipe
 		- stub the pipe element FtpFileRetrieverPipe by a pipe element GenericMessageSendingPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
 		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements GenericMessageSendingPipe and ForEachChildElementPipe
-		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Request' to all pipe and inputWrapper elements SoapWrapperPipe with attribute direction=wrap 
+		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Request/Action' to all pipe and inputWrapper elements SoapWrapperPipe with attribute direction=wrap 
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Response' to all outputWrapper elements SoapWrapperPipe with attribute direction=wrap 
 	-->
 	<xsl:template match="/">
@@ -182,7 +182,7 @@
 					<xsl:apply-templates select="@*" />
 					<xsl:attribute name="useFixedValues">true</xsl:attribute>
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
-					<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination'])=0">
+					<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination']/@value)=0">
 						<xsl:element name="param">
 							<xsl:attribute name="name">destination</xsl:attribute>
 							<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Request</xsl:attribute>
@@ -195,10 +195,17 @@
 					<xsl:apply-templates select="@*" />
 					<xsl:attribute name="useFixedValues">true</xsl:attribute>
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
-					<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination'])=0">
+					<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination']/@value)=0">
 						<xsl:element name="param">
 							<xsl:attribute name="name">destination</xsl:attribute>
-							<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Request</xsl:attribute>
+							<xsl:choose>
+								<xsl:when test="parent::*/outputWrapper">
+									<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Request</xsl:attribute>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Action</xsl:attribute>
+								</xsl:otherwise>
+							</xsl:choose>
 						</xsl:element>
 					</xsl:if>
 				</xsl:element>
@@ -208,7 +215,7 @@
 					<xsl:apply-templates select="@*" />
 					<xsl:attribute name="useFixedValues">true</xsl:attribute>
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
-					<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination'])=0">
+					<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination']/@value)=0">
 						<xsl:element name="param">
 							<xsl:attribute name="name">destination</xsl:attribute>
 							<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Response</xsl:attribute>
@@ -243,14 +250,14 @@
 			</xsl:when>
 			<xsl:when test="name()='param' and starts-with(@pattern,'{now,')">
 				<xsl:element name="param">
-					<xsl:apply-templates select="@*[name()='pattern'=false()]" />
+					<xsl:apply-templates select="@*[(name()='pattern')=false()]" />
 					<xsl:attribute name="pattern">
 						<xsl:value-of select="concat('{fixedDate,',substring-after(@pattern,'{now,'))" />
 					</xsl:attribute>
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 				</xsl:element>
 			</xsl:when>
-			<xsl:when test="(name()='errorStorage' or name()='messageLog') and parent::*[name()='pipe'] and @className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage'=false()">
+			<xsl:when test="(name()='errorStorage' or name()='messageLog') and parent::*[name()='pipe'] and (@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage')=false()">
 				<xsl:call-template name="disable" />
 			</xsl:when>
 			<xsl:otherwise>
