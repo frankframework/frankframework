@@ -127,7 +127,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a processing attempt is retried after an exception is caught or rollback is experienced (only applicable for transacted receivers). If maxRetries &lt; 0 the number of attempts is infinite</td><td>1</td></tr>
  * <tr><td>{@link #setCheckForDuplicates(boolean) checkForDuplicates}</td><td>if set to <code>true</code>, each message is checked for presence in the message log. If already present, it is not processed again. (only required for non XA compatible messaging). Requires messagelog!</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setPollInterval(int) pollInterval}</td><td>The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. (only for polling listeners, not for e.g. IFSA, JMS, WebService or JavaListeners)</td><td>10</td></tr>
- * <tr><td>{@link #setIbis42compatibility(boolean) ibis42compatibility}</td><td>if set to <code>true</code>, the result of a failed processing of a message is a formatted errormessage. Otherwise a listener specific error handling is performed</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Receiver</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Receiver resulted in an exception</td><td>-1 (disabled)</td></tr>
@@ -241,8 +240,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private String name;
 	private String onError = ONERROR_CONTINUE; 
 	protected RunStateManager runState = new RunStateManager();
-    
-	private boolean ibis42compatibility=false;
 
 	// the number of threads that may execute a pipeline concurrently (only for pulling listeners)
 	private int numThreads = 1;
@@ -297,12 +294,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private PlatformTransactionManager txManager;
 
 	private EventHandler eventHandler=null;
-    
-    
-	/**
-	 * Map containing message-ids which are currently being processed.
-	 */
-	private Map messageRetryCounters = new HashMap();
 
 	/**
 	 * The cache for poison messages acts as a sort of poor-mans error
@@ -771,16 +762,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 
 	private void moveInProcessToError(String originalMessageId, String correlationId, String message, Date receivedDate, String comments, Object rawMessage, TransactionDefinition txDef) {
-	
-		throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
-		log.info(getLogPrefix()+"moves message id ["+originalMessageId+"] correlationId ["+correlationId+"] to errorSender/errorStorage");
 		cachePoisonMessageId(originalMessageId);
 		ISender errorSender = getErrorSender();
 		ITransactionalStorage errorStorage = getErrorStorage();
 		if (errorSender==null && errorStorage==null) {
-			log.warn(getLogPrefix()+"has no errorSender or errorStorage, message with id [" + originalMessageId + "] will be lost");
+			log.debug(getLogPrefix()+"has no errorSender or errorStorage, will not move message with id ["+originalMessageId+"] correlationId ["+correlationId+"] to errorSender/errorStorage");
 			return;
 		}
+		throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
+		log.debug(getLogPrefix()+"moves message with id ["+originalMessageId+"] correlationId ["+correlationId+"] to errorSender/errorStorage");
 		TransactionStatus txStatus = null;
 		try {
 			txStatus = txManager.getTransaction(txDef);
@@ -869,9 +859,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * All messages that for this receiver are pumped down to this method, so it actually
 	 * calls the {@link nl.nn.adapterframework.core.Adapter adapter} to process the message.<br/>
 
-	 * Assumes that a transation has been started where necessary
+	 * Assumes that a transation has been started where necessary.
 	 */
-	private void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingDuration, boolean retry) throws ListenerException {
+	private void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingDuration, boolean manualRetry) throws ListenerException {
 		if (rawMessage==null) {
 			log.debug(getLogPrefix()+"received null message, returning directly");
 			return;
@@ -883,7 +873,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		String message = origin.getStringFromRawMessage(rawMessage, threadContext);
 		String technicalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
 		String messageId = (String)threadContext.get("id");
-		processMessageInAdapter(origin, rawMessage, message, messageId, technicalCorrelationId, threadContext, waitingDuration, retry);
+		processMessageInAdapter(origin, rawMessage, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
 	}
 
 	public void retryMessage(String messageId) throws ListenerException {
@@ -930,9 +920,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 
 	/*
-	 * assumes message is read, and when transacted, transation is still open.
+	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	private String processMessageInAdapter(IListener origin, Object rawMessage, String message, String messageId, String technicalCorrelationId, Map threadContext, long waitingDuration, boolean retry) throws ListenerException {
+	private String processMessageInAdapter(IListener origin, Object rawMessage, String message, String messageId, String technicalCorrelationId, Map threadContext, long waitingDuration, boolean manualRetry) throws ListenerException {
 		String result=null;
 		PipeLineResult pipeLineResult=null;
 		long startProcessingTimestamp = System.currentTimeMillis();
@@ -989,10 +979,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				log.warn(getLogPrefix()+"could not extract label: ("+ClassUtils.nameOf(e)+") "+e.getMessage());
 			}
 		}
-		if (hasProblematicHistory(messageId, retry, rawMessage, message, threadContext, businessCorrelationId)) {
+		if (hasProblematicHistory(messageId, manualRetry, rawMessage, message, threadContext, businessCorrelationId)) {
 			if (!isTransacted()) {
 				log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which has a problematic history; aborting processing");
- 			}
+			}
 			numRejected.increase();
 			return result;
 		}
@@ -1034,72 +1024,54 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			pipelineSession = createProcessingContext(businessCorrelationId, threadContext, messageId);
 //			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 			try {
-				// TODO: What about Ibis42 compat mode?
-				if (isIbis42compatibility()) {
-					log.debug(getLogPrefix()+"processing message in Ibis42compatibility-mode");
-					pipeLineResult = adapter.processMessage(businessCorrelationId, pipelineMessage, pipelineSession);
+				if (getMessageLog()!=null) {
+					getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(),"log",label,pipelineMessage);
+				}
+				log.debug(getLogPrefix()+"preparing TimeoutGuard");
+				TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());
+				try {
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"activating TimeoutGuard with transactionTimeout ["+transactionTimeout+"]s");
+					tg.activateGuard(getTransactionTimeout());
+					pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, pipelineSession);
 					result=pipeLineResult.getResult();
-					errorMessage = result;
-					if (pipeLineResult.getState().equals(adapter.getErrorState())) {
-						messageInError = true;
-					}
-				} else {
-					// TODO: Find the right catch-clause where we decide about
-					// retrying or swallowing and pushing to error-storage
-					// Right now we make the decision before pushing a response
-					// back which might be too early.
-					try {
-						if (getMessageLog()!=null) {
-							getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(),"log",label,pipelineMessage);
+					errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
+					if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"received result: "+errorMessage); }
+					messageInError=txStatus.isRollbackOnly();
+				} finally {
+					log.debug(getLogPrefix()+"canceling TimeoutGuard, isInterrupted ["+Thread.currentThread().isInterrupted()+"]");
+					if (tg.cancel()) {
+						errorMessage = "timeout exceeded";
+						if (StringUtils.isEmpty(result)) {
+							result="<timeout/>";
 						}
-						log.debug(getLogPrefix()+"preparing TimeoutGuard");
-						TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());
-						try {
-							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"activating TimeoutGuard with transactionTimeout ["+transactionTimeout+"]s");
-							tg.activateGuard(getTransactionTimeout());
-							pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, pipelineSession);
-							result=pipeLineResult.getResult();
-							errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
-							if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"received result: "+errorMessage); }
-							messageInError=txStatus.isRollbackOnly();
-						} finally {
-							log.debug(getLogPrefix()+"canceling TimeoutGuard, isInterrupted ["+Thread.currentThread().isInterrupted()+"]");
-							if (tg.cancel()) {
-								errorMessage = "timeout exceeded";
-								if (StringUtils.isEmpty(result)) {
-									result="<timeout/>";
-								}
-								messageInError=true;
-							}
-						}
-						if (!messageInError && !isTransacted()) {
-							String commitOnState=((Adapter)adapter).getPipeLine().getCommitOnState();
-							
-							if (StringUtils.isNotEmpty(commitOnState) && 
-								!commitOnState.equalsIgnoreCase(pipeLineResult.getState())) {
-								messageInError=true;
-							}
-						}							
-
-					} catch (Throwable t) {
-						if (TransactionSynchronizationManager.isActualTransactionActive()) {
-							log.debug("<*>"+getLogPrefix() + "TX Update: Received failure, transaction " +
-									(txStatus.isRollbackOnly()?"already":"not yet") +
-									" marked for rollback-only");
-						}
-						errorMessage = t.getMessage();
-						messageInError = true;
-						if (pipeLineResult==null) {
-							pipeLineResult=new PipeLineResult();
-						}
-						if (StringUtils.isEmpty(pipeLineResult.getResult())) {
-							String formattedErrorMessage=adapter.formatErrorMessage("exception caught",t,message,messageId,this,startProcessingTimestamp);
-							pipeLineResult.setResult(formattedErrorMessage);
-						}
-						ListenerException l = wrapExceptionAsListenerException(t);
-						throw l;
+						messageInError=true;
 					}
 				}
+				if (!messageInError && !isTransacted()) {
+					String commitOnState=((Adapter)adapter).getPipeLine().getCommitOnState();
+					
+					if (StringUtils.isNotEmpty(commitOnState) && 
+						!commitOnState.equalsIgnoreCase(pipeLineResult.getState())) {
+						messageInError=true;
+					}
+				}
+			} catch (Throwable t) {
+				if (TransactionSynchronizationManager.isActualTransactionActive()) {
+					log.debug("<*>"+getLogPrefix() + "TX Update: Received failure, transaction " +
+							(txStatus.isRollbackOnly()?"already":"not yet") +
+							" marked for rollback-only");
+				}
+				errorMessage = t.getMessage();
+				messageInError = true;
+				if (pipeLineResult==null) {
+					pipeLineResult=new PipeLineResult();
+				}
+				if (StringUtils.isEmpty(pipeLineResult.getResult())) {
+					String formattedErrorMessage=adapter.formatErrorMessage("exception caught",t,message,messageId,this,startProcessingTimestamp);
+					pipeLineResult.setResult(formattedErrorMessage);
+				}
+				ListenerException l = wrapExceptionAsListenerException(t);
+				throw l;
 			} finally {
 				putSessionKeysIntoThreadContext(threadContext, pipelineSession);
 			}
@@ -1117,11 +1089,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		} finally {
 			cacheProcessResult(messageId, businessCorrelationId, errorMessage, new Date(startProcessingTimestamp));
 			if (!isTransacted() && messageInError) {
-				// NB: Because the below happens from a finally-clause, any
-				// exception that has occurred will still be propagated even
-				// if we decide not to retry the message.
-				// This should perhaps be avoided
-				retryOrErrorStorage(rawMessage, startProcessingTimestamp, txStatus, errorMessage, message, messageId, businessCorrelationId, retry);
+				if (!manualRetry) {
+					moveInProcessToError(messageId, businessCorrelationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessage, TXNEW_CTRL);
+				}
 			}
 			try {
 				Map afterMessageProcessedMap;
@@ -1133,9 +1103,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				} else {
 					afterMessageProcessedMap=pipelineSession;
 				}
-				// TODO: Should this be done in a finally, unconditionally?
-				// Perhaps better to have separate methods for correct processing,
-				// and cleanup after an error?
 				origin.afterMessageProcessed(pipeLineResult,rawMessage, afterMessageProcessedMap);
 			} finally {
 				long finishProcessingTimestamp = System.currentTimeMillis();
@@ -1185,39 +1152,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private synchronized ProcessResultCacheItem getCachedProcessResult(String messageId) {
 		return (ProcessResultCacheItem)processResultCache.get(messageId);
 	}
-    
-    
-	private long getAndIncrementMessageRetryCount(String messageId) {
-		Counter retries;
-		synchronized (messageRetryCounters) {
-			retries = (Counter) messageRetryCounters.get(messageId);
-			if (retries == null) {
-				retries = new Counter(0);
-				messageRetryCounters.put(messageId, retries);
-				return 0L;
-			}
-		}
-		retries.increase();
-		return retries.getValue();
-	}
-
-	private long removeMessageRetryCount(String messageId) {
-		synchronized (messageRetryCounters) {
-			Counter retries = (Counter) messageRetryCounters.get(messageId);
-			if (retries == null) {
-				return 0;
-			} else {
-				messageRetryCounters.remove(messageId);
-				return retries.getValue();
-			}
-		}
-	}
 
 	/*
 	 * returns true if message should not be processed
 	 */
-	private boolean hasProblematicHistory(String messageId, boolean retry, Object rawMessage, String message, Map threadContext, String correlationId) throws ListenerException {
-		if (!retry) {
+	private boolean hasProblematicHistory(String messageId, boolean manualRetry, Object rawMessage, String message, Map threadContext, String correlationId) throws ListenerException {
+		if (!manualRetry) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"checking try count for messageId ["+messageId+"]");
 			ProcessResultCacheItem prci = getCachedProcessResult(messageId);
 			if (prci==null) {
@@ -1262,59 +1202,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			return true;
 		}
 		return false;
-	}
-
-	/**
-	 * Decide if a failed message can be retried, or should be removed from the
-	 * queue and put to the error-storage.
-	 * 
-	 * <p>
-	 * In the former case, the current transaction is marked rollback-only.
-	 * </p>
-	 * <p>
-	 * In the latter case, the message is also moved to the error-storage and
-	 * it's message-id is 'blacklisted' in the internal cache of poison-messages.
-	 * </p>
-	 * <p>
-	 * NB: Because the current global transaction might have already been marked for
-	 * rollback-only, even if we decide not to retry the message it might still
-	 * be redelivered to us. In that case, the poison-cache will save the day.
-	 * </p>
-	 * 
-	 * @return Returns <code>true</code> if the message can still be retried,
-	 * or <code>false</code> if the message will not be retried.
-	 */
-	private boolean retryOrErrorStorage(Object rawMessage, long startProcessingTimestamp, TransactionStatus txStatus, String errorMessage, String message, String messageId, String correlationId, boolean wasRetry) {
-
-		long retryCount = getAndIncrementMessageRetryCount(messageId);
-		log.error(getLogPrefix()+"message with id ["+messageId+"] had error in processing; current retry-count: " + retryCount);
-        
-		// Mark TX as rollback-only, because in any case updates done in the
-		// transaction may not be performed.
-		txStatus.setRollbackOnly();
-		if (wasRetry) {
-			return false;
-		}
-		if (isTransacted()) {
-			// If not yet exceeded the max retry count,
-			// mark TX as rollback-only and throw an
-			// exception
-			if (retryCount < maxRetries || maxRetries<0) {
-				log.error(getLogPrefix()+"message with id ["+messageId+"] will be retried; transaction marked rollback-only");
-				return true;
-			} else {
-				// Max retries exceeded; message to be moved
-				// to error location (OR LOST!)
-				log.error(getLogPrefix()+"message with id ["+messageId+"] retry count exceeded;");
-				//removeMessageRetryCount(messageId);
-				moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessage, TXNEW_CTRL);
-				return false;
-			}
-		} else {
-			log.error(getLogPrefix()+"not transacted, message with id ["+messageId+"] will not be retried");
-			moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessage, TXNEW_CTRL);
-			return false;
-		}
 	}
 
 	public void exceptionThrown(INamedObject object, Throwable t) {
@@ -1823,15 +1710,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public void setNumThreadsPolling(int i) {
 		numThreadsPolling = i;
 	}
-
-	public boolean isIbis42compatibility() {
-		return ibis42compatibility;
-	}
-
-	public void setIbis42compatibility(boolean b) {
-		ibis42compatibility = b;
-	}
-	
 
 	// event numbers for tracing
 	public void setBeforeEvent(int i) {

@@ -21,6 +21,7 @@ import javax.jms.Destination;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.jms.JmsListener;
@@ -42,7 +43,7 @@ import nl.nn.adapterframework.jms.JmsListener;
  * 
  * @author  Peter Leeuwenburgh
  */
-public class EsbJmsListener extends JmsListener {
+public class EsbJmsListener extends JmsListener implements ITransactionRequirements {
 	private final static String REQUEST_REPLY = "RR";
 	private final static String FIRE_AND_FORGET = "FF";
 	private final static String CACHE_CONSUMER = "CACHE_CONSUMER";
@@ -89,5 +90,21 @@ public class EsbJmsListener extends JmsListener {
 
 	public boolean isSynchronous() {
 		return getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY);
+	}
+
+	public boolean transactionalRequired() {
+		if (getMessageProtocol().equals(FIRE_AND_FORGET)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public boolean transactionalAllowed() {
+		if (getMessageProtocol().equals(FIRE_AND_FORGET)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

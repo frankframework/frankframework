@@ -3,9 +3,14 @@ Releases
 
 Upcoming:
 
-- Also when not transacted don't retrow exception caught in JMS listener (caused
-  connection to be closed and caused possible other threads on the same listener
-  to experience "javax.jms.IllegalStateException: Consumer closed").
+- Also when not transacted don't retrow exception caught in JMS listener (caused connection to be closed and caused possible other threads on the same listener to experience "javax.jms.IllegalStateException: Consumer closed").
+- Tweaked error logging and configuration warnings about transactional processing.
+    - Show requirement for errorStorage on FF EsbJmsListener as configuration warning instead of log warning on every failed message.
+    - Removed logging error "not transacted, ... will not be retried" and warning "has no errorSender or errorStorage, message ... will be lost" (when a listener should run under transaction control (ITransactionRequirements) a configuration warning is already shown).
+    - Removed logging error "message ... had error in processing; current retry-count: 0" (on error in pipeline an appropriate action (e.g. logging) should already been done).
+    - Don't throw RCV_MESSAGE_TO_ERRORSTORE_EVENT and don't log "moves ... to errorSender/errorStorage" when no errorSender or errorStorage present.
+    - Removed some unused code and comments like ibis42compatibility.
+    - Renamed var retry to manualRetry for better code readability.
 - Alpha version of new design Ibis console.
 - Better support for Active Directory and other LdapSender improvements.
     - Make "filter" on LDAP error/warning messages work for AD too.
