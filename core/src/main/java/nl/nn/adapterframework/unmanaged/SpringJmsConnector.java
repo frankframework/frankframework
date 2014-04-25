@@ -215,24 +215,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				getReceiver().increaseRetryIntervalAndWait(e,getLogPrefix());
 				if (txStatus!=null) {
 					txStatus.setRollbackOnly();
-				} else {
-					JMSException jmse = new JMSException(getLogPrefix()+"caught exception: "+e.getMessage());
-					jmse.setLinkedException(e);
-					throw jmse;
 				}
-//				if (JtaUtil.inTransaction()) {
-//					log.warn(getLogPrefix()+"caught exception processing message, setting rollbackonly", e);
-//					JtaUtil.setRollbackOnly();
-//				} else {
-//					if (jmsContainer.isSessionTransacted()) {
-//						log.warn(getLogPrefix()+"caught exception processing message, rolling back JMS session", e);
-//						session.rollback();
-//					} else {
-//						JMSException jmse = new JMSException(getLogPrefix()+"caught exception, no transactional stuff to rollback");
-//						jmse.initCause(e);
-//						throw jmse;
-//					}
-//				}
 			} finally {
 				if (txStatus==null && jmsContainer.isSessionTransacted()) {
 					log.debug(getLogPrefix()+"committing JMS session");

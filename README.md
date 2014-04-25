@@ -3,6 +3,9 @@ Releases
 
 Upcoming:
 
+- Also when not transacted don't retrow exception caught in JMS listener (caused
+  connection to be closed and caused possible other threads on the same listener
+  to experience "javax.jms.IllegalStateException: Consumer closed").
 - Alpha version of new design Ibis console.
 - Better support for Active Directory and other LdapSender improvements.
     - Make "filter" on LDAP error/warning messages work for AD too.
