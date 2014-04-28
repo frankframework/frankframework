@@ -349,6 +349,11 @@
 							<xsl:value-of select="@name"/>=<xsl:value-of select="."/>
 						</xsl:for-each>
 			</xsl:attribute>
+			<xsl:if test="@alt">
+				<xsl:attribute name="title">
+					<xsl:value-of select="@alt"/>
+				</xsl:attribute>
+			</xsl:if>
 			<xsl:if test="@newwindow">
 				<xsl:attribute name="target">_blank</xsl:attribute>
 			</xsl:if>
