@@ -30,7 +30,7 @@
 		if ("bootstrap".equals(theme)) {
 			String stylesheet = "bootstrap/xsl/" + view.substring(5, view.length() - 4) + ".xsl";
 %>
-			<?xml-stylesheet href="<%=stylesheet%>" type="text/xsl"?>
+			<%= "<?xml-stylesheet href=\"" + stylesheet + "\" type=\"text/xsl\"?>" %>
 <%
 		}
 %>

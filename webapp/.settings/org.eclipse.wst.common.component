@@ -7,7 +7,22 @@
         <dependent-module archiveName="ibis-adapterframework-core-5.5-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-core/iaf-core">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="ibis-adapterframework-ifsa-5.5-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ifsa/iaf-ifsa">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="ibis-adapterframework-tibco-5.5-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-tibco/iaf-tibco">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="ibis-adapterframework-sap-5.5-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-sap/iaf-sap">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="ibis-adapterframework-coolgen-5.5-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-coolgen/iaf-coolgen">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="ibis-adapterframework-ibm-5.5-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ibm/iaf-ibm">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="java-output-path" value="/iaf-webapp/target/classes"/>
-        <property name="context-root" value="ibis-webapp"/>
+        <property name="context-root" value="ibis-adapterframework-webapp"/>
     </wb-module>
 </project-modules>
