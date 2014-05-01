@@ -8,7 +8,7 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import javax.wsdl.WSDLException;
+import nl.nn.javax.wsdl.WSDLException;
 import java.io.IOException;
 
 import static org.mockito.Mockito.mock;

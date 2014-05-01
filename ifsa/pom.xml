@@ -26,10 +26,11 @@
     <dependency>
       <groupId>javax.ejb</groupId>
       <artifactId>ejb-api</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.struts</groupId>
-      <artifactId>struts-core</artifactId>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-struts</artifactId>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>

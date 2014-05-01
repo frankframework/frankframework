@@ -20,7 +20,7 @@ import java.util.Properties;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.axis.utils.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.sap.conn.jco.ext.DestinationDataEventListener;

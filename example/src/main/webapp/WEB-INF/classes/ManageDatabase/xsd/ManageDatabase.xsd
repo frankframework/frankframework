@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by HP SLMS Purchasing (ING) -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:element name="manageDatabaseREQ" type="manageDatabaseREQType"/>
+	<xsd:element name="manageDatabaseRLY" type="manageDatabaseRLYType"/>
+	<xsd:complexType name="manageDatabaseREQType">
+		<xsd:sequence>
+			<xsd:choice maxOccurs="unbounded">
+				<xsd:element name="delete" type="deleteType"/>
+				<xsd:element name="alter" type="alterType"/>
+				<xsd:element name="select" type="selectType"/>
+				<xsd:element name="update" type="updateType"/>
+				<xsd:element name="insert" type="insertType"/>
+				<xsd:element name="sql" type="sqlType"/>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="manageDatabaseRLYType">
+		<xsd:sequence>
+			<xsd:element name="completionInformation" type="completionInformationType"/>
+			<xsd:element name="results" minOccurs="0">
+				<xsd:complexType>
+					<xsd:complexContent>
+						<xsd:extension base="resultsType">
+							<xsd:attribute name="count" use="required"/>
+						</xsd:extension>
+					</xsd:complexContent>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="deleteType">
+		<xsd:sequence>
+			<xsd:element name="tableName" type="xsd:string"/>
+			<xsd:element name="where" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="alterType">
+		<xsd:sequence>
+			<xsd:element name="sequenceName" type="xsd:string"/>
+			<xsd:element name="startWith" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="selectType">
+		<xsd:sequence>
+			<xsd:element name="tableName" type="xsd:string"/>
+			<xsd:element name="columns" type="columnsType" minOccurs="0"/>
+			<xsd:element name="where" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="order" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="updateType">
+		<xsd:sequence>
+			<xsd:element name="tableName" type="xsd:string"/>
+			<xsd:element name="columns" type="columnsType"/>
+			<xsd:element name="where" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="insertType">
+		<xsd:sequence>
+			<xsd:element name="tableName" type="xsd:string"/>
+			<xsd:element name="columns" type="columnsType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="sqlType">
+		<xsd:sequence>
+			<xsd:element name="type" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="query" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="columnsType">
+		<xsd:sequence>
+			<xsd:element name="column" type="columnType" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="columnType">
+		<xsd:sequence>
+			<xsd:element name="name" type="xsd:string"/>
+			<xsd:element name="value" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="type" type="typeType" minOccurs="0"/>
+			<xsd:element name="decimalSeparator" type="separatorType" minOccurs="0"/>
+			<xsd:element name="groupingSeparator" type="separatorType" minOccurs="0"/>
+			<xsd:element name="formatString" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="completionInformationType">
+		<xsd:sequence>
+			<xsd:element name="returnCode" type="returnCodeType"/>
+			<xsd:element name="reasonCode" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="message" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="resultsType">
+		<xsd:sequence>
+			<xsd:element name="result" type="xsd:anyType" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="typeType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="string"/>
+			<xsd:enumeration value="function"/>
+			<xsd:enumeration value="number"/>
+			<xsd:enumeration value="datetime"/>
+			<xsd:enumeration value="blob"/>
+			<xsd:enumeration value="clob"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="separatorType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="."/>
+			<xsd:enumeration value=","/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="returnCodeType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="OK"/>
+			<xsd:enumeration value="NOT_OK"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

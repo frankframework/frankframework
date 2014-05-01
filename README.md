@@ -11,6 +11,8 @@ Upcoming:
     - Don't throw RCV_MESSAGE_TO_ERRORSTORE_EVENT and don't log "moves ... to errorSender/errorStorage" when no errorSender or errorStorage present.
     - Removed some unused code and comments like ibis42compatibility.
     - Renamed var retry to manualRetry for better code readability.
+- Prevent java.io.NotSerializableException when the application server wants to persist sessions.
+- Prevent problems with control characters in Test Tool GUI (replace them with inverted question mark + "#" + number of character + ";").
 - Alpha version of new design Ibis console.
 - Better support for Active Directory and other LdapSender improvements.
     - Make "filter" on LDAP error/warning messages work for AD too.

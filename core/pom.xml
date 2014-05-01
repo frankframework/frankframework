@@ -22,12 +22,13 @@
     <dependency>
       <groupId>javax.ejb</groupId>
       <artifactId>ejb-api</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>javax.transaction</groupId>
       <artifactId>transaction-api</artifactId>
       <version>1.1</version>
-      <scope>compile</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>javax.mail</groupId>
@@ -45,6 +46,12 @@
     <dependency>
       <groupId>commons-digester</groupId>
       <artifactId>commons-digester</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!--<dependency>
       <groupId>org.apache.commons</groupId>
@@ -67,12 +74,6 @@
       <groupId>commons-net</groupId>
       <artifactId>commons-net</artifactId>
     </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.2</version>
-    </dependency>
-    <!-- xml related -->
     <dependency>
       <groupId>net.sf.saxon</groupId>
       <artifactId>Saxon-HE</artifactId>
@@ -97,24 +98,28 @@
     <dependency>
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
-      <version>2.9.1</version> <!-- all kind of things don't work with newer versions -->
+      <version>2.9.1</version><!-- All kind of things don't work with newer versions. -->
     </dependency>
-    <!-- frameworks -->
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring</artifactId>
       <version>2.5.6.SEC03</version>
     </dependency>
     <dependency>
-      <groupId>struts</groupId>
-      <artifactId>struts</artifactId>
-      <version>1.2.9</version>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-struts</artifactId>
     </dependency>
-    <!-- webservices related -->
-    <dependency>
-      <groupId>com.sun.xml.ws</groupId>
-      <artifactId>jaxws-rt</artifactId>
-      <version>2.1.3</version>
+    <dependency><!-- Needed when running on Java 5 (without it tests fail with JDK 1.5 and succeed with JDK 1.7). -->
+      <groupId>com.sun.xml.stream</groupId>
+      <artifactId>sjsxp</artifactId>
+      <version>1.0</version>
+      <scope>runtime</scope>
+      <exclusions>
+        <exclusion><!-- Exclude 1.0 as 1.0.1 is already included by xmlbeans. -->
+          <groupId>javax.xml.stream</groupId>
+          <artifactId>stax-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.ws.security</groupId>
@@ -125,6 +130,16 @@
       <groupId>axis</groupId>
       <artifactId>axis</artifactId>
       <version>1.4</version>
+      <exclusions>
+        <exclusion>
+          <groupId>axis</groupId>
+          <artifactId>axis-jaxrpc</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>axis</groupId>
+          <artifactId>axis-wsdl4j</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>soap</groupId>
@@ -150,6 +165,12 @@
       <groupId>net.sf.ehcache</groupId>
       <artifactId>ehcache</artifactId>
       <version>1.5.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>net.sf.jsr107cache</groupId>
+          <artifactId>jsr107cache</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
@@ -160,11 +181,13 @@
       <groupId>xalan</groupId>
       <artifactId>xalan</artifactId>
       <version>2.7.1</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>xalan</groupId>
       <artifactId>serializer</artifactId>
       <version>2.7.1</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
@@ -191,7 +214,7 @@
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-webspheremq</artifactId>
       <version>1.0</version>
-      <scope>compile</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>xmlunit</groupId>
