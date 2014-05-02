@@ -29,6 +29,6 @@
             <dependency-type>consumes</dependency-type>
         </dependent-module>
         <property name="java-output-path" value="/iaf-example/target/classes"/>
-        <property name="context-root" value="ibis-adapterframework-example"/>
+        <property name="context-root" value="iaf-example"/>
     </wb-module>
 </project-modules>
