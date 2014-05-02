@@ -35,18 +35,14 @@
       autowire="byName"
       />
 
-
-  <!-- IBIS Beans -->
-  <bean id="adapterService" class="nl.nn.adapterframework.configuration.DirectoryScanningAdapterServiceImpl"
-      >
+  <bean id="adapterService" class="nl.nn.adapterframework.configuration.BasicAdapterServiceImpl"/>
+  <!--
+  <bean id="adapterService" class="nl.nn.adapterframework.configuration.DirectoryScanningAdapterServiceImpl">
     <constructor-arg value="${adapterServiceWatchedDirectory}" />
     <property name="rateInSeconds" value="${adapterServiceCheckRateInSeconds}" />
   </bean>
-  <!--
-  <bean id="adapterService" class="nl.nn.adapterframework.configuration.BasicAdapterServiceImpl"
-      >
-  </bean>
   -->
+
   <bean name="configuration" class="nl.nn.adapterframework.configuration.Configuration"
         autowire="byName"
         init-method="init">
