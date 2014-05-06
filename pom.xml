@@ -203,10 +203,9 @@
   </reporting>
 
   <scm>
-    <connection>scm:git:git://github.com/ibissource/iaf.git</connection>
-    <developerConnection>scm:git:git://github.com/ibissource/iaf.git</developerConnection>
+    <connection>scm:git:https://github.com/ibissource/iaf.git</connection>
+    <developerConnection>scm:git:https://github.com/ibissource/iaf.git</developerConnection>
     <url>https://github.com/ibissource/iaf</url>
-    <tag>5.0.28</tag>
   </scm>
 
   <distributionManagement>
