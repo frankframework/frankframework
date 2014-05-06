@@ -225,7 +225,7 @@
     </snapshotRepository>
     <site>
       <id>www.ibissource.org</id>
-      <url>file:target/site/deploy</url>
+      <url>file:target/site-deploy</url>
     </site>
   </distributionManagement>
 
