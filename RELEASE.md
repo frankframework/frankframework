@@ -14,15 +14,15 @@ Release on Windows 7 behind a proxy
 - set MAVEN_OPTS=-Xmx512m -XX:MaxPermSize=128m
 - git config --list
 - Check and when needed set the following settings.
-- git config --global user.name "<first-name> <last-name>"
-- git config --global user.email <first-name>.<last-name>@ibissource.org
-- git config --global http.proxy http://<proxy-username>:<proxy-password>@<proxy-host>:<proxy-port>
-- git config --global https.proxy http://<proxy-username>:<proxy-password>@<proxy-host>:<proxy-port>
+- git config --global user.name "[first-name] [last-name]"
+- git config --global user.email [first-name].[last-name]@ibissource.org
+- git config --global http.proxy http://[proxy-username]:[proxy-password]@[proxy-host]:[proxy-port]
+- git config --global https.proxy http://[proxy-username]:[proxy-password]@[proxy-host]:[proxy-port]
 - git config --global core.autocrlf true
 - cd D:\Temp (or any other folder)
 - git clone https://github.com/ibissource/iaf.git
 - git clone https://github.com/ibissource/mvn-repo.git
-- git clone https://<user>@bitbucket.org/ibissource/mvn-repo-proprietary.git
+- git clone https://[user]@bitbucket.org/ibissource/mvn-repo-proprietary.git
 - cd iaf
 - mvn release:prepare -DpushChanges=false
 - git push
@@ -30,12 +30,12 @@ Release on Windows 7 behind a proxy
 - mkdir target
 - cd target
 - git clone https://github.com/ibissource/mvn-repo.git
-- git clone https://<user>@bitbucket.org/ibissource/mvn-repo-proprietary.git
+- git clone https://[user]@bitbucket.org/ibissource/mvn-repo-proprietary.git
 - cd ..
 - mvn release:perform
 - cd target
 - cd mvn-repo
 - git add .
 - git commit
-- i, Release ibis-adapterframework-parent-<version>, esc, :, wq, enter
+- i, Release ibis-adapterframework-parent-[version], esc, :, wq, enter
 - git push
