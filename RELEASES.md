@@ -12,7 +12,7 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v5.5...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
-- ...
+- Move missing errorStorage warning from MessageKeeper (at adapter level) and logfile to ConfigurationWarnings (top of console main page).
 
 
 

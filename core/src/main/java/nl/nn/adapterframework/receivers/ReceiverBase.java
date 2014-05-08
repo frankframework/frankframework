@@ -624,7 +624,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 //				}
 				
 				if (errorSender==null && errorStorage==null) {
-					warn(getLogPrefix()+"sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost");
+					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+					String msg = getLogPrefix()+"sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost";
+					configWarnings.add(log, msg);
 				} else {
 //					if (errorSender!=null && !(errorSender instanceof IXAEnabled && ((IXAEnabled)errorSender).isTransacted())) {
 //						warn(getLogPrefix()+"sets transacted=true, but errorSender is not. Transactional integrity is not guaranteed"); 
