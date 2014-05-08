@@ -3,6 +3,15 @@ Releases
 
 Upcoming:
 
+- ...
+
+[![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+[Commits](https://github.com/ibissource/iaf/compare/v5_5...HEAD)
+[JavaDocs](http://www.ibissource.org/iaf/maven/apidocs/index.html)
+
+5.5:
+
 - Also when not transacted don't retrow exception caught in JMS listener (caused connection to be closed and caused possible other threads on the same listener to experience "javax.jms.IllegalStateException: Consumer closed").
 - Tweaked error logging and configuration warnings about transactional processing.
     - Show requirement for errorStorage on FF EsbJmsListener as configuration warning instead of log warning on every failed message.
@@ -27,10 +36,7 @@ Upcoming:
 - Better integration of Maven and Eclipse (using Kepler SR2).
 - added "Transaction Service" to console function "Show Security Items", and added configuration warning "receiver/pipeline transaction timeout exceeds system transaction timeout"
 
-[![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
-
-[Commits](https://github.com/ibissource/iaf/compare/v5_4...HEAD)
-[JavaDocs](http://www.ibissource.org/iaf/maven/apidocs/index.html)
+[Commits](https://github.com/ibissource/iaf/compare/v5_4...v5_5)
 
 5.4:
 
