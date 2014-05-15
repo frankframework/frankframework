@@ -24,6 +24,7 @@ import java.util.List;
 import javax.naming.AuthenticationException;
 import javax.naming.CommunicationException;
 import javax.naming.Context;
+import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
@@ -90,6 +91,9 @@ public class LoginFilter implements Filter {
 
 	protected static final int ldapAuthModeNums[] = { LDAP_AUTH_MODE_NONE,
 			LDAP_AUTH_MODE_SIMPLE, LDAP_AUTH_MODE_BASIC, LDAP_AUTH_MODE_FULL };
+
+	protected static final String AUTH_PATH_MODE_OBSERVER = "Observer";
+	protected static final String AUTH_PATH_MODE_DATAADMIN = "DataAdmin";
 
 	protected String applicationServerType;
 	protected String otapStage;
@@ -185,19 +189,19 @@ public class LoginFilter implements Filter {
 			} else {
 				boolean allowedObserverPath = isAllowedObserverPath(path);
 				boolean allowedDataAdminPath = false;
-				String authorizeGroup = null;
+				String authorizePathMode = null;
 				if (ldapAuthModeNum >= LDAP_AUTH_MODE_FULL) {
 					allowedDataAdminPath = isAllowedDataAdminPath(path);
 					if (allowedObserverPath) {
-						authorizeGroup = ldapAuthObserverBase;
+						authorizePathMode = AUTH_PATH_MODE_OBSERVER;
 					} else if (allowedDataAdminPath) {
-						authorizeGroup = ldapAuthDataAdminBase;
+						authorizePathMode = AUTH_PATH_MODE_DATAADMIN;
 					}
 				}
 				if (allowedObserverPath || allowedDataAdminPath) {
 					if (ldapAuthModeNum >= LDAP_AUTH_MODE_BASIC) {
 						String authenticated = askUsername(req, res,
-								authorizeGroup);
+								authorizePathMode);
 						if (authenticated == null) {
 							res.getWriter().write(
 									"<html>Not Allowed (" + path + ")</html>");
@@ -246,7 +250,7 @@ public class LoginFilter implements Filter {
 	}
 
 	private String askUsername(HttpServletRequest req, HttpServletResponse res,
-			String authorizeGroup) {
+			String authorizePathMode) {
 		String username = null;
 		String header = req.getHeader("Authorization");
 		if (header == null) {
@@ -258,7 +262,7 @@ public class LoginFilter implements Filter {
 				String uname = usernpassw.substring(0, usernpassw.indexOf(":"));
 				String pword = usernpassw
 						.substring(usernpassw.indexOf(":") + 1);
-				if (checkUsernamePassword(uname, pword, authorizeGroup)) {
+				if (checkUsernamePassword(uname, pword, authorizePathMode)) {
 					username = uname;
 				}
 			}
@@ -272,7 +276,7 @@ public class LoginFilter implements Filter {
 	}
 
 	private boolean checkUsernamePassword(String username, String password,
-			String authorizeGroup) {
+			String authorizePathMode) {
 		String dnUser = Misc.replace(ldapAuthUserBase, "%UID%", username);
 
 		Hashtable env = new Hashtable();
@@ -296,15 +300,19 @@ public class LoginFilter implements Filter {
 				ctx = new InitialLdapContext(env, null);
 			}
 
-			if (authorizeGroup == null) {
+			if (authorizePathMode == null) {
 				return true;
 			} else {
-				DirContext lookedContext = (DirContext) (ctx
-						.lookup(authorizeGroup));
-				Attribute attrs = lookedContext.getAttributes("").get("member");
-				for (int i = 0; i < attrs.size(); i++) {
-					String foundMember = (String) attrs.get(i);
-					if (foundMember.equalsIgnoreCase(dnUser)) {
+				if (authorizePathMode.equals(AUTH_PATH_MODE_OBSERVER)) {
+					if (isMemberOf(ctx, dnUser, ldapAuthObserverBase)) {
+						return true;
+					}
+					if (isMemberOf(ctx, dnUser, ldapAuthDataAdminBase)) {
+						return true;
+					}
+				}
+				if (authorizePathMode.equals(AUTH_PATH_MODE_DATAADMIN)) {
+					if (isMemberOf(ctx, dnUser, ldapAuthDataAdminBase)) {
 						return true;
 					}
 				}
@@ -321,6 +329,19 @@ public class LoginFilter implements Filter {
 				} catch (Exception e) {
 					log.warn("LoginFilter caught Exception", e);
 				}
+			}
+		}
+		return false;
+	}
+
+	private boolean isMemberOf(DirContext ctx, String dnUser, String dnGroup)
+			throws NamingException {
+		DirContext lookedContext = (DirContext) (ctx.lookup(dnGroup));
+		Attribute attrs = lookedContext.getAttributes("").get("member");
+		for (int i = 0; i < attrs.size(); i++) {
+			String foundMember = (String) attrs.get(i);
+			if (foundMember.equalsIgnoreCase(dnUser)) {
+				return true;
 			}
 		}
 		return false;
