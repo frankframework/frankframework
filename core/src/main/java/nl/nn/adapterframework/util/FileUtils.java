@@ -32,6 +32,8 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.servlet.http.HttpServletRequest;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -609,4 +611,54 @@ public class FileUtils {
 			}
 		}
 	}
+
+	public static boolean readAllowed(String rules, HttpServletRequest request, String fileName) throws IOException {
+		List<String> rulesList = Arrays.asList(rules.split("\\|"));
+		for (String rule: rulesList) {
+			List<String> parts = Arrays.asList(rule.trim().split("\\s+"));
+			if (parts.size() != 3) {
+				log.debug("invalid rule '" + rule + "' contains " + parts.size() + " part(s): " + parts);
+			} else {
+				String canonicalFileName = null;
+				try {
+					canonicalFileName = new File(fileName).getCanonicalPath();
+				} catch(Exception e) {
+					log.error("cannot determine canonical path for file name '" + fileName + "'", e);
+				}
+				String canonicalPath = null;
+				if ("*".equals(parts.get(0))) {
+					canonicalPath = parts.get(0);
+				} else {
+					try {
+						canonicalPath = new File(parts.get(0)).getCanonicalPath();
+					} catch(Exception e) {
+						log.error("cannot determine canonical path for first part '" + parts.get(0) + "' of rule", e);
+					}
+				}
+				if (canonicalFileName != null && canonicalPath != null) {
+					String role = parts.get(1);
+					String type = parts.get(2);
+					log.debug("check allow read file '" + canonicalFileName + "' with rule path '" + canonicalPath + "', role '" + role + "' and type '" + type + "'");
+					if ("*".equals(canonicalPath) || canonicalFileName.startsWith(canonicalPath)) {
+						log.debug("path match");
+						if ("*".equals(role) || request.isUserInRole(role)) {
+							log.debug("role match");
+							if ("allow".equals(type)) {
+								log.debug("allow");
+								return true;
+							} else if ("deny".equals(type)) {
+								log.debug("deny");
+								return false;
+							} else {
+								log.error("invalid rule type");
+							}
+						}
+					}
+				}
+			}
+		}
+		log.debug("deny");
+		return false;
+	}
+
 }

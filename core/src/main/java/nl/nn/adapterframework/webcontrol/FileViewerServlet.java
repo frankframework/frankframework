@@ -45,6 +45,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EncapsulatingReader;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -93,6 +94,8 @@ public class FileViewerServlet extends HttpServlet  {
 	private static final String stats_html_xslt = "/xml/xsl/stats_html.xsl";
 	private static final String stats_prefix    = "<statisticsCollections>";
 	private static final String stats_postfix	  = "</statisticsCollections>";
+
+	public static final String permissionRules = AppConstants.getInstance().getResolvedProperty("FileViewerServlet.permission.rules");
 
 	public static String makeConfiguredReplacements(String input) {
 		StringTokenizer tok=AppConstants.getInstance().getTokenizer(fvConfigKey);
@@ -219,13 +222,13 @@ public class FileViewerServlet extends HttpServlet  {
 		outputStream.close();
 	}
 
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-	    try {
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+		try {
 	
-	        String type=(String)request.getAttribute("resultType");
-	        if (type==null) { type=request.getParameter("resultType"); }  
-	        String fileName=(String)request.getAttribute("fileName");
-	        if (fileName==null) { fileName=request.getParameter("fileName"); } 
+			String type=(String)request.getAttribute("resultType");
+			if (type==null) { type=request.getParameter("resultType"); }
+			String fileName=(String)request.getAttribute("fileName");
+			if (fileName==null) { fileName=request.getParameter("fileName"); }
 			String log4j = (String) request.getAttribute("log4j");
 			if (log4j == null) { log4j = request.getParameter("log4j"); }
 			String stats = (String) request.getAttribute("stats");
@@ -233,25 +236,31 @@ public class FileViewerServlet extends HttpServlet  {
 //			String pipeSplit = (String) request.getAttribute("pipeSplit");
 //			if (pipeSplit == null) { pipeSplit = request.getParameter("pipeSplit"); }
 
-			
-	        if (fileName==null) {
+			if (fileName==null) {
 				PrintWriter out = response.getWriter();
-	            response.setContentType("text/html");
-	            out.println("fileName not specified");
-	            return;
-	        }
-	        boolean log4jFlag = "xml".equalsIgnoreCase(log4j) || "true".equalsIgnoreCase(log4j);
-	        if (log4jFlag) {
-	        	String stylesheetUrl;
-	        	if ("html".equalsIgnoreCase(type)) {
+				response.setContentType("text/html");
+				out.println("fileName not specified");
+				return;
+			} else {
+				if (!FileUtils.readAllowed(permissionRules, request, fileName)) {
+					PrintWriter out = response.getWriter();
+					response.setContentType("text/html");
+					out.println("not allowed");
+					return;
+				}
+			}
+			boolean log4jFlag = "xml".equalsIgnoreCase(log4j) || "true".equalsIgnoreCase(log4j);
+			if (log4jFlag) {
+				String stylesheetUrl;
+				if ("html".equalsIgnoreCase(type)) {
 					response.setContentType("text/html");
 					stylesheetUrl=log4j_html_xslt;
-	        	} else {
+				} else {
 					response.setContentType("text/plain");
 					stylesheetUrl=log4j_text_xslt;
-	        	}
+				}
 				transformReader(new FileReader(fileName), fileName, null, response, log4j_prefix, log4j_postfix, stylesheetUrl, fileName);
-	        } else {
+			} else {
 				boolean statsFlag = "xml".equalsIgnoreCase(stats) || "true".equalsIgnoreCase(stats);
 				if (statsFlag) {
 //					boolean pipeSplitFlag = "true".equalsIgnoreCase(pipeSplit);
@@ -300,16 +309,17 @@ public class FileViewerServlet extends HttpServlet  {
 					}
 				}
 			}
-	    } catch (IOException e) {
-		    log.error("FileViewerServlet caught IOException" , e);
-		    throw e;
-	    } catch (Throwable e) {
-		    log.error("FileViewerServlet caught Throwable" , e);
-		    throw new ServletException("FileViewerServlet caught Throwable" ,e);
-	    }
-    }
-    
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        doGet(request, response);
-    }
+		} catch (IOException e) {
+			log.error("FileViewerServlet caught IOException" , e);
+			throw e;
+		} catch (Throwable e) {
+			log.error("FileViewerServlet caught Throwable" , e);
+			throw new ServletException("FileViewerServlet caught Throwable" ,e);
+		}
+	}
+
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+		doGet(request, response);
+	}
+
 }
