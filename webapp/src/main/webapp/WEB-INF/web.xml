@@ -54,7 +54,7 @@
         <init-param>
             <param-name>autoStart</param-name>
             <param-value>true</param-value>
-            <description>Indicates wether the adapters should automatically started</description>
+            <description>Indicates whether the adapters should automatically started</description>
         </init-param>
         <init-param>
             <param-name>configuration</param-name>
