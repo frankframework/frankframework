@@ -18,8 +18,10 @@ package nl.nn.adapterframework.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -70,7 +72,25 @@ public class Dir2Xml  {
 		}
 		return dirXml.toXML();
 	}
-  
+
+	public String getRecursiveDirList() {
+		File dir = new File(path);
+		Collection<File> filesCol = FileUtils.listFiles(dir, null, true);
+		File files[] = filesCol.toArray(new File[filesCol.size()]);
+		if (files != null) {
+			Arrays.sort(files, new FileNameComparator());
+		}
+		int count = (files == null ? 0 : files.length);
+		XmlBuilder dirXml = new XmlBuilder("directory");
+		dirXml.addAttribute("name", path);
+		dirXml.addAttribute("count", count);
+		for (int i = 0; i < count; i++) {
+			File file = files[i];
+			dirXml.addSubElement(getFileAsXmlBuilder(file,file.getName()));
+		}
+		return dirXml.toXML();
+	}
+
 	private XmlBuilder getFileAsXmlBuilder(File file, String nameShown) {
 	
 		XmlBuilder fileXml = new XmlBuilder("file");
