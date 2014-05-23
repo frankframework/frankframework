@@ -15,20 +15,41 @@
 */
 package nl.nn.adapterframework.jms;
 
+import java.io.IOException;
+import java.util.Map;
+
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
+import javax.naming.NamingException;
+import javax.xml.transform.TransformerException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.*;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IXAEnabled;
+import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DomBuilderException;
-import org.apache.commons.lang.StringUtils;
 
-import javax.jms.*;
-import javax.naming.NamingException;
-import javax.xml.transform.TransformerException;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
+import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -52,10 +73,6 @@ import java.util.Map;
  * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>the time (in milliseconds) it takes for the message to expire. If the message is not consumed before, it will be lost. Make sure to set it to a positive value for request/repy type of messages.</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as <code>deliveryMode</code>. You probably want to use that.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
- * <tr><td>{@link #setForceMQCompliancy(String) forceMQCompliancy}</td><td>If the MQ destination is not a JMS receiver, format errors occur.
-	 To prevent this, settting <code>forceMQCompliancy</code> to MQ will inform
-	 MQ that the replyto queue is not JMS compliant. Setting <code>forceMQCompliancy</code>
-	 to "JMS" will cause that on mq the destination is identified as jms-compliant.</td><td>JMS</td></tr>
  * <tr><td>{@link #setCorrelationIdToHex(boolean) correlationIdToHex}</td><td>Transform the value of the correlationId to a hexadecimal value if it starts with ID: (preserving the ID: part). Useful when sending messages to MQ which expects this value to be in hexadecimal format when it starts with ID:, otherwise generating the error: MQJMS1044: String is not a valid hexadecimal number</td><td>false</td></tr>
  * <tr><td>{@link #setCorrelationIdToHexPrefix(String) correlationIdToHexPrefix}</td><td>Prefix to check before executing correlationIdToHex. When empty (and correlationIdToHex equals true) all correlationId's are transformed, this is useful in case you want the entire correlationId to be transformed (for example when the receiving party doesn't allow characters like a colon to be present in the correlationId).</td><td>ID:</td></tr>
  * <tr><td>{@link #setCorrelationIdMaxLength(int) correlationIdMaxLength}</td><td>if set (>=0) and the length of the correlationID exceeds this maximum length, the correlationID is trimmed from the left side of a string to this maximum length</td><td>-1</td></tr>
@@ -94,15 +111,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
     private Destination destination;
 
     private Map<String, ConnectionFactory> proxiedConnectionFactories;
-
-    //<code>forceMQCompliancy</code> is used to perform MQ specific replying.
-    //If the MQ destination is not a JMS receiver, format errors occur.
-    //To prevent this, settting replyToComplianceType to MQ will inform
-    //MQ that the queue (or destination) on which a message is sent, is not JMS compliant.
-
-    private String forceMQCompliancy=null;
-    private boolean forceTargetClientMQ=false;
-	private boolean forceTargetClientJMS=false;
 
     //---------------------------------------------------------------------
     // Queue fields
@@ -319,36 +327,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return textMessage;
 	}
 
-	/**
-	 * Enforces the setting of <code>forceMQCompliancy</code><br/>.
-	 * this method has to be called prior to creating a <code>MessageProducer</code>
-	 */
- 	private void enforceMQCompliancy(Destination destination) throws JMSException {
- 		if (forceTargetClientMQ) {
-             setTargetClient(destination, 1 /*JMSC.MQJMS_CLIENT_NONJMS_MQ*/);
-             if (log.isDebugEnabled()) log.debug("["+name+"] MQ Compliancy for queue ["+destination.toString()+"] set to NONJMS");
- 		} else {
-             if (forceTargetClientJMS) {
-                 setTargetClient(destination, 0 /*JMSC.MQJMS_CLIENT_JMS_COMPLIANT*/);
-                 if (log.isDebugEnabled()) log.debug("MQ Compliancy for queue ["+destination.toString()+"] set to JMS");
-			}
- 		}
-    }
-
-    private void setTargetClient(Destination destination, int integer) {
-        try {
-            Method method = destination.getClass().getMethod("setTargetClient", Integer.class);
-            method.invoke(destination, integer);
-        } catch (NoSuchMethodException e) {
-            log.error(e.getMessage() + " You need to have ibm mq");
-        } catch (InvocationTargetException e) {
-            log.error(e.getMessage(), e);
-        } catch (IllegalAccessException e) {
-            log.error(e.getMessage(), e);
-        }
-
-
-    }
     public Destination getDestination() throws NamingException, JMSException, JmsException  {
 
 	    if (destination == null) {
@@ -453,7 +431,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 				mp = getQueueSender((QueueSession)session, (Queue)destination);
 			}
 		} else {
-			enforceMQCompliancy(destination);
 			mp = session.createProducer(destination);
 		}
 		if (getMessageTimeToLive()>0)
@@ -510,16 +487,14 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	  * @exception  javax.jms.JMSException
 	  */
 	private QueueSender getQueueSender(QueueSession session, Queue destination) throws NamingException, JMSException {
-	    enforceMQCompliancy(destination);
-		QueueSender queueSender = session.createSender(destination);
-	    return queueSender;
+		return session.createSender(destination);
 	}
 
 	/**
 	 * Gets a topicPublisher for a specified topic
 	 */
 	private TopicPublisher getTopicPublisher(TopicSession session, Topic topic) throws NamingException, JMSException {
-	    return session.createPublisher(topic);
+		return session.createPublisher(topic);
 	}
 	private TopicSubscriber getTopicSubscriber(TopicSession session, Topic topic, String selector) throws NamingException, JMSException {
 
@@ -569,7 +544,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 					}
 				}
 			} else {
-				enforceMQCompliancy(dest);
 				mp = session.createProducer(dest);
 			}
 		} catch (InvalidDestinationException e) {
@@ -659,7 +633,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 					return sendByQueue((QueueSession)session, (Queue)dest, message);
 				}
 			} else {
-				enforceMQCompliancy(dest);
 				MessageProducer mp = session.createProducer(dest);
 				mp.send(message);
 				mp.close();
@@ -674,28 +647,21 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 			}
 		}
 	}
-	/**
-	 * Send a message to a Destination of type Queue.
-	 * This method respects the <code>replyToComplianceType</code> field,
-	 * as if it is set to "MQ",
-	 * @return messageID of the sent message
-	 */
-	private String sendByQueue(QueueSession session, Queue destination, Message message)
-	    throws NamingException, JMSException {
-	    enforceMQCompliancy(destination);
-	    QueueSender tqs = session.createSender(destination);
-	    tqs.send(message);
-	    tqs.close();
-	    return message.getJMSMessageID();
-	}
-	private String sendByTopic(TopicSession session, Topic destination, Message message)
-	    throws NamingException, JMSException {
 
-	    TopicPublisher tps = session.createPublisher(destination);
-	    tps.publish(message);
-	    tps.close();
+	protected String sendByQueue(QueueSession session, Queue destination,
+			Message message) throws NamingException, JMSException {
+		QueueSender tqs = session.createSender(destination);
+		tqs.send(message);
+		tqs.close();
 		return message.getJMSMessageID();
+	}
 
+	protected String sendByTopic(TopicSession session, Topic destination,
+			Message message) throws NamingException, JMSException {
+		TopicPublisher tps = session.createPublisher(destination);
+		tps.publish(message);
+		tps.close();
+		return message.getJMSMessageID();
 	}
 
 	public boolean isSessionsArePooled() {
@@ -882,35 +848,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	public String getSubscriberType() {
 		return subscriberType;
 	}
-
-
-	/**
-	 * <code>forceMQCompliancy</code> is used to perform MQ specific sending.
-	 * If the MQ destination is not a JMS receiver, format errors occur.
-	 * To prevent this, settting <code>forceMQCompliancy</code>  to MQ will inform
-	 * MQ that the replyto queue is not JMS compliant. Setting <code>forceMQCompliancy</code>
-	 * to "JMS" will cause that on mq the destination is identified as jms-compliant.
-	 * Other specifics information for different providers may be
-	 * implemented. Defaults to "JMS".<br/>
-	 */
-	public void setForceMQCompliancy(String forceMQCompliancy) {
-		if (forceMQCompliancy.equals("MQ")) {
-			forceTargetClientMQ=true;
-			forceTargetClientJMS=false;
-		} else {
-			if (forceMQCompliancy.equals("JMS")) {
-				forceTargetClientMQ=false;
-				forceTargetClientJMS=true;
-			} else {
-				throw new IllegalArgumentException("forceMQCompliancy has a wrong value ["+forceMQCompliancy+"] should be 'JMS' or 'MQ'");
-			}
-		}
-		this.forceMQCompliancy=forceMQCompliancy;
-	}
-	public String getForceMQCompliancy() {
-		return forceMQCompliancy;
-	}
-
 
 	/**
 	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link #isTransacted()} returns <code>false</code>.
