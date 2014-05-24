@@ -33,38 +33,38 @@
 			<div class="navbar-collapse collapse navbar-responsive-collapse"> <!-- class="navbar-collapse collapse navbar-responsive-collapse"-->
 				<ul class="nav navbar-nav">
 					<li>
-						<a href="showConfigurationStatus.do" title="show Configuration Status">
-							<img src="bootstrap/img/configurationStatus.gif" alt="show Configuration Status"/>
+						<a href="showConfigurationStatus.do" title="Show Configuration Status">
+							<img src="bootstrap/img/configurationStatus.gif" alt="Show Configuration Status"/>
 						</a>
 					</li>
 					<li>
-						<a href="showConfiguration.do" title="show Configuration">
-							<img src="bootstrap/img/configuration.gif" alt="show Configuration"/>
+						<a href="showConfiguration.do" title="Show Configuration">
+							<img src="bootstrap/img/configuration.gif" alt="Show Configuration"/>
 						</a>
 					</li>
 					<li>
-						<a href="showWsdls.do" title="show WSDL's">
-							<img src="bootstrap/img/wsdl.gif" alt="show WSDL's"/>
+						<a href="showWsdls.do" title="WSDL's">
+							<img src="bootstrap/img/wsdl.gif" alt="WSDL's"/>
 						</a>
 					</li>
 					<li>
-						<a href="testPipeLine.do" title="test a PipeLine of an Adapter">
-							<img src="bootstrap/img/testPipeLine.gif" alt="test a PipeLine of an Adapter"/>
+						<a href="testPipeLine.do" title="Test a PipeLine of an Adapter">
+							<img src="bootstrap/img/testPipeLine.gif" alt="Test a PipeLine of an Adapter"/>
 						</a>
 					</li>
 					<li>
-						<a href="testService.do" title="test a ServiceListener">
-							<img src="bootstrap/img/service.gif" alt="test a ServiceListener"/>
+						<a href="testService.do" title="Test a ServiceListener">
+							<img src="bootstrap/img/service.gif" alt="Test a ServiceListener"/>
 						</a>
 					</li>
 					<li>
-						<a href="sendJmsMessage.do" title="send a message with JMS">
-							<img src="bootstrap/img/jmsmessage.gif" alt="send a message with JMS"/>
+						<a href="sendJmsMessage.do" title="Send a message with JMS">
+							<img src="bootstrap/img/jmsmessage.gif" alt="Send a message with JMS"/>
 						</a>
 					</li>
 					<li>
-						<a href="executeJdbcQuery.do" title="execute a Jdbc Query">
-							<img src="bootstrap/img/execquery.gif" alt="execute a Jdbc Query"/>
+						<a href="executeJdbcQuery.do" title="Execute a Jdbc Query">
+							<img src="bootstrap/img/execquery.gif" alt="Execute a Jdbc Query"/>
 						</a>
 					</li>
 					<li>
@@ -73,48 +73,48 @@
 						</a>
 					</li>
 					<li>
-						<a href="browseQueue.do" title="browse a queue with JMS">
-							<img src="bootstrap/img/browsejms.gif" alt="browse a queue with JMS"/>
+						<a href="browseQueue.do" title="Browse a queue with JMS">
+							<img src="bootstrap/img/browsejms.gif" alt="Browse a queue with JMS"/>
 						</a>
 					</li>
 					<li>
-						<a href="showSchedulerStatus.do" title="show Scheduler status">
-							<img src="bootstrap/img/clock.gif" alt="show Scheduler status"/>
+						<a href="showSchedulerStatus.do" title="Show Scheduler status">
+							<img src="bootstrap/img/clock.gif" alt="Show Scheduler status"/>
 						</a>
 					</li>
 					<li>
-						<a href="showEnvironmentVariables.do" title="show Environment Variables">
-							<img src="bootstrap/img/config.gif" alt="show Environment Variables"/>
+						<a href="showEnvironmentVariables.do" title="Show Environment Variables">
+							<img src="bootstrap/img/config.gif" alt="Show Environment Variables"/>
 						</a>
 					</li>
 					<li>
-						<a href="browseJdbcTable.do" title="browse a Jdbc Table">
-							<img src="bootstrap/img/table.gif" alt="browse a Jdbc Table"/>
+						<a href="browseJdbcTable.do" title="Browse a Jdbc Table">
+							<img src="bootstrap/img/table.gif" alt="Browse a Jdbc Table"/>
 						</a>
 					</li>
 					<li>
-						<a href="showSecurityItems.do" title="show Security Items">
-							<img src="bootstrap/img/security.gif" alt="show Security Items"/>
+						<a href="showSecurityItems.do" title="Show Security Items">
+							<img src="bootstrap/img/security.gif" alt="Show Security Items"/>
 						</a>
 					</li>
 					<li>
-						<a href="showMonitors.do" title="show Monitors">
-							<img src="bootstrap/img/monitoring.gif" alt="show Monitors"/>
+						<a href="showMonitors.do" title="Show Monitors">
+							<img src="bootstrap/img/monitoring.gif" alt="Show Monitors"/>
 						</a>
 					</li>
 					<li>
-						<a href="showIbisstoreSummary.do" title="show Ibisstore Summary">
-							<img src="bootstrap/img/ibisstore.gif" alt="show Ibisstore Summary"/>
+						<a href="showIbisstoreSummary.do" title="Show Ibisstore Summary">
+							<img src="bootstrap/img/ibisstore.gif" alt="Show Ibisstore Summary"/>
 						</a>
 					</li>
 					<li>						
-						<a href="showLogging.do" title="show Logging">
-							<img src="bootstrap/img/logging.gif" alt="show Logging"/>
+						<a href="showLogging.do" title="Show Logging">
+							<img src="bootstrap/img/logging.gif" alt="Show Logging"/>
 						</a>
 					</li>
 					<li>
-						<a href="DumpIbisConsole" title="dump Ibis Console">
-							<img src="bootstrap/img/dump.gif" alt="dump Ibis Console"/>
+						<a href="DumpIbisConsole" title="Dump Ibis Console">
+							<img src="bootstrap/img/dump.gif" alt="Dump Ibis Console"/>
 						</a>
 					</li>
 					<li>
@@ -124,8 +124,15 @@
 					</li>
 					<li>
 						<a href="#" data-toggle="modal" data-target="#myModal" title="Information">
-							<img src="bootstrap/img/info.gif" alt="show Info"/>
+							<img src="bootstrap/img/info.gif" alt="Information"/>
 						</a>
+					</li>
+					<li>
+						<xsl:element name="a">
+							<xsl:attribute name="href"><xsl:value-of select="/page/attribute[@name='nl.nn.adapterframework.webcontrol.ThemeSwitchQueryString']"/></xsl:attribute>
+							<xsl:attribute name="title">Theme Classic</xsl:attribute>
+							<img src="bootstrap/img/theme-switch.png" alt="Theme Classic"/>
+						</xsl:element>
 					</li>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">

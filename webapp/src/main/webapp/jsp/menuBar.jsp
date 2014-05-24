@@ -7,102 +7,108 @@
 			<imagelink 
 				href="showConfigurationStatus.do"
 				type="configurationStatus"
-				alt="show Configuration Status">
+				alt="Show Configuration Status">
 			</imagelink>
 			<imagelink 
 				href="showConfiguration.do"
 				type="configuration"
-				alt="show Configuration">
+				alt="Show Configuration">
 			</imagelink>
 			<imagelink 
 				href="showLogging.do"
 				type="logging"
-				alt="show Logging">
+				alt="Show Logging">
 			</imagelink>
 			<imagelink 
 				href="sendJmsMessage.do"
 				type="jms-message"
-				alt="send a message with JMS">
+				alt="Send a message with JMS">
 			</imagelink>
 			<imagelink 
 				href="testIfsaService.do"
 				type="ifsa-message"
-				alt="call an IFSA Service">
+				alt="Call an IFSA Service">
 			</imagelink>
 			<imagelink 
 				href="browseQueue.do"
 				type="browsejms"
-				alt="browse a queue with JMS">
+				alt="Browse a queue with JMS">
 			</imagelink>
 			<imagelink
 				href="testPipeLine.do"
 				type="testPipeLine"
-				alt="test a PipeLine of an Adapter">
+				alt="Test a PipeLine of an Adapter">
 			</imagelink>
 			<imagelink
 				href="testService.do"
 				type="service"
-				alt="test a ServiceListener">
+				alt="Test a ServiceListener">
 			</imagelink>
 			<imagelink
 				href="servlet/rpcrouter"
 				type="wsdl"
-				alt="retrieve WSDL">
+				alt="WSDL's">
 			</imagelink>
 			<imagelink
 				href="showSchedulerStatus.do"
 				type="scheduler"
-				alt="show Scheduler status">
+				alt="Show Scheduler status">
 			</imagelink>
 			<imagelink
 				href="showEnvironmentVariables.do"
 				type="properties"
-				alt="show Environment Variables">
+				alt="Show Environment Variables">
 			</imagelink>
 			<imagelink
 				href="executeJdbcQuery.do"
 				type="execquery"
-				alt="execute a Jdbc Query">
+				alt="Execute a Jdbc Query">
 			</imagelink>
 			<imagelink
 				href="browseJdbcTable.do"
 				type="browsetable"
-				alt="browse a Jdbc Table">
+				alt="Browse a Jdbc Table">
 			</imagelink>
 			<imagelink
 				href="DumpIbisConsole"
 				type="dump"
-				alt="dump Ibis Console">
+				alt="Dump Ibis Console">
 			</imagelink>
 			<imagelink 
 				href="showTracingConfiguration.do"
 				type="tracingConfiguration"
-				alt="show Tracing Configuration">
+				alt="Show Tracing Configuration">
 			 </imagelink>
 			<imagelink
 				href="showSecurityItems.do"
 				type="security"
-				alt="show Security Items">
+				alt="Show Security Items">
 			</imagelink>
 			<imagelink 
 				href="showMonitors.do"
 				type="monitoring"
-				alt="show Monitors">
+				alt="Show Monitors">
 			</imagelink>
 			<imagelink 
 				href="showIbisstoreSummary.do"
 				type="showsummary"
-				alt="show Ibisstore Summary">
+				alt="Show Ibisstore Summary">
 			</imagelink>
 			<imagelink
 				href="testtool"
 				type="testtool"
-				alt="testTool">
+				alt="Test Tool">
 			</imagelink>
 			<imagelink
 				href="<%= AppConstants.getInstance().getResolvedProperty("help.url") %>"
 				type="help"
+				alt="Help"
 				newwindow="true">
+			</imagelink>
+			<imagelink
+				href="<%=XmlUtils.encodeChars(themeSwitchQueryString)%>"
+				type="theme"
+				alt="Theme Bootstrap">
 			</imagelink>
 	</imagelinkMenu>
 </menuBar>

@@ -22,12 +22,38 @@
 			theme = "classic";
 		}
 	}
-	
+	String otherTheme;
+	if ("classic".equals(theme)) {
+		otherTheme = "bootstrap";
+	} else {
+		otherTheme = "classic";
+	}
+	String themeSwitchQueryString = (String)request.getAttribute("javax.servlet.forward.query_string");
+	if (themeSwitchQueryString == null) {
+		themeSwitchQueryString = "?theme=" + otherTheme;
+	} else {
+		themeSwitchQueryString = "?" + themeSwitchQueryString;
+		int i = themeSwitchQueryString.indexOf("?theme=");
+		if (i == -1) {
+			i = themeSwitchQueryString.indexOf("&theme=");
+		}
+		if (i == -1) {
+			themeSwitchQueryString = themeSwitchQueryString + "&theme=" + otherTheme;
+		} else {
+			int j = themeSwitchQueryString.indexOf("&", i + 7);
+			if (j == -1) {
+				j = themeSwitchQueryString.length();
+			}
+			themeSwitchQueryString = themeSwitchQueryString.substring(0, i + 7) + otherTheme + themeSwitchQueryString.substring(j);
+		}
+	}
+	request.setAttribute("nl.nn.adapterframework.webcontrol.ThemeSwitchQueryString", themeSwitchQueryString);
+
 	String contenttype="text/html";
 	String output=request.getParameter("output");
 	if ("xml".equals(output) || "bootstrap".equals(theme)) {
 		response.setContentType("text/xml;charset=UTF-8");
-		if ("bootstrap".equals(theme)) {
+		if (!"xml".equals(output)) {
 			String stylesheet = "bootstrap/xsl/" + view.substring(5, view.length() - 4) + ".xsl";
 %>
 			<%= "<?xml-stylesheet href=\"" + stylesheet + "\" type=\"text/xsl\"?>" %>
@@ -39,7 +65,7 @@
 			String attribute=request.getParameter("attribute");
 			if (attribute!=null) {
 				Object value=request.getAttribute(attribute);
-				out.println("<attribute name=\""+attribute+"\" class=\""+value.getClass().getName()+"\">"+value+"</attribute>");		
+				out.println("<attribute name=\""+attribute+"\" class=\""+value.getClass().getName()+"\">"+value+"</attribute>");
 			} else {
 				for(Enumeration enumeration=request.getAttributeNames();enumeration.hasMoreElements();) {
 					String name=(String)enumeration.nextElement();
@@ -48,12 +74,12 @@
 					if (value instanceof String) {
 						string = (String)value;
 					} else {
-						string = XmlUtils.encodeChars(ToStringBuilder.reflectionToString(value));
+						string = ToStringBuilder.reflectionToString(value);
 					}
-					if ("configXML".equals(name)) {
-						string = "<![CDATA[" + XmlUtils.encodeCdataString(string) + "]]>";
+					if (name.contains(".") || name.equals("configXML")) {
+						string = XmlUtils.encodeChars(string);
 					}
-					out.println("<attribute name=\""+name+"\" class=\""+value.getClass().getName()+"\">"+string+"</attribute>");		
+					out.println("<attribute name=\""+name+"\" class=\""+value.getClass().getName()+"\">"+string+"</attribute>");
 				}
 				%>
 				<%@ include file="requestToXml.jsp" %>
