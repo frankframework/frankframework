@@ -267,6 +267,17 @@ public class Misc {
 		return streamToString(stream,endOfLineString, DEFAULT_INPUT_STREAM_ENCODING, xmlEncode);
 	}
 
+	public static byte[] streamToBytes(InputStream inputStream)
+			throws IOException {
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		byte[] buf = new byte[1024];
+		int len;
+		while ((len = inputStream.read(buf)) > 0) {
+			result.write(buf, 0, len);
+		}
+		return result.toByteArray();
+	}
+
 	public static String resourceToString(URL resource, String endOfLineString, boolean xmlEncode) throws IOException {
 		InputStream stream = resource.openStream();
 		try {

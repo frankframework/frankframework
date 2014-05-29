@@ -15,10 +15,13 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -60,7 +63,7 @@ import org.apache.log4j.Logger;
  * <li>create: create a new file, but do not write anything to it</li>
  * <li>read: read from file</li>
  * <li>delete: delete the file</li>
- * <li>read_delete: read the contents, then delete</li>
+ * <li>read_delete: read the contents, then delete (when outputType is stream the file is deleted after the stream is read)</li>
  * <li>encode: encode base64</li>
  * <li>decode: decode base64</li>
  * <li>list: returns the files and directories in the directory that satisfy the specified filter (see {@link nl.nn.adapterframework.util.Dir2Xml dir2xml}). If a directory is not specified, the fileName is expected to include the directory</li>
@@ -72,7 +75,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setTestCanWrite(boolean) testCanWrite}</td><td>when set to <code>true</code>, a test is performed to find out if a temporary file can be created and deleted in the specified directory (only used if directory is set and combined with the action write, write_append or create)</td><td>true</td></tr>
  * <tr><td>{@link #setSkipBOM(boolean) skipBOM}</td><td>when set to <code>true</code>, a possible Bytes Order Mark (BOM) at the start of the file is skipped (only used for the action read and encoding UFT-8)</td><td>false</td></tr>
  * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>(only used when actions=delete) when set to <code>true</code>, the directory from which a file is deleted is also deleted when it contains no other files</td><td>false</td></tr>
- * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code> or <code>bytes</code></td><td>"string"</td></tr>
+ * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code>, <code>bytes</code> or <code>stream</code></td><td>"string"</td></tr>
  * <tr><td>{@link #setFileSource(String) fileSource}</td><td>(action=read) either <code>filesystem</code> or <code>classpath</code></td><td>"filesystem"</td></tr>
  * </table>
  * </p>
@@ -142,8 +145,10 @@ public class FileHandler {
 		
 		if (transformers.size() == 0)
 			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
-		if (!outputType.equalsIgnoreCase("string") && !outputType.equalsIgnoreCase("bytes")) {
-			throw new ConfigurationException(getLogPrefix(null)+"illegal value for outputType ["+outputType+"], must be 'string' or 'bytes'");
+		if (!outputType.equalsIgnoreCase("string")
+				&& !outputType.equalsIgnoreCase("bytes")
+				&& !outputType.equalsIgnoreCase("stream")) {
+			throw new ConfigurationException(getLogPrefix(null)+"illegal value for outputType ["+outputType+"], must be 'string', 'bytes' or 'stream'");
 		}
 		
 		// configure the transformers
@@ -154,22 +159,38 @@ public class FileHandler {
 	}
 	
 	public Object handle(Object input, IPipeLineSession session) throws Exception {
-		byte[] inValue = null;
+		Object output = null;
 		if (input instanceof byte[]) {
-			inValue = (byte [])input;
-		}
-		else {
-//inputType
-			inValue = (input == null) ? null : input.toString().getBytes(charset);
-		}
-			
-		for (Iterator it = transformers.iterator(); it.hasNext(); ) {
-			inValue = ((TransformerAction)it.next()).go(inValue, session);
-		}
-		if (inValue == null || "bytes".equals(outputType)) {
-			return inValue;
+			output = (byte[])input;
+		} else if (input instanceof InputStream) {
+			if (transformers.get(0) instanceof TransformerActionWithInputTypeStream) {
+				output = input;
+			} else {
+				output = Misc.streamToBytes((InputStream)input);
+			}
 		} else {
-			return new String(inValue, charset);
+			output = (input == null) ? null : input.toString().getBytes(charset);
+		}
+		for (Iterator it = transformers.iterator(); it.hasNext(); ) {
+			TransformerAction transformerAction = (TransformerAction)it.next();
+			if (!it.hasNext() && "stream".equals(outputType)) {
+				if (transformerAction instanceof TransformerActionWithOutputTypeStream) {
+					output = ((TransformerActionWithOutputTypeStream)transformerAction).go((byte[])output, session, "stream");
+				} else {
+					output = new ByteArrayInputStream(transformerAction.go((byte[])output, session));
+				}
+			} else {
+				if (output instanceof InputStream) {
+					output = ((TransformerActionWithInputTypeStream)transformerAction).go((InputStream)output, session);
+				} else {
+					output = transformerAction.go((byte[])output, session);
+				}
+			}
+		}
+		if (output == null || "bytes".equals(outputType) || "stream".equals(outputType)) {
+			return output;
+		} else {
+			return new String((byte[])output, charset);
 		}
 	}
 	
@@ -184,9 +205,17 @@ public class FileHandler {
 		void configure() throws ConfigurationException;
 		/*
 		 * transform the in and return the result
-* @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
+		 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
 		 */
 		byte[] go(byte[] in, IPipeLineSession session) throws Exception;
+	}
+	
+	protected interface TransformerActionWithInputTypeStream extends TransformerAction {
+		byte[] go(InputStream in, IPipeLineSession session) throws Exception;
+	}
+	
+	protected interface TransformerActionWithOutputTypeStream extends TransformerAction {
+		InputStream go(byte[] in, IPipeLineSession session, String outputType) throws Exception;
 	}
 	
 	/**
@@ -235,7 +264,7 @@ public class FileHandler {
 	/**
 	 * Write the input to a file in the specified directory.
 	 */
-	private class FileWriter implements TransformerAction {
+	private class FileWriter implements TransformerActionWithInputTypeStream {
 		private boolean append = false;
 		public FileWriter(boolean append) {
 			this.append = append;
@@ -250,8 +279,10 @@ public class FileHandler {
 			}
 		}
 		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
+			return go(new ByteArrayInputStream(in), session);
+		}
+		public byte[] go(InputStream in, IPipeLineSession session) throws Exception {
 			File tmpFile=createFile(session);
-
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
 					if (tmpFile.getParentFile().mkdirs()) {
@@ -265,13 +296,10 @@ public class FileHandler {
 			}
 			// Use tmpFile.getPath() instead of tmpFile to be WAS 5.0 / Java 1.3 compatible
 			FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), append);
-			
 			try {
-				if (in!=null) {
-					fos.write(in);
-					if (isWriteLineSeparator()) {
-						fos.write(eolArray);
-					}
+				Misc.streamToStream(in, fos);
+				if (isWriteLineSeparator()) {
+					fos.write(eolArray);
 				}
 			} finally {
 				fos.close();
@@ -306,7 +334,7 @@ public class FileHandler {
 	 * Reads the file, which name is specified in the input, from the specified directory.
 	 * The class supports the deletion of the file after reading.
 	 */
-	private class FileReader implements TransformerAction {
+	private class FileReader implements TransformerActionWithOutputTypeStream {
 		private boolean deleteAfterRead;
 		
 		FileReader() {
@@ -332,26 +360,8 @@ public class FileHandler {
 			}
 		}
 		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
-			File file;
-			 
-			String name = (String)session.get(fileNameSessionKey);;
-			
-			if (StringUtils.isEmpty(name)) {
-				name = new String(in);
-			}
-			
-			if (fileSource.equals("classpath")) {
-				URL resource = ClassUtils.getResourceURL(this, name);
-				file = new File(resource.getFile());
-			} else {
-				if (StringUtils.isNotEmpty(getDirectory())) {
-					file = new File(getDirectory(), name);
-				} else {
-					file = new File(name);
-				}
-			}
+			File file = getFile(in, session);
 			FileInputStream fis = new FileInputStream(file);
-			
 			try {
 				byte[] result = new byte[fis.available()];
 				fis.read(result);
@@ -370,10 +380,31 @@ public class FileHandler {
 				}
 			} finally {
 				fis.close();
-
 				if (deleteAfterRead)
-					file.delete();					
+					file.delete();
 			}
+		}
+		public InputStream go(byte[] in, IPipeLineSession session,
+				String outputType) throws Exception {
+			return new FileDeleteAfterReadInputStream(getFile(in, session), deleteAfterRead);
+		}
+		private File getFile(byte[] in, IPipeLineSession session) {
+			File file;
+			String name = (String)session.get(fileNameSessionKey);
+			if (StringUtils.isEmpty(name)) {
+				name = new String(in);
+			}
+			if (fileSource.equals("classpath")) {
+				URL resource = ClassUtils.getResourceURL(this, name);
+				file = new File(resource.getFile());
+			} else {
+				if (StringUtils.isNotEmpty(getDirectory())) {
+					file = new File(getDirectory(), name);
+				} else {
+					file = new File(name);
+				}
+			}
+			return file;
 		}
 	}
 
@@ -657,5 +688,54 @@ public class FileHandler {
 	}
 	public boolean isDeleteEmptyDirectory() {
 		return deleteEmptyDirectory;
+	}
+
+	private class FileDeleteAfterReadInputStream extends FileInputStream {
+		File file;
+		boolean deleteAfterRead;
+
+		public FileDeleteAfterReadInputStream(File file, boolean deleteAfterRead) throws FileNotFoundException {
+			super(file);
+			this.file = file;
+			this.deleteAfterRead = deleteAfterRead;
+			if (deleteAfterRead) {
+				file.deleteOnExit();
+			}
+		}
+
+		@Override
+		public int read() throws IOException {
+			int i = super.read();
+			if (i == -1 && deleteAfterRead) {
+				file.delete();
+			}
+			return i;
+		}
+
+		@Override
+		public int read(byte[] b) throws IOException {
+			int i = super.read(b);
+			if (i == -1 && deleteAfterRead) {
+				file.delete();
+			}
+			return i;
+		}
+
+		@Override
+		public int read(byte[] b, int off, int len) throws IOException {
+			int i = super.read(b, off, len);
+			if (i == -1 && deleteAfterRead) {
+				file.delete();
+			}
+			return i;
+		}
+
+		@Override
+		public void close() throws IOException {
+			super.close();
+			if (deleteAfterRead) {
+				file.delete();
+			}
+		}
 	}
 }

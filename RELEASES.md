@@ -15,6 +15,8 @@ Upcoming
 - Move missing errorStorage warning from MessageKeeper (at adapter level) and logfile to ConfigurationWarnings (top of console main page).
 - Replace (broken) enforceMQCompliancy on JmsSender with MQSender.
 - Remove FXF 1 and 2 support.
+- Add theme switch button.
+- Add stream support to FilePipe and FileSender.
 
 
 
