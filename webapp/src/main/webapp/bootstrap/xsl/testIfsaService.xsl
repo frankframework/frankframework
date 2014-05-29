@@ -7,17 +7,17 @@
 		<html lang="nl-NL">
 			<xsl:call-template name="header">
 				<xsl:with-param name="css">showLogging.css</xsl:with-param>
-				<xsl:with-param name="title">IJA_IPLnL 186 20131029-1413 - Call an IFSA service</xsl:with-param>
+				<xsl:with-param name="title"><xsl:value-of select="/page/applicationConstants/properties/property[@name='instance.name']"/> - Call an IFSA service</xsl:with-param>
 			</xsl:call-template>
 			<body>
 				<xsl:call-template name="menu">
-					<xsl:with-param name="environment">TST</xsl:with-param>
+					<xsl:with-param name="environment"><xsl:value-of select="/page/applicationConstants/properties/property[@name='otap.stage']"/></xsl:with-param>
 				</xsl:call-template>
 				<xsl:call-template name="modal">
-					<xsl:with-param name="version">IJA_IPLnL 186 20131029-1413, IAF 5.0-a27.3, buildscript 11g, size: 5.1</xsl:with-param>
-					<xsl:with-param name="server">running on LPAB00000001894 using Apache Tomcat/7.0.22</xsl:with-param>
-					<xsl:with-param name="heap">heap size: 89M, total JVM memory: 150M</xsl:with-param>
-					<xsl:with-param name="space">free space: 68GB, total space: 74GB</xsl:with-param>
+					<xsl:with-param name="version"><xsl:value-of select="/page/applicationConstants/properties/property[@name='instance.name']"/> ??? ????????-????, IAF <xsl:value-of select="/page/applicationConstants/properties/property[@name='application.version']"/>, buildscript ??, size: ??</xsl:with-param>
+					<xsl:with-param name="server">running on ??? using ???</xsl:with-param>
+					<xsl:with-param name="heap">heap size: ??M, total JVM memory: ??M</xsl:with-param>
+					<xsl:with-param name="space">free space: ??GB, total space: ??GB</xsl:with-param>
 				</xsl:call-template>
 				<div class="panel panel-primary">
 					<div class="panel-heading">
