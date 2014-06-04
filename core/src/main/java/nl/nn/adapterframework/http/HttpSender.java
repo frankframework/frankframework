@@ -58,6 +58,10 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.lang.StringUtils;
+import org.htmlcleaner.CleanerProperties;
+import org.htmlcleaner.HtmlCleaner;
+import org.htmlcleaner.SimpleXmlSerializer;
+import org.htmlcleaner.TagNode;
 
 /**
  * Sender that gets information via a HTTP using POST or GET.
@@ -103,7 +107,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setInputMessageParam(String) inputMessageParam}</td><td>(only used when <code>methodeType=POST</code> and <code>paramsInUrl=false</code>) name of the request parameter which is used to put the input message in</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHeadersParams(String) headersParams}</td><td>Comma separated list of parameter names which should be set as http headers</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIgnoreRedirects(boolean) ignoreRedirects}</td><td>when true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful</td><td>false</td></tr>
- * <tr><td>{@link #setIgnoreCertificateExpiredException(boolean) ignoreCertificateExpiredException}</td><td>when true,  the CertificateExpiredException is ignored</td><td>false</td></tr>
+ * <tr><td>{@link #setIgnoreCertificateExpiredException(boolean) ignoreCertificateExpiredException}</td><td>when true, the CertificateExpiredException is ignored</td><td>false</td></tr>
+ * <tr><td>{@link #setxhtml(boolean) xhtml}</td><td>when true, the html response is transformed to xhtml</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -218,6 +223,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private boolean paramsInUrl=true;
 	private boolean ignoreRedirects=false;
 	private boolean ignoreCertificateExpiredException=false;
+	private boolean xhtml=false;
 
 	protected Parameter urlParameter;
 	
@@ -638,7 +644,18 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			throw new SenderException("Failed to recover from exception");
 		}
 
-		return result;	
+		
+		if (isXhtml()
+				&& StringUtils.isNotEmpty(result)
+				&& (result.trim().startsWith("<html>") || result.trim()
+						.startsWith("<html "))) {
+			CleanerProperties props = new CleanerProperties();
+			HtmlCleaner cleaner = new HtmlCleaner(props);
+			TagNode tagNode = cleaner.clean(result);
+			return new SimpleXmlSerializer(props).getXmlAsString(tagNode);
+		} else {
+			return result;
+		}
 	}
 
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
@@ -926,5 +943,12 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public boolean isParamsInUrl() {
 		return paramsInUrl;
+	}
+
+	public void setXhtml(boolean b) {
+		xhtml = b;
+	}
+	public boolean isXhtml() {
+		return xhtml;
 	}
 }

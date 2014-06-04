@@ -277,6 +277,11 @@
       <version>1.0.20061217</version>
       <scope>test</scope>
     </dependency>
+	<dependency>
+		<groupId>net.sourceforge.htmlcleaner</groupId>
+		<artifactId>htmlcleaner</artifactId>
+		<version>2.7</version>
+	</dependency>
   </dependencies>
 
 </project>
