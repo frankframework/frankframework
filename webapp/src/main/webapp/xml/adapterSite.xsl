@@ -147,8 +147,10 @@
 						total JVM memory: <xsl:value-of select="//processMetrics/properties/property[@name='totalMemory']"/>
 						</div>
 						<xsl:if test="//fileSystem/totalSpace!='null'">
+							<div>
 							free space: <xsl:value-of select="//fileSystem/freeSpace"/>,
 							total space: <xsl:value-of select="//fileSystem/totalSpace"/>
+							</div>
 						</xsl:if>
 						<div id="clock"/>
 					</td>
