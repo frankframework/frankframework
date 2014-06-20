@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.TransformerConfigurationException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -41,6 +42,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.TransformerPool;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HostConfiguration;
@@ -109,6 +111,7 @@ import org.htmlcleaner.TagNode;
  * <tr><td>{@link #setIgnoreRedirects(boolean) ignoreRedirects}</td><td>when true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful</td><td>false</td></tr>
  * <tr><td>{@link #setIgnoreCertificateExpiredException(boolean) ignoreCertificateExpiredException}</td><td>when true, the CertificateExpiredException is ignored</td><td>false</td></tr>
  * <tr><td>{@link #setxhtml(boolean) xhtml}</td><td>when true, the html response is transformed to xhtml</td><td>false</td></tr>
+ * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>>(only used when <code>xhtml=true</code>) stylesheet to apply to the html response</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -224,6 +227,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private boolean ignoreRedirects=false;
 	private boolean ignoreCertificateExpiredException=false;
 	private boolean xhtml=false;
+	private String styleSheetName=null;
+
+	private TransformerPool transformerPool=null;
 
 	protected Parameter urlParameter;
 	
@@ -375,9 +381,22 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			throw new ConfigurationException(getLogPrefix()+"cannot interprete uri ["+getUrl()+"]");
 		}
 
+		if (StringUtils.isNotEmpty(getStyleSheetName())) {
+			try {
+				URL stylesheetURL = ClassUtils.getResourceURL(this, getStyleSheetName());
+				if (stylesheetURL==null) {
+					throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet ["+getStyleSheetName()+"]");
+				}
+				transformerPool = new TransformerPool(stylesheetURL);
+			} catch (IOException e) {
+				throw new ConfigurationException(getLogPrefix() + "cannot retrieve ["+ getStyleSheetName() + "]", e);
+			} catch (TransformerConfigurationException te) {
+				throw new ConfigurationException(getLogPrefix() + "got error creating transformer from file [" + getStyleSheetName() + "]", te);
+			}
+		}
 	}
 
-	public void open() {
+	public void open() throws SenderException {
 //		connectionManager = new IbisMultiThreadedHttpConnectionManager();
 		connectionManager = new HttpConnectionManager(0,getName());
 		connectionManager.setMaxConnectionsPerHost(getMaxConnections());
@@ -387,11 +406,21 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			connectionManager.setConnectionStaleCheckingEnabled(isStaleChecking());
 		}
 		httpclient.setHttpConnectionManager(connectionManager);
+		if (transformerPool!=null) {
+			try {
+				transformerPool.open();
+			} catch (Exception e) {
+				throw new SenderException(getLogPrefix()+"cannot start TransformerPool", e);
+			}
+		}
 	}
 
 	public void close() {
 		connectionManager.shutdown();
 		connectionManager=null;
+		if (transformerPool!=null) {
+			transformerPool.close();
+		}
 	}
 
 	public boolean isSynchronous() {
@@ -643,7 +672,6 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			}
 			throw new SenderException("Failed to recover from exception");
 		}
-
 		
 		if (isXhtml()
 				&& StringUtils.isNotEmpty(result)
@@ -652,10 +680,19 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			CleanerProperties props = new CleanerProperties();
 			HtmlCleaner cleaner = new HtmlCleaner(props);
 			TagNode tagNode = cleaner.clean(result);
-			return new SimpleXmlSerializer(props).getXmlAsString(tagNode);
-		} else {
-			return result;
+			result = new SimpleXmlSerializer(props).getXmlAsString(tagNode);
+
+			if (transformerPool!=null) {
+				log.debug(getLogPrefix()+ " transforming result [" + result + "]");
+				ParameterResolutionContext prc_xslt = new ParameterResolutionContext(result, null, true, true); 
+				try {
+					result = transformerPool.transform(prc_xslt.getInputSource(), null);
+				} catch (Exception e) {
+					throw new SenderException("Exception on transforming input", e);
+				}
+			}
 		}
+		return result;
 	}
 
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
@@ -950,5 +987,12 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public boolean isXhtml() {
 		return xhtml;
+	}
+
+	public void setStyleSheetName(String stylesheetName){
+		this.styleSheetName=stylesheetName;
+	}
+	public String getStyleSheetName() {
+		return styleSheetName;
 	}
 }
