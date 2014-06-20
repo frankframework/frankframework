@@ -43,7 +43,7 @@
     <dependency>
       <groupId>org.aspectj</groupId>
       <artifactId>aspectjweaver</artifactId>
-      <version>1.8.0</version>
+      <version>1.6.2</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
