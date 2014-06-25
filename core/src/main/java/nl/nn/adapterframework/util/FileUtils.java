@@ -159,6 +159,7 @@ public class FileUtils {
 	}
 
 	public static String moveFile(File orgFile, File rename2File, int numberOfAttempts, long waitTime) throws InterruptedException {
+		boolean rename2FileExists = rename2File.exists();
 		int errCount = 0;
 		
 		while (errCount++ < numberOfAttempts) {
@@ -168,14 +169,23 @@ public class FileUtils {
 			// doesn't work (for example when running on Linux and the file
 			// needs to be moved to another filesystem).
 			if (!success) {
+				log.debug("Could not move file ["+orgFile.getPath()+"] to ["+rename2File.getPath()+"], now trying alternate move (copy and delete)");
 				success = copyFile(orgFile, rename2File, false);
 				if (success) {
 					success = orgFile.delete();
+					if (!success) {
+						log.debug("Could not delete source file ["+orgFile.getPath()+"] after copying it to ["+rename2File.getPath()+"]");
+						if (!rename2FileExists) {
+							log.debug("Deleting destination file ["+rename2File.getPath()+"]: " + rename2File.delete());
+						}
+					}
+				} else {
+					log.debug("Could not copy file in alternate move");
 				}
-				log.debug("Result of alternate move (copy and delete): " + success);
 			}
 			
 			if (!success) {
+				log.debug("Retries left for moving file [" + (numberOfAttempts - errCount) + "]");
 				if (errCount < numberOfAttempts) {
 					Thread.sleep(waitTime);
 				}
@@ -596,6 +606,15 @@ public class FileUtils {
 						}
 					}
 				} else {
+					File zipParentFile = zipFile.getParentFile(); 
+					if (!zipParentFile.exists()) {
+						log.debug("creating directory [" + zipParentFile.getPath()
+								+ "] for ZipEntry [" + ze.getName() + "]");
+						if (!zipParentFile.mkdir()) {
+							throw new IOException(zipParentFile.getPath()
+									+ " could not be created");
+						}
+					}
 					FileOutputStream fos = new FileOutputStream(zipFile);
 					log.debug("writing ZipEntry [" + ze.getName()
 							+ "] to file [" + zipFile.getPath() + "]");
@@ -661,4 +680,7 @@ public class FileUtils {
 		return false;
 	}
 
+	public static long getLastModifiedDelta(File file) {
+		return System.currentTimeMillis() - file.lastModified();
+	}
 }
