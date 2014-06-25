@@ -79,6 +79,7 @@ public class XmlSwitch extends AbstractPipe {
 	private String sessionKey=null;
     private String notFoundForwardName=null;
     private String emptyForwardName=null;
+	private boolean xslt2=false;
 
 	/**
 	 * If no {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} is specified, the
@@ -108,7 +109,7 @@ public class XmlSwitch extends AbstractPipe {
 				throw new ConfigurationException(getLogPrefix(null) + "cannot have both an xpathExpression and a serviceSelectionStylesheetFilename specified");
 			}
 			try {
-				transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getXpathExpression(), "text"));
+				transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getXpathExpression(), "text"), isXslt2());
 			} 
 			catch (TransformerConfigurationException te) {
 				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);
@@ -121,7 +122,7 @@ public class XmlSwitch extends AbstractPipe {
 					if (stylesheetURL==null) {
 						throw new ConfigurationException(getLogPrefix(null) + "cannot find stylesheet ["+getServiceSelectionStylesheetFilename()+"]");
 					}
-					transformerPool = new TransformerPool(stylesheetURL);
+					transformerPool = new TransformerPool(stylesheetURL, isXslt2());
 				} catch (IOException e) {
 					throw new ConfigurationException(getLogPrefix(null) + "cannot retrieve ["+ serviceSelectionStylesheetFilename + "]", e);
 				} catch (TransformerConfigurationException te) {
@@ -264,4 +265,11 @@ public class XmlSwitch extends AbstractPipe {
 		return sessionKey;
 	}
 
+	public boolean isXslt2() {
+		return xslt2;
+	}
+
+	public void setXslt2(boolean b) {
+		xslt2 = b;
+	}
 }
