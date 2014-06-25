@@ -285,6 +285,21 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			} catch (SQLException e) {
 				log.warn(new SenderException(getLogPrefix() + "got exception closing SQL statement",e ));
 			}
+			if (isCloseInputstreamOnExit()) {
+				if (paramList!=null) {
+					for (int i = 0; i < paramList.size(); i++) {
+						if (Parameter.TYPE_INPUTSTREAM.equals(paramList.getParameter(i).getType())) {
+							log.debug(getLogPrefix() + "Closing inputstream for parameter [" + paramList.getParameter(i).getName() + "]");
+							try {
+								InputStream inputStream = (InputStream) paramList.getParameter(i).getValue(null, prc);
+								inputStream.close();
+							} catch (Exception e) {
+								log.warn(new SenderException(getLogPrefix() + "got exception closing inputstream", e));
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 

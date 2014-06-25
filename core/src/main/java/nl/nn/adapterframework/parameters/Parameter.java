@@ -75,6 +75,8 @@ import org.w3c.dom.Node;
  * 	<li><code>xmldatetime</code>: converts the result from a XML dateTime to a Date. When applied as a JDBC parameter, the method setTimestamp() is used</li>
  * 	<li><code>number</code>: converts the result to a Number, using decimalSeparator and groupingSeparator. When applied as a JDBC parameter, the method setDouble() is used</li>
  * 	<li><code>integer</code>: converts the result to an Integer</li>
+ * 	<li><code>inputstream</code>: only applicable as a JDBC parameter, the method setBinaryStream() is used</li>
+ * 	<li><code>string2bytes</code>: only applicable as a JDBC parameter, the method setBytes() is used</li>
  * </ul>
  * </td><td>string</td></tr>
  * <tr><td>{@link #setFormatString(String) formatString}</td><td>used in combination with types <code>date</code>, <code>time</code> and <code>datetime</code></td><td>depends on type</td></tr>
@@ -132,6 +134,8 @@ public class Parameter implements INamedObject, IWithParameters {
 	public final static String TYPE_XMLDATETIME="xmldatetime";
 	public final static String TYPE_NUMBER="number";
 	public final static String TYPE_INTEGER="integer";
+	public final static String TYPE_INPUTSTREAM="inputstream";
+	public final static String TYPE_STRING2BYTES="string2bytes";
 	
 	public final static String TYPE_DATE_PATTERN="yyyy-MM-dd";
 	public final static String TYPE_TIME_PATTERN="HH:mm:ss";
