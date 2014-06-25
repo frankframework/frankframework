@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.WildCardFilter;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -41,6 +42,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setSubdirectories(boolean) subdirectories}</td><td>when <code>true</code>, files  in subdirectories will be deleted, too</td><td>false</td></tr>
  * <tr><td>{@link #setLastModifiedDelta(long) lastModifiedDelta}</td><td>time in milliseconds that must have passed at least before a file will be deleted</td><td>0</td></tr>
  * <tr><td>{@link #setDeleteEmptySubdirectories(boolean) deleteEmptySubdirectories}</td><td>when <code>true</code>, empty subdirectories will be deleted, too</td><td>false</td></tr>
+ * <tr><td>{@link #setWildcard(String) wildcard}</td><td>filter of files to delete. If not set and a directory is specified, all files in the directory are interpreted to be deleted</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -53,6 +55,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	private boolean subdirectories=false;
 	private long lastModifiedDelta=0;
 	private boolean deleteEmptySubdirectories=false;
+	private String wildcard;
 
 	private _FileFilter fileFilter = new _FileFilter();
 	private _DirFilter dirFilter = new _DirFilter();
@@ -118,9 +121,20 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	}
 
 	private void getFilesForDeletion(List result, File directory) {
-		File[] files = directory.listFiles(fileFilter);
-		for (int i = 0; i < files.length; i++) {
-			result.add(files[i]);
+		File[] files;
+		if (getWildcard()!=null) {
+			WildCardFilter filter = new WildCardFilter(getWildcard());
+			files = directory.listFiles(filter);
+			for (int i = 0; i < files.length; i++) {
+				if (FileUtils.getLastModifiedDelta(files[i]) > getLastModifiedDelta()) {
+					result.add(files[i]);
+				}
+			}
+		} else {
+			files = directory.listFiles(fileFilter);
+			for (int i = 0; i < files.length; i++) {
+				result.add(files[i]);
+			}
 		}
 		
 		if (isSubdirectories()) {
@@ -152,7 +166,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	private class _FileFilter implements FileFilter {
 		public boolean accept(File file) {
 			if (file.isFile()) {
-				if ((System.currentTimeMillis() - file.lastModified()) > getLastModifiedDelta()) {
+				if (FileUtils.getLastModifiedDelta(file) > getLastModifiedDelta()) {
 					return true;
 				}
 			}
@@ -192,5 +206,12 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	}
 	public boolean isDeleteEmptySubdirectories() {
 		return deleteEmptySubdirectories;
+	}
+
+	public void setWildcard(String string) {
+		wildcard = string;
+	}
+	public String getWildcard() {
+		return wildcard;
 	}
 }
