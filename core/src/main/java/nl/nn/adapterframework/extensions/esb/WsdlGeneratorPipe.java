@@ -94,16 +94,19 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		OutputStream fullWsdlOut = null;
 		try {
 			Adapter adapter = new Adapter();
-			adapter.setName(FileUtils.getBaseName(fileName));
+			String fileBaseName = FileUtils.getBaseName(fileName).replaceAll(
+					" ", "_");
+			adapter.setName(fileBaseName);
 			GenericReceiver genericReceiver = new GenericReceiver();
 			EsbJmsListener esbJmsListener = new EsbJmsListener();
-			esbJmsListener.setQueueConnectionFactoryName("jms/qcf_tibco");
+			esbJmsListener.setQueueConnectionFactoryName("jms/qcf_"
+					+ fileBaseName);
+			esbJmsListener.setDestinationName("jms/dest_" + fileBaseName);
 			genericReceiver.setListener(esbJmsListener);
 			adapter.registerReceiver(genericReceiver);
 			pipeLine.setAdapter(adapter);
 			Wsdl wsdl = null;
-			wsdl = new Wsdl(pipeLine, FileUtils.getBaseName(fileName)
-					.replaceAll(" ", "_"));
+			wsdl = new Wsdl(pipeLine, fileBaseName);
 			wsdl.setIndent(true);
 			wsdl.setDocumentation(getWsdlDocumentation(wsdl.getFilename()));
 			wsdl.setWsdlNamespacePrefix("ns");
