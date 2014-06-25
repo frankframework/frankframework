@@ -141,8 +141,10 @@ public final class ShowConfigurationStatus extends ActionBase {
 		
 			RunStateEnum adapterRunState = adapter.getRunState();
 			
-			adapterXML.addAttribute("name",adapter.getName());
-			adapterXML.addAttribute("nameUC",StringUtils.upperCase(adapter.getName()));
+			String adapterName = adapter.getName();
+			adapterXML.addAttribute("name",adapterName);
+			// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter 
+			adapterXML.addAttribute("nameUC",StringUtils.upperCase(StringUtils.replace(adapterName,"_", "*")));
 			adapterXML.addAttribute("started", ""+(adapterRunState.equals(RunStateEnum.STARTED)));
 			adapterXML.addAttribute("state", adapterRunState.toString());
 			if (adapterRunState.equals(RunStateEnum.STARTING)) {
