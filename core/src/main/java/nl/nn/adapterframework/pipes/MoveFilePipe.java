@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setDirectory(String) directory}</td><td>base directory where files are moved from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilename(String) filename}</td><td>name of the file to move (if not specified, the input for this pipe is assumed to be the name of the file</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWildcard(String) wildcard}</td><td>filter of files to replace</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWildcardSessionKey(String) wildcardSessionKey}</td><td>session key that contains the name of the filter to use (only used if wildcard is not set)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2dir(String) move2dir}</td><td>destination directory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2file(String) move2file}</td><td>name of the destination file (if not specified, the name of the file to move is taken)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2fileSessionKey(String) move2fileSessionKey}</td><td>session key that contains the name of the file to use (only used if move2file is not set)</td><td>&nbsp;</td></tr>
@@ -47,6 +48,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setAppend(boolean) append}</td><td> when set <code>true</code> and the destination file already exists, the content of the file to move is written to the end of the destination file. This implies <code>overwrite=false</code></td><td>false</td></tr>
  * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>when set to <code>true</code>, the directory from which a file is moved is deleted when it contains no other files</td><td>false</td></tr>
  * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to move to is created if it does not exist</td><td>false</td></tr>
+ * <tr><td>{@link #setPrefix(String) prefix}</td><td>string which is inserted at the start of the destination file</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSuffix(String) suffix}</td><td>string which is inserted at the end of the destination file (and replaces the extension if present)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -59,6 +62,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 	private String directory;
 	private String filename;
 	private String wildcard;
+	private String wildcardSessionKey;
 	private String move2dir;
 	private String move2file;
 	protected String move2fileSessionKey;
@@ -69,6 +73,8 @@ public class MoveFilePipe extends FixedForwardPipe {
 	private boolean append = false;
 	private boolean deleteEmptyDirectory = false;
 	private boolean createDirectory = false;
+	private String prefix;
+	private String suffix;
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -87,7 +93,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		File srcFile=null;
 		File dstFile=null;
 
-		if (StringUtils.isEmpty(getWildcard())) {
+		if (StringUtils.isEmpty(getWildcard()) && StringUtils.isEmpty(getWildcardSessionKey())) {
 			if (StringUtils.isEmpty(getDirectory())) {
 				if (StringUtils.isEmpty(getFilename())) {
 					srcFile = new File(input.toString());
@@ -103,12 +109,12 @@ public class MoveFilePipe extends FixedForwardPipe {
 			}
 			if (StringUtils.isEmpty(getMove2file())) {
 				if (StringUtils.isEmpty(getMove2fileSessionKey())) {
-					dstFile = new File(getMove2dir(), srcFile.getName());
+					dstFile = new File(getMove2dir(), retrieveDestinationChild(srcFile.getName()));
 				} else {
-					dstFile = new File(getMove2dir(), (String)session.get(getMove2fileSessionKey()));
+					dstFile = new File(getMove2dir(), retrieveDestinationChild((String)session.get(getMove2fileSessionKey())));
 				}
 			} else {
-				dstFile = new File(getMove2dir(), getMove2file());
+				dstFile = new File(getMove2dir(), retrieveDestinationChild(getMove2file()));
 			}
 			moveFile(session, srcFile, dstFile);
 		} else {
@@ -121,18 +127,32 @@ public class MoveFilePipe extends FixedForwardPipe {
 			} else {
 				srcFile = new File(getDirectory());
 			}
-			WildCardFilter filter = new WildCardFilter(getWildcard());
+			String wc;
+			if (StringUtils.isEmpty(getWildcardSessionKey())) {
+				wc = getWildcard();
+			} else {
+				wc = (String)session.get(getWildcardSessionKey());
+			}
+			WildCardFilter filter = new WildCardFilter(wc);
 			File[] srcFiles = srcFile.listFiles(filter);
 			int count = (srcFiles == null ? 0 : srcFiles.length);
+			if (count==0) {
+				log.info(getLogPrefix(session) + "no files with wildcard [" + wc + "] found in directory [" + srcFile.getAbsolutePath() +"]");
+			}
 			for (int i = 0; i < count; i++) {
-				dstFile = new File(getMove2dir(), srcFiles[i].getName());
+				dstFile = new File(getMove2dir(), retrieveDestinationChild(srcFiles[i].getName()));
 				moveFile(session, srcFiles[i], dstFile);
 			}
 		}
 
 		/* if parent source directory is empty, delete the directory */
 		if (isDeleteEmptyDirectory()) {
-			File srcDirectory = srcFile.getParentFile();
+			File srcDirectory;
+			if (srcFile.isDirectory()) {
+				srcDirectory = srcFile.getAbsoluteFile();
+			} else {
+				srcDirectory = srcFile.getParentFile();
+			}
 			if (srcDirectory.exists() && srcDirectory.list().length==0) {
 				boolean success = srcDirectory.delete();
 				if (!success){
@@ -146,9 +166,23 @@ public class MoveFilePipe extends FixedForwardPipe {
 			}
 		}
 		
-		return new PipeRunResult(getForward(), dstFile.getAbsolutePath());
+		return new PipeRunResult(getForward(), (dstFile==null?srcFile.getAbsolutePath():dstFile.getAbsolutePath()));
 	}
 
+	private String retrieveDestinationChild(String child) {
+		String newChild;
+		if (StringUtils.isNotEmpty(getPrefix())) {
+			newChild = getPrefix() + child;
+		} else {
+			newChild =  child;
+		}
+		if (StringUtils.isNotEmpty(getSuffix())) {
+			String baseName = FileUtils.getBaseName(newChild);
+			newChild = baseName + getSuffix();
+		}
+		return newChild;
+	}
+	
 	private void moveFile(IPipeLineSession session, File srcFile, File dstFile) throws PipeRunException {
 		try {
 			if (!dstFile.getParentFile().exists()) {
@@ -194,6 +228,13 @@ public class MoveFilePipe extends FixedForwardPipe {
 	}
 	public String getDirectory() {
 		return directory;
+	}
+
+	public void setWildcardSessionKey(String string) {
+		wildcardSessionKey = string;
+	}
+	public String getWildcardSessionKey() {
+		return wildcardSessionKey;
 	}
 
 	public void setWildcard(String string) {
@@ -271,5 +312,19 @@ public class MoveFilePipe extends FixedForwardPipe {
 	}
 	public boolean isCreateDirectory() {
 		return createDirectory;
+	}
+
+	public void setPrefix(String string) {
+		prefix = string;
+	}
+	public String getPrefix() {
+		return prefix;
+	}
+
+	public void setSuffix(String string) {
+		suffix = string;
+	}
+	public String getSuffix() {
+		return suffix;
 	}
 }
