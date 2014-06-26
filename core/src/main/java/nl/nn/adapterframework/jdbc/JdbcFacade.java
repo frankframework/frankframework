@@ -336,7 +336,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				} else {
 					throw new SenderException(getLogPrefix()+"unknown inputstream ["+value.getClass()+"] for parameter ["+pv.getDefinition().getName()+"]");
 				}
-			} else if (Parameter.TYPE_STRING2BYTES.equals(paramType)) {
+			} else if ("string2bytes".equals(paramType)) {
 				statement.setBytes(i+1, ((String)value).getBytes());
 			} else { 
 				statement.setString(i+1, (String)value);

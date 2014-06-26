@@ -76,7 +76,6 @@ import org.w3c.dom.Node;
  * 	<li><code>number</code>: converts the result to a Number, using decimalSeparator and groupingSeparator. When applied as a JDBC parameter, the method setDouble() is used</li>
  * 	<li><code>integer</code>: converts the result to an Integer</li>
  * 	<li><code>inputstream</code>: only applicable as a JDBC parameter, the method setBinaryStream() is used</li>
- * 	<li><code>string2bytes</code>: only applicable as a JDBC parameter, the method setBytes() is used</li>
  * </ul>
  * </td><td>string</td></tr>
  * <tr><td>{@link #setFormatString(String) formatString}</td><td>used in combination with types <code>date</code>, <code>time</code> and <code>datetime</code></td><td>depends on type</td></tr>
@@ -135,7 +134,6 @@ public class Parameter implements INamedObject, IWithParameters {
 	public final static String TYPE_NUMBER="number";
 	public final static String TYPE_INTEGER="integer";
 	public final static String TYPE_INPUTSTREAM="inputstream";
-	public final static String TYPE_STRING2BYTES="string2bytes";
 	
 	public final static String TYPE_DATE_PATTERN="yyyy-MM-dd";
 	public final static String TYPE_TIME_PATTERN="HH:mm:ss";
@@ -343,7 +341,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			result=getDefaultValue();
 		}
 		if (result !=null && result instanceof String) {
-			if (getMinLength()>=0) {
+			if (getMinLength()>=0 && !TYPE_NUMBER.equals(getType())) {
 				if (result.toString().length()<getMinLength()) {
 					log.debug("Padding parameter ["+getName()+"] because length ["+result.toString().length()+"] deceeds minLength ["+getMinLength()+"]" );
 					result = StringUtils.rightPad(result.toString(), getMinLength());
@@ -393,6 +391,10 @@ public class Parameter implements INamedObject, IWithParameters {
 					result = n;
 				} catch (ParseException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
+				}
+				if (getMinLength()>=0 && result.toString().length()<getMinLength()) {
+					log.debug("Adding leading zeros to parameter ["+getName()+"]" );
+					result = StringUtils.leftPad(result.toString(), getMinLength(), '0');
 				}
 			}
 			if (TYPE_INTEGER.equals(getType())) {
