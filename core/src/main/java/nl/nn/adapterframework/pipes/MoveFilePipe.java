@@ -148,21 +148,26 @@ public class MoveFilePipe extends FixedForwardPipe {
 		/* if parent source directory is empty, delete the directory */
 		if (isDeleteEmptyDirectory()) {
 			File srcDirectory;
-			if (srcFile.isDirectory()) {
-				srcDirectory = srcFile.getAbsoluteFile();
-			} else {
+			if (StringUtils.isEmpty(getWildcard()) && StringUtils.isEmpty(getWildcardSessionKey())) {
 				srcDirectory = srcFile.getParentFile();
-			}
-			if (srcDirectory.exists() && srcDirectory.list().length==0) {
-				boolean success = srcDirectory.delete();
-				if (!success){
-				   log.warn( getLogPrefix(session) + "could not delete directory [" + srcDirectory.getAbsolutePath() +"]");
-				} 
-				else {
-				   log.info(getLogPrefix(session) + "deleted directory [" + srcDirectory.getAbsolutePath() +"]");
-				} 
 			} else {
-				   log.info(getLogPrefix(session) + "directory [" + srcDirectory.getAbsolutePath() +"] doesn't exist or is not empty");
+				srcDirectory = srcFile.getAbsoluteFile();
+			}
+			log.debug("srcFile ["+srcFile.getPath()+"] srcDirectory ["+srcDirectory.getPath()+"]");
+			if (srcDirectory.exists()) {
+				if (srcDirectory.list().length==0) {
+					boolean success = srcDirectory.delete();
+					if (!success){
+					   log.warn( getLogPrefix(session) + "could not delete directory [" + srcDirectory.getAbsolutePath() +"]");
+					} 
+					else {
+					   log.info(getLogPrefix(session) + "deleted directory [" + srcDirectory.getAbsolutePath() +"]");
+					} 
+				} else {
+					   log.info(getLogPrefix(session) + "directory [" + srcDirectory.getAbsolutePath() +"] is not empty");
+				}
+			} else {
+				   log.info(getLogPrefix(session) + "directory [" + srcDirectory.getAbsolutePath() +"] doesn't exist");
 			}
 		}
 		
