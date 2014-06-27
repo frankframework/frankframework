@@ -14,6 +14,7 @@
 	<xsl:param name="messagingLayer">ESB</xsl:param>
 	<xsl:param name="serviceLayer" />
 	<!-- other elements -->
+	<xsl:param name="namespace">http://nn.nl/XSD/Generic/MessageHeader/1</xsl:param>
 	<xsl:param name="fromId" />
 	<xsl:param name="cpaId" />
 	<xsl:param name="conversationId" />
@@ -21,14 +22,14 @@
 	<xsl:param name="correlationId" />
 	<xsl:param name="timestamp" />
 	<xsl:template match="/">
-		<MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
-			<From>
-				<Id>
+		<xsl:element name="MessageHeader" namespace="{$namespace}">
+			<xsl:element name="From" namespace="{$namespace}">
+				<xsl:element name="Id" namespace="{$namespace}">
 					<xsl:value-of select="$fromId" />
-				</Id>
-			</From>
-			<To>
-				<Location>
+				</xsl:element>
+			</xsl:element>
+			<xsl:element name="To" namespace="{$namespace}">
+				<xsl:element name="Location" namespace="{$namespace}">
 					<xsl:choose>
 						<xsl:when test="$messagingLayer='P2P'">
 							<xsl:value-of select="concat($messagingLayer, '.', $businessDomain, '.', $applicationName, '.', $applicationFunction, '.', $paradigm)"/>
@@ -37,46 +38,46 @@
 							<xsl:value-of select="concat($messagingLayer, '.', $businessDomain, '.', $serviceLayer, '.', $serviceName, '.', $serviceContext, '.', $serviceContextVersion, '.', $operationName, '.', $operationVersion, '.', $paradigm)"/>
 						</xsl:otherwise>
 					</xsl:choose>
-				</Location>
-			</To>
-			<HeaderFields>
-				<CPAId>
+				</xsl:element>
+			</xsl:element>
+			<xsl:element name="HeaderFields" namespace="{$namespace}">
+				<xsl:element name="CPAId" namespace="{$namespace}">
 					<xsl:value-of select="$cpaId" />
-				</CPAId>
-				<ConversationId>
+				</xsl:element>
+				<xsl:element name="ConversationId" namespace="{$namespace}">
 					<xsl:value-of select="$conversationId" />
-				</ConversationId>
-				<MessageId>
+				</xsl:element>
+				<xsl:element name="MessageId" namespace="{$namespace}">
 					<xsl:value-of select="$messageId" />
-				</MessageId>
+				</xsl:element>
 				<xsl:if test="string-length($correlationId)&gt;0">
-					<CorrelationId>
+					<xsl:element name="CorrelationId" namespace="{$namespace}">
 						<xsl:value-of select="$correlationId" />
-					</CorrelationId>
+					</xsl:element>
 				</xsl:if>
-				<Timestamp>
+				<xsl:element name="Timestamp" namespace="{$namespace}">
 					<xsl:value-of select="$timestamp" />
-				</Timestamp>
-			</HeaderFields>
-			<Service>
-				<Name>
+				</xsl:element>
+			</xsl:element>
+			<xsl:element name="Service" namespace="{$namespace}">
+				<xsl:element name="Name" namespace="{$namespace}">
 					<xsl:value-of select="$serviceName" />
-				</Name>
-				<Context>
+				</xsl:element>
+				<xsl:element name="Context" namespace="{$namespace}">
 					<xsl:value-of select="$serviceContext" />
-				</Context>
-				<Action>
-					<Paradigm>
+				</xsl:element>
+				<xsl:element name="Action" namespace="{$namespace}">
+					<xsl:element name="Paradigm" namespace="{$namespace}">
 						<xsl:value-of select="$paradigm" />
-					</Paradigm>
-					<Name>
+					</xsl:element>
+					<xsl:element name="Name" namespace="{$namespace}">
 						<xsl:value-of select="$operationName" />
-					</Name>
-					<Version>
+					</xsl:element>
+					<xsl:element name="Version" namespace="{$namespace}">
 						<xsl:value-of select="$operationVersion" />
-					</Version>
-				</Action>
-			</Service>
-		</MessageHeader>
+					</xsl:element>
+				</xsl:element>
+			</xsl:element>
+		</xsl:element>
 	</xsl:template>
 </xsl:stylesheet>
