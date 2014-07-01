@@ -324,6 +324,17 @@ public class FileHandler {
 		}
 		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
 			File tmpFile=createFile(session);
+			if (!tmpFile.getParentFile().exists()) {
+				if (isCreateDirectory()) {
+					if (tmpFile.getParentFile().mkdirs()) {
+						log.debug( getLogPrefix(session) + "created directory [" + tmpFile.getParent() +"]");
+					} else {
+						log.warn( getLogPrefix(session) + "directory [" + tmpFile.getParent() +"] could not be created");
+					}
+				} else {
+					log.warn( getLogPrefix(session) + "directory [" + tmpFile.getParent() +"] does not exists");
+				}
+			}
 			FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), false);
 			fos.close();
 			return tmpFile.getPath().getBytes();
