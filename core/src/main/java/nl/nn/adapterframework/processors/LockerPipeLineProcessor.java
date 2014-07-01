@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.processors;
 
+import java.sql.SQLException;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -34,23 +36,37 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 			try {
 				objectId = locker.lock();
 			} catch (Exception e) {
-				throw new PipeRunException(null, "error while setting lock", e);
-			}
-		}
-		if (objectId != null) {
-			try {
-				pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
-			} finally {
-				try {
-					locker.unlock(objectId);
-				} catch (Exception e) {
-					throw new PipeRunException(null, "error while removing lock", e);
+				boolean isUniqueConstraintViolation = false;
+				if (e instanceof SQLException) {
+					SQLException sqle = (SQLException) e;
+					isUniqueConstraintViolation = locker.getDbmsSupport().isUniqueConstraintViolation(sqle);
 				}
+				if (isUniqueConstraintViolation) {
+					String msg = "error while setting lock: " + e.getMessage();
+					log.info(msg);
+				} else {
+					throw new PipeRunException(null, "error while setting lock", e);
+				}
+			}
+			if (objectId != null) {
+				try {
+					pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
+				} finally {
+					try {
+						locker.unlock(objectId);
+					} catch (Exception e) {
+						//throw new PipeRunException(null, "error while removing lock", e);
+						String msg = "error while removing lock: " + e.getMessage();
+						log.warn(msg);
+					}
+				}
+			} else {
+				pipeLineResult = new PipeLineResult();
+				pipeLineResult.setState("success");
 			}
 		} else {
 			pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}
 		return pipeLineResult;
 	}
-
 }

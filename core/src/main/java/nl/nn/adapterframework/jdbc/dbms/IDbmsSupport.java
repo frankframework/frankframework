@@ -88,4 +88,5 @@ public interface IDbmsSupport {
 	boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException;
 	boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException;
 
+	boolean isUniqueConstraintViolation(SQLException e);
 }

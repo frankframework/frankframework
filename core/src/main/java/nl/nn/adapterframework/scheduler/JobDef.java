@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.scheduler;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -548,9 +549,19 @@ public class JobDef {
 							try {
 								objectId = getLocker().lock();
 							} catch (Exception e) {
+								boolean isUniqueConstraintViolation = false;
+								if (e instanceof SQLException) {
+									SQLException sqle = (SQLException) e;
+									isUniqueConstraintViolation = locker.getDbmsSupport().isUniqueConstraintViolation(sqle);
+								}
 								String msg = "error while setting lock: " + e.getMessage();
-								getMessageKeeper().add(msg, MessageKeeperMessage.INFO_LEVEL);
-								log.info(getLogPrefix()+msg);
+								if (isUniqueConstraintViolation) {
+									getMessageKeeper().add(msg, MessageKeeperMessage.INFO_LEVEL);
+									log.info(getLogPrefix()+msg);
+								} else {
+									getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+									log.error(getLogPrefix()+msg);
+								}
 							}
 							if (objectId!=null) {
 								TimeoutGuard tg = new TimeoutGuard("Job "+getName());

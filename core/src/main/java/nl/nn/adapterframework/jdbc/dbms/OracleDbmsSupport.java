@@ -142,4 +142,12 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		return doIsTableColumnPresent(conn, "all_tab_columns", "owner", "table_name", "column_name", schemaName, tableName, columnName);
 	}
 
+	public boolean isUniqueConstraintViolation(SQLException e) {
+		if (e.getErrorCode()==1) {
+			// ORA-00001: unique constraint violated (<schema>.<constraint>)
+			return true;
+		} else {
+			return false;
+		}
+	}
 }

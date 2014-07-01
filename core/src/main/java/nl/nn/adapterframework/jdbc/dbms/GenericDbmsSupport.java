@@ -367,6 +367,11 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		log.warn("could not determine presence of index columns on table ["+tableName+"] (not an Oracle database)");
 		return true;
 	}
+
+	public boolean isUniqueConstraintViolation(SQLException e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 	
 }

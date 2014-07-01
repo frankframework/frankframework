@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -104,4 +105,12 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		return doIsTableColumnPresent(conn, "INFORMATION_SCHEMA.COLUMNS", "TABLE_CATALOG", "TABLE_NAME", "COLUMN_NAME", schemaName, tableName, columnName);
 	}
 
+	public boolean isUniqueConstraintViolation(SQLException e) {
+		if (e.getErrorCode()==2627) {
+			// Violation of %ls constraint '%.*ls'. Cannot insert duplicate key in object '%.*ls'.
+			return true;
+		} else {
+			return false;
+		}
+	}
 }
