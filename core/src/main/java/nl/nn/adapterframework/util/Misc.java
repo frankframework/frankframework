@@ -188,6 +188,20 @@ public class Misc {
 			}
 		}
 	}
+
+	public static byte[] streamToBytes(InputStream inputStream) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		byte[] buffer = new byte[1024];
+		while (true) {
+		    int r = inputStream.read(buffer);
+		    if (r == -1) break;
+		    out.write(buffer, 0, r);
+		}
+
+		return out.toByteArray();
+	}
+	
+	
 	public static void readerToWriter(Reader reader, Writer writer) throws IOException {
 		readerToWriter(reader,writer,true);
 	}
@@ -265,17 +279,6 @@ public class Misc {
 	public static String streamToString(InputStream stream, String endOfLineString, boolean xmlEncode)
 		throws IOException {
 		return streamToString(stream,endOfLineString, DEFAULT_INPUT_STREAM_ENCODING, xmlEncode);
-	}
-
-	public static byte[] streamToBytes(InputStream inputStream)
-			throws IOException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
-		byte[] buf = new byte[1024];
-		int len;
-		while ((len = inputStream.read(buf)) > 0) {
-			result.write(buf, 0, len);
-		}
-		return result.toByteArray();
 	}
 
 	public static String resourceToString(URL resource, String endOfLineString, boolean xmlEncode) throws IOException {

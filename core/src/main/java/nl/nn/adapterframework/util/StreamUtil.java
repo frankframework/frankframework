@@ -36,6 +36,8 @@ import org.apache.commons.lang.StringUtils;
  */
 public class StreamUtil {
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
+
+	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
 	
 	public static OutputStream getOutputStream(Object target) throws IOException {
 		if (target instanceof OutputStream) {
@@ -113,6 +115,22 @@ public class StreamUtil {
 		return result;
 	}
 
+	public static byte[] streamToByteArray(InputStream inputStream, boolean skipBOM) throws IOException {
+		byte[] result = Misc.streamToBytes(inputStream);
+		if (skipBOM) {
+			//log.debug("checking BOM");
+			if ((result[0] == BOM_UTF_8[0]) && (result[1] == BOM_UTF_8[1]) && (result[2] == BOM_UTF_8[2])) {
+			    byte[] resultWithoutBOM = new byte[result.length-3];
+			    for(int i = 3; i < result.length; ++i)
+			    	resultWithoutBOM[i-3]=result[i];
+			    //log.debug("removed UTF-8 BOM");
+			    return resultWithoutBOM;
+			}
+		}
+		//log.debug("no UTF-8 BOM found");
+		return result;
+	}
+	
 	public static void copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
 		if (in!=null) {
 			byte buffer[]=new byte[chunkSize]; 

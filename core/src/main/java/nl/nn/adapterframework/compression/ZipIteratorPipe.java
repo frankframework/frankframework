@@ -88,6 +88,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setStreamingContents(boolean) streamingContents}</td><td>when set to <code>false</code>, a string containing the contents of the entry is placed under the session key, instead of the inputstream to the contents</td><td>true</td></tr>
  * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
  * <tr><td>{@link #setCharset(String) charset}</td><td>charset used when reading the contents of the entry (only used if streamingContens=false></td><td>UTF-8</td></tr>
+ * <tr><td>{@link #setSkipBOM(boolean) skipBOM}</td><td>when set to <code>true</code>, a possible Bytes Order Mark (BOM) at the start of the file is skipped (only used for encoding UFT-8)</td><td>false</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -109,6 +110,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 	private boolean streamingContents=true;
 	private boolean closeInputstreamOnExit=true;
 	private String charset=Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private boolean skipBOM=false;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -168,7 +170,13 @@ public class ZipIteratorPipe extends IteratingPipe {
 					session.put(getContentsSessionKey(),source); // do this each time, to allow reuse of the session key when an item is optionally encoded
 				} else { 
 					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"storing contents of zip entry under session key ["+getContentsSessionKey()+"]");
-					session.put(getContentsSessionKey(),StreamUtil.streamToString(source,null,getCharset()));
+					if (isSkipBOM()) {
+						byte contentBytes[] = StreamUtil.streamToByteArray(source, true);
+						String content = Misc.byteArrayToString(contentBytes, null, false);
+						session.put(getContentsSessionKey(),content);
+					} else {
+						String content = StreamUtil.streamToString(source,null,getCharset());
+					}
 				}
 				return filename;
 			} catch (IOException e) {
@@ -261,4 +269,10 @@ public class ZipIteratorPipe extends IteratingPipe {
 		return charset;
 	}
 
+	public void setSkipBOM(boolean b) {
+		skipBOM = b;
+	}
+	public boolean isSkipBOM() {
+		return skipBOM;
+	}
 }
