@@ -170,13 +170,14 @@ public class ZipIteratorPipe extends IteratingPipe {
 					session.put(getContentsSessionKey(),source); // do this each time, to allow reuse of the session key when an item is optionally encoded
 				} else { 
 					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"storing contents of zip entry under session key ["+getContentsSessionKey()+"]");
+					String content;
 					if (isSkipBOM()) {
 						byte contentBytes[] = StreamUtil.streamToByteArray(source, true);
-						String content = Misc.byteArrayToString(contentBytes, null, false);
-						session.put(getContentsSessionKey(),content);
+						content = Misc.byteArrayToString(contentBytes, null, false);
 					} else {
-						String content = StreamUtil.streamToString(source,null,getCharset());
+						content = StreamUtil.streamToString(source,null,getCharset());
 					}
+					session.put(getContentsSessionKey(),content);
 				}
 				return filename;
 			} catch (IOException e) {
