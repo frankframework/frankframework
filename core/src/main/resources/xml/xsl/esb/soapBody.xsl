@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />
-	<xsl:param name="namespace">http://nn.nl/XSD/Generic/MessageHeader/2</xsl:param>
+	<xsl:param name="namespace">http://nn.nl/XSD/Generic/MessageHeader/1</xsl:param>
 	<xsl:param name="errorCode" />
 	<xsl:param name="errorReason" />
 	<xsl:param name="errorDetailCode" />
