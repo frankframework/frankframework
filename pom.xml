@@ -3,7 +3,7 @@
 
   <groupId>org.ibissource</groupId>
   <artifactId>ibis-adapterframework-parent</artifactId>
-  <version>5.6</version>
+  <version>5.7-SNAPSHOT</version>
   <name>Ibis AdapterFramework parent</name>
   <packaging>pom</packaging>
 
@@ -19,37 +19,37 @@
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-core</artifactId>
-        <version>5.6</version>
+        <version>5.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-ifsa</artifactId>
-        <version>5.6</version>
+        <version>5.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-tibco</artifactId>
-        <version>5.6</version>
+        <version>5.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-sap</artifactId>
-        <version>5.6</version>
+        <version>5.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-coolgen</artifactId>
-        <version>5.6</version>
+        <version>5.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-ibm</artifactId>
-        <version>5.6</version>
+        <version>5.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-webapp</artifactId>
-        <version>5.6</version>
+        <version>5.7-SNAPSHOT</version>
         <type>war</type>
       </dependency>
       <dependency>
@@ -206,7 +206,7 @@
     <connection>scm:git:https://github.com/ibissource/iaf.git</connection>
     <developerConnection>scm:git:https://github.com/ibissource/iaf.git</developerConnection>
     <url>https://github.com/ibissource/iaf</url>
-    <tag>v5.6</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <distributionManagement>
