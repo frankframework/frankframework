@@ -12,11 +12,28 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v5.5...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
+- ...
+
+
+
+5.6
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v5_5...v5_6)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v5.6)](https://travis-ci.org/ibissource/iaf)
+
 - Move missing errorStorage warning from MessageKeeper (at adapter level) and logfile to ConfigurationWarnings (top of console main page).
 - Replace (broken) enforceMQCompliancy on JmsSender with MQSender.
 - Remove FXF 1 and 2 support.
 - Add theme switch button.
 - Add stream support to FilePipe and FileSender.
+- Added the possibility for enabling LDAP authentication and authorization without a deployment descriptor
+- Added functionality for unit testing (TestTool)
+- Added some MS SQL support
+- Extended functionality for MoveFilePipe and CleanupOldFilesPipe, and introduced UploadFilePipe
+- Introduction of SimpleJdbcListener; activate pipeline based on a select count query
+- Added possibility to process zipped xml files with a BOM (Byte Order Mark)
+- Added locker functionality to pipeline element (it was already available for scheduler element)
 
 
 
