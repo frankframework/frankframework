@@ -10,7 +10,7 @@ Release on Windows 7 behind a proxy
 - Adjust Screen Buffer Size (Width: 140, Height: 9999) and Window Size
   (Width: 140, Height: 75)
 - set JAVA_HOME=D:\Software\Installed\Java\jdk1.5.0_22
-- set PATH=%PATH%;D:\Software\Installed\Git\bin\;D:\Software\Installed\Maven\apache-maven-3.0.5\bin
+- set PATH=D:\Software\Installed\Git\bin\;D:\Software\Installed\Maven\apache-maven-3.0.5\bin
 - set MAVEN_OPTS=-Xmx512m -XX:MaxPermSize=128m
 - git config --list
 - Check and when needed set the following settings.
@@ -37,5 +37,6 @@ Release on Windows 7 behind a proxy
 - cd mvn-repo
 - git add .
 - git commit
+- git status
 - i, Release ibis-adapterframework-parent-[version], esc, :, wq, enter
 - git push
