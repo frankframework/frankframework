@@ -35,6 +35,11 @@ Upcoming
 - Added possibility to process zipped xml files with a BOM (Byte Order Mark)
 - Added locker functionality to pipeline element (it was already available for scheduler element)
 
+### Non backwards compatible changes
+
+- Attribute enforceMQCompliancy on JmsSender has been removed, use nl.nn.adapterframework.extensions.ibm.MQSender instead of nl.nn.adapterframework.jms.JmsSender when setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ) is needed.
+- Support for FXF 1 and 2 as been dropped.
+
 
 
 5.5
