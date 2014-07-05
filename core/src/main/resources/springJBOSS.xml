@@ -10,11 +10,11 @@
 		"
 	>
 
-	<!-- Transaction stuff -->
-	<!-- In order to properly handle 'Propagation: Supports', set property
-		 'transactionSynchronization' to 'Synchronize on actual transaction'. -->
-
-	<!-- Defining a open source transaction manager -->
+	<!--
+	An open source transaction manager.
+	In order to properly handle 'Propagation: Supports', set property
+	'transactionSynchronization' to 'Synchronize on actual transaction'.
+	-->
 	<bean
 		id="txManagerReal"
 		class="org.springframework.transaction.jta.JtaTransactionManager"

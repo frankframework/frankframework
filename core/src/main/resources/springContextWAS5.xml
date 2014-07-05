@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="
-            http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
-            ">
-
-    <import resource="springUnmanagedDeployment.xml"/>
-    <!-- <import resource="springEjbDeployment.xml"/> -->
-    <import resource="springCommon.xml"/>
-    <import resource="springWAS5.xml"/>
-    <import resource="springCustom.xml"/>
-    
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd"
+	>
+	<import resource="springUnmanagedDeployment.xml"/>
+	<!-- <import resource="springEjbDeployment.xml"/> -->
+	<import resource="springCommon.xml"/>
+	<import resource="springWAS5.xml"/>
+	<import resource="springCustom.xml"/>
 </beans>

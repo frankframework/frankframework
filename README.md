@@ -84,6 +84,15 @@ IntelliJ
 Command-line interface
 ======================
 
+Initial:
+
 - git clone https://github.com/ibissource/iaf
-- cd iaf/core
+- cd iaf
 - mvn
+- cd example
+- mvn jetty:run
+
+After modifying a project file:
+
+- ctrl-c
+- cd .. ; mvn clean install ; cd example ; mvn jetty:run
