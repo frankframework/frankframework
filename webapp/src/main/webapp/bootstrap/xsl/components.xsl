@@ -137,6 +137,9 @@
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					<li>
+						<span class="label label-warning label-environment" title="Theme Bootstrap is part of a beta version">beta</span>
+					</li>
+					<li>
 						<xsl:variable name="class">
 							<xsl:choose>
 								<xsl:when test="$environment = 'LOC'">success</xsl:when>
