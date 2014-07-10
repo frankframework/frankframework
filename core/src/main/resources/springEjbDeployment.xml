@@ -1,64 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:util="http://www.springframework.org/schema/util"
-       xsi:schemaLocation="
-            http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
-            http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
-            ">
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation=
+		"
+		http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
+		"
+	>
 
-    <!-- Prototype-beans for configuration -->
-    <bean id="proto-ifsaProviderListener" class="nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener"
-    	autowire="byName" scope="prototype">
-    	<property name="listenerPortConnector" ref="listenerPortConnector"/>
-    </bean>
-    
-    <!-- IBIS Beans -->
-    <bean id="ibisManager" class="nl.nn.adapterframework.unmanaged.DefaultIbisManager"
-        autowire="byName">
-        <property name="deploymentMode">
-            <util:constant static-field="nl.nn.adapterframework.configuration.IbisManager.DEPLOYMENT_MODE_EJB"/>
-        </property>
-        <property name="transactionManager" ref="txManager"/>
-    </bean>
-    
-    <bean id="listenerPortPoller" class="nl.nn.adapterframework.ejb.ListenerPortPoller"
-        autowire="byName" scope="singleton">
-    </bean>
-    
-    <bean id="jmsConnector" class="nl.nn.adapterframework.ejb.EjbListenerPortConnector"
-        autowire="byName" scope="prototype">
-    </bean>
-    
-    <alias name="jmsConnector" alias="listenerPortConnector"/>
-    
-    <!-- set up Quartz Job to run the ListenerPortPoller every 5 secodns -->
-    <bean id="portPollerJob" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"
-         lazy-init="true">
-        <property name="targetObject" ref="listenerPortPoller" />
-        <property name="targetMethod" value="poll" />
-    </bean>
-    
-    <bean id="portPollerTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean"
-         lazy-init="true">
-        <!-- see the job definition above -->
-        <property name="jobDetail" ref="portPollerJob" />
-        <!-- 10 seconds -->
-        <property name="startDelay" value="10000" />
-        <!-- repeat every 5 seconds -->
-        <property name="repeatInterval" value="5000" />
-    </bean>
+	<!-- Prototype-beans for configuration -->
+	<bean
+		id="proto-ifsaProviderListener"
+		class="nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener"
+		autowire="byName"
+		scope="prototype"
+		>
+		<property name="listenerPortConnector" ref="listenerPortConnector"/>
+	</bean>
 
-    <!-- Scheduler (Quartz) -->
-    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean"
-        autowire="byName" lazy-init="true">
-        <!-- Auto-wiring wires up bean named taskExecutor as threadpool implementation -->
-        <property name="autoStartup" value="false"/>
-        <!--<property name="transactionManager" ref="txManager"/>-->
-        <property name="triggers">
-            <list>
-                <ref bean="portPollerTrigger" />
-            </list>
-        </property>
-    </bean>
+	<!-- IBIS Beans -->
+	<bean
+		id="ibisManager"
+		class="nl.nn.adapterframework.unmanaged.DefaultIbisManager"
+		autowire="byName"
+		>
+		<property name="deploymentMode">
+			<util:constant static-field="nl.nn.adapterframework.configuration.IbisManager.DEPLOYMENT_MODE_EJB"/>
+		</property>
+		<property name="transactionManager" ref="txManager"/>
+	</bean>
+
+	<bean
+		id="listenerPortPoller"
+		class="nl.nn.adapterframework.ejb.ListenerPortPoller"
+		autowire="byName"
+		scope="singleton"
+	/>
+
+	<bean
+		id="jmsConnector"
+		class="nl.nn.adapterframework.ejb.EjbListenerPortConnector"
+		autowire="byName"
+		scope="prototype"
+	/>
+
+	<alias name="jmsConnector" alias="listenerPortConnector"/>
+
+	<!-- set up Quartz Job to run the ListenerPortPoller every 5 secodns -->
+	<bean
+		id="portPollerJob"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"
+		lazy-init="true"
+		>
+		<property name="targetObject" ref="listenerPortPoller" />
+		<property name="targetMethod" value="poll" />
+	</bean>
+
+	<bean
+		id="portPollerTrigger"
+		class="org.springframework.scheduling.quartz.SimpleTriggerBean"
+		lazy-init="true"
+		>
+		<!-- see the job definition above -->
+		<property name="jobDetail" ref="portPollerJob" />
+		<!-- 10 seconds -->
+		<property name="startDelay" value="10000" />
+		<!-- repeat every 5 seconds -->
+		<property name="repeatInterval" value="5000" />
+	</bean>
+
+	<!-- Scheduler (Quartz) -->
+	<bean
+		id="scheduler"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean"
+		autowire="byName"
+		lazy-init="true"
+		>
+		<!-- Auto-wiring wires up bean named taskExecutor as threadpool implementation -->
+		<property name="autoStartup" value="false"/>
+		<!--<property name="transactionManager" ref="txManager"/>-->
+		<property name="triggers">
+			<list>
+				<ref bean="portPollerTrigger" />
+			</list>
+		</property>
+	</bean>
+
 </beans>

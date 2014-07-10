@@ -84,6 +84,19 @@ IntelliJ
 Command-line interface
 ======================
 
+Initial:
+
 - git clone https://github.com/ibissource/iaf
-- cd iaf/core
+- cd iaf
 - mvn
+- cd example
+- mvn jetty:run
+- [http://localhost:8080/](http://localhost:8080/)
+
+
+After modifying a project file:
+
+- ctrl-c
+- cd .. ; mvn clean install ; cd example ; mvn jetty:run
+
+The jetty-maven-plugin requires Maven 3 and Java 1.7.

@@ -166,6 +166,8 @@
 			<jsp:include page="/jsp/editMonitor.jsp" flush="true"/> 
 		<%} else if (view.equals("/jsp/editTrigger.jsp")) {%>
 			<jsp:include page="/jsp/editTrigger.jsp" flush="true"/> 
+		<%} else if (view.equals("/jsp/testTool.jsp")) {%>
+			<% response.sendRedirect("testtool"); %>
 		<%} else {%>
 			<page><%=view%> not configured in view.jsp</page>
 		<%}%>

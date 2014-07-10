@@ -69,7 +69,6 @@ import org.apache.log4j.Logger;
  * </p>
  * 
  * @author Peter Leeuwenburgh
- * @version $Id: LoginFilter.java,v 1.1 2014/05/06 13:21:51 m168309 Exp $
  */
 
 public class LoginFilter implements Filter {

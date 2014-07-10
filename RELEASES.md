@@ -12,21 +12,23 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v5.5...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
-- ...
+- Add support for jetty-maven-plugin
 
 
 
 5.6
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v5_5...v5_6)
+[Commits](https://github.com/ibissource/iaf/compare/v5.5...v5.6)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v5.6)](https://travis-ci.org/ibissource/iaf)
 
 - Move missing errorStorage warning from MessageKeeper (at adapter level) and logfile to ConfigurationWarnings (top of console main page).
 - Replace (broken) enforceMQCompliancy on JmsSender with MQSender.
 - Remove FXF 1 and 2 support.
+- Fix Ibis name and DTAP stage in Bootstrap theme.
 - Add theme switch button.
 - Add stream support to FilePipe and FileSender.
+- Add permission rules to FileViewerServlet.
 - Added the possibility for enabling LDAP authentication and authorization without a deployment descriptor
 - Added functionality for unit testing (TestTool)
 - Added some MS SQL support
@@ -35,12 +37,17 @@ Upcoming
 - Added possibility to process zipped xml files with a BOM (Byte Order Mark)
 - Added locker functionality to pipeline element (it was already available for scheduler element)
 
+### Non backwards compatible changes
+
+- Attribute enforceMQCompliancy on JmsSender has been removed, use nl.nn.adapterframework.extensions.ibm.MQSender instead of nl.nn.adapterframework.jms.JmsSender when setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ) is needed.
+- Support for FXF 1 and 2 as been dropped.
+
 
 
 5.5
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v5_4...v5_5)
+[Commits](https://github.com/ibissource/iaf/compare/v5.4...v5.5)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v5.5)](https://travis-ci.org/ibissource/iaf)
 
 - Also when not transacted don't retrow exception caught in JMS listener (caused connection to be closed and caused possible other threads on the same listener to experience "javax.jms.IllegalStateException: Consumer closed").

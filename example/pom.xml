@@ -43,4 +43,25 @@
       <scope>runtime</scope><!-- Overwrite <scope>provided</scope> in parent pom. -->
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>9.0.7.v20131107</version>
+        <configuration>
+          <systemProperties>
+            <systemProperty>
+              <name>application.server.type</name>
+              <value>JETTYMVN</value>
+            </systemProperty>
+            <systemProperty>
+              <name>log.dir</name>
+              <value>${java.io.tmpdir}</value>
+            </systemProperty>
+          </systemProperties>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
