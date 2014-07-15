@@ -94,6 +94,7 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setMaxLength(int) maxLength}</td><td>if set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length</td><td>-1</td></tr>
  * <tr><td>{@link #setMinInclusive(String) minInclusive}</td><td>used in combination with type <code>number</code>; if set and the value of the parameter exceeds this minimum value, this minimum value is taken</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxInclusive(String) maxInclusive}</td><td>used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setXslt2(boolean) xslt2}</td><td>(applicable for xpathExpression and styleSheetName) when set <code>true</code> XSLT processor 2.0 (net.sf.saxon) will be used, otherwise XSLT processor 1.0 (org.apache.xalan)</td><td>false</td></tr>
  * </table>
  * </p>
  * Examples:
@@ -163,6 +164,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	private Number maxInclusive;
 	private boolean hidden = false;
 	private boolean removeNamespaces=false;
+	private boolean xslt2=false;
 
 	private DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
@@ -188,7 +190,7 @@ public class Parameter implements INamedObject, IWithParameters {
 							  TYPE_DOMDOC.equalsIgnoreCase(getType())?"xml":"text";
 			boolean includeXmlDeclaration=false;
 			
-			transformerPool=TransformerPool.configureTransformer("Parameter ["+getName()+"] ",getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList);
+			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,isXslt2());
 	    } else {
 			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
 				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
@@ -679,5 +681,12 @@ public class Parameter implements INamedObject, IWithParameters {
 	}
 	public String getMinInclusive() {
 		return minInclusiveString;
+	}
+
+	public void setXslt2(boolean b) {
+		xslt2 = b;
+	}
+	public boolean isXslt2() {
+		return xslt2;
 	}
 }
