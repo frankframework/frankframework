@@ -90,7 +90,10 @@ public class RestListenerServlet extends HttpServlet {
 		        for (FileItem item : items) {
 		            if (item.isFormField()) {
 		                // Process regular form field (input type="text|radio|checkbox|etc", select, etc).
-		                // skip
+		                String fieldName = item.getFieldName();
+		                String fieldValue = item.getString();
+		    			if (log.isDebugEnabled()) log.debug("setting parameter ["+fieldName+"] to ["+fieldValue+"]");
+		    			messageContext.put(fieldName, fieldValue);
 		            } else {
 		                // Process form file field (input type="file").
 		                String fieldName = item.getFieldName();
