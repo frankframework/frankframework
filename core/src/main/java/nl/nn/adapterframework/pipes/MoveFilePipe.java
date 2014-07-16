@@ -42,7 +42,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setMove2file(String) move2file}</td><td>name of the destination file (if not specified, the name of the file to move is taken)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2fileSessionKey(String) move2fileSessionKey}</td><td>session key that contains the name of the file to use (only used if move2file is not set)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNumberOfBackups(int) numberOfBackups}</td><td>number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.</td><td>5</td></tr>
- * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>when set <code>true</code>, the destination file will be deleted if it already exists</td><td>false</td></tr>
+ * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>when set <code>true</code>, the destination file will be deleted if it already exists. When set <code>false</code> and <code>numberOfBackups</code> set to 0, a counter is added to the destination filename ('basename_###.ext')</td><td>false</td></tr>
  * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of attempts before throwing an exception</td><td>10</td></tr>
  * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>time between attempts</td><td>1000 [ms]</td></tr>
  * <tr><td>{@link #setAppend(boolean) append}</td><td> when set <code>true</code> and the destination file already exists, the content of the file to move is written to the end of the destination file. This implies <code>overwrite=false</code></td><td>false</td></tr>
@@ -210,6 +210,9 @@ public class MoveFilePipe extends FixedForwardPipe {
 					log.info(getLogPrefix(session)+"moved file ["+srcFile.getAbsolutePath()+"] to file ["+dstFile.getAbsolutePath()+"]");
 				}			 
 			} else {
+				if (!isOverwrite() && getNumberOfBackups()==0) {
+					dstFile = FileUtils.getFreeFile(dstFile);
+				}
 				if (FileUtils.moveFile(srcFile, dstFile, isOverwrite(), getNumberOfBackups(), getNumberOfAttempts(), getWaitBeforeRetry()) == null) {
 					throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]"); 
 				} else {

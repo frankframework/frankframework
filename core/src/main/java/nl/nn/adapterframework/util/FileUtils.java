@@ -196,6 +196,46 @@ public class FileUtils {
 		return null;
 	}
 
+	public static File getFreeFile(File file)  {
+		if (file.exists()) {
+			String extension = FileUtils.getFileNameExtension(file.getPath());
+			int count = 1;
+			while (true) {
+				String newFileName;
+				String countStr;
+				if (count < 1000) {
+					countStr = StringUtils.leftPad(("" + count), 3, "0");
+				} else {
+					countStr = "" + count;
+				}
+				if (extension!=null) {
+					newFileName = StringUtils.substringBeforeLast(file.getPath(), ".") + "_" + countStr + "." + extension;
+				} else {
+					newFileName = file.getPath() + "_" + countStr;
+				}
+				File newFile = new File(newFileName);
+				if (newFile.exists()) {
+					count++;
+				} else {
+					return newFile;
+				}
+			}
+		} else {
+			return file;
+		}
+	}
+
+	public static void main(String[] args) {
+		File file = new File("d:/data/ibis4scan/handleScannedDocument/Ibis2Scan/zip");
+		
+		try {
+			System.out.println("["+ getFreeFile(file).getPath()+"]");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public static String appendFile(File orgFile, File destFile, int nrRetries, long waitTime) throws InterruptedException {
 		int errCount = 0;
 		
