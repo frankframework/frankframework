@@ -23,6 +23,7 @@ package nl.nn.adapterframework.util;
 
 public class MsgLogUtil {
 	public static final String MSGLOG_LEVEL_BY_DEFAULT_KEY = "msg.log.level.default";
+	public static final String MSGLOG_HIDDEN_BY_DEFAULT_KEY = "msg.log.hidden.default";
 
 	public static final String MSGLOG_LEVEL_NONE_STR = "None";
 	public static final String MSGLOG_LEVEL_TERSE_STR = "Terse";
@@ -35,6 +36,7 @@ public class MsgLogUtil {
 	public static final int MSGLOG_LEVEL_FULL = 3;
 
 	private static int msgLogLevelByDefault = -1;
+	private static Boolean msgLogHiddenByDefault = null;
 
 	public static final String msgLogLevels[] =
 		{
@@ -56,6 +58,14 @@ public class MsgLogUtil {
 			msgLogLevelByDefault = getMsgLogLevelNum(msgLogLevelByDefaultString);
 		}
 		return msgLogLevelByDefault;
+	}
+
+	public static synchronized boolean getMsgLogHiddenByDefault() {
+		if (msgLogHiddenByDefault==null) {
+			boolean hidden = AppConstants.getInstance().getBoolean(MSGLOG_HIDDEN_BY_DEFAULT_KEY, false);
+			msgLogHiddenByDefault = new Boolean(hidden);
+		}
+		return msgLogHiddenByDefault.booleanValue();
 	}
 
 	public static int getMsgLogLevelNum(String msgLogLevel) {

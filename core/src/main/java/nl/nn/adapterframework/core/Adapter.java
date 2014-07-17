@@ -80,6 +80,7 @@ import org.springframework.core.task.TaskExecutor;
  *   <tr><td colspan="1">Basic</td><td>at adapter and sending pipe level (not yet available; only at adapter level)</td></tr>
  *   <tr><td colspan="1">Full</td> <td>at adapter and pipe level (not yet available; only at adapter level)</td></tr>
  *  </table></td><td>application default (None)</td></tr>
+ * <tr><td>{@link #setMsgLogHidden(boolean) msgLogHidden}</td><td>if set to <code>true</code>, the length of the message is shown in the MSG log instead of the content of the message</td><td>false</td></tr>
  * </table>
  * 
  * @author Johan Verrips
@@ -122,6 +123,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private int messageKeeperSize = 10; //default length
 	private boolean autoStart = true;
 	private int msgLogLevel = MsgLogUtil.getMsgLogLevelByDefault();
+	private boolean msgLogHidden = MsgLogUtil.getMsgLogHiddenByDefault();
 
 	// state to put in PipeLineResult when a PipeRunException occurs;
 	private String errorState = "ERROR";
@@ -257,7 +259,11 @@ public class Adapter implements IAdapter, NamedBean {
 			//if (isRequestReplyLogging()) {
 			String logMsg = "Adapter [" + getName() + "] messageId[" + messageID + "] formatted errormessage, result [" + formattedErrorMessage + "]";
 			if (isMsgLogTerseEnabled()) {
-				msgLog.info(logMsg);
+				if (isMsgLogHidden()) {
+					msgLog.info("Adapter [" + getName() + "] messageId[" + messageID + "] formatted errormessage, result [LENGTH=" + formattedErrorMessage.length() + "]");
+				} else {
+					msgLog.info(logMsg);
+				}
 			}
 			if (log.isDebugEnabled()) {
 				log.debug(logMsg);
@@ -483,7 +489,11 @@ public class Adapter implements IAdapter, NamedBean {
 			//if (isRequestReplyLogging()) {
 			String logMsg = "Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.getResult() + "] from PipeLine";
 			if (isMsgLogTerseEnabled()) {
-				msgLog.info(logMsg);
+				if (isMsgLogHidden()) {
+					msgLog.info("Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [LENGTH=" + result.getResult().length() + "] from PipeLine");
+				} else {
+					msgLog.info(logMsg);
+				}
 			}
 			if (log.isDebugEnabled()) {
 				log.debug(logMsg);
@@ -518,7 +528,11 @@ public class Adapter implements IAdapter, NamedBean {
 		//if (isRequestReplyLogging()) {
 		String logMsg = "Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]";
 		if (isMsgLogTerseEnabled()) {
-			msgLog.info(logMsg);
+			if (isMsgLogHidden()) {
+				msgLog.info("Adapter [" + name + "] received message [LENGTH=" + message.length() + "] with messageId [" + messageId + "]");
+			} else {
+				msgLog.info(logMsg);
+			}
 		}
 		if (log.isDebugEnabled()) { 
 			log.debug(logMsg);
@@ -532,7 +546,11 @@ public class Adapter implements IAdapter, NamedBean {
 			//if (isRequestReplyLogging()) {
 			logMsg = "Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine";
 			if (isMsgLogTerseEnabled()) {
-				msgLog.info(logMsg);
+				if (isMsgLogHidden()) {
+					msgLog.info("Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [LENGTH=" + result.toString().length() + "] from PipeLine");
+				} else {
+					msgLog.info(logMsg);
+				}
 			}
 			if (log.isDebugEnabled()) {
 				log.debug(logMsg);
@@ -917,5 +935,12 @@ public class Adapter implements IAdapter, NamedBean {
 		} 
 		return false;
 	}
-}
 
+	public void setMsgLogHidden(boolean b) {
+		msgLogHidden = b;
+	}
+
+	public boolean isMsgLogHidden() {
+		return msgLogHidden;
+	}
+}
