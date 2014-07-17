@@ -52,7 +52,7 @@ import org.apache.commons.lang.StringUtils;
  * 
  * For an Oracle database the following objects are used:
  *  <pre>
-	CREATE TABLE <schema_owner>.IBISLOCK
+	CREATE TABLE &lt;schema_owner&gt;.IBISLOCK
 	(
 	OBJECTID VARCHAR2(100 CHAR),
 	TYPE CHAR(1 CHAR),
@@ -62,11 +62,11 @@ import org.apache.commons.lang.StringUtils;
 	CONSTRAINT PK_IBISLOCK PRIMARY KEY (OBJECTID)
 	);
 
-	CREATE INDEX <schema_owner>.IX_IBISLOCK ON <schema_owner>.IBISLOCK
+	CREATE INDEX &lt;schema_owner&gt;.IX_IBISLOCK ON &lt;schema_owner&gt;.IBISLOCK
 	(EXPIRYDATE);
 
-	GRANT DELETE, INSERT, SELECT, UPDATE ON <schema_owner>.IBISLOCK TO <rolenaam>;
-	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO <rolenaam>;
+	GRANT DELETE, INSERT, SELECT, UPDATE ON &lt;schema_owner&gt;.IBISLOCK TO &lt;rolename&gt;;
+	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO &lt;rolename&gt;;
 		
 	COMMIT;
  *  </pre>
