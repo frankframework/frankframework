@@ -55,7 +55,7 @@
 		<xsl:element name="Result" namespace="{$namespace}">
 			<xsl:choose>
 				<xsl:when test="string-length($errorCode)=0">
-					<xsl:element name="Result" namespace="{$namespace}">OK</xsl:element>
+					<xsl:element name="Status" namespace="{$namespace}">OK</xsl:element>
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:element name="Status" namespace="{$namespace}">ERROR</xsl:element>
