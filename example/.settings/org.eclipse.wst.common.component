@@ -1,27 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project-modules id="moduleCoreId" project-version="1.5.0">
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
     <wb-module deploy-name="iaf-example">
         <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
-        <dependent-module archiveName="ibis-adapterframework-core-5.6-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-core/iaf-core">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-ifsa-5.6-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ifsa/iaf-ifsa">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-tibco-5.6-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-tibco/iaf-tibco">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-sap-5.6-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-sap/iaf-sap">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-coolgen-5.6-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-coolgen/iaf-coolgen">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-ibm-5.6-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ibm/iaf-ibm">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
         <dependent-module deploy-path="/" handle="module:/overlay/prj/iaf-webapp?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
             <dependency-type>consumes</dependency-type>
         </dependent-module>
