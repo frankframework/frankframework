@@ -20,11 +20,7 @@ import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -104,10 +100,12 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	protected void init() throws ConfigurationException {
 		if (needsInit) {
 			super.init();
-            if (schemasProvider == null) throw new IllegalStateException("No schema provider");
+            if (schemasProvider == null) {
+                throw new IllegalStateException("No schema provider");
+            }
 			String schemasId = schemasProvider.getSchemasId();
 			if (schemasId != null) {
-				preparse(schemasId, schemasProvider.getSchemas());
+				preparse(schemasId, new ArrayList<Schema>(schemasProvider.getSchemas()));
 			}
 		}
 	}
