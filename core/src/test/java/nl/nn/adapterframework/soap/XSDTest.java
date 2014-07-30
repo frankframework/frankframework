@@ -48,9 +48,9 @@ public class XSDTest {
                 null,
                 true);
         assertEquals("http://test",
-                xsd.namespace);
+                xsd.getNamespace());
         assertEquals("http://www.ing.com/pim",
-                xsd.targetNamespace);
+                xsd.getTargetNamespace());
 	}
 
 
