@@ -42,7 +42,7 @@ import org.xml.sax.InputSource;
 
 /**
  * The representation of a XSD.
- * 
+ *
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
@@ -59,42 +59,55 @@ public class XSD implements Comparable<XSD> {
 	public final String targetNamespace;
 	public final List<String> rootTags = new ArrayList<String>();
 
-	public XSD(URL url, String namespace, boolean addNamespaceToSchema,
-            String parentLocation, boolean isRootXsd) throws IOException, XMLStreamException {
+	public XSD(final URL url,
+               String namespace,
+               boolean addNamespaceToSchema,
+               String parentLocation,
+               boolean isRootXsd) throws IOException, XMLStreamException {
 		this.url = url;
 		this.namespace = namespace;
 		this.addNamespaceToSchema = addNamespaceToSchema;
 		this.parentLocation = parentLocation;
 		this.isRootXsd = isRootXsd;
 		String tns = null;
-        if (url == null) throw new IllegalArgumentException("No resource " + url + " found");
-		InputStream in = url.openStream();
-		XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in,
-				XmlUtils.STREAM_FACTORY_ENCODING);
-		int elementDepth = 0;
-		while (er.hasNext()) {
-			XMLEvent e = er.nextEvent();
-			switch (e.getEventType()) {
-			case XMLStreamConstants.START_ELEMENT:
-				elementDepth++;
-				StartElement el = e.asStartElement();
-				if (el.getName().equals(SchemaUtils.SCHEMA)) {
-					Attribute a = el.getAttributeByName(SchemaUtils.TNS);
-					if (a != null) {
-						tns = a.getValue();
-					}
-				} else if (el.getName().equals(SchemaUtils.ELEMENT)) {
-					if (elementDepth == 2) {
-                        rootTags.add(el.getAttributeByName(SchemaUtils.NAME).getValue());
-					}
-				}
-				break;
-			case XMLStreamConstants.END_ELEMENT:
-				elementDepth--;
-				break;
-			}
-		}
-		this.targetNamespace = tns;
+        if (url == null) {
+            throw new IllegalArgumentException("Provided URL is null");
+        }
+        try {
+            InputStream in = url.openStream();
+            if (in == null) {
+                throw new IllegalArgumentException("No resource " + url + " found");
+            }
+            XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in,
+                    XmlUtils.STREAM_FACTORY_ENCODING);
+            int elementDepth = 0;
+            while (er.hasNext()) {
+                XMLEvent e = er.nextEvent();
+                switch (e.getEventType()) {
+                    case XMLStreamConstants.START_ELEMENT:
+                        elementDepth++;
+                        StartElement el = e.asStartElement();
+                        if (el.getName().equals(SchemaUtils.SCHEMA)) {
+                            Attribute a = el.getAttributeByName(SchemaUtils.TNS);
+                            if (a != null) {
+                                tns = a.getValue();
+                            }
+                        } else if (el.getName().equals(SchemaUtils.ELEMENT)) {
+                            if (elementDepth == 2) {
+                                rootTags.add(el.getAttributeByName(SchemaUtils.NAME).getValue());
+                            }
+                        }
+                        break;
+                    case XMLStreamConstants.END_ELEMENT:
+                        elementDepth--;
+                        break;
+                }
+            }
+
+        } catch (IOException ioe) {
+            LOG.warn("URL " + url + " cannot be read");
+        }
+        this.targetNamespace = tns;
 	}
 
 	@Override
@@ -229,7 +242,7 @@ public class XSD implements Comparable<XSD> {
                                 namespace = attribute.getValue();
                                 if ("http://www.w3.org/XML/1998/namespace".equals(namespace)) {
                                     // E.g. used in SOAP 1.2 XSD:
-                                    // <xs:import namespace="http://www.w3.org/XML/1998/namespace" 
+                                    // <xs:import namespace="http://www.w3.org/XML/1998/namespace"
                                     // schemaLocation="http://www.w3.org/2001/xml.xsd"/>
                                     isXmlNamespace = true;
                                 }
