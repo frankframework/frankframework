@@ -7,8 +7,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -29,24 +28,19 @@ public class SchemasProviderImpl implements SchemasProvider {
         return id;
     }
 
+
+
     public List<Schema> getSchemas() throws ConfigurationException {
-        List<Schema> schemas = new ArrayList<Schema>();
-        schemas.add(
+        return Collections.<Schema>singletonList(
                 new Schema() {
                     public InputStream getInputStream() throws IOException {
                         return ClassUtils.getResourceURL(xsd).openStream();
                     }
-
-                    public Reader getReader() throws IOException {
-                        return null;
-                    }
-
                     public String getSystemId() {
                         return ClassUtils.getResourceURL(xsd).toExternalForm();
                     }
                 }
         );
-        return schemas;
     }
 
     /**
