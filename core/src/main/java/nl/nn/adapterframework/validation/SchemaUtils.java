@@ -84,7 +84,7 @@ public class SchemaUtils {
                     if (!(excludes != null
                             && excludes.contains(split[i]))) {
                         xsds.add(getXSD(split[i + 1], split[i],
-                                addNamespaceToSchema, true));
+                                addNamespaceToSchema));
                     }
                 }
             }
@@ -116,12 +116,12 @@ public class SchemaUtils {
         return result;
     }
 
-    public static XSD getXSD(String resource, String ns, boolean addNamespaceToSchema, boolean rootXsd) throws IOException, XMLStreamException {
+    public static XSD getXSD(String resource, String ns, boolean addNamespaceToSchema) throws IOException, XMLStreamException {
         URL url = ClassUtils.getResourceURL(resource);
         if (url == null) {
             throw new IllegalArgumentException("No such resource " + resource);
         }
-        XSD xsd = new XSD(url, ns, addNamespaceToSchema, "", rootXsd);
+        XSD xsd = new XSD(url, ns, addNamespaceToSchema, "");
         return  xsd;
     }
 

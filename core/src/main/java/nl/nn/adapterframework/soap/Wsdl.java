@@ -352,7 +352,7 @@ public class Wsdl {
             // the WebServiceListener as the namespace for the schema.
             if (webServiceListenerNamespace != null) {
                 if (!checkSchemaLocationOnly) {
-                    XSD xsd = SchemaUtils.getXSD(inputSchema, webServiceListenerNamespace, true, true);
+                    XSD xsd = SchemaUtils.getXSD(inputSchema, webServiceListenerNamespace, true);
                     xsds.add(xsd);
                 }
             } else {

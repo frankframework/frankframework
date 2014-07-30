@@ -34,8 +34,7 @@ public class XSDTest {
                 ClassUtils.getResourceURL("v1 test.xsd"),
                 "http://test",
                 false,
-                null,
-                true);
+                null);
 		assertEquals("v1 test.xsd", xsd.getName());
 	}
 
@@ -45,8 +44,7 @@ public class XSDTest {
                 ClassUtils.getResourceURL("v1 test.xsd"),
                 "http://test",
                 false,
-                null,
-                true);
+                null);
         assertEquals("http://test",
                 xsd.getNamespace());
         assertEquals("http://www.ing.com/pim",
@@ -61,8 +59,7 @@ public class XSDTest {
 				url,
                 "http://test",
                 false,
-                null,
-                true);
+                null);
 		assertEquals("XSDTest/", xsd.getBaseUrl());
 	}
 
@@ -71,7 +68,7 @@ public class XSDTest {
 		XSD xsd = new XSD(
                 new URL("file:/data/WAS/6.1/wasap02/appl/Ibis4WUB-010_20111221-1815_wasap02.ear/Ibis4WUB.war/WEB-INF/classes/CalculateQuoteAndPolicyValuesLifeRetail/xsd/Calculation.xsd"),
                 "http://test",
-                false, null, true);
+                false, null);
 
 		assertEquals("CalculateQuoteAndPolicyValuesLifeRetail/xsd/", xsd.getBaseUrl());
 	}
@@ -81,7 +78,7 @@ public class XSDTest {
 	public void writeXSD() throws XMLStreamException, IOException, ParserConfigurationException, SAXException, URISyntaxException {
 		XSD xsd = new XSD(
                 ClassUtils.getResourceURL("XSDTest/test.xsd"),
-                "http://test", false, null, true);
+                "http://test", false, null);
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		XMLStreamWriter writer = WsdlUtils.getWriter(out, false);

@@ -22,6 +22,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.*;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -52,21 +53,18 @@ public class XSD implements Comparable<XSD>  {
 	private  final String namespace;
 	private  final boolean addNamespaceToSchema;
 	private  final String parentLocation;
-	private final boolean isRootXsd;
-	private final String targetNamespace;
+    private final String targetNamespace;
 	private final List<String> rootTags = new ArrayList<String>();
 
 	public XSD(final URL url,
                String namespace,
                boolean addNamespaceToSchema,
-               String parentLocation,
-               boolean isRootXsd) throws IOException, XMLStreamException {
+               String parentLocation) throws IOException, XMLStreamException {
 		this.url = url;
 		this.namespace = namespace;
 		this.addNamespaceToSchema = addNamespaceToSchema;
 		this.parentLocation = parentLocation;
-		this.isRootXsd = isRootXsd;
-		String tns = null;
+        String tns = null;
         if (url == null) {
             throw new IllegalArgumentException("Provided URL is null");
         }
@@ -237,7 +235,7 @@ public class XSD implements Comparable<XSD>  {
                                     el.getAttributeByName(SchemaUtils.NAMESPACE);
                             if (attribute != null) {
                                 namespace = attribute.getValue();
-                                if ("http://www.w3.org/XML/1998/namespace".equals(namespace)) {
+                                if (XMLConstants.XML_NS_URI.equals(namespace)) {
                                     // E.g. used in SOAP 1.2 XSD:
                                     // <xs:import namespace="http://www.w3.org/XML/1998/namespace"
                                     // schemaLocation="http://www.w3.org/2001/xml.xsd"/>
@@ -251,9 +249,8 @@ public class XSD implements Comparable<XSD>  {
                         if (!isXmlNamespace) {
                         	XSD x = new XSD(
                                     ClassUtils.getResourceURL(getChildUrl(url, schemaLocation.getValue())),
-                                    namespace, addNamespaceToSchema, getBaseUrl(),
-                                    false
-                                    );
+                                    namespace, addNamespaceToSchema, getBaseUrl()
+                            );
                             if (xsds.add(x)) {
                                 x.getXsdsRecursive(xsds);
                             }
