@@ -2,8 +2,10 @@ package nl.nn.adapterframework.soap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.http.WebServiceListener;
+import nl.nn.adapterframework.pipes.WsdlXmlValidator;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.pipes.XmlValidatorTest;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -44,7 +46,7 @@ import static org.mockito.Mockito.when;
 @RunWith(value = Parameterized.class)
 public class WsdlTest {
 
-    private Class<AbstractXmlValidator> implementation;
+    private final  Class<AbstractXmlValidator> implementation;
 
     public WsdlTest(Class<AbstractXmlValidator> implementation) {
         this.implementation = implementation;
@@ -140,7 +142,22 @@ public class WsdlTest {
 		test(wsdl, "WsdlTest/FindIntermediary.test.wsdl");
         zip(wsdl);
         // assertEquals(2, wsdl.getXSDs(true).size()); TODO?
+    }
 
+    @Test
+    public void fromWsdl() throws ConfigurationException, IOException, XMLStreamException {
+        WsdlXmlValidator wsdlXmlValidator = new WsdlXmlValidator();
+        wsdlXmlValidator.setWsdl("");
+        PipeLine pipe = mockPipeLine(
+                getXmlValidatorInstance("FindIntermediaryREQ", null,
+                        "http://wub2nn.nn.nl/FindIntermediary " +
+                                "WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd"),
+                getXmlValidatorInstance("FindIntermediaryRLY", null,
+                        "http://wub2nn.nn.nl/FindIntermediary " +
+                                "WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd"),
+                "http://wub2nn.nn.nl/FindIntermediary",
+                "WsdlTest/FindIntermediary");
+        Wsdl wsdl = new Wsdl(pipe).init();
     }
 
 
@@ -176,6 +193,7 @@ public class WsdlTest {
         validator.setRoot(rootTag);
         return validator;
     }
+
 
     protected PipeLine mockPipeLine(XmlValidator inputValidator, XmlValidator outputValidator, String targetNamespace, String adapterName) {
         PipeLine simple = mock(PipeLine.class);

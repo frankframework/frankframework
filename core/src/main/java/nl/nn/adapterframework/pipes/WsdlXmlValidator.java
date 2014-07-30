@@ -146,17 +146,17 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 	}
 
-	public Reader toReader(Schema wsdlSchema) throws WSDLException {
-		return new StringReader(toString(wsdlSchema));
+	private InputStream toInputStream(Schema wsdlSchema) throws WSDLException, UnsupportedEncodingException {
+		return new ByteArrayInputStream(toBytes(wsdlSchema));
 	}
 
-	protected  String toString(Schema wsdlSchema) throws WSDLException {
+	private byte[] toBytes(Schema wsdlSchema) throws WSDLException, UnsupportedEncodingException {
 		SchemaSerializer schemaSerializer = new SchemaSerializer();
 		StringWriter w = new StringWriter();
 		PrintWriter res = new PrintWriter(w);
 		schemaSerializer.marshall(Object.class, SCHEMA, wsdlSchema, res,
 				definition, definition.getExtensionRegistry());
-		return w.toString().trim();
+		return w.toString().trim().getBytes("UTF-8");
 	}
 
 	@Override
@@ -171,7 +171,9 @@ public class WsdlXmlValidator extends SoapValidator {
             result.add(
                     new nl.nn.adapterframework.validation.Schema() {
                         public InputStream getInputStream() throws IOException {
-                            if (validateSoapEnvelope.xsd == null) throw new IOException(validateSoapEnvelope + " has  no xsd");
+                            if (validateSoapEnvelope.xsd == null) {
+                                throw new IOException(validateSoapEnvelope + " has  no xsd");
+                            }
                             return ClassUtils.getResourceURL(validateSoapEnvelope.xsd).openStream();
                         }
                         public String getSystemId() {
@@ -192,17 +194,15 @@ public class WsdlXmlValidator extends SoapValidator {
 					new nl.nn.adapterframework.validation.Schema() {
 
 						public InputStream getInputStream() {
-							return null;
-						}
-
-						public Reader getReader() throws IOException {
 							try {
-								return toReader(schema);
+								return toInputStream(schema);
 							} catch (WSDLException e) {
-								LOG.error(e.getMessage(), e);
-								throw new IOException("WSDLException while reading schema");
-							}
-						}
+                                throw new RuntimeException("WSDLException while reading schema " + e.getMessage(), e);
+							} catch (UnsupportedEncodingException e) {
+                                // can not happen
+                                throw new RuntimeException(e);
+                            }
+                        }
 
 						public String getSystemId() {
 							return ClassUtils.getResourceURL(wsdl).toExternalForm();

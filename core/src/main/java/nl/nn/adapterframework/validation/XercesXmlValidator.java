@@ -105,7 +105,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
             }
 			String schemasId = schemasProvider.getSchemasId();
 			if (schemasId != null) {
-				preparse(schemasId, new ArrayList<Schema>(schemasProvider.getSchemas()));
+				preparse(schemasId, schemasProvider.getSchemas());
 			}
 		}
 	}
@@ -262,7 +262,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
         // SystemId is needed in case the schema has an import. Maybe we should
 		// already resolve this at the SchemaProvider side (when using
 		// addNamespaceToSchema this is now already done).
-        return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
+        String systemId = schema.getSystemId();
+        return new XMLInputSource(null, systemId, null, schema.getInputStream(), null);
 	}
 
 }
