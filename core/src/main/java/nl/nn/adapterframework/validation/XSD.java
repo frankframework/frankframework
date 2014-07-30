@@ -32,6 +32,7 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -51,13 +52,13 @@ public class XSD implements Comparable<XSD> {
 
 	private static String TEST_RESOURCE_IN_THE_ROOT = "Configuration.xml";
 
-	public final URL url;
-	public final String namespace;
-	public final boolean addNamespaceToSchema;
-	public final String parentLocation;
-	public final boolean isRootXsd;
-	public final String targetNamespace;
-	public final List<String> rootTags = new ArrayList<String>();
+	private final URL url;
+	private  final String namespace;
+	private  final boolean addNamespaceToSchema;
+	private  final String parentLocation;
+	private final boolean isRootXsd;
+	private final String targetNamespace;
+	private final List<String> rootTags = new ArrayList<String>();
 
 	public XSD(final URL url,
                String namespace,
@@ -269,4 +270,27 @@ public class XSD implements Comparable<XSD> {
         return xsds;
     }
 
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public String getTargetNamespace() {
+        return targetNamespace;
+    }
+
+    public boolean isAddNamespaceToSchema() {
+        return addNamespaceToSchema;
+    }
+
+    public URL getUrl() {
+        return url;
+    }
+
+    public String getParentLocation() {
+        return parentLocation;
+    }
+
+    public List<String> getRootTags() {
+        return Collections.unmodifiableList(rootTags);
+    }
 }

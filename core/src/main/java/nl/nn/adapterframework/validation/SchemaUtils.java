@@ -106,10 +106,10 @@ public class SchemaUtils {
                 throws XMLStreamException, IOException {
         Map<String, Set<XSD>> result = new TreeMap<String, Set<XSD>>();
         for (XSD xsd : xsds) {
-            Set<XSD> set = result.get(xsd.namespace);
+            Set<XSD> set = result.get(xsd.getNamespace());
             if (set == null) {
                 set = new TreeSet<XSD>();
-                result.put(xsd.namespace, set);
+                result.put(xsd.getNamespace(), set);
             }
             set.add(xsd);
         }
@@ -264,7 +264,7 @@ public class SchemaUtils {
                         namespacesToCorrect);
         final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(
                 namespaceCorrectingXMLStreamWriter);
-        InputStream in = xsd.url.openStream();
+        InputStream in = xsd.getUrl().openStream();
         if (in == null) {
             throw new IllegalStateException("" + xsd + " not found");
         }
@@ -316,14 +316,14 @@ public class SchemaUtils {
                                         el.getNamespaceContext());
                             }
                         }
-                        if (xsd.addNamespaceToSchema) {
+                        if (xsd.isAddNamespaceToSchema()) {
                             e = XmlUtils.mergeAttributes(el,
                                     Arrays.asList(
-                                        new AttributeEvent(TNS, xsd.namespace),
+                                        new AttributeEvent(TNS, xsd.getNamespace()),
                                         new AttributeEvent(ELFORMDEFAULT, "qualified")
                                     ).iterator(),
                                     Arrays.asList(
-                                        XmlUtils.EVENT_FACTORY.createNamespace(xsd.namespace)
+                                        XmlUtils.EVENT_FACTORY.createNamespace(xsd.getNamespace())
                                     ).iterator(),
                                     XmlUtils.EVENT_FACTORY
                                 );
@@ -331,11 +331,11 @@ public class SchemaUtils {
                                 Attribute tns = el.getAttributeByName(TNS);
                                 if (tns != null) {
                                     String s = tns.getValue();
-                                    if (!s.equals(xsd.namespace)) {
-                                        namespacesToCorrect.put(s, xsd.namespace);
+                                    if (!s.equals(xsd.getNamespace())) {
+                                        namespacesToCorrect.put(s, xsd.getNamespace());
                                     }
                                 }
-                                LOG.debug(xsd.url + " Corrected " + el + " -> " + e);
+                                LOG.debug(xsd.getUrl() + " Corrected " + el + " -> " + e);
                             }
                         } else {
                             e = el;
@@ -390,17 +390,17 @@ public class SchemaUtils {
                                             el.getLocation(),
                                             el.getSchemaType());
                                 } else {
-                                    if (xsd.parentLocation != null) {
-                                        if (xsd.parentLocation.length() > 0 && location.startsWith(xsd.parentLocation)) {
-                                            location = location.substring(xsd.parentLocation.length());
+                                    if (xsd.getParentLocation() != null) {
+                                        if (xsd.getParentLocation().length() > 0 && location.startsWith(xsd.getParentLocation())) {
+                                            location = location.substring(xsd.getParentLocation().length());
                                         }
                                     }
                                     e =
                                         XMLStreamUtils.mergeAttributes(el,
                                             Collections.singletonList(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
                                     if (LOG.isDebugEnabled()) {
-                                        LOG.debug(xsd.url + " Corrected " + el + " -> " + e);
-                                        LOG.debug(xsd.url + " Relative to : " + xsd.parentLocation + " -> " + e);
+                                        LOG.debug(xsd.getUrl() + " Corrected " + el + " -> " + e);
+                                        LOG.debug(xsd.getUrl() + " Relative to : " + xsd.getParentLocation() + " -> " + e);
                                     }
                                 }
                             }

@@ -329,8 +329,8 @@ public class Wsdl {
                 prefixCount++;
             }
             for (XSD xsd : xsdsRecursive) {
-                if (StringUtils.isEmpty(xsd.targetNamespace)
-                        && !xsd.addNamespaceToSchema) {
+                if (StringUtils.isEmpty(xsd.getTargetNamespace())
+                        && !xsd.isAddNamespaceToSchema()) {
                     warn("XSD '" + xsd.getBaseUrl() + xsd.getName()
                             + "' doesn't have a targetNamespace and addNamespaceToSchema is false");
                 }
@@ -801,7 +801,7 @@ public class Wsdl {
     protected QName getRootTag(String tag) throws XMLStreamException, IOException {
         if (StringUtils.isNotEmpty(tag)) {
             for (XSD xsd : rootXsds) {
-                for (String rootTag : xsd.rootTags) {
+                for (String rootTag : xsd.getRootTags()) {
                     if (tag.equals(rootTag)) {
                         String prefix = prefixByXsd.get(xsd);
                         return new QName(namespaceByPrefix.get(prefix), tag, prefix);
