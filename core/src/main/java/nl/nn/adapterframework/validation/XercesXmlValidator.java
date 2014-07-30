@@ -105,7 +105,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
             }
 			String schemasId = schemasProvider.getSchemasId();
 			if (schemasId != null) {
-				preparse(schemasId, schemasProvider.getSchemas());
+				preparse(schemasId, new ArrayList<Schema>(schemasProvider.getSchemas()));
 			}
 		}
 	}

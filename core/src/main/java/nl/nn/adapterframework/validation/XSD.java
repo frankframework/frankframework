@@ -284,6 +284,6 @@ public class XSD implements Comparable<XSD>  {
     }
 
     public List<String> getRootTags() {
-        return rootTags;
+        return Collections.unmodifiableList(rootTags);
     }
 }
