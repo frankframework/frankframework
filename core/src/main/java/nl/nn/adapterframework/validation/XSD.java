@@ -20,10 +20,8 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.Collections;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamConstants;
@@ -32,7 +30,7 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import edu.emory.mathcs.backport.java.util.Collections;
+import edu.emory.mathcs.backport.java.util.*;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -47,7 +45,7 @@ import org.xml.sax.InputSource;
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
-public class XSD implements Comparable<XSD> {
+public class XSD implements Comparable<XSD>  {
 	private static final Logger LOG = LogUtil.getLogger(XSD.class);
 
 	private static String TEST_RESOURCE_IN_THE_ROOT = "Configuration.xml";
