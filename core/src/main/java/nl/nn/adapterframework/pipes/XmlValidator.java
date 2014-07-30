@@ -461,9 +461,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 					public InputStream getInputStream() throws IOException {
 						return ClassUtils.getResourceURL(getNoNamespaceSchemaLocation()).openStream();
 					}
-					public Reader getReader() throws IOException {
-						return null;
-					}
 					public String getSystemId() {
 						return ClassUtils.getResourceURL(getNoNamespaceSchemaLocation()).toExternalForm();
 					}
@@ -488,9 +485,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 							public InputStream getInputStream() throws IOException {
 								return new ByteArrayInputStream(schemaStreams.get(namespace).toByteArray());
 							}
-							public Reader getReader() throws IOException {
-								return null;
-							}
 							public String getSystemId() {
 								return null;
 							}
@@ -509,9 +503,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 								new Schema() {
 									public InputStream getInputStream() throws IOException {
 										return ClassUtils.getResourceURL(location).openStream();
-									}
-									public Reader getReader() throws IOException {
-										return null;
 									}
 									public String getSystemId() {
 										return ClassUtils.getResourceURL(location).toExternalForm();
@@ -554,9 +545,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				new Schema() {
 					public InputStream getInputStream() throws IOException {
 						return url.openStream();
-					}
-					public Reader getReader() throws IOException {
-						return null;
 					}
 					public String getSystemId() {
 						return url.toExternalForm();

@@ -261,15 +261,10 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	private static XMLInputSource stringToXMLInputSource(Schema schema) throws IOException {
-		InputStream inputStream = schema.getInputStream();
-		// SystemId is needed in case the schema has an import. Maybe we should
+        // SystemId is needed in case the schema has an import. Maybe we should
 		// already resolve this at the SchemaProvider side (when using
 		// addNamespaceToSchema this is now already done).
-		if (inputStream != null) {
-			return new XMLInputSource(null, schema.getSystemId(), null, inputStream, null);
-		} else {
-			return new XMLInputSource(null, schema.getSystemId(), null, schema.getReader(), null);
-		}
+        return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
 	}
 
 }

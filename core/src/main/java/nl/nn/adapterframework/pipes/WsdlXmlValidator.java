@@ -170,16 +170,10 @@ public class WsdlXmlValidator extends SoapValidator {
         if (validateSoapEnvelope != null) {
             result.add(
                     new nl.nn.adapterframework.validation.Schema() {
-
                         public InputStream getInputStream() throws IOException {
                             if (validateSoapEnvelope.xsd == null) throw new IOException(validateSoapEnvelope + " has  no xsd");
                             return ClassUtils.getResourceURL(validateSoapEnvelope.xsd).openStream();
                         }
-
-                        public Reader getReader() throws IOException {
-                            return null;
-                        }
-
                         public String getSystemId() {
                             return ClassUtils.getResourceURL(validateSoapEnvelope.xsd).toExternalForm();
                         }
