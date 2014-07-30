@@ -144,7 +144,7 @@ public class SchemaUtils {
         }
     }
 
-    
+
     /**
      * @return a map with ByteArrayOutputStream's when xmlStreamWriter is null,
      *         otherwise write to xmlStreamWriter
@@ -390,16 +390,17 @@ public class SchemaUtils {
                                             el.getLocation(),
                                             el.getSchemaType());
                                 } else {
-                                    String relativeTo = xsd.parentLocation;
-                                    if (relativeTo.length() > 0 && location.startsWith(relativeTo)) {
-                                        location = location.substring(relativeTo.length());
+                                    if (xsd.parentLocation != null) {
+                                        if (xsd.parentLocation.length() > 0 && location.startsWith(xsd.parentLocation)) {
+                                            location = location.substring(xsd.parentLocation.length());
+                                        }
                                     }
                                     e =
                                         XMLStreamUtils.mergeAttributes(el,
                                             Collections.singletonList(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
                                     if (LOG.isDebugEnabled()) {
                                         LOG.debug(xsd.url + " Corrected " + el + " -> " + e);
-                                        LOG.debug(xsd.url + " Relative to : " + relativeTo + " -> " + e);
+                                        LOG.debug(xsd.url + " Relative to : " + xsd.parentLocation + " -> " + e);
                                     }
                                 }
                             }
