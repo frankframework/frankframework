@@ -13,6 +13,18 @@ Upcoming
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 - Add support for jetty-maven-plugin
+- Added functionality to forward form fields as sessionKeys (in RestListeners)
+- Added possibility to write log records (to separate log files) without the message itself (e.g. for making counts)
+
+
+
+5.6.1
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v5.6...v5.6.1)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v5.6.1)](https://travis-ci.org/ibissource/iaf)
+
+- Fixed bug in EsbSoapWrapper where Result element was inserted instead of Status element 
 
 
 
