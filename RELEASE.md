@@ -48,6 +48,6 @@ Release on Windows 7 behind a proxy
 - git add .
 - git status
 - git commit
+    - i, Release ibis-adapterframework-parent-[version], esc, :, wq, enter
 - git status
-- i, Release ibis-adapterframework-parent-[version], esc, :, wq, enter
 - git push
