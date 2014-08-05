@@ -15,6 +15,7 @@ Upcoming
 - Add support for jetty-maven-plugin
 - Added functionality to forward form fields as sessionKeys (in RestListeners)
 - Added possibility to write log records (to separate log files) without the message itself (e.g. for making counts)
+- Configuration warning when FxF directory doesn't exist
 
 
 

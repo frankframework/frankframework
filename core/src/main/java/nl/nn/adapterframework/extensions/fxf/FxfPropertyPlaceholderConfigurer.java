@@ -24,9 +24,9 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 
 /**
- * Initialise the fxf.dir property when not already available from the
- * AppConstants and make it available to the Ibis configuration and the Spring
- * configuration.
+ * Initialise the fxf.dir property when possible and not already available from
+ * the AppConstants and make it available to the Ibis configuration and the
+ * Spring configuration.
  *
  * @author Jaco de Groot
  */
@@ -35,7 +35,7 @@ public class FxfPropertyPlaceholderConfigurer
 	protected Logger log = LogUtil.getLogger(this);
 
 	@Override
-    protected void convertProperties(Properties props) {
+	protected void convertProperties(Properties props) {
 		String fxfDir = appConstants.getResolvedProperty("fxf.dir");
 		if (fxfDir == null) {
 			// Use default location, see was.policy too
@@ -45,15 +45,10 @@ public class FxfPropertyPlaceholderConfigurer
 			}
 		}
 		if (fxfDir != null) {
-			if (!new File(fxfDir).isDirectory()) {
-				log.debug("Could not find FxF directory: " + fxfDir);
-				fxfDir = null;
-			} else {
-				log.debug("FxF directory: " + fxfDir);
-				appConstants.setProperty("fxf.dir", fxfDir);
-				props.put("fxf.dir", fxfDir);
-			}
+			appConstants.setProperty("fxf.dir", fxfDir);
+			props.put("fxf.dir", fxfDir);
 		}
+		log.debug("FxF directory: " + fxfDir);
 	}
 
 }

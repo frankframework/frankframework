@@ -743,17 +743,19 @@ public class JobDef {
 			File fxfDirectory = new File(fxfDir);
 			log.debug("Clean FxF directory: " + fxfDirectory);
 			File[] flowDirectories = fxfDirectory.listFiles();
-			for (int i = 0; i < flowDirectories.length; i++) {
-				File flowDirectory = flowDirectories[i];
-				if (flowDirectory.isDirectory()) {
-					log.debug("Clean flow directory: " + flowDirectory);
-					File inDirectory = new File(flowDirectory, "in");
-					if (inDirectory.exists()) {
-						cleanDirectory(inDirectory, fxfRetention);
-					}
-					File outDirectory = new File(flowDirectory, "out");
-					if (outDirectory.exists()) {
-						cleanDirectory(outDirectory, fxfRetention);
+			if (flowDirectories != null) {
+				for (int i = 0; i < flowDirectories.length; i++) {
+					File flowDirectory = flowDirectories[i];
+					if (flowDirectory.isDirectory()) {
+						log.debug("Clean flow directory: " + flowDirectory);
+						File inDirectory = new File(flowDirectory, "in");
+						if (inDirectory.exists()) {
+							cleanDirectory(inDirectory, fxfRetention);
+						}
+						File outDirectory = new File(flowDirectory, "out");
+						if (outDirectory.exists()) {
+							cleanDirectory(outDirectory, fxfRetention);
+						}
 					}
 				}
 			}

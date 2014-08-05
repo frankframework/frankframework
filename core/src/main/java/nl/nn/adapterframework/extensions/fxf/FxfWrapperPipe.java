@@ -110,6 +110,8 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			fxfDir = appConstants.getResolvedProperty("fxf.dir");
 			if (fxfDir == null) {
 				throw new ConfigurationException("property fxf.dir has not been initialised");
+			} else if (!new File(fxfDir).isDirectory()) {
+				throw new ConfigurationException("fxf.dir '" + fxfDir + "' doesn't exist or is not a directory");
 			}
 			transferFlowIdTp = TransformerPool.configureTransformer0(
 					getLogPrefix(null), null,
