@@ -91,6 +91,21 @@ public class Misc {
 		return createSimpleUUID();
 	}
 
+	/**
+	* Creates a Universally Unique Identifier, via the java.util.UUID class (36 characters or 32 characters without dashes).
+	*/
+	static public String createRandomUUID(boolean removeDashes) {
+		String uuidString = java.util.UUID.randomUUID().toString();
+		if (removeDashes) {
+			return uuidString.replaceAll("-", "");
+		} else {
+			return uuidString;
+		}
+	}
+
+	static public String createRandomUUID() {
+		return createRandomUUID(false);
+	}
 
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 

@@ -87,7 +87,7 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>URL to a stylesheet that wil be applied to the contents of the message or the value of the session-variable.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoveNamespaces(boolean) removeNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the input message are removed before the stylesheet/xpathExpression is executed</td><td>false</td></tr>
  * <tr><td>{@link #setDefaultValue(String) defaultValue}</td><td>If the result of sessionKey, XpathExpressen and/or Stylesheet returns null or an empty String, this value is returned</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPattern(String) pattern}</td><td>Value of parameter is determined using substitution and formating. The expression can contain references to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. {now}, {uid}, {hostname} and {fixeddate} are named constants that can be used in the expression. If fname is a parameter or session variable that resolves to Eric, then the pattern 'Hi {fname}, hoe gaat het?' resolves to 'Hi Eric, hoe gaat het?'. A guid can be generated using {hostname}_{uid}, see also <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html</a> for more information about (g)uid's.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPattern(String) pattern}</td><td>Value of parameter is determined using substitution and formating. The expression can contain references to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. {now}, {uid}, {uuid}, {hostname} and {fixeddate} are named constants that can be used in the expression. If fname is a parameter or session variable that resolves to Eric, then the pattern 'Hi {fname}, hoe gaat het?' resolves to 'Hi Eric, hoe gaat het?'. A guid can be generated using {hostname}_{uid}, see also <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html</a> for more information about (g)uid's or <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/UUID.html">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/UUID.html</a> for more information about uuid's.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValue(String) value}</td><td>A fixed value</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHidden(boolean) hidden}</td><td>if set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setMinLength(int) minLength}</td><td>if set (>=0) and the length of the value of the parameter deceeds this minimum length, the value is padded</td><td>-1</td></tr>
@@ -491,6 +491,8 @@ public class Parameter implements INamedObject, IWithParameters {
 				substitutionValue = new Date();
 			} else if ("uid".equals(name.toLowerCase())) {
 				substitutionValue = Misc.createSimpleUUID();
+			} else if ("uuid".equals(name.toLowerCase())) {
+				substitutionValue = Misc.createRandomUUID();
 			} else if ("hostname".equals(name.toLowerCase())) {
 				substitutionValue = Misc.getHostname();
 			} else if ("fixeddate".equals(name.toLowerCase())) {
