@@ -368,6 +368,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				credentials = new UsernamePasswordCredentials(uname, cf.getPassword());
 			}
 			if (StringUtils.isNotEmpty(getProxyHost())) {
+				httpState.setAuthenticationPreemptive(true);
 				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
 				hostconfigurationBase.setProxy(getProxyHost(), getProxyPort());
 				if (StringUtils.isNotEmpty(pcf.getUsername())) {
