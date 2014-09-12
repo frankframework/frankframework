@@ -21,8 +21,15 @@
 			<tbody>
 				<tr>
 					<xtags:forEach select="result/fielddefinition/field">
+						<xtags:variable id="name" select="@name"/>
 						<th>
-							<xtags:valueOf select="@name"/>
+							<text>
+								<xtags:valueOf select="$name"/>
+							</text>
+							<% if (name.startsWith("LENGTH ")) { %>
+								<xtags:variable id="text" select="'to show the content of this field instead of the length Rownum max should equal Rownum min and should be greater than zero'"/>
+								<img src="images/smallhelp.gif" alt="<%=text%>" title="<%=text%>"/>
+							<% } %>
 						</th>
 					</xtags:forEach>
 				</tr>

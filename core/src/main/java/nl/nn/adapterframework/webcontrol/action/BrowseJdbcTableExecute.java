@@ -110,16 +110,19 @@ public class BrowseJdbcTableExecute extends ActionBase {
 					qs.setName("QuerySender");
 					qs.setJmsRealm(form_jmsRealm);
 
-					if (form_numberOfRowsOnly || qs.getDatabaseType() == DbmsSupportFactory.DBMS_ORACLE) {
+					//if (form_numberOfRowsOnly || qs.getDatabaseType() == DbmsSupportFactory.DBMS_ORACLE) {
 						qs.setQueryType("select");
 						qs.setBlobSmartGet(true);
 						qs.setIncludeFieldDefinition(true);
 						qs.configure();
 						qs.open();
-						query = "SELECT * FROM " + form_tableName + " WHERE ROWNUM=0";
+						query = "SELECT * FROM " + form_tableName + " WHERE 0=1";
 						result = qs.sendMessage("dummy", query);
 						String browseJdbcTableExecuteREQ =
 							"<browseJdbcTableExecuteREQ>"
+								+ "<dbmsName>"
+								+ qs.getDbmsSupport().getDbmsName()
+								+ "</dbmsName>"
 								+ "<tableName>"
 								+ form_tableName
 								+ "</tableName>"
@@ -146,9 +149,9 @@ public class BrowseJdbcTableExecute extends ActionBase {
 							query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
 						}
 						result = qs.sendMessage("dummy", query);
-					} else {
-						error("errors.generic","This function only supports oracle databases",null);
-					}
+					//} else {
+						//error("errors.generic","This function only supports oracle databases",null);
+					//}
 				} catch (Throwable t) {
 					error("errors.generic","error occured on executing jdbc query [" + query + "]",t);
 				} finally {
