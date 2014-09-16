@@ -17,6 +17,7 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -26,20 +27,23 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
 
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTableExecute extends ActionBase {
 	public static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
+	private static Logger log = LogUtil.getLogger(BrowseJdbcTableExecute.class);
+	private static final String permissionRules = AppConstants.getInstance().getResolvedProperty("browseJdbcTable.permission.rules");
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -97,6 +101,9 @@ public class BrowseJdbcTableExecute extends ActionBase {
 				if (form_rownumMax - form_rownumMin >= 100) {
 					error("errors.generic","Difference between Rownum max and Rownum min must be less than hundred",null);
 				}
+			}
+			if (!readAllowed(permissionRules, request, form_tableName)) {
+				error("errors.generic","Access to table ("+form_tableName+") not allowed",null);
 			}
 		}
 
@@ -232,6 +239,41 @@ public class BrowseJdbcTableExecute extends ActionBase {
 			jmsRealms.add("no realms defined");
 		form.set("jmsRealms", jmsRealms);
 
+	}
+
+	public static boolean readAllowed(String rules, HttpServletRequest request, String tableName) throws IOException {
+		tableName = tableName.toLowerCase();
+		List<String> rulesList = Arrays.asList(rules.split("\\|"));
+		for (String rule: rulesList) {
+			List<String> parts = Arrays.asList(rule.trim().split("\\s+"));
+			if (parts.size() != 3) {
+				log.debug("invalid rule '" + rule + "' contains " + parts.size() + " part(s): " + parts);
+			} else {
+				String tablePattern = parts.get(0).toLowerCase();
+				if (tableName != null && tablePattern != null) {
+					String role = parts.get(1);
+					String type = parts.get(2);
+					log.debug("check allow read table '" + tableName + "' with rule table '" + tablePattern + "', role '" + role + "' and type '" + type + "'");
+					if ("*".equals(tablePattern) || tableName.equals(tablePattern)) {
+						log.debug("table match");
+						if ("*".equals(role) || request.isUserInRole(role)) {
+							log.debug("role match");
+							if ("allow".equals(type)) {
+								log.debug("allow");
+								return true;
+							} else if ("deny".equals(type)) {
+								log.debug("deny");
+								return false;
+							} else {
+								log.error("invalid rule type");
+							}
+						}
+					}
+				}
+			}
+		}
+		log.debug("deny");
+		return false;
 	}
 
 }
