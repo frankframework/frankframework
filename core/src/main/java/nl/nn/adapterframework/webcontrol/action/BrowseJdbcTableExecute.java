@@ -116,7 +116,7 @@ public class BrowseJdbcTableExecute extends ActionBase {
 						qs.setIncludeFieldDefinition(true);
 						qs.configure();
 						qs.open();
-						query = "SELECT * FROM " + form_tableName + " WHERE 0=1";
+						query = "SELECT * FROM " + form_tableName + " WHERE ROWNUM=1"; //ROWNUM=0 does full table scan
 						result = qs.sendMessage("dummy", query);
 						String browseJdbcTableExecuteREQ =
 							"<browseJdbcTableExecuteREQ>"
