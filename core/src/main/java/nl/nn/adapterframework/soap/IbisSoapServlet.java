@@ -166,7 +166,7 @@ public class IbisSoapServlet extends HttpServlet {
         w.write("<ol>");
 
         int count = 0;
-        for (IAdapter a : ibisManager.getConfiguration().getRegisteredAdapters()) {
+        for (IAdapter a : ibisManager.getConfiguration().getAdapterService().getAdapters().values()) {
             count++;
             w.write("<li>");
             try {
