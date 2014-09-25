@@ -165,6 +165,7 @@ public class GetTibcoQueues extends FixedForwardPipe {
 		qNameXml.setCdataValue(queueName);
 		Connection connection = null;
 		Session jSession = null;
+		TibjmsAdmin admin = null;
 		try {
 			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(
 					url);
@@ -200,7 +201,16 @@ public class GetTibcoQueues extends FixedForwardPipe {
 			}
 			qNameXml.addAttribute("count", count);
 			qMessageXml.addSubElement(qNameXml);
-		} catch (JMSException e) {
+
+			admin = new TibjmsAdmin(url, cf.getUsername(), cf.getPassword());
+			Map aclMap = getAclMap(admin);
+			QueueInfo qInfo = admin.getQueue(queueName);
+			XmlBuilder aclXml = new XmlBuilder("acl");
+			XmlBuilder qInfoXml = qInfoToXml(qInfo);
+			aclXml.setValue((String) aclMap.get(qInfo.getName()));
+			qInfoXml.addSubElement(aclXml);
+			qMessageXml.addSubElement(qInfoXml);
+		} catch (Exception e) {
 			String msg = logPrefix
 					+ " exception on browsing Tibco queue [" + queueName
 					+ "]";
@@ -213,6 +223,14 @@ public class GetTibcoQueues extends FixedForwardPipe {
 				return "<error>" + msgCdataString + "</error>";
 			}
 		} finally {
+			if (admin != null) {
+				try {
+					admin.close();
+				} catch (TibjmsAdminException e) {
+					log.warn(getLogPrefix(null) + "exception on closing Tibjms Admin",
+							e);
+				}
+			}
 			if (connection != null) {
 				try {
 					connection.close();
@@ -232,117 +250,23 @@ public class GetTibcoQueues extends FixedForwardPipe {
 		qInfosXml.addAttribute("timestamp", DateUtils.getIsoTimeStamp());
 		try {
 			admin = new TibjmsAdmin(url, cf.getUsername(), cf.getPassword());
-
-			Map userMap = new HashMap();
-			Map aclMap = new HashMap();
-			ACLEntry[] aclEntries = admin.getACLEntries();
-			for (int j = 0; j < aclEntries.length; j++) {
-				ACLEntry aclEntry = aclEntries[j];
-				String destination = aclEntry.getDestination().getName();
-				String principal = aclEntry.getPrincipal().getName();
-				String permissions = aclEntry.getPermissions().toString();
-				String principalDescription = null;
-				if (principal != null) {
-					if (userMap.containsKey(principal)) {
-						principalDescription = (String) userMap.get(principal);
-					} else {
-						UserInfo principalUserInfo = admin.getUser(principal);
-						if (principalUserInfo != null) {
-							principalDescription = principalUserInfo
-									.getDescription();
-							userMap.put(principal, principalDescription);
-						}
-					}
-				}
-				String pp;
-				if (principalDescription != null) {
-					pp = principal + " (" + principalDescription + ")="
-							+ permissions;
-				} else {
-					pp = principal + "=" + permissions;
-
-				}
-				if (aclMap.containsKey(destination)) {
-					String ppe = (String) aclMap.get(destination);
-					aclMap.remove(destination);
-					aclMap.put(destination, ppe + "; " + pp);
-				} else {
-					aclMap.put(destination, pp);
-				}
-			}
-
+			Map aclMap = getAclMap(admin);
 			QueueInfo[] qInfos = admin.getQueues();
 			for (int i = 0; i < qInfos.length; i++) {
 				QueueInfo qInfo = qInfos[i];
 				if (skipTemporaryQueues && qInfo.isTemporary()) {
 					// skip
 				} else {
-					XmlBuilder qInfoXml = new XmlBuilder("qInfo");
-					XmlBuilder qNameXml = new XmlBuilder("qName");
-					String qName = qInfo.getName();
-					qNameXml.setCdataValue(qName);
-					qInfoXml.addSubElement(qNameXml);
-					XmlBuilder pendingMsgCountXml = new XmlBuilder(
-							"pendingMsgCount");
-					long pendingMsgCount = qInfo.getPendingMessageCount();
-					pendingMsgCountXml.setValue(Long.toString(pendingMsgCount));
-					qInfoXml.addSubElement(pendingMsgCountXml);
-					XmlBuilder pendingMsgSizeXml = new XmlBuilder(
-							"pendingMsgSize");
-					long pendingMsgSize = qInfo.getPendingMessageSize();
-					pendingMsgSizeXml.setValue(Misc.toFileSize(pendingMsgSize));
-					qInfoXml.addSubElement(pendingMsgSizeXml);
-					XmlBuilder receiverCountXml = new XmlBuilder(
-							"receiverCount");
-					int receiverCount = qInfo.getReceiverCount();
-					receiverCountXml.setValue(Integer.toString(receiverCount));
-					qInfoXml.addSubElement(receiverCountXml);
-					XmlBuilder inTotalMsgsXml = new XmlBuilder("inTotalMsgs");
-					long inTotalMsgs = qInfo.getInboundStatistics()
-							.getTotalMessages();
-					inTotalMsgsXml.setValue(Long.toString(inTotalMsgs));
-					qInfoXml.addSubElement(inTotalMsgsXml);
-					XmlBuilder outTotalMsgsXml = new XmlBuilder("outTotalMsgs");
-					long outTotalMsgs = qInfo.getOutboundStatistics()
-							.getTotalMessages();
-					outTotalMsgsXml.setValue(Long.toString(outTotalMsgs));
-					qInfoXml.addSubElement(outTotalMsgsXml);
-					XmlBuilder isStaticXml = new XmlBuilder("isStatic");
-					isStaticXml.setValue(qInfo.isStatic() ? "true" : "false");
-					qInfoXml.addSubElement(isStaticXml);
-					XmlBuilder prefetchXml = new XmlBuilder("prefetch");
-					int prefetch = qInfo.getPrefetch();
-					prefetchXml.setValue(Integer.toString(prefetch));
-					qInfoXml.addSubElement(prefetchXml);
-					XmlBuilder isBridgedXml = new XmlBuilder("isBridged");
-					BridgeTarget[] bta = qInfo.getBridgeTargets();
-					isBridgedXml.setValue(bta.length == 0 ? "false" : "true");
-					qInfoXml.addSubElement(isBridgedXml);
-					if (bta.length != 0) {
-						XmlBuilder bridgeTargetsXml = new XmlBuilder(
-								"bridgeTargets");
-						String btaString = null;
-						for (int j = 0; j < bta.length; j++) {
-							BridgeTarget bridgeTarget = bta[j];
-							if (btaString == null) {
-								btaString = bridgeTarget.toString();
-							} else {
-								btaString = btaString + "; "
-										+ bridgeTarget.toString();
-							}
-						}
-						bridgeTargetsXml.setCdataValue(btaString);
-						qInfoXml.addSubElement(bridgeTargetsXml);
-					}
+					XmlBuilder qInfoXml = qInfoToXml(qInfo);
 					qInfosXml.addSubElement(qInfoXml);
 					XmlBuilder aclXml = new XmlBuilder("acl");
-					aclXml.setValue((String) aclMap.get(qName));
+					aclXml.setValue((String) aclMap.get(qInfo.getName()));
 					qInfoXml.addSubElement(aclXml);
 				}
 			}
 		} catch (TibjmsAdminException e) {
 			String msg = logPrefix
-					+ " Exception on getting Tibco queues for url [" + url
+					+ " exception on getting Tibco queues info for url [" + url
 					+ "]";
 			if (isThrowException()) {
 				throw new PipeRunException(this, msg, e);
@@ -353,13 +277,13 @@ public class GetTibcoQueues extends FixedForwardPipe {
 				return "<error>" + msgCdataString + "</error>";
 			}
 		} finally {
-			try {
-				if (admin != null) {
+			if (admin != null) {
+				try {
 					admin.close();
+				} catch (TibjmsAdminException e) {
+					log.warn(getLogPrefix(null) + "exception on closing Tibjms Admin",
+							e);
 				}
-			} catch (TibjmsAdminException e) {
-				log.warn(getLogPrefix(null) + "exception closing Tibjms Admin",
-						e);
 			}
 		}
 		return qInfosXml.toXML();
@@ -379,6 +303,107 @@ public class GetTibcoQueues extends FixedForwardPipe {
 		return null;
 	}
 
+	private XmlBuilder qInfoToXml (QueueInfo qInfo) {
+		XmlBuilder qInfoXml = new XmlBuilder("qInfo");
+		XmlBuilder qNameXml = new XmlBuilder("qName");
+		qNameXml.setCdataValue(qInfo.getName());
+		qInfoXml.addSubElement(qNameXml);
+		XmlBuilder pendingMsgCountXml = new XmlBuilder(
+				"pendingMsgCount");
+		long pendingMsgCount = qInfo.getPendingMessageCount();
+		pendingMsgCountXml.setValue(Long.toString(pendingMsgCount));
+		qInfoXml.addSubElement(pendingMsgCountXml);
+		XmlBuilder pendingMsgSizeXml = new XmlBuilder(
+				"pendingMsgSize");
+		long pendingMsgSize = qInfo.getPendingMessageSize();
+		pendingMsgSizeXml.setValue(Misc.toFileSize(pendingMsgSize));
+		qInfoXml.addSubElement(pendingMsgSizeXml);
+		XmlBuilder receiverCountXml = new XmlBuilder(
+				"receiverCount");
+		int receiverCount = qInfo.getReceiverCount();
+		receiverCountXml.setValue(Integer.toString(receiverCount));
+		qInfoXml.addSubElement(receiverCountXml);
+		XmlBuilder inTotalMsgsXml = new XmlBuilder("inTotalMsgs");
+		long inTotalMsgs = qInfo.getInboundStatistics()
+				.getTotalMessages();
+		inTotalMsgsXml.setValue(Long.toString(inTotalMsgs));
+		qInfoXml.addSubElement(inTotalMsgsXml);
+		XmlBuilder outTotalMsgsXml = new XmlBuilder("outTotalMsgs");
+		long outTotalMsgs = qInfo.getOutboundStatistics()
+				.getTotalMessages();
+		outTotalMsgsXml.setValue(Long.toString(outTotalMsgs));
+		qInfoXml.addSubElement(outTotalMsgsXml);
+		XmlBuilder isStaticXml = new XmlBuilder("isStatic");
+		isStaticXml.setValue(qInfo.isStatic() ? "true" : "false");
+		qInfoXml.addSubElement(isStaticXml);
+		XmlBuilder prefetchXml = new XmlBuilder("prefetch");
+		int prefetch = qInfo.getPrefetch();
+		prefetchXml.setValue(Integer.toString(prefetch));
+		qInfoXml.addSubElement(prefetchXml);
+		XmlBuilder isBridgedXml = new XmlBuilder("isBridged");
+		BridgeTarget[] bta = qInfo.getBridgeTargets();
+		isBridgedXml.setValue(bta.length == 0 ? "false" : "true");
+		qInfoXml.addSubElement(isBridgedXml);
+		if (bta.length != 0) {
+			XmlBuilder bridgeTargetsXml = new XmlBuilder(
+					"bridgeTargets");
+			String btaString = null;
+			for (int j = 0; j < bta.length; j++) {
+				BridgeTarget bridgeTarget = bta[j];
+				if (btaString == null) {
+					btaString = bridgeTarget.toString();
+				} else {
+					btaString = btaString + "; "
+							+ bridgeTarget.toString();
+				}
+			}
+			bridgeTargetsXml.setCdataValue(btaString);
+			qInfoXml.addSubElement(bridgeTargetsXml);
+		}
+		return qInfoXml;
+	}
+	
+	private Map getAclMap(TibjmsAdmin admin) throws TibjmsAdminException {
+		Map userMap = new HashMap();
+		Map aclMap = new HashMap();
+		ACLEntry[] aclEntries = admin.getACLEntries();
+		for (int j = 0; j < aclEntries.length; j++) {
+			ACLEntry aclEntry = aclEntries[j];
+			String destination = aclEntry.getDestination().getName();
+			String principal = aclEntry.getPrincipal().getName();
+			String permissions = aclEntry.getPermissions().toString();
+			String principalDescription = null;
+			if (principal != null) {
+				if (userMap.containsKey(principal)) {
+					principalDescription = (String) userMap.get(principal);
+				} else {
+					UserInfo principalUserInfo = admin.getUser(principal);
+					if (principalUserInfo != null) {
+						principalDescription = principalUserInfo
+								.getDescription();
+						userMap.put(principal, principalDescription);
+					}
+				}
+			}
+			String pp;
+			if (principalDescription != null) {
+				pp = principal + " (" + principalDescription + ")="
+						+ permissions;
+			} else {
+				pp = principal + "=" + permissions;
+
+			}
+			if (aclMap.containsKey(destination)) {
+				String ppe = (String) aclMap.get(destination);
+				aclMap.remove(destination);
+				aclMap.put(destination, ppe + "; " + pp);
+			} else {
+				aclMap.put(destination, pp);
+			}
+		}
+		return aclMap;
+	}
+	
 	public String getUrl() {
 		return url;
 	}
