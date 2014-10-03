@@ -30,6 +30,7 @@ import java.sql.SQLException;
  * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.DirectQuerySender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLockRows(boolean) lockRows}</td><td>When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the SELECT statement (by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query)</td><td>false</td></tr>
+ * <tr><td>{@link #setLockWait(int) lockWait}</td><td>when set and >=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED'</td><td>-1</td></tr>
  * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(String) username}</td><td>username used to connect to datasource</td><td>&nbsp;</td></tr>
@@ -72,11 +73,12 @@ import java.sql.SQLException;
 public class DirectQuerySender extends JdbcQuerySenderBase {
 
 	private boolean lockRows=false;
-
+	private int lockWait=-1;
+	
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws SQLException, JdbcException {
 		String qry = message;
 		if (lockRows) {
-			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry);
+			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);
 		}
 		return prepareQuery(con, qry, updateable);
 	}
@@ -87,5 +89,13 @@ public class DirectQuerySender extends JdbcQuerySenderBase {
 
 	public boolean isLockRows() {
 		return lockRows;
+	}
+
+	public void setLockWait(int i) {
+		lockWait = i;
+	}
+
+	public int getLockWait() {
+		return lockWait;
 	}
 }

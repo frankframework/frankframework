@@ -78,6 +78,7 @@ public interface IDbmsSupport {
 	String getTextFieldType();
 	
 	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws JdbcException;
+	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException;
 
 	String provideIndexHintAfterFirstKeyword(String tableName, String indexName);
 	String provideFirstRowsHintAfterFirstKeyword(int rowCount);

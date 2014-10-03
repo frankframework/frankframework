@@ -89,7 +89,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 	
 	
-	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws JdbcException {
+	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
@@ -100,7 +100,11 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 			 * http://www.ss64.com/ora/select.html
 			 * http://forums.oracle.com/forums/thread.jspa?threadID=664986
 			 */
-			return selectQuery+" FOR UPDATE SKIP LOCKED";
+			if (wait < 0) {
+				return selectQuery+" FOR UPDATE SKIP LOCKED";
+			} else {
+				return selectQuery+" FOR UPDATE WAIT " + wait;
+			}
 	}
 
 	public String provideIndexHintAfterFirstKeyword(String tableName, String indexName) {

@@ -86,6 +86,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>controls whether all the results of each iteration will be collected in one result message. If set <code>false</code>, only a small summary is returned</td><td>true</td></tr>
  * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLockRows(boolean) lockRows}</td><td>When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the SELECT statement (by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query)</td><td>false</td></tr>
+ * <tr><td>{@link #setLockWait(int) lockWait}</td><td>when set and >=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED'</td><td>-1</td></tr>
  * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBlockSize(int) blockSize}</td><td>controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.</td><td>0 (one line at a time, no prefix of suffix)</td></tr>
  * <tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr>
@@ -118,6 +119,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 
 	private String query=null;
 	private boolean lockRows=false;
+	private int lockWait=-1;
 	
 	protected JdbcQuerySenderBase querySender = new JdbcQuerySenderBase() {
 
@@ -129,7 +131,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 				qry = message;
 			}
 			if (lockRows) {
-				qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry);
+				qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);
 			}
 			return prepareQuery(con, qry, updateable);
 		}
@@ -247,5 +249,13 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 
 	public boolean isLockRows() {
 		return lockRows;
+	}
+
+	public void setLockWait(int i) {
+		lockWait = i;
+	}
+
+	public int getLockWait() {
+		return lockWait;
 	}
 }
