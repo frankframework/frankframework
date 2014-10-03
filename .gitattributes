@@ -1,2 +1,31 @@
-*.java ident
-*.xml ident
+# For checkin. See man gitattributes: When text is set to "auto", the path is
+# marked for automatic end-of-line normalization. If Git decides that the
+# content is text, its line endings are normalized to LF on checkin.
+* text=auto
+
+# For checkout. See man gitattributes: eol This attribute sets a specific
+# line-ending style to be used in the working directory. It enables end-of-line
+# normalization without any content checks, effectively setting the text
+# attribute.
+*.java         text eol=lf
+*.xml          text eol=lf
+*.xsl          text eol=lf
+*.xslt         text eol=lf
+*.txt          text eol=lf
+*.jsp          text eol=lf
+*.css          text eol=lf
+*.js           text eol=lf
+*.tld          text eol=lf
+*.wsdd         text eol=lf
+*.md           text eol=lf
+*.yml          text eol=lf
+.gitattributes text eol=lf
+.gitignore     text eol=lf
+.project       text eol=lf
+.classpath     text eol=lf
+.jsdtscope     text eol=lf
+org.eclipse.*  text eol=lf
+
+*.png binary
+*.gif binary
+*.ico binary
