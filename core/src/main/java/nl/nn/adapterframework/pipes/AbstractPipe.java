@@ -82,6 +82,7 @@ import org.springframework.transaction.TransactionDefinition;
  * <tr><td>{@link #setGetInputFromFixedValue(String) getInputFromFixedValue}</td><td>when set, this fixed value is taken as input, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
+ * <tr><td>{@link #setRestoreMovedElements(boolean) restoreMovedElements}</td><td>when set <code>true</code>, compacted messages are restored to their original format (see also  {@link nl.nn.adapterframework.receivers.ReceiverBase#setElementToMove(java.lang.String)})</td><td>false</td></tr>
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
  * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are:
  *   <table border="1">
@@ -130,6 +131,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private String getInputFromFixedValue=null;
 	private String storeResultInSessionKey=null;
 	private boolean preserveInput=false;
+	private boolean restoreMovedElements=false;
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
@@ -426,6 +428,12 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return preserveInput;
 	}
 
+	public void setRestoreMovedElements(boolean restoreMovedElements) {
+		this.restoreMovedElements = restoreMovedElements;
+	}
+	public boolean isRestoreMovedElements() {
+		return restoreMovedElements;
+	}
 
 	public void setNamespaceAware(boolean b) {
 		namespaceAware = b;

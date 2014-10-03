@@ -29,6 +29,8 @@ import org.apache.commons.lang.StringUtils;
  * @author Jaco de Groot
  */
 public class InputOutputPipeProcessor extends PipeProcessorBase {
+	private final static String ME_START = "{sessionKey:";
+	private final static String ME_END = "}";
 
 	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Object message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		Object preservedObject = message;
@@ -58,6 +60,14 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		}
 
 		if (pe !=null) {
+			if (pe.isRestoreMovedElements()) {
+				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] restoring from compacted result for pipe ["+pe.getName()+"]");
+				Object result = pipeRunResult.getResult();
+				if (result!=null) {
+					String resultString = (String)result;
+					pipeRunResult.setResult(restoreMovedElements(resultString, pipeLineSession));
+				}
+			}
 			if (StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
 				Object result = pipeRunResult.getResult();
@@ -71,4 +81,44 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		return pipeRunResult;
 	}
 
+	private String restoreMovedElements(String invoerString, IPipeLineSession pipeLineSession) {
+		StringBuffer buffer = new StringBuffer();
+		int startPos = invoerString.indexOf(ME_START);
+		if (startPos == -1)
+			return invoerString;
+		char[] invoerChars = invoerString.toCharArray();
+		int copyFrom = 0;
+		while (startPos != -1) {
+			buffer.append(invoerChars, copyFrom, startPos - copyFrom);
+			int nextStartPos =
+				invoerString.indexOf(
+					ME_START,
+					startPos + ME_START.length());
+			if (nextStartPos == -1) {
+				nextStartPos = invoerString.length();
+			}
+			int endPos =
+				invoerString.indexOf(ME_END, startPos + ME_START.length());
+			if (endPos == -1 || endPos > nextStartPos) {
+				log.warn("Found a start delimiter without an end delimiter while restoring from compacted result at position ["
+						+ startPos + "] in ["+ invoerString+ "]");
+				buffer.append(invoerChars, startPos, nextStartPos - startPos);
+				copyFrom = nextStartPos;
+			} else {
+				String movedElementSessionKey = invoerString.substring(startPos + ME_START.length(),endPos);
+				if (pipeLineSession.containsKey(movedElementSessionKey)) {
+					String movedElementValue = (String) pipeLineSession.get(movedElementSessionKey);
+					buffer.append(movedElementValue);
+					copyFrom = endPos + ME_END.length();
+				} else {
+					log.warn("Did not find sessionKey [" + movedElementSessionKey + "] while restoring from compacted result");
+					buffer.append(invoerChars, startPos, nextStartPos - startPos);
+					copyFrom = nextStartPos;
+				}
+			}
+			startPos = invoerString.indexOf(ME_START, copyFrom);
+		}
+		buffer.append(invoerChars, copyFrom, invoerChars.length - copyFrom);
+		return buffer.toString();
+	}
 }

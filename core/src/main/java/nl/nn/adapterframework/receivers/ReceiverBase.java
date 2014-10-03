@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -79,6 +83,7 @@ import nl.nn.adapterframework.util.TracingEventNumbers;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -91,6 +96,9 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * This {@link IReceiver Receiver} may be used as a base-class for developing receivers.
@@ -137,6 +145,10 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * <tr><td>{@link #setLabelNamespaceDefs(String) labelNamespaceDefs}</td><td>namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelStyleSheet(String) labelStyleSheet}</td><td>stylesheet to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHiddenInputSessionKeys(String) hiddenInputSessionKeys}</td><td>comma separated list of keys of session variables which are available when the <code>PipeLineSession</code> is created and of which the value will not be shown in the log (replaced by asterisks)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setChompCharSize(String) chompCharSize}</td><td>if set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setElementToMove(String) elementToMove}</td><td>if set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: "{sessionKey:" + <code>elementToMoveSessionKey</code> + "}"</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setElementToMoveSessionKey(String) elementToMoveSessionKey}</td><td>(only used when <code>elementToMove</code> is set) name of the session key under which the character data is stored</td><td>"ref_" + the name of the element</td></tr>
+ * <tr><td>{@link #setElementToMoveChain(String) elementToMoveChain}</td><td>like <code>elementToMove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. "adapter;pipeline;pipe")</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p>
@@ -230,6 +242,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private String labelNamespaceDefs;
 	private String labelXPath;
 	private String labelStyleSheet;
+    private String chompCharSize = null;
+    private int chompLength = -1;
+    private String elementToMove = null;
+    private String elementToMoveSessionKey = null;
+    private String elementToMoveChain = null;
 
 	public static final String ONERROR_CONTINUE = "continue";
 	public static final String ONERROR_CLOSE = "close";
@@ -547,6 +564,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			propagateName();
 			if (getListener()==null) {
 				throw new ConfigurationException(getLogPrefix()+"has no listener");
+			}
+			if (!StringUtils.isEmpty(getElementToMove()) && !StringUtils.isEmpty(getElementToMoveChain())) {
+				throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
 			}
 			if (getListener() instanceof IPushingListener) {
 				IPushingListener pl = (IPushingListener)getListener();
@@ -941,6 +961,28 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				log.debug(getLogPrefix()+"generated messageId ["+messageId+"]");
 		}
 
+		if (getChompCharSize() != null || getElementToMove() != null || getElementToMoveChain() != null) {
+			log.debug(getLogPrefix()+"compact received message");
+			if (getChompCharSize() != null) {
+				chompLength = (int) Misc.toFileSize(getChompCharSize(), -1);
+			}
+			try {
+				InputStream xmlInput = IOUtils.toInputStream(message, "UTF-8");
+				CompactSaxHandler handler = new CompactSaxHandler();
+				if (threadContext != null) {
+					handler.setContext(threadContext);
+				}
+				SAXParserFactory parserFactory = XmlUtils.getSAXParserFactory();
+				parserFactory.setNamespaceAware(true);
+				SAXParser saxParser = parserFactory.newSAXParser();
+				saxParser.parse(xmlInput, handler);
+				message = handler.getXmlString();
+				handler = null;
+			} catch (Exception e) {
+				throw new ListenerException("error during compacting received message to more compact format: " + e.getMessage());
+			}
+		}
+		
 		String businessCorrelationId=null;
 		if (correlationIDTp!=null) {
 			try {
@@ -1124,7 +1166,99 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return result;
 	}
 
+	private class CompactSaxHandler extends DefaultHandler {
+		private StringBuffer messageBuffer = new StringBuffer();
+		private StringBuffer charBuffer = new StringBuffer();
+		private List elements = new ArrayList();
+	    private Map context = null;
+	    
+		public void startElement(String uri, String localName, String qName,
+				Attributes attributes) throws SAXException {
+			printCharBuffer();
+			messageBuffer.append("<" + localName + ">");
+			elements.add(localName);
+		}
 
+		public void endElement(String uri, String localName, String qName)
+				throws SAXException {
+			int lastIndex = elements.size() - 1;
+			String lastElement = (String) elements.get(lastIndex);
+			if (!lastElement.equals(localName)) {
+				throw new SAXException("expected end element [" + lastElement
+						+ "] but got end element [" + localName + "]");
+			}
+
+			printCharBuffer();
+			messageBuffer.append("</" + localName + ">");
+			elements.remove(lastIndex);
+		}
+
+		public void characters(char[] ch, int start, int length)
+				throws SAXException {
+			charBuffer.append(ch, start, length);
+		}
+
+		private void printCharBuffer() {
+			if (charBuffer.length() > 0) {
+				String before = "";
+				String after = "";
+				
+				if (chompLength >= 0 && charBuffer.length() > chompLength) {
+					before = "*** character data size [" + charBuffer.length() + "] exceeds [" + getChompCharSize() + "] and is chomped ***";
+					after = "...(" + (charBuffer.length() - chompLength) + " characters more)";
+					charBuffer.setLength(chompLength);
+				}
+
+				int lastIndex = elements.size() - 1;
+				String lastElement = (String) elements.get(lastIndex);
+				
+				if (context != null && ((getElementToMove() != null && lastElement.equals(getElementToMove())
+							|| (getElementToMoveChain() != null && elementsToString().equals(getElementToMoveChain()))))) {
+					String elementToMoveSK;
+					if (getElementToMoveSessionKey() == null) {
+						elementToMoveSK = "ref_" + lastElement;
+					} else {
+						elementToMoveSK = getElementToMoveSessionKey();
+					}
+					if (context.containsKey(elementToMoveSK)) {
+						String etmsk = elementToMoveSK;
+						int counter = 1;
+						while (context.containsKey(elementToMoveSK)) {
+							counter++;
+							elementToMoveSK = etmsk + counter;
+						}
+					}
+					context.put(elementToMoveSK, before + charBuffer.toString() + after);
+					messageBuffer.append("{sessionKey:" + elementToMoveSK + "}");
+				} else {
+					messageBuffer.append(before + XmlUtils.encodeChars(charBuffer.toString()) + after);
+				}
+
+				charBuffer.setLength(0);
+			}
+		}
+
+		private String elementsToString() {
+			String chain = null;
+			for (Iterator<String> it = elements.iterator(); it.hasNext();) {
+				String element = (String) it.next();
+				if (chain == null) {
+					chain = element;
+				} else {
+					chain = chain + ";" + element;
+				}
+			}
+			return chain;
+		}
+
+		public void setContext(Map map) {
+			context = map;
+		}
+
+		public String getXmlString() {
+			return messageBuffer.toString();
+		}
+	}
 
 	private synchronized void cachePoisonMessageId(String messageId) {
 		poisonMessageIdCache.put(messageId, messageId);
@@ -1914,4 +2048,31 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return labelStyleSheet;
 	}
 
+	public void setChompCharSize(String string) {
+		chompCharSize = string;
+	}
+	public String getChompCharSize() {
+		return chompCharSize;
+	}
+
+	public void setElementToMove(String string) {
+		elementToMove = string;
+	}
+	public String getElementToMove() {
+		return elementToMove;
+	}
+
+	public void setElementToMoveSessionKey(String string) {
+		elementToMoveSessionKey = string;
+	}
+	public String getElementToMoveSessionKey() {
+		return elementToMoveSessionKey;
+	}
+
+	public void setElementToMoveChain(String string) {
+		elementToMoveChain = string;
+	}
+	public String getElementToMoveChain() {
+		return elementToMoveChain;
+	}
 }
