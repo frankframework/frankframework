@@ -89,6 +89,11 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		return result;
 	}
 
+	public String getFirstRecordQuery(String tableName) throws JdbcException {
+		String query="select top(1) * from "+tableName;
+		return query;
+	} 
+
 	public String provideTrailingFirstRowsHint(int rowCount) {
 		return " OPTION (FAST "+rowCount+")";
 	}

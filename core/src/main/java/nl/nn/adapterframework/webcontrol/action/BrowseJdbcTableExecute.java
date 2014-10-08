@@ -123,7 +123,7 @@ public class BrowseJdbcTableExecute extends ActionBase {
 						qs.setIncludeFieldDefinition(true);
 						qs.configure();
 						qs.open();
-						query = "SELECT * FROM " + form_tableName + " WHERE ROWNUM=1"; //ROWNUM=0 does full table scan
+						query = qs.getDbmsSupport().getFirstRecordQuery(form_tableName);
 						result = qs.sendMessage("dummy", query);
 						String browseJdbcTableExecuteREQ =
 							"<browseJdbcTableExecuteREQ>"

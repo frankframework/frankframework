@@ -195,6 +195,12 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return selectQuery+" FOR UPDATE";
 	}
 
+	public String getFirstRecordQuery(String tableName) throws JdbcException {
+		log.warn("don't know how to perform getFirstRecordQuery for this database type, doing a guess...");
+		String query="select * from "+tableName+" where ROWNUM=1";
+		return query;
+	} 
+
 	public String provideIndexHintAfterFirstKeyword(String tableName, String indexName) {
 		return "";
 	}
@@ -211,7 +217,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return null;
 	}
 
-	
 	protected boolean doIsTablePresent(Connection conn, String tablesTable, String schemaColumn, String tableNameColumn, String schemaName, String tableName) throws JdbcException {
 		String query="select count(*) from "+tablesTable+" where upper("+tableNameColumn+")=?";
 		if (StringUtils.isNotEmpty(schemaName)) {

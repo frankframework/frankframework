@@ -107,6 +107,11 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 			}
 	}
 
+	public String getFirstRecordQuery(String tableName) throws JdbcException {
+		String query="select * from "+tableName+" where ROWNUM=1";
+		return query;
+	} 
+
 	public String provideIndexHintAfterFirstKeyword(String tableName, String indexName) {
 		return " /*+ INDEX ( "+tableName+ " "+indexName+" ) */ "; 
 	}

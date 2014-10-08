@@ -52,6 +52,11 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 		return selectQuery+" FOR UPDATE";
 	}
 
+	public String getFirstRecordQuery(String tableName) throws JdbcException {
+		String query="select * from "+tableName+" fetch first 1 rows only";
+		return query;
+	} 
+
 	public String getSchema(Connection conn) throws JdbcException {
 		return JdbcUtil.executeStringQuery(conn, "SELECT CURRENT SERVER FROM SYSIBM.SYSDUMMY1");
 	}
