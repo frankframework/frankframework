@@ -64,7 +64,6 @@ public class Misc {
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 	public static final String MESSAGE_SIZE_WARN_BY_DEFAULT_KEY = "message.size.warn.default";
-	public static final String MESSAGE_SIZE_ERROR_BY_DEFAULT_KEY = "message.size.error.default";
 	public static final String RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY = "response.body.size.warn.default";
 	public static final String RESPONSE_BODY_SIZE_ERROR_BY_DEFAULT_KEY = "response.body.size.error.default";
 	public static final String FORCE_FIXED_FORWARDING_BY_DEFAULT_KEY = "force.fixed.forwarding.default";
@@ -663,15 +662,6 @@ public class Misc {
 			messageSizeWarnByDefault = new Long(definition);
 		}
 		return messageSizeWarnByDefault.longValue();
-	}
-
-	public static synchronized long getMessageSizeErrorByDefault() {
-		if (messageSizeErrorByDefault==null) {
-			String definitionString=AppConstants.getInstance().getString(MESSAGE_SIZE_ERROR_BY_DEFAULT_KEY, null);
-			long definition=toFileSize(definitionString, -1);
-			messageSizeErrorByDefault = new Long(definition);
-		}
-		return messageSizeErrorByDefault.longValue();
 	}
 
 	public static synchronized long getResponseBodySizeWarnByDefault() {

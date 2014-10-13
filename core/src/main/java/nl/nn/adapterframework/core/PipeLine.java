@@ -78,8 +78,7 @@ import org.springframework.transaction.TransactionDefinition;
  *  </table></td><td>Supports</td></tr>
  * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to process a message.</td><td><code>0</code> (use system default)</code></td></tr>
  * <tr><td>{@link #setStoreOriginalMessageWithoutNamespaces(boolean) storeOriginalMessageWithoutNamespaces}</td><td>when set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalMessageWithoutNamespaces</td><td>false</td></tr>
- * <tr><td>{@link #setMessageSizeWarn(String) messageSizeWarn}</td><td>if messageSizeWarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged</td><td>application default (1MB)</td></tr>
- * <tr><td>{@link #setMessageSizeError(String) messageSizeError}</td><td>if messageSizeError>=0 and the size of the input or result pipe message exceeds the value specified an error message is logged</td><td>application default (10MB)</td></tr>
+ * <tr><td>{@link #setMessageSizeWarn(String) messageSizeWarn}</td><td>if messageSizeWarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged</td><td>application default (3MB)</td></tr>
  * <tr><td>{@link #setForceFixedForwarding(boolean) forceFixedForwarding}</td><td>forces that each pipe in the pipeline is not automatically added to the globalForwards table</td><td>application default</td></tr>
  * </table>
  * </p>
@@ -161,7 +160,6 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	private String commitOnState = "success"; // exit state on which receiver will commit XA transactions
 	private boolean storeOriginalMessageWithoutNamespaces = false;
 	private long messageSizeWarn  = Misc.getMessageSizeWarnByDefault();
-	private long messageSizeError = Misc.getMessageSizeErrorByDefault();
 	private boolean forceFixedForwarding = Misc.isForceFixedForwardingByDefault();
 
 	private List<IPipeLineExitHandler> exitHandlers = new ArrayList<IPipeLineExitHandler>();
@@ -310,7 +308,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 						epipe.registerEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
 					}
 					epipe.registerEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
-					if (getMessageSizeErrorNum() >= 0) {
+					if (getMessageSizeWarnNum() >= 0) {
 						epipe.registerEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
 					}
 					if (epipe.hasSizeStatistics()) {
@@ -772,21 +770,6 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	}
 	public long getMessageSizeWarnNum() {
 		return messageSizeWarn;
-	}
-
-	/**
-	 * The <b>MessageSizeError</b> option takes a long
-	 * integer in the range 0 - 2^63. You can specify the value
-	 * with the suffixes "KB", "MB" or "GB" so that the integer is
-	 * interpreted being expressed respectively in kilobytes, megabytes
-	 * or gigabytes. For example, the value "10KB" will be interpreted
-	 * as 10240.
-	 */
-	public void setMessageSizeError(String s) {
-		messageSizeError = Misc.toFileSize(s, messageSizeError + 1);
-	}
-	public long getMessageSizeErrorNum() {
-		return messageSizeError;
 	}
 
 	public TransactionDefinition getTxDef() {

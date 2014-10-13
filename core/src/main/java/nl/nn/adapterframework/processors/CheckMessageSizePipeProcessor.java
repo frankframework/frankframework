@@ -40,26 +40,15 @@ public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 
 	private void checkMessageSize(Object message, PipeLine pipeLine, IPipe pipe, boolean input) {
 		String logMessage = null;
-		if (pipeLine.getMessageSizeErrorNum()>=0) {
+		if (pipeLine.getMessageSizeWarnNum()>=0) {
 			if (message instanceof String) {
 				int messageLength = message.toString().length();
-				if (messageLength>=pipeLine.getMessageSizeErrorNum()) {
-					logMessage = "pipe [" + pipe.getName() + "] of adapter [" + pipeLine.getOwner().getName() + "], " + (input ? "input" : "result") + " message size [" + Misc.toFileSize(messageLength) + "] exceeds [" + Misc.toFileSize(pipeLine.getMessageSizeErrorNum()) + "]";
-					log.error(logMessage);
+				if (messageLength>=pipeLine.getMessageSizeWarnNum()) {
+					logMessage = "pipe [" + pipe.getName() + "] of adapter [" + pipeLine.getOwner().getName() + "], " + (input ? "input" : "result") + " message size [" + Misc.toFileSize(messageLength) + "] exceeds [" + Misc.toFileSize(pipeLine.getMessageSizeWarnNum()) + "]";
+					log.warn(logMessage);
 					if (pipe instanceof IExtendedPipe) {
 						IExtendedPipe pe = (IExtendedPipe)pipe;
 						pe.throwEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
-					}
-				}
-			}
-		}
-		if (logMessage == null) {
-			if (pipeLine.getMessageSizeWarnNum()>=0) {
-				if (message instanceof String) {
-					int messageLength = message.toString().length();
-					if (messageLength>=pipeLine.getMessageSizeWarnNum()) {
-						logMessage = "pipe [" + pipe.getName() + "] of adapter [" + pipeLine.getOwner().getName() + "], " + (input ? "input" : "result") + " message size [" + Misc.toFileSize(messageLength) + "] exceeds [" + Misc.toFileSize(pipeLine.getMessageSizeWarnNum()) + "]";
-						log.warn(logMessage);
 					}
 				}
 			}
