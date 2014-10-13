@@ -559,14 +559,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		InputStream is = httpmethod.getResponseBodyAsStream();
 		String responseBody = Misc.streamToString(is,"\n",charset,false);
 		int rbLength = responseBody.length();
-		long rbSizeError = Misc.getResponseBodySizeErrorByDefault();
-		if (rbLength >= rbSizeError) {
-			log.error(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeError)+"]");
-		} else {
-			long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
-			if (rbLength >= rbSizeWarn) {
-				log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
-			}
+		long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
+		if (rbLength >= rbSizeWarn) {
+			log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
 		}
 		return responseBody;
 	}

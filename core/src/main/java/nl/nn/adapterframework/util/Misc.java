@@ -65,13 +65,10 @@ public class Misc {
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 	public static final String MESSAGE_SIZE_WARN_BY_DEFAULT_KEY = "message.size.warn.default";
 	public static final String RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY = "response.body.size.warn.default";
-	public static final String RESPONSE_BODY_SIZE_ERROR_BY_DEFAULT_KEY = "response.body.size.error.default";
 	public static final String FORCE_FIXED_FORWARDING_BY_DEFAULT_KEY = "force.fixed.forwarding.default";
 
 	private static Long messageSizeWarnByDefault = null;
-	private static Long messageSizeErrorByDefault = null;
 	private static Long responseBodySizeWarnByDefault = null;
-	private static Long responseBodySizeErrorByDefault = null;
 	private static Boolean forceFixedForwardingByDefault = null;
 
 	/**
@@ -671,15 +668,6 @@ public class Misc {
 			responseBodySizeWarnByDefault = new Long(definition);
 		}
 		return responseBodySizeWarnByDefault.longValue();
-	}
-
-	public static synchronized long getResponseBodySizeErrorByDefault() {
-		if (responseBodySizeErrorByDefault==null) {
-			String definitionString=AppConstants.getInstance().getString(RESPONSE_BODY_SIZE_ERROR_BY_DEFAULT_KEY, null);
-			long definition=toFileSize(definitionString, -1);
-			responseBodySizeErrorByDefault = new Long(definition);
-		}
-		return responseBodySizeErrorByDefault.longValue();
 	}
 
 	public static synchronized boolean isForceFixedForwardingByDefault() {
