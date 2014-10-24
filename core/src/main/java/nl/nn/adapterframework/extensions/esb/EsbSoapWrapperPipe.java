@@ -44,6 +44,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion')</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setRetrievePhysicalDestination(boolean) retrievePhysicalDestination}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code></td><td><code>true</code></td></tr>
  * <tr><td>{@link #setUseFixedValues(boolean) useFixedValues}</td><td>If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setFixResultNamespace(boolean) fixResultNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed</td><td><code>false</code></td></tr>
  * </table></p>
  * <p>
  * <b>/xml/xsl/esb/soapHeader.xsl:</b>
@@ -164,6 +165,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>operationName</td><td>&nbsp;</td></tr>
  * <tr><td>operationVersion</td><td>1</td></tr>
  * <tr><td>paradigm</td><td>&nbsp;</td></tr>
+ * <tr><td>fixResultNamespace</td><td>false</td></tr>
  * </table>
  * </p>
  * <p>
@@ -236,8 +238,10 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	protected final static String CORRELATIONID = "correlationId";
 	protected final static String EXTERNALREFTOMESSAGEID = "externalRefToMessageId";
 	protected final static String TIMESTAMP = "timestamp";
+	protected final static String FIXRESULTNAMESPACE = "fixResultNamespace";
 
 	private boolean useFixedValues=false; 
+	private boolean fixResultNamespace=false; 
 
     public static enum Mode  {
         I2T,
@@ -551,6 +555,12 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			}
 			addParameter(p);
 		}
+		if (parameterList.findParameter(FIXRESULTNAMESPACE)==null) {
+			p = new Parameter();
+			p.setName(FIXRESULTNAMESPACE);
+			p.setValue(String.valueOf(isFixResultNamespace()));
+			addParameter(p);
+		}
 	}
 	public void setMode(String string) {
 		mode = Mode.valueOf(string.toUpperCase());
@@ -651,5 +661,13 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 
 	public boolean isUseFixedValues() {
 		return useFixedValues;
+	}
+
+	public void setFixResultNamespace(boolean b) {
+		fixResultNamespace = b;
+	}
+
+	public boolean isFixResultNamespace() {
+		return fixResultNamespace;
 	}
 }

@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
-	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />
+	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
 	<xsl:param name="namespace">http://nn.nl/XSD/Generic/MessageHeader/1</xsl:param>
-	<xsl:param name="errorCode" />
-	<xsl:param name="errorReason" />
-	<xsl:param name="errorDetailCode" />
-	<xsl:param name="errorDetailText" />
-	<xsl:param name="serviceName" />
-	<xsl:param name="serviceContext" />
-	<xsl:param name="operationName" />
+	<xsl:param name="errorCode"/>
+	<xsl:param name="errorReason"/>
+	<xsl:param name="errorDetailCode"/>
+	<xsl:param name="errorDetailText"/>
+	<xsl:param name="serviceName"/>
+	<xsl:param name="serviceContext"/>
+	<xsl:param name="operationName"/>
 	<xsl:param name="operationVersion">1</xsl:param>
-	<xsl:param name="paradigm" />
+	<xsl:param name="paradigm"/>
+	<xsl:param name="fixResultNamespace">true</xsl:param>
 	<!--
 		if $errorCode is empty then
 		 - the complete input message is copied
 		 - a result tag is added as last child of the root tag if it doesn't exist and $paradigm equals 'Response'
+		 - if the result tag exists and $fixResultNamespace equals true, the namespace of the result tag is changed to $namespace
 		if $errorCode is not empty then
 		 - the root tag of the input message is copied
 		 - a result tag is wrapped in this copied root tag
@@ -28,26 +30,49 @@
 	<xsl:template match="/">
 		<xsl:choose>
 			<xsl:when test="string-length($errorCode)=0">
-				<xsl:apply-templates select="*|comment()|processing-instruction()" mode="ok" />
+				<xsl:apply-templates select="*|comment()|processing-instruction()" mode="ok"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:apply-templates select="*|comment()|processing-instruction()" mode="error" />
+				<xsl:apply-templates select="*|comment()|processing-instruction()" mode="error"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
 	<xsl:template match="*|@*|comment()|processing-instruction()|text()" mode="ok">
-		<xsl:copy>
-			<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" mode="ok" />
-			<xsl:if test="not(parent::*) and $result_exists='false' and $paradigm='Response'">
-				<xsl:call-template name="Result" />
-			</xsl:if>
-		</xsl:copy>
+		<xsl:choose>
+			<xsl:when test="self::* and local-name(.)='Result' and $fixResultNamespace='true'">
+				<xsl:element name="Result" namespace="{$namespace}">
+					<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" mode="fixResultNamespace"/>
+				</xsl:element>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:copy>
+					<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" mode="ok"/>
+					<xsl:if test="not(parent::*) and $result_exists='false' and $paradigm='Response'">
+						<xsl:call-template name="Result"/>
+					</xsl:if>
+				</xsl:copy>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+	<xsl:template match="*|@*|comment()|processing-instruction()|text()" mode="fixResultNamespace">
+		<xsl:choose>
+			<xsl:when test="self::*">
+				<xsl:element name="{local-name(.)}" namespace="{$namespace}">
+					<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" mode="fixResultNamespace" />
+				</xsl:element>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:copy>
+					<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" mode="fixResultNamespace" />
+				</xsl:copy>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 	<xsl:template match="*|@*|comment()|processing-instruction()|text()" mode="error">
 		<xsl:if test="not(parent::*)">
 			<xsl:copy>
-				<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" mode="error" />
-				<xsl:call-template name="Result" />
+				<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" mode="error"/>
+				<xsl:call-template name="Result"/>
 			</xsl:copy>
 		</xsl:if>
 	</xsl:template>
@@ -62,7 +87,7 @@
 					<xsl:element name="ErrorList" namespace="{$namespace}">
 						<xsl:element name="Error" namespace="{$namespace}">
 							<xsl:element name="Code" namespace="{$namespace}">
-								<xsl:value-of select="$errorCode" />
+								<xsl:value-of select="$errorCode"/>
 							</xsl:element>
 							<xsl:element name="Reason" namespace="{$namespace}">
 								<xsl:choose>
@@ -77,27 +102,27 @@
 									</xsl:when>
 									<xsl:otherwise>
 										<xsl:text disable-output-escaping="yes">&lt;![CDATA[</xsl:text>
-										<xsl:value-of select="$errorReason" />
+										<xsl:value-of select="$errorReason"/>
 										<xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
 									</xsl:otherwise>
 								</xsl:choose>
 							</xsl:element>
 							<xsl:element name="Service" namespace="{$namespace}">
 								<xsl:element name="Name" namespace="{$namespace}">
-									<xsl:value-of select="$serviceName" />
+									<xsl:value-of select="$serviceName"/>
 								</xsl:element>
 								<xsl:element name="Context" namespace="{$namespace}">
-									<xsl:value-of select="$serviceContext" />
+									<xsl:value-of select="$serviceContext"/>
 								</xsl:element>
 								<xsl:element name="Action" namespace="{$namespace}">
 									<xsl:element name="Paradigm" namespace="{$namespace}">
-										<xsl:value-of select="$paradigm" />
+										<xsl:value-of select="$paradigm"/>
 									</xsl:element>
 									<xsl:element name="Name" namespace="{$namespace}">
-										<xsl:value-of select="$operationName" />
+										<xsl:value-of select="$operationName"/>
 									</xsl:element>
 									<xsl:element name="Version" namespace="{$namespace}">
-										<xsl:value-of select="$operationVersion" />
+										<xsl:value-of select="$operationVersion"/>
 									</xsl:element>
 								</xsl:element>
 							</xsl:element>
@@ -105,12 +130,12 @@
 								<xsl:element name="DetailList" namespace="{$namespace}">
 									<xsl:element name="Detail" namespace="{$namespace}">
 										<xsl:element name="Code" namespace="{$namespace}">
-											<xsl:value-of select="$errorDetailCode" />
+											<xsl:value-of select="$errorDetailCode"/>
 										</xsl:element>
 										<xsl:if test="string-length($errorDetailText)&gt;0">
 											<xsl:element name="Text" namespace="{$namespace}">
 												<xsl:text disable-output-escaping="yes">&lt;![CDATA[</xsl:text>
-												<xsl:value-of select="$errorDetailText" />
+												<xsl:value-of select="$errorDetailText"/>
 												<xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
 											</xsl:element>
 										</xsl:if>
