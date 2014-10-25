@@ -17,6 +17,7 @@ Upcoming
 - Added possibility to write log records (to separate log files) without the message itself (e.g. for making counts)
 - Configuration warning when FxF directory doesn't exist
 - Added parameter pattern 'uuid' (which can be used instead of the combination of 'hostname' and 'uid')
+- Enable parameters in xpathExpression of XmlSwitch
 
 
 

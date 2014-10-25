@@ -108,12 +108,7 @@ public class XmlSwitch extends AbstractPipe {
 			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
 				throw new ConfigurationException(getLogPrefix(null) + "cannot have both an xpathExpression and a serviceSelectionStylesheetFilename specified");
 			}
-			try {
-				transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getXpathExpression(), "text"), isXslt2());
-			} 
-			catch (TransformerConfigurationException te) {
-				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);
-			}
+			transformerPool = TransformerPool.configureTransformer(getLogPrefix(null), null, getXpathExpression(), null, "text", false, getParameterList());
 		} 
 		else {
 			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
