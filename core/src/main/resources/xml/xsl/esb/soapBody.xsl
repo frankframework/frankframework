@@ -11,7 +11,7 @@
 	<xsl:param name="operationName"/>
 	<xsl:param name="operationVersion">1</xsl:param>
 	<xsl:param name="paradigm"/>
-	<xsl:param name="fixResultNamespace">true</xsl:param>
+	<xsl:param name="fixResultNamespace">false</xsl:param>
 	<!--
 		if $errorCode is empty then
 		 - the complete input message is copied
