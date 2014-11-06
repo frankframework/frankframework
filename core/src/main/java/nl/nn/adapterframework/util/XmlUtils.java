@@ -338,10 +338,7 @@ public class XmlUtils {
 		Document document;
 		InputSource src;
 
-		DocumentBuilderFactory factory = getDocumentBuilderFactory(xslt2);
-		if (xslt2 && !namespaceAware) {
-			log.info("Saxon parser is always namespace aware, so setting namespaceAware=false is ignored");
-		}
+		DocumentBuilderFactory factory = getDocumentBuilderFactory(xslt2, namespaceAware);
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			if (!resolveExternalEntities) {
@@ -681,8 +678,7 @@ public class XmlUtils {
 			throws DomBuilderException {
 		Variant in = new Variant(xmlString);
 		InputSource is = in.asXmlInputSource();
-		SAXParserFactory factory = getSAXParserFactory();
-		factory.setNamespaceAware(namespaceAware);
+		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
 		try {
 			XMLReader xmlReader = factory.newSAXParser().getXMLReader();
 			if (!resolveExternalEntities) {
@@ -739,6 +735,8 @@ public class XmlUtils {
 		return getTransformerFactory(false);
 	}
 
+	//TransformerFactory.setNamespaceAware doesn't exists!
+	
 	public static synchronized TransformerFactory getTransformerFactory(boolean xslt2) {
 		if (xslt2) {
 			return new net.sf.saxon.TransformerFactoryImpl();
@@ -760,14 +758,34 @@ public class XmlUtils {
 
 	public static synchronized DocumentBuilderFactory getDocumentBuilderFactory(boolean xslt2) {
 		if (xslt2) {
+			return getDocumentBuilderFactory(xslt2, false);
+		} else {
+			return getDocumentBuilderFactory(xslt2, isNamespaceAwareByDefault());
+		}
+	}
+
+	public static synchronized DocumentBuilderFactory getDocumentBuilderFactory(boolean xslt2, boolean namespaceAware) {
+		if (xslt2) {
+			if (!namespaceAware) {
+				log.info("Saxon parser is always namespace aware, so setting namespaceAware=false is ignored");
+			}
 			return new net.sf.saxon.dom.DocumentBuilderFactoryImpl();
 		} else {
-			return new org.apache.xerces.jaxp.DocumentBuilderFactoryImpl();
+			DocumentBuilderFactory factory;
+			factory = new org.apache.xerces.jaxp.DocumentBuilderFactoryImpl();
+			factory.setNamespaceAware(namespaceAware);
+			return factory;
 		}
 	}
 
 	public static synchronized SAXParserFactory getSAXParserFactory() {
-		return new org.apache.xerces.jaxp.SAXParserFactoryImpl();
+		return getSAXParserFactory(isNamespaceAwareByDefault());
+	}
+
+	public static synchronized SAXParserFactory getSAXParserFactory(boolean namespaceAware) {
+		SAXParserFactory factory = new org.apache.xerces.jaxp.SAXParserFactoryImpl();
+		factory.setNamespaceAware(namespaceAware);
+		return factory;
 	}
 
 	/**
