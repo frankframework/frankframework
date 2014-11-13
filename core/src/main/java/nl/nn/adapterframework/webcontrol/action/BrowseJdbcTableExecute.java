@@ -17,6 +17,7 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -123,8 +125,21 @@ public class BrowseJdbcTableExecute extends ActionBase {
 						qs.setIncludeFieldDefinition(true);
 						qs.configure();
 						qs.open();
-						query = qs.getDbmsSupport().getFirstRecordQuery(form_tableName);
-						result = qs.sendMessage("dummy", query);
+
+						ResultSet rs = qs.getConnection().getMetaData().getColumns(null, null, form_tableName, null);
+						String fielddefinition = "<fielddefinition>";
+						while(rs.next()) {
+							String field = "<field name=\""
+									+ rs.getString(4)
+									+ "\" type=\""
+									+ DB2XMLWriter.getFieldType(rs.getInt(5))
+									+ "\" size=\""
+									+ rs.getInt(7)
+									+ "\"/>";
+							fielddefinition = fielddefinition + field;
+						}
+						fielddefinition = fielddefinition + "</fielddefinition>";
+						
 						String browseJdbcTableExecuteREQ =
 							"<browseJdbcTableExecuteREQ>"
 								+ "<dbmsName>"
@@ -148,7 +163,8 @@ public class BrowseJdbcTableExecute extends ActionBase {
 								+ "<rownumMax>"
 								+ form_rownumMax
 								+ "</rownumMax>"
-								+ result
+								+ fielddefinition
+								+ "<maxColumnSize>1000</maxColumnSize>"
 								+ "</browseJdbcTableExecuteREQ>";
 						URL url = ClassUtils.getResourceURL(this, DB2XML_XSLT);
 						if (url != null) {

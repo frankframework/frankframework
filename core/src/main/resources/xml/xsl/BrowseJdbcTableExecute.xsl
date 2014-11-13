@@ -8,6 +8,7 @@
 	<xsl:variable name="order" select="browseJdbcTableExecuteREQ/order"/>
 	<xsl:variable name="rownumMin" select="number(browseJdbcTableExecuteREQ/rownumMin)"/>
 	<xsl:variable name="rownumMax" select="number(browseJdbcTableExecuteREQ/rownumMax)"/>
+	<xsl:variable name="maxColumnSize" select="number(browseJdbcTableExecuteREQ/maxColumnSize)"/>
 	<xsl:template match="browseJdbcTableExecuteREQ">
 		<xsl:choose>
 			<xsl:when test="$numberOfRowsOnly='true'">
@@ -87,9 +88,9 @@
 	</xsl:template>
 	<xsl:template name="selectAllFields">
 		<xsl:choose>
-			<xsl:when test="$rownumMax!=$rownumMin and result/fielddefinition/field[@type='BLOB' or @type='CLOB']">
-				<xsl:for-each select="result/fielddefinition/field">
-					<xsl:if test="@type='BLOB' or @type='CLOB'">
+			<xsl:when test="$rownumMax!=$rownumMin and fielddefinition/field[number(@size)&gt;$maxColumnSize]">
+				<xsl:for-each select="fielddefinition/field">
+					<xsl:if test="number(@size)&gt;$maxColumnSize">
 						<xsl:choose>
 							<xsl:when test="$dbmsName='MS SQL'">
 								<xsl:text>LEN(</xsl:text>
@@ -100,7 +101,7 @@
 						</xsl:choose>
 					</xsl:if>
 					<xsl:value-of select="@name"/>
-					<xsl:if test="@type='BLOB' or @type='CLOB'">
+					<xsl:if test="number(@size)&gt;$maxColumnSize">
 						<xsl:text>) AS &quot;LENGTH </xsl:text>
 						<xsl:value-of select="@name"/>
 						<xsl:text>&quot;</xsl:text>
