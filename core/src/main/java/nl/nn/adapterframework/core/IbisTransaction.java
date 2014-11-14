@@ -15,13 +15,17 @@
 */
 package nl.nn.adapterframework.core;
 
+import javax.transaction.TransactionManager;
+
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 import org.apache.log4j.Logger;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
@@ -62,11 +66,11 @@ public class IbisTransaction {
 			txName = Misc.createSimpleUUID();
 			TransactionSynchronizationManager.setCurrentTransactionName(txName);
 			int txTimeout = txDef.getTimeout();
-			log.debug("Created a new transaction ["+txName+"] for " + object + " with timeout [" + (txTimeout<0?"system default(=120s)":""+txTimeout) + "]");
+			log.debug("Transaction manager ["+getRealTransactionManager()+"] created a new transaction ["+txName+"] for " + object + " with timeout [" + (txTimeout<0?"system default(=120s)":""+txTimeout) + "]");
 		} else {
 			txName = TransactionSynchronizationManager.getCurrentTransactionName();
 			if (txClientIsActive && !txIsActive) {
-				log.debug("Suspended the transaction [" + txClientName + "] for " + object);
+				log.debug("Transaction manager ["+getRealTransactionManager()+"] suspended the transaction [" + txClientName + "] for " + object);
 			}
 		}
 	}
@@ -75,17 +79,33 @@ public class IbisTransaction {
 		return txStatus;
 	}
 
+	private String getRealTransactionManager() {
+		if (txManager instanceof SpringTxManagerProxy) {
+			SpringTxManagerProxy springTxMgr = (SpringTxManagerProxy) txManager;
+			PlatformTransactionManager platformTxMgr = springTxMgr.getRealTxManager();
+			if (platformTxMgr instanceof JtaTransactionManager) {
+				JtaTransactionManager jtaTxMgr = (JtaTransactionManager) platformTxMgr;
+				TransactionManager txMgr = jtaTxMgr.getTransactionManager();
+				return txMgr.getClass().getName();
+			} else {
+				return platformTxMgr.getClass().getName();
+			}
+		} else {
+			return txManager.getClass().getName();
+		}
+	}
+
 	public void commit() {
 		if (txIsNew) {
 			if (txStatus.isRollbackOnly()) {
-				log.debug("Transaction ["+txName+"] marked for rollback, so rolling back the transaction for " + object);
+				log.debug("Transaction ["+txName+"] marked for rollback, so transaction manager ["+getRealTransactionManager()+"] is rolling back the transaction for " + object);
 			} else {
-				log.debug("Transaction ["+txName+"] is not marked for rollback, so committing the transaction for " + object);
+				log.debug("Transaction ["+txName+"] is not marked for rollback, so transaction manager ["+getRealTransactionManager()+"] is committing the transaction for " + object);
 			}
 		}
 		txManager.commit(txStatus);
 		if (!txIsNew && txClientIsActive && !txIsActive) {
-			log.debug("Resumed the transaction [" + txClientName + "] for " + object);
+			log.debug("Transaction manager ["+getRealTransactionManager()+"] resumed the transaction [" + txClientName + "] for " + object);
 		}
 	}
 }
