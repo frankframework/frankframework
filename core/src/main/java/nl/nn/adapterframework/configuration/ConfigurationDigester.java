@@ -19,6 +19,9 @@ import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.*;
 
 import javax.xml.transform.Transformer;
+
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
@@ -237,6 +240,7 @@ abstract public class ConfigurationDigester {
 				configString = ConfigurationUtils.getStubbedConfiguration(configString);
 			}
 
+			saveConfig(configString);			
 			digester.parse(new StringReader(configString));
 		} catch (Throwable t) {
             // wrap exception to be sure it gets rendered via the IbisException-renderer
@@ -251,6 +255,27 @@ abstract public class ConfigurationDigester {
 		}
 	}
 
+	private void saveConfig(String config) {
+		String directoryName = AppConstants.getInstance().getResolvedProperty("log.dir");
+		String fileName = AppConstants.getInstance().getResolvedProperty("instance.name")+"-config.xml";
+		File file = new File(directoryName, fileName);
+		FileWriter fileWriter = null;
+		try {
+			fileWriter = new FileWriter(file,false);
+			fileWriter.write(config);
+		} catch (IOException e) {
+			LOG.warn("Could not write configuration to file ["+file.getPath()+"]",e);
+		} finally {
+			if (fileWriter!=null) {
+				try {
+					fileWriter.close();
+				} catch (Exception e) {
+					LOG.warn("Could not close configuration file ["+file.getPath()+"]",e);
+				}
+			}
+		}
+	}
+	
 	private  void fillConfigWarnDefaultValueExceptions(URL configurationFileURL) throws Exception {
 		URL xsltSource = ClassUtils.getResourceURL(this, attributesGetter_xslt);
 		if (xsltSource == null) {
