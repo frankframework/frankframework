@@ -225,17 +225,6 @@ public class FileUtils {
 		}
 	}
 
-	public static void main(String[] args) {
-		File file = new File("d:/data/ibis4scan/handleScannedDocument/Ibis2Scan/zip");
-		
-		try {
-			System.out.println("["+ getFreeFile(file).getPath()+"]");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
 	public static String appendFile(File orgFile, File destFile, int nrRetries, long waitTime) throws InterruptedException {
 		int errCount = 0;
 		
