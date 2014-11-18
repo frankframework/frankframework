@@ -56,6 +56,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the input message from. (N.B. same as <code>getInputFromSessionKey</code>)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setEmptyForwardName(String) emptyForwardName}</td><td>Forward returned when the content, on which the switch is performed, is empty. If <code>emptyForwardName</code> is not specified, <code>notFoundForwardName</code> is used.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNotFoundForwardName(String) notFoundForwardName}</td><td>Forward returned when the pipename derived from the stylesheet could not be found.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setXslt2(boolean) xslt2}</td><td>when set <code>true</code> XSLT processor 2.0 (net.sf.saxon) will be used, otherwise XSLT processor 1.0 (org.apache.xalan)</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -108,7 +109,7 @@ public class XmlSwitch extends AbstractPipe {
 			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
 				throw new ConfigurationException(getLogPrefix(null) + "cannot have both an xpathExpression and a serviceSelectionStylesheetFilename specified");
 			}
-			transformerPool = TransformerPool.configureTransformer(getLogPrefix(null), null, getXpathExpression(), null, "text", false, getParameterList());
+			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), null, getXpathExpression(), null, "text", false, getParameterList(), isXslt2());
 		} 
 		else {
 			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
