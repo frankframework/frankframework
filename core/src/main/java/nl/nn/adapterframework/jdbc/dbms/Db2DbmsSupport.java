@@ -38,7 +38,7 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 		return "DB2";
 	}
 
-	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws JdbcException {
+	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
