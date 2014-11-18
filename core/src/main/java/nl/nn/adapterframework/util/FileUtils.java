@@ -421,7 +421,7 @@ public class FileUtils {
 		int count = (files == null ? 0 : files.length);
 		for (int i = 0; i < count; i++) {
 			File file = files[i];
-			if (file.isDirectory()) {
+			if (!file.isFile()) {
 				continue;
 			}
 			if (excludeFilter!=null && excludeFilter.accept(dir, file.getName())) {
