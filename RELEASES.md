@@ -18,6 +18,7 @@ Upcoming
 - Configuration warning when FxF directory doesn't exist
 - Added parameter pattern 'uuid' (which can be used instead of the combination of 'hostname' and 'uid')
 - Enable parameters in xpathExpression of XmlSwitch
+- Bugfix database actions not being part of transaction when using BTM
 
 
 

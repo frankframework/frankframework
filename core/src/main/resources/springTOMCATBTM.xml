@@ -56,6 +56,17 @@
 		<property name="jndiName" value="${jndiContextPrefix}jdbc/${instance.name.lc}"/>
 	</bean>
 
+	<!-- Make the proxied data source available to the JdbcFacade -->
+	<bean id="proxiedDataSources" class="java.util.HashMap">
+		<constructor-arg>
+			<map>
+				<entry key="jdbc/${instance.name.lc}">
+					<ref bean="defaultDataSource"/>
+				</entry>
+			</map>
+		</constructor-arg>
+	</bean>
+
 	<bean
 		name="defaultConnectionFactory"
 		class="bitronix.tm.resource.jms.PoolingConnectionFactory"
