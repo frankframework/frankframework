@@ -44,6 +44,7 @@
 		>
 		<property name="uniqueName" value="${instance.name.lc}.defaultDataSource"/>
 		<property name="maxPoolSize" value="20"/>
+		<property name="allowLocalTransactions" value="true"/>
 		<property name="resource">
 			<ref bean="jndiDataSource"/>
 		</property>
