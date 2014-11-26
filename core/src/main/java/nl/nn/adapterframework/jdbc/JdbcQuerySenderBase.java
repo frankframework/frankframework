@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.jms.JMSException;
+import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
@@ -110,6 +111,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setUseNamedParams(boolean) useNamedParams}</td><td>when <code>true</code>, every string in the message which equals "?{<code>paramName</code>}" will be replaced by the setter method for the corresponding parameter (the parameters don't need to be in the correct order and unused parameters are skipped)</td><td>false</td></tr>
  * <tr><td>{@link #setIncludeFieldDefinition(boolean) includeFieldDefinition}</td><td>when <code>true</code>, the result contains besides the returned rows also a header with information about the fetched fields</td><td>application default (true)</td></tr>
  * <tr><td>{@link #setRowIdSessionKey(boolean) rowIdSessionKey}</td><td>If specified, the ROWID of the processed row is put in the PipeLineSession under the specified key (only applicable for <code>queryType=other</code>). <b>Note:</b> If multiple rows are processed a SQLException is thrown.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)</td><td>false</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -164,6 +166,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private String rowIdSessionKey=null;
 	private String packageContent = "db2";
 	protected String[] columnsReturnedList=null;
+	private boolean streamResultToServlet=false;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -249,7 +252,14 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				if (prc!=null && StringUtils.isNotEmpty(getClobSessionKey())) {
 					clobSessionVar=prc.getSession().get(getClobSessionKey());
 				}
-				return executeSelectQuery(statement,blobSessionVar,clobSessionVar);
+				if (isStreamResultToServlet()) {
+					HttpServletResponse response = (HttpServletResponse) prc.getSession().get("restListenerServletResponse");
+					String contentType = (String) prc.getSession().get("contentType");
+					String contentDisposition = (String) prc.getSession().get("contentDisposition");
+					return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition);
+				} else {
+					return executeSelectQuery(statement,blobSessionVar,clobSessionVar);
+				}
 			} 
 			if (updateBlob) {
 				if (StringUtils.isEmpty(getBlobSessionKey())) {
@@ -375,15 +385,35 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 
 	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException, JMSException {
+		return getResult(resultset, blobSessionVar, clobSessionVar, null, null, null);
+	}
+	
+	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException, JMSException {
 		String result=null;
 		if (isScalar()) {
 			if (resultset.next()) {
 				//result = resultset.getString(1);
 				ResultSetMetaData rsmeta = resultset.getMetaData();
-				if (blobSessionVar!=null && JdbcUtil.isBlobType(resultset, 1, rsmeta)) {
-					JdbcUtil.streamBlob(resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), blobSessionVar, isCloseOutputstreamOnExit());
-					return "";
-				} 
+				if (JdbcUtil.isBlobType(resultset, 1, rsmeta)) {
+					if (response==null) {
+						if (blobSessionVar!=null) {
+							JdbcUtil.streamBlob(resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), blobSessionVar, isCloseOutputstreamOnExit());
+							return "";
+						}
+					} else {
+						InputStream inputStream = JdbcUtil.getBlobInputStream(resultset, 1, isBlobsCompressed());
+						if (StringUtils.isNotEmpty(contentType)) {
+							response.setHeader("Content-Type", contentType); 
+						}
+						if (StringUtils.isNotEmpty(contentDisposition)) {
+							response.setHeader("Content-Disposition", contentDisposition); 
+						}
+						OutputStream outputStream = response.getOutputStream();
+						Misc.streamToStream(inputStream, outputStream);
+						log.debug(getLogPrefix() + "copied blob input stream [" + inputStream + "] to output stream [" + outputStream + "]");
+						return "";
+					}
+				}
 				if (clobSessionVar!=null && JdbcUtil.isClobType(resultset, 1, rsmeta)) {
 					JdbcUtil.streamClob(resultset, 1, clobSessionVar, isCloseOutputstreamOnExit());
 					return "";
@@ -528,6 +558,10 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 	
 	protected String executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar) throws SenderException{
+		return executeSelectQuery(statement, blobSessionVar, clobSessionVar, null, null, null);
+	}
+	
+	protected String executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws SenderException{
 		ResultSet resultset=null;
 		try {
 			if (getMaxRows()>0) {
@@ -541,7 +575,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				resultset.absolute(getStartRow()-1);
 				log.debug(getLogPrefix() + "Index set at position: " +  resultset.getRow() );
 			}				
-			return getResult(resultset,blobSessionVar,clobSessionVar);
+			return getResult(resultset,blobSessionVar,clobSessionVar, response, contentType, contentDisposition);
 		} catch (SQLException sqle) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",sqle );
 		} catch (JdbcException e) {
@@ -1032,5 +1066,13 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	public void setRowIdSessionKey(String string) {
 		rowIdSessionKey = string;
+	}
+
+	public boolean isStreamResultToServlet() {
+		return streamResultToServlet;
+	}
+
+	public void setStreamResultToServlet(boolean b) {
+		streamResultToServlet = b;
 	}
 }

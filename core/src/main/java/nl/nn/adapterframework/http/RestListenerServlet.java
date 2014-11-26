@@ -113,16 +113,25 @@ public class RestListenerServlet extends HttpServlet {
 		}
 		try {
 			log.debug("RestListenerServlet calling service ["+path+"]");
-			String result=sd.dispatchRequest(path, request.getMethod(), etag, contentType, body, messageContext);
-			etag=(String)messageContext.get("etag");
-			contentType=(String)messageContext.get("contentType");
-			if (StringUtils.isNotEmpty(contentType)) { 
-				response.setHeader("Content-Type", contentType); 
+			String result=sd.dispatchRequest(path, request.getMethod(), etag, contentType, body, messageContext, response);
+			if (StringUtils.isEmpty(result)) {
+				log.debug("RestListenerServlet finished with result set in pipeline");
+			} else {
+				etag=(String)messageContext.get("etag");
+				contentType=(String)messageContext.get("contentType");
+				if (StringUtils.isNotEmpty(contentType)) { 
+					response.setHeader("Content-Type", contentType); 
+				}
+				String contentDisposition=(String)messageContext.get("contentDisposition");
+				if (StringUtils.isNotEmpty(contentDisposition)) { 
+					response.setHeader("Content-Disposition", contentDisposition); 
+				}
+				if (StringUtils.isNotEmpty(etag)) { 
+					response.setHeader("etag", etag); 
+				}
+				response.getWriter().print(result);
+				log.debug("RestListenerServlet finished with result ["+result+"] etag ["+etag+"] contentType ["+contentType+"] contentDisposition ["+contentDisposition+"]");
 			}
-			if (StringUtils.isNotEmpty(etag)) { 
-				response.setHeader("etag", etag); 
-			}
-			response.getWriter().print(result);
 		} catch (ListenerException e) {
 			log.warn("RestListenerServlet caught exception, will rethrow as ServletException",e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());

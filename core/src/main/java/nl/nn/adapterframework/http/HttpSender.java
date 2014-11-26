@@ -15,13 +15,17 @@
 */
 package nl.nn.adapterframework.http;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -58,6 +62,11 @@ import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.PartSource;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.lang.StringUtils;
 import org.htmlcleaner.CleanerProperties;
@@ -110,8 +119,10 @@ import org.htmlcleaner.TagNode;
  * <tr><td>{@link #setHeadersParams(String) headersParams}</td><td>Comma separated list of parameter names which should be set as http headers</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIgnoreRedirects(boolean) ignoreRedirects}</td><td>when true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful</td><td>false</td></tr>
  * <tr><td>{@link #setIgnoreCertificateExpiredException(boolean) ignoreCertificateExpiredException}</td><td>when true, the CertificateExpiredException is ignored</td><td>false</td></tr>
- * <tr><td>{@link #setxhtml(boolean) xhtml}</td><td>when true, the html response is transformed to xhtml</td><td>false</td></tr>
+ * <tr><td>{@link #setXhtml(boolean) xhtml}</td><td>when true, the html response is transformed to xhtml</td><td>false</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>>(only used when <code>xhtml=true</code>) stylesheet to apply to the html response</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMultiPart(boolean) multipart}</td><td>when true and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body</td><td>false</td></tr>
+ * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -228,6 +239,8 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private boolean ignoreCertificateExpiredException=false;
 	private boolean xhtml=false;
 	private String styleSheetName=null;
+	private boolean multipart=false;
+	private boolean streamResultToServlet=false;
 
 	private TransformerPool transformerPool=null;
 
@@ -507,25 +520,67 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 
 	}
 
-	protected PostMethod getPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap) throws SenderException {
+	protected PostMethod getPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, ParameterResolutionContext prc) throws SenderException {
 		try {
 			PostMethod hmethod = new PostMethod(uri.getPath());
-			if (StringUtils.isNotEmpty(getInputMessageParam())) {
-				hmethod.addParameter(getInputMessageParam(),message);
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+getInputMessageParam()+"] with value ["+message+"]");
-			}
-			if (parameters!=null) {
-				for(int i=0; i<parameters.size(); i++) {
-					ParameterValue pv = parameters.getParameterValue(i);
-					String name = pv.getDefinition().getName();
-					String value = pv.asStringValue("");
-					if (headersParamsMap.keySet().contains(name)) {
-						hmethod.addRequestHeader(name,value);
-						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended header ["+name+"] with value ["+value+"]");
-					} else {
-						hmethod.addParameter(name,value);
-						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+			if (!isMultipart()) {
+				if (StringUtils.isNotEmpty(getInputMessageParam())) {
+					hmethod.addParameter(getInputMessageParam(),message);
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+getInputMessageParam()+"] with value ["+message+"]");
+				}
+				if (parameters!=null) {
+					for(int i=0; i<parameters.size(); i++) {
+						ParameterValue pv = parameters.getParameterValue(i);
+						String name = pv.getDefinition().getName();
+						String value = pv.asStringValue("");
+						if (headersParamsMap.keySet().contains(name)) {
+							hmethod.addRequestHeader(name,value);
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended header ["+name+"] with value ["+value+"]");
+						} else {
+							hmethod.addParameter(name,value);
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+						}
 					}
+				}
+			} else {
+				if (parameters!=null) {
+					List<Part> partList = new ArrayList<Part>();
+					if (StringUtils.isNotEmpty(getInputMessageParam())) {
+						StringPart stringPart = new StringPart(getInputMessageParam(), message);
+						partList.add(stringPart);
+						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getInputMessageParam()+"] with value ["+message+"]");
+					}
+					for(int i=0; i<parameters.size(); i++) {
+						ParameterValue pv = parameters.getParameterValue(i);
+						String paramType = pv.getDefinition().getType();
+						String name = pv.getDefinition().getName();
+						if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
+							Object value = pv.getValue();
+							if (value instanceof FileInputStream) {
+								FileInputStream fis = (FileInputStream)value;
+								String fileName = null;
+								String sessionKey = pv.getDefinition().getSessionKey();
+								if (sessionKey != null) {
+									fileName = (String) prc.getSession().get(sessionKey + "Name");
+								}
+								FileStreamPartSource fsps = new FileStreamPartSource(fis, fileName);
+								FilePart filePart = new FilePart(name,fsps);
+								partList.add(filePart);
+								if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+value+"] and name ["+fileName+"]");
+							} else {
+								throw new SenderException(getLogPrefix()+"unknown inputstream ["+value.getClass()+"] for parameter ["+name+"]");
+							}
+						} else {
+							String value = pv.asStringValue("");
+							StringPart stringPart = new StringPart(name, value);
+							partList.add(stringPart);
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
+						}
+					}
+					Part[] parts = new Part[partList.size()];
+					partList.toArray(parts);
+					MultipartRequestEntity request = new MultipartRequestEntity(parts, hmethod.getParams());
+					hmethod.setRequestEntity(request);
 				}
 			}
 			return hmethod;
@@ -534,7 +589,42 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		}
 	}
 	
+	private class FileStreamPartSource implements PartSource {
+		private FileInputStream fis = null;
+		private String fileName;
+		
+		public FileStreamPartSource(FileInputStream fis, String fileName) {
+			this.fis = fis;
+			this.fileName = fileName;
+		}
+		
+		public InputStream createInputStream() throws IOException {
+			return fis;
+		}
+
+		public String getFileName() {
+			if (fileName == null) {
+				return "unknown";
+			}
+			return fileName;
+		}
+
+		public long getLength() {
+			long len = 0;
+			try {
+				len = fis.getChannel().size();
+			} catch (IOException e) {
+				log.warn(getLogPrefix()+"could not determine file input stream size", e);
+			}
+			return len;
+		}
+	}
+	
 	public String extractResult(HttpMethod httpmethod) throws SenderException, IOException {
+		return extractResult(httpmethod, null);
+	}
+	
+	public String extractResult(HttpMethod httpmethod, HttpServletResponse response) throws SenderException, IOException {
 		int statusCode = httpmethod.getStatusCode();
 		boolean ok = false;
 		if (statusCode==HttpServletResponse.SC_OK) {
@@ -549,8 +639,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		if (!ok) {
 			throw new SenderException(getLogPrefix()+"httpstatus "+statusCode+": "+httpmethod.getStatusText());
 		}
-		//return httpmethod.getResponseBodyAsString();
-		return getResponseBodyAsString(httpmethod);
+		if (response==null) {
+			//return httpmethod.getResponseBodyAsString();
+			return getResponseBodyAsString(httpmethod);
+		} else {
+			streamResponseBody(httpmethod, response);
+			return "";
+		}
 	}
 
 	public String getResponseBodyAsString(HttpMethod httpmethod) throws IOException {
@@ -564,6 +659,21 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
 		}
 		return responseBody;
+	}
+
+	public void streamResponseBody(HttpMethod httpmethod, HttpServletResponse response) throws IOException {
+		InputStream is = httpmethod.getResponseBodyAsStream();
+		String contentType = httpmethod.getResponseHeader("Content-Type").getValue();
+		if (StringUtils.isNotEmpty(contentType)) {
+			response.setHeader("Content-Type", contentType); 
+		}
+		String contentDisposition =  httpmethod.getResponseHeader("Content-Disposition").getValue();
+		if (StringUtils.isNotEmpty(contentDisposition)) {
+			response.setHeader("Content-Disposition", contentDisposition); 
+		}
+		OutputStream outputStream = response.getOutputStream();
+		Misc.streamToStream(is, outputStream);
+		log.debug(getLogPrefix() + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
@@ -595,7 +705,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			}
 
 			if (!isParamsInUrl()) {
-				httpmethod=getPostMethodWithParamsInBody(uri, message, pvl, headersParamsMap);
+				httpmethod=getPostMethodWithParamsInBody(uri, message, pvl, headersParamsMap, prc);
 			} else {
 				httpmethod=getMethod(uri, message, pvl, headersParamsMap);
 				if (!"POST".equals(getMethodType())) {
@@ -640,7 +750,12 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				} else {
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"status ["+statusCode+"]");
 				}
-				result = extractResult(httpmethod);	
+				if (isStreamResultToServlet()) {
+					HttpServletResponse response = (HttpServletResponse) prc.getSession().get("restListenerServletResponse");
+					result = extractResult(httpmethod, response);	
+				} else {
+					result = extractResult(httpmethod);	
+				}
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"retrieved result ["+result+"]");
 			} catch (HttpException e) {
 				Throwable throwable = e.getCause();
@@ -990,5 +1105,19 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public String getStyleSheetName() {
 		return styleSheetName;
+	}
+
+	public void setMultipart(boolean b) {
+		multipart = b;
+	}
+	public boolean isMultipart() {
+		return multipart;
+	}
+
+	public void setStreamResultToServlet(boolean b) {
+		streamResultToServlet = b;
+	}
+	public boolean isStreamResultToServlet() {
+		return streamResultToServlet;
 	}
 }

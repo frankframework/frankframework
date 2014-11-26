@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import javax.servlet.http.HttpServletResponse;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ServiceClient;
@@ -63,7 +65,7 @@ public class RestServiceDispatcher  {
 	 * @param request the <code>String</code> with the request/input
 	 * @return String with the result of processing the <code>request</code> throught the <code>serviceName</code>
      */
-	public String dispatchRequest(String uri, String method, String etag, String contentType, String request, Map context) throws ListenerException {
+	public String dispatchRequest(String uri, String method, String etag, String contentType, String request, Map context, HttpServletResponse httpServletResponse) throws ListenerException {
 		
 		if (log.isDebugEnabled()) log.debug("searching listener for uri ["+uri+"] method ["+method+"]");
 		
@@ -102,6 +104,7 @@ public class RestServiceDispatcher  {
 		if (etagKey!=null) context.put(etagKey,etag);
 		if (contentTypeKey!=null) context.put(contentTypeKey,contentType);
 		if (log.isDebugEnabled()) log.debug("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
+		if (httpServletResponse!=null) context.put("restListenerServletResponse", httpServletResponse);
 
 		if (listener instanceof RestListener) {
 			RestListener restListener = (RestListener) listener;
