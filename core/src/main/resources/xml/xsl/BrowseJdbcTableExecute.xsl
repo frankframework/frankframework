@@ -53,13 +53,11 @@
 				<xsl:call-template name="selectAllFields"/>
 				<xsl:text> FROM </xsl:text>
 				<xsl:value-of select="$tableName"/>
-				<xsl:text>) AS x WHERE </xsl:text>
 				<xsl:if test="string-length($where)&gt;0">
-					<xsl:text>(</xsl:text>
+					<xsl:text> WHERE </xsl:text>			
 					<xsl:value-of select="$where"/>
-					<xsl:text>) AND </xsl:text>
 				</xsl:if>
-				<xsl:text>x.rnum BETWEEN </xsl:text>			
+				<xsl:text>) AS x WHERE x.rnum BETWEEN </xsl:text>			
 				<xsl:value-of select="$rownumMin"/>
 				<xsl:text> AND </xsl:text>			
 				<xsl:value-of select="$rownumMax"/>
