@@ -196,6 +196,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 								}
 							} else {
 								log.debug("validation succeeded");
+								object = validationResult.getResult();
 								ready=true;
 							}
 						} else {
