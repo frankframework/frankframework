@@ -11,6 +11,10 @@
   <name>Ibis AdapterFramework webapp</name>
   <packaging>war</packaging>
 
+  <properties>
+    <m2eclipse.wtp.contextRoot>iaf-webapp</m2eclipse.wtp.contextRoot>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.ibissource</groupId>

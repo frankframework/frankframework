@@ -19,6 +19,7 @@ Upcoming
 - Added parameter pattern 'uuid' (which can be used instead of the combination of 'hostname' and 'uid')
 - Enable parameters in xpathExpression of XmlSwitch
 - Bugfix database actions not being part of transaction when using BTM
+- Better m2e configuration (no need to overwrite/change org.eclipse.wst.common.component anymore)
 
 
 
