@@ -247,6 +247,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
     private String elementToMove = null;
     private String elementToMoveSessionKey = null;
     private String elementToMoveChain = null;
+	private boolean removeCompactMsgNamespaces = true;
 
 	public static final String ONERROR_CONTINUE = "continue";
 	public static final String ONERROR_CLOSE = "close";
@@ -1169,15 +1170,32 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private class CompactSaxHandler extends DefaultHandler {
 		private StringBuffer messageBuffer = new StringBuffer();
 		private StringBuffer charBuffer = new StringBuffer();
+	    private StringBuffer namespaceBuffer = new StringBuffer();
 		private List elements = new ArrayList();
 	    private Map context = null;
 	    
 		public void startElement(String uri, String localName, String qName,
 				Attributes attributes) throws SAXException {
+					
 			printCharBuffer();
-			messageBuffer.append("<" + localName + ">");
+			if (isRemoveCompactMsgNamespaces()) {
+				messageBuffer.append("<" + localName + ">");
+			} else {
+				messageBuffer.append("<" + qName + namespaceBuffer + ">");
+			}
 			elements.add(localName);
+			namespaceBuffer.setLength(0);
 		}
+		public void startPrefixMapping(String prefix, String uri) {
+			String thisPrefix = "";
+			if (prefix!="") {
+				thisPrefix = ":" + prefix;
+			}
+			if (uri != "") {
+				namespaceBuffer.append(" xmlns" + thisPrefix + "=\"" + uri + "\"");
+			}
+			
+		  }
 
 		public void endElement(String uri, String localName, String qName)
 				throws SAXException {
@@ -1189,7 +1207,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			}
 
 			printCharBuffer();
-			messageBuffer.append("</" + localName + ">");
+			if (isRemoveCompactMsgNamespaces()) {
+				messageBuffer.append("</" + localName + ">");
+			} else {
+				messageBuffer.append("</" + qName + ">");
+			}
 			elements.remove(lastIndex);
 		}
 
@@ -2074,5 +2096,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 	public String getElementToMoveChain() {
 		return elementToMoveChain;
+	}
+
+	public void setRemoveCompactMsgNamespaces(boolean b) {
+		removeCompactMsgNamespaces = b;
+	}
+	public boolean isRemoveCompactMsgNamespaces() {
+		return removeCompactMsgNamespaces;
 	}
 }
