@@ -239,6 +239,7 @@
       </activation>
       <modules>
         <module>core</module>
+        <module>example</module>
         <module>larva</module>
         <module>webapp</module>
       </modules>
