@@ -12,6 +12,7 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v5.5...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
+- Move Test Tool 1 from IbisTestToolWEB to Maven module Ibis AdapterFramework Larva
 - Add support for jetty-maven-plugin
 - Added functionality to forward form fields as sessionKeys (in RestListeners)
 - Added possibility to write log records (to separate log files) without the message itself (e.g. for making counts)

@@ -1,0 +1,39 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.ibissource</groupId>
+    <artifactId>ibis-adapterframework-parent</artifactId>
+    <version>5.7-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>ibis-adapterframework-larva</artifactId>
+  <name>Ibis AdapterFramework Larva</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-adapterframework-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-adapterframework-ifsa</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jms_1.1_spec</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.8.2</version>
+    </dependency>
+    <dependency>
+      <groupId>rome</groupId>
+      <artifactId>rome</artifactId>
+      <version>1.0</version>
+    </dependency>
+  </dependencies>
+
+</project>

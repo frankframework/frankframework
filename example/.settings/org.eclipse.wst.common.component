@@ -2,10 +2,13 @@
     <wb-module deploy-name="iaf-example">
         <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
-        <dependent-module archiveName="ibis-adapterframework-ifsa-5.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ifsa/iaf-ifsa">
+        <dependent-module archiveName="ibis-adapterframework-larva-5.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-larva/iaf-larva">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module archiveName="ibis-adapterframework-core-5.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-core/iaf-core">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="ibis-adapterframework-ifsa-5.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ifsa/iaf-ifsa">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module archiveName="ibis-adapterframework-tibco-5.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-tibco/iaf-tibco">

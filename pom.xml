@@ -48,6 +48,11 @@
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
+        <artifactId>ibis-adapterframework-larva</artifactId>
+        <version>5.7-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-webapp</artifactId>
         <version>5.7-SNAPSHOT</version>
         <type>war</type>

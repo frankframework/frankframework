@@ -95,9 +95,14 @@
 				alt="Show Ibisstore Summary">
 			</imagelink>
 			<imagelink
+				href="test/index.jsp"
+				type="testtool1"
+				alt="Larva Test Tool">
+			</imagelink>
+			<imagelink
 				href="testtool"
 				type="testtool"
-				alt="Test Tool">
+				alt="Ladybug Test Tool">
 			</imagelink>
 			<imagelink
 				href="<%= AppConstants.getInstance().getResolvedProperty("help.url") %>"

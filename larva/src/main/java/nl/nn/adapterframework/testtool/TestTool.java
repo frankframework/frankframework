@@ -1,0 +1,3878 @@
+package nl.nn.adapterframework.testtool;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+import java.util.zip.ZipInputStream;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.extensions.ifsa.IfsaException;
+import nl.nn.adapterframework.extensions.ifsa.jms.IfsaRequesterSender;
+import nl.nn.adapterframework.extensions.ifsa.jms.PullingIfsaProviderListener;
+import nl.nn.adapterframework.extensions.ifsa.jms.PushingIfsaProviderListener;
+import nl.nn.adapterframework.http.HttpSender;
+import nl.nn.adapterframework.http.IbisWebServiceSender;
+import nl.nn.adapterframework.http.WebServiceListener;
+import nl.nn.adapterframework.http.WebServiceSender;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jms.JmsSender;
+import nl.nn.adapterframework.jms.PullingJmsListener;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.receivers.JavaListener;
+import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.senders.IbisJavaSender;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CaseInsensitiveComparator;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.ProcessUtil;
+import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.dom4j.DocumentException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+
+import com.sun.syndication.io.XmlReader;
+
+/**
+ * @author Jaco de Groot
+ */
+public class TestTool {
+	private static Logger logger = LogUtil.getLogger(TestTool.class);
+	private static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [totals], [error]";
+	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
+	private static final int JMS_TESTTOOL_LISTENER_TIMEOUT = 30000;
+	private static final int IFSA_TESTTOOL_LISTENER_TIMEOUT = 30000;
+	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
+	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
+	protected static final String TESTTOOL_DUMMY_MESSAGE = "<TestTool>Dummy message</TestTool>";
+	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
+	// dirty solution by Marco de Reus:
+	private static String zeefVijlNeem = "";
+	private static String windiffCommand = "D:\\Tools\\windiff\\WINDIFF.EXE";
+
+	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
+		String logLevel = "wrong pipeline messages";
+		String autoScroll = "true";
+		
+		String paramLogLevel = request.getParameter("loglevel");
+		if (paramLogLevel != null && LOG_LEVEL_ORDER.indexOf("[" + paramLogLevel + "]") > -1) {
+			logLevel = paramLogLevel;
+		}
+		String paramAutoScroll = request.getParameter("autoscroll");
+		if (paramAutoScroll == null && paramLogLevel != null) {
+			autoScroll = "false";
+		}
+
+		Map writers = new HashMap();
+		writers.put("out", out);
+		writers.put("htmlbuffer", new StringWriter());
+		writers.put("logbuffer", new StringWriter());
+		writers.put("loglevel", logLevel);
+		writers.put("autoscroll", autoScroll);
+		writers.put("usehtmlbuffer", "false");
+		writers.put("uselogbuffer", "true");
+		writers.put("messagecounter", new Integer(0));
+		writers.put("scenariocounter", new Integer(1));
+
+		TestTool.debugMessage("Start logging to logbuffer until form is written", writers);
+		debugMessage("Get ibis context", writers);
+		AppConstants appConstants = AppConstants.getInstance();
+		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
+		IbisContext ibisContext = (IbisContext)application.getAttribute(ibisContextKey);
+		debugMessage("Read scenariosrootdirectory parameter", writers);
+		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
+		String paramScenariosDeploymentSpecs = request.getParameter("scenariosdeploymentspecs");
+		debugMessage("Initialize list of scenarios root directories", writers);
+		List scenariosRootDirectories = new ArrayList();
+		List scenariosRootDescriptions = new ArrayList();
+		List scenariosRootDeploymentSpecs = new ArrayList();
+		initScenariosRoots(application, request, scenariosRootDirectories, scenariosRootDescriptions, scenariosRootDeploymentSpecs, ibisContext, writers);
+		if (scenariosRootDirectories.size() == 0) {
+			debugMessage("Stop logging to logbuffer", writers);
+			writers.put("uselogbuffer", "stop");
+			errorMessage("No scenarios root directories found", writers);
+		} else {
+			debugMessage("Get current scenarios root directory", writers);
+			String scenariosRootDirectory;
+			if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.equals("")) {
+				scenariosRootDirectory = (String)scenariosRootDirectories.get(0);
+			} else {
+				scenariosRootDirectory = paramScenariosRootDirectory;
+			}
+			debugMessage("Read global properties", writers);
+			Properties globalProperties = new Properties();
+			File file;
+			file = new File(scenariosRootDirectory + "/../JavaSource/DeploymentSpecifics.properties");
+			if (file.exists()) globalProperties.putAll(readProperties(file, writers));
+			file = new File(scenariosRootDirectory + "/../JavaSource/ServerTypeSpecifics_" + System.getProperty("application.server.type") + ".properties");
+			if (file.exists()) globalProperties.putAll(readProperties(file, writers));
+			file = new File(scenariosRootDirectory + "/../JavaSource/BuildInfo.properties");
+			if (file.exists()) globalProperties.putAll(readProperties(file, writers));
+			file = new File(scenariosRootDirectory + "/../JavaSource/SideSpecifics_" + System.getProperty("otap.side") + ".properties");
+			if (file.exists()) globalProperties.putAll(readProperties(file, writers));
+			file = new File(scenariosRootDirectory + "/../JavaSource/StageSpecifics_" + System.getProperty("otap.stage") + ".properties");
+			if (file.exists()) globalProperties.putAll(readProperties(file, writers));
+			file = new File(scenariosRootDirectory + "/../JavaSource/Test.properties");
+			if (file.exists()) globalProperties.putAll(readProperties(file, writers));
+			for (Object key : globalProperties.keySet()) {
+				if (System.getProperty((String)key) != null) {
+					globalProperties.put(key, (System.getProperty((String)key)));
+				}
+			}
+			debugMessage("Read scenarios from directory '" + scenariosRootDirectory + "'", writers);
+			List allScenarioFiles = readScenarioFiles(globalProperties, scenariosRootDirectory, writers);
+			debugMessage("Read execute parameter", writers);
+			String paramExecute = request.getParameter("execute");
+			debugMessage("Read waitbeforecleanup parameter", writers);
+			String paramWaitBeforeCleanUp = request.getParameter("waitbeforecleanup");
+			debugMessage("Initialize 'wait before cleanup' variable", writers);
+			int waitBeforeCleanUp = 100;
+			if (paramWaitBeforeCleanUp != null) {
+				try {
+					waitBeforeCleanUp = Integer.parseInt(paramWaitBeforeCleanUp);
+				} catch(NumberFormatException e) {
+				}
+			}
+			debugMessage("Write html form", writers);
+			printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, scenariosRootDirectory, globalProperties, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
+			debugMessage("Stop logging to logbuffer", writers);
+			writers.put("uselogbuffer", "stop");
+			debugMessage("Start debugging to out", writers);
+			debugMessage("Execute scenario(s) if execute parameter present and scenarios root directory did not change", writers);
+			if (paramExecute != null) {
+				String paramExecuteCanonicalPath;
+				String scenariosRootDirectoryCanonicalPath;
+				try {
+					paramExecuteCanonicalPath = new File(paramExecute).getCanonicalPath();
+					scenariosRootDirectoryCanonicalPath = new File(scenariosRootDirectory).getCanonicalPath();
+				} catch(IOException e) {
+					paramExecuteCanonicalPath = paramExecute;
+					scenariosRootDirectoryCanonicalPath = scenariosRootDirectory;
+					errorMessage("Could not get canonical path: " + e.getMessage(), e, writers);
+				}
+				if (paramExecuteCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
+
+					debugMessage("Initialize XMLUnit", writers);
+					XMLUnit.setIgnoreWhitespace(true);
+					debugMessage("Initialize 'scenario files' variable", writers);
+					debugMessage("Param execute: " + paramExecute, writers);
+					List scenarioFiles;
+					if (paramExecute.endsWith(".properties")) {
+						debugMessage("Read one scenario", writers);
+						scenarioFiles = new ArrayList();
+						scenarioFiles.add(new File(paramExecute));
+					} else {
+						debugMessage("Read all scenarios from directory '" + paramExecute + "'", writers);
+						scenarioFiles = readScenarioFiles(globalProperties, paramExecute, writers);
+					}
+					boolean evenStep = false;
+					debugMessage("Initialize statistics variables", writers);
+					int scenariosPassed = 0;
+					int scenariosFailed = 0;
+					long startTime = System.currentTimeMillis();
+					debugMessage("Execute scenario('s)", writers);
+					Iterator scenarioFilesIterator = scenarioFiles.iterator();
+					while (scenarioFilesIterator.hasNext()) {
+						boolean scenarioPassed = false;
+						File scenarioFile = (File)scenarioFilesIterator.next();
+				
+						String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
+						String longName = scenarioFile.getAbsolutePath();
+						String shortName = longName.substring(scenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
+	
+						if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") < LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
+							writeHtml("<br/>", writers, false);
+							writeHtml("<br/>", writers, false);
+							writeHtml("<div class='scenario'>", writers, false);
+						}
+						debugMessage("Read property file " + scenarioFile.getName(), writers);
+						Properties properties = readProperties(globalProperties, scenarioFile, writers);
+						List steps = null;
+	
+						if (properties != null) {
+							debugMessage("Read steps from property file", writers);
+							steps = getSteps(properties, writers);
+							if (steps != null) {
+								Map ifsaThreadContexts = new HashMap();
+								Map ifsaRawMessages = new HashMap();
+								synchronized(STEP_SYNCHRONIZER) {
+									debugMessage("Open queues", writers);
+									Map queues = openQueues(scenarioDirectory, steps, properties, ibisContext, ifsaThreadContexts, ifsaRawMessages, writers);
+									if (queues != null) {
+										debugMessage("Execute steps", writers);
+										boolean allStepsPassed = true;
+										Iterator iterator = steps.iterator();
+										while (allStepsPassed && iterator.hasNext()) {
+											if (evenStep) {
+												writeHtml("<div class='even'>", writers, false);
+												evenStep = false;
+											} else {
+												writeHtml("<div class='odd'>", writers, false);
+												evenStep = true;
+											}
+											String step = (String)iterator.next();
+											String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
+											debugMessage("Execute step '" + stepDisplayName + "'", writers);
+											boolean stepPassed = executeStep(step, properties, stepDisplayName, queues, ifsaThreadContexts, ifsaRawMessages, writers);
+											if (stepPassed) {
+												stepPassedMessage("Step '" + stepDisplayName + "' passed", writers);
+											} else {
+												stepFailedMessage("Step '" + stepDisplayName + "' failed", writers);
+												allStepsPassed = false;
+											}
+											writeHtml("</div>", writers, false);
+										}
+										if (allStepsPassed) {
+											scenarioPassed = true;
+										}
+										debugMessage("Wait " + waitBeforeCleanUp + " ms before clean up", writers);
+										try {
+											Thread.sleep(waitBeforeCleanUp);
+										} catch(InterruptedException e) {
+										}
+										debugMessage("Close queues", writers);
+										boolean remainingMessagesFound = closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+										if (remainingMessagesFound) {
+											stepFailedMessage("Found one or more messages on queues or in database after scenario executed", writers);
+											scenarioPassed = false;
+										}
+									}
+								}
+							}
+						}
+	
+						if (scenarioPassed) {
+							scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed", writers);						
+							scenariosPassed++;
+						} else {
+							scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed", writers);
+							scenariosFailed++;
+						}
+						
+						writeHtml("</div>", writers, false);
+					}
+					long executeTime = System.currentTimeMillis() - startTime;
+					debugMessage("Print statistics information", writers);
+					int scenariosTotal = scenariosPassed + scenariosFailed;
+					if (scenariosTotal == 0) {
+						scenariosTotalMessage("No scenarios found", writers);
+					} else {
+						if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
+							writeHtml("<br/>", writers, false);
+							writeHtml("<br/>", writers, false);
+						}
+						debugMessage("Print statistics information", writers);
+						if (scenariosPassed == scenariosTotal) {
+							if (scenariosTotal == 1) {
+								scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + executeTime + " ms)", writers);
+							} else {
+								scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers);
+							}
+						} else if (scenariosFailed == scenariosTotal) {
+							if (scenariosTotal == 1) {
+								scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + executeTime + " ms)", writers);
+							} else {
+								scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers);
+							}
+						} else {
+							if (scenariosTotal == 1) {
+								scenariosTotalMessage("1 scenario executed in " + executeTime + " ms", writers);
+							} else {
+								scenariosTotalMessage(scenariosTotal + " scenarios executed in " + executeTime + " ms", writers);
+							}
+							if (scenariosPassed == 1) {
+								scenariosPassedTotalMessage("1 scenario passed", writers);
+							} else {
+								scenariosPassedTotalMessage(scenariosPassed + " scenarios passed", writers);
+							}
+							if (scenariosFailed == 1) {
+								scenariosFailedTotalMessage("1 scenario failed", writers);
+							} else {
+								scenariosFailedTotalMessage(scenariosFailed + " scenarios failed", writers);
+							}
+						}
+					}
+					debugMessage("Start logging to htmlbuffer until form is written", writers);
+					writers.put("usehtmlbuffer", "start");
+					writeHtml("<br/>", writers, false);
+					writeHtml("<br/>", writers, false);
+					printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, scenariosRootDirectory, globalProperties, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
+					debugMessage("Stop logging to htmlbuffer", writers);
+					writers.put("usehtmlbuffer", "stop");
+					writeHtml("", writers, true);
+				}
+			}
+		}
+	}
+
+	public static void printHtmlForm(List scenariosRootDirectories, List scenariosRootDescriptions, String scenariosRootDirectory, Properties globalProperties, List scenarioFiles, int waitBeforeCleanUp, String paramExecute, String autoScroll, Map writers) {
+		writeHtml("<form action=\"index.jsp\" method=\"post\">", writers, false);
+
+		writeHtml("<table>", writers, false);
+		writeHtml("<tr>", writers, false);
+		writeHtml("<td>Scenario(s)</td>", writers, false);
+		writeHtml("</tr>", writers, false);
+		writeHtml("<tr>", writers, false);
+		writeHtml("<td>", writers, false);
+		writeHtml("<select name=\"execute\">", writers, false);
+		debugMessage("Fill execute select box.", writers);
+		Set addedDirectories = new HashSet();
+		Iterator scenarioFilesIterator = scenarioFiles.iterator();
+		while (scenarioFilesIterator.hasNext()) {
+			File scenarioFile = (File)scenarioFilesIterator.next();
+			String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
+			Properties properties = readProperties(globalProperties, scenarioFile, writers);
+			debugMessage("Add parent directories of '" + scenarioDirectory + "'", writers);
+			int i = -1;
+			String scenarioDirectoryCanonicalPath;
+			String scenariosRootDirectoryCanonicalPath;
+			try {
+				scenarioDirectoryCanonicalPath = new File(scenarioDirectory).getCanonicalPath();
+				scenariosRootDirectoryCanonicalPath = new File(scenariosRootDirectory).getCanonicalPath();
+			} catch(IOException e) {
+				scenarioDirectoryCanonicalPath = scenarioDirectory;
+				scenariosRootDirectoryCanonicalPath = scenariosRootDirectory;
+				errorMessage("Could not get canonical path: " + e.getMessage(), e, writers);
+			}
+			if (scenarioDirectoryCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
+				i = scenariosRootDirectory.length() - 1;
+				while (i != -1) {
+					String longName = scenarioDirectory.substring(0, i + 1);
+					debugMessage("longName: '" + longName + "'", writers);
+					if (!addedDirectories.contains(longName)) {
+						String shortName = scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1);
+						String option = "<option value=\"" + XmlUtils.encodeChars(longName) + "\"";
+						debugMessage("paramExecute: '" + paramExecute + "'", writers);
+						if (paramExecute != null && paramExecute.equals(longName)) {
+							option = option + " selected";
+						}
+						option = option + ">" + XmlUtils.encodeChars(shortName) + "</option>";
+						writeHtml(option, writers, false);
+						addedDirectories.add(longName);
+					}
+					i = scenarioDirectory.indexOf(File.separator, i + 1);
+				}
+				String longName = scenarioFile.getAbsolutePath();
+				String shortName = longName.substring(scenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
+				debugMessage("shortName: '" + shortName + "'", writers);
+				String option = "<option value=\"" + XmlUtils.encodeChars(longName) + "\"";
+				if (paramExecute != null && paramExecute.equals(longName)) {
+					option = option + " selected";
+				}
+				option = option + ">" + XmlUtils.encodeChars(shortName + " - " + properties.getProperty("scenario.description")) + "</option>";
+				writeHtml(option, writers, false);
+			}
+		}
+		writeHtml("</select>", writers, false);
+		writeHtml("</td>", writers, false);
+		writeHtml("</tr>", writers, false);
+		writeHtml("</table>", writers, false);
+
+		writeHtml("<table align=\"left\">", writers, false);
+		writeHtml("<tr>", writers, false);
+		writeHtml("<td>Scenarios root directory</td>", writers, false);
+		writeHtml("</tr>", writers, false);
+		writeHtml("<tr>", writers, false);
+		writeHtml("<td>", writers, false);
+		writeHtml("<select name=\"scenariosrootdirectory\">", writers, false);
+		Iterator scenariosRootDirectoriesIterator = scenariosRootDirectories.iterator();
+		Iterator scenariosRootDescriptionsIterator = scenariosRootDescriptions.iterator();
+		while (scenariosRootDirectoriesIterator.hasNext()) {
+			String directory = (String)scenariosRootDirectoriesIterator.next();
+			String description = (String)scenariosRootDescriptionsIterator.next();
+			String option = "<option value=\"" + XmlUtils.encodeChars(directory) + "\"";
+			if (scenariosRootDirectory.equals(directory)) {
+				option = option + " selected";
+			}
+			option = option + ">" + XmlUtils.encodeChars(description) + "</option>";
+			writeHtml(option, writers, false);
+		}
+		writeHtml("</select>", writers, false);
+		writeHtml("</td>", writers, false);
+		writeHtml("</tr>", writers, false);
+		writeHtml("</table>", writers, false);
+
+		// Use a span to make IE put table on next line with a smaller window width
+		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+		writeHtml("<table align=\"left\">", writers, false);
+		writeHtml("<tr>", writers, false);
+		writeHtml("<td>Wait before clean up (ms)</td>", writers, false);
+		writeHtml("</tr>", writers, false);
+		writeHtml("<tr>", writers, false);
+		writeHtml("<td>", writers, false);
+		writeHtml("<input type=\"text\" name=\"waitbeforecleanup\" value=\"" + waitBeforeCleanUp + "\">", writers, false);
+		writeHtml("</td>", writers, false);
+		writeHtml("</tr>", writers, false);
+		writeHtml("</table>", writers, false);
+
+		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+		writeHtml("<table align=\"left\">", writers, false);
+		writeHtml("<tr>", writers, false);
+		writeHtml("<td>Log level</td>", writers, false);
+		writeHtml("</tr>", writers, false);
+		writeHtml("<tr>", writers, false);
+		writeHtml("<td>", writers, false);
+		writeHtml("<select name=\"loglevel\">", writers, false);
+		StringTokenizer tokenizer = new StringTokenizer(LOG_LEVEL_ORDER, ",");
+		while (tokenizer.hasMoreTokens()) {
+			String level = tokenizer.nextToken().trim();
+			level = level.substring(1, level.length() - 1);
+			String option = "<option value=\"" + XmlUtils.encodeChars(level) + "\"";
+			if (((String)writers.get("loglevel")).equals(level)) {
+				option = option + " selected";
+			}
+			option = option + ">" + XmlUtils.encodeChars(level) + "</option>";
+			writeHtml(option, writers, false);
+		}
+		writeHtml("</select>", writers, false);
+		writeHtml("</td>", writers, false);
+		writeHtml("</tr>", writers, false);
+		writeHtml("</table>", writers, false);
+
+		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+		writeHtml("<table align=\"left\">", writers, false);
+		writeHtml("<tr>", writers, false);
+		writeHtml("<td>Auto scroll</td>", writers, false);
+		writeHtml("</tr>", writers, false);
+		writeHtml("<tr>", writers, false);
+		writeHtml("<td>", writers, false);
+		writeHtml("<input type=\"checkbox\" name=\"autoscroll\" value=\"true\"", writers, false);
+		if (autoScroll.equals("true")) {
+			writeHtml(" checked", writers, false);
+		}
+		writeHtml(">", writers, false);
+		writeHtml("</td>", writers, false);
+		writeHtml("</tr>", writers, false);
+		writeHtml("</table>", writers, false);
+
+		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+		writeHtml("<table align=\"left\">", writers, false);
+		writeHtml("<tr>", writers, false);
+		writeHtml("<td>&nbsp;</td>", writers, false);
+		writeHtml("</tr>", writers, false);
+		writeHtml("<tr>", writers, false);
+		writeHtml("<td align=\"right\">", writers, false);
+		writeHtml("<input type=\"submit\" name=\"submit\" value=\"start\">", writers, false);
+		writeHtml("</td>", writers, false);
+		writeHtml("</tr>", writers, false);
+		writeHtml("</table>", writers, false);
+
+		writeHtml("</form>", writers, false);
+		writeHtml("<br clear=\"all\"/>", writers, false);
+	}
+
+	public static void write(String html, String type, String method, Map writers, boolean scroll) {
+		String useBuffer = (String)writers.get("use" + type + "buffer");
+		if (useBuffer.equals("start")) {
+			useBuffer = "true";
+			writers.put("use" + type + "buffer", useBuffer);
+		} else if (useBuffer.equals("stop")) {
+			Writer out = (Writer)writers.get("out");
+			StringWriter buffer = (StringWriter)writers.get(type + "buffer");
+			try {
+				out.write(buffer.toString());
+			} catch(IOException e) {
+			}
+			useBuffer = "false";
+			writers.put("use" + type + "buffer", useBuffer);
+		}
+		Writer writer;
+		if (useBuffer.equals("true")) {
+			writer = (Writer)writers.get(type + "buffer");
+		} else {
+			writer = (Writer)writers.get("out");
+		}
+		if (method == null || LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") <= LOG_LEVEL_ORDER.indexOf("[" + method + "]")) {
+			try {
+				writer.write(html + "\n");
+				if (scroll && "true".equals(writers.get("autoscroll"))) {
+					writer.write("<script type=\"text/javascript\"><!--\n");
+					writer.write("scrollToBottom();\n");
+					writer.write("--></script>\n");
+				}
+				writer.flush();
+			} catch(IOException e) {
+			}
+		}
+	}
+
+	public static void writeHtml(String html, Map writers, boolean scroll) {
+		write(html, "html", null, writers, scroll);
+	}
+
+	public static void writeLog(String html, String method, Map writers, boolean scroll) {
+		write(html, "log", method, writers, scroll);
+	}
+
+	public static void debugMessage(String message, Map writers) {
+		String method = "debug";
+		logger.debug(message);
+		writeLog(XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(message)) + "<br/>", method, writers, false);
+	}
+
+	public static void debugPipelineMessage(String stepDisplayName, String message, String pipelineMessage, Map writers) {
+		String method = "pipeline messages";
+		int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
+		messageCounter ++;
+		
+		writeLog("<div class='message container'>", method, writers, false);
+		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
+		writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
+		writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
+		writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
+		writeLog("</div>", method, writers, false);
+		
+		writers.put("messagecounter", new Integer(messageCounter));
+	}
+
+	public static void debugPipelineMessagePreparedForDiff(String stepDisplayName, String message, String pipelineMessage, Map writers) {
+		String method = "pipeline messages prepared for diff";
+		int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
+		messageCounter ++;
+
+		writeLog("<div class='message container'>", method, writers, false);
+		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
+		writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
+		writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
+		writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
+		writeLog("</div>", method, writers, false);
+
+		writers.put("messagecounter", new Integer(messageCounter));
+	}
+
+	public static void wrongPipelineMessage(String message, String pipelineMessage, Map writers) {
+		String method = "wrong pipeline messages";
+		int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
+		messageCounter ++;
+		
+		writeLog("<div class='message container'>", method, writers, false);
+		writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
+		writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
+		writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
+		writeLog("</div>", method, writers, false);
+
+		writers.put("messagecounter", new Integer(messageCounter));
+	}
+
+	public static void wrongPipelineMessage(String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected, Map writers) {
+		String method = "wrong pipeline messages";
+		int scenarioCounter = ((Integer)writers.get("scenariocounter")).intValue();
+		String formName = "scenario" + scenarioCounter + "Wpm";
+		String resultBoxId = formName + "ResultBox";
+		String expectedBoxId = formName + "ExpectedBox";
+		String diffBoxId = formName + "DiffBox";
+
+		writeLog("<div class='error container'>", method, writers, false);
+		writeLog("<form name='"+formName+"' action='saveResultToFile.jsp' method='post' accept-charset='UTF-8'>", method, writers, false);
+		writeLog("<input name=\"iehack\" type=\"hidden\" value=\"&#9760;\" />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
+		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
+		
+		writeLog("<hr/>", method, writers, false);
+
+		writeLog("<div class='resultContainer'>", method, writers, false);
+		writeLog(writeCommands(resultBoxId, true, "<a href='javascript:void(0);' class='" + formName + "|saveResults'>save</a>"), method, writers, false);
+		writeLog("<h5>Result (raw):</h5>", method, writers, false);
+		writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
+		writeLog("</div>", method, writers, false);
+
+		writeLog("<div class='expectedContainer'>", method, writers, false);
+		writeLog(writeCommands(expectedBoxId, true, null), method, writers, true);
+		writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' >", method, writers, false);
+		writeLog("<input type='hidden' name='cmd'>", method, writers, false);
+		writeLog("<h5>Expected (raw):</h5>", method, writers, false);
+		writeLog("<textarea name='expectedBox' id='"+expectedBoxId+"'>" + XmlUtils.encodeChars(pipelineMessageExpected) + "</textarea>", method, writers, false);
+		writeLog("</div>", method, writers, false);
+		
+		writeLog("<hr/>", method, writers, false);
+
+		writeLog("<div class='differenceContainer'>", method, writers, false);
+		String btn1 = "<a class=\"['"+resultBoxId+"','"+expectedBoxId+"']|indentCompare|"+diffBoxId+"\" href=\"javascript:void(0)\">compare</a>";
+		String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
+		writeLog(writeCommands(diffBoxId, false, btn1+btn2), method, writers, false);
+		writeLog("<h5>Differences:</h5>", method, writers, false);
+		writeLog("<pre id='"+diffBoxId+"' class='diffBox'></pre>", method, writers, false);
+		writeLog("</div>", method, writers, false);
+
+		writeLog("<h5>Difference description:</h5>", method, writers, false);
+		writeLog("<p class='diffMessage'>" + XmlUtils.encodeChars(message) + "</p>", method, writers, true);
+		writeLog("</form>", method, writers, false);
+		writeLog("</div>", method, writers, false);
+		
+		scenarioCounter++;
+		writers.put("scenariocounter", new Integer(scenarioCounter));
+	}
+
+	public static void wrongPipelineMessagePreparedForDiff(String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff, Map writers) {
+		String method = "wrong pipeline messages prepared for diff";
+		int scenarioCounter = ((Integer)writers.get("scenariocounter")).intValue();
+		int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
+		String formName = "scenario" + scenarioCounter + "Wpmpfd";
+		String resultBoxId = formName + "ResultBox";
+		String expectedBoxId = formName + "ExpectedBox";
+		String diffBoxId = formName + "DiffBox";
+
+		writeLog("<div class='error container'>", method, writers, false);
+		writeLog("<form name='"+formName+"' action='saveResultToFile.jsp' method='post' accept-charset='UTF-8'>", method, writers, false);
+		writeLog("<input name=\"iehack\" type=\"hidden\" value=\"&#9760;\" />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
+		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
+		messageCounter ++;
+		
+		writeLog("<hr/>", method, writers, false);
+		
+		writeLog("<div class='resultContainer'>", method, writers, false);
+		writeLog(writeCommands(resultBoxId, true, null), method, writers, false);
+		writeLog("<h5>Result (prepared for diff):</h5>", method, writers, false);
+		writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlUtils.encodeChars(pipelineMessagePreparedForDiff) + "</textarea>", method, writers, false);
+		writeLog("</div>", method, writers, false);		
+		
+		messageCounter++;
+		writeLog("<div class='expectedContainer'>", method, writers, false);
+		writeLog(writeCommands(expectedBoxId, true, null), method, writers, false);
+		writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' >", method, writers, false);
+		writeLog("<input type='hidden' name='cmd'>", method, writers, false);
+		writeLog("<h5>Expected (prepared for diff):</h5>", method, writers, false);
+		writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlUtils.encodeChars(pipelineMessageExpectedPreparedForDiff) + "</textarea>", method, writers, false);
+		writeLog("</div>", method, writers, false);
+		
+		writeLog("<hr/>", method, writers, false);
+
+		messageCounter++;
+		writeLog("<div class='differenceContainer'>", method, writers, false);
+
+		String btn1 = "<a class=\"['"+resultBoxId+"','"+expectedBoxId+"']|indentCompare|"+diffBoxId+"\" href=\"javascript:void(0)\">compare</a>";
+		String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
+		writeLog(writeCommands(diffBoxId, false, btn1+btn2), method, writers, false);
+		writeLog("<h5>Differences:</h5>", method, writers, false);
+		writeLog("<pre id='"+diffBoxId+"' class='diffBox'></pre>", method, writers, false);
+		writeLog("</div>", method, writers, false);
+		
+		writeLog("</form>", method, writers, false);
+		writeLog("</div>", method, writers, false);
+
+		writers.put("messagecounter", new Integer(messageCounter));
+	}
+	
+	private static String writeCommands(String target, boolean textArea, String customCommand) {
+		String commands = "";
+		
+		commands += "<div class='commands'>";
+		commands += "<span class='widthCommands'><a href='javascript:void(0);' class='" + target + "|widthDown'>-</a><a href='javascript:void(0);' class='" + target + "|widthExact'>width</a><a href='javascript:void(0);' class='" + target + "|widthUp'>+</a></span>";
+		commands += "<span class='heightCommands'><a href='javascript:void(0);' class='" + target + "|heightDown'>-</a><a href='javascript:void(0);' class='" + target + "|heightExact'>height</a><a href='javascript:void(0);' class='" + target + "|heightUp'>+</a></span>";
+		if (textArea) {
+			commands += "<a href='javascript:void(0);' class='" + target + "|copy'>copy</a> ";
+			commands += "<a href='javascript:void(0);' class='" + target + "|xmlFormat'>indent</a>";
+		}
+		if (customCommand != null) {
+			commands += " " + customCommand;
+		}
+		commands += "</div>";
+		
+		
+		return commands;
+	}
+
+	public static void stepPassedMessage(String message, Map writers) {
+		String method = "step passed/failed";
+		writeLog("<h3 class='passed'>" + XmlUtils.encodeChars(message) + "</h3>", method, writers, true);
+	}
+
+	public static void stepFailedMessage(String message, Map writers) {
+		String method = "step passed/failed";
+		writeLog("<h3 class='failed'>" + XmlUtils.encodeChars(message) + "</h3>", method, writers, true);
+	}
+
+	public static void scenarioPassedMessage(String message, Map writers) {
+		String method = "scenario passed/failed";
+		writeLog("<h2 class='passed'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
+	}
+
+	public static void scenarioFailedMessage(String message, Map writers) {
+		String method = "scenario passed/failed";
+		writeLog("<h2 class='failed'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
+	}
+
+	public static void scenariosTotalMessage(String message, Map writers) {
+		String method = "totals";
+		writeLog("<h1 class='total'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+	}
+
+	public static void scenariosPassedTotalMessage(String message, Map writers) {
+		String method = "totals";
+		writeLog("<h1 class='passed'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+	}
+
+	public static void scenariosFailedTotalMessage(String message, Map writers) {
+		String method = "totals";
+		writeLog("<h1 class='failed'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+	}
+
+	public static void errorMessage(String message, Map writers) {
+		String method = "error";
+		writeLog("<h1 class='error'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+	}
+
+	public static void errorMessage(String message, Exception exception, Map writers) {
+		errorMessage(message, writers);
+		String method = "error";
+		Throwable throwable = exception;
+		while (throwable != null) {
+			StringWriter stringWriter = new StringWriter();
+			PrintWriter printWriter = new PrintWriter(stringWriter);
+			throwable.printStackTrace(printWriter);
+			printWriter.close();
+			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
+			messageCounter++;
+			writeLog("<div class='container'>", method, writers, false);
+			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
+			writeLog("<h5>Stack trace:</h5>", method, writers, false);
+			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(stringWriter.toString())) + "</textarea>", method, writers, false);
+			writeLog("</div>", method, writers, false);
+			writers.put("messagecounter", new Integer(messageCounter));
+			throwable = throwable.getCause();
+		}
+	}
+
+	public static void initScenariosRoots(ServletContext application, 
+										  HttpServletRequest request, 
+										  List scenariosRootDirectories, 
+										  List scenariosRootDescriptions, 
+										  List scenariosRootDeploymentSpecs, 
+										  IbisContext ibisContext,
+										  Map writers) {
+		debugMessage("Get scenarios directories", writers);
+		String servletPath = request.getServletPath();
+		if (servletPath == null) {
+			errorMessage("Could not read servlet path", writers);
+		} else {
+			int i = servletPath.lastIndexOf('/');
+			if (i == -1) {
+				errorMessage("Could not find '/' in servlet path", writers);
+			} else {
+				String realPath = application.getRealPath(servletPath.substring(0, i));
+				if (realPath == null) {
+					errorMessage("Could not read webapp real path", writers);
+				} else {
+					if (!realPath.endsWith(File.separator)) {
+						realPath = realPath + File.separator;
+					}
+					String testToolPropertiesFilename = realPath + "testtool.properties";
+					debugMessage("Test Tool properties file: " + testToolPropertiesFilename, writers);
+					Properties properties = new Properties();
+					try {
+						FileInputStream testToolPropertiesFileInputStream = new FileInputStream(testToolPropertiesFilename);
+						properties.load(testToolPropertiesFileInputStream);
+						testToolPropertiesFileInputStream.close();
+						Map scenariosRoots = new HashMap();
+						int j = 1;
+						String directory = properties.getProperty("scenariosroot" + j + ".directory");
+						String description = properties.getProperty("scenariosroot" + j + ".description");
+						while (directory != null) {
+							if (description == null) {
+								errorMessage("Could not find description for root directory '" + directory + "'", writers);
+							} else if (scenariosRoots.get(description) != null) {
+								errorMessage("A root directory named '" + description + "' already exist", writers);
+							} else {
+								if (!new File(directory).isAbsolute()) {
+									directory = realPath + directory;
+								}
+								if (!directory.endsWith(File.separator)) {
+									directory = directory + File.separator;
+								}
+								scenariosRoots.put(description, directory);
+							}
+							j++;
+							directory = properties.getProperty("scenariosroot" + j + ".directory");
+							description = properties.getProperty("scenariosroot" + j + ".description");
+						}
+						TreeSet treeSet = new TreeSet(new CaseInsensitiveComparator());
+						treeSet.addAll(scenariosRoots.keySet());
+						Iterator iterator = treeSet.iterator();
+						while (iterator.hasNext()) {
+							description = (String)iterator.next();
+							scenariosRootDescriptions.add(description);
+							scenariosRootDirectories.add(scenariosRoots.get(description));
+						}
+						String autoIgnore = properties.getProperty("autoignore");
+						if (autoIgnore != null) {
+							writers.put("autoignore", autoIgnore);
+						} else {
+							writers.put("autoignore", "false");
+						}
+						
+						/* This block checks for the existance of the properties 'datasource.name' and
+						 * 'datasource.deleteTable'. If both are present, the table is emptied.
+						 * Big part is ripped from openQueues (jdbc-part).
+						 */
+						String datasourceName = properties.getProperty("datasource.name");
+						String datasourceDeleteTable = properties.getProperty("datasource.deleteTable");
+						if (datasourceName != null && datasourceDeleteTable != null) {
+							
+							FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+							deleteQuerySender.setName("Test Tool delete table");
+							deleteQuerySender.setDatasourceName(AppConstants.getInstance().getResolvedProperty("jndiContextPrefix") + datasourceName);
+							deleteQuerySender.setQueryType("delete");
+							deleteQuerySender.setQuery("delete from " + datasourceDeleteTable);
+							try {
+								deleteQuerySender.configure();				 		
+								deleteQuerySender.open(); 						
+					
+								deleteQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+								deleteQuerySender.close();
+								debugMessage("Deleted table " + datasourceDeleteTable, writers);
+							} catch(ConfigurationException e) {
+								errorMessage("Could not configure deleteQuerySender: " + e.getMessage(), e, writers);
+							} catch(TimeOutException e) {
+								errorMessage("Time out on execute pre delete query for '" + datasourceDeleteTable + "': " + e.getMessage(), e, writers);
+							} catch(SenderException e) {
+								errorMessage("Could not execute pre delete query for '" + datasourceDeleteTable + "': " + e.getMessage(), e, writers);
+							}
+						}
+						
+					} catch(IOException e) {
+						errorMessage("Could not read file '" + testToolPropertiesFilename + "':" + e.getMessage(), e, writers);
+					}
+				}
+			}
+		}
+	}
+
+	public static List readScenarioFiles(Properties globalProperties, String scenariosDirectory, Map writers) {
+		List scenarioFiles = new ArrayList();
+		debugMessage("List all files in directory '" + scenariosDirectory + "'", writers);
+		File[] files = new File(scenariosDirectory).listFiles();
+		if (files == null) {
+			debugMessage("Could not read files from directory '" + scenariosDirectory + "'", writers);
+		} else {
+			debugMessage("Sort files", writers);
+			Arrays.sort(files);
+			debugMessage("Filter out property files containing a 'scenario.description' property", writers);
+			for (int i = 0; i < files.length; i++) {
+				File file = files[i];
+				if (file.getName().endsWith(".properties")) {
+					Properties properties = readProperties(globalProperties, file, writers);
+					if (properties != null && properties.get("scenario.description") != null) {
+						String active = properties.getProperty("scenario.active", "true");
+						if (active.equalsIgnoreCase("true")) {
+							scenarioFiles.add(file);
+						}
+					}
+				} else if (file.isDirectory() && (!file.getName().equals("CVS"))) {
+					scenarioFiles.addAll(readScenarioFiles(globalProperties, file.getAbsolutePath(), writers));
+				}
+			}
+		}
+		debugMessage(scenarioFiles.size() + " scenario files found", writers);
+		return scenarioFiles;
+	}
+
+	public static Properties readProperties(File propertiesFile, Map writers) {
+		return readProperties(null, propertiesFile, false, writers);
+	}
+
+	public static Properties readProperties(Properties globalProperties, File propertiesFile, Map writers) {
+		return readProperties(globalProperties, propertiesFile, true, writers);
+	}
+
+	public static Properties readProperties(Properties globalProperties, File propertiesFile, boolean substVars, Map writers) {
+		String directory = new File(propertiesFile.getAbsolutePath()).getParent();
+		Properties properties = new Properties();
+		if (globalProperties != null) {
+			properties.putAll(globalProperties);
+		}
+		FileInputStream fileInputStreamPropertiesFile = null;
+		try {
+			fileInputStreamPropertiesFile = new FileInputStream(propertiesFile);
+			properties.load(fileInputStreamPropertiesFile);
+			fileInputStreamPropertiesFile.close();
+			fileInputStreamPropertiesFile = null;
+			addAbsolutePathProperties(directory, properties);
+			Properties includedProperties = new Properties();
+			int i = 0;
+			String includeFilename = properties.getProperty("include");
+			if (includeFilename == null) {
+				i++;
+				includeFilename = properties.getProperty("include" + i);
+			}
+			while (includeFilename != null) {
+				debugMessage("Load include file: " + includeFilename, writers);
+				File includeFile = new File(getAbsolutePath(directory, includeFilename));
+				Properties includeProperties = readProperties(globalProperties, includeFile, false, writers);
+				includedProperties.putAll(includeProperties);
+				i++;
+				includeFilename = properties.getProperty("include" + i);
+			}
+			properties.putAll(includedProperties);
+			for (Object key : properties.keySet()) {
+				properties.put(key, StringResolver.substVars((String)properties.get(key), globalProperties));
+			}
+			debugMessage(properties.size() + " properties found", writers);
+		} catch(Exception e) {
+			properties = null;
+			errorMessage("Could not read properties file: " + e.getMessage(), e, writers);
+			if (fileInputStreamPropertiesFile != null) {
+				try {
+					fileInputStreamPropertiesFile.close();
+				} catch(Exception e2) {
+					errorMessage("Could not close file '" + propertiesFile.getAbsolutePath() + "': " + e2.getMessage(), e, writers);
+				}
+			}
+		}
+		return properties;
+	}
+
+	/**
+	 * Returns the absolute pathname for the child pathname. The parent pathname
+	 * is used as a prefix when the child pathname is an not absolute.
+	 *  
+	 * @param parent  the parent pathname to use
+	 * @param child   the child pathname to convert to a absolute pathname
+	 */
+	public static String getAbsolutePath(String parent, String child) {
+		File result;
+		File file = new File(child);
+		if (file.isAbsolute()) {
+			result = file;
+		} else {
+			result = new File(parent, child);
+		}
+		return result.getAbsolutePath();
+	}
+
+	public static void addAbsolutePathProperties(String propertiesDirectory, Properties properties) {
+		Properties absolutePathProperties = new Properties();
+		Iterator iterator = properties.keySet().iterator();
+		while (iterator.hasNext()) {
+			String property = (String)iterator.next();
+			if (property.endsWith(".read") || property.endsWith(".write")
+					|| property.endsWith(".directory")
+					|| property.endsWith(".filename")
+					|| property.endsWith(".valuefile")
+					|| property.endsWith(".valuefileinputstream")) {
+				String absolutePathProperty = property + ".absolutepath";
+				String value = getAbsolutePath(propertiesDirectory, (String)properties.get(property));
+				absolutePathProperties.put(absolutePathProperty, value);
+			}
+		}
+		properties.putAll(absolutePathProperties);
+	}
+
+	public static List getSteps(Properties properties, Map writers) {
+		List steps = new ArrayList();
+		int i = 1;
+		boolean lastStepFound = false;
+		while (!lastStepFound) {
+			boolean stepFound = false;
+			Enumeration enumeration = properties.propertyNames();
+			while (enumeration.hasMoreElements()) {
+				String key = (String)enumeration.nextElement();
+				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write"))) {
+					if (!stepFound) {
+						steps.add(key);
+						stepFound = true;
+						debugMessage("Added step '" + key + "'", writers);
+					} else {
+						errorMessage("More than one step" + i + " properties found, already found '" + steps.get(steps.size() - 1) + "' before finding '" + key + "'", writers);
+					}
+				}
+			}
+			if (!stepFound) {
+				lastStepFound = true;
+			}
+			i++;
+		}
+		debugMessage(steps.size() + " steps found", writers);
+		return steps;
+	}
+
+	public static Map openQueues(String scenarioDirectory, List steps, Properties properties, IbisContext ibisContext, Map ifsaThreadContexts, Map ifsaRawMessages, Map writers) {
+		Map queues = new HashMap();
+		debugMessage("Get all queue names", writers);
+		List ifsaProviderListeners = new ArrayList();
+		List ifsaRequesterSenders = new ArrayList();
+		List jmsSenders = new ArrayList();
+		List jmsListeners = new ArrayList();
+		List jdbcFixedQuerySenders = new ArrayList();
+		List ibisWebServiceSenders = new ArrayList();
+		List webServiceSenders = new ArrayList();
+		List webServiceListeners = new ArrayList();
+		List httpSenders = new ArrayList();
+		List ibisJavaSenders = new ArrayList();
+		List javaListeners = new ArrayList();
+		List fileSenders = new ArrayList();
+		List fileListeners = new ArrayList();
+		List xsltProviderListeners = new ArrayList();
+				
+		Iterator iterator = properties.keySet().iterator();
+		while (iterator.hasNext()) {
+			String key = (String)iterator.next();
+			int i = key.indexOf('.');
+			if (i != -1) {
+				int j = key.indexOf('.', i + 1);
+				if (j != -1) {
+					String queueName = key.substring(0, j);
+					debugMessage("queuename openqueue: " + queueName, writers);
+					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))
+							&& !jmsSenders.contains(queueName)) {
+						debugMessage("Adding jmsSender queue: " + queueName, writers);
+						jmsSenders.add(queueName);
+					} else if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))
+							&& !jmsListeners.contains(queueName)) {
+						debugMessage("Adding jmsListener queue: " + queueName, writers);
+						jmsListeners.add(queueName);
+					} else if ("nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener".equals(properties.get(queueName + ".className"))
+							&& !ifsaProviderListeners.contains(queueName)) {
+						debugMessage("Adding ifsaProviderListener queue: " + queueName, writers);
+						ifsaProviderListeners.add(queueName);
+					} else if ("nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender".equals(properties.get(queueName + ".className"))
+							&& !ifsaRequesterSenders.contains(queueName)) {
+						debugMessage("Adding ifsaRequesterSender queue: " + queueName, writers);
+						ifsaRequesterSenders.add(queueName);
+					} else if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))
+							&& !jdbcFixedQuerySenders.contains(queueName)) {
+						debugMessage("Adding jdbcFixedQuerySender queue: " + queueName, writers);
+						jdbcFixedQuerySenders.add(queueName);
+					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))
+							&& !ibisWebServiceSenders.contains(queueName)) {
+						debugMessage("Adding ibisWebServiceSender queue: " + queueName, writers);
+						ibisWebServiceSenders.add(queueName);
+					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))
+							&& !webServiceSenders.contains(queueName)) {
+						debugMessage("Adding webServiceSender queue: " + queueName, writers);
+						webServiceSenders.add(queueName);
+					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))
+							&& !webServiceListeners.contains(queueName)) {
+						debugMessage("Adding webServiceListener queue: " + queueName, writers);
+						webServiceListeners.add(queueName);
+					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))
+							&& !httpSenders.contains(queueName)) {
+						debugMessage("Adding httpSender queue: " + queueName, writers);
+						httpSenders.add(queueName);
+					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))
+							&& !ibisJavaSenders.contains(queueName)) {
+						debugMessage("Adding ibisJavaSender queue: " + queueName, writers);
+						ibisJavaSenders.add(queueName);
+					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))
+							&& !javaListeners.contains(queueName)) {
+						debugMessage("Adding javaListener queue: " + queueName, writers);
+						javaListeners.add(queueName);
+					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))
+							&& !fileSenders.contains(queueName)) {
+						debugMessage("Adding fileSender queue: " + queueName, writers);
+						fileSenders.add(queueName);
+					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))
+							&& !fileListeners.contains(queueName)) {
+						debugMessage("Adding fileListener queue: " + queueName, writers);
+						fileListeners.add(queueName);
+					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))
+							&& !xsltProviderListeners.contains(queueName)) {
+						debugMessage("Adding xsltProviderListeners queue: " + queueName, writers);
+						xsltProviderListeners.add(queueName);
+					}
+				}
+			}
+		}
+
+		debugMessage("Initialize ifsa provider listeners", writers);
+		iterator = ifsaProviderListeners.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			String applicationId = (String)properties.get(queueName + ".applicationId");
+			String messageProtocol = (String)properties.get(queueName + ".messageProtocol");
+			String timeout = (String)properties.get(queueName + ".timeout");
+
+			int nTimeout = IFSA_TESTTOOL_LISTENER_TIMEOUT;
+			if (timeout != null && timeout.length() > 0) {
+				nTimeout = Integer.parseInt(timeout);
+				debugMessage("Overriding default timeout setting of "+IFSA_TESTTOOL_LISTENER_TIMEOUT+" with "+ nTimeout, writers);
+			}
+
+			if (applicationId == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find property '" + queueName + ".applicationId'", writers);
+			} else if (messageProtocol == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find property '" + queueName + ".messageProtocol'", writers);
+			} else {
+				PullingIfsaProviderListener pullingIfsaProviderListener = new PullingIfsaProviderListener();
+				pullingIfsaProviderListener.setName("Test Tool IfsaProviderListener");
+				pullingIfsaProviderListener.setApplicationId(applicationId);
+				pullingIfsaProviderListener.setMessageProtocol(messageProtocol);
+				pullingIfsaProviderListener.setTimeOut(nTimeout);
+				try {
+					pullingIfsaProviderListener.configure();
+				} catch(ConfigurationException e) {
+					errorMessage("Could not configure IfsaProviderListener: " + e.getMessage(), e, writers);
+					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					queues = null;
+				}
+				try {
+					pullingIfsaProviderListener.openService();
+				} catch(IfsaException e) {
+					errorMessage("Could not open service IfsaProviderListener: " + e.getMessage(), e, writers);
+					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					queues = null;
+				}
+				if (queues != null) {
+					Map ifsaProviderListenerInfo = new HashMap();
+					ifsaProviderListenerInfo.put("ifsaProviderListener", pullingIfsaProviderListener);
+					queues.put(queueName, ifsaProviderListenerInfo);
+					ifsaCleanUp(queueName, pullingIfsaProviderListener, ifsaThreadContexts, ifsaRawMessages, false, writers);
+					debugMessage("Opened ifsa provider listener '" + queueName + "'", writers);
+				}
+			}
+		}
+
+		debugMessage("Initialize ifsa requester senders", writers);
+		iterator = ifsaRequesterSenders.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			String applicationId = (String)properties.get(queueName + ".applicationId");
+			String serviceId = (String)properties.get(queueName + ".serviceId");
+			String messageProtocol = (String)properties.get(queueName + ".messageProtocol");
+			String timeout = (String)properties.get(queueName + ".timeout");
+			Boolean convertExceptionToMessage = new Boolean((String)properties.get(queueName + ".convertExceptionToMessage"));
+
+			int nTimeout = IFSA_TESTTOOL_LISTENER_TIMEOUT;
+			if (timeout != null && timeout.length() > 0) {
+				nTimeout = Integer.parseInt(timeout);
+				debugMessage("Overriding default timeout setting of "+IFSA_TESTTOOL_LISTENER_TIMEOUT+" with "+ nTimeout, writers);
+			}
+
+			if (applicationId == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find property '" + queueName + ".applicationId'", writers);
+			} else if (serviceId == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find property '" + queueName + ".serviceId'", writers);
+			} else if (messageProtocol == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find property '" + queueName + ".messageProtocol'", writers);
+			} else {
+				IfsaRequesterSender ifsaRequesterSender = new IfsaRequesterSender();
+				ifsaRequesterSender.setName("Test Tool IfsaRequesterSender");
+				ifsaRequesterSender.setApplicationId(applicationId);
+				ifsaRequesterSender.setServiceId(serviceId);
+				ifsaRequesterSender.setMessageProtocol(messageProtocol);
+				ifsaRequesterSender.setTimeOut(nTimeout);
+				Map paramPropertiesMap = createParametersMapFromParamProperties(properties, queueName, writers, true, null);
+				Iterator paramPropertiesIterator = paramPropertiesMap.keySet().iterator();
+				while (paramPropertiesIterator.hasNext()) {
+					String key = (String)paramPropertiesIterator.next();
+					Parameter parameter = (Parameter)paramPropertiesMap.get(key);
+					ifsaRequesterSender.addParameter(parameter);
+				}
+				try {
+					ifsaRequesterSender.configure();
+				} catch(ConfigurationException e) {
+					errorMessage("Could not configure IfsaRequesterSender: " + e.getMessage(), e, writers);
+					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					queues = null;
+				}
+				try {
+					ifsaRequesterSender.openService();
+				} catch(IfsaException e) {
+					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					queues = null;
+					errorMessage("Could not open service IfsaRequesterSender: " + e.getMessage(), e, writers);
+				}
+				if (queues != null) {
+					Map ifsaRequesterSenderInfo = new HashMap();
+					ifsaRequesterSenderInfo.put("ifsaRequesterSender", ifsaRequesterSender);
+					ifsaRequesterSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
+					queues.put(queueName, ifsaRequesterSenderInfo);
+					debugMessage("Opened ifsa requester sender '" + queueName + "'", writers);
+				}
+			}
+		}
+
+		debugMessage("Initialize jms senders", writers);
+		iterator = jmsSenders.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			String queue = (String)properties.get(queueName + ".queue");
+			if (queue == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find property '" + queueName + ".queue'", writers);
+			} else {
+				JmsSender jmsSender = (JmsSender)ibisContext.createBean(JmsSender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+				jmsSender.setName("Test Tool JmsSender");
+				jmsSender.setDestinationName(queue);
+				jmsSender.setDestinationType("QUEUE");
+				jmsSender.setAcknowledgeMode("auto");
+				jmsSender.setJmsRealm("default");
+				String deliveryMode = properties.getProperty(queueName + ".deliveryMode");
+				debugMessage("Property '" + queueName + ".deliveryMode': " + deliveryMode, writers);
+				String persistent = properties.getProperty(queueName + ".persistent");
+				debugMessage("Property '" + queueName + ".persistent': " + persistent, writers);
+				String useCorrelationIdFrom = properties.getProperty(queueName + ".useCorrelationIdFrom");
+				debugMessage("Property '" + queueName + ".useCorrelationIdFrom': " + useCorrelationIdFrom, writers);
+				String replyToName = properties.getProperty(queueName + ".replyToName");
+				debugMessage("Property '" + queueName + ".replyToName': " + replyToName, writers);
+				if (deliveryMode != null) {
+					debugMessage("Set deliveryMode to " + deliveryMode, writers);
+					jmsSender.setDeliveryMode(deliveryMode);
+				}
+				if ("true".equals(persistent)) {
+					debugMessage("Set persistent to true", writers);
+					jmsSender.setPersistent(true);
+				} else {
+					debugMessage("Set persistent to false", writers);
+					jmsSender.setPersistent(false);
+				}
+				if (replyToName != null) {
+					debugMessage("Set replyToName to " + replyToName, writers);
+					jmsSender.setReplyToName(replyToName);
+				}
+				Map jmsSenderInfo = new HashMap();
+				jmsSenderInfo.put("jmsSender", jmsSender);
+				jmsSenderInfo.put("useCorrelationIdFrom", useCorrelationIdFrom);
+				String correlationId = properties.getProperty(queueName + ".jmsCorrelationId");
+				if (correlationId!=null) {
+					jmsSenderInfo.put("jmsCorrelationId", correlationId);
+					debugMessage("Property '" + queueName + ".jmsCorrelationId': " + correlationId, writers);
+				}
+				queues.put(queueName, jmsSenderInfo);
+				debugMessage("Opened jms sender '" + queueName + "'", writers);
+			}
+		}
+
+		debugMessage("Initialize jms listeners", writers);
+		iterator = jmsListeners.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			String queue = (String)properties.get(queueName + ".queue");
+			String timeout = (String)properties.get(queueName + ".timeout");
+
+			int nTimeout = JMS_TESTTOOL_LISTENER_TIMEOUT;
+			if (timeout != null && timeout.length() > 0) {
+				nTimeout = Integer.parseInt(timeout);
+				debugMessage("Overriding default timeout setting of "+JMS_TESTTOOL_LISTENER_TIMEOUT+" with "+ nTimeout, writers);
+			}
+
+			if (queue == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find property '" + queueName + ".queue'", writers);
+			} else {
+				PullingJmsListener pullingJmsListener = (PullingJmsListener)ibisContext.createBean(PullingJmsListener.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+				pullingJmsListener.setName("Test Tool JmsListener");
+				pullingJmsListener.setDestinationName(queue);
+				pullingJmsListener.setDestinationType("QUEUE");
+				pullingJmsListener.setAcknowledgeMode("auto");
+				pullingJmsListener.setJmsRealm("default");
+				// Call setJmsRealm twice as a workaround for a strange bug
+				// where we get a java.lang.NullPointerException in a class of
+				// the commons-beanutils.jar on the first call to setJmsRealm
+				// after starting the Test Tool ear:
+				// at org.apache.commons.beanutils.MappedPropertyDescriptor.internalFindMethod(MappedPropertyDescriptor.java(Compiled Code))
+				// at org.apache.commons.beanutils.MappedPropertyDescriptor.internalFindMethod(MappedPropertyDescriptor.java:413)
+				// ...
+				// Looks like some sort of classloader problem where
+				// internalFindMethod on another class is called (last line in
+				// stacktrace has "Compiled Code" while other lines have
+				// linenumbers).
+				// Can be reproduced with for example:
+				// - WebSphere Studio Application Developer (Windows) Version: 5.1.2
+				// - Ibis4Juice build 20051104-1351
+				// - y01\rr\getAgent1003\scenario01.properties
+				pullingJmsListener.setJmsRealm("default");
+				pullingJmsListener.setTimeOut(nTimeout);
+				String setForceMessageIdAsCorrelationId = (String)properties.get(queueName + ".setForceMessageIdAsCorrelationId");
+				if ("true".equals(setForceMessageIdAsCorrelationId)) {
+					pullingJmsListener.setForceMessageIdAsCorrelationId(true);
+				}
+				Map jmsListenerInfo = new HashMap();
+				jmsListenerInfo.put("jmsListener", pullingJmsListener);
+				queues.put(queueName, jmsListenerInfo);
+				debugMessage("Opened jms listener '" + queueName + "'", writers);
+				if (jmsCleanUp(queueName, pullingJmsListener, writers)) {
+					errorMessage("Found one or more old messages on queue '" + queueName + "', you might want to run your tests with a higher 'wait before clean up' value", writers);
+				}
+			}
+		}
+
+		debugMessage("Initialize jdbc fixed query senders", writers);
+		iterator = jdbcFixedQuerySenders.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String name = (String)iterator.next();
+			String datasourceName = (String)properties.get(name + ".datasourceName");
+			String username = (String)properties.get(name + ".username");
+			String password = (String)properties.get(name + ".password");
+			boolean allFound = false;
+			String preDelete = ""; 
+			int preDeleteIndex = 1;
+			String queryType = (String)properties.get(name + ".queryType");
+			String getBlobSmartString = (String)properties.get(name + ".getBlobSmart");
+			boolean getBlobSmart = false;
+			if (getBlobSmartString != null) {
+				getBlobSmart = Boolean.valueOf(getBlobSmartString).booleanValue();
+			}
+			if (datasourceName == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find datasourceName property for " + name, writers);
+			} else {
+				Map querySendersInfo = new HashMap();
+				while (!allFound && queues != null) {
+					preDelete = (String)properties.get(name + ".preDel" + preDeleteIndex);
+					if (preDelete != null) {
+						FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+						deleteQuerySender.setName("Test Tool pre delete query sender");
+						deleteQuerySender.setDatasourceName(AppConstants.getInstance().getResolvedProperty("jndiContextPrefix") + datasourceName);
+						deleteQuerySender.setQueryType("delete");
+						deleteQuerySender.setQuery("delete from " + preDelete);
+						try {
+							deleteQuerySender.configure();				 		
+							deleteQuerySender.open(); 						
+							deleteQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+							deleteQuerySender.close();
+						} catch(ConfigurationException e) {
+							closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+							queues = null;
+							errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
+						} catch(TimeOutException e) {
+							closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+							queues = null;
+							errorMessage("Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e, writers);
+						} catch(SenderException e) {
+							closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+							queues = null;
+							errorMessage("Could not execute pre delete query for '" + name + "': " + e.getMessage(), e, writers);
+						}
+						preDeleteIndex++;
+					} else {
+						allFound = true;
+					}	
+				}
+				if (queues != null) {
+					String prePostQuery = (String)properties.get(name + ".prePostQuery");
+					if (prePostQuery != null) {
+						FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)ibisContext.createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+						prePostFixedQuerySender.setName("Test Tool query sender");
+						prePostFixedQuerySender.setDatasourceName(AppConstants.getInstance().getResolvedProperty("jndiContextPrefix") + datasourceName);
+						//prePostFixedQuerySender.setUsername(username);
+						//prePostFixedQuerySender.setPassword(password);
+						prePostFixedQuerySender.setQueryType("select");
+						prePostFixedQuerySender.setQuery(prePostQuery);
+						try {
+							prePostFixedQuerySender.configure();
+						} catch(ConfigurationException e) {
+							closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+							queues = null;
+							errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
+						}
+						if (queues != null) {
+							try {
+								prePostFixedQuerySender.open();
+							} catch(SenderException e) {
+								closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+								queues = null;
+								errorMessage("Could not open (pre/post) '" + name + "': " + e.getMessage(), e, writers);
+							}
+						}
+						if (queues != null) {
+							try {
+								String result = prePostFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+								querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
+								querySendersInfo.put("prePostQueryResult", result);
+							} catch(TimeOutException e) {
+								closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+								queues = null;
+								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
+							} catch(SenderException e) {
+								closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+								queues = null;
+								errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e, writers);
+							}
+						}
+					}
+				}
+				if (queues != null) {
+					String readQuery = (String)properties.get(name + ".readQuery");
+					if (readQuery != null) {
+						FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)ibisContext.createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+						readQueryFixedQuerySender.setName("Test Tool query sender");
+						readQueryFixedQuerySender.setDatasourceName(AppConstants.getInstance().getResolvedProperty("jndiContextPrefix") + datasourceName);
+						//readQueryFixedQuerySender.setUsername(username);
+						//readQueryFixedQuerySender.setPassword(password);
+						
+						if ((queryType != null) && (! queryType.equals(""))) {
+							readQueryFixedQuerySender.setQueryType(queryType);	
+						} else {
+							readQueryFixedQuerySender.setQueryType("select");	
+						}
+						
+						readQueryFixedQuerySender.setQuery(readQuery);
+						readQueryFixedQuerySender.setBlobSmartGet(getBlobSmart);
+						try {
+							readQueryFixedQuerySender.configure();
+						} catch(ConfigurationException e) {
+							closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+							queues = null;
+							errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
+						}
+						if (queues != null) {
+							try {
+								readQueryFixedQuerySender.open();
+								querySendersInfo.put("readQueryQueryFixedQuerySender", readQueryFixedQuerySender);
+							} catch(SenderException e) {
+								closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+								queues = null;
+								errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
+							}
+						}
+					}
+				}
+				if (queues != null) {
+					String waitBeforeRead = (String)properties.get(name + ".waitBeforeRead");
+					if (waitBeforeRead != null) {
+						try {
+							querySendersInfo.put("readQueryWaitBeforeRead", new Integer(waitBeforeRead));
+						} catch(NumberFormatException e) {
+							errorMessage("Value of '" + name + ".waitBeforeRead' not a number: " + e.getMessage(), e, writers);
+						}
+					}
+					queues.put(name, querySendersInfo);
+					debugMessage("Opened jdbc connection '" + name + "'", writers);
+				}
+			}
+		}
+
+		debugMessage("Initialize ibis web service senders", writers);
+		iterator = ibisWebServiceSenders.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String name = (String)iterator.next();
+	
+			String ibisHost = (String)properties.get(name + ".ibisHost");
+			String ibisInstance = (String)properties.get(name + ".ibisInstance");
+			String serviceName = (String)properties.get(name + ".serviceName");
+			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
+
+			if (ibisHost == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find ibisHost property for " + name, writers);
+			} else if (ibisInstance == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find ibisInstance property for " + name, writers);
+			} else if (serviceName == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find serviceName property for " + name, writers);
+			} else {
+				IbisWebServiceSender ibisWebServiceSender = new IbisWebServiceSender();
+				ibisWebServiceSender.setName("Test Tool IbisWebServiceSender");
+				ibisWebServiceSender.setIbisHost(ibisHost);
+				ibisWebServiceSender.setIbisInstance(ibisInstance);
+				ibisWebServiceSender.setServiceName(serviceName);
+				try {
+					ibisWebServiceSender.configure();
+				} catch(ConfigurationException e) {
+					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
+					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					queues = null;
+				}
+				try {
+					ibisWebServiceSender.open();
+				} catch (SenderException e) {
+					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					queues = null;
+					errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
+				}
+				if (queues != null) {
+					Map ibisWebServiceSenderInfo = new HashMap();
+					ibisWebServiceSenderInfo.put("ibisWebServiceSender", ibisWebServiceSender);
+					ibisWebServiceSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
+					queues.put(name, ibisWebServiceSenderInfo);
+					debugMessage("Opened ibis web service sender '" + name + "'", writers);
+				}
+			}
+		}
+
+		debugMessage("Initialize web service senders", writers);
+		iterator = webServiceSenders.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String name = (String)iterator.next();
+			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
+			String url = (String)properties.get(name + ".url");
+			String userName = (String)properties.get(name + ".userName");
+			String password = (String)properties.get(name + ".password");
+			String soap = (String)properties.get(name + ".soap");
+			String allowSelfSignedCertificates = (String)properties.get(name + ".allowSelfSignedCertificates");
+			if (url == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find url property for " + name, writers);
+			} else {
+				WebServiceSender webServiceSender = new WebServiceSender();
+				webServiceSender.setName("Test Tool WebServiceSender");
+				webServiceSender.setUrl(url);
+				webServiceSender.setUserName(userName);
+				webServiceSender.setPassword(password);
+				if (soap != null) {
+					webServiceSender.setSoap(new Boolean(soap));
+				}
+				if (allowSelfSignedCertificates != null) {
+					webServiceSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
+				}
+				String serviceNamespaceURI = (String)properties.get(name + ".serviceNamespaceURI");
+				if (serviceNamespaceURI != null) {
+					webServiceSender.setServiceNamespaceURI(serviceNamespaceURI);
+				}
+				try {
+					webServiceSender.configure();
+				} catch(ConfigurationException e) {
+					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
+					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					queues = null;
+				}
+				if (queues != null) {
+					try {
+						webServiceSender.open();
+					} catch (SenderException e) {
+						closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+						queues = null;
+						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
+					}
+					if (queues != null) {
+						Map webServiceSenderInfo = new HashMap();
+						webServiceSenderInfo.put("webServiceSender", webServiceSender);
+						webServiceSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
+						queues.put(name, webServiceSenderInfo);
+						debugMessage("Opened web service sender '" + name + "'", writers);
+					}
+				}
+			}
+		}
+
+		debugMessage("Initialize web service listeners", writers);
+		iterator = webServiceListeners.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String name = (String)iterator.next();
+			String serviceNamespaceURI = (String)properties.get(name + ".serviceNamespaceURI");
+
+			if (serviceNamespaceURI == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find property '" + name + ".serviceNamespaceURI'", writers);
+			} else {
+				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
+				try {
+					long requestTimeOut = Long.parseLong((String)properties.get(name + ".requestTimeOut"));
+					listenerMessageHandler.setRequestTimeOut(requestTimeOut);
+					debugMessage("Request time out set to '" + requestTimeOut + "'", writers);
+				} catch(Exception e) {
+				}
+				try {
+					long responseTimeOut = Long.parseLong((String)properties.get(name + ".responseTimeOut"));
+					listenerMessageHandler.setResponseTimeOut(responseTimeOut);
+					debugMessage("Response time out set to '" + responseTimeOut + "'", writers);
+				} catch(Exception e) {
+				}
+				WebServiceListener webServiceListener = new WebServiceListener();
+				webServiceListener.setName("Test Tool WebServiceListener");
+				webServiceListener.setServiceNamespaceURI(serviceNamespaceURI);
+				webServiceListener.setHandler(listenerMessageHandler);
+				webServiceListener.open();
+				Map webServiceListenerInfo = new HashMap();
+				webServiceListenerInfo.put("webServiceListener", webServiceListener);
+				webServiceListenerInfo.put("listenerMessageHandler", listenerMessageHandler);
+				queues.put(name, webServiceListenerInfo);
+				ServiceDispatcher serviceDispatcher = ServiceDispatcher.getInstance();
+				try {
+					serviceDispatcher.registerServiceClient(serviceNamespaceURI, webServiceListener);
+					debugMessage("Opened web service listener '" + name + "'", writers);
+				} catch(ListenerException e) {
+					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					queues = null;
+					errorMessage("Could not open java listener '" + name + "': " + e.getMessage(), e, writers);
+				}
+			}
+		}
+
+		debugMessage("Initialize http senders", writers);
+		iterator = httpSenders.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String name = (String)iterator.next();
+			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
+			String url = (String)properties.get(name + ".url");
+			String userName = (String)properties.get(name + ".userName");
+			String password = (String)properties.get(name + ".password");
+			String headerParams = (String)properties.get(name + ".headersParams");
+			String xhtmlString = (String)properties.get(name + ".xhtml");
+			boolean xhtml = false;
+			if (xhtmlString != null) {
+				xhtml = Boolean.valueOf(xhtmlString).booleanValue();
+			}
+			String methodtype = (String)properties.get(name + ".methodType");
+ 			String styleSheetName = (String)properties.get(name + ".styleSheetName");
+			if (url == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find url property for " + name, writers);
+			} else {
+				HttpSender httpSender = new HttpSender();
+				httpSender.setName("Test Tool HttpSender");
+				httpSender.setUrl(url);
+				httpSender.setUserName(userName);
+				httpSender.setPassword(password);
+				httpSender.setHeadersParams(headerParams);
+				httpSender.setXhtml(xhtml);
+				if (StringUtils.isNotEmpty(methodtype)) {
+					httpSender.setMethodType(methodtype);
+				}
+				if (StringUtils.isNotEmpty(styleSheetName)) {
+					String ssn = "file:///" + getAbsolutePath(scenarioDirectory, styleSheetName);
+					httpSender.setStyleSheetName(ssn);
+				}
+				ParameterResolutionContext parameterResolutionContext = new ParameterResolutionContext();
+				parameterResolutionContext.setSession(new PipeLineSessionBase());
+				Map paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, parameterResolutionContext);
+				Iterator parameterNameIterator = paramPropertiesMap.keySet().iterator();
+				while (parameterNameIterator.hasNext()) {
+					String parameterName = (String)parameterNameIterator.next();
+					Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
+					httpSender.addParameter(parameter);
+				}
+				try {
+					httpSender.configure();
+				} catch(ConfigurationException e) {
+					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
+					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					queues = null;
+				}
+				if (queues != null) {
+					try {
+						httpSender.open();
+					} catch (SenderException e) {
+						closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+						queues = null;
+						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
+					}
+					if (queues != null) {
+						Map httpSenderInfo = new HashMap();
+						httpSenderInfo.put("httpSender", httpSender);
+						httpSenderInfo.put("parameterResolutionContext", parameterResolutionContext);
+						httpSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
+						queues.put(name, httpSenderInfo);
+						debugMessage("Opened http sender '" + name + "'", writers);
+					}
+				}
+			}
+		}
+
+		debugMessage("Initialize ibis java senders", writers);
+		iterator = ibisJavaSenders.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String name = (String)iterator.next();
+			String serviceName = (String)properties.get(name + ".serviceName");
+			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
+			if (serviceName == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find serviceName property for " + name, writers);
+			} else {
+				IbisJavaSender ibisJavaSender = new IbisJavaSender();
+				ibisJavaSender.setName("Test Tool IbisJavaSender");
+				ibisJavaSender.setServiceName(serviceName);
+				ParameterResolutionContext parameterResolutionContext = new ParameterResolutionContext();
+				parameterResolutionContext.setSession(new PipeLineSessionBase());
+				Map paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, parameterResolutionContext);
+				Iterator parameterNameIterator = paramPropertiesMap.keySet().iterator();
+				while (parameterNameIterator.hasNext()) {
+					String parameterName = (String)parameterNameIterator.next();
+					Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
+					ibisJavaSender.addParameter(parameter);
+				}
+				try {
+					ibisJavaSender.configure();
+				} catch(ConfigurationException e) {
+					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
+					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					queues = null;
+				}
+				if (queues != null) {
+					try {
+						ibisJavaSender.open();
+					} catch (SenderException e) {
+						closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+						queues = null;
+						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
+					}
+					if (queues != null) {
+						Map ibisJavaSenderInfo = new HashMap();
+						ibisJavaSenderInfo.put("ibisJavaSender", ibisJavaSender);
+						ibisJavaSenderInfo.put("parameterResolutionContext", parameterResolutionContext);
+						ibisJavaSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
+						queues.put(name, ibisJavaSenderInfo);
+						debugMessage("Opened ibis java sender '" + name + "'", writers);
+					}
+				}
+			}
+		}
+
+		debugMessage("Initialize java listeners", writers);
+		iterator = javaListeners.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String name = (String)iterator.next();
+			String serviceName = (String)properties.get(name + ".serviceName");
+			if (serviceName == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find property '" + name + ".serviceName'", writers);
+			} else {
+				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
+				try {
+					long requestTimeOut = Long.parseLong((String)properties.get(name + ".requestTimeOut"));
+					listenerMessageHandler.setRequestTimeOut(requestTimeOut);
+					debugMessage("Request time out set to '" + requestTimeOut + "'", writers);
+				} catch(Exception e) {
+				}
+				try {
+					long responseTimeOut = Long.parseLong((String)properties.get(name + ".responseTimeOut"));
+					listenerMessageHandler.setResponseTimeOut(responseTimeOut);
+					debugMessage("Response time out set to '" + responseTimeOut + "'", writers);
+				} catch(Exception e) {
+				}
+				JavaListener javaListener = new JavaListener();
+				javaListener.setName("Test Tool JavaListener");
+				javaListener.setServiceName(serviceName);
+				javaListener.setHandler(listenerMessageHandler);
+				try {
+					javaListener.open();
+					Map javaListenerInfo = new HashMap();
+					javaListenerInfo.put("javaListener", javaListener);
+					javaListenerInfo.put("listenerMessageHandler", listenerMessageHandler);
+					queues.put(name, javaListenerInfo);
+					debugMessage("Opened java listener '" + name + "'", writers);
+				} catch(ListenerException e) {
+					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					queues = null;
+					errorMessage("Could not open java listener '" + name + "': " + e.getMessage(), e, writers);
+				}
+			}
+		}
+
+		debugMessage("Initialize file senders", writers);
+		iterator = fileSenders.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			String filename  = (String)properties.get(queueName + ".filename");
+			if (filename == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find filename property for " + queueName, writers);
+			} else {
+				FileSender fileSender = new FileSender();
+				String filenameAbsolutePath = (String)properties.get(queueName + ".filename.absolutepath");;
+				fileSender.setFilename(filenameAbsolutePath);
+				String encoding = (String)properties.get(queueName + ".encoding");
+				if (encoding != null) {
+					fileSender.setEncoding(encoding);
+					debugMessage("Encoding set to '" + encoding + "'", writers);
+				}
+				String deletePathString = (String)properties.get(queueName + ".deletePath");
+				if (deletePathString != null) {
+					boolean deletePath = Boolean.valueOf(deletePathString).booleanValue();
+					fileSender.setDeletePath(deletePath);
+					debugMessage("Delete path set to '" + deletePath + "'", writers);
+				}
+				String createPathString = (String)properties.get(queueName + ".createPath");
+				if (createPathString != null) {
+					boolean createPath = Boolean.valueOf(createPathString).booleanValue();
+					fileSender.setCreatePath(createPath);
+					debugMessage("Create path set to '" + createPath + "'", writers);
+				}
+				try {
+					String checkDeleteString = (String)properties.get(queueName + ".checkDelete");
+					if (checkDeleteString != null) {
+						boolean checkDelete = Boolean.valueOf(checkDeleteString).booleanValue();
+						fileSender.setCheckDelete(checkDelete);
+						debugMessage("Check delete set to '" + checkDelete + "'", writers);
+					}
+				} catch(Exception e) {
+				}
+				try {
+					String runAntString = (String)properties.get(queueName + ".runAnt");
+					if (runAntString != null) {
+						boolean runAnt = Boolean.valueOf(runAntString).booleanValue();
+						fileSender.setRunAnt(runAnt);
+						debugMessage("Run ant set to '" + runAnt + "'", writers);
+					}
+				} catch(Exception e) {
+				}
+				try {
+					long timeOut = Long.parseLong((String)properties.get(queueName + ".timeOut"));
+					fileSender.setTimeOut(timeOut);
+					debugMessage("Time out set to '" + timeOut + "'", writers);
+				} catch(Exception e) {
+				}
+				try {
+					long interval  = Long.parseLong((String)properties.get(queueName + ".interval"));
+					fileSender.setInterval(interval);
+					debugMessage("Interval set to '" + interval + "'", writers);
+				} catch(Exception e) {
+				}
+				try {
+					String overwriteString = (String)properties.get(queueName + ".overwrite");
+					if (overwriteString != null) {
+						debugMessage("OverwriteString = " + overwriteString, writers);					
+						boolean overwrite = Boolean.valueOf(overwriteString).booleanValue();
+						fileSender.setOverwrite(overwrite);
+						debugMessage("Overwrite set to '" + overwrite + "'", writers);
+					}
+				} catch(Exception e) {
+				}
+				Map fileSenderInfo = new HashMap();
+				fileSenderInfo.put("fileSender", fileSender);
+				queues.put(queueName, fileSenderInfo);
+				debugMessage("Opened file sender '" + queueName + "'", writers);
+			}
+		}
+
+		debugMessage("Initialize file listeners", writers);
+		iterator = fileListeners.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			String filename  = (String)properties.get(queueName + ".filename");
+			String directory = null;
+			String wildcard = null;
+			if (filename == null) {
+				directory = (String)properties.get(queueName + ".directory");
+				wildcard = (String)properties.get(queueName + ".wildcard");
+			}
+			if (filename == null && directory == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find filename or directory property for " + queueName, writers);
+			} else if (directory != null && wildcard == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find wildcard property for " + queueName, writers);
+			} else {
+				FileListener fileListener = new FileListener();
+				if (filename == null) {
+					String directoryAbsolutePath = (String)properties.get(queueName + ".directory.absolutepath");;
+					fileListener.setDirectory(directoryAbsolutePath);
+					fileListener.setWildcard(wildcard);
+				} else {
+					String filenameAbsolutePath = (String)properties.get(queueName + ".filename.absolutepath");;
+					fileListener.setFilename(filenameAbsolutePath);
+				}
+				try {
+					long waitBeforeRead = Long.parseLong((String)properties.get(queueName + ".waitBeforeRead"));
+					fileListener.setWaitBeforeRead(waitBeforeRead);
+					debugMessage("Wait before read set to '" + waitBeforeRead + "'", writers);
+				} catch(Exception e) {
+				}
+				try {
+					long timeOut = Long.parseLong((String)properties.get(queueName + ".timeOut"));
+					fileListener.setTimeOut(timeOut);
+					debugMessage("Time out set to '" + timeOut + "'", writers);
+				} catch(Exception e) {
+				}
+				try {
+					long interval  = Long.parseLong((String)properties.get(queueName + ".interval"));
+					fileListener.setInterval(interval);
+					debugMessage("Interval set to '" + interval + "'", writers);
+				} catch(Exception e) {
+				}
+				Map fileListenerInfo = new HashMap();
+				fileListenerInfo.put("fileListener", fileListener);
+				queues.put(queueName, fileListenerInfo);
+				debugMessage("Opened file listener '" + queueName + "'", writers);
+				if (fileListenerCleanUp(queueName, fileListener, writers)) {
+					errorMessage("Found old messages on '" + queueName + "'", writers);
+				}
+			}
+		}
+
+		debugMessage("Initialize xslt provider listeners", writers);
+		iterator = xsltProviderListeners.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			String filename  = (String)properties.get(queueName + ".filename");
+			if (filename == null) {
+				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				queues = null;
+				errorMessage("Could not find filename property for " + queueName, writers);
+			} else {
+				String filenameAbsolutePath = (String)properties.get(queueName + ".filename.absolutepath");
+				XsltProviderListener xsltProviderListener = new XsltProviderListener();
+				xsltProviderListener.setFilename(filenameAbsolutePath);
+				String xslt2String = (String)properties.get(queueName + ".xslt2");
+				if (xslt2String != null) {
+					try {
+						boolean xslt2 = Boolean.valueOf(xslt2String).booleanValue();
+						xsltProviderListener.setXslt2(xslt2);
+						debugMessage("Xslt2 set to '" + xslt2 + "'", writers);
+					} catch(Exception e) {
+					}
+				}
+				String namespaceAwareString = (String)properties.get(queueName + ".namespaceAware");
+				if (namespaceAwareString != null) {
+					try {
+						boolean namespaceAware = Boolean.valueOf(namespaceAwareString).booleanValue();
+						xsltProviderListener.setNamespaceAware(namespaceAware);
+						debugMessage("Namespace aware set to '" + namespaceAware + "'", writers);
+					} catch(Exception e) {
+					}
+				}
+				try {
+					xsltProviderListener.init();
+					Map xsltProviderListenerInfo = new HashMap();
+					xsltProviderListenerInfo.put("xsltProviderListener", xsltProviderListener);
+					queues.put(queueName, xsltProviderListenerInfo);
+					debugMessage("Opened xslt provider listener '" + queueName + "'", writers);
+				} catch(ListenerException e) {
+					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					queues = null;
+					errorMessage("Could not create xslt provider listener for '" + queueName + "': " + e.getMessage(), e, writers);
+				}
+			}
+		}
+
+		return queues;
+	}
+
+
+
+	public static boolean closeQueues(Map queues, Properties properties, Map ifsaThreadContexts, Map ifsaRawMessages, Map writers) {
+		boolean remainingMessagesFound = false;
+		debugMessage("Close ifsa provider listeners first because we might send dummy reply's that triggers a pipeline to send a reply to a jms queue", writers);
+		Iterator iterator = queues.keySet().iterator();
+		while (iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			if ("nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener".equals(properties.get(queueName + ".className"))) {
+				PullingIfsaProviderListener pullingIfsaProviderListener = (PullingIfsaProviderListener)((Map)queues.get(queueName)).get("ifsaProviderListener");
+				if (ifsaCleanUp(queueName, pullingIfsaProviderListener, ifsaThreadContexts, ifsaRawMessages, true, writers)) {
+					remainingMessagesFound = true;
+				}
+				try {
+					pullingIfsaProviderListener.close();
+					debugMessage("Closed ifsa provider listener '" + queueName + "'", writers);
+				} catch(ListenerException e) {
+					errorMessage("Could not close IfsaProviderListener: " + e.getMessage(), e, writers);
+				}
+			}
+		}
+		debugMessage("Close ifsa requester senders", writers);
+		iterator = queues.keySet().iterator();
+		while (iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			if ("nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender".equals(properties.get(queueName + ".className"))) {
+				IfsaRequesterSender ifsaRequesterSender = (IfsaRequesterSender)((Map)queues.get(queueName)).get("ifsaRequesterSender");
+				if ("RR".equals(ifsaRequesterSender.getMessageProtocol())) {
+					Map ifsaRequesterSenderInfo = (Map)queues.get(queueName);
+					SenderThread ifsaRequesterSenderThread = (SenderThread)ifsaRequesterSenderInfo.remove("ifsaRequesterSenderThread");
+					if (ifsaRequesterSenderThread != null) {
+						debugMessage("Found remaining SenderThread", writers);
+						SenderException senderException = ifsaRequesterSenderThread.getSenderException();
+						if (senderException != null) {
+							errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
+						}
+						TimeOutException timeOutException = ifsaRequesterSenderThread.getTimeOutException();
+						if (timeOutException != null) {
+							errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
+						}
+						String message = ifsaRequesterSenderThread.getResponse();
+						if (message != null) {
+							wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
+						}
+					}
+				}
+				try {
+					ifsaRequesterSender.close();
+					debugMessage("Closed ifsa requester sender '" + queueName + "'", writers);
+				} catch(SenderException e) {
+					errorMessage("Could not close IfsaRequesterSender: " + e.getMessage(), e, writers);
+				}
+			}
+		}
+		debugMessage("Close jms senders", writers);
+		iterator = queues.keySet().iterator();
+		while (iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
+				JmsSender jmsSender = (JmsSender)((Map)queues.get(queueName)).get("jmsSender");
+				try {
+					jmsSender.close();
+					debugMessage("Closed jms sender '" + queueName + "'", writers);
+				} catch(SenderException e) {
+					errorMessage("Could not close jms sender '" + queueName + "': " + e.getMessage(), e, writers);
+				}
+			}
+		}
+		debugMessage("Close jms listeners", writers);
+		iterator = queues.keySet().iterator();
+		while (iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
+				PullingJmsListener pullingJmsListener = (PullingJmsListener)((Map)queues.get(queueName)).get("jmsListener");
+				if (jmsCleanUp(queueName, pullingJmsListener, writers)) {
+					remainingMessagesFound = true;
+				}
+				try {
+					pullingJmsListener.close();
+					debugMessage("Closed jms listener '" + queueName + "'", writers);
+				} catch(ListenerException e) {
+					errorMessage("Could not close jms listener '" + queueName + "': " + e.getMessage(), e, writers);
+				}
+			}
+		}
+		debugMessage("Close jdbc connections", writers);
+		iterator = queues.keySet().iterator();
+		while (iterator.hasNext()) {
+			String name = (String)iterator.next();
+			if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(name + ".className"))) {
+				Map querySendersInfo = (Map)queues.get(name);
+				FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)querySendersInfo.get("prePostQueryFixedQuerySender");
+				if (prePostFixedQuerySender != null) {
+					try {
+						/* Check if the preResult and postResult are not equal. If so, then there is a
+						 * database change that has not been read in the scenario.
+						 * So set remainingMessagesFound to true and show the entry.
+						 * (see also executeFixedQuerySenderRead() )
+						 */
+						String preResult = (String)querySendersInfo.get("prePostQueryResult");
+						String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+						if (!preResult.equals(postResult)) {
+							
+							String message = null;
+							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
+							try {
+								message = readQueryFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+							} catch(TimeOutException e) {
+								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
+							} catch(SenderException e) {
+								errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e, writers);
+							}
+							if (message != null) {
+								wrongPipelineMessage("Found remaining message on '" + name + "'", message, writers);
+							}
+
+							remainingMessagesFound = true;
+							
+						}
+						prePostFixedQuerySender.close();
+					} catch(TimeOutException e) {
+						errorMessage("Time out on close (pre/post) '" + name + "': " + e.getMessage(), e, writers);
+					} catch(SenderException e) {
+						errorMessage("Could not close (pre/post) '" + name + "': " + e.getMessage(), e, writers);
+					}
+				}
+				FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
+				try {
+					readQueryFixedQuerySender.close();
+				} catch(SenderException e) {
+					errorMessage("Could not close '" + name + "': " + e.getMessage(), e, writers);
+				}
+			}
+		}
+		debugMessage("Close ibis webservice senders", writers);
+		iterator = queues.keySet().iterator();
+		while (iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
+				IbisWebServiceSender ibisWebServiceSender = (IbisWebServiceSender)((Map)queues.get(queueName)).get("ibisWebServiceSender");
+				Map ibisWebServiceSenderInfo = (Map)queues.get(queueName);
+				SenderThread senderThread = (SenderThread)ibisWebServiceSenderInfo.remove("ibisWebServiceSenderThread");
+				if (senderThread != null) {
+					debugMessage("Found remaining SenderThread", writers);
+					SenderException senderException = senderThread.getSenderException();
+					if (senderException != null) {
+						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
+					}
+					TimeOutException timeOutException = senderThread.getTimeOutException();
+					if (timeOutException != null) {
+						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
+					}
+					String message = senderThread.getResponse();
+					if (message != null) {
+						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
+					}
+				}
+
+				try {
+					ibisWebServiceSender.close();
+					debugMessage("Closed ibis webservice sender '" + queueName + "'", writers);
+				} catch(SenderException e) {
+					errorMessage("Could not close '" + queueName + "': " + e.getMessage(), e, writers);
+				}
+			}
+		}
+		
+		debugMessage("Close web service senders", writers);
+		iterator = queues.keySet().iterator();
+		while (iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
+				WebServiceSender webServiceSender = (WebServiceSender)((Map)queues.get(queueName)).get("webServiceSender");
+				Map webServiceSenderInfo = (Map)queues.get(queueName);
+				SenderThread senderThread = (SenderThread)webServiceSenderInfo.remove("webServiceSenderThread");
+				if (senderThread != null) {
+					debugMessage("Found remaining SenderThread", writers);
+					SenderException senderException = senderThread.getSenderException();
+					if (senderException != null) {
+						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
+					}
+					TimeOutException timeOutException = senderThread.getTimeOutException();
+					if (timeOutException != null) {
+						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
+					}
+					String message = senderThread.getResponse();
+					if (message != null) {
+						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
+					}
+				}
+				webServiceSender.close();
+				debugMessage("Closed webservice sender '" + queueName + "'", writers);
+			}
+		}
+
+		debugMessage("Close web service listeners", writers);
+		iterator = queues.keySet().iterator();
+		while (iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
+				Map webServiceListenerInfo = (Map)queues.get(queueName);
+				WebServiceListener webServiceListener = (WebServiceListener)webServiceListenerInfo.get("webServiceListener");
+				webServiceListener.close();
+				debugMessage("Closed web service listener '" + queueName + "'", writers);
+				ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)webServiceListenerInfo.get("listenerMessageHandler");
+				if (listenerMessageHandler != null) {
+					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(0);
+					while (listenerMessage != null) {
+						String message = listenerMessage.getMessage();
+						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message, writers);
+						remainingMessagesFound = true;
+						listenerMessage = listenerMessageHandler.getRequestMessage(0);
+					}
+					listenerMessage = listenerMessageHandler.getResponseMessage(0);
+					while (listenerMessage != null) {
+						String message = listenerMessage.getMessage();
+						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message, writers);
+						remainingMessagesFound = true;
+						listenerMessage = listenerMessageHandler.getResponseMessage(0);
+					}
+				}
+			}
+		}
+
+		debugMessage("Close ibis java senders", writers);
+		iterator = queues.keySet().iterator();
+		while (iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
+				IbisJavaSender ibisJavaSender = (IbisJavaSender)((Map)queues.get(queueName)).get("ibisJavaSender");
+
+				Map ibisJavaSenderInfo = (Map)queues.get(queueName);
+				SenderThread ibisJavaSenderThread = (SenderThread)ibisJavaSenderInfo.remove("ibisJavaSenderThread");
+				if (ibisJavaSenderThread != null) {
+					debugMessage("Found remaining SenderThread", writers);
+					SenderException senderException = ibisJavaSenderThread.getSenderException();
+					if (senderException != null) {
+						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
+					}
+					TimeOutException timeOutException = ibisJavaSenderThread.getTimeOutException();
+					if (timeOutException != null) {
+						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
+					}
+					String message = ibisJavaSenderThread.getResponse();
+					if (message != null) {
+						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
+					}
+				}
+
+				try {
+				ibisJavaSender.close();
+					debugMessage("Closed ibis java sender '" + queueName + "'", writers);
+				} catch(SenderException e) {
+					errorMessage("Could not close '" + queueName + "': " + e.getMessage(), e, writers);
+				}
+			}
+		}
+
+		debugMessage("Close java listeners", writers);
+		iterator = queues.keySet().iterator();
+		while (iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
+				Map javaListenerInfo = (Map)queues.get(queueName);
+				JavaListener javaListener = (JavaListener)javaListenerInfo.get("javaListener");
+				try {
+					javaListener.close();
+					debugMessage("Closed java listener '" + queueName + "'", writers);
+				} catch(ListenerException e) {
+					errorMessage("Could not close java listener '" + queueName + "': " + e.getMessage(), e, writers);
+				}
+				ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)javaListenerInfo.get("listenerMessageHandler");
+				if (listenerMessageHandler != null) {
+					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(0);
+					while (listenerMessage != null) {
+						String message = listenerMessage.getMessage();
+						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message, writers);
+						remainingMessagesFound = true;
+						listenerMessage = listenerMessageHandler.getRequestMessage(0);
+					}
+					listenerMessage = listenerMessageHandler.getResponseMessage(0);
+					while (listenerMessage != null) {
+						String message = listenerMessage.getMessage();
+						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message, writers);
+						remainingMessagesFound = true;
+						listenerMessage = listenerMessageHandler.getResponseMessage(0);
+					}
+				}
+			}
+		}
+
+		debugMessage("Close file listeners", writers);
+		iterator = queues.keySet().iterator();
+		while (iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
+				FileListener fileListener = (FileListener)((Map)queues.get(queueName)).get("fileListener");
+				fileListenerCleanUp(queueName, fileListener, writers);
+				debugMessage("Closed file listener '" + queueName + "'", writers);
+			}
+		}
+
+		debugMessage("Close xslt provider listeners", writers);
+		iterator = queues.keySet().iterator();
+		while (iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
+				XsltProviderListener xsltProviderListener = (XsltProviderListener)((Map)queues.get(queueName)).get("xsltProviderListener");
+				xsltProviderListenerCleanUp(queues, queueName, writers);
+				debugMessage("Closed xslt provider listener '" + queueName + "'", writers);
+			}
+		}
+
+		return remainingMessagesFound;
+	}
+
+	public static boolean ifsaWrite(String reply, PullingIfsaProviderListener pullingIfsaProviderListener, Object rawMessage, Map threadContext, Map writers) {
+		boolean success = false;
+		PipeLineResult pipeLineResult = new PipeLineResult();
+		if ("RR".equals(pullingIfsaProviderListener.getMessageProtocol())) {
+			pipeLineResult.setResult(reply);
+		}
+		pipeLineResult.setState("success");
+		try {
+			pullingIfsaProviderListener.afterMessageProcessed(pipeLineResult, rawMessage, threadContext);
+			success = true;
+		} catch(ListenerException e1) {
+			errorMessage("Could not write to ifsa: " + e1.getMessage(), e1, writers);
+		} catch(NullPointerException e2) {
+			errorMessage("NullPointerException writing to ifsa (this probably means message protocol for this service should be FF in the scenario properties).", e2, writers);
+		}
+		return success;
+	}
+
+	public static boolean jmsCleanUp(String queueName, PullingJmsListener pullingJmsListener, Map writers) {
+		boolean remainingMessagesFound = false;
+		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
+		long oldTimeOut = pullingJmsListener.getTimeOut();
+		pullingJmsListener.setTimeOut(10);
+		boolean empty = false;
+		while (!empty) {
+			Object rawMessage = null;
+			String message = null;
+			Map threadContext = null;
+			try {
+				threadContext = pullingJmsListener.openThread();
+				rawMessage = pullingJmsListener.getRawMessage(threadContext);
+				if (rawMessage != null) {
+					message = pullingJmsListener.getStringFromRawMessage(rawMessage, threadContext);
+					remainingMessagesFound = true;
+					if (message == null) {
+						errorMessage("Could not translate raw message from jms queue '" + queueName + "'", writers);
+					} else {
+						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
+					}
+				}
+			} catch(ListenerException e) {
+				errorMessage("ListenerException on jms clean up '" + queueName + "': " + e.getMessage(), e, writers);
+			} finally {
+				if (threadContext != null) {
+					try {
+						pullingJmsListener.closeThread(threadContext);
+					} catch(ListenerException e) {
+						errorMessage("Could not close thread on jms listener '" + queueName + "': " + e.getMessage(), e, writers);
+					}
+				}
+			}
+			if (rawMessage == null) {
+				empty = true;
+			}
+		}
+		pullingJmsListener.setTimeOut((int) oldTimeOut);
+		return remainingMessagesFound;
+	}
+
+	public static boolean ifsaCleanUp(String queueName, PullingIfsaProviderListener pullingIfsaProviderListener, Map ifsaThreadContexts, Map ifsaRawMessages, boolean showWrongPipelineMessage, Map writers) {
+		boolean remainingMessagesFound = false;
+		Map threadContext = (HashMap)ifsaThreadContexts.remove(queueName);
+		if (threadContext != null) {
+			Object rawMessage = ifsaRawMessages.remove(queueName);
+			if (rawMessage != null) {
+				sendIfsaDummyReply(queueName, pullingIfsaProviderListener, rawMessage, threadContext, showWrongPipelineMessage, writers);
+			}
+			try {
+				pullingIfsaProviderListener.closeThread(threadContext);
+			} catch(ListenerException e) {
+				errorMessage("Could not close thread on ifsa provider listener '" + queueName + "': " + e.getMessage(), e, writers);
+			}
+		}
+		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
+		long oldTimeOut = pullingIfsaProviderListener.getTimeOut();
+		pullingIfsaProviderListener.setTimeOut(10);
+		boolean empty = false;
+		while (!empty) {
+			Object rawMessage = null;
+			try {
+				threadContext = pullingIfsaProviderListener.openThread();
+				rawMessage = pullingIfsaProviderListener.getRawMessage(threadContext);
+			} catch(ListenerException e1) {
+				if (threadContext != null) {
+					try {
+						pullingIfsaProviderListener.closeThread(threadContext);
+					} catch(ListenerException e2) {
+						errorMessage("Could not close thread on ifsa provider listener '" + queueName + "': " + e2.getMessage(), e2, writers);
+					}
+				}
+			}
+			if (rawMessage == null) {
+				empty = true;
+			} else {
+				remainingMessagesFound = true;
+				try {
+					String message = pullingIfsaProviderListener.getStringFromRawMessage(rawMessage, threadContext);
+					if (showWrongPipelineMessage && message != null) {
+						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
+					}
+				} catch(ListenerException e) {
+					errorMessage("Could not translate raw ifsa message: " + e.getMessage(), e, writers);
+				}
+				sendIfsaDummyReply(queueName, pullingIfsaProviderListener, rawMessage, threadContext, showWrongPipelineMessage, writers);
+				try {
+					pullingIfsaProviderListener.closeThread(threadContext);
+				} catch(ListenerException e2) {
+					errorMessage("Could not close thread on ifsa provider listener '" + queueName + "': " + e2.getMessage(), e2, writers);
+				}
+			}
+		}
+		pullingIfsaProviderListener.setTimeOut(oldTimeOut);
+		return remainingMessagesFound;
+	}
+
+	public static boolean fileListenerCleanUp(String queueName, FileListener fileListener, Map writers) {
+		boolean remainingMessagesFound = false;
+		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
+		long oldTimeOut = fileListener.getTimeOut();
+		fileListener.setTimeOut(0);
+		boolean empty = false;
+		fileListener.setTimeOut(0);
+		try {
+			String message = fileListener.getMessage();
+			if (message != null) {
+				remainingMessagesFound = true;
+				wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
+			}
+		} catch(TimeOutException e) {
+		} catch(ListenerException e) {
+			errorMessage("Could read message from file listener '" + queueName + "': " + e.getMessage(), e, writers);
+		}
+		fileListener.setTimeOut(oldTimeOut);
+		return remainingMessagesFound;
+	}
+
+	public static boolean xsltProviderListenerCleanUp(Map queues, String queueName, Map writers) {
+		boolean remainingMessagesFound = false;
+		Map xsltProviderListenerInfo = (Map)queues.get(queueName);
+		XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
+		String message = xsltProviderListener.getResult();
+		if (message != null) {
+			remainingMessagesFound = true;
+			wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
+		}
+		return remainingMessagesFound;
+	}
+
+	public static void sendIfsaDummyReply(String queueName, PullingIfsaProviderListener pullingIfsaProviderListener, Object rawMessage, Map threadContext, boolean showWrongPipelineMessage, Map writers) {
+		debugMessage("Send dummy reply for ifsa request '" + queueName + "' that didn't send a response yet", writers);
+		String message = TESTTOOL_CLEAN_UP_REPLY;
+		if (ifsaWrite(message, pullingIfsaProviderListener, rawMessage, threadContext, writers)) {
+			if (showWrongPipelineMessage && "RR".equals(pullingIfsaProviderListener.getMessageProtocol())) {
+				wrongPipelineMessage("Ifsa clean up message:", message, writers);
+			}
+		}
+	}
+	
+	private static boolean executeJmsSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
+		boolean result = false;
+		
+		Map jmsSenderInfo = (Map)queues.get(queueName);
+		JmsSender jmsSender = (JmsSender)jmsSenderInfo.get("jmsSender");
+		try {
+			String correlationId = null;
+			String useCorrelationIdFrom = (String)jmsSenderInfo.get("useCorrelationIdFrom");
+			if (useCorrelationIdFrom != null) {
+				Map listenerInfo = (Map)queues.get(useCorrelationIdFrom);
+				if (listenerInfo == null) {
+					errorMessage("Could not find listener '" + useCorrelationIdFrom + "' to use correlation id from", writers);
+				} else {
+					correlationId = (String)listenerInfo.get("correlationId");
+					if (correlationId == null) {
+						errorMessage("Could not find correlation id from listener '" + useCorrelationIdFrom + "'", writers);
+					}
+				}
+			}
+			if (correlationId == null) {
+				correlationId = (String)jmsSenderInfo.get("jmsCorrelationId");
+			}
+			if (correlationId == null) {
+				correlationId = TESTTOOL_CORRELATIONID;
+			}
+			jmsSender.sendMessage(correlationId, fileContent);
+			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
+			result = true;
+		} catch(TimeOutException e) {
+			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e, writers);
+		} catch(SenderException e) {
+			errorMessage("Could not send jms message to '" + queueName + "': " + e.getMessage(), e, writers);
+		}
+		
+		return result;
+	}
+	
+	private static boolean executeIfsaProviderListenerWrite(String stepDisplayName, Map queues, Map writers, Map ifsaThreadContexts, Map ifsaRawMessages, String queueName, String fileContent) {
+		boolean result = false;
+		
+		PullingIfsaProviderListener pullingIfsaProviderListener = (PullingIfsaProviderListener)((Map)queues.get(queueName)).get("ifsaProviderListener");
+	
+		HashMap threadContext = (HashMap)ifsaThreadContexts.remove(queueName);
+		if (threadContext == null) {
+			errorMessage("Could not find thread context from previous ifsa read (no ifsa read executed before ifsa write?)", writers);
+		} else {
+			Object rawMessage = ifsaRawMessages.remove(queueName);
+			if (rawMessage == null) {
+				errorMessage("Could not find message from previous ifsa read (no ifsa read executed before ifsa write?)", writers);
+			} else {
+				if (ifsaWrite(fileContent, pullingIfsaProviderListener, rawMessage, threadContext, writers)) {
+					debugPipelineMessage(stepDisplayName, "Successfull writen to '" + queueName + "':", fileContent, writers);
+					result = true;
+				}
+			}
+			try {
+				pullingIfsaProviderListener.closeThread(threadContext);
+			} catch(ListenerException e) {
+				errorMessage("Could not close thread on ifsa provider listener '" + queueName + "':" + e.getMessage(), e, writers);
+			}
+		}
+		
+		return result;	
+	}
+	
+	private static boolean executeIfsaRequesterSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
+		boolean result = false;
+		
+		Map ifsaRequesterSenderInfo = (Map)queues.get(queueName);
+		IfsaRequesterSender ifsaRequesterSender = (IfsaRequesterSender)ifsaRequesterSenderInfo.get("ifsaRequesterSender");
+		Boolean convertExceptionToMessage = (Boolean)ifsaRequesterSenderInfo.get("convertExceptionToMessage");
+		String output = null;
+		try {
+			if ("RR".equals(ifsaRequesterSender.getMessageProtocol())) {
+				SenderThread ifsaRequesterSenderThread = new SenderThread(ifsaRequesterSender, fileContent, convertExceptionToMessage.booleanValue());
+				ifsaRequesterSenderThread.start();
+				ifsaRequesterSenderInfo.put("ifsaRequesterSenderThread", ifsaRequesterSenderThread);
+				debugPipelineMessage(stepDisplayName, "Successfully started thread writing to '" + queueName + "':", fileContent, writers);
+				result = true;
+			} else {
+				PipeLineSessionBase pipeLineSession = new PipeLineSessionBase();
+				// WAT IS EEN GOEDE BIFNAME?
+				pipeLineSession.put(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY, TESTTOOL_BIFNAME);
+				ParameterResolutionContext parameterResolutionContext = new ParameterResolutionContext();
+				parameterResolutionContext.setSession(pipeLineSession);
+				output = ifsaRequesterSender.sendMessage(TESTTOOL_CORRELATIONID, fileContent, parameterResolutionContext);
+				debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
+				result = true;
+			}
+		} catch(TimeOutException e) {
+			errorMessage("TimeOutException writing to '" + queueName + "': " + e.getMessage(), e, writers);
+		} catch(SenderException e) {
+			errorMessage("SenderException writing to '" + queueName + "': " + e.getMessage(), e, writers);
+		}		
+		
+		return result;
+	}
+
+	private static boolean executeSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String senderType, String fileContent) {
+		boolean result = false;
+		Map senderInfo = (Map)queues.get(queueName);
+		ISender sender = (ISender)senderInfo.get(senderType + "Sender");
+		Boolean convertExceptionToMessage = (Boolean)senderInfo.get("convertExceptionToMessage");
+		ParameterResolutionContext parameterResolutionContext = (ParameterResolutionContext)senderInfo.get("parameterResolutionContext");
+		SenderThread senderThread;
+		if (parameterResolutionContext == null) {
+			senderThread = new SenderThread(sender, fileContent, convertExceptionToMessage.booleanValue());
+		} else {
+			senderThread = new SenderThread((ISenderWithParameters)sender, fileContent, parameterResolutionContext, convertExceptionToMessage.booleanValue());
+		}
+		senderThread.start();
+		senderInfo.put(senderType + "SenderThread", senderThread);
+		debugPipelineMessage(stepDisplayName, "Successfully started thread writing to '" + queueName + "':", fileContent, writers);
+		logger.debug("Successfully started thread writing to '" + queueName + "'");
+		result = true;
+		return result;
+	}
+	
+	private static boolean executeJavaOrWebServiceListenerWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
+		boolean result = false;
+
+		Map listenerInfo = (Map)queues.get(queueName);
+		ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)listenerInfo.get("listenerMessageHandler");
+		if (listenerMessageHandler == null) {
+			errorMessage("No ListenerMessageHandler found", writers);
+		} else {
+			String correlationId = null;
+			Map context = new HashMap();
+			ListenerMessage requestListenerMessage = (ListenerMessage)listenerInfo.get("listenerMessage");
+			if (requestListenerMessage != null) {
+				correlationId = requestListenerMessage.getCorrelationId();
+				context = requestListenerMessage.getContext();
+			}
+			ListenerMessage listenerMessage = new ListenerMessage(correlationId, fileContent, context);
+			listenerMessageHandler.putResponseMessage(listenerMessage);
+			debugPipelineMessage(stepDisplayName, "Successfully put message on '" + queueName + "':", fileContent, writers);
+			logger.debug("Successfully put message on '" + queueName + "'");
+			result = true;
+		}
+
+		return result;
+	}
+	
+	private static boolean executeFileSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
+		boolean result = false;
+		Map fileSenderInfo = (Map)queues.get(queueName);
+		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
+		try {
+			fileSender.sendMessage(fileContent);
+			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
+			result = true;
+		} catch(Exception e) {
+			errorMessage("Exception writing to file: " + e.getMessage(), e, writers);
+		}
+		return result;
+	}
+
+	private static boolean executeXsltProviderListenerWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileName, String fileContent, Properties properties) {
+		boolean result = false;
+		Map xsltProviderListenerInfo = (Map)queues.get(queueName);
+		XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
+		String message = xsltProviderListener.getResult();
+		if (message == null) {
+			if ("".equals(fileName)) {
+				result = true;
+			} else {
+				errorMessage("Could not read result (null returned)", writers);
+			}
+		} else {
+			if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+				result = true;
+			}
+		}
+		return result;
+	}
+	
+	private static boolean executeJmsListenerRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+		boolean result = false;
+
+		Map jmsListenerInfo = (Map)queues.get(queueName);
+		PullingJmsListener pullingJmsListener = (PullingJmsListener)jmsListenerInfo.get("jmsListener");
+		Map threadContext = null;
+		String message = null;
+		try {
+			threadContext = pullingJmsListener.openThread();
+			Object rawMessage = pullingJmsListener.getRawMessage(threadContext);
+			if (rawMessage != null) {
+				message = pullingJmsListener.getStringFromRawMessage(rawMessage, threadContext);
+				String correlationId = pullingJmsListener.getIdFromRawMessage(rawMessage, threadContext);
+				jmsListenerInfo.put("correlationId", correlationId);
+			}
+		} catch(ListenerException e) {
+			if (!"".equals(fileName)) {
+				errorMessage("Could not read jms message from '" + queueName + "': " + e.getMessage(), e, writers);
+			}
+		} finally {
+			if (threadContext != null) {
+				try {
+					pullingJmsListener.closeThread(threadContext);
+				} catch(ListenerException e) {
+					errorMessage("Could not close thread on jms listener '" + queueName + "': " + e.getMessage(), e, writers);
+				}
+			}
+		}
+		
+		if (message == null) {
+			if ("".equals(fileName)) {
+				result = true;
+			} else {
+				errorMessage("Could not read jms message (null returned)", writers);
+			}
+		} else {
+			if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+				result = true;
+			}
+		}
+
+		return result;	
+	}
+	
+	private static boolean executeIfsaProviderListenerRead(String stepDisplayName, Properties properties, Map queues, Map writers, Map ifsaThreadContexts, Map ifsaRawMessages, String queueName, String fileName, String fileContent) {
+		boolean result = false;
+		
+		Map ifsaProviderListenerInfo = (Map)queues.get(queueName);
+		PullingIfsaProviderListener pullingIfsaProviderListener = (PullingIfsaProviderListener)ifsaProviderListenerInfo.get("ifsaProviderListener");
+		Object rawMessage = null;
+		Map threadContext = null;
+		boolean correctFullIfsaServiceName = true;
+		try {
+			threadContext = pullingIfsaProviderListener.openThread();
+			rawMessage = pullingIfsaProviderListener.getRawMessage(threadContext);
+			if (rawMessage != null) {
+				String correlationId = pullingIfsaProviderListener.getIdFromRawMessage(rawMessage, threadContext);
+				ifsaProviderListenerInfo.put("correlationId", correlationId);
+				String fullIfsaServiceName = (String)threadContext.get("fullIfsaServiceName");
+				if (properties.get(queueName + ".fullIfsaServiceName") != null) {
+					if (compareResult(stepDisplayName, fileName, properties.getProperty(queueName + ".fullIfsaServiceName"), fullIfsaServiceName, properties, writers, queueName + ".fullIfsaServiceName")) {
+					} else {
+						correctFullIfsaServiceName = false;
+						errorMessage("Received wrong fullIfsaServiceName from '" + queueName + "':" + fullIfsaServiceName, writers);
+					}
+				}
+			}
+		} catch(ListenerException e) {
+			if (!"".equals(fileName)) {
+				errorMessage("Could not read ifsa message: " + e.getMessage(), e, writers);
+			}
+		} finally {
+			if (threadContext != null) {
+				try {
+					pullingIfsaProviderListener.closeThread(threadContext);
+				} catch(ListenerException e) {
+					errorMessage("Could not close thread on ifsa provider listener '" + queueName + "': " + e.getMessage(), e, writers);
+				}
+			}
+		}
+		if (correctFullIfsaServiceName) {
+			if (rawMessage == null) {
+				if ("".equals(fileName)) {
+					result = true;
+				} else {
+					errorMessage("Could not read ifsa message (null returned)", writers);
+				}
+			} else {
+				ifsaThreadContexts.put(queueName, threadContext);
+				ifsaRawMessages.put(queueName, rawMessage);
+				
+				String message = null;
+				try {
+					message = pullingIfsaProviderListener.getStringFromRawMessage(rawMessage, threadContext);
+					/* direct dummy reply indien FF, nu kunnen er meerdere FF berichten
+					   achter elkaar van dezelfde applicatieId ontvangen worden zonder 
+					   dat er ifsa berichten op de queue blijven staan 
+					   (ifsaThreadContexts is een map met unieke sleutels, 
+						dus werkt de ifsaCleanUp niet)
+					*/
+
+					if (pullingIfsaProviderListener.getMessageProtocol().equals("FF")) {
+						sendIfsaDummyReply(queueName, pullingIfsaProviderListener, rawMessage, threadContext, false, writers);
+						ifsaThreadContexts.remove(queueName);
+						ifsaRawMessages.remove(queueName);
+						pullingIfsaProviderListener.closeThread(threadContext);
+						debugMessage("Written dummy reply and cleaned up after providerlistener FF read from '" + queueName + "'", writers);
+					}
+
+				} catch(ListenerException e) {
+					errorMessage("Could not translate raw ifsa message: " + e.getMessage(), e, writers);
+				}
+				if (message != null) {
+					if ("".equals(fileName)) {
+						debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
+					} else {
+						 if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+							result = true;
+						}
+					}
+				}
+			}
+		}
+				
+		return result;
+	}
+	
+	private static boolean executeSenderRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String senderType, String fileName, String fileContent) {
+		boolean result = false;
+	
+		Map senderInfo = (Map)queues.get(queueName);
+		SenderThread senderThread = (SenderThread)senderInfo.remove(senderType + "SenderThread");
+		if (senderThread == null) {
+			errorMessage("No SenderThread found, no " + senderType + "Sender.write request?", writers);
+		} else {
+			SenderException senderException = senderThread.getSenderException();
+			if (senderException == null) {
+				TimeOutException timeOutException = senderThread.getTimeOutException();
+				if (timeOutException == null) {
+					String message = senderThread.getResponse();
+					if (message == null) {
+						if ("".equals(fileName)) {
+							result = true;
+						} else {
+							errorMessage("Could not read " + senderType + "Sender message (null returned)", writers);
+						}
+					} else {
+						if ("".equals(fileName)) {
+							debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
+						} else {
+							if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+								result = true;
+							}
+						}
+					}
+				} else {
+					errorMessage("Could not read " + senderType + "Sender message (TimeOutException): " + timeOutException.getMessage(), timeOutException, writers);
+				}
+			} else {
+				errorMessage("Could not read " + senderType + "Sender message (SenderException): " + senderException.getMessage(), senderException, writers);
+			}
+		}
+		
+		return result;
+	}
+
+	private static boolean executeJavaListenerOrWebServiceListenerRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+		boolean result = false;
+
+		Map listenerInfo = (Map)queues.get(queueName);
+		ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)listenerInfo.get("listenerMessageHandler");
+		if (listenerMessageHandler == null) {
+			errorMessage("No ListenerMessageHandler found", writers);
+		} else {
+			String message = null;
+			ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
+			if (listenerMessage != null) {
+				message = listenerMessage.getMessage();
+				listenerInfo.put("listenerMessage", listenerMessage);
+			}
+			if (message == null) {
+				if ("".equals(fileName)) {
+					result = true;
+				} else {
+					errorMessage("Could not read listenerMessageHandler message (null returned)", writers);
+				}
+			} else {
+				if ("".equals(fileName)) {
+					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
+				} else {
+					if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+						result = true;
+					} else {
+						// Send a clean up reply because there is probably a
+						// thread waiting for a reply
+						String correlationId = null;
+						Map context = new HashMap();
+						listenerMessage = new ListenerMessage(correlationId, TESTTOOL_CLEAN_UP_REPLY, context);
+						listenerMessageHandler.putResponseMessage(listenerMessage);
+					}
+				}
+			}
+		}
+		
+		return result;
+	}
+
+	private static boolean executeFixedQuerySenderRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+		boolean result = false;
+		
+		Map querySendersInfo = (Map)queues.get(queueName);
+		Integer waitBeforeRead = (Integer)querySendersInfo.get("readQueryWaitBeforeRead");
+
+		if (waitBeforeRead != null) {
+			try {
+				Thread.sleep(waitBeforeRead.intValue());
+			} catch(InterruptedException e) {
+			}
+		}
+		boolean newRecordFound = true;
+		FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)querySendersInfo.get("prePostQueryFixedQuerySender");
+		if (prePostFixedQuerySender != null) {
+			try {
+				String preResult = (String)querySendersInfo.get("prePostQueryResult");
+				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult, writers);
+				String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult, writers);
+				if (preResult.equals(postResult)) {
+					newRecordFound = false;
+				}
+				/* Fill the preResult with postResult, so closeQueues is able to determine if there
+				 * are remaining messages left.
+				 */
+				querySendersInfo.put("prePostQueryResult", postResult);
+			} catch(TimeOutException e) {
+				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
+			} catch(SenderException e) {
+				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e, writers);
+			}
+		}
+		String message = null;
+		if (newRecordFound) {
+			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
+			try {
+				message = readQueryFixedQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+			} catch(TimeOutException e) {
+				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
+			} catch(SenderException e) {
+				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e, writers);
+			}
+		}
+		if (message == null) {
+			if ("".equals(fileName)) {
+				result = true;
+			} else {
+				errorMessage("Could not read jdbc message (null returned) or no new message found (pre result equals post result)", writers);
+			}
+		} else {
+			if ("".equals(fileName)) {
+				debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
+			} else {
+				if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+					result = true;
+				}
+			}
+		}
+
+		return result;
+	}
+
+	private static boolean executeFileListenerRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+		boolean result = false;
+		Map fileListenerInfo = (Map)queues.get(queueName);
+		FileListener fileListener = (FileListener)fileListenerInfo.get("fileListener");
+		String message = null;
+		try {
+			message = fileListener.getMessage();
+		} catch(Exception e) {
+			if (!"".equals(fileName)) {
+				errorMessage("Could not read file from '" + queueName + "': " + e.getMessage(), e, writers);
+			}
+		}
+		if (message == null) {
+			if ("".equals(fileName)) {
+				result = true;
+			} else {
+				errorMessage("Could not read file (null returned)", writers);
+			}
+		} else {
+			if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+				result = true;
+			}
+		}
+		return result;	
+	}
+
+	private static boolean executeFileSenderRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+		boolean result = false;
+		Map fileSenderInfo = (Map)queues.get(queueName);
+		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
+		String message = null;
+		try {
+			message = fileSender.getMessage();
+		} catch(Exception e) {
+			if (!"".equals(fileName)) {
+				errorMessage("Could not read file from '" + queueName + "': " + e.getMessage(), e, writers);
+			}
+		}
+		if (message == null) {
+			if ("".equals(fileName)) {
+				result = true;
+			} else {
+				errorMessage("Could not read file (null returned)", writers);
+			}
+		} else {
+			if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+				result = true;
+			}
+		}
+		return result;	
+	}
+
+	private static boolean executeXsltProviderListenerRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileContent, Map xsltParameters) {
+		boolean result = false;
+		Map xsltProviderListenerInfo = (Map)queues.get(queueName);
+		if (xsltProviderListenerInfo == null) {
+			errorMessage("No info found for xslt provider listener '" + queueName + "'", writers);
+		} else {
+			XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
+			if (xsltProviderListener == null) {
+				errorMessage("XSLT provider listener not found for '" + queueName + "'", writers);
+			} else {
+				try {
+					xsltProviderListener.processRequest(fileContent, xsltParameters);
+					result = true;
+				} catch(ListenerException e) {
+					errorMessage("Could not transform xml: " + e.getMessage(), e, writers);
+				}
+				debugPipelineMessage(stepDisplayName, "Result:", fileContent, writers);
+			}
+		}
+		return result;	
+	}
+
+	public static boolean executeStep(String step, Properties properties, String stepDisplayName, Map queues, Map ifsaThreadContexts, Map ifsaRawMessages, Map writers) {
+		boolean stepPassed = false;
+		String fileName = properties.getProperty(step);
+		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
+		int i = step.indexOf('.');
+		String queueName;
+		String fileContent;
+		// vul globale var
+		zeefVijlNeem = fileNameAbsolutePath;
+		
+		//inlezen file voor deze stap
+		if ("".equals(fileName)) {
+			errorMessage("No file specified for step '" + step + "'", writers);
+		} else {
+			debugMessage("Read file " + fileName, writers);
+			fileContent = readFile(fileNameAbsolutePath, writers);
+			if (fileContent == null) {
+				errorMessage("Could not read file '" + fileName + "'", writers);
+			} else {
+				if (step.endsWith(".read")) {
+					queueName = step.substring(i + 1, step.length() - 5);
+
+					if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeJmsListenerRead(stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);	
+					} else if ("nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeIfsaProviderListenerRead(stepDisplayName, properties, queues, writers, ifsaThreadContexts, ifsaRawMessages, queueName, fileName, fileContent);
+					} else if ("nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeSenderRead(stepDisplayName, properties, queues, writers, queueName, "ifsaRequester", fileName, fileContent);
+					} else 	if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeFixedQuerySenderRead(stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeSenderRead(stepDisplayName, properties, queues, writers, queueName, "ibisWebService", fileName, fileContent);
+					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeSenderRead(stepDisplayName, properties, queues, writers, queueName, "webService", fileName, fileContent);
+					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeJavaListenerOrWebServiceListenerRead(stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeSenderRead(stepDisplayName, properties, queues, writers, queueName, "http", fileName, fileContent);
+					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeSenderRead(stepDisplayName, properties, queues, writers, queueName, "ibisJava", fileName, fileContent);
+					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeJavaListenerOrWebServiceListenerRead(stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeFileListenerRead(stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeFileSenderRead(stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeXsltProviderListenerRead(stepDisplayName, properties, queues, writers, queueName, fileContent, createParametersMapFromParamProperties(properties, step, writers, false, null));
+					} else {
+						errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
+					}
+				} else {
+					queueName = step.substring(i + 1, step.length() - 6);
+
+					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
+					} else if ("nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeIfsaProviderListenerWrite(stepDisplayName, queues, writers, ifsaThreadContexts, ifsaRawMessages, queueName, fileContent);
+					} else if ("nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeIfsaRequesterSenderWrite(stepDisplayName, queues, writers/*, ifsaThreadContexts, ifsaRawMessages*/, queueName, fileContent);
+					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "ibisWebService", fileContent);
+					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "webService", fileContent);
+					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeJavaOrWebServiceListenerWrite(stepDisplayName, queues, writers, queueName, fileContent);
+					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "http", fileContent);
+					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "ibisJava", fileContent);
+					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeJavaOrWebServiceListenerWrite(stepDisplayName, queues, writers, queueName, fileContent);
+					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeFileSenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
+					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeXsltProviderListenerWrite(stepDisplayName, queues, writers, queueName, fileName, fileContent, properties);
+					} else {
+						errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
+					}
+				}
+			}
+		}
+
+		return stepPassed;
+	}
+
+	public static String readFile(String fileName, Map writers) {
+		String result = null;
+		String encoding = null;
+		if (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")) {
+			// Determine the encoding the XML way but don't use an XML parser to
+			// read the file and transform it to a string to prevent changes in
+			// formatting and prevent adding an xml declaration where this is
+			// not present in the file. For example, when using a
+			// WebServiceSender to send a message to a WebServiceListener the
+			// xml message must not contain an xml declaration.
+			// AFAIK the Java 1.4 standard XML api doesn't provide a method
+			// to determine the encoding used by an XML file, thus use the
+			// XmlReader from ROME (https://rome.dev.java.net/).
+			try {
+				XmlReader xmlReader = new XmlReader(new File(fileName));
+				encoding = xmlReader.getEncoding();
+				xmlReader.close();
+			} catch (IOException e) {
+				errorMessage("Could not determine encoding for file '" + fileName + "': " + e.getMessage(), e, writers);
+			}
+		} else if (fileName.endsWith(".utf8")) {
+			encoding = "UTF-8";
+		} else {
+			encoding = "ISO-8859-1";
+		}
+		if (encoding != null) {
+			InputStreamReader inputStreamReader = null;
+			try {
+				StringBuffer stringBuffer = new StringBuffer();
+				inputStreamReader = new InputStreamReader(new FileInputStream(fileName), encoding);
+				char[] cbuf = new char[4096];
+				int len = inputStreamReader.read(cbuf);
+				while (len != -1) {
+					stringBuffer.append(cbuf, 0, len);
+					len = inputStreamReader.read(cbuf);
+				}
+				result = stringBuffer.toString();
+			} catch (Exception e) {
+				errorMessage("Could not read file '" + fileName + "': " + e.getMessage(), e, writers);
+			} finally {
+				if (inputStreamReader != null) {
+					try {
+						inputStreamReader.close();
+					} catch(Exception e) {
+						errorMessage("Could not close file '" + fileName + "': " + e.getMessage(), e, writers);
+					}
+				}
+			}
+		}
+		return result;
+	}
+
+	// Used by saveResultToFile.jsp
+	public static void windiff(String expectedFileName, String result, String expected) throws IOException, DocumentException, SenderException {
+		File tempFileResult = writeTempFile(expectedFileName, result);
+		File tempFileExpected = writeTempFile(expectedFileName, expected);
+		String command = windiffCommand + " " + tempFileResult + " " + tempFileExpected;
+		System.out.println(command);
+		ProcessUtil.executeCommand(command);
+	}
+
+	private static File writeTempFile(String originalFileName, String content) throws IOException, DocumentException {
+		String encoding = getEncoding(originalFileName, content);
+
+		String baseName = FileUtils.getBaseName(originalFileName);
+		String extensie = FileUtils.getFileNameExtension(originalFileName);
+
+		File tempFile = null;
+		tempFile = File.createTempFile("ibistesttool", "."+extensie);
+		tempFile.deleteOnExit();
+		String tempFileMessage;
+		if (extensie.equalsIgnoreCase("XML")) {
+			tempFileMessage = XmlUtils.canonicalize(content);
+		} else {
+			tempFileMessage = content;
+		}
+
+		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(tempFile, true), encoding);
+		outputStreamWriter.write(tempFileMessage);
+		outputStreamWriter.close();
+
+		return tempFile;
+	}
+
+	// Used by saveResultToFile.jsp
+	public static void writeFile(String fileName, String content) throws IOException {
+		String encoding = getEncoding(fileName, content);
+		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(fileName), encoding);
+		outputStreamWriter.write(content);
+		outputStreamWriter.close();
+	}
+
+	private static String getEncoding(String fileName, String content) {
+		String encoding = null;
+		if (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")) {
+			if (content.startsWith("<?xml") && content.indexOf("?>") != -1) {
+				String declaration = content.substring(0, content.indexOf("?>"));
+				int encodingIndex = declaration.indexOf("encoding");
+				if (encodingIndex != -1) {
+					int doubleQuoteIndex1 = declaration.indexOf('"', encodingIndex);
+					int doubleQuoteIndex2 = -1;
+					if (doubleQuoteIndex1 != -1) {
+						doubleQuoteIndex2 = declaration.indexOf('"', doubleQuoteIndex1 + 1);
+					}
+					int singleQuoteIndex1 = declaration.indexOf('\'', encodingIndex);
+					int singleQuoteIndex2 = -1;
+					if (singleQuoteIndex1 != -1) {
+						singleQuoteIndex2 = declaration.indexOf('\'', singleQuoteIndex1 + 1);
+					}
+					if (doubleQuoteIndex2 != -1 && (singleQuoteIndex2 == -1 || doubleQuoteIndex2 < singleQuoteIndex2)) {
+						encoding = declaration.substring(doubleQuoteIndex1 + 1, doubleQuoteIndex2);
+					} else if (singleQuoteIndex2 != -1) {
+						encoding = declaration.substring(singleQuoteIndex1 + 1, singleQuoteIndex2);
+					}
+				}
+			}
+			if (encoding == null) {
+				encoding = "UTF-8";
+			}
+		} else if (fileName.endsWith(".utf8")) {
+			encoding = "UTF-8";
+		} else {
+			encoding = "ISO-8859-1";
+		}
+		return encoding;
+	}
+
+	public static boolean compareResult(String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, Map writers, String queueName) {
+		boolean ok = false;
+		String printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
+		String printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
+		String preparedExpectedResult = printableExpectedResult;
+		String preparedActualResult = printableActualResult;
+		debugMessage("Check decodeUnzipContentBetweenKeys properties", writers);
+		boolean decodeUnzipContentBetweenKeysProcessed = false;
+		int i = 1;
+		while (!decodeUnzipContentBetweenKeysProcessed) {
+			String key1 = properties.getProperty("decodeUnzipContentBetweenKeys" + i + ".key1");
+			String key2 = properties.getProperty("decodeUnzipContentBetweenKeys" + i + ".key2");
+			boolean replaceNewlines = false;
+			if ("true".equals(properties.getProperty("decodeUnzipContentBetweenKeys" + i + ".replaceNewlines"))) {
+				replaceNewlines = true;
+			}
+			if (key1 != null && key2 != null) {
+				debugMessage("Decode and unzip content between key1 '" + key1 + "' and key2 '" + key2 + "' (replaceNewlines is " + replaceNewlines + ")", writers);
+				preparedExpectedResult = decodeUnzipContentBetweenKeys(preparedExpectedResult, key1, key2, replaceNewlines, writers);
+				preparedActualResult = decodeUnzipContentBetweenKeys(preparedActualResult, key1, key2, replaceNewlines, writers);
+				i++;
+			} else {
+				decodeUnzipContentBetweenKeysProcessed = true;
+			}
+		}
+		debugMessage("Check canonicaliseFilePathContentBetweenKeys properties", writers);
+		boolean canonicaliseFilePathContentBetweenKeysProcessed = false;
+		i = 1;
+		while (!canonicaliseFilePathContentBetweenKeysProcessed) {
+			String key1 = properties.getProperty("canonicaliseFilePathContentBetweenKeys" + i + ".key1");
+			String key2 = properties.getProperty("canonicaliseFilePathContentBetweenKeys" + i + ".key2");
+			if (key1 != null && key2 != null) {
+				debugMessage("Canonicalise filepath content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = canonicaliseFilePathContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
+				preparedActualResult = canonicaliseFilePathContentBetweenKeys(preparedActualResult, key1, key2, writers);
+				i++;
+			} else {
+				canonicaliseFilePathContentBetweenKeysProcessed = true;
+			}
+		}
+		String useAutoIgnore = (String) writers.get("autoignore"); 
+		if (useAutoIgnore.equals("true")) {
+			debugMessage("Use auto ignore", writers);
+			if (fileName.endsWith(".xml")) {
+				// Auto ignore's for xml
+				debugMessage("Ignore xml comment", writers);
+				preparedExpectedResult = removeKeysAndContentBetweenKeys(preparedExpectedResult, "<!--", "-->");
+				preparedActualResult = removeKeysAndContentBetweenKeys(preparedActualResult, "<!--", "-->");
+				debugMessage("Ignore linenumbers in stacktraces", writers);
+				preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, ".java:", ")");
+				preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, ".java:", ")");
+				preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, ".java(", "Compiled Code))");
+				preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, ".java(", "Compiled Code))");
+				debugMessage("Ignore AuditTrailInformation", writers);
+				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, "<AuditTrailInformation>", "</AuditTrailInformation>");
+				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, "<AuditTrailInformation>", "</AuditTrailInformation>");
+				debugMessage("Ignore timeStamp", writers);
+				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, "<timeStamp>", "</timeStamp>");
+				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, "<timeStamp>", "</timeStamp>");
+				debugMessage("Ignore errorMessage timestamp and receivedTime attributes", writers);
+				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, "<errorMessage timestamp=\"", "\"");
+				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, "<errorMessage timestamp=\"", "\"");
+				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, "receivedTime=\"", "\"");
+				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, "receivedTime=\"", "\"");
+				debugMessage("Ignore transactionEffectiveDate", writers);
+				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, "<transactionEffectiveDate>", "</transactionEffectiveDate>");
+				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, "<transactionEffectiveDate>", "</transactionEffectiveDate>");
+			} else {
+				// Auto ignore's for txt
+				debugMessage("Ignore newlines", writers);
+				preparedExpectedResult = removeKey(preparedExpectedResult, "\n");
+				preparedActualResult = removeKey(preparedActualResult, "\n");
+				preparedExpectedResult = removeKey(preparedExpectedResult, "\r");
+				preparedActualResult = removeKey(preparedActualResult, "\r");
+			}
+		}
+		debugMessage("Check ignoreRegularExpressionKey properties", writers);
+		boolean ignoreRegularExpressionKeyProcessed = false;
+		i = 1;
+		while (!ignoreRegularExpressionKeyProcessed) {
+			String key = properties.getProperty("ignoreRegularExpressionKey" + i + ".key");
+			if (key != null) {
+				debugMessage("Ignore regular expression key '" + key + "'", writers);
+				preparedExpectedResult = ignoreRegularExpression(preparedExpectedResult, key);
+				preparedActualResult = ignoreRegularExpression(preparedActualResult, key);
+				i++;
+			} else {
+				ignoreRegularExpressionKeyProcessed = true;
+			}
+		}
+		debugMessage("Check removeRegularExpressionKey properties", writers);
+		boolean removeRegularExpressionKeyProcessed = false;
+		i = 1;
+		while (!removeRegularExpressionKeyProcessed) {
+			String key = properties.getProperty("removeRegularExpressionKey" + i + ".key");
+			if (key != null) {
+				debugMessage("Remove regular expression key '" + key + "'", writers);
+				preparedExpectedResult = removeRegularExpression(preparedExpectedResult, key);
+				preparedActualResult = removeRegularExpression(preparedActualResult, key);
+				i++;
+			} else {
+				removeRegularExpressionKeyProcessed = true;
+			}
+		}
+		debugMessage("Check replaceRegularExpressionKeys properties", writers);
+		boolean replaceRegularExpressionKeysProcessed = false;
+		i = 1;
+		while (!replaceRegularExpressionKeysProcessed) {
+			String key1 = properties.getProperty("replaceRegularExpressionKeys" + i + ".key1");
+			String key2 = properties.getProperty("replaceRegularExpressionKeys" + i + ".key2");
+			if (key1 != null && key2 != null) {
+				debugMessage("Replace regular expression from '" + key1 + "' to '" + key2 + "'", writers);
+				preparedExpectedResult = replaceRegularExpression(preparedExpectedResult, key1, key2);
+				preparedActualResult = replaceRegularExpression(preparedActualResult, key1, key2);
+				i++;
+			} else {
+				replaceRegularExpressionKeysProcessed = true;
+			}
+		}
+		debugMessage("Check ignoreContentBetweenKeys properties", writers);
+		boolean ignoreContentBetweenKeysProcessed = false;
+		i = 1;
+		while (!ignoreContentBetweenKeysProcessed) {
+			String key1 = properties.getProperty("ignoreContentBetweenKeys" + i + ".key1");
+			String key2 = properties.getProperty("ignoreContentBetweenKeys" + i + ".key2");
+			if (key1 != null && key2 != null) {
+				debugMessage("Ignore content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, key1, key2);
+				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, key1, key2);
+				i++;
+			} else {
+				ignoreContentBetweenKeysProcessed = true;
+			}
+		}
+		debugMessage("Check ignoreKeysAndContentBetweenKeys properties", writers);
+		boolean ignoreKeysAndContentBetweenKeysProcessed = false;
+		i = 1;
+		while (!ignoreKeysAndContentBetweenKeysProcessed) {
+			String key1 = properties.getProperty("ignoreKeysAndContentBetweenKeys" + i + ".key1");
+			String key2 = properties.getProperty("ignoreKeysAndContentBetweenKeys" + i + ".key2");
+			if (key1 != null && key2 != null) {
+				debugMessage("Ignore keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
+				preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
+				i++;
+			} else {
+				ignoreKeysAndContentBetweenKeysProcessed = true;
+			}
+		}
+		debugMessage("Check removeKeysAndContentBetweenKeys properties", writers);
+		boolean removeKeysAndContentBetweenKeysProcessed = false;
+		i = 1;
+		while (!removeKeysAndContentBetweenKeysProcessed) {
+			String key1 = properties.getProperty("removeKeysAndContentBetweenKeys" + i + ".key1");
+			String key2 = properties.getProperty("removeKeysAndContentBetweenKeys" + i + ".key2");
+			if (key1 != null && key2 != null) {
+				debugMessage("Remove keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = removeKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
+				preparedActualResult = removeKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
+				i++;
+			} else {
+				removeKeysAndContentBetweenKeysProcessed = true;
+			}
+		}
+		debugMessage("Check ignoreKey properties", writers);
+		boolean ignoreKeyProcessed = false;
+		i = 1;
+		while (!ignoreKeyProcessed) {
+			String key = properties.getProperty("ignoreKey" + i);
+			if (key != null) {
+				debugMessage("Ignore key '" + key + "'", writers);
+				preparedExpectedResult = ignoreKey(preparedExpectedResult, key);
+				preparedActualResult = ignoreKey(preparedActualResult, key);
+				i++;
+			} else {
+				ignoreKeyProcessed = true;
+			}
+		}
+		debugMessage("Check removeKey properties", writers);
+		boolean removeKeyProcessed = false;
+		i = 1;
+		while (!removeKeyProcessed) {
+			String key = properties.getProperty("removeKey" + i);
+			if (key != null) {
+				debugMessage("Remove key '" + key + "'", writers);
+				preparedExpectedResult = removeKey(preparedExpectedResult, key);
+				preparedActualResult = removeKey(preparedActualResult, key);
+				i++;
+			} else {
+				removeKeyProcessed = true;
+			}
+		}
+		debugMessage("Check ignoreCurrentTimeBetweenKeys properties", writers);
+		boolean ignoreCurrentTimeBetweenKeysProcessed = false;
+		i = 1;
+		while (!ignoreCurrentTimeBetweenKeysProcessed) {
+			String key1 = properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".key1");
+			String key2 = properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".key2");
+			String pattern = properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".pattern");
+			String margin = properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".margin");
+			boolean errorMessageOnRemainingString = true;
+			if ("false".equals(properties.getProperty("ignoreCurrentTimeBetweenKeys" + i + ".errorMessageOnRemainingString"))) {
+				errorMessageOnRemainingString = false;
+			}
+			if (key1 != null && key2 != null && margin != null) {
+				debugMessage("Ignore current time between key1 '" + key1 + "' and key2 '" + key2 + "' (errorMessageOnRemainingString is " + errorMessageOnRemainingString + ")", writers);
+				debugMessage("For result string", writers);
+				preparedActualResult = ignoreCurrentTimeBetweenKeys(preparedActualResult, key1, key2, pattern, margin, errorMessageOnRemainingString, false, writers);
+				debugMessage("For expected string", writers);
+				preparedExpectedResult = ignoreCurrentTimeBetweenKeys(preparedExpectedResult, key1, key2, pattern, margin, errorMessageOnRemainingString, true, writers);
+				i++;
+			} else {
+				ignoreCurrentTimeBetweenKeysProcessed = true;
+			}
+		}
+		debugMessage("Check ignoreContentBeforeKey properties", writers);
+		boolean ignoreContentBeforeKeyProcessed = false;
+		i = 1;
+		while (!ignoreContentBeforeKeyProcessed) {
+			String key = properties.getProperty("ignoreContentBeforeKey" + i);
+			if (key == null) {
+				key = properties.getProperty("ignoreContentBeforeKey" + i + ".key");
+			}
+			if (key != null) {
+				debugMessage("Ignore content before key '" + key + "'", writers);
+				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
+				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
+				i++;
+			} else {
+				ignoreContentBeforeKeyProcessed = true;
+			}
+		}
+		debugMessage("Check ignoreContentAfterKey properties", writers);
+		boolean ignoreContentAfterKeyProcessed = false;
+		i = 1;
+		while (!ignoreContentAfterKeyProcessed) {
+			String key = properties.getProperty("ignoreContentAfterKey" + i);
+			if (key == null) {
+				key = properties.getProperty("ignoreContentAfterKey" + i + ".key");
+			}
+			if (key != null) {
+				debugMessage("Ignore content after key '" + key + "'", writers);
+				preparedExpectedResult = ignoreContentAfterKey(preparedExpectedResult, key);
+				preparedActualResult = ignoreContentAfterKey(preparedActualResult, key);
+				i++;
+			} else {
+				ignoreContentAfterKeyProcessed = true;
+			}
+		}
+		debugMessage("Check ignoreContentAfterKey properties", writers);
+		if (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")) {
+			// xml diff
+			Diff diff = null;
+			boolean identical = false;
+			Exception diffException = null;
+			try {
+				diff = new Diff(preparedExpectedResult, preparedActualResult);
+				identical = diff.identical();
+			} catch(Exception e) {
+				diffException = e;
+			}
+			if (identical) {
+				ok = true;
+				debugMessage("Strings are identical", writers);
+				debugPipelineMessage(stepDisplayName, "Result", printableActualResult, writers);
+				debugPipelineMessagePreparedForDiff(stepDisplayName, "Result as prepared for diff", preparedActualResult, writers);
+			} else {
+				debugMessage("Strings are not identical", writers);
+				String message;
+				if (diffException == null) {
+					message = diff.toString();
+				} else {
+					message = "Exception during XML diff: " + diffException.getMessage();
+					errorMessage("Exception during XML diff: ", diffException, writers);
+				}
+				wrongPipelineMessage(stepDisplayName, message, printableActualResult, printableExpectedResult, writers);
+				wrongPipelineMessagePreparedForDiff(stepDisplayName, preparedActualResult, preparedExpectedResult, writers);
+			}
+		} else {
+			// txt diff
+			String formattedPreparedExpectedResult = formatString(preparedExpectedResult, writers);
+			String formattedPreparedActualResult = formatString(preparedActualResult, writers);
+			if (formattedPreparedExpectedResult.equals(formattedPreparedActualResult)) {
+				ok = true;
+				debugMessage("Strings are identical", writers);
+				debugPipelineMessage(stepDisplayName, "Result", printableActualResult, writers);
+				debugPipelineMessagePreparedForDiff(stepDisplayName, "Result as prepared for diff", preparedActualResult, writers);
+			} else {
+				debugMessage("Strings are not identical", writers);
+				String message = null;
+				String diffActual = "";
+				String diffExcpected = "";
+				int j = formattedPreparedActualResult.length();
+				if (formattedPreparedExpectedResult.length() > i) {
+					j = formattedPreparedExpectedResult.length();
+				}
+				for (i = 0; i < j; i++) {
+					if (i >= formattedPreparedActualResult.length() || i >= formattedPreparedExpectedResult.length()
+							|| formattedPreparedActualResult.charAt(i) != formattedPreparedExpectedResult.charAt(i)) {
+						if (message == null) {
+							message = "Starting at char " + (i + 1);
+						}
+						if (i < formattedPreparedActualResult.length()) {
+							diffActual = diffActual + formattedPreparedActualResult.charAt(i);
+						}
+						if (i < formattedPreparedExpectedResult.length()) {
+							diffExcpected = diffExcpected + formattedPreparedExpectedResult.charAt(i);
+						}
+					}
+				}
+				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
+				wrongPipelineMessage(stepDisplayName, message, printableActualResult, printableExpectedResult, writers);
+				wrongPipelineMessagePreparedForDiff(stepDisplayName, preparedActualResult, preparedExpectedResult, writers);
+			}
+		}
+		return ok;
+	}
+
+	public static String ignoreContentBetweenKeys(String string, String key1, String key2) {
+		String result = string;
+		String ignoreText = "IGNORE";
+		int i = result.indexOf(key1);
+		while (i != -1 && result.length() > i + key1.length()) {
+			int j = result.indexOf(key2, i + key1.length());
+			if (j != -1) {
+				result = result.substring(0, i) + key1 + ignoreText + result.substring(j);
+				i = result.indexOf(key1, i + key1.length() + ignoreText.length() + key2.length());
+			} else {
+				i = -1;
+			}
+		}
+		return result;
+	}
+
+	public static String ignoreKeysAndContentBetweenKeys(String string, String key1, String key2) {
+		String result = string;
+		String ignoreText = "IGNORE";
+		int i = result.indexOf(key1);
+		while (i != -1 && result.length() > i + key1.length()) {
+			int j = result.indexOf(key2, i + key1.length());
+			if (j != -1) {
+				result = result.substring(0, i) + ignoreText + result.substring(j + key2.length());
+				i = result.indexOf(key1, i + ignoreText.length());
+			} else {
+				i = -1;
+			}
+		}
+		return result;
+	}
+
+	public static String removeKeysAndContentBetweenKeys(String string, String key1, String key2) {
+		String result = string;
+		int i = result.indexOf(key1);
+		while (i != -1 && result.length() > i + key1.length()) {
+			int j = result.indexOf(key2, i + key1.length());
+			if (j != -1) {
+				result = result.substring(0, i) + result.substring(j + key2.length());
+				i = result.indexOf(key1, i);
+			} else {
+				i = -1;
+			}
+		}
+		return result;
+	}
+
+	public static String ignoreKey(String string, String key) {
+		String result = string;
+		String ignoreText = "IGNORE";
+		int i = result.indexOf(key);
+		while (i != -1) {
+			result = result.substring(0, i) + ignoreText + result.substring(i + key.length());
+			i = result.indexOf(key, i);
+		}
+		return result;
+	}
+
+	public static String removeKey(String string, String key) {
+		String result = string;
+		int i = result.indexOf(key);
+		while (i != -1) {
+			result = result.substring(0, i) + result.substring(i + key.length());
+			i = result.indexOf(key, i);
+		}
+		return result;
+	}
+
+	public static String decodeUnzipContentBetweenKeys(String string, String key1, String key2, boolean replaceNewlines, Map writers) {
+		String result = string;
+		int i = result.indexOf(key1);
+		while (i != -1 && result.length() > i + key1.length()) {
+			debugMessage("Key 1 found", writers);
+			int j = result.indexOf(key2, i + key1.length());
+			if (j != -1) {
+				debugMessage("Key 2 found", writers);
+				String encoded = result.substring(i + key1.length(), j);
+				String unzipped = null;
+				byte[] decodedBytes = null;
+				Base64 decoder = new Base64();
+				debugMessage("Decode", writers);
+				decodedBytes = decoder.decodeBase64(encoded);
+				if (unzipped == null) {
+					try {
+						debugMessage("Unzip", writers);
+						StringBuffer stringBuffer = new StringBuffer();
+						stringBuffer.append("<tt:file xmlns:tt=\"testtool\">");
+						ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(decodedBytes));
+						stringBuffer.append("<tt:name>" + zipInputStream.getNextEntry().getName() + "</tt:name>");
+						stringBuffer.append("<tt:content>");
+						byte[] buffer = new byte[1024];
+						int readLength = zipInputStream.read(buffer);
+						while (readLength != -1) {
+							String part = new String(buffer, 0, readLength, "UTF-8");
+							if (replaceNewlines) {
+								part = StringUtils.replace(StringUtils.replace(part, "\r", "[CARRIAGE RETURN]"), "\n", "[LINE FEED]");
+							}
+							stringBuffer.append(part);
+							readLength = zipInputStream.read(buffer);
+						}
+						stringBuffer.append("</tt:content>");
+						stringBuffer.append("</tt:file>");
+						unzipped = stringBuffer.toString();
+					} catch(Exception e) {
+						errorMessage("Could not unzip: " + e.getMessage(), e, writers);
+						unzipped = encoded;
+					}
+				}
+				result = result.substring(0, i) + key1 + unzipped + result.substring(j);
+				i = result.indexOf(key1, i + key1.length() + unzipped.length() + key2.length());
+			} else {
+				i = -1;
+			}
+		}
+		return result;
+	}
+
+	public static String canonicaliseFilePathContentBetweenKeys(String string, String key1, String key2, Map writers) {
+		String result = string;
+		if (key1.equals("*") && key2.equals("*")) {
+			File file = new File(result);
+			try {
+				result = file.getCanonicalPath();
+			} catch (IOException e) {
+				errorMessage("Could not canonicalise filepath: " + e.getMessage(), e, writers);
+			}
+		} else {
+			int i = result.indexOf(key1);
+			while (i != -1 && result.length() > i + key1.length()) {
+				int j = result.indexOf(key2, i + key1.length());
+				if (j != -1) {
+					String fileName = result.substring(i + key1.length(), j);
+					File file = new File(fileName);
+					try {
+						fileName = file.getCanonicalPath();
+					} catch (IOException e) {
+						errorMessage("Could not canonicalise filepath: " + e.getMessage(), e, writers);
+					}
+					result = result.substring(0, i) + key1 + fileName + result.substring(j);
+					i = result.indexOf(key1, i + key1.length() + fileName.length() + key2.length());
+				} else {
+					i = -1;
+				}
+			}
+		}
+		return result;
+	}
+	
+	public static String ignoreCurrentTimeBetweenKeys(String string, String key1, String key2, String pattern, String margin, boolean errorMessageOnRemainingString, boolean isControlString, Map writers) {
+		String result = string;
+		String ignoreText = "IGNORE_CURRENT_TIME";
+		int i = result.indexOf(key1);
+		while (i != -1 && result.length() > i + key1.length()) {
+			debugMessage("Key 1 found", writers);
+			int j = result.indexOf(key2, i + key1.length());
+			if (j != -1) {
+				debugMessage("Key 2 found", writers);
+				String dateString = result.substring(i + key1.length(), j);
+				Date date;
+				boolean remainingString = false;
+				try {
+					SimpleDateFormat simpleDateFormat = null;
+					if (pattern == null) {
+						// Expect time in milliseconds
+						date = new Date(Long.parseLong(dateString));
+					} else {
+						simpleDateFormat = new SimpleDateFormat(pattern);
+						ParsePosition parsePosition = new ParsePosition(0);
+						date = simpleDateFormat.parse(dateString, parsePosition);
+						if (parsePosition.getIndex() != dateString.length()) {
+							remainingString = true;
+							i = result.indexOf(key1, j + key2.length());
+							if (errorMessageOnRemainingString) {
+								errorMessage("Found remaining string after parsing date with pattern '"
+											 + pattern + "': "
+											 + dateString.substring(parsePosition.getIndex()), writers);
+							}
+						}
+					}
+					if (!remainingString) {
+						if (isControlString) {
+							// Ignore the date in the control string independent on margin from current time
+							result = result.substring(0, i) + key1 + ignoreText + result.substring(j);
+							i = result.indexOf(key1, i + key1.length() + ignoreText.length() + key2.length());
+						} else {
+							// Ignore the date in the test string dependent on margin from current time
+							String currentTime;
+							long currentTimeMillis;
+							if (pattern == null) {
+								currentTime = "" + System.currentTimeMillis();
+								currentTimeMillis = Long.parseLong(currentTime);
+							} else {
+								currentTime = simpleDateFormat.format(new Date(System.currentTimeMillis()));
+								currentTimeMillis = simpleDateFormat.parse(currentTime).getTime();
+							}
+							if (date.getTime() >= currentTimeMillis - Long.parseLong(margin) && date.getTime() <= currentTimeMillis + Long.parseLong(margin)) {
+								result = result.substring(0, i) + key1 + ignoreText + result.substring(j);
+								i = result.indexOf(key1, i + key1.length() + ignoreText.length() + key2.length());
+							} else {
+								errorMessage("Dates differ too much. Current time: '" + currentTime + "'. Result time: '" + dateString + "'", writers);
+								i = result.indexOf(key1, j + key2.length());
+							}
+						}
+					}
+				} catch(ParseException e) {
+					i = -1;
+					errorMessage("Could not parse margin or date: " + e.getMessage(), e, writers);
+				} catch(NumberFormatException e) {
+					i = -1;
+					errorMessage("Could not parse long value: " + e.getMessage(), e, writers);
+				}
+			} else {
+				i = -1;
+			}
+		}
+		return result;
+	}
+
+	public static String ignoreContentBeforeKey(String string, String key) {
+		int i = string.indexOf(key);
+		if (i == -1) {
+			return string;
+		} else {
+			return string.substring(i) + "IGNORE";
+		}
+	}
+
+	public static String ignoreContentAfterKey(String string, String key) {
+		int i = string.indexOf(key);
+		if (i == -1) {
+			return string;
+		} else {
+			return string.substring(0, i + key.length()) + "IGNORE";
+		}
+	}
+
+	public static String ignoreRegularExpression(String string, String regex) {
+		return string.replaceAll(regex, "IGNORE");
+	}
+
+	public static String removeRegularExpression(String string, String regex) {
+		return string.replaceAll(regex, "");
+	}
+
+	public static String replaceRegularExpression(String string, String from, String to) {
+		return string.replaceAll(from, to);
+	}
+
+	/**
+	 * Create a Map for a specific property based on other properties that are
+	 * the same except for a .param1.name, .param1.value or .param1.valuefile
+	 * suffix.  The property with the .name suffix specifies the key for the
+	 * Map, the property with the value suffix specifies the value for the Map.
+	 * A property with a the .valuefile suffix can be used as an alternative
+	 * for a property with a .value suffix to specify the file to read the
+	 * value for the Map from. More than one param can be specified by using
+	 * param2, param3 etc.
+	 *  
+	 * @param propertiesDirectory suffix for filenames specified by properties
+	 *                            with a .valuefile suffix. Can be left empty.
+	 * @param properties
+	 * @param property
+	 * @param writers
+	 * @return
+	 */
+	private static Map createParametersMapFromParamProperties(Properties properties, String property, Map writers, boolean createParameterObjects, ParameterResolutionContext parameterResolutionContext) {
+		debugMessage("Search parameters for property '" + property + "'", writers);
+		Map result = new HashMap();
+		boolean processed = false;
+		int i = 1;
+		while (!processed) {
+			String name = properties.getProperty(property + ".param" + i + ".name");
+			if (name != null) {
+				Object value = properties.getProperty(property + ".param" + i + ".value");
+				if (value == null) {
+					String filename = properties.getProperty(property + ".param" + i + ".valuefile.absolutepath");
+					if (filename != null) {
+						value = readFile(filename, writers);
+					} else {
+						String inputStreamFilename = properties.getProperty(property + ".param" + i + ".valuefileinputstream.absolutepath");
+						if (inputStreamFilename != null) {
+							try {
+								value = new FileInputStream(inputStreamFilename);
+							} catch(FileNotFoundException e) {
+								errorMessage("Could not read file '" + inputStreamFilename + "': " + e.getMessage(), e, writers);
+							}
+						}
+					}
+				}
+				if (value != null && value instanceof String) {
+					if ("node".equals(properties.getProperty(property + ".param" + i + ".type"))) {
+						try {
+							value = XmlUtils.buildNode((String)value, true);
+						} catch (DomBuilderException e) {
+							errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
+						}
+					} else if ("domdoc".equals(properties.getProperty(property + ".param" + i + ".type"))) {
+						try {
+							value = XmlUtils.buildDomDocument((String)value, true);
+						} catch (DomBuilderException e) {
+							errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
+						}
+					}
+				}
+				if (createParameterObjects) {
+					String  pattern = properties.getProperty(property + ".param" + i + ".pattern");
+					if (value == null && pattern == null) {
+						errorMessage("Property '" + property + ".param" + i + " doesn't have a value or pattern", writers);
+					} else {
+						try {
+							Parameter parameter = new Parameter();
+							parameter.setName(name);
+							if (value != null && !(value instanceof String)) {
+								parameter.setSessionKey(name);
+								parameterResolutionContext.getSession().put(name, value);
+							} else {
+								parameter.setValue((String)value);
+								parameter.setPattern(pattern);
+							}
+							parameter.configure();
+							result.put(name, parameter);
+							debugMessage("Add param with name '" + name + "', value '" + value + "' and pattern '" + pattern + "' for property '" + property + "'", writers);
+						} catch (ConfigurationException e) {
+							errorMessage("Parameter '" + name + "' could not be configured", writers);
+						}
+					}
+				} else {
+					if (value == null) {
+						errorMessage("Property '" + property + ".param" + i + ".value' or '" + property + ".param" + i + ".valuefile' or '" + property + ".param" + i + ".valuefileinputstream' not found while property '" + property + ".param" + i + ".name' exist", writers);
+					} else {
+						result.put(name, value);
+						debugMessage("Add param with name '" + name + "' and value '" + value + "' for property '" + property + "'", writers);
+					}
+				}
+				i++;
+			} else {
+				processed = true;
+			}
+		}
+		return result;
+	}
+
+	public static String formatString(String string, Map writers) {
+		StringBuffer sb = new StringBuffer();
+		try {
+			Reader reader = new StringReader(string);
+			BufferedReader br = new BufferedReader(reader);
+			String l = null;
+			while ((l = br.readLine()) != null) {
+				if (sb.length()==0) {
+					sb.append(l);
+				} else {
+					sb.append(System.getProperty("line.separator") + l);
+				}
+			}
+			br.close();
+		} catch(Exception e) {
+			errorMessage("Could not read string '" + string + "': " + e.getMessage(), e, writers);
+		}
+		return sb.toString();
+	}
+}

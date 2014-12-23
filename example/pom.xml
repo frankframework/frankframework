@@ -21,6 +21,18 @@
       <artifactId>ibis-adapterframework-webapp</artifactId>
       <type>war</type>
     </dependency>
+    <!--
+    Copy ibis-adapterframework-larva dependency from iaf-webapp/pom.xml to
+    make m2e add dependent-module elements to org.eclipse.wst.common.component.
+    Maven doesn't need this copy to add the jar files to the war file.
+    Might be a bug in m2e: https://bugs.eclipse.org/bugs/show_bug.cgi?id=398138
+    Note: Maven will copy the jar files from the war in the local repository.
+    -->
+    <dependency>
+      <groupId>org.ibissource</groupId>
+      <artifactId>ibis-adapterframework-larva</artifactId>
+      <scope>runtime</scope>
+    </dependency>
     <dependency>
       <groupId>org.glassfish.main.transaction</groupId>
       <artifactId>javax.transaction</artifactId>
@@ -75,6 +87,7 @@
     make m2e add dependent-module elements to org.eclipse.wst.common.component.
     Maven doesn't need this copy to add the jar files to the war file.
     Might be a bug in m2e: https://bugs.eclipse.org/bugs/show_bug.cgi?id=398138
+    Note: Maven will copy the jar files from the war in the local repository.
     -->
     <profile>
       <id>iaf-with-proprietary-dependencies</id>

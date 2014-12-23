@@ -1,0 +1,150 @@
+*
+{ -moz-box-sizing: border-box; }
+
+body, td, th
+{
+	font-family: Verdana, Tahoma, sans-serif;
+	font-size: 8pt;
+}
+
+div.error textarea, div.error pre, div.error h4
+{ margin-bottom: 20px; }
+
+h1, h2, h3
+{ font-weight: normal; margin: 0; }
+
+h1
+{ font-size: 24px; }
+
+	h1.error
+	{ color: red; font-size: 30px; }
+
+h2
+{ font-size: 18px; }
+
+h3
+{ clear: left; font-size: 11px; }
+
+h4, h5
+{
+	color: #3a3a3a;
+	font-size: 8pt;
+	font-weight: normal;
+	margin: 0;
+}
+
+h5
+{ font-weight: bold; padding-top: 8px; }
+
+table
+{ border: 0; }
+
+textarea
+{
+	font-family: "Courier New", Courier, monospace;
+	font-size: 8pt;
+	height: 100%;
+	_height: 300px;
+	width: 100%;
+}
+
+.diffBox
+{
+	background-color: #fff;
+	border: 2px inset;
+	border-bottom: 1px inset;
+	border-right: 1px inset;
+	height: 100%;
+	_height: 100%;
+	margin-top: 1px;
+	overflow: scroll;
+	width: 100%;
+}
+
+.diffMessage
+{
+	background-color: #fff;
+	border: 1px solid #ccc;
+	color: #363;
+	font-family: "Courier New", Courier, monospace;
+	margin-top: 0;
+	padding: 10px;
+	width: 96%;
+}
+
+.container
+{ width: 100%; }
+
+	.container hr
+	{ clear: both; visibility: hidden; }
+	
+.message.container, .resultContainer, .expectedContainer, .differenceContainer
+{ float: left; height: 300px; margin-bottom: 40px; _margin-bottom: 0; width: 49%; }
+
+.message.container
+{ height: 200px; width: 98%; }
+
+	.message.container textarea
+	{ _height: 200px; }
+	
+	.resultContainer textarea, .expectedContainer textarea, .differenceContainer textarea
+	{  _height: 300px; }
+
+.resultContainer
+{ margin-right: 10px; }
+
+.differenceContainer
+{
+	float: none;
+	height: 200px;
+	width: 99%;
+}
+
+.failed
+{ color: red; }
+
+.passed
+{ color: green; }
+
+.total
+{ margin-top: 5px; }
+
+.commands
+{ float: right; }
+
+	.commands a
+	{
+		background-color: #fff;
+		border: 1px outset #3a3a3a;
+		_border: 1px outset;
+		color: #3a3a3a;
+		display: block;
+		float: left;
+		padding: 2px 6px;
+		text-decoration: none;
+	}
+	
+	.commands a:hover
+	{
+		border: 1px outset red;
+		color: #000;
+	}
+	
+	.commands .heightCommands, .commands .widthCommands
+	{ display: block; float: left; margin-right: 5px; }
+
+.scenario
+{
+	background-color: #EDECEB;
+	border: 1px solid #ccc;
+	padding: 10px;
+}
+
+.even
+{ }
+
+.odd
+{ }
+
+#flashcopier embed
+{ height: 0; width: 0; }
