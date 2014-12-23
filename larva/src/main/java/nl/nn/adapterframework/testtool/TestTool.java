@@ -40,14 +40,9 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.extensions.ifsa.IfsaException;
-import nl.nn.adapterframework.extensions.ifsa.jms.IfsaRequesterSender;
-import nl.nn.adapterframework.extensions.ifsa.jms.PullingIfsaProviderListener;
-import nl.nn.adapterframework.extensions.ifsa.jms.PushingIfsaProviderListener;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.IbisWebServiceSender;
 import nl.nn.adapterframework.http.WebServiceListener;
@@ -88,7 +83,6 @@ public class TestTool {
 	private static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [totals], [error]";
 	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
 	private static final int JMS_TESTTOOL_LISTENER_TIMEOUT = 30000;
-	private static final int IFSA_TESTTOOL_LISTENER_TIMEOUT = 30000;
 	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
 	protected static final String TESTTOOL_DUMMY_MESSAGE = "<TestTool>Dummy message</TestTool>";
@@ -240,11 +234,9 @@ public class TestTool {
 							debugMessage("Read steps from property file", writers);
 							steps = getSteps(properties, writers);
 							if (steps != null) {
-								Map ifsaThreadContexts = new HashMap();
-								Map ifsaRawMessages = new HashMap();
 								synchronized(STEP_SYNCHRONIZER) {
 									debugMessage("Open queues", writers);
-									Map queues = openQueues(scenarioDirectory, steps, properties, ibisContext, ifsaThreadContexts, ifsaRawMessages, writers);
+									Map queues = openQueues(scenarioDirectory, steps, properties, ibisContext, writers);
 									if (queues != null) {
 										debugMessage("Execute steps", writers);
 										boolean allStepsPassed = true;
@@ -260,7 +252,7 @@ public class TestTool {
 											String step = (String)iterator.next();
 											String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
 											debugMessage("Execute step '" + stepDisplayName + "'", writers);
-											boolean stepPassed = executeStep(step, properties, stepDisplayName, queues, ifsaThreadContexts, ifsaRawMessages, writers);
+											boolean stepPassed = executeStep(step, properties, stepDisplayName, queues, writers);
 											if (stepPassed) {
 												stepPassedMessage("Step '" + stepDisplayName + "' passed", writers);
 											} else {
@@ -278,7 +270,7 @@ public class TestTool {
 										} catch(InterruptedException e) {
 										}
 										debugMessage("Close queues", writers);
-										boolean remainingMessagesFound = closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+										boolean remainingMessagesFound = closeQueues(queues, properties, writers);
 										if (remainingMessagesFound) {
 											stepFailedMessage("Found one or more messages on queues or in database after scenario executed", writers);
 											scenarioPassed = false;
@@ -1031,11 +1023,9 @@ public class TestTool {
 		return steps;
 	}
 
-	public static Map openQueues(String scenarioDirectory, List steps, Properties properties, IbisContext ibisContext, Map ifsaThreadContexts, Map ifsaRawMessages, Map writers) {
+	public static Map openQueues(String scenarioDirectory, List steps, Properties properties, IbisContext ibisContext, Map writers) {
 		Map queues = new HashMap();
 		debugMessage("Get all queue names", writers);
-		List ifsaProviderListeners = new ArrayList();
-		List ifsaRequesterSenders = new ArrayList();
 		List jmsSenders = new ArrayList();
 		List jmsListeners = new ArrayList();
 		List jdbcFixedQuerySenders = new ArrayList();
@@ -1066,14 +1056,6 @@ public class TestTool {
 							&& !jmsListeners.contains(queueName)) {
 						debugMessage("Adding jmsListener queue: " + queueName, writers);
 						jmsListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener".equals(properties.get(queueName + ".className"))
-							&& !ifsaProviderListeners.contains(queueName)) {
-						debugMessage("Adding ifsaProviderListener queue: " + queueName, writers);
-						ifsaProviderListeners.add(queueName);
-					} else if ("nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender".equals(properties.get(queueName + ".className"))
-							&& !ifsaRequesterSenders.contains(queueName)) {
-						debugMessage("Adding ifsaRequesterSender queue: " + queueName, writers);
-						ifsaRequesterSenders.add(queueName);
 					} else if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))
 							&& !jdbcFixedQuerySenders.contains(queueName)) {
 						debugMessage("Adding jdbcFixedQuerySender queue: " + queueName, writers);
@@ -1119,131 +1101,13 @@ public class TestTool {
 			}
 		}
 
-		debugMessage("Initialize ifsa provider listeners", writers);
-		iterator = ifsaProviderListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			String applicationId = (String)properties.get(queueName + ".applicationId");
-			String messageProtocol = (String)properties.get(queueName + ".messageProtocol");
-			String timeout = (String)properties.get(queueName + ".timeout");
-
-			int nTimeout = IFSA_TESTTOOL_LISTENER_TIMEOUT;
-			if (timeout != null && timeout.length() > 0) {
-				nTimeout = Integer.parseInt(timeout);
-				debugMessage("Overriding default timeout setting of "+IFSA_TESTTOOL_LISTENER_TIMEOUT+" with "+ nTimeout, writers);
-			}
-
-			if (applicationId == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
-				queues = null;
-				errorMessage("Could not find property '" + queueName + ".applicationId'", writers);
-			} else if (messageProtocol == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
-				queues = null;
-				errorMessage("Could not find property '" + queueName + ".messageProtocol'", writers);
-			} else {
-				PullingIfsaProviderListener pullingIfsaProviderListener = new PullingIfsaProviderListener();
-				pullingIfsaProviderListener.setName("Test Tool IfsaProviderListener");
-				pullingIfsaProviderListener.setApplicationId(applicationId);
-				pullingIfsaProviderListener.setMessageProtocol(messageProtocol);
-				pullingIfsaProviderListener.setTimeOut(nTimeout);
-				try {
-					pullingIfsaProviderListener.configure();
-				} catch(ConfigurationException e) {
-					errorMessage("Could not configure IfsaProviderListener: " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
-					queues = null;
-				}
-				try {
-					pullingIfsaProviderListener.openService();
-				} catch(IfsaException e) {
-					errorMessage("Could not open service IfsaProviderListener: " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
-					queues = null;
-				}
-				if (queues != null) {
-					Map ifsaProviderListenerInfo = new HashMap();
-					ifsaProviderListenerInfo.put("ifsaProviderListener", pullingIfsaProviderListener);
-					queues.put(queueName, ifsaProviderListenerInfo);
-					ifsaCleanUp(queueName, pullingIfsaProviderListener, ifsaThreadContexts, ifsaRawMessages, false, writers);
-					debugMessage("Opened ifsa provider listener '" + queueName + "'", writers);
-				}
-			}
-		}
-
-		debugMessage("Initialize ifsa requester senders", writers);
-		iterator = ifsaRequesterSenders.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			String applicationId = (String)properties.get(queueName + ".applicationId");
-			String serviceId = (String)properties.get(queueName + ".serviceId");
-			String messageProtocol = (String)properties.get(queueName + ".messageProtocol");
-			String timeout = (String)properties.get(queueName + ".timeout");
-			Boolean convertExceptionToMessage = new Boolean((String)properties.get(queueName + ".convertExceptionToMessage"));
-
-			int nTimeout = IFSA_TESTTOOL_LISTENER_TIMEOUT;
-			if (timeout != null && timeout.length() > 0) {
-				nTimeout = Integer.parseInt(timeout);
-				debugMessage("Overriding default timeout setting of "+IFSA_TESTTOOL_LISTENER_TIMEOUT+" with "+ nTimeout, writers);
-			}
-
-			if (applicationId == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
-				queues = null;
-				errorMessage("Could not find property '" + queueName + ".applicationId'", writers);
-			} else if (serviceId == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
-				queues = null;
-				errorMessage("Could not find property '" + queueName + ".serviceId'", writers);
-			} else if (messageProtocol == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
-				queues = null;
-				errorMessage("Could not find property '" + queueName + ".messageProtocol'", writers);
-			} else {
-				IfsaRequesterSender ifsaRequesterSender = new IfsaRequesterSender();
-				ifsaRequesterSender.setName("Test Tool IfsaRequesterSender");
-				ifsaRequesterSender.setApplicationId(applicationId);
-				ifsaRequesterSender.setServiceId(serviceId);
-				ifsaRequesterSender.setMessageProtocol(messageProtocol);
-				ifsaRequesterSender.setTimeOut(nTimeout);
-				Map paramPropertiesMap = createParametersMapFromParamProperties(properties, queueName, writers, true, null);
-				Iterator paramPropertiesIterator = paramPropertiesMap.keySet().iterator();
-				while (paramPropertiesIterator.hasNext()) {
-					String key = (String)paramPropertiesIterator.next();
-					Parameter parameter = (Parameter)paramPropertiesMap.get(key);
-					ifsaRequesterSender.addParameter(parameter);
-				}
-				try {
-					ifsaRequesterSender.configure();
-				} catch(ConfigurationException e) {
-					errorMessage("Could not configure IfsaRequesterSender: " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
-					queues = null;
-				}
-				try {
-					ifsaRequesterSender.openService();
-				} catch(IfsaException e) {
-					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
-					queues = null;
-					errorMessage("Could not open service IfsaRequesterSender: " + e.getMessage(), e, writers);
-				}
-				if (queues != null) {
-					Map ifsaRequesterSenderInfo = new HashMap();
-					ifsaRequesterSenderInfo.put("ifsaRequesterSender", ifsaRequesterSender);
-					ifsaRequesterSenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
-					queues.put(queueName, ifsaRequesterSenderInfo);
-					debugMessage("Opened ifsa requester sender '" + queueName + "'", writers);
-				}
-			}
-		}
-
 		debugMessage("Initialize jms senders", writers);
 		iterator = jmsSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			String queue = (String)properties.get(queueName + ".queue");
 			if (queue == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find property '" + queueName + ".queue'", writers);
 			} else {
@@ -1303,7 +1167,7 @@ public class TestTool {
 			}
 
 			if (queue == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find property '" + queueName + ".queue'", writers);
 			} else {
@@ -1361,7 +1225,7 @@ public class TestTool {
 				getBlobSmart = Boolean.valueOf(getBlobSmartString).booleanValue();
 			}
 			if (datasourceName == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find datasourceName property for " + name, writers);
 			} else {
@@ -1380,15 +1244,15 @@ public class TestTool {
 							deleteQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
 							deleteQuerySender.close();
 						} catch(ConfigurationException e) {
-							closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+							closeQueues(queues, properties, writers);
 							queues = null;
 							errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
 						} catch(TimeOutException e) {
-							closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+							closeQueues(queues, properties, writers);
 							queues = null;
 							errorMessage("Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e, writers);
 						} catch(SenderException e) {
-							closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+							closeQueues(queues, properties, writers);
 							queues = null;
 							errorMessage("Could not execute pre delete query for '" + name + "': " + e.getMessage(), e, writers);
 						}
@@ -1410,7 +1274,7 @@ public class TestTool {
 						try {
 							prePostFixedQuerySender.configure();
 						} catch(ConfigurationException e) {
-							closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+							closeQueues(queues, properties, writers);
 							queues = null;
 							errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
 						}
@@ -1418,7 +1282,7 @@ public class TestTool {
 							try {
 								prePostFixedQuerySender.open();
 							} catch(SenderException e) {
-								closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+								closeQueues(queues, properties, writers);
 								queues = null;
 								errorMessage("Could not open (pre/post) '" + name + "': " + e.getMessage(), e, writers);
 							}
@@ -1429,11 +1293,11 @@ public class TestTool {
 								querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 								querySendersInfo.put("prePostQueryResult", result);
 							} catch(TimeOutException e) {
-								closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+								closeQueues(queues, properties, writers);
 								queues = null;
 								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
 							} catch(SenderException e) {
-								closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+								closeQueues(queues, properties, writers);
 								queues = null;
 								errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e, writers);
 							}
@@ -1460,7 +1324,7 @@ public class TestTool {
 						try {
 							readQueryFixedQuerySender.configure();
 						} catch(ConfigurationException e) {
-							closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+							closeQueues(queues, properties, writers);
 							queues = null;
 							errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
 						}
@@ -1469,7 +1333,7 @@ public class TestTool {
 								readQueryFixedQuerySender.open();
 								querySendersInfo.put("readQueryQueryFixedQuerySender", readQueryFixedQuerySender);
 							} catch(SenderException e) {
-								closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+								closeQueues(queues, properties, writers);
 								queues = null;
 								errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
 							}
@@ -1502,15 +1366,15 @@ public class TestTool {
 			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
 
 			if (ibisHost == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find ibisHost property for " + name, writers);
 			} else if (ibisInstance == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find ibisInstance property for " + name, writers);
 			} else if (serviceName == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find serviceName property for " + name, writers);
 			} else {
@@ -1523,13 +1387,13 @@ public class TestTool {
 					ibisWebServiceSender.configure();
 				} catch(ConfigurationException e) {
 					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					closeQueues(queues, properties, writers);
 					queues = null;
 				}
 				try {
 					ibisWebServiceSender.open();
 				} catch (SenderException e) {
-					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					closeQueues(queues, properties, writers);
 					queues = null;
 					errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
 				}
@@ -1554,7 +1418,7 @@ public class TestTool {
 			String soap = (String)properties.get(name + ".soap");
 			String allowSelfSignedCertificates = (String)properties.get(name + ".allowSelfSignedCertificates");
 			if (url == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find url property for " + name, writers);
 			} else {
@@ -1577,14 +1441,14 @@ public class TestTool {
 					webServiceSender.configure();
 				} catch(ConfigurationException e) {
 					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					closeQueues(queues, properties, writers);
 					queues = null;
 				}
 				if (queues != null) {
 					try {
 						webServiceSender.open();
 					} catch (SenderException e) {
-						closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+						closeQueues(queues, properties, writers);
 						queues = null;
 						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
 					}
@@ -1606,7 +1470,7 @@ public class TestTool {
 			String serviceNamespaceURI = (String)properties.get(name + ".serviceNamespaceURI");
 
 			if (serviceNamespaceURI == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find property '" + name + ".serviceNamespaceURI'", writers);
 			} else {
@@ -1637,7 +1501,7 @@ public class TestTool {
 					serviceDispatcher.registerServiceClient(serviceNamespaceURI, webServiceListener);
 					debugMessage("Opened web service listener '" + name + "'", writers);
 				} catch(ListenerException e) {
-					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					closeQueues(queues, properties, writers);
 					queues = null;
 					errorMessage("Could not open java listener '" + name + "': " + e.getMessage(), e, writers);
 				}
@@ -1661,7 +1525,7 @@ public class TestTool {
 			String methodtype = (String)properties.get(name + ".methodType");
  			String styleSheetName = (String)properties.get(name + ".styleSheetName");
 			if (url == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find url property for " + name, writers);
 			} else {
@@ -1692,14 +1556,14 @@ public class TestTool {
 					httpSender.configure();
 				} catch(ConfigurationException e) {
 					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					closeQueues(queues, properties, writers);
 					queues = null;
 				}
 				if (queues != null) {
 					try {
 						httpSender.open();
 					} catch (SenderException e) {
-						closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+						closeQueues(queues, properties, writers);
 						queues = null;
 						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
 					}
@@ -1722,7 +1586,7 @@ public class TestTool {
 			String serviceName = (String)properties.get(name + ".serviceName");
 			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
 			if (serviceName == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find serviceName property for " + name, writers);
 			} else {
@@ -1742,14 +1606,14 @@ public class TestTool {
 					ibisJavaSender.configure();
 				} catch(ConfigurationException e) {
 					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					closeQueues(queues, properties, writers);
 					queues = null;
 				}
 				if (queues != null) {
 					try {
 						ibisJavaSender.open();
 					} catch (SenderException e) {
-						closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+						closeQueues(queues, properties, writers);
 						queues = null;
 						errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
 					}
@@ -1771,7 +1635,7 @@ public class TestTool {
 			String name = (String)iterator.next();
 			String serviceName = (String)properties.get(name + ".serviceName");
 			if (serviceName == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find property '" + name + ".serviceName'", writers);
 			} else {
@@ -1800,7 +1664,7 @@ public class TestTool {
 					queues.put(name, javaListenerInfo);
 					debugMessage("Opened java listener '" + name + "'", writers);
 				} catch(ListenerException e) {
-					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					closeQueues(queues, properties, writers);
 					queues = null;
 					errorMessage("Could not open java listener '" + name + "': " + e.getMessage(), e, writers);
 				}
@@ -1813,7 +1677,7 @@ public class TestTool {
 			String queueName = (String)iterator.next();
 			String filename  = (String)properties.get(queueName + ".filename");
 			if (filename == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find filename property for " + queueName, writers);
 			} else {
@@ -1896,11 +1760,11 @@ public class TestTool {
 				wildcard = (String)properties.get(queueName + ".wildcard");
 			}
 			if (filename == null && directory == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find filename or directory property for " + queueName, writers);
 			} else if (directory != null && wildcard == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find wildcard property for " + queueName, writers);
 			} else {
@@ -1947,7 +1811,7 @@ public class TestTool {
 			String queueName = (String)iterator.next();
 			String filename  = (String)properties.get(queueName + ".filename");
 			if (filename == null) {
-				closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find filename property for " + queueName, writers);
 			} else {
@@ -1979,7 +1843,7 @@ public class TestTool {
 					queues.put(queueName, xsltProviderListenerInfo);
 					debugMessage("Opened xslt provider listener '" + queueName + "'", writers);
 				} catch(ListenerException e) {
-					closeQueues(queues, properties, ifsaThreadContexts, ifsaRawMessages, writers);
+					closeQueues(queues, properties, writers);
 					queues = null;
 					errorMessage("Could not create xslt provider listener for '" + queueName + "': " + e.getMessage(), e, writers);
 				}
@@ -1991,58 +1855,9 @@ public class TestTool {
 
 
 
-	public static boolean closeQueues(Map queues, Properties properties, Map ifsaThreadContexts, Map ifsaRawMessages, Map writers) {
+	public static boolean closeQueues(Map queues, Properties properties, Map writers) {
 		boolean remainingMessagesFound = false;
-		debugMessage("Close ifsa provider listeners first because we might send dummy reply's that triggers a pipeline to send a reply to a jms queue", writers);
-		Iterator iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener".equals(properties.get(queueName + ".className"))) {
-				PullingIfsaProviderListener pullingIfsaProviderListener = (PullingIfsaProviderListener)((Map)queues.get(queueName)).get("ifsaProviderListener");
-				if (ifsaCleanUp(queueName, pullingIfsaProviderListener, ifsaThreadContexts, ifsaRawMessages, true, writers)) {
-					remainingMessagesFound = true;
-				}
-				try {
-					pullingIfsaProviderListener.close();
-					debugMessage("Closed ifsa provider listener '" + queueName + "'", writers);
-				} catch(ListenerException e) {
-					errorMessage("Could not close IfsaProviderListener: " + e.getMessage(), e, writers);
-				}
-			}
-		}
-		debugMessage("Close ifsa requester senders", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
-			if ("nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender".equals(properties.get(queueName + ".className"))) {
-				IfsaRequesterSender ifsaRequesterSender = (IfsaRequesterSender)((Map)queues.get(queueName)).get("ifsaRequesterSender");
-				if ("RR".equals(ifsaRequesterSender.getMessageProtocol())) {
-					Map ifsaRequesterSenderInfo = (Map)queues.get(queueName);
-					SenderThread ifsaRequesterSenderThread = (SenderThread)ifsaRequesterSenderInfo.remove("ifsaRequesterSenderThread");
-					if (ifsaRequesterSenderThread != null) {
-						debugMessage("Found remaining SenderThread", writers);
-						SenderException senderException = ifsaRequesterSenderThread.getSenderException();
-						if (senderException != null) {
-							errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
-						}
-						TimeOutException timeOutException = ifsaRequesterSenderThread.getTimeOutException();
-						if (timeOutException != null) {
-							errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
-						}
-						String message = ifsaRequesterSenderThread.getResponse();
-						if (message != null) {
-							wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
-						}
-					}
-				}
-				try {
-					ifsaRequesterSender.close();
-					debugMessage("Closed ifsa requester sender '" + queueName + "'", writers);
-				} catch(SenderException e) {
-					errorMessage("Could not close IfsaRequesterSender: " + e.getMessage(), e, writers);
-				}
-			}
-		}
+		Iterator iterator;
 		debugMessage("Close jms senders", writers);
 		iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
@@ -2305,24 +2120,6 @@ public class TestTool {
 		return remainingMessagesFound;
 	}
 
-	public static boolean ifsaWrite(String reply, PullingIfsaProviderListener pullingIfsaProviderListener, Object rawMessage, Map threadContext, Map writers) {
-		boolean success = false;
-		PipeLineResult pipeLineResult = new PipeLineResult();
-		if ("RR".equals(pullingIfsaProviderListener.getMessageProtocol())) {
-			pipeLineResult.setResult(reply);
-		}
-		pipeLineResult.setState("success");
-		try {
-			pullingIfsaProviderListener.afterMessageProcessed(pipeLineResult, rawMessage, threadContext);
-			success = true;
-		} catch(ListenerException e1) {
-			errorMessage("Could not write to ifsa: " + e1.getMessage(), e1, writers);
-		} catch(NullPointerException e2) {
-			errorMessage("NullPointerException writing to ifsa (this probably means message protocol for this service should be FF in the scenario properties).", e2, writers);
-		}
-		return success;
-	}
-
 	public static boolean jmsCleanUp(String queueName, PullingJmsListener pullingJmsListener, Map writers) {
 		boolean remainingMessagesFound = false;
 		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
@@ -2364,62 +2161,6 @@ public class TestTool {
 		return remainingMessagesFound;
 	}
 
-	public static boolean ifsaCleanUp(String queueName, PullingIfsaProviderListener pullingIfsaProviderListener, Map ifsaThreadContexts, Map ifsaRawMessages, boolean showWrongPipelineMessage, Map writers) {
-		boolean remainingMessagesFound = false;
-		Map threadContext = (HashMap)ifsaThreadContexts.remove(queueName);
-		if (threadContext != null) {
-			Object rawMessage = ifsaRawMessages.remove(queueName);
-			if (rawMessage != null) {
-				sendIfsaDummyReply(queueName, pullingIfsaProviderListener, rawMessage, threadContext, showWrongPipelineMessage, writers);
-			}
-			try {
-				pullingIfsaProviderListener.closeThread(threadContext);
-			} catch(ListenerException e) {
-				errorMessage("Could not close thread on ifsa provider listener '" + queueName + "': " + e.getMessage(), e, writers);
-			}
-		}
-		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
-		long oldTimeOut = pullingIfsaProviderListener.getTimeOut();
-		pullingIfsaProviderListener.setTimeOut(10);
-		boolean empty = false;
-		while (!empty) {
-			Object rawMessage = null;
-			try {
-				threadContext = pullingIfsaProviderListener.openThread();
-				rawMessage = pullingIfsaProviderListener.getRawMessage(threadContext);
-			} catch(ListenerException e1) {
-				if (threadContext != null) {
-					try {
-						pullingIfsaProviderListener.closeThread(threadContext);
-					} catch(ListenerException e2) {
-						errorMessage("Could not close thread on ifsa provider listener '" + queueName + "': " + e2.getMessage(), e2, writers);
-					}
-				}
-			}
-			if (rawMessage == null) {
-				empty = true;
-			} else {
-				remainingMessagesFound = true;
-				try {
-					String message = pullingIfsaProviderListener.getStringFromRawMessage(rawMessage, threadContext);
-					if (showWrongPipelineMessage && message != null) {
-						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
-					}
-				} catch(ListenerException e) {
-					errorMessage("Could not translate raw ifsa message: " + e.getMessage(), e, writers);
-				}
-				sendIfsaDummyReply(queueName, pullingIfsaProviderListener, rawMessage, threadContext, showWrongPipelineMessage, writers);
-				try {
-					pullingIfsaProviderListener.closeThread(threadContext);
-				} catch(ListenerException e2) {
-					errorMessage("Could not close thread on ifsa provider listener '" + queueName + "': " + e2.getMessage(), e2, writers);
-				}
-			}
-		}
-		pullingIfsaProviderListener.setTimeOut(oldTimeOut);
-		return remainingMessagesFound;
-	}
-
 	public static boolean fileListenerCleanUp(String queueName, FileListener fileListener, Map writers) {
 		boolean remainingMessagesFound = false;
 		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
@@ -2451,16 +2192,6 @@ public class TestTool {
 			wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
 		}
 		return remainingMessagesFound;
-	}
-
-	public static void sendIfsaDummyReply(String queueName, PullingIfsaProviderListener pullingIfsaProviderListener, Object rawMessage, Map threadContext, boolean showWrongPipelineMessage, Map writers) {
-		debugMessage("Send dummy reply for ifsa request '" + queueName + "' that didn't send a response yet", writers);
-		String message = TESTTOOL_CLEAN_UP_REPLY;
-		if (ifsaWrite(message, pullingIfsaProviderListener, rawMessage, threadContext, writers)) {
-			if (showWrongPipelineMessage && "RR".equals(pullingIfsaProviderListener.getMessageProtocol())) {
-				wrongPipelineMessage("Ifsa clean up message:", message, writers);
-			}
-		}
 	}
 	
 	private static boolean executeJmsSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
@@ -2496,67 +2227,6 @@ public class TestTool {
 		} catch(SenderException e) {
 			errorMessage("Could not send jms message to '" + queueName + "': " + e.getMessage(), e, writers);
 		}
-		
-		return result;
-	}
-	
-	private static boolean executeIfsaProviderListenerWrite(String stepDisplayName, Map queues, Map writers, Map ifsaThreadContexts, Map ifsaRawMessages, String queueName, String fileContent) {
-		boolean result = false;
-		
-		PullingIfsaProviderListener pullingIfsaProviderListener = (PullingIfsaProviderListener)((Map)queues.get(queueName)).get("ifsaProviderListener");
-	
-		HashMap threadContext = (HashMap)ifsaThreadContexts.remove(queueName);
-		if (threadContext == null) {
-			errorMessage("Could not find thread context from previous ifsa read (no ifsa read executed before ifsa write?)", writers);
-		} else {
-			Object rawMessage = ifsaRawMessages.remove(queueName);
-			if (rawMessage == null) {
-				errorMessage("Could not find message from previous ifsa read (no ifsa read executed before ifsa write?)", writers);
-			} else {
-				if (ifsaWrite(fileContent, pullingIfsaProviderListener, rawMessage, threadContext, writers)) {
-					debugPipelineMessage(stepDisplayName, "Successfull writen to '" + queueName + "':", fileContent, writers);
-					result = true;
-				}
-			}
-			try {
-				pullingIfsaProviderListener.closeThread(threadContext);
-			} catch(ListenerException e) {
-				errorMessage("Could not close thread on ifsa provider listener '" + queueName + "':" + e.getMessage(), e, writers);
-			}
-		}
-		
-		return result;	
-	}
-	
-	private static boolean executeIfsaRequesterSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
-		boolean result = false;
-		
-		Map ifsaRequesterSenderInfo = (Map)queues.get(queueName);
-		IfsaRequesterSender ifsaRequesterSender = (IfsaRequesterSender)ifsaRequesterSenderInfo.get("ifsaRequesterSender");
-		Boolean convertExceptionToMessage = (Boolean)ifsaRequesterSenderInfo.get("convertExceptionToMessage");
-		String output = null;
-		try {
-			if ("RR".equals(ifsaRequesterSender.getMessageProtocol())) {
-				SenderThread ifsaRequesterSenderThread = new SenderThread(ifsaRequesterSender, fileContent, convertExceptionToMessage.booleanValue());
-				ifsaRequesterSenderThread.start();
-				ifsaRequesterSenderInfo.put("ifsaRequesterSenderThread", ifsaRequesterSenderThread);
-				debugPipelineMessage(stepDisplayName, "Successfully started thread writing to '" + queueName + "':", fileContent, writers);
-				result = true;
-			} else {
-				PipeLineSessionBase pipeLineSession = new PipeLineSessionBase();
-				// WAT IS EEN GOEDE BIFNAME?
-				pipeLineSession.put(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY, TESTTOOL_BIFNAME);
-				ParameterResolutionContext parameterResolutionContext = new ParameterResolutionContext();
-				parameterResolutionContext.setSession(pipeLineSession);
-				output = ifsaRequesterSender.sendMessage(TESTTOOL_CORRELATIONID, fileContent, parameterResolutionContext);
-				debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
-				result = true;
-			}
-		} catch(TimeOutException e) {
-			errorMessage("TimeOutException writing to '" + queueName + "': " + e.getMessage(), e, writers);
-		} catch(SenderException e) {
-			errorMessage("SenderException writing to '" + queueName + "': " + e.getMessage(), e, writers);
-		}		
 		
 		return result;
 	}
@@ -2682,90 +2352,7 @@ public class TestTool {
 
 		return result;	
 	}
-	
-	private static boolean executeIfsaProviderListenerRead(String stepDisplayName, Properties properties, Map queues, Map writers, Map ifsaThreadContexts, Map ifsaRawMessages, String queueName, String fileName, String fileContent) {
-		boolean result = false;
-		
-		Map ifsaProviderListenerInfo = (Map)queues.get(queueName);
-		PullingIfsaProviderListener pullingIfsaProviderListener = (PullingIfsaProviderListener)ifsaProviderListenerInfo.get("ifsaProviderListener");
-		Object rawMessage = null;
-		Map threadContext = null;
-		boolean correctFullIfsaServiceName = true;
-		try {
-			threadContext = pullingIfsaProviderListener.openThread();
-			rawMessage = pullingIfsaProviderListener.getRawMessage(threadContext);
-			if (rawMessage != null) {
-				String correlationId = pullingIfsaProviderListener.getIdFromRawMessage(rawMessage, threadContext);
-				ifsaProviderListenerInfo.put("correlationId", correlationId);
-				String fullIfsaServiceName = (String)threadContext.get("fullIfsaServiceName");
-				if (properties.get(queueName + ".fullIfsaServiceName") != null) {
-					if (compareResult(stepDisplayName, fileName, properties.getProperty(queueName + ".fullIfsaServiceName"), fullIfsaServiceName, properties, writers, queueName + ".fullIfsaServiceName")) {
-					} else {
-						correctFullIfsaServiceName = false;
-						errorMessage("Received wrong fullIfsaServiceName from '" + queueName + "':" + fullIfsaServiceName, writers);
-					}
-				}
-			}
-		} catch(ListenerException e) {
-			if (!"".equals(fileName)) {
-				errorMessage("Could not read ifsa message: " + e.getMessage(), e, writers);
-			}
-		} finally {
-			if (threadContext != null) {
-				try {
-					pullingIfsaProviderListener.closeThread(threadContext);
-				} catch(ListenerException e) {
-					errorMessage("Could not close thread on ifsa provider listener '" + queueName + "': " + e.getMessage(), e, writers);
-				}
-			}
-		}
-		if (correctFullIfsaServiceName) {
-			if (rawMessage == null) {
-				if ("".equals(fileName)) {
-					result = true;
-				} else {
-					errorMessage("Could not read ifsa message (null returned)", writers);
-				}
-			} else {
-				ifsaThreadContexts.put(queueName, threadContext);
-				ifsaRawMessages.put(queueName, rawMessage);
-				
-				String message = null;
-				try {
-					message = pullingIfsaProviderListener.getStringFromRawMessage(rawMessage, threadContext);
-					/* direct dummy reply indien FF, nu kunnen er meerdere FF berichten
-					   achter elkaar van dezelfde applicatieId ontvangen worden zonder 
-					   dat er ifsa berichten op de queue blijven staan 
-					   (ifsaThreadContexts is een map met unieke sleutels, 
-						dus werkt de ifsaCleanUp niet)
-					*/
 
-					if (pullingIfsaProviderListener.getMessageProtocol().equals("FF")) {
-						sendIfsaDummyReply(queueName, pullingIfsaProviderListener, rawMessage, threadContext, false, writers);
-						ifsaThreadContexts.remove(queueName);
-						ifsaRawMessages.remove(queueName);
-						pullingIfsaProviderListener.closeThread(threadContext);
-						debugMessage("Written dummy reply and cleaned up after providerlistener FF read from '" + queueName + "'", writers);
-					}
-
-				} catch(ListenerException e) {
-					errorMessage("Could not translate raw ifsa message: " + e.getMessage(), e, writers);
-				}
-				if (message != null) {
-					if ("".equals(fileName)) {
-						debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
-					} else {
-						 if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
-							result = true;
-						}
-					}
-				}
-			}
-		}
-				
-		return result;
-	}
-	
 	private static boolean executeSenderRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String senderType, String fileName, String fileContent) {
 		boolean result = false;
 	
@@ -2983,7 +2570,7 @@ public class TestTool {
 		return result;	
 	}
 
-	public static boolean executeStep(String step, Properties properties, String stepDisplayName, Map queues, Map ifsaThreadContexts, Map ifsaRawMessages, Map writers) {
+	public static boolean executeStep(String step, Properties properties, String stepDisplayName, Map queues, Map writers) {
 		boolean stepPassed = false;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
@@ -3007,10 +2594,6 @@ public class TestTool {
 
 					if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJmsListenerRead(stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);	
-					} else if ("nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeIfsaProviderListenerRead(stepDisplayName, properties, queues, writers, ifsaThreadContexts, ifsaRawMessages, queueName, fileName, fileContent);
-					} else if ("nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderRead(stepDisplayName, properties, queues, writers, queueName, "ifsaRequester", fileName, fileContent);
 					} else 	if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeFixedQuerySenderRead(stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
@@ -3039,10 +2622,6 @@ public class TestTool {
 
 					if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
-					} else if ("nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeIfsaProviderListenerWrite(stepDisplayName, queues, writers, ifsaThreadContexts, ifsaRawMessages, queueName, fileContent);
-					} else if ("nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeIfsaRequesterSenderWrite(stepDisplayName, queues, writers/*, ifsaThreadContexts, ifsaRawMessages*/, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeSenderWrite(stepDisplayName, queues, writers, queueName, "ibisWebService", fileContent);
 					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
