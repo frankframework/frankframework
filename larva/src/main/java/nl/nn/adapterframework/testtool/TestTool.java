@@ -1518,11 +1518,10 @@ public class TestTool {
 			String password = (String)properties.get(name + ".password");
 			String headerParams = (String)properties.get(name + ".headersParams");
 			String xhtmlString = (String)properties.get(name + ".xhtml");
-			boolean xhtml = false;
-			if (xhtmlString != null) {
-				xhtml = Boolean.valueOf(xhtmlString).booleanValue();
-			}
 			String methodtype = (String)properties.get(name + ".methodType");
+			String paramsInUrlString = (String)properties.get(name + ".paramsInUrl");
+			String inputMessageParam = (String)properties.get(name + ".inputMessageParam");
+			String multipartString = (String)properties.get(name + ".multipart");
  			String styleSheetName = (String)properties.get(name + ".styleSheetName");
 			if (url == null) {
 				closeQueues(queues, properties, writers);
@@ -1535,9 +1534,20 @@ public class TestTool {
 				httpSender.setUserName(userName);
 				httpSender.setPassword(password);
 				httpSender.setHeadersParams(headerParams);
-				httpSender.setXhtml(xhtml);
+				if (StringUtils.isNotEmpty(xhtmlString)) {
+					httpSender.setXhtml(Boolean.valueOf(xhtmlString).booleanValue());
+				}
 				if (StringUtils.isNotEmpty(methodtype)) {
 					httpSender.setMethodType(methodtype);
+				}
+				if (StringUtils.isNotEmpty(paramsInUrlString)) {
+					httpSender.setParamsInUrl(Boolean.valueOf(paramsInUrlString).booleanValue());
+				}
+				if (StringUtils.isNotEmpty(inputMessageParam)) {
+					httpSender.setInputMessageParam(inputMessageParam);
+				}
+				if (StringUtils.isNotEmpty(multipartString)) {
+					httpSender.setMultipart(Boolean.valueOf(multipartString).booleanValue());
 				}
 				if (StringUtils.isNotEmpty(styleSheetName)) {
 					String ssn = "file:///" + getAbsolutePath(scenarioDirectory, styleSheetName);
