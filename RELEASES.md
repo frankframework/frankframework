@@ -22,6 +22,7 @@ Upcoming
 - Bugfix database actions not being part of transaction when using BTM
 - Better m2e configuration (no need to overwrite/change org.eclipse.wst.common.component anymore)
 - Show http body in exception thrown by http sender in case status code indicates an error
+- Make multipart work for http sender in case only inputMessageParam is used (without extra parameters)
 
 
 

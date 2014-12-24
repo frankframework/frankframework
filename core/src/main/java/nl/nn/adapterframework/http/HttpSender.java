@@ -543,13 +543,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 					}
 				}
 			} else {
+				List<Part> partList = new ArrayList<Part>();
+				if (StringUtils.isNotEmpty(getInputMessageParam())) {
+					StringPart stringPart = new StringPart(getInputMessageParam(), message);
+					partList.add(stringPart);
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getInputMessageParam()+"] with value ["+message+"]");
+				}
 				if (parameters!=null) {
-					List<Part> partList = new ArrayList<Part>();
-					if (StringUtils.isNotEmpty(getInputMessageParam())) {
-						StringPart stringPart = new StringPart(getInputMessageParam(), message);
-						partList.add(stringPart);
-						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getInputMessageParam()+"] with value ["+message+"]");
-					}
 					for(int i=0; i<parameters.size(); i++) {
 						ParameterValue pv = parameters.getParameterValue(i);
 						String paramType = pv.getDefinition().getType();
@@ -577,11 +577,11 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
 						}
 					}
-					Part[] parts = new Part[partList.size()];
-					partList.toArray(parts);
-					MultipartRequestEntity request = new MultipartRequestEntity(parts, hmethod.getParams());
-					hmethod.setRequestEntity(request);
 				}
+				Part[] parts = new Part[partList.size()];
+				partList.toArray(parts);
+				MultipartRequestEntity request = new MultipartRequestEntity(parts, hmethod.getParams());
+				hmethod.setRequestEntity(request);
 			}
 			return hmethod;
 		} catch (URIException e) {
