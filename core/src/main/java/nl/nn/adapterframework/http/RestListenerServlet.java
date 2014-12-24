@@ -62,9 +62,6 @@ public class RestListenerServlet extends HttpServlet {
 		
 		String path=request.getPathInfo();
 		String body = "";
-		if (request.getMethod().equalsIgnoreCase("GET")) {
-			body=Misc.streamToString(request.getInputStream(),"\n",false);
-		}
 			
 		String etag=request.getHeader("etag");
 		String contentType=request.getHeader("accept");
@@ -82,7 +79,7 @@ public class RestListenerServlet extends HttpServlet {
 			if (log.isDebugEnabled()) log.debug("setting parameter ["+paramname+"] to ["+paramvalue+"]");
 			messageContext.put(paramname, paramvalue);
 		}
-		if (request.getMethod().equalsIgnoreCase("POST")) {
+		if (ServletFileUpload.isMultipartContent(request)) {
 			try {
 				DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 				ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
@@ -110,6 +107,8 @@ public class RestListenerServlet extends HttpServlet {
 				log.warn("RestListenerServlet caught FileUploadException, will rethrow as ServletException",e);
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
 			}
+		} else {
+			body=Misc.streamToString(request.getInputStream(),"\n",false);
 		}
 		try {
 			log.debug("RestListenerServlet calling service ["+path+"]");

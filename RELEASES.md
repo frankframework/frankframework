@@ -23,6 +23,7 @@ Upcoming
 - Better m2e configuration (no need to overwrite/change org.eclipse.wst.common.component anymore)
 - Show http body in exception thrown by http sender in case status code indicates an error
 - Make multipart work for http sender in case only inputMessageParam is used (without extra parameters)
+- Bugfix RestListenerServlet that didn't read http body anymore for POST method
 
 
 
