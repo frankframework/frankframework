@@ -637,7 +637,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			}
 		}
 		if (!ok) {
-			throw new SenderException(getLogPrefix()+"httpstatus "+statusCode+": "+httpmethod.getStatusText());
+			throw new SenderException(getLogPrefix() + "httpstatus "
+					+ statusCode + ": " +httpmethod.getStatusText()
+					+ " body: " + getResponseBodyAsString(httpmethod));
 		}
 		if (response==null) {
 			//return httpmethod.getResponseBodyAsString();
