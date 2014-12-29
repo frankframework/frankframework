@@ -394,7 +394,7 @@
 			<xsl:when test="@type='edit'"				>images/edit.gif</xsl:when>
 			<xsl:when test="@type='help'"				>images/help.gif</xsl:when>
 			<xsl:when test="@type='testtool'"			>images/testtool.gif</xsl:when>
-			<xsl:when test="@type='testtool1'"			>images/check.gif</xsl:when>
+			<xsl:when test="@type='testtool1'"			>images/testtool1.gif</xsl:when>
 			<xsl:when test="@type='showsummary'"		>images/ibisstore.gif</xsl:when>
 			<xsl:when test="@type='theme'"				>images/theme-switch.png</xsl:when>
 
