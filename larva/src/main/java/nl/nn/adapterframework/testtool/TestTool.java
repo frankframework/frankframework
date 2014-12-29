@@ -1116,7 +1116,12 @@ public class TestTool {
 				jmsSender.setDestinationName(queue);
 				jmsSender.setDestinationType("QUEUE");
 				jmsSender.setAcknowledgeMode("auto");
-				jmsSender.setJmsRealm("default");
+				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
+				if (jmsRealm!=null) {
+					jmsSender.setJmsRealm(jmsRealm);
+				} else {
+					jmsSender.setJmsRealm("default");
+				}
 				String deliveryMode = properties.getProperty(queueName + ".deliveryMode");
 				debugMessage("Property '" + queueName + ".deliveryMode': " + deliveryMode, writers);
 				String persistent = properties.getProperty(queueName + ".persistent");
@@ -1176,7 +1181,12 @@ public class TestTool {
 				pullingJmsListener.setDestinationName(queue);
 				pullingJmsListener.setDestinationType("QUEUE");
 				pullingJmsListener.setAcknowledgeMode("auto");
-				pullingJmsListener.setJmsRealm("default");
+				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
+				if (jmsRealm!=null) {
+					pullingJmsListener.setJmsRealm(jmsRealm);
+				} else {
+					pullingJmsListener.setJmsRealm("default");
+				}
 				// Call setJmsRealm twice as a workaround for a strange bug
 				// where we get a java.lang.NullPointerException in a class of
 				// the commons-beanutils.jar on the first call to setJmsRealm
@@ -1192,7 +1202,6 @@ public class TestTool {
 				// - WebSphere Studio Application Developer (Windows) Version: 5.1.2
 				// - Ibis4Juice build 20051104-1351
 				// - y01\rr\getAgent1003\scenario01.properties
-				pullingJmsListener.setJmsRealm("default");
 				pullingJmsListener.setTimeOut(nTimeout);
 				String setForceMessageIdAsCorrelationId = (String)properties.get(queueName + ".setForceMessageIdAsCorrelationId");
 				if ("true".equals(setForceMessageIdAsCorrelationId)) {
