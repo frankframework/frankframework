@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.extensions.tibco;
 
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +23,7 @@ import java.util.Map;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
@@ -30,18 +32,19 @@ import javax.jms.TextMessage;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
 
 import com.tibco.tibjms.admin.ACLEntry;
 import com.tibco.tibjms.admin.BridgeTarget;
@@ -54,9 +57,9 @@ import com.tibco.tibjms.admin.UserInfo;
  * Returns information about Tibco queues in a XML string.
  * <p>
  * If the parameter <code>queueName</code> is empty then
- * - all Tibco queues including information about these queues are returned
+ * <ul><li>all Tibco queues including information about these queues are returned</li></ul>
  * else
- * - one message on a specific Tibco queue including information about this message is returned (without removing it)
+ * <ul><li>one message on a specific Tibco queue including information about this message is returned (without removing it)</li></ul>
  * </p>
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -66,44 +69,44 @@ import com.tibco.tibjms.admin.UserInfo;
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSkipTemporaryQueues(boolean) skipTemporaryQueues}</td><td>>when set to <code>true</code>, temporary queues are skipped</td><td>false</td></tr>
- * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>when <code>true</code>, a PipeRunException is thrown. Otherwise the output is only logged as an error (and returned in a XML string).</td><td>true</td></tr>
- * <tr><td>{@link #setHideMessage(boolean) hideMessage}</td><td>>when set to <code>true</code>, the length of the queue message is returned instead of the queue message self (when parameter <code>queueName</code> is not empty)</td><td>false</td></tr>
+ * <tr><td>{@link #setSkipTemporaryQueues(boolean) skipTemporaryQueues}</td><td>when set to <code>true</code>, temporary queues are skipped</td><td>false</td></tr>
+ * <tr><td>{@link #setHideMessage(boolean) hideMessage}</td><td>when set to <code>true</code>, the length of the queue message is returned instead of the queue message self (when parameter <code>queueName</code> is not empty)</td><td>false</td></tr>
  * </table>
  * </p>
  * <p>
  * <table border="1">
  * <b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>url</td><td>string</td><td>When a parameter with name serviceId is present, it is used instead of the url specified by the attribute</td></tr>
+ * <tr><td>url</td><td>string</td><td>When a parameter with name url is present, it is used instead of the url specified by the attribute</td></tr>
  * <tr><td>authAlias</td><td>string</td><td>When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute</td></tr>
  * <tr><td>userName</td><td>string</td><td>When a parameter with name userName is present, it is used instead of the userName specified by the attribute</td></tr>
  * <tr><td>password</td><td>string</td><td>When a parameter with name password is present, it is used instead of the password specified by the attribute</td></tr>
- * <tr><td>queueName</td><td>string</td><td>the name of the queue which is used for <code>browseQueue=true</code></td></tr>
- * <tr><td>queueItem</td><td>string</td><td>the number of the queue message which is used for <code>browseQueue=true</code> (default is 1)</td></tr>
+ * <tr><td>queueName</td><td>string</td><td>the name of the queue which is used for browsing one queue</code></td></tr>
+ * <tr><td>queueItem</td><td>string</td><td>the number of the queue message which is used for browsing one queue (default is 1)</td></tr>
+ * <tr><td>showAge</td><td>boolean</td><td>when set to <code>true</code> and <code>pendingMsgCount&gt;0</code> and <code>receiverCount=0</code>, the age of the current first message in the queue is shown in the queues overview (default is false)</td></tr>
  * </table>
  * </p>
  * 
  * @author Peter Leeuwenburgh
- * @version $Id$
+ * @version $Id: GetTibcoQueues.java,v 1.14 2014/12/17 15:09:22 m168309 Exp $
  */
 
-public class GetTibcoQueues extends FixedForwardPipe {
+public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String url;
 	private String authAlias;
 	private String userName;
 	private String password;
 	private boolean skipTemporaryQueues = false;
-	private boolean throwException = true;
 	private boolean hideMessage = false;
-
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
+		
+	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session)
 			throws PipeRunException {
 		String result;
 		String url_work;
 		String authAlias_work;
 		String userName_work;
 		String password_work;
+		String queueName_work = null;
 
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
@@ -137,152 +140,170 @@ public class GetTibcoQueues extends FixedForwardPipe {
 		CredentialFactory cf = new CredentialFactory(authAlias_work,
 				userName_work, password_work);
 
-		String queueName_work = getParameterValue(pvl, "queueName");
-		if (StringUtils.isNotEmpty(queueName_work)) {
-			String queueItem_work = getParameterValue(pvl, "queueItem");
-			int qi;
-			if (StringUtils.isNumeric(queueItem_work)) {
-				qi = Integer.parseInt(queueItem_work);
-			} else {
-				qi = 1;
-			}
-			result = getQueueMessage(getLogPrefix(session), url_work, cf,
-					queueName_work, qi);
-		} else {
-			result = getQueuesInfo(getLogPrefix(session), url_work, cf);
-		}
-
-		return new PipeRunResult(getForward(), result);
-	}
-
-	private String getQueueMessage(String logPrefix, String url,
-			CredentialFactory cf, String queueName, int queueItem)
-			throws PipeRunException {
-		XmlBuilder qMessageXml = new XmlBuilder("qMessage");
-		qMessageXml.addAttribute("url", url);
-		qMessageXml.addAttribute("timestamp", DateUtils.getIsoTimeStamp());
-		XmlBuilder qNameXml = new XmlBuilder("qName");
-		qNameXml.setCdataValue(queueName);
 		Connection connection = null;
 		Session jSession = null;
 		TibjmsAdmin admin = null;
 		try {
 			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(
-					url);
+					url_work);
 			connection = factory.createConnection(cf.getUsername(),
 					cf.getPassword());
 			jSession = connection.createSession(false,
 					javax.jms.Session.AUTO_ACKNOWLEDGE);
-			Queue queue = jSession.createQueue(queueName);
-			QueueBrowser queueBrowser = jSession.createBrowser(queue);
-			Enumeration enm = queueBrowser.getEnumeration();
-			int count = 0;
-			while (enm.hasMoreElements()) {
-				count++;
-				if (count == queueItem) {
-					qNameXml.addAttribute("item", count);
-					TextMessage msg = (TextMessage) enm.nextElement();
-					XmlBuilder qMessageId = new XmlBuilder("qMessageId");
-					qMessageId.setCdataValue(msg.getJMSMessageID());
-					qMessageXml.addSubElement(qMessageId);
-					XmlBuilder qTimestamp = new XmlBuilder("qTimestamp");
-					qTimestamp.setCdataValue(DateUtils.format(msg.getJMSTimestamp(), DateUtils.fullIsoFormat));
-					qMessageXml.addSubElement(qTimestamp);
-					XmlBuilder qTextXml = new XmlBuilder("qText");
-					if (isHideMessage()) {
-						qTextXml.setCdataValue("[length=" + msg.getText().length() + "]");
-					} else {
-						qTextXml.setCdataValue(msg.getText());
-					}
-					qMessageXml.addSubElement(qTextXml);
-				} else {
-					enm.nextElement();
-				}
-			}
-			qNameXml.addAttribute("count", count);
-			qMessageXml.addSubElement(qNameXml);
+			admin = new TibjmsAdmin(url_work, cf.getUsername(),
+					cf.getPassword());
 
-			admin = new TibjmsAdmin(url, cf.getUsername(), cf.getPassword());
-			Map aclMap = getAclMap(admin);
-			QueueInfo qInfo = admin.getQueue(queueName);
-			XmlBuilder aclXml = new XmlBuilder("acl");
-			XmlBuilder qInfoXml = qInfoToXml(qInfo);
-			aclXml.setValue((String) aclMap.get(qInfo.getName()));
-			qInfoXml.addSubElement(aclXml);
-			qMessageXml.addSubElement(qInfoXml);
-		} catch (Exception e) {
-			String msg = logPrefix
-					+ " exception on browsing Tibco queue [" + queueName
-					+ "]";
-			if (isThrowException()) {
-				throw new PipeRunException(this, msg, e);
+			queueName_work = getParameterValue(pvl, "queueName");
+			if (StringUtils.isNotEmpty(queueName_work)) {
+				String queueItem_work = getParameterValue(pvl, "queueItem");
+				int qi;
+				if (StringUtils.isNumeric(queueItem_work)) {
+					qi = Integer.parseInt(queueItem_work);
+				} else {
+					qi = 1;
+				}
+				result = getQueueMessage(jSession, admin, queueName_work, qi);
 			} else {
-				String msgString = msg + ": " + e.getMessage();
-				log.error(msgString);
-				String msgCdataString = "<![CDATA[" + msgString + "]]>";
-				return "<error>" + msgCdataString + "</error>";
+				String showAge_work = getParameterValue(pvl, "showAge");
+				boolean showAge = ("true".equalsIgnoreCase(showAge_work) ? true
+						: false);
+				result = getQueuesInfo(jSession, admin, showAge);
 			}
+		} catch (Exception e) {
+			String msg = getLogPrefix(session)
+					+ "exception on showing Tibco queues, url ["
+					+ url_work
+					+ "]"
+					+ (StringUtils.isNotEmpty(queueName_work) ? " queue ["
+							+ queueName_work + "]" : "");
+			throw new PipeRunException(this, msg, e);
 		} finally {
 			if (admin != null) {
 				try {
 					admin.close();
 				} catch (TibjmsAdminException e) {
-					log.warn(getLogPrefix(null) + "exception on closing Tibjms Admin",
-							e);
+					log.warn(getLogPrefix(session)
+							+ "exception on closing Tibjms Admin", e);
 				}
 			}
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (JMSException e) {
-					log.warn(logPrefix + "exception on closing connection", e);
+					log.warn(getLogPrefix(session)
+							+ "exception on closing connection", e);
 				}
 			}
 		}
+		return result;
+	}
+
+	private String getQueueMessage(Session jSession, TibjmsAdmin admin,
+			String queueName, int queueItem) throws TibjmsAdminException,
+			JMSException {
+		XmlBuilder qMessageXml = new XmlBuilder("qMessage");
+		qMessageXml.addAttribute("url", admin.getInfo().getURL());
+		qMessageXml.addAttribute("timestamp", DateUtils.getIsoTimeStamp());
+		XmlBuilder qNameXml = new XmlBuilder("qName");
+		qNameXml.setCdataValue(queueName);
+
+		Queue queue = jSession.createQueue(queueName);
+		QueueBrowser queueBrowser = jSession.createBrowser(queue);
+		Enumeration enm = queueBrowser.getEnumeration();
+		int count = 0;
+		while (enm.hasMoreElements()) {
+			count++;
+			if (count == queueItem) {
+				qNameXml.addAttribute("item", count);
+				Object o = enm.nextElement();
+				if (o instanceof Message) {
+					Message msg = (Message) o;
+					XmlBuilder qMessageId = new XmlBuilder("qMessageId");
+					qMessageId.setCdataValue(msg.getJMSMessageID());
+					qMessageXml.addSubElement(qMessageId);
+					XmlBuilder qTimestamp = new XmlBuilder("qTimestamp");
+					qTimestamp.setCdataValue(DateUtils.format(
+							msg.getJMSTimestamp(), DateUtils.fullIsoFormat));
+					qMessageXml.addSubElement(qTimestamp);
+					XmlBuilder qTextXml = new XmlBuilder("qText");
+					String msgText;
+					try {
+						TextMessage textMessage = (TextMessage) msg;
+						msgText = textMessage.getText();
+					} catch (ClassCastException e) {
+						msgText = msg.toString();
+						qTextXml.addAttribute("text", false);
+					}
+					if (isHideMessage()) {
+						qTextXml.setCdataValue("[length=" + msgText.length()
+								+ "]");
+					} else {
+						qTextXml.setCdataValue(msgText);
+					}
+					qMessageXml.addSubElement(qTextXml);
+				}
+			} else {
+				enm.nextElement();
+			}
+		}
+		qNameXml.addAttribute("count", count);
+		qMessageXml.addSubElement(qNameXml);
+
+		Map aclMap = getAclMap(admin);
+		QueueInfo qInfo = admin.getQueue(queueName);
+		XmlBuilder aclXml = new XmlBuilder("acl");
+		XmlBuilder qInfoXml = qInfoToXml(qInfo);
+		aclXml.setValue((String) aclMap.get(qInfo.getName()));
+		qInfoXml.addSubElement(aclXml);
+		qMessageXml.addSubElement(qInfoXml);
+
 		return qMessageXml.toXML();
 	}
 
-	private String getQueuesInfo(String logPrefix, String url,
-			CredentialFactory cf) throws PipeRunException {
-		TibjmsAdmin admin = null;
+	private String getQueuesInfo(Session jSession, TibjmsAdmin admin,
+			boolean showAge) throws TibjmsAdminException {
 		XmlBuilder qInfosXml = new XmlBuilder("qInfos");
-		qInfosXml.addAttribute("url", url);
-		qInfosXml.addAttribute("timestamp", DateUtils.getIsoTimeStamp());
-		try {
-			admin = new TibjmsAdmin(url, cf.getUsername(), cf.getPassword());
-			Map aclMap = getAclMap(admin);
-			QueueInfo[] qInfos = admin.getQueues();
-			for (int i = 0; i < qInfos.length; i++) {
-				QueueInfo qInfo = qInfos[i];
-				if (skipTemporaryQueues && qInfo.isTemporary()) {
-					// skip
-				} else {
-					XmlBuilder qInfoXml = qInfoToXml(qInfo);
-					qInfosXml.addSubElement(qInfoXml);
-					XmlBuilder aclXml = new XmlBuilder("acl");
-					aclXml.setValue((String) aclMap.get(qInfo.getName()));
-					qInfoXml.addSubElement(aclXml);
-				}
-			}
-		} catch (TibjmsAdminException e) {
-			String msg = logPrefix
-					+ " exception on getting Tibco queues info for url [" + url
-					+ "]";
-			if (isThrowException()) {
-				throw new PipeRunException(this, msg, e);
+		qInfosXml.addAttribute("url", admin.getInfo().getURL());
+		long currentTime = (new Date()).getTime();
+		qInfosXml.addAttribute("timestamp",
+				DateUtils.format(currentTime, DateUtils.fullIsoFormat));
+
+		Map aclMap = getAclMap(admin);
+		QueueInfo[] qInfos = admin.getQueues();
+		for (int i = 0; i < qInfos.length; i++) {
+			QueueInfo qInfo = qInfos[i];
+			if (skipTemporaryQueues && qInfo.isTemporary()) {
+				// skip
 			} else {
-				String msgString = msg + ": " + e.getMessage();
-				log.error(msgString);
-				String msgCdataString = "<![CDATA[" + msgString + "]]>";
-				return "<error>" + msgCdataString + "</error>";
-			}
-		} finally {
-			if (admin != null) {
-				try {
-					admin.close();
-				} catch (TibjmsAdminException e) {
-					log.warn(getLogPrefix(null) + "exception on closing Tibjms Admin",
-							e);
+				XmlBuilder qInfoXml = qInfoToXml(qInfo);
+				qInfosXml.addSubElement(qInfoXml);
+				XmlBuilder aclXml = new XmlBuilder("acl");
+				aclXml.setValue((String) aclMap.get(qInfo.getName()));
+				qInfoXml.addSubElement(aclXml);
+				if (showAge) {
+					if (qInfo.getReceiverCount() == 0
+							&& qInfo.getPendingMessageCount() > 0) {
+						long qfmAgeTime;
+						try {
+							qfmAgeTime = TibcoUtils.getQueueFirstMessageAge(
+									jSession, qInfo.getName(), currentTime);
+						} catch (JMSException e) {
+							qfmAgeTime = -1;
+						}
+						String qfmAge;
+						if (qfmAgeTime > 0) {
+							qfmAge = DurationFormatUtils.formatDuration(
+									qfmAgeTime, "ddd-HH:mm:ss");
+						} else {
+							qfmAge = "?";
+						}
+						if (qfmAge != null) {
+							XmlBuilder firstMsgAgeXml = new XmlBuilder(
+									"firstMsgAge");
+							firstMsgAgeXml.setCdataValue(qfmAge);
+							qInfoXml.addSubElement(firstMsgAgeXml);
+						}
+					}
 				}
 			}
 		}
@@ -303,34 +324,36 @@ public class GetTibcoQueues extends FixedForwardPipe {
 		return null;
 	}
 
-	private XmlBuilder qInfoToXml (QueueInfo qInfo) {
+	private XmlBuilder qInfoToXml(QueueInfo qInfo) {
 		XmlBuilder qInfoXml = new XmlBuilder("qInfo");
 		XmlBuilder qNameXml = new XmlBuilder("qName");
-		qNameXml.setCdataValue(qInfo.getName());
+		String qName = qInfo.getName();
+		qNameXml.setCdataValue(qName);
 		qInfoXml.addSubElement(qNameXml);
-		XmlBuilder pendingMsgCountXml = new XmlBuilder(
-				"pendingMsgCount");
+		String qNameEncoded = XmlUtils.encodeURL(qName);
+		if (!qNameEncoded.equals(qName)) {
+			XmlBuilder qNameEncodedXml = new XmlBuilder("qNameEncoded");
+			qNameEncodedXml.setCdataValue(qNameEncoded);
+			qInfoXml.addSubElement(qNameEncodedXml);
+		}
+		XmlBuilder pendingMsgCountXml = new XmlBuilder("pendingMsgCount");
 		long pendingMsgCount = qInfo.getPendingMessageCount();
 		pendingMsgCountXml.setValue(Long.toString(pendingMsgCount));
 		qInfoXml.addSubElement(pendingMsgCountXml);
-		XmlBuilder pendingMsgSizeXml = new XmlBuilder(
-				"pendingMsgSize");
+		XmlBuilder pendingMsgSizeXml = new XmlBuilder("pendingMsgSize");
 		long pendingMsgSize = qInfo.getPendingMessageSize();
 		pendingMsgSizeXml.setValue(Misc.toFileSize(pendingMsgSize));
 		qInfoXml.addSubElement(pendingMsgSizeXml);
-		XmlBuilder receiverCountXml = new XmlBuilder(
-				"receiverCount");
+		XmlBuilder receiverCountXml = new XmlBuilder("receiverCount");
 		int receiverCount = qInfo.getReceiverCount();
 		receiverCountXml.setValue(Integer.toString(receiverCount));
 		qInfoXml.addSubElement(receiverCountXml);
 		XmlBuilder inTotalMsgsXml = new XmlBuilder("inTotalMsgs");
-		long inTotalMsgs = qInfo.getInboundStatistics()
-				.getTotalMessages();
+		long inTotalMsgs = qInfo.getInboundStatistics().getTotalMessages();
 		inTotalMsgsXml.setValue(Long.toString(inTotalMsgs));
 		qInfoXml.addSubElement(inTotalMsgsXml);
 		XmlBuilder outTotalMsgsXml = new XmlBuilder("outTotalMsgs");
-		long outTotalMsgs = qInfo.getOutboundStatistics()
-				.getTotalMessages();
+		long outTotalMsgs = qInfo.getOutboundStatistics().getTotalMessages();
 		outTotalMsgsXml.setValue(Long.toString(outTotalMsgs));
 		qInfoXml.addSubElement(outTotalMsgsXml);
 		XmlBuilder isStaticXml = new XmlBuilder("isStatic");
@@ -345,16 +368,14 @@ public class GetTibcoQueues extends FixedForwardPipe {
 		isBridgedXml.setValue(bta.length == 0 ? "false" : "true");
 		qInfoXml.addSubElement(isBridgedXml);
 		if (bta.length != 0) {
-			XmlBuilder bridgeTargetsXml = new XmlBuilder(
-					"bridgeTargets");
+			XmlBuilder bridgeTargetsXml = new XmlBuilder("bridgeTargets");
 			String btaString = null;
 			for (int j = 0; j < bta.length; j++) {
 				BridgeTarget bridgeTarget = bta[j];
 				if (btaString == null) {
 					btaString = bridgeTarget.toString();
 				} else {
-					btaString = btaString + "; "
-							+ bridgeTarget.toString();
+					btaString = btaString + "; " + bridgeTarget.toString();
 				}
 			}
 			bridgeTargetsXml.setCdataValue(btaString);
@@ -362,7 +383,7 @@ public class GetTibcoQueues extends FixedForwardPipe {
 		}
 		return qInfoXml;
 	}
-	
+
 	private Map getAclMap(TibjmsAdmin admin) throws TibjmsAdminException {
 		Map userMap = new HashMap();
 		Map aclMap = new HashMap();
@@ -403,7 +424,7 @@ public class GetTibcoQueues extends FixedForwardPipe {
 		}
 		return aclMap;
 	}
-	
+
 	public String getUrl() {
 		return url;
 	}
@@ -442,14 +463,6 @@ public class GetTibcoQueues extends FixedForwardPipe {
 
 	public void setSkipTemporaryQueues(boolean b) {
 		skipTemporaryQueues = b;
-	}
-
-	public void setThrowException(boolean b) {
-		throwException = b;
-	}
-
-	public boolean isThrowException() {
-		return throwException;
 	}
 
 	public boolean isHideMessage() {
