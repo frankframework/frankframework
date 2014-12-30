@@ -654,6 +654,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		String charset = ((HttpMethodBase)httpmethod).getResponseCharSet();
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
 		InputStream is = httpmethod.getResponseBodyAsStream();
+		if (is == null) {
+			return null;
+		}
 		String responseBody = Misc.streamToString(is,"\n",charset,false);
 		int rbLength = responseBody.length();
 		long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
