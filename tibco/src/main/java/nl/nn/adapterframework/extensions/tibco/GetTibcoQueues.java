@@ -288,13 +288,13 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 							qfmAgeTime = TibcoUtils.getQueueFirstMessageAge(
 									jSession, qInfo.getName(), currentTime);
 						} catch (JMSException e) {
-							qfmAgeTime = -1;
+							qfmAgeTime = -3;
 						}
-						String qfmAge;
-						if (qfmAgeTime > 0) {
+						String qfmAge = null;
+						if (qfmAgeTime >= 0) {
 							qfmAge = DurationFormatUtils.formatDuration(
 									qfmAgeTime, "ddd-HH:mm:ss");
-						} else {
+						} else if (qfmAgeTime < -1) {
 							qfmAge = "?";
 						}
 						if (qfmAge != null) {

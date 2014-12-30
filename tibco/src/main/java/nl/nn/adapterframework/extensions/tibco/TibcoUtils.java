@@ -28,6 +28,7 @@ import javax.jms.Session;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.tibco.tibjms.admin.QueueInfo;
@@ -42,10 +43,14 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
 public class TibcoUtils {
 	static Logger log = LogUtil.getLogger(TibcoUtils.class);
 
-	public static long getQueueFirstMessageAge(String url, String authAlias,
+	/**
+	 * return -1: no message found
+	 * return -2: message found, but not of type Message.
+	 */
+	public static long getQueueFirstMessageAge(String provUrl, String authAlias,
 			String userName, String password, String queueName)
 			throws JMSException, TibjmsAdminException {
-		long result = -1;
+		String url = StringUtils.replace(provUrl, "tibjmsnaming:", "tcp:");
 		CredentialFactory cf = new CredentialFactory(authAlias, userName,
 				password);
 		Connection connection = null;
@@ -61,7 +66,9 @@ public class TibcoUtils {
 						cf.getPassword());
 				jSession = connection.createSession(false,
 						javax.jms.Session.AUTO_ACKNOWLEDGE);
-				result = getQueueFirstMessageAge(jSession, queueName);
+				return getQueueFirstMessageAge(jSession, queueName);
+			} else {
+				return -1;
 			}
 		} finally {
 			if (admin != null) {
@@ -79,7 +86,6 @@ public class TibcoUtils {
 				}
 			}
 		}
-		return result;
 	}
 
 	protected static long getQueueFirstMessageAge(Session jSession,
@@ -87,6 +93,11 @@ public class TibcoUtils {
 		return getQueueFirstMessageAge(jSession, queueName, System.currentTimeMillis());
 	}
 
+	
+	/**
+	 * return -1: no message found
+	 * return -2: message found, but not of type Message.
+	 */
 	protected static long getQueueFirstMessageAge(Session jSession,
 			String queueName, long currentTime) throws JMSException {
 		Queue queue = jSession.createQueue(queueName);
@@ -101,7 +112,7 @@ public class TibcoUtils {
 			} else {
 				log.warn("message was not of type Message, but ["
 						+ o.getClass().getName() + "]");
-				return -1;
+				return -2;
 			}
 		} else {
 			return -1;

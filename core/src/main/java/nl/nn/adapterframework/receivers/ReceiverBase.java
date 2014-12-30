@@ -268,6 +268,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
     
 	private Counter threadsProcessing = new Counter(0);
 	        
+	private long lastMessageDate = 0;
+
 	// number of messages received
 	private CounterStatistic numReceived = new CounterStatistic(0);
 	private CounterStatistic numRetried = new CounterStatistic(0);
@@ -954,6 +956,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 //		} else {
 //			requestSizeStatistics.addValue(message.length());
 //		}
+		lastMessageDate = startProcessingTimestamp;
 		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] (technical) correlationId ["+technicalCorrelationId+"]");
 
 		if (StringUtils.isEmpty(messageId)) {
@@ -1751,6 +1754,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return numRejected.getValue();
 	}
 
+	public long getLastMessageDate() {
+		return lastMessageDate;
+	}
 	
 //	public StatisticsKeeper getRequestSizeStatistics() {
 //		return requestSizeStatistics;

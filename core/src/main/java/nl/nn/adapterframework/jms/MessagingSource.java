@@ -24,7 +24,6 @@ import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 import javax.jms.TopicConnection;
@@ -149,25 +148,40 @@ public class MessagingSource  {
 		return getConnectionFactory();
 	}
 
-	public String getPhysicalName() { 
-		String result="";
+	public Object getManagedConnectionFactory() {
+		ConnectionFactory qcf = null;
 		try {
-			ConnectionFactory qcf = getConnectionFactoryDelegate();
-			Object managedConnectionFacory;
+			qcf = getConnectionFactoryDelegate();
 			try {
-				managedConnectionFacory = ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
+				return ClassUtils.invokeGetter(qcf,
+						"getManagedConnectionFactory", true);
 			} catch (Exception e) {
 				// In case of BTM.
-				managedConnectionFacory = ClassUtils.invokeGetter(qcf, "getResource", true);
-			}
-			// result+=ClassUtils.reflectionToString(managedConnectionFacory, "perties"); //catches properties as well as Properties... 
-			// result+=ClassUtils.reflectionToString(qcf, "factory");
-			result+=managedConnectionFacory.toString();
-			if (result.contains("activemq")) {
-				result += "[" + ClassUtils.invokeGetter(managedConnectionFacory,"getBrokerURL",true) + "]";
+				return ClassUtils.invokeGetter(qcf, "getResource", true);
 			}
 		} catch (Exception e) {
-			result+= ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() "+ClassUtils.nameOf(e)+": "+e.getMessage();
+			String errorMsg = getLogPrefix()
+					+ "could not determine managed connection factory";
+			if (qcf != null) {
+				errorMsg += " for [" + ClassUtils.nameOf(qcf) + "]";
+			}
+			log.warn(errorMsg, e);
+			return null;
+		}
+	}
+
+	public String getPhysicalName() { 
+		String result="";
+		Object managedConnectionFactory = getManagedConnectionFactory();
+		if (managedConnectionFactory!=null) {
+			try {
+				result=managedConnectionFactory.toString();
+				if (result.contains("activemq")) {
+					result += "[" + ClassUtils.invokeGetter(managedConnectionFactory,"getBrokerURL",true) + "]";
+				}
+			} catch (Exception e) {
+				result+= ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() "+ClassUtils.nameOf(e)+": "+e.getMessage();
+			}
 		}
 		return result;
 	}

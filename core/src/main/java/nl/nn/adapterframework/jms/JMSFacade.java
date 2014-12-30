@@ -176,6 +176,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return result;
 	}
 
+	public Object getManagedConnectionFactory() throws JmsException {
+		return getMessagingSource().getManagedConnectionFactory();
+	}
+
 	public String getConnectionFactoryInfo() throws JmsException {
 		return getMessagingSource().getPhysicalName();
 	}
