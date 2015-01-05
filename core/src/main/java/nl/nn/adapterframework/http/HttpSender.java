@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import jcifs.util.Base64;
+
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerConfigurationException;
 
@@ -60,8 +62,10 @@ import org.apache.commons.httpclient.StatusLine;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
@@ -75,7 +79,7 @@ import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
 
 /**
- * Sender that gets information via a HTTP using POST or GET.
+ * Sender for the HTTP protocol using GET, POST, PUT or DELETE.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -84,8 +88,8 @@ import org.htmlcleaner.TagNode;
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrlParam(String) urlParam}</td><td>parameter that is used to obtain url; overrides url-attribute.</td><td>url</td></tr>
- * <tr><td>{@link #setMethodType(String) methodType}</td><td>type of method to be executed, either 'GET' or 'POST'</td><td>GET</td></tr>
- * <tr><td>{@link #setContentType(String) contentType}</td><td>content-type of the request, only for POST methods</td><td>text/html; charset=UTF-8</td></tr>
+ * <tr><td>{@link #setMethodType(String) methodType}</td><td>type of method to be executed, either 'GET', 'POST', 'PUT' or 'DELETE'</td><td>GET</td></tr>
+ * <tr><td>{@link #setContentType(String) contentType}</td><td>content-type of the request, only for POST and PUT methods</td><td>text/html; charset=UTF-8</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout in ms of obtaining a connection/result. 0 means no timeout</td><td>10000</td></tr>
  * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>the maximum number of concurrent connections</td><td>10</td></tr>
  * <tr><td>{@link #setMaxExecuteRetries(int) maxExecuteRetries}</td><td>the maximum number of times it the execution is retried</td><td>1</td></tr>
@@ -123,6 +127,7 @@ import org.htmlcleaner.TagNode;
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>>(only used when <code>xhtml=true</code>) stylesheet to apply to the html response</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMultiPart(boolean) multipart}</td><td>when true and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body</td><td>false</td></tr>
  * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)</td><td>false</td></tr>
+ * <tr><td>{@link #setBase64(boolean) base64}</td><td>when true, the result is base64 encoded</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -133,7 +138,7 @@ import org.htmlcleaner.TagNode;
  * <pre>
  *   param_name=param_value&another_param_name=another_param_value
  * </pre>
- * <p>POST methods expect a message similar as GET, or looking like this</p>
+ * <p>POST AND PUT methods expect a message similar as GET, or looking like this</p>
  * <pre>
  *   param_name=param_value
  *   another_param_name=another_param_value
@@ -241,7 +246,8 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private String styleSheetName=null;
 	private boolean multipart=false;
 	private boolean streamResultToServlet=false;
-
+	private boolean base64=false;
+	
 	private TransformerPool transformerPool=null;
 
 	protected Parameter urlParameter;
@@ -513,7 +519,31 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			
 				return postMethod;
 			}
-			throw new SenderException("unknown methodtype ["+getMethodType()+"], must be either POST or GET");
+			if (getMethodType().equals("PUT")) {
+				PutMethod putMethod = new PutMethod(path.toString());
+				if (StringUtils.isNotEmpty(getContentType())) {
+					putMethod.setRequestHeader("Content-Type",getContentType());
+				}
+				if (parameters!=null) {
+					StringBuffer msg = new StringBuffer(message);
+					appendParameters(true,msg,parameters,headersParamsMap);
+					if (StringUtils.isEmpty(message) && msg.length()>1) {
+						message=msg.substring(1);
+					} else {
+						message=msg.toString();
+					}
+				}
+				putMethod.setRequestBody(message);
+				return putMethod;
+			}
+			if (getMethodType().equals("DELETE")) {
+				DeleteMethod deleteMethod = new DeleteMethod(path.toString());
+				if (StringUtils.isNotEmpty(getContentType())) {
+					deleteMethod.setRequestHeader("Content-Type",getContentType());
+				}
+				return deleteMethod;
+			}
+			throw new SenderException("unknown methodtype ["+getMethodType()+"], must be either POST, GET, PUT or DELETE");
 		} catch (URIException e) {
 			throw new SenderException(getLogPrefix()+"cannot find path from url ["+getUrl()+"]", e);
 		}
@@ -642,8 +672,12 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 					+ " body: " + getResponseBodyAsString(httpmethod));
 		}
 		if (response==null) {
-			//return httpmethod.getResponseBodyAsString();
-			return getResponseBodyAsString(httpmethod);
+			if (isBase64()) {
+				return getResponseBodyAsBase64(httpmethod);
+			} else {
+				//return httpmethod.getResponseBodyAsString();
+				return getResponseBodyAsString(httpmethod);
+			}
 		} else {
 			streamResponseBody(httpmethod, response);
 			return "";
@@ -666,6 +700,15 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		return responseBody;
 	}
 
+	public String getResponseBodyAsBase64(HttpMethod httpmethod) throws IOException {
+		byte[] bytes = httpmethod.getResponseBody();
+		if (bytes == null) {
+			return null;
+		}
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"base64 encodes response body");
+		return Base64.encode(bytes);
+	}
+	
 	public void streamResponseBody(HttpMethod httpmethod, HttpServletResponse response) throws IOException {
 		InputStream is = httpmethod.getResponseBodyAsStream();
 		String contentType = httpmethod.getResponseHeader("Content-Type").getValue();
@@ -713,7 +756,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				httpmethod=getPostMethodWithParamsInBody(uri, message, pvl, headersParamsMap, prc);
 			} else {
 				httpmethod=getMethod(uri, message, pvl, headersParamsMap);
-				if (!"POST".equals(getMethodType())) {
+				if (!"POST".equals(getMethodType()) && !"PUT".equals(getMethodType()) ) {
 					httpmethod.setFollowRedirects(isFollowRedirects());
 				}
 			}
@@ -1124,5 +1167,12 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public boolean isStreamResultToServlet() {
 		return streamResultToServlet;
+	}
+
+	public void setBase64(boolean b) {
+		base64 = b;
+	}
+	public boolean isBase64() {
+		return base64;
 	}
 }
