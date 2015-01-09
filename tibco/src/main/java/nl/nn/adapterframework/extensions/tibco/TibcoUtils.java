@@ -31,8 +31,6 @@ import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.tibco.tibjms.admin.QueueInfo;
-import com.tibco.tibjms.admin.TibjmsAdmin;
 import com.tibco.tibjms.admin.TibjmsAdminException;
 
 /**
@@ -43,41 +41,35 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
 public class TibcoUtils {
 	static Logger log = LogUtil.getLogger(TibcoUtils.class);
 
+	public static long getQueueFirstMessageAge(String provUrl,
+			String authAlias, String userName, String password, String queueName)
+			throws JMSException, TibjmsAdminException {
+		return getQueueFirstMessageAge(provUrl, authAlias, userName, password,
+				queueName, null);
+	}
+
 	/**
 	 * return -1: no message found
 	 * return -2: message found, but not of type Message.
 	 */
-	public static long getQueueFirstMessageAge(String provUrl, String authAlias,
-			String userName, String password, String queueName)
-			throws JMSException, TibjmsAdminException {
+	public static long getQueueFirstMessageAge(String provUrl,
+			String authAlias, String userName, String password,
+			String queueName, String messageSelector) throws JMSException,
+			TibjmsAdminException {
 		String url = StringUtils.replace(provUrl, "tibjmsnaming:", "tcp:");
 		CredentialFactory cf = new CredentialFactory(authAlias, userName,
 				password);
 		Connection connection = null;
 		Session jSession = null;
-		TibjmsAdmin admin = null;
 		try {
-			admin = new TibjmsAdmin(url, cf.getUsername(), cf.getPassword());
-			QueueInfo qInfo = admin.getQueue(queueName);
-			if (qInfo.getPendingMessageCount() > 0) {
-				ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(
-						url);
-				connection = factory.createConnection(cf.getUsername(),
-						cf.getPassword());
-				jSession = connection.createSession(false,
-						javax.jms.Session.AUTO_ACKNOWLEDGE);
-				return getQueueFirstMessageAge(jSession, queueName);
-			} else {
-				return -1;
-			}
+			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(
+					url);
+			connection = factory.createConnection(cf.getUsername(),
+					cf.getPassword());
+			jSession = connection.createSession(false,
+					javax.jms.Session.AUTO_ACKNOWLEDGE);
+			return getQueueFirstMessageAge(jSession, queueName, messageSelector);
 		} finally {
-			if (admin != null) {
-				try {
-					admin.close();
-				} catch (TibjmsAdminException e) {
-					log.warn("Exception on closing Tibjms Admin", e);
-				}
-			}
 			if (connection != null) {
 				try {
 					connection.close();
@@ -90,18 +82,30 @@ public class TibcoUtils {
 
 	protected static long getQueueFirstMessageAge(Session jSession,
 			String queueName) throws JMSException {
-		return getQueueFirstMessageAge(jSession, queueName, System.currentTimeMillis());
+		return getQueueFirstMessageAge(jSession, queueName, null);
 	}
 
-	
-	/**
-	 * return -1: no message found
-	 * return -2: message found, but not of type Message.
-	 */
+	protected static long getQueueFirstMessageAge(Session jSession,
+			String queueName, String messageSelector) throws JMSException {
+		return getQueueFirstMessageAge(jSession, queueName, messageSelector,
+				System.currentTimeMillis());
+	}
+
 	protected static long getQueueFirstMessageAge(Session jSession,
 			String queueName, long currentTime) throws JMSException {
+		return getQueueFirstMessageAge(jSession, queueName, null, currentTime);
+	}
+
+	protected static long getQueueFirstMessageAge(Session jSession,
+			String queueName, String messageSelector, long currentTime)
+			throws JMSException {
 		Queue queue = jSession.createQueue(queueName);
-		QueueBrowser queueBrowser = jSession.createBrowser(queue);
+		QueueBrowser queueBrowser;
+		if (messageSelector == null) {
+			queueBrowser = jSession.createBrowser(queue);
+		} else {
+			queueBrowser = jSession.createBrowser(queue, messageSelector);
+		}
 		Enumeration enm = queueBrowser.getEnumeration();
 		if (enm.hasMoreElements()) {
 			Object o = enm.nextElement();
