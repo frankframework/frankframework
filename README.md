@@ -30,6 +30,44 @@ See [release notes](RELEASES.md).
 
 
 
+Commit messages
+===============
+
+Format of the commit message:
+
+    <type>: <subject>
+    <BLANK_LINE>
+    <body>
+    <BLANK_LINE>
+    <footer>
+
+**Allowed &lt;type&gt;:**
+- feat (new feature)
+- fix (bug fix)
+- docs (changes to documentation)
+- style (formatting, missing semi colons, etc; no code change)
+- refactor (refactoring production code)
+- test (adding missing tests, refactoring tests; no production code change)
+- chore (updating grunt tasks etc; no production code change)
+
+**&lt;subject&gt; text:**
+- use imperative, present tense: “change” not “changed” nor “changes”
+- don't capitalize first letter
+- no dot (.) at the end
+
+**Message body (required for scope 'feat' and 'fix'):**
+- just as in <subject> use imperative, present tense: “change” not “changed” nor “changes”
+- includes motivation for the change and contrasts with previous behavior
+- the message body contains a more functional description of the change which is understandable for non-developers
+
+**Message footer (optional):**
+- Closed issues should be listed on a separate line in the footer prefixed with "Closes" keyword like this:  
+*Closes #234*  
+or in case of multiple issues:  
+*Closes #123, #245, #992*
+
+
+
 Mailing list and IRC
 ====================
 
