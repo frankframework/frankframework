@@ -96,9 +96,13 @@
     <profile>
       <id>m2e-iaf-with-proprietary-dependencies</id>
       <activation>
+        <!--
+        Disable profile activation only being done for m2e as a workaround for a
+        bug in Maven versions before 3.2.2.
+        http://maven.apache.org/docs/3.2.2/release-notes.html#Requiring_multiple_profile_activation_conditions_to_be_true_does_not_work_MNG-4565
         <property>
           <name>m2e.version</name>
-        </property>
+        </property -->
         <file>
           <exists>../../mvn-repo-proprietary/.project</exists>
         </file>
