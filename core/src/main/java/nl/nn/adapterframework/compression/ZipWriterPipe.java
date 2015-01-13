@@ -72,6 +72,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setCloseOutputstreamOnExit(boolean) closeOutputstreamOnExit}</td>  <td>only for action="open": when set to <code>false</code>, the outputstream is not closed after the zip creation is finished</td><td>true</td></tr>
  * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td>  <td>only for action="write": when set to <code>false</code>, the inputstream is not closed after the zip entry is written</td><td>true</td></tr>
  * <tr><td>{@link #setCharset(String) charset}</td><td>only for action="write": charset used to write strings to zip entries</td><td>UTF-8</td></tr>
+ * <tr><td>{@link #setCompleteFileHeader(boolean) completeFileHeader}</td><td>only for action="write": when set to <code>true</code>, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero)</td><td>false</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -104,6 +105,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	private boolean closeInputstreamOnExit=true;
 	private boolean closeOutputstreamOnExit=true;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private boolean completeFileHeader=false;
 	
 	private Parameter filenameParameter=null; //used for with action=open for main filename, with action=write for entryfilename
 
@@ -234,7 +236,11 @@ public class ZipWriterPipe extends FixedForwardPipe {
 			}
 			if (ACTION_WRITE.equals(getAction())) {
 				try {
-					sessionData.writeEntry(filename, input, isCloseInputstreamOnExit(), getCharset());
+					if (isCompleteFileHeader()) {
+						sessionData.writeEntryWithCompletedHeader(filename, input, isCloseInputstreamOnExit(), getCharset());
+					} else {
+						sessionData.writeEntry(filename, input, isCloseInputstreamOnExit(), getCharset());
+					}
 				} catch (IOException e) {
 					throw new PipeRunException(this,getLogPrefix(session)+"cannot add data to zipentry for ["+filename+"]",e);
 				}
@@ -287,5 +293,12 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	}
 	public String getAction() {
 		return action;
+	}
+
+	public void setCompleteFileHeader(boolean b) {
+		completeFileHeader = b;
+	}
+	public boolean isCompleteFileHeader() {
+		return completeFileHeader;
 	}
 }
