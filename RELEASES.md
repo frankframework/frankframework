@@ -9,22 +9,48 @@ Upcoming
 --------
 
 [JavaDocs](http://www.ibissource.org/iaf/maven/apidocs/index.html)
-[Commits](https://github.com/ibissource/iaf/compare/v5.5...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v5.6.1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
-- Move Test Tool 1 from IbisTestToolWEB to Maven module Ibis AdapterFramework Larva
 - Add support for jetty-maven-plugin
+- Added note "Theme Bootstrap is part of a beta version" in main page of IBIS console for theme "bootstrap"
+- Put regular form fields received by rest calls in sessionKeys (next to file form fields) so they can be used in the pipeline
+- Added xslt2 attribute to parameter for using XSLT 2.0 instead of only XSLT 1.0
+- Avoid PipeRunException when moving a file to an already existing destination (by adding a counter suffix)
+- Added possibility to log the length of messages instead of the content in the MSG log
 - Added functionality to forward form fields as sessionKeys (in RestListeners)
 - Added possibility to write log records (to separate log files) without the message itself (e.g. for making counts)
 - Configuration warning when FxF directory doesn't exist
 - Added parameter pattern 'uuid' (which can be used instead of the combination of 'hostname' and 'uid')
+- Add preemptive authentication to prevent “httpstatus 407: Proxy Authentication Required" when proxy is used without an user in a http call
+- Make the IBIS console function "Browse a Jdbc table" capable for MQ SQL (next to Oracle)
+- Performance fix for the IBIS console function "Browse a Jdbc table" 
+- Add queue info when getting queue messages (currently used in "ShowTibcoQueues" in IJA_TiBeT2)
+- Add possibility to wait for a database row to be locked (instead of always skipping locked records)
+- Add functionality to temporarily move and/or chomp received messages for memory purposes
+- Remove error about maximum size (10 MB) exceeding messages and increase the similar warning size from 1 MB to 3 MB. For HTTP messages increase the warning size from 32 KB to 128 KB
+- Add possibility to fix the namespace of TIBCO response messages (instead of just copying the namespace)
 - Enable parameters in xpathExpression of XmlSwitch
+- Fix bug in namespace awareness (which was introduced in November 2013)
+- Performance fix for the IBIS console function "Browse a Jdbc table" (get column information directly instead of by selecting first record)
+- Write loaded configuration to file when IBIS is started so it's possible to query on it (e.g. via Splunk)
+- Fix bug "(SQLException) FOR UPDATE clause allowed only for DECLARE CURSOR" for non Oracle dbms which was introduced with lockWait attribute
+- Fix strange bug in DirectoryListener (which occurred in Ibis4Scan)
 - Bugfix database actions not being part of transaction when using BTM
+- Add possibility for a RestListener to stream received documents from and into a database table
 - Better m2e configuration (no need to overwrite/change org.eclipse.wst.common.component anymore)
+- Add class to browse and remove queue messages with input and output a xml message (very useful for test purposes)
+- Move Test Tool 1 from IbisTestToolWEB to Maven module Ibis AdapterFramework Larva
 - Show http body in exception thrown by http sender in case status code indicates an error
 - Make multipart work for http sender in case only inputMessageParam is used (without extra parameters)
 - Bugfix RestListenerServlet that didn't read http body anymore for POST method
 - Add support for paramsInUrl, inputMessageParam and multipart to Larva HttpSender
+- Add custom pipe for interrupting processing when timeout is exceeded
+- Add facility to show the age of the current first message in the queue when pendingMsgCount>0 and receiverCount=0 (currently used in "ShowTibcoQueues" in IJA_TiBeT2)
+- Add facility to check EsbJmsListeners on lost connections
+- Next to the methode type GET and POST, also the method types PUT and DELETE are now possible in HttpSender
+- With the base64 attribute in HttpSender it is possible to receive and pass on non-string results
+- Add completeFileHeader attribute in ZipWriterPipe
 - Bugfix NPE when changing log level in console and nonstandard log4j configuration is used
 
 
