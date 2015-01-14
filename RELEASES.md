@@ -25,6 +25,7 @@ Upcoming
 - Make multipart work for http sender in case only inputMessageParam is used (without extra parameters)
 - Bugfix RestListenerServlet that didn't read http body anymore for POST method
 - Add support for paramsInUrl, inputMessageParam and multipart to Larva HttpSender
+- Bugfix NPE when changing log level in console and nonstandard log4j configuration is used
 
 
 

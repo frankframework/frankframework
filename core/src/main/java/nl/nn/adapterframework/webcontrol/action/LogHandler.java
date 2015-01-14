@@ -86,10 +86,12 @@ public class LogHandler extends ActionBase {
 			+ ""+form_lengthLogRecords
 			+"] by"+commandIssuedBy);
 
-        iaw.setMaxMessageLength(form_lengthLogRecords);
-        AppConstants.getInstance().put("log.logIntermediaryResults", logIntermediaryResults);
+		if (iaw != null) {
+			iaw.setMaxMessageLength(form_lengthLogRecords);
+		}
+		AppConstants.getInstance().put("log.logIntermediaryResults", logIntermediaryResults);
 		lg.setLevel(level);
 
-        return (mapping.findForward("success"));
-        }
+		return (mapping.findForward("success"));
+	}
 }
