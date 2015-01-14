@@ -13,13 +13,13 @@ Upcoming
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 - Add support for jetty-maven-plugin
-- Added note "Theme Bootstrap is part of a beta version" in main page of IBIS console for theme "bootstrap"
+- Add note "Theme Bootstrap is part of a beta version" in main page of IBIS console for theme "bootstrap"
 - Put regular form fields received by rest calls in sessionKeys (next to file form fields) so they can be used in the pipeline
-- Added xslt2 attribute to parameter for using XSLT 2.0 instead of only XSLT 1.0
+- Add xslt2 attribute to parameter for using XSLT 2.0 instead of only XSLT 1.0
 - Avoid PipeRunException when moving a file to an already existing destination (by adding a counter suffix)
-- Added possibility to log the length of messages instead of the content in the MSG log
-- Added functionality to forward form fields as sessionKeys (in RestListeners)
-- Added possibility to write log records (to separate log files) without the message itself (e.g. for making counts)
+- Add possibility to log the length of messages instead of the content in the MSG log
+- Add functionality to forward form fields as sessionKeys (in RestListeners)
+- Add possibility to write log records (to separate log files) without the message itself (e.g. for making counts)
 - Configuration warning when FxF directory doesn't exist
 - Added parameter pattern 'uuid' (which can be used instead of the combination of 'hostname' and 'uid')
 - Add preemptive authentication to prevent “httpstatus 407: Proxy Authentication Required" when proxy is used without an user in a http call
