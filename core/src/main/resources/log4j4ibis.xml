@@ -43,6 +43,9 @@
 		<appender-ref ref="file"/>
 		<appender-ref ref="XML"/>
 	</appender>
+	<logger name="nl.nn.adapterframework.testtool">
+		<level value="WARN"/>
+	</logger>
 	<logger name="org.apache">
 		<level value="INFO"/>
 	</logger>
