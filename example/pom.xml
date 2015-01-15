@@ -63,6 +63,10 @@
               <name>log.dir</name>
               <value>${java.io.tmpdir}</value>
             </systemProperty>
+            <systemProperty>
+              <name>otap.stage</name>
+              <value>LOC</value>
+            </systemProperty>
           </systemProperties>
         </configuration>
       </plugin>

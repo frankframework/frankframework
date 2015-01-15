@@ -54,6 +54,7 @@ Upcoming
 - Bugfix NPE when changing log level in console and nonstandard log4j configuration is used
 - Use default log4j config in example webapp
 - Use AppConstants in Larva Test Tool when testtool.properties not found
+- Configure example webapp to use Larva Test Tool
 
 
 
