@@ -52,6 +52,7 @@ Upcoming
 - With the base64 attribute in HttpSender it is possible to receive and pass on non-string results
 - Add completeFileHeader attribute in ZipWriterPipe
 - Bugfix NPE when changing log level in console and nonstandard log4j configuration is used
+- Use default log4j config in example webapp
 
 
 
