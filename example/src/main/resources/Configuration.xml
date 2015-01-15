@@ -1,5 +1,6 @@
 <!DOCTYPE IOS-Adaptering [
 	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
+	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
 	<!ENTITY ManageDatabase SYSTEM "ConfigurationManageDatabase.xml">
 ]>
 <IOS-Adaptering configurationName="IBIS AdapterFramework (IAF) configuration for example">
@@ -8,5 +9,6 @@
       <!-- jmsRealm realmName="qcf" queueConnectionFactoryName="jms/qcf"/ -->
   </jmsRealms>
   &HelloWorld;
+  &HelloWorlds;
   &ManageDatabase;
 </IOS-Adaptering>

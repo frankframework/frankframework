@@ -1,0 +1,32 @@
+<module>
+	<adapter name="HelloWorlds">
+		<receiver
+			name="HelloWorlds"
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			>
+			<listener
+				name="HelloWorlds"
+				className="nl.nn.adapterframework.receivers.JavaListener"
+			/>
+		</receiver>
+		<pipeline firstPipe="HelloWorlds">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe
+				name="HelloWorlds"
+				className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
+				blockSize="3"
+				blockPrefix="&lt;batch>"
+				blockSuffix="&lt;/batch>"
+				elementXPathExpression="/tests/test"
+				>
+				<sender
+					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					javaListener="HelloWorld"
+				/>
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

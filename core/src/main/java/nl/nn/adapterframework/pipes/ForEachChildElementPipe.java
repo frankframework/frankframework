@@ -196,15 +196,18 @@ public class ForEachChildElementPipe extends IteratingPipe {
 					elementbuffer.append("</"+localName+">");
 				}
 			}
-			if (--elementLevel<=1 && ++itemCounter>=getBlockSize()) {
+			elementLevel--;
+			if (elementLevel == 1) {
+				itemCounter++;
+			}
+			if ((elementLevel == 1 && itemCounter >= getBlockSize())
+					|| (elementLevel == 0 && itemCounter > 0)) {
 				try {
-					if (elementLevel==1 || itemCounter>1) {
-						if (getBlockSize()>0) {
-							elementbuffer.append(getBlockSuffix());
-						}
-						stopRequested = !callback.handleItem(elementbuffer.toString());
-						elementbuffer.setLength(startLength);
+					if (getBlockSize()>0) {
+						elementbuffer.append(getBlockSuffix());
 					}
+					stopRequested = !callback.handleItem(elementbuffer.toString());
+					elementbuffer.setLength(startLength);
 					itemCounter=0;
 				} catch (Exception e) {
 					if (e instanceof TimeOutException) {
@@ -221,7 +224,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 					
 				}
 				if (stopRequested) {
-					throw new SAXException("stop maar");
+					throw new SAXException("stop requested");
 				}
 			}
 		}
