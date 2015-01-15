@@ -2,3 +2,4 @@
 *.iml
 target
 lib
+/example/src/main/resources/Test.properties

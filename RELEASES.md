@@ -55,6 +55,7 @@ Upcoming
 - Use default log4j config in example webapp
 - Use AppConstants in Larva Test Tool when testtool.properties not found
 - Configure example webapp to use Larva Test Tool
+- Add Test.properties to AppConstants for local properties which should not be added to the version control system
 
 
 
