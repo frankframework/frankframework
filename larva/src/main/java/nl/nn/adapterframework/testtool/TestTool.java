@@ -120,46 +120,18 @@ public class TestTool {
 		AppConstants appConstants = AppConstants.getInstance();
 		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
 		IbisContext ibisContext = (IbisContext)application.getAttribute(ibisContextKey);
-		debugMessage("Read scenariosrootdirectory parameter", writers);
-		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
-		String paramScenariosDeploymentSpecs = request.getParameter("scenariosdeploymentspecs");
-		debugMessage("Initialize list of scenarios root directories", writers);
+		debugMessage("Initialize global properties and directories", writers);
 		List scenariosRootDirectories = new ArrayList();
 		List scenariosRootDescriptions = new ArrayList();
-		List scenariosRootDeploymentSpecs = new ArrayList();
-		initScenariosRoots(application, request, scenariosRootDirectories, scenariosRootDescriptions, scenariosRootDeploymentSpecs, ibisContext, writers);
+		StringBuffer scenariosRootDirectoryStringBuffer = new StringBuffer();
+		Properties globalProperties = initGlobalPropertiesAndDirectories(application, request, ibisContext, scenariosRootDirectories, scenariosRootDescriptions, scenariosRootDirectoryStringBuffer, writers);
 		if (scenariosRootDirectories.size() == 0) {
 			debugMessage("Stop logging to logbuffer", writers);
 			writers.put("uselogbuffer", "stop");
 			errorMessage("No scenarios root directories found", writers);
 		} else {
-			debugMessage("Get current scenarios root directory", writers);
-			String scenariosRootDirectory;
-			if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.equals("")) {
-				scenariosRootDirectory = (String)scenariosRootDirectories.get(0);
-			} else {
-				scenariosRootDirectory = paramScenariosRootDirectory;
-			}
-			debugMessage("Read global properties", writers);
-			Properties globalProperties = new Properties();
-			File file;
-			file = new File(scenariosRootDirectory + "/../JavaSource/DeploymentSpecifics.properties");
-			if (file.exists()) globalProperties.putAll(readProperties(file, writers));
-			file = new File(scenariosRootDirectory + "/../JavaSource/ServerTypeSpecifics_" + System.getProperty("application.server.type") + ".properties");
-			if (file.exists()) globalProperties.putAll(readProperties(file, writers));
-			file = new File(scenariosRootDirectory + "/../JavaSource/BuildInfo.properties");
-			if (file.exists()) globalProperties.putAll(readProperties(file, writers));
-			file = new File(scenariosRootDirectory + "/../JavaSource/SideSpecifics_" + System.getProperty("otap.side") + ".properties");
-			if (file.exists()) globalProperties.putAll(readProperties(file, writers));
-			file = new File(scenariosRootDirectory + "/../JavaSource/StageSpecifics_" + System.getProperty("otap.stage") + ".properties");
-			if (file.exists()) globalProperties.putAll(readProperties(file, writers));
-			file = new File(scenariosRootDirectory + "/../JavaSource/Test.properties");
-			if (file.exists()) globalProperties.putAll(readProperties(file, writers));
-			for (Object key : globalProperties.keySet()) {
-				if (System.getProperty((String)key) != null) {
-					globalProperties.put(key, (System.getProperty((String)key)));
-				}
-			}
+			String scenariosRootDirectory = scenariosRootDirectoryStringBuffer.toString();
+			debugMessage("Current scenarios root directory: " + scenariosRootDirectory, writers);
 			debugMessage("Read scenarios from directory '" + scenariosRootDirectory + "'", writers);
 			List allScenarioFiles = readScenarioFiles(globalProperties, scenariosRootDirectory, writers);
 			debugMessage("Read execute parameter", writers);
@@ -771,14 +743,12 @@ public class TestTool {
 		}
 	}
 
-	public static void initScenariosRoots(ServletContext application, 
-										  HttpServletRequest request, 
-										  List scenariosRootDirectories, 
-										  List scenariosRootDescriptions, 
-										  List scenariosRootDeploymentSpecs, 
-										  IbisContext ibisContext,
-										  Map writers) {
-		debugMessage("Get scenarios directories", writers);
+	public static Properties initGlobalPropertiesAndDirectories(
+			ServletContext application, HttpServletRequest request,
+			IbisContext ibisContext, List scenariosRootDirectories,
+			List scenariosRootDescriptions, StringBuffer scenariosRootDirectory,
+			Map writers) {
+		Properties globalProperties = null;
 		String servletPath = request.getServletPath();
 		if (servletPath == null) {
 			errorMessage("Could not read servlet path", writers);
@@ -796,83 +766,119 @@ public class TestTool {
 					}
 					String testToolPropertiesFilename = realPath + "testtool.properties";
 					debugMessage("Test Tool properties file: " + testToolPropertiesFilename, writers);
-					Properties properties = new Properties();
-					try {
-						FileInputStream testToolPropertiesFileInputStream = new FileInputStream(testToolPropertiesFilename);
-						properties.load(testToolPropertiesFileInputStream);
-						testToolPropertiesFileInputStream.close();
-						Map scenariosRoots = new HashMap();
-						int j = 1;
-						String directory = properties.getProperty("scenariosroot" + j + ".directory");
-						String description = properties.getProperty("scenariosroot" + j + ".description");
-						while (directory != null) {
-							if (description == null) {
-								errorMessage("Could not find description for root directory '" + directory + "'", writers);
-							} else if (scenariosRoots.get(description) != null) {
-								errorMessage("A root directory named '" + description + "' already exist", writers);
-							} else {
-								if (!new File(directory).isAbsolute()) {
-									directory = realPath + directory;
-								}
-								if (!directory.endsWith(File.separator)) {
-									directory = directory + File.separator;
-								}
-								scenariosRoots.put(description, directory);
-							}
-							j++;
-							directory = properties.getProperty("scenariosroot" + j + ".directory");
-							description = properties.getProperty("scenariosroot" + j + ".description");
+					File testToolPropertiesFile = new File(testToolPropertiesFilename);
+					if (testToolPropertiesFile.exists()) {
+						debugMessage("Read first set of global properties from Test Tool properties file", writers);
+						globalProperties = new Properties();
+						try {
+							FileInputStream testToolPropertiesFileInputStream = new FileInputStream(testToolPropertiesFilename);
+							globalProperties.load(testToolPropertiesFileInputStream);
+							testToolPropertiesFileInputStream.close();
+						} catch(IOException e) {
+							errorMessage("Could not read file '" + testToolPropertiesFilename + "':" + e.getMessage(), e, writers);
 						}
-						TreeSet treeSet = new TreeSet(new CaseInsensitiveComparator());
-						treeSet.addAll(scenariosRoots.keySet());
-						Iterator iterator = treeSet.iterator();
-						while (iterator.hasNext()) {
-							description = (String)iterator.next();
-							scenariosRootDescriptions.add(description);
-							scenariosRootDirectories.add(scenariosRoots.get(description));
-						}
-						String autoIgnore = properties.getProperty("autoignore");
-						if (autoIgnore != null) {
-							writers.put("autoignore", autoIgnore);
+					} else {
+						debugMessage("Use AppConstants as global properties file", writers);
+						globalProperties = AppConstants.getInstance();
+					}
+					Map scenariosRoots = new HashMap();
+					int j = 1;
+					String directory = globalProperties.getProperty("scenariosroot" + j + ".directory");
+					String description = globalProperties.getProperty("scenariosroot" + j + ".description");
+					while (directory != null) {
+						if (description == null) {
+							errorMessage("Could not find description for root directory '" + directory + "'", writers);
+						} else if (scenariosRoots.get(description) != null) {
+							errorMessage("A root directory named '" + description + "' already exist", writers);
 						} else {
-							writers.put("autoignore", "false");
+							if (!new File(directory).isAbsolute()) {
+								directory = realPath + directory;
+							}
+							if (!directory.endsWith(File.separator)) {
+								directory = directory + File.separator;
+							}
+							scenariosRoots.put(description, directory);
 						}
-						
-						/* This block checks for the existance of the properties 'datasource.name' and
-						 * 'datasource.deleteTable'. If both are present, the table is emptied.
-						 * Big part is ripped from openQueues (jdbc-part).
-						 */
-						String datasourceName = properties.getProperty("datasource.name");
-						String datasourceDeleteTable = properties.getProperty("datasource.deleteTable");
-						if (datasourceName != null && datasourceDeleteTable != null) {
-							
-							FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
-							deleteQuerySender.setName("Test Tool delete table");
-							deleteQuerySender.setDatasourceName(AppConstants.getInstance().getResolvedProperty("jndiContextPrefix") + datasourceName);
-							deleteQuerySender.setQueryType("delete");
-							deleteQuerySender.setQuery("delete from " + datasourceDeleteTable);
-							try {
-								deleteQuerySender.configure();				 		
-								deleteQuerySender.open(); 						
-					
-								deleteQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
-								deleteQuerySender.close();
-								debugMessage("Deleted table " + datasourceDeleteTable, writers);
-							} catch(ConfigurationException e) {
-								errorMessage("Could not configure deleteQuerySender: " + e.getMessage(), e, writers);
-							} catch(TimeOutException e) {
-								errorMessage("Time out on execute pre delete query for '" + datasourceDeleteTable + "': " + e.getMessage(), e, writers);
-							} catch(SenderException e) {
-								errorMessage("Could not execute pre delete query for '" + datasourceDeleteTable + "': " + e.getMessage(), e, writers);
+						j++;
+						directory = globalProperties.getProperty("scenariosroot" + j + ".directory");
+						description = globalProperties.getProperty("scenariosroot" + j + ".description");
+					}
+					TreeSet treeSet = new TreeSet(new CaseInsensitiveComparator());
+					treeSet.addAll(scenariosRoots.keySet());
+					Iterator iterator = treeSet.iterator();
+					while (iterator.hasNext()) {
+						description = (String)iterator.next();
+						scenariosRootDescriptions.add(description);
+						scenariosRootDirectories.add(scenariosRoots.get(description));
+					}
+					debugMessage("Read scenariosrootdirectory parameter", writers);
+					String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
+					String paramScenariosDeploymentSpecs = request.getParameter("scenariosdeploymentspecs");
+					debugMessage("Get current scenarios root directory", writers);
+					if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.equals("")) {
+						scenariosRootDirectory.append((String)scenariosRootDirectories.get(0));
+					} else {
+						scenariosRootDirectory.append(paramScenariosRootDirectory);
+					}
+					if (testToolPropertiesFile.exists()) {
+						debugMessage("Emulate AppConstants for remaining set of global properties next to Test Tool properties file", writers);
+						File file;
+						file = new File(scenariosRootDirectory + "/../JavaSource/DeploymentSpecifics.properties");
+						if (file.exists()) globalProperties.putAll(readProperties(file, writers));
+						file = new File(scenariosRootDirectory + "/../JavaSource/ServerTypeSpecifics_" + System.getProperty("application.server.type") + ".properties");
+						if (file.exists()) globalProperties.putAll(readProperties(file, writers));
+						file = new File(scenariosRootDirectory + "/../JavaSource/BuildInfo.properties");
+						if (file.exists()) globalProperties.putAll(readProperties(file, writers));
+						file = new File(scenariosRootDirectory + "/../JavaSource/SideSpecifics_" + System.getProperty("otap.side") + ".properties");
+						if (file.exists()) globalProperties.putAll(readProperties(file, writers));
+						file = new File(scenariosRootDirectory + "/../JavaSource/StageSpecifics_" + System.getProperty("otap.stage") + ".properties");
+						if (file.exists()) globalProperties.putAll(readProperties(file, writers));
+						file = new File(scenariosRootDirectory + "/../JavaSource/Test.properties");
+						if (file.exists()) globalProperties.putAll(readProperties(file, writers));
+						for (Object key : globalProperties.keySet()) {
+							if (System.getProperty((String)key) != null) {
+								globalProperties.put(key, (System.getProperty((String)key)));
 							}
 						}
+					}
+					String autoIgnore = globalProperties.getProperty("autoignore");
+					if (autoIgnore != null) {
+						writers.put("autoignore", autoIgnore);
+					} else {
+						writers.put("autoignore", "false");
+					}
+					/* This block checks for the existance of the properties 'datasource.name' and
+					 * 'datasource.deleteTable'. If both are present, the table is emptied.
+					 * Big part is ripped from openQueues (jdbc-part).
+					 */
+					String datasourceName = globalProperties.getProperty("datasource.name");
+					String datasourceDeleteTable = globalProperties.getProperty("datasource.deleteTable");
+					if (datasourceName != null && datasourceDeleteTable != null) {
 						
-					} catch(IOException e) {
-						errorMessage("Could not read file '" + testToolPropertiesFilename + "':" + e.getMessage(), e, writers);
+						FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+						deleteQuerySender.setName("Test Tool delete table");
+						deleteQuerySender.setDatasourceName(AppConstants.getInstance().getResolvedProperty("jndiContextPrefix") + datasourceName);
+						deleteQuerySender.setQueryType("delete");
+						deleteQuerySender.setQuery("delete from " + datasourceDeleteTable);
+						try {
+							deleteQuerySender.configure();				 		
+							deleteQuerySender.open(); 						
+				
+							deleteQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
+							deleteQuerySender.close();
+							debugMessage("Deleted table " + datasourceDeleteTable, writers);
+						} catch(ConfigurationException e) {
+							errorMessage("Could not configure deleteQuerySender: " + e.getMessage(), e, writers);
+						} catch(TimeOutException e) {
+							errorMessage("Time out on execute pre delete query for '" + datasourceDeleteTable + "': " + e.getMessage(), e, writers);
+						} catch(SenderException e) {
+							errorMessage("Could not execute pre delete query for '" + datasourceDeleteTable + "': " + e.getMessage(), e, writers);
+						}
 					}
 				}
 			}
 		}
+		return globalProperties;
 	}
 
 	public static List readScenarioFiles(Properties globalProperties, String scenariosDirectory, Map writers) {
