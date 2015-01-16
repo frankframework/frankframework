@@ -57,6 +57,7 @@ Upcoming
 - Configure example webapp to use Larva Test Tool
 - Add Test.properties to AppConstants for local properties which should not be added to the version control system
 - Bugfix ForEachChildElementPipe with blockSize which was skipping remaining items after last block
+- Remove datasource.deleteTable function from Larva
 
 
 

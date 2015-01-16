@@ -849,34 +849,6 @@ public class TestTool {
 					} else {
 						writers.put("autoignore", "false");
 					}
-					/* This block checks for the existance of the properties 'datasource.name' and
-					 * 'datasource.deleteTable'. If both are present, the table is emptied.
-					 * Big part is ripped from openQueues (jdbc-part).
-					 */
-					String datasourceName = globalProperties.getProperty("datasource.name");
-					String datasourceDeleteTable = globalProperties.getProperty("datasource.deleteTable");
-					if (datasourceName != null && datasourceDeleteTable != null) {
-						
-						FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
-						deleteQuerySender.setName("Test Tool delete table");
-						deleteQuerySender.setDatasourceName(AppConstants.getInstance().getResolvedProperty("jndiContextPrefix") + datasourceName);
-						deleteQuerySender.setQueryType("delete");
-						deleteQuerySender.setQuery("delete from " + datasourceDeleteTable);
-						try {
-							deleteQuerySender.configure();				 		
-							deleteQuerySender.open(); 						
-				
-							deleteQuerySender.sendMessage(TESTTOOL_CORRELATIONID, TESTTOOL_DUMMY_MESSAGE);
-							deleteQuerySender.close();
-							debugMessage("Deleted table " + datasourceDeleteTable, writers);
-						} catch(ConfigurationException e) {
-							errorMessage("Could not configure deleteQuerySender: " + e.getMessage(), e, writers);
-						} catch(TimeOutException e) {
-							errorMessage("Time out on execute pre delete query for '" + datasourceDeleteTable + "': " + e.getMessage(), e, writers);
-						} catch(SenderException e) {
-							errorMessage("Could not execute pre delete query for '" + datasourceDeleteTable + "': " + e.getMessage(), e, writers);
-						}
-					}
 				}
 			}
 		}
