@@ -816,7 +816,9 @@ public class TestTool {
 					String paramScenariosDeploymentSpecs = request.getParameter("scenariosdeploymentspecs");
 					debugMessage("Get current scenarios root directory", writers);
 					if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.equals("")) {
-						scenariosRootDirectory.append((String)scenariosRootDirectories.get(0));
+						if (scenariosRootDirectories.size() > 0) {
+							scenariosRootDirectory.append((String)scenariosRootDirectories.get(0));
+						}
 					} else {
 						scenariosRootDirectory.append(paramScenariosRootDirectory);
 					}
