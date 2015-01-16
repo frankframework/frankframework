@@ -124,7 +124,7 @@ public class TestTool {
 		List scenariosRootDirectories = new ArrayList();
 		List scenariosRootDescriptions = new ArrayList();
 		StringBuffer scenariosRootDirectoryStringBuffer = new StringBuffer();
-		Properties globalProperties = initGlobalPropertiesAndDirectories(application, request, ibisContext, scenariosRootDirectories, scenariosRootDescriptions, scenariosRootDirectoryStringBuffer, writers);
+		Properties globalProperties = initGlobalPropertiesAndDirectories(application, request, scenariosRootDirectories, scenariosRootDescriptions, scenariosRootDirectoryStringBuffer, writers);
 		if (scenariosRootDirectories.size() == 0) {
 			debugMessage("Stop logging to logbuffer", writers);
 			writers.put("uselogbuffer", "stop");
@@ -745,9 +745,8 @@ public class TestTool {
 
 	public static Properties initGlobalPropertiesAndDirectories(
 			ServletContext application, HttpServletRequest request,
-			IbisContext ibisContext, List scenariosRootDirectories,
-			List scenariosRootDescriptions, StringBuffer scenariosRootDirectory,
-			Map writers) {
+			List scenariosRootDirectories, List scenariosRootDescriptions,
+			StringBuffer scenariosRootDirectory, Map writers) {
 		Properties globalProperties = null;
 		String servletPath = request.getServletPath();
 		if (servletPath == null) {
@@ -842,12 +841,6 @@ public class TestTool {
 								globalProperties.put(key, (System.getProperty((String)key)));
 							}
 						}
-					}
-					String autoIgnore = globalProperties.getProperty("autoignore");
-					if (autoIgnore != null) {
-						writers.put("autoignore", autoIgnore);
-					} else {
-						writers.put("autoignore", "false");
 					}
 				}
 			}
@@ -2812,42 +2805,6 @@ public class TestTool {
 				i++;
 			} else {
 				canonicaliseFilePathContentBetweenKeysProcessed = true;
-			}
-		}
-		String useAutoIgnore = (String) writers.get("autoignore"); 
-		if (useAutoIgnore.equals("true")) {
-			debugMessage("Use auto ignore", writers);
-			if (fileName.endsWith(".xml")) {
-				// Auto ignore's for xml
-				debugMessage("Ignore xml comment", writers);
-				preparedExpectedResult = removeKeysAndContentBetweenKeys(preparedExpectedResult, "<!--", "-->");
-				preparedActualResult = removeKeysAndContentBetweenKeys(preparedActualResult, "<!--", "-->");
-				debugMessage("Ignore linenumbers in stacktraces", writers);
-				preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, ".java:", ")");
-				preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, ".java:", ")");
-				preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, ".java(", "Compiled Code))");
-				preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, ".java(", "Compiled Code))");
-				debugMessage("Ignore AuditTrailInformation", writers);
-				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, "<AuditTrailInformation>", "</AuditTrailInformation>");
-				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, "<AuditTrailInformation>", "</AuditTrailInformation>");
-				debugMessage("Ignore timeStamp", writers);
-				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, "<timeStamp>", "</timeStamp>");
-				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, "<timeStamp>", "</timeStamp>");
-				debugMessage("Ignore errorMessage timestamp and receivedTime attributes", writers);
-				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, "<errorMessage timestamp=\"", "\"");
-				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, "<errorMessage timestamp=\"", "\"");
-				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, "receivedTime=\"", "\"");
-				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, "receivedTime=\"", "\"");
-				debugMessage("Ignore transactionEffectiveDate", writers);
-				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, "<transactionEffectiveDate>", "</transactionEffectiveDate>");
-				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, "<transactionEffectiveDate>", "</transactionEffectiveDate>");
-			} else {
-				// Auto ignore's for txt
-				debugMessage("Ignore newlines", writers);
-				preparedExpectedResult = removeKey(preparedExpectedResult, "\n");
-				preparedActualResult = removeKey(preparedActualResult, "\n");
-				preparedExpectedResult = removeKey(preparedExpectedResult, "\r");
-				preparedActualResult = removeKey(preparedActualResult, "\r");
 			}
 		}
 		debugMessage("Check ignoreRegularExpressionKey properties", writers);
