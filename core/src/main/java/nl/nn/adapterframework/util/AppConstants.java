@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -46,7 +48,12 @@ public final class AppConstants extends Properties implements Serializable{
 
 	private AppConstants() {
 		super();
-		load();
+		load(propertiesFileName);
+	}
+
+	private AppConstants(String directory) {
+		super();
+		load(directory, propertiesFileName);
 	}
 
 	/**
@@ -58,6 +65,14 @@ public final class AppConstants extends Properties implements Serializable{
 			self=new AppConstants();
 		}
 		return self;
+	}
+
+	/**
+	 * Retrieve an instance based on a directory
+	 * @return AppConstants instance
+	 */
+	public static synchronized AppConstants getInstance(String directory) {
+		return new AppConstants(directory);
 	}
 
 	/**
@@ -127,13 +142,11 @@ public final class AppConstants extends Properties implements Serializable{
 		  list = defaults;
 	    return new StringTokenizer(list, ",");
 	}
-	/**
-	 * Load loads the properties from the file specified by propertiesFileName and any propertiesfile specified
-	 * there-in.
-	 */
-	public void load() {
-	    load(propertiesFileName);
+
+	private synchronized void load(String filename) {
+		load(null, filename);
 	}
+
 	/**
 	 * Load the contents of a propertiesfile.
 	 * <p>Optionally, this may be a comma-seperated list of files to load, e.g.
@@ -142,40 +155,52 @@ public final class AppConstants extends Properties implements Serializable{
 	 * so you may also specify <code><pre>log4j.properties, deploymentspecifics.properties</pre></code>
 	 * </p>
 	 */
-	public synchronized void load(String filename) {
-
-	    StringTokenizer tokenizer = new StringTokenizer(filename, ",");
-
-	    while (tokenizer.hasMoreTokens()) {
-	        String theFilename= tokenizer.nextToken().trim();
-	        try {
+	private synchronized void load(String directory, String filename) {
+		StringTokenizer tokenizer = new StringTokenizer(filename, ",");
+		while (tokenizer.hasMoreTokens()) {
+			String theFilename= tokenizer.nextToken().trim();
+			try {
 				if (StringResolver.needsResolution(theFilename)) {
 					Properties props = Misc.getEnvironmentVariables();
 					props.putAll(System.getProperties());
 					theFilename = StringResolver.substVars(theFilename, props);
 				}
-	            URL url = ClassUtils.getResourceURL(this, theFilename);
-
-				if (url==null) {
-					log.debug("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
+				URL url = null;
+				InputStream is = null;
+				if (directory == null) {
+					url = ClassUtils.getResourceURL(this, theFilename);
+					if (url == null) {
+						log.debug("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
+					} else {
+						is = url.openStream();
+					}
 				} else {
-		            InputStream is = url.openStream();
-		            load(is);
-		            log.info("Application constants loaded from [" + url.toString() + "]");
-		            if (getProperty(additionalPropertiesFileKey) != null) {
-		                // prevent reloading of the same file over and over again
-		                String loadFile = getProperty(additionalPropertiesFileKey);
-		                this.remove(additionalPropertiesFileKey);
-		                load(loadFile);
-		            }
+					theFilename = directory + "/" + theFilename;
+					File file = new File(theFilename);
+					if (file.exists()) {
+						is = new FileInputStream(file);
+					} else {
+						log.debug("cannot find file ["+theFilename+"] to load additional properties from, ignoring");
+					}
 				}
-	        } catch (IOException e) {
-	            log.error("error reading [" + propertiesFileName + "]", e);
-	        }
-	    }
-	}
-	public void setDefaults(Properties defaults) {
-		super.putAll(defaults);
+				if (is != null) {
+					load(is);
+					if (url != null) {
+						log.info("Application constants loaded from url [" + url.toString() + "]");
+					} else {
+						log.info("Application constants loaded from file [" + theFilename + "]");
+					}
+					if (getProperty(additionalPropertiesFileKey) != null) {
+						// prevent reloading of the same file over and over again
+						String loadFile = getProperty(additionalPropertiesFileKey);
+						this.remove(additionalPropertiesFileKey);
+						load(directory, loadFile);
+					}
+				}
+			} catch (IOException e) {
+				log.error("error reading [" + propertiesFileName + "]", e);
+			}
+		}
 	}
 
 	public String toXml() {

@@ -120,20 +120,29 @@ public class TestTool {
 		AppConstants appConstants = AppConstants.getInstance();
 		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
 		IbisContext ibisContext = (IbisContext)application.getAttribute(ibisContextKey);
-		debugMessage("Initialize global properties and directories", writers);
+		debugMessage("Initialize scenarios root directories", writers);
 		List scenariosRootDirectories = new ArrayList();
 		List scenariosRootDescriptions = new ArrayList();
-		StringBuffer scenariosRootDirectoryStringBuffer = new StringBuffer();
-		Properties globalProperties = initGlobalPropertiesAndDirectories(application, request, scenariosRootDirectories, scenariosRootDescriptions, scenariosRootDirectoryStringBuffer, writers);
+		String currentScenariosRootDirectory = initScenariosRootDirectories(appConstants, application, request, scenariosRootDirectories, scenariosRootDescriptions, writers);
 		if (scenariosRootDirectories.size() == 0) {
 			debugMessage("Stop logging to logbuffer", writers);
 			writers.put("uselogbuffer", "stop");
 			errorMessage("No scenarios root directories found", writers);
 		} else {
-			String scenariosRootDirectory = scenariosRootDirectoryStringBuffer.toString();
-			debugMessage("Current scenarios root directory: " + scenariosRootDirectory, writers);
-			debugMessage("Read scenarios from directory '" + scenariosRootDirectory + "'", writers);
-			List allScenarioFiles = readScenarioFiles(globalProperties, scenariosRootDirectory, writers);
+			String appConstantsDirectory = appConstants.getResolvedProperty("larva.appconstants.directory");
+			if (appConstantsDirectory != null) {
+				appConstantsDirectory = currentScenariosRootDirectory + "/" + appConstantsDirectory;
+				if (new File(currentScenariosRootDirectory).exists()) {
+					if (new File(appConstantsDirectory).exists()) {
+						debugMessage("Get AppConstants from directory: " + appConstantsDirectory, writers);
+						appConstants = AppConstants.getInstance(appConstantsDirectory);
+					} else {
+						errorMessage("Directory for AppConstans not found", writers);
+					}
+				}
+			}
+			debugMessage("Read scenarios from directory '" + currentScenariosRootDirectory + "'", writers);
+			List allScenarioFiles = readScenarioFiles(appConstants, currentScenariosRootDirectory, writers);
 			debugMessage("Read execute parameter", writers);
 			String paramExecute = request.getParameter("execute");
 			debugMessage("Read waitbeforecleanup parameter", writers);
@@ -147,7 +156,7 @@ public class TestTool {
 				}
 			}
 			debugMessage("Write html form", writers);
-			printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, scenariosRootDirectory, globalProperties, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
+			printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
 			debugMessage("Stop logging to logbuffer", writers);
 			writers.put("uselogbuffer", "stop");
 			debugMessage("Start debugging to out", writers);
@@ -157,10 +166,10 @@ public class TestTool {
 				String scenariosRootDirectoryCanonicalPath;
 				try {
 					paramExecuteCanonicalPath = new File(paramExecute).getCanonicalPath();
-					scenariosRootDirectoryCanonicalPath = new File(scenariosRootDirectory).getCanonicalPath();
+					scenariosRootDirectoryCanonicalPath = new File(currentScenariosRootDirectory).getCanonicalPath();
 				} catch(IOException e) {
 					paramExecuteCanonicalPath = paramExecute;
-					scenariosRootDirectoryCanonicalPath = scenariosRootDirectory;
+					scenariosRootDirectoryCanonicalPath = currentScenariosRootDirectory;
 					errorMessage("Could not get canonical path: " + e.getMessage(), e, writers);
 				}
 				if (paramExecuteCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
@@ -176,7 +185,7 @@ public class TestTool {
 						scenarioFiles.add(new File(paramExecute));
 					} else {
 						debugMessage("Read all scenarios from directory '" + paramExecute + "'", writers);
-						scenarioFiles = readScenarioFiles(globalProperties, paramExecute, writers);
+						scenarioFiles = readScenarioFiles(appConstants, paramExecute, writers);
 					}
 					boolean evenStep = false;
 					debugMessage("Initialize statistics variables", writers);
@@ -191,7 +200,7 @@ public class TestTool {
 				
 						String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
 						String longName = scenarioFile.getAbsolutePath();
-						String shortName = longName.substring(scenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
+						String shortName = longName.substring(currentScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
 	
 						if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") < LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
 							writeHtml("<br/>", writers, false);
@@ -199,7 +208,7 @@ public class TestTool {
 							writeHtml("<div class='scenario'>", writers, false);
 						}
 						debugMessage("Read property file " + scenarioFile.getName(), writers);
-						Properties properties = readProperties(globalProperties, scenarioFile, writers);
+						Properties properties = readProperties(appConstants, scenarioFile, writers);
 						List steps = null;
 	
 						if (properties != null) {
@@ -307,7 +316,7 @@ public class TestTool {
 					writers.put("usehtmlbuffer", "start");
 					writeHtml("<br/>", writers, false);
 					writeHtml("<br/>", writers, false);
-					printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, scenariosRootDirectory, globalProperties, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
+					printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
 					debugMessage("Stop logging to htmlbuffer", writers);
 					writers.put("usehtmlbuffer", "stop");
 					writeHtml("", writers, true);
@@ -316,7 +325,7 @@ public class TestTool {
 		}
 	}
 
-	public static void printHtmlForm(List scenariosRootDirectories, List scenariosRootDescriptions, String scenariosRootDirectory, Properties globalProperties, List scenarioFiles, int waitBeforeCleanUp, String paramExecute, String autoScroll, Map writers) {
+	public static void printHtmlForm(List scenariosRootDirectories, List scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List scenarioFiles, int waitBeforeCleanUp, String paramExecute, String autoScroll, Map writers) {
 		writeHtml("<form action=\"index.jsp\" method=\"post\">", writers, false);
 
 		writeHtml("<table>", writers, false);
@@ -332,7 +341,7 @@ public class TestTool {
 		while (scenarioFilesIterator.hasNext()) {
 			File scenarioFile = (File)scenarioFilesIterator.next();
 			String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
-			Properties properties = readProperties(globalProperties, scenarioFile, writers);
+			Properties properties = readProperties(appConstants, scenarioFile, writers);
 			debugMessage("Add parent directories of '" + scenarioDirectory + "'", writers);
 			int i = -1;
 			String scenarioDirectoryCanonicalPath;
@@ -743,11 +752,12 @@ public class TestTool {
 		}
 	}
 
-	public static Properties initGlobalPropertiesAndDirectories(
+	public static String initScenariosRootDirectories(
+			AppConstants appConstants,
 			ServletContext application, HttpServletRequest request,
 			List scenariosRootDirectories, List scenariosRootDescriptions,
-			StringBuffer scenariosRootDirectory, Map writers) {
-		Properties globalProperties = null;
+			 Map writers) {
+		String currentScenariosRootDirectory = null;
 		String servletPath = request.getServletPath();
 		if (servletPath == null) {
 			errorMessage("Could not read servlet path", writers);
@@ -763,27 +773,10 @@ public class TestTool {
 					if (!realPath.endsWith(File.separator)) {
 						realPath = realPath + File.separator;
 					}
-					String testToolPropertiesFilename = realPath + "testtool.properties";
-					debugMessage("Test Tool properties file: " + testToolPropertiesFilename, writers);
-					File testToolPropertiesFile = new File(testToolPropertiesFilename);
-					if (testToolPropertiesFile.exists()) {
-						debugMessage("Read first set of global properties from Test Tool properties file", writers);
-						globalProperties = new Properties();
-						try {
-							FileInputStream testToolPropertiesFileInputStream = new FileInputStream(testToolPropertiesFilename);
-							globalProperties.load(testToolPropertiesFileInputStream);
-							testToolPropertiesFileInputStream.close();
-						} catch(IOException e) {
-							errorMessage("Could not read file '" + testToolPropertiesFilename + "':" + e.getMessage(), e, writers);
-						}
-					} else {
-						debugMessage("Use AppConstants as global properties file", writers);
-						globalProperties = AppConstants.getInstance();
-					}
 					Map scenariosRoots = new HashMap();
 					int j = 1;
-					String directory = globalProperties.getProperty("scenariosroot" + j + ".directory");
-					String description = globalProperties.getProperty("scenariosroot" + j + ".description");
+					String directory = appConstants.getResolvedProperty("scenariosroot" + j + ".directory");
+					String description = appConstants.getResolvedProperty("scenariosroot" + j + ".description");
 					while (directory != null) {
 						if (description == null) {
 							errorMessage("Could not find description for root directory '" + directory + "'", writers);
@@ -799,8 +792,8 @@ public class TestTool {
 							scenariosRoots.put(description, directory);
 						}
 						j++;
-						directory = globalProperties.getProperty("scenariosroot" + j + ".directory");
-						description = globalProperties.getProperty("scenariosroot" + j + ".description");
+						directory = appConstants.getResolvedProperty("scenariosroot" + j + ".directory");
+						description = appConstants.getResolvedProperty("scenariosroot" + j + ".description");
 					}
 					TreeSet treeSet = new TreeSet(new CaseInsensitiveComparator());
 					treeSet.addAll(scenariosRoots.keySet());
@@ -816,39 +809,18 @@ public class TestTool {
 					debugMessage("Get current scenarios root directory", writers);
 					if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.equals("")) {
 						if (scenariosRootDirectories.size() > 0) {
-							scenariosRootDirectory.append((String)scenariosRootDirectories.get(0));
+							currentScenariosRootDirectory = (String)scenariosRootDirectories.get(0);
 						}
 					} else {
-						scenariosRootDirectory.append(paramScenariosRootDirectory);
-					}
-					if (testToolPropertiesFile.exists()) {
-						debugMessage("Emulate AppConstants for remaining set of global properties next to Test Tool properties file", writers);
-						File file;
-						file = new File(scenariosRootDirectory + "/../JavaSource/DeploymentSpecifics.properties");
-						if (file.exists()) globalProperties.putAll(readProperties(file, writers));
-						file = new File(scenariosRootDirectory + "/../JavaSource/ServerTypeSpecifics_" + System.getProperty("application.server.type") + ".properties");
-						if (file.exists()) globalProperties.putAll(readProperties(file, writers));
-						file = new File(scenariosRootDirectory + "/../JavaSource/BuildInfo.properties");
-						if (file.exists()) globalProperties.putAll(readProperties(file, writers));
-						file = new File(scenariosRootDirectory + "/../JavaSource/SideSpecifics_" + System.getProperty("otap.side") + ".properties");
-						if (file.exists()) globalProperties.putAll(readProperties(file, writers));
-						file = new File(scenariosRootDirectory + "/../JavaSource/StageSpecifics_" + System.getProperty("otap.stage") + ".properties");
-						if (file.exists()) globalProperties.putAll(readProperties(file, writers));
-						file = new File(scenariosRootDirectory + "/../JavaSource/Test.properties");
-						if (file.exists()) globalProperties.putAll(readProperties(file, writers));
-						for (Object key : globalProperties.keySet()) {
-							if (System.getProperty((String)key) != null) {
-								globalProperties.put(key, (System.getProperty((String)key)));
-							}
-						}
+						currentScenariosRootDirectory = paramScenariosRootDirectory;
 					}
 				}
 			}
 		}
-		return globalProperties;
+		return currentScenariosRootDirectory;
 	}
 
-	public static List readScenarioFiles(Properties globalProperties, String scenariosDirectory, Map writers) {
+	public static List readScenarioFiles(AppConstants appConstants, String scenariosDirectory, Map writers) {
 		List scenarioFiles = new ArrayList();
 		debugMessage("List all files in directory '" + scenariosDirectory + "'", writers);
 		File[] files = new File(scenariosDirectory).listFiles();
@@ -861,7 +833,7 @@ public class TestTool {
 			for (int i = 0; i < files.length; i++) {
 				File file = files[i];
 				if (file.getName().endsWith(".properties")) {
-					Properties properties = readProperties(globalProperties, file, writers);
+					Properties properties = readProperties(appConstants, file, writers);
 					if (properties != null && properties.get("scenario.description") != null) {
 						String active = properties.getProperty("scenario.active", "true");
 						if (active.equalsIgnoreCase("true")) {
@@ -869,7 +841,7 @@ public class TestTool {
 						}
 					}
 				} else if (file.isDirectory() && (!file.getName().equals("CVS"))) {
-					scenarioFiles.addAll(readScenarioFiles(globalProperties, file.getAbsolutePath(), writers));
+					scenarioFiles.addAll(readScenarioFiles(appConstants, file.getAbsolutePath(), writers));
 				}
 			}
 		}
@@ -877,20 +849,13 @@ public class TestTool {
 		return scenarioFiles;
 	}
 
-	public static Properties readProperties(File propertiesFile, Map writers) {
-		return readProperties(null, propertiesFile, false, writers);
+	public static Properties readProperties(AppConstants appConstants, File propertiesFile, Map writers) {
+		return readProperties(appConstants, propertiesFile, true, writers);
 	}
 
-	public static Properties readProperties(Properties globalProperties, File propertiesFile, Map writers) {
-		return readProperties(globalProperties, propertiesFile, true, writers);
-	}
-
-	public static Properties readProperties(Properties globalProperties, File propertiesFile, boolean substVars, Map writers) {
+	public static Properties readProperties(AppConstants appConstants, File propertiesFile, boolean root, Map writers) {
 		String directory = new File(propertiesFile.getAbsolutePath()).getParent();
 		Properties properties = new Properties();
-		if (globalProperties != null) {
-			properties.putAll(globalProperties);
-		}
 		FileInputStream fileInputStreamPropertiesFile = null;
 		try {
 			fileInputStreamPropertiesFile = new FileInputStream(propertiesFile);
@@ -908,14 +873,17 @@ public class TestTool {
 			while (includeFilename != null) {
 				debugMessage("Load include file: " + includeFilename, writers);
 				File includeFile = new File(getAbsolutePath(directory, includeFilename));
-				Properties includeProperties = readProperties(globalProperties, includeFile, false, writers);
+				Properties includeProperties = readProperties(appConstants, includeFile, false, writers);
 				includedProperties.putAll(includeProperties);
 				i++;
 				includeFilename = properties.getProperty("include" + i);
 			}
 			properties.putAll(includedProperties);
-			for (Object key : properties.keySet()) {
-				properties.put(key, StringResolver.substVars((String)properties.get(key), globalProperties));
+			if (root) {
+				properties.putAll(appConstants);
+				for (Object key : properties.keySet()) {
+					properties.put(key, StringResolver.substVars((String)properties.get(key), properties));
+				}
 			}
 			debugMessage(properties.size() + " properties found", writers);
 		} catch(Exception e) {
