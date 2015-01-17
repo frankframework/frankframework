@@ -95,13 +95,13 @@
 				alt="Show Ibisstore Summary">
 			</imagelink>
 			<imagelink
-				href="test/index.jsp"
-				type="testtool1"
+				href="larva"
+				type="larva"
 				alt="Larva Test Tool">
 			</imagelink>
 			<imagelink
 				href="testtool"
-				type="testtool"
+				type="ladybug"
 				alt="Ladybug Test Tool">
 			</imagelink>
 			<imagelink
