@@ -131,7 +131,7 @@ public class TestTool {
 		} else {
 			String appConstantsDirectory = appConstants.getResolvedProperty("larva.appconstants.directory");
 			if (appConstantsDirectory != null) {
-				appConstantsDirectory = currentScenariosRootDirectory + "/" + appConstantsDirectory;
+				appConstantsDirectory = getAbsolutePath(currentScenariosRootDirectory, appConstantsDirectory);
 				if (new File(currentScenariosRootDirectory).exists()) {
 					if (new File(appConstantsDirectory).exists()) {
 						debugMessage("Get AppConstants from directory: " + appConstantsDirectory, writers);
@@ -783,12 +783,7 @@ public class TestTool {
 						} else if (scenariosRoots.get(description) != null) {
 							errorMessage("A root directory named '" + description + "' already exist", writers);
 						} else {
-							if (!new File(directory).isAbsolute()) {
-								directory = realPath + directory;
-							}
-							if (!directory.endsWith(File.separator)) {
-								directory = directory + File.separator;
-							}
+							directory = getAbsolutePath(realPath, directory, true);
 							scenariosRoots.put(description, directory);
 						}
 						j++;
@@ -808,7 +803,17 @@ public class TestTool {
 					String paramScenariosDeploymentSpecs = request.getParameter("scenariosdeploymentspecs");
 					debugMessage("Get current scenarios root directory", writers);
 					if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.equals("")) {
-						if (scenariosRootDirectories.size() > 0) {
+						String defaultScenariosRootDirectory = appConstants.getResolvedProperty("scenariosroot.default");
+						if (defaultScenariosRootDirectory != null) {
+							defaultScenariosRootDirectory = getAbsolutePath(realPath, defaultScenariosRootDirectory, true);
+							if (scenariosRootDirectories.contains(defaultScenariosRootDirectory)) {
+								currentScenariosRootDirectory = defaultScenariosRootDirectory;
+							} else {
+								errorMessage("Default scenarios root directory not found: " + defaultScenariosRootDirectory, writers);
+							}
+						}
+						if (currentScenariosRootDirectory == null
+								&& scenariosRootDirectories.size() > 0) {
 							currentScenariosRootDirectory = (String)scenariosRootDirectories.get(0);
 						}
 					} else {
@@ -900,6 +905,10 @@ public class TestTool {
 		return properties;
 	}
 
+	public static String getAbsolutePath(String parent, String child) {
+		return getAbsolutePath(parent, child, false);
+	}
+
 	/**
 	 * Returns the absolute pathname for the child pathname. The parent pathname
 	 * is used as a prefix when the child pathname is an not absolute.
@@ -907,7 +916,8 @@ public class TestTool {
 	 * @param parent  the parent pathname to use
 	 * @param child   the child pathname to convert to a absolute pathname
 	 */
-	public static String getAbsolutePath(String parent, String child) {
+	public static String getAbsolutePath(String parent, String child,
+			boolean addFileSeparator) {
 		File result;
 		File file = new File(child);
 		if (file.isAbsolute()) {
@@ -915,7 +925,11 @@ public class TestTool {
 		} else {
 			result = new File(parent, child);
 		}
-		return result.getAbsolutePath();
+		if (addFileSeparator) {
+			return result.getAbsolutePath() + File.separator;
+		} else {
+			return result.getAbsolutePath();
+		}
 	}
 
 	public static void addAbsolutePathProperties(String propertiesDirectory, Properties properties) {

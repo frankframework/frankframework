@@ -61,11 +61,19 @@
             </systemProperty>
             <systemProperty>
               <name>log.dir</name>
-              <value>${java.io.tmpdir}</value>
+              <value>target</value>
+            </systemProperty>
+            <systemProperty>
+              <name>log.level</name>
+              <value>DEBUG</value>
             </systemProperty>
             <systemProperty>
               <name>otap.stage</name>
               <value>LOC</value>
+            </systemProperty>
+            <systemProperty>
+              <name>scenariosroot.default</name>
+              <value>../../../../src/test/resources</value>
             </systemProperty>
           </systemProperties>
         </configuration>

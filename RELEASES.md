@@ -61,6 +61,7 @@ Upcoming
 - Remove autoignore function from Larva
 - Replace testtool.properties with AppConstants
 - Remove unused and broken Larva jsp's
+- Add scenariosroot.default property
 
 
 
