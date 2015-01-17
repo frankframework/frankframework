@@ -59,6 +59,8 @@ Upcoming
 - Bugfix ForEachChildElementPipe with blockSize which was skipping remaining items after last block
 - Remove datasource.deleteTable function from Larva
 - Remove autoignore function from Larva
+- Replace testtool.properties with AppConstants
+- Remove unused and broken Larva jsp's
 
 
 
