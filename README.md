@@ -107,12 +107,13 @@ Commit messages
 ===============
 
 When relevant to the end-user first add a line to [release notes](RELEASES.md)
-at the end of section 'Upcoming' with a functional description targeted to
-end-user. There's no limit on the length of this line. After that create the
-commit message targeted to developers and Git tools with a short one-line
-description in the first line (in some cases the same as the release notes line)
-and if necessary a more detailed explanatory text after a blank line. See:
+at the end of [section 'Upcoming'](RELEASES.md#upcoming) with a functional
+description targeted to end-user. There's no limit on the length of this line.
+After that create the commit message targeted to developers and Git tools with a
+short one-line description in the first line (in some cases the same as the
+release notes line) and if necessary a more detailed explanatory text after a
+blank line. See:
 
-http://chris.beams.io/posts/git-commit/#seven-rules
-http://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting
-http://git-scm.com/book/ch5-2.html
+- http://chris.beams.io/posts/git-commit/#seven-rules
+- http://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting
+- http://git-scm.com/book/ch5-2.html
