@@ -71,10 +71,6 @@
               <name>otap.stage</name>
               <value>LOC</value>
             </systemProperty>
-            <systemProperty>
-              <name>scenariosroot.default</name>
-              <value>../../../../src/test/resources</value>
-            </systemProperty>
           </systemProperties>
         </configuration>
       </plugin>
