@@ -773,7 +773,8 @@ public class TestTool {
 					if (!realPath.endsWith(File.separator)) {
 						realPath = realPath + File.separator;
 					}
-					Map scenariosRoots = new HashMap();
+					Map<String, String> scenariosRoots = new HashMap<String, String>();
+					Map<String, String> scenariosRootsBroken = new HashMap<String, String>();
 					int j = 1;
 					String directory = appConstants.getResolvedProperty("scenariosroot" + j + ".directory");
 					String description = appConstants.getResolvedProperty("scenariosroot" + j + ".description");
@@ -792,7 +793,11 @@ public class TestTool {
 								debugMessage("Use m2e parent: " + parent, writers);
 							}
 							directory = getAbsolutePath(parent, directory, true);
-							scenariosRoots.put(description, directory);
+							if (new File(directory).exists()) {
+								scenariosRoots.put(description, directory);
+							} else {
+								scenariosRootsBroken.put(description, directory);
+							}
 						}
 						j++;
 						directory = appConstants.getResolvedProperty("scenariosroot" + j + ".directory");
@@ -806,19 +811,22 @@ public class TestTool {
 						scenariosRootDescriptions.add(description);
 						scenariosRootDirectories.add(scenariosRoots.get(description));
 					}
+					treeSet.clear();
+					treeSet.addAll(scenariosRootsBroken.keySet());
+					iterator = treeSet.iterator();
+					while (iterator.hasNext()) {
+						description = (String)iterator.next();
+						scenariosRootDescriptions.add("X " + description);
+						scenariosRootDirectories.add(scenariosRootsBroken.get(description));
+					}
 					debugMessage("Read scenariosrootdirectory parameter", writers);
 					String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
 					String paramScenariosDeploymentSpecs = request.getParameter("scenariosdeploymentspecs");
 					debugMessage("Get current scenarios root directory", writers);
 					if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.equals("")) {
-						String defaultScenariosRootDirectory = appConstants.getResolvedProperty("scenariosroot.default");
-						if (defaultScenariosRootDirectory != null) {
-							defaultScenariosRootDirectory = getAbsolutePath(realPath, defaultScenariosRootDirectory, true);
-							if (scenariosRootDirectories.contains(defaultScenariosRootDirectory)) {
-								currentScenariosRootDirectory = defaultScenariosRootDirectory;
-							} else {
-								errorMessage("Default scenarios root directory not found: " + defaultScenariosRootDirectory, writers);
-							}
+						String scenariosRootDefault = appConstants.getResolvedProperty("scenariosroot.default");
+						if (scenariosRootDefault != null) {
+							currentScenariosRootDirectory = scenariosRoots.get(scenariosRootDefault);
 						}
 						if (currentScenariosRootDirectory == null
 								&& scenariosRootDirectories.size() > 0) {
