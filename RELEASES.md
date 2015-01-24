@@ -62,6 +62,7 @@ Upcoming
 - Replace testtool.properties with AppConstants
 - Remove unused and broken Larva jsp's
 - Add scenariosroot.default property
+- Add support to Larva for Maven based Eclipse projects
 
 
 

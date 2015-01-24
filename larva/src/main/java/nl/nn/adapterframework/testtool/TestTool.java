@@ -783,7 +783,15 @@ public class TestTool {
 						} else if (scenariosRoots.get(description) != null) {
 							errorMessage("A root directory named '" + description + "' already exist", writers);
 						} else {
-							directory = getAbsolutePath(realPath, directory, true);
+							String parent = realPath;
+							String m2eFileName = appConstants.getResolvedProperty("scenariosroot" + j + ".m2e.pom.properties");
+							if (m2eFileName != null) {
+								debugMessage("Read m2e pom.properties: " + m2eFileName, writers);
+								Properties m2eProperties = readProperties(null, new File(realPath, m2eFileName), false, writers);
+								parent = m2eProperties.getProperty("m2e.projectLocation");
+								debugMessage("Use m2e parent: " + parent, writers);
+							}
+							directory = getAbsolutePath(parent, directory, true);
 							scenariosRoots.put(description, directory);
 						}
 						j++;
