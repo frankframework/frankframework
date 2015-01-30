@@ -190,7 +190,8 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 						}
 					}
 				}
-				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException);
+				Map properties = getMessagePropertiesToSet(threadContext);
+				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} else {
 				if (getSender()==null) {
 					log.info("["+getName()+"] has no sender, not sending the result.");
@@ -226,7 +227,9 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 	}
 
-
+	public Map getMessagePropertiesToSet(Map threadContext) {
+		return null;
+	}
 
     public void setJmsConnector(IListenerConnector configurator) {
 		jmsConnector = configurator;

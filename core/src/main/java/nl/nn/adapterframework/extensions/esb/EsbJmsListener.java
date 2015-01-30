@@ -15,9 +15,14 @@
 */
 package nl.nn.adapterframework.extensions.esb;
 
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -37,8 +42,9 @@ import nl.nn.adapterframework.jms.JmsListener;
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUseReplyTo(boolean) useReplyTo}</td><td>if messageProtocol=<code>FF</code>: </td><td>false</td></tr>
+ * <tr><td>{@link #setUseReplyTo(boolean) useReplyTo}</td><td>if messageProtocol=<code>FF</code>: </td><td><code>false</code></td></tr>
  * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setCopyAEProperties(boolean) copyAEProperties}</td><td>if <code>true</code>, all JMS properties in the request starting with "ae_" are copied to the reply</td><td><code>false</code></td></tr>
  * </table></p>
  * 
  * @author  Peter Leeuwenburgh
@@ -49,7 +55,8 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	private final static String CACHE_CONSUMER = "CACHE_CONSUMER";
 
 	private String messageProtocol = null;
-
+	private boolean copyAEProperties = false;
+	
 	public void configure() throws ConfigurationException {
 		if (getMessageProtocol() == null) {
 			throw new ConfigurationException(getLogPrefix() + "messageProtocol must be set");
@@ -70,6 +77,30 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		super.configure();
 	}
 
+	protected String retrieveIdFromMessage(Message message, Map threadContext) throws ListenerException {
+		String id = super.retrieveIdFromMessage(message, threadContext);
+		if (isCopyAEProperties()) {
+			Enumeration propertyNames = null;
+			try {
+				propertyNames = message.getPropertyNames();
+			} catch (JMSException e) {
+				log.debug("ignoring JMSException in getPropertyName()", e);
+			}
+			while (propertyNames.hasMoreElements()) {
+				String propertyName = (String) propertyNames.nextElement ();
+				if (propertyName.startsWith("ae_")) {
+					try {
+						Object object = message.getObjectProperty(propertyName);
+						threadContext.put(propertyName, object);
+					} catch (JMSException e) {
+						log.debug("ignoring JMSException in getObjectProperty()", e);
+					}
+				}
+			}
+		}
+		return id;
+	}
+
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {
 		super.afterMessageProcessed(plr, rawMessage, threadContext);
 		if (getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY)) {
@@ -77,6 +108,24 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			if (replyTo == null) {
 				log.warn("no replyTo address found for messageProtocol [" + getMessageProtocol() + "], response is lost");
 			}
+		}
+	}
+
+	public Map getMessagePropertiesToSet(Map threadContext) {
+		if (isCopyAEProperties()) {
+			Map properties = new HashMap();
+			if (threadContext!=null) {
+				for (Iterator it = threadContext.keySet().iterator(); it.hasNext();) {
+					String key = (String)it.next();
+					if (key.startsWith("ae_")) {
+						Object value = threadContext.get(key);
+						properties.put(key, value);
+					}
+				}
+			}
+			return properties;
+		} else {
+			return null;
 		}
 	}
 	
@@ -106,5 +155,13 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		} else {
 			return false;
 		}
+	}
+
+	public void setCopyAEProperties(boolean b) {
+		copyAEProperties = b;
+	}
+
+	public boolean isCopyAEProperties() {
+		return copyAEProperties;
 	}
 }
