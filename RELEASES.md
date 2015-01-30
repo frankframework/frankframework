@@ -64,6 +64,7 @@ Upcoming
 - Add scenariosroot.default property
 - Add support to Larva for Maven based Eclipse projects
 - Sort available scenarios root directories before unavailable ones
+- Adjust the filling of the ESB Common Message Header in the SOAP Header
 
 
 

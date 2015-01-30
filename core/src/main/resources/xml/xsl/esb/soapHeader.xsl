@@ -20,6 +20,7 @@
 	<xsl:param name="conversationId" />
 	<xsl:param name="messageId" />
 	<xsl:param name="correlationId" />
+	<xsl:param name="externalRefToMessageId" />
 	<xsl:param name="timestamp" />
 	<xsl:template match="/">
 		<xsl:element name="MessageHeader" namespace="{$namespace}">
@@ -53,6 +54,11 @@
 				<xsl:if test="string-length($correlationId)&gt;0">
 					<xsl:element name="CorrelationId" namespace="{$namespace}">
 						<xsl:value-of select="$correlationId" />
+					</xsl:element>
+				</xsl:if>
+				<xsl:if test="string-length($externalRefToMessageId)&gt;0">
+					<xsl:element name="ExternalRefToMessageId" namespace="{$namespace}">
+						<xsl:value-of select="$externalRefToMessageId" />
 					</xsl:element>
 				</xsl:if>
 				<xsl:element name="Timestamp" namespace="{$namespace}">

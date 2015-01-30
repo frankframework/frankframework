@@ -27,6 +27,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Extension to SoapWrapperPipe for separate modes.
@@ -61,6 +62,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>ConversationId</td><td>2</td><td>$conversationId</td></tr>
  * <tr><td>CorrelationId</td><td>2</td><td>$correlationId (if empty then skip this element)</td></tr>
  * <tr><td>MessageId</td><td>2</td><td>$messageId</td></tr>
+ * <tr><td>ExternalRefToMessageId</td><td>2</td><td>$externalRefToMessageId (if empty then skip this element)</td></tr>
  * <tr><td>Timestamp</td><td>2</td><td>$timestamp</td></tr>
  * <tr><td>Service</td><td>1</td><td>&nbsp;</td></tr>
  * <tr><td>Name</td><td>2</td><td>$serviceName</td></tr>
@@ -86,10 +88,11 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>serviceLayer</td><td>&nbsp;</td></tr>
  * <tr><td>destination</td><td>if not empty this parameter contains the preceding parameters as described in 'Location' in the table above</td></tr>
  * <tr><td>fromId</td><td>property 'instance.name'</td></tr>
- * <tr><td>cpaId</td><td>if $paradigm equals 'Response' then copied from the original (received) SOAP Header, else 'n/a'</td></tr>
- * <tr><td>conversationId</td><td>if $paradigm equals 'Response' then copied from the original (received) SOAP Header, else parameter pattern '{hostname}_{uid}'</td></tr>
+ * <tr><td>cpaId</td><td>if applicable, copied from the original (received) SOAP Header, else 'n/a'</td></tr>
+ * <tr><td>conversationId</td><td>if applicable, copied from the original (received) SOAP Header, else parameter pattern '{hostname}_{uid}'</td></tr>
  * <tr><td>messageId</td><td>parameter pattern '{hostname}_{uid}'</td></tr>
- * <tr><td>correlationId</td><td>if applicable, copied from MessageId in the original (received) SOAP Header</td></tr>
+ * <tr><td>correlationId</td><td>if $paradigm equals 'Response' then copied from MessageId in the original (received) SOAP Header</td></tr>
+ * <tr><td>externalRefToMessageId</td><td>if applicable, copied from the original (received) SOAP Header</td></tr>
  * <tr><td>timestamp</td><td>parameter pattern '{now,date,yyyy-MM-dd'T'HH:mm:ss}'</td></tr>
  * </table>
  * </p>
@@ -103,7 +106,6 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>Id</td><td>2</td><td>$fromId</td></tr>
  * <tr><td>HeaderFields</td><td>1</td><td>&nbsp;</td></tr>
  * <tr><td>ConversationId</td><td>2</td><td>$conversationId</td></tr>
- * <tr><td>CorrelationId</td><td>2</td><td>$correlationId (if empty then skip this element)</td></tr>
  * <tr><td>MessageId</td><td>2</td><td>$messageId</td></tr>
  * <tr><td>ExternalRefToMessageId</td><td>2</td><td>$externalRefToMessageId (if empty then skip this element)</td></tr>
  * <tr><td>Timestamp</td><td>2</td><td>$timestamp</td></tr>
@@ -113,7 +115,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><th>name</th><th>default</th></tr>
  * <tr><td>namespace</td><td>"http://www.ing.com/CSP/XSD/General/Message_2"</td></tr>
  * <tr><td>fromId</td><td>property 'instance.name'</td></tr>
- * <tr><td>conversationId</td><td>if $paradigm equals 'Response' or 'Reply' then copied from the original (received) SOAP Header, else parameter pattern '{hostname}_{uid}'</td></tr>
+ * <tr><td>conversationId</td><td>if applicable, copied from the original (received) SOAP Header, else parameter pattern '{hostname}_{uid}'</td></tr>
  * <tr><td>messageId</td><td>parameter pattern '{hostname}_{uid}'</td></tr>
  * <tr><td>externalRefToMessageId</td><td>if applicable, copied from MessageId in the original (received) SOAP Header</td></tr>
  * <tr><td>timestamp</td><td>parameter pattern '{now,date,yyyy-MM-dd'T'HH:mm:ss}'</td></tr>
@@ -490,29 +492,25 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			if (parameterList.findParameter(CPAID)==null) {
 				p = new Parameter();
 				p.setName(CPAID);
-				if (paradigm!=null && paradigm.equals("Response")) {
-					p.setSessionKey(SOAPHEADER);
-					p.setXpathExpression("MessageHeader/HeaderFields/CPAId");
-					p.setRemoveNamespaces(true);
-				} else {
-					p.setValue("n/a");
-				}
+				p.setSessionKey(SOAPHEADER);
+				p.setXpathExpression("MessageHeader/HeaderFields/CPAId");
+				p.setRemoveNamespaces(true);
+				p.setDefaultValue("n/a");
 				addParameter(p);
 			}
 		}
 		if (parameterList.findParameter(CONVERSATIONID)==null) {
 			p = new Parameter();
 			p.setName(CONVERSATIONID);
-			if (paradigm!=null && (paradigm.equals("Response") || paradigm.equals("Reply"))) {
-				p.setSessionKey(SOAPHEADER);
-				p.setXpathExpression("MessageHeader/HeaderFields/ConversationId");
-				p.setRemoveNamespaces(true);
+			p.setSessionKey(SOAPHEADER);
+			p.setXpathExpression("MessageHeader/HeaderFields/ConversationId");
+			p.setRemoveNamespaces(true);
+			if (isUseFixedValues()) {
+				//p.setPattern("{fixedhostname}_{fixeduid}");
+				p.setDefaultValue(Parameter.FIXEDHOSTNAME+"_"+Parameter.FIXEDUID);
 			} else {
-				if (isUseFixedValues()) {
-					p.setPattern("{fixedhostname}_{fixeduid}");
-				} else {
-					p.setPattern("{hostname}_{uid}");
-				}
+				//p.setPattern("{hostname}_{uid}");
+				p.setDefaultValue(Misc.getHostname()+"_"+Misc.createSimpleUUID());
 			}
 			addParameter(p);
 		}
@@ -526,23 +524,28 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			}
 			addParameter(p);
 		}
-		if (mode == Mode.BIS) {
-			if (parameterList.findParameter(EXTERNALREFTOMESSAGEID)==null) {
-				p = new Parameter();
-				p.setName(EXTERNALREFTOMESSAGEID);
-				p.setSessionKey(SOAPHEADER);
+		if (parameterList.findParameter(EXTERNALREFTOMESSAGEID)==null) {
+			p = new Parameter();
+			p.setName(EXTERNALREFTOMESSAGEID);
+			p.setSessionKey(SOAPHEADER);
+			if (mode == Mode.BIS) {
 				p.setXpathExpression("MessageHeader/HeaderFields/MessageId");
-				p.setRemoveNamespaces(true);
-				addParameter(p);
+			} else {
+				p.setXpathExpression("MessageHeader/HeaderFields/ExternalRefToMessageId");
 			}
-		} else {
+			p.setRemoveNamespaces(true);
+			addParameter(p);
+		}
+		if (mode != Mode.BIS) {
 			if (parameterList.findParameter(CORRELATIONID)==null) {
-				p = new Parameter();
-				p.setName(CORRELATIONID);
-				p.setSessionKey(SOAPHEADER);
-				p.setXpathExpression("MessageHeader/HeaderFields/MessageId");
-				p.setRemoveNamespaces(true);
-				addParameter(p);
+				if (paradigm!=null && paradigm.equals("Response")) {
+					p = new Parameter();
+					p.setName(CORRELATIONID);
+					p.setSessionKey(SOAPHEADER);
+					p.setXpathExpression("MessageHeader/HeaderFields/MessageId");
+					p.setRemoveNamespaces(true);
+					addParameter(p);
+				}
 			}
 		}
 		if (parameterList.findParameter(TIMESTAMP)==null) {
