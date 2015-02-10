@@ -180,7 +180,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			String outputRoot = props.getProperty("output.root");
 			File outputXsdFile = new File(propertiesFile.getParent(), outputXsd);
 			int rootPosition;
-			if (inputXsd.equalsIgnoreCase(outputXsd)) {
+			if (inputXsd != null && inputXsd.equalsIgnoreCase(outputXsd)) {
 				rootPosition = 2;
 			} else {
 				rootPosition = 1;
