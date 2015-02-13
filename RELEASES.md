@@ -66,6 +66,8 @@ Upcoming
 - Sort available scenarios root directories before unavailable ones
 - Adjust the filling of the ESB Common Message Header in the SOAP Header
 - Add copyAEProperties attribute in EsbJmsListener
+- Add charset parameter to MailSender
+- Make MailSender parameters messageType and messageBase64 thread-safe
 
 
 

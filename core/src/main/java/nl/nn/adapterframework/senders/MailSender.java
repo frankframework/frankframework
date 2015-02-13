@@ -60,16 +60,19 @@ import org.w3c.dom.Element;
  * Sample email.xml:<br/><code><pre>
  *	&lt;email&gt;
  *	    &lt;recipients&gt;
- *		&lt;recipient type="to"&gt;***@natned&lt;/recipient&gt;
+ *		    &lt;recipient type="to"&gt;***@nn.nl&lt;/recipient&gt;
  *	        &lt;recipient type="cc"&gt;***@nn.nl&lt;/recipient&gt;
  *	    &lt;/recipients&gt;
  *	    &lt;from&gt;***@nn.nl&lt;/from&gt;
  *	    &lt;subject&gt;this is the subject&lt;/subject&gt;
  *	    &lt;message&gt;dit is de message&lt;/message&gt;
+ *	    &lt;messageType&gt;text/plain&lt;/messageType&gt;&lt;!-- Optional --&gt;
+ *	    &lt;messageBase64&gt;false&lt;/messageBase64&gt;&lt;!-- Optional --&gt;
+ *	    &lt;charset&gt;UTF-8&lt;/charset&gt;&lt;!-- Optional --&gt;
  *	    &lt;attachments&gt;
  *	        &lt;attachment name="filename1.txt" type="text"&gt;<i>contents of first attachment</i>&lt;/attachment&gt;
  *	        &lt;attachment name="filename2.txt" type="text" url="url-to-resource" base64="false"&gt;<i>this is an attachment with a resource</i>&lt;/attachment&gt;
- *	    &lt;/attachments&gt;
+ *	    &lt;/attachments&gt;&lt;!-- Optional --&gt;
  *	&lt;/email&gt;
  * </pre></code> <br/>
  * Notice: it must be valid XML. Therefore, especially the message element
@@ -99,6 +102,7 @@ import org.w3c.dom.Element;
  * <tr><td>message</td><td>string</td><td>message itself. If absent, the complete input message is assumed to be the message</td></tr>
  * <tr><td>messageType</td><td>string</td><td>message MIME type (at this moment only available are text/plain and text/html - default: text/plain)</td></tr>
  * <tr><td>messageBase64</td><td>boolean</td><td>indicates whether the message content is base64 encoded (default: false)</td></tr>
+ * <tr><td>charset</td><td>string</td><td>the character encoding (e.g. ISO-8859-1 or UTF-8) used to send the email (default: value of system property mail.mime.charset, when not present the value of system property file.encoding)</td></tr>
  * <tr><td>recipients</td><td>xml</td><td>recipients of the message. must result in a structure like: <code><pre>
  *	        &lt;recipient type="to"&gt;***@natned&lt;/recipient&gt;
  *	        &lt;recipient type="cc"&gt;***@nn.nl&lt;/recipient&gt;
@@ -126,8 +130,6 @@ public class MailSender extends SenderWithParametersBase {
 	private String defaultAttachmentName = "attachment";
 	private String defaultMessageType = "text/plain";
 	private String defaultMessageBase64 = "false";
-	private String messageType = null;
-	private String messageBase64 = null;
 	
 	private int timeout=20000;
 
@@ -203,6 +205,9 @@ public class MailSender extends SenderWithParametersBase {
 	public String sendMessage(String correlationID,	String message,	ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String from=null;
 		String subject=null;
+		String messageType=null;
+		String messageBase64=null;
+		String charset=null;
 		Collection recipients=null;
 		Collection attachments=null;
 		ParameterValueList pvl;
@@ -239,6 +244,11 @@ public class MailSender extends SenderWithParametersBase {
 					messageBase64 = pv.asStringValue(null);  
 					log.debug("MailSender ["+getName()+"] retrieved messageBase64-parameter ["+messageBase64+"]");
 				}
+				pv = pvl.getParameterValue("charset");
+				if (pv != null) {
+					charset = pv.asStringValue(null);  
+					log.debug("MailSender ["+getName()+"] retrieved charset-parameter ["+charset+"]");
+				}
 				pv = pvl.getParameterValue("recipients");
 				if (pv != null) {
 					recipients = pv.asCollection();  
@@ -250,7 +260,7 @@ public class MailSender extends SenderWithParametersBase {
 			} catch (ParameterException e) {
 				throw new SenderException("MailSender ["+getName()+"] got exception determining parametervalues",e);
 			}
-			messageInMailSafeForm = sendEmail(from, subject, message, recipients, attachments);
+			messageInMailSafeForm = sendEmail(from, subject, message, messageType, messageBase64, charset, recipients, attachments);
 		}
 		prc.getSession().put("messageInMailSafeForm", messageInMailSafeForm);
 		return correlationID;
@@ -270,6 +280,9 @@ public class MailSender extends SenderWithParametersBase {
 		String from;
 		String subject;
 		String message;
+		String messageType;
+		String messageBase64;
+		String charset;
 		Collection recipients;
 		Collection attachments;
 		
@@ -282,6 +295,7 @@ public class MailSender extends SenderWithParametersBase {
 			message = XmlUtils.getChildTagAsString(emailElement, "message");
 			messageType = XmlUtils.getChildTagAsString(emailElement, "messageType");
 			messageBase64 = XmlUtils.getChildTagAsString(emailElement, "messageBase64");
+			charset = XmlUtils.getChildTagAsString(emailElement, "charset");
 
 			Element recipientsElement = XmlUtils.getFirstChildTag(emailElement, "recipients");
 			recipients = XmlUtils.getChildTags(recipientsElement, "recipient");
@@ -293,10 +307,12 @@ public class MailSender extends SenderWithParametersBase {
 			throw new SenderException("exception parsing [" + input + "]", e);
 		}
 
-		return sendEmail(from, subject, message, recipients, attachments);
+		return sendEmail(from, subject, message, messageType, messageBase64, charset, recipients, attachments);
 	}
 
-	protected String sendEmail(String from, String subject, String message, Collection recipients, Collection attachments) throws SenderException {
+	protected String sendEmail(String from, String subject, String message,
+			String messageType, String messageBase64, String charset,
+			Collection recipients, Collection attachments) throws SenderException {
 
 		StringBuffer sb = new StringBuffer();
 
@@ -335,9 +351,9 @@ public class MailSender extends SenderWithParametersBase {
 			}
 
 			// construct a message  
-			Message msg = new MimeMessage(session);
+			MimeMessage msg = new MimeMessage(session);
 			msg.setFrom(new InternetAddress(from));
-			msg.setSubject(subject);
+			msg.setSubject(subject, charset);
 			Iterator iter = recipients.iterator();
 			boolean recipientsFound=false;
 			while (iter.hasNext()) {
@@ -366,16 +382,16 @@ public class MailSender extends SenderWithParametersBase {
 			}
 
 			String messageTypeWithCharset;
-			String charset1 = System.getProperty("mail.mime.charset");
-			String charset2 = System.getProperty("file.encoding");
-			if (charset1!=null) {
-				messageTypeWithCharset = messageType + ";charset=" + charset1;
-			} else {
-				if (charset2!=null) {
-					messageTypeWithCharset = messageType + ";charset=" + charset2;
-				} else {
-					messageTypeWithCharset = messageType;
+			if (charset == null) {
+				charset = System.getProperty("mail.mime.charset");
+				if (charset == null) {
+					charset = System.getProperty("file.encoding");
 				}
+			}
+			if (charset != null) {
+				messageTypeWithCharset = messageType + ";charset=" + charset;
+			} else {
+				messageTypeWithCharset = messageType;
 			}
 			log.debug("MailSender [" + getName() + "] uses encoding ["+messageTypeWithCharset+"]");
 
