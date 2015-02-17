@@ -29,6 +29,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.log4j.Logger;
 
 import com.tibco.tibjms.admin.TibjmsAdminException;
@@ -99,6 +100,12 @@ public class TibcoUtils {
 	protected static long getQueueFirstMessageAge(Session jSession,
 			String queueName, String messageSelector, long currentTime)
 			throws JMSException {
+		return getQueueFirstMessageAge(jSession, queueName, messageSelector, currentTime, true);
+	}
+
+	protected static long getQueueFirstMessageAge(Session jSession,
+			String queueName, String messageSelector, long currentTime, boolean warn)
+			throws JMSException {
 		Queue queue = jSession.createQueue(queueName);
 		QueueBrowser queueBrowser;
 		if (messageSelector == null) {
@@ -114,12 +121,31 @@ public class TibcoUtils {
 				long jmsTimestamp = msg.getJMSTimestamp();
 				return currentTime - jmsTimestamp;
 			} else {
-				log.warn("message was not of type Message, but ["
-						+ o.getClass().getName() + "]");
+				if (warn) {
+					log.warn("message was not of type Message, but ["
+							+ o.getClass().getName() + "]");
+				}
 				return -2;
 			}
 		} else {
 			return -1;
+		}
+	}
+
+	protected static String getQueueFirstMessageAgeAsString(Session jSession,
+			String queueName, long currentTime) {
+		try {
+			long age = getQueueFirstMessageAge(jSession, queueName, null,
+					currentTime, false);
+			if (age == -2) {
+				return "??";
+			} else if (age == -1) {
+				return null;
+			} else {
+				return DurationFormatUtils.formatDuration(age, "ddd-HH:mm:ss");
+			}
+		} catch (JMSException e) {
+			return "?";
 		}
 	}
 }

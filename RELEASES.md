@@ -68,6 +68,7 @@ Upcoming
 - Add copyAEProperties attribute in EsbJmsListener
 - Add charset parameter to MailSender
 - Make MailSender parameters messageType and messageBase64 thread-safe
+- Add queueRegex attribute to GetTibcoQueues
 
 
 

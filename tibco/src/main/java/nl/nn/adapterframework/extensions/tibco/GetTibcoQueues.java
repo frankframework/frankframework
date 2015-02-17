@@ -98,7 +98,8 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String password;
 	private boolean skipTemporaryQueues = false;
 	private boolean hideMessage = false;
-		
+	private String queueRegex;
+
 	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session)
 			throws PipeRunException {
 		String result;
@@ -283,18 +284,11 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				if (showAge) {
 					if (qInfo.getReceiverCount() == 0
 							&& qInfo.getPendingMessageCount() > 0) {
-						long qfmAgeTime;
-						try {
-							qfmAgeTime = TibcoUtils.getQueueFirstMessageAge(
-									jSession, qInfo.getName(), currentTime);
-						} catch (JMSException e) {
-							qfmAgeTime = -3;
-						}
-						String qfmAge = null;
-						if (qfmAgeTime >= 0) {
-							qfmAge = DurationFormatUtils.formatDuration(
-									qfmAgeTime, "ddd-HH:mm:ss");
-						} else if (qfmAgeTime < -1) {
+						String qfmAge;
+						if (getQueueRegex() == null || qInfo.getName().matches(getQueueRegex())) {
+							qfmAge = TibcoUtils.getQueueFirstMessageAgeAsString(jSession,
+									qInfo.getName(), currentTime);
+						} else {
 							qfmAge = "?";
 						}
 						if (qfmAge != null) {
@@ -471,5 +465,13 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 
 	public void setHideMessage(boolean b) {
 		hideMessage = b;
+	}
+
+	public String getQueueRegex() {
+		return queueRegex;
+	}
+
+	public void setQueueRegex(String string) {
+		queueRegex = string;
 	}
 }
