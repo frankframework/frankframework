@@ -25,6 +25,7 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
@@ -57,13 +58,12 @@ public class EsbJmsListenerChecker {
 			if (adapter instanceof Adapter) {
 				for (Iterator receiverIt = adapter.getReceiverIterator(); receiverIt
 						.hasNext();) {
-					ReceiverBase receiver = (ReceiverBase) receiverIt.next();
+					IReceiver receiver = (IReceiver) receiverIt.next();
 					if (receiver instanceof ReceiverBase) {
 						ReceiverBase rb = (ReceiverBase) receiver;
 						if (rb.getRunState().equals(RunStateEnum.STARTED)) {
 							// if (true) {
-							long lastMessageDate = receiver
-									.getLastMessageDate();
+							long lastMessageDate = rb.getLastMessageDate();
 							if (lastMessageDate == 0
 									|| System.currentTimeMillis()
 											- lastMessageDate > idleTimeout) {
