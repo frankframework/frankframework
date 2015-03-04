@@ -251,21 +251,16 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
         BIS
     }
 
-	private final static String SOAPHEADER = "soapHeader";
-
-
 	private Mode mode = Mode.REG;
 	private boolean addOutputNamespace = false;
 	private boolean retrievePhysicalDestination = true;
 
     @Override
 	public void configure() throws ConfigurationException {
-		if ("unwrap".equalsIgnoreCase(getDirection())) {
-			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
-				setSoapHeaderSessionKey(SOAPHEADER);
-			}
-		}
 		if ("wrap".equalsIgnoreCase(getDirection())) {
+			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
+				setSoapHeaderSessionKey(DEFAULT_SOAP_HEADER_SESSION_KEY);
+			}
 			if (StringUtils.isEmpty(getSoapHeaderStyleSheet())) {
 				if (mode == Mode.BIS) {
 					setSoapHeaderStyleSheet("/xml/xsl/esb/bisSoapHeader.xsl");
@@ -492,7 +487,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			if (parameterList.findParameter(CPAID)==null) {
 				p = new Parameter();
 				p.setName(CPAID);
-				p.setSessionKey(SOAPHEADER);
+				p.setSessionKey(getSoapHeaderSessionKey());
 				p.setXpathExpression("MessageHeader/HeaderFields/CPAId");
 				p.setRemoveNamespaces(true);
 				p.setDefaultValue("n/a");
@@ -502,15 +497,14 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		if (parameterList.findParameter(CONVERSATIONID)==null) {
 			p = new Parameter();
 			p.setName(CONVERSATIONID);
-			p.setSessionKey(SOAPHEADER);
+			p.setSessionKey(getSoapHeaderSessionKey());
 			p.setXpathExpression("MessageHeader/HeaderFields/ConversationId");
 			p.setRemoveNamespaces(true);
 			if (isUseFixedValues()) {
-				//p.setPattern("{fixedhostname}_{fixeduid}");
-				p.setDefaultValue(Parameter.FIXEDHOSTNAME+"_"+Parameter.FIXEDUID);
+				p.setPattern("{fixedhostname}_{fixeduid}");
 			} else {
-				//p.setPattern("{hostname}_{uid}");
-				p.setDefaultValue(Misc.getHostname()+"_"+Misc.createSimpleUUID());
+				p.setPattern("{hostname}_{uid}");
+				p.setDefaultValueMethods("pattern");
 			}
 			addParameter(p);
 		}
@@ -527,7 +521,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		if (parameterList.findParameter(EXTERNALREFTOMESSAGEID)==null) {
 			p = new Parameter();
 			p.setName(EXTERNALREFTOMESSAGEID);
-			p.setSessionKey(SOAPHEADER);
+			p.setSessionKey(getSoapHeaderSessionKey());
 			if (mode == Mode.BIS) {
 				p.setXpathExpression("MessageHeader/HeaderFields/MessageId");
 			} else {
@@ -541,7 +535,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 				if (paradigm!=null && paradigm.equals("Response")) {
 					p = new Parameter();
 					p.setName(CORRELATIONID);
-					p.setSessionKey(SOAPHEADER);
+					p.setSessionKey(getSoapHeaderSessionKey());
 					p.setXpathExpression("MessageHeader/HeaderFields/MessageId");
 					p.setRemoveNamespaces(true);
 					addParameter(p);

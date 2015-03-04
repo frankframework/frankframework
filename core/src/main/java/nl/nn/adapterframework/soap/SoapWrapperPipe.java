@@ -21,10 +21,9 @@ import java.util.Map;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -34,6 +33,8 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
  *
@@ -42,12 +43,16 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
- * <tr><td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td><td>
- * <table>
- * <tr><td><code>direction=unwrap</code></td><td>name of the session key to store the content of the SOAP Header from the request in</td></tr>
- * <tr><td><code>direction=wrap</code></td><td>name of the session key to retrieve the content of the SOAP Header for the response from. If the attribute soapHeaderStyleSheet is not empty, the attribute soapHeaderStyleSheet precedes this attribute</td></tr>
- * </table>
- * </td><td>&nbsp;</td></tr>
+ * <tr>
+ *   <td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td>
+ *   <td>
+ *     <table>
+ *       <tr><td><code>direction=unwrap</code></td><td>name of the session key to store the content of the SOAP Header from the request in</td></tr>
+ *       <tr><td><code>direction=wrap</code></td><td>name of the session key to retrieve the content of the SOAP Header for the response from. If the attribute soapHeaderStyleSheet is not empty, the attribute soapHeaderStyleSheet precedes this attribute</td></tr>
+ *     </table>
+ *   </td>
+ *   <td>soapHeader when direction=unwrap</td>
+ * </tr>
  * <tr><td>{@link #setEncodingStyle(String) encodingStyle}</td><td>the encodingStyle to be set in the SOAP Header</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceNamespace(String) serviceNamespace}</td><td>the namespace of the message sent. Identifies the service to be called. May be overriden by an actual namespace setting in the message to be sent</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>(only used when <code>direction=wrap</code>) stylesheet to create the content of the SOAP Header. As input for this stylesheet a dummy xml string is used. Note: outputType=<code>xml</code> and xslt2=<code>true</code></td><td>&nbsp;</td></tr>
@@ -73,6 +78,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Peter Leeuwenburgh
  */
 public class SoapWrapperPipe extends FixedForwardPipe {
+	protected final static String DEFAULT_SOAP_HEADER_SESSION_KEY = "soapHeader";
+
 	private String direction = "wrap";
 	private String soapHeaderSessionKey = null;
 	private String encodingStyle = null;
@@ -94,11 +101,15 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	private TransformerPool outputNamespaceTp = null;
 	private TransformerPool rootTp = null;
 
-    @Override
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		soapWrapper = SoapWrapper.getInstance();
-
+		if ("unwrap".equalsIgnoreCase(getDirection()) && PipeLine.INPUT_WRAPPER_NAME.equals(getName())) {
+			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
+				setSoapHeaderSessionKey(DEFAULT_SOAP_HEADER_SESSION_KEY);
+			}
+		}
 		if (StringUtils.isNotEmpty(getSoapHeaderStyleSheet())) {
 			soapHeaderTp = TransformerPool.configureTransformer0(getLogPrefix(null), null, null, getSoapHeaderStyleSheet(), "xml", false, getParameterList(), true);
 		}
