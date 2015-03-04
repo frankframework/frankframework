@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
@@ -35,6 +36,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IWithParameters;
+import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.pipes.PutSystemDateInSession;
 import nl.nn.adapterframework.util.DateUtils;
@@ -87,6 +89,7 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>URL to a stylesheet that wil be applied to the contents of the message or the value of the session-variable.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoveNamespaces(boolean) removeNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the input message are removed before the stylesheet/xpathExpression is executed</td><td>false</td></tr>
  * <tr><td>{@link #setDefaultValue(String) defaultValue}</td><td>If the result of sessionKey, XpathExpressen and/or Stylesheet returns null or an empty String, this value is returned</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDefaultValueMethods(String) defaultValueMethods}</td><td>Comma separated list of methods (defaultValue, sessionKey, pattern, value or input) to use as default value. Used in the order they appear until a non-null value is found.</td><td>defaultValue</td></tr>
  * <tr><td>{@link #setPattern(String) pattern}</td><td>Value of parameter is determined using substitution and formating. The expression can contain references to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. {now}, {uid}, {uuid}, {hostname} and {fixeddate} are named constants that can be used in the expression. If fname is a parameter or session variable that resolves to Eric, then the pattern 'Hi {fname}, hoe gaat het?' resolves to 'Hi Eric, hoe gaat het?'. A guid can be generated using {hostname}_{uid}, see also <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html</a> for more information about (g)uid's or <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/UUID.html">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/UUID.html</a> for more information about uuid's.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValue(String) value}</td><td>A fixed value</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHidden(boolean) hidden}</td><td>if set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)</td><td><code>false</code></td></tr>
@@ -148,10 +151,11 @@ public class Parameter implements INamedObject, IWithParameters {
 	private String type = null;
 	private String sessionKey = null;
 	private String xpathExpression = null; 
-	private String namespaceDefs = null; 
+	private String namespaceDefs = null;
 	private String styleSheetName = null;
-	private String pattern = null; 
+	private String pattern = null;
 	private String defaultValue = null;
+	private String defaultValueMethods = "defaultValue";
 	private String value = null;
 	private String formatString = null;
 	private String decimalSeparator = null;
@@ -326,7 +330,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			if (StringUtils.isNotEmpty(getSessionKey())) {
 				result=prc.getSession().get(getSessionKey());
 			} else if (StringUtils.isNotEmpty(getPattern())) {
-				result=format(alreadyResolvedParameters, prc); 								
+				result=format(alreadyResolvedParameters, prc);
 			} else if (StringUtils.isNotEmpty(getValue())) {
 				result = getValue();
 			} else {
@@ -339,8 +343,22 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 		} else {
 			// if value is null then return specified default value
-			log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+(isHidden()?hide(getDefaultValue()):getDefaultValue())+"]");
-			result=getDefaultValue();
+			StringTokenizer stringTokenizer = new StringTokenizer(getDefaultValueMethods(), ",");
+			while (result == null && stringTokenizer.hasMoreElements()) {
+				String token = stringTokenizer.nextToken();
+				if ("defaultValue".equals(token)) {
+					result = getDefaultValue();
+				} else if ("sessionKey".equals(token)) {
+					result = prc.getSession().get(getSessionKey());
+				} else if ("pattern".equals(token)) {
+					result = format(alreadyResolvedParameters, prc);
+				} else if ("value".equals(token)) {
+					result = getValue();
+				} else if ("input".equals(token)) {
+					result = prc.getInput();
+				}
+			}
+			log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+(isHidden()?hide(result.toString()):result)+"]");
 		}
 		if (result !=null && result instanceof String) {
 			if (getMinLength()>=0 && !TYPE_NUMBER.equals(getType())) {
@@ -537,20 +555,28 @@ public class Parameter implements INamedObject, IWithParameters {
 		return name;
 	}
 
-	public void setDefaultValue(String rhs) {
-		defaultValue = rhs;
+	public void setDefaultValue(String string) {
+		defaultValue = string;
 	}
 
 	public String getDefaultValue() {
 		return defaultValue;
 	}
 
+	public void setDefaultValueMethods(String string) {
+		defaultValueMethods = string;
+	}
+
+	public String getDefaultValueMethods() {
+		return defaultValueMethods;
+	}
+
 	TransformerPool getTransformerPool() {
 		return transformerPool;
 	}
 
-	public void setSessionKey(String rhs) {
-		sessionKey = rhs;
+	public void setSessionKey(String string) {
+		sessionKey = string;
 	}
 
 	public String getSessionKey() {
