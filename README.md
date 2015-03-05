@@ -103,8 +103,15 @@ The jetty-maven-plugin requires Maven 3 and Java 1.7.
 
 
 
-Commit messages
-===============
+Commits
+=======
+
+Add the current year, the name of the copyright owner and the copyright notice
+(when not already present) to adjusted and new files. See:
+
+- http://www.gnu.org/licenses/gpl-howto.html
+- http://stackoverflow.com/questions/3487007/when-to-update-the-year-in-open-source-copyright-notice
+- http://www.apache.org/licenses/LICENSE-2.0
 
 When relevant to the end-user first add a line to [release notes](RELEASES.md)
 at the end of [section 'Upcoming'](RELEASES.md#upcoming) with a functional
