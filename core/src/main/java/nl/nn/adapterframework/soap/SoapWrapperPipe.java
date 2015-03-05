@@ -51,7 +51,7 @@ import org.apache.commons.lang.StringUtils;
  *       <tr><td><code>direction=wrap</code></td><td>name of the session key to retrieve the content of the SOAP Header for the response from. If the attribute soapHeaderStyleSheet is not empty, the attribute soapHeaderStyleSheet precedes this attribute</td></tr>
  *     </table>
  *   </td>
- *   <td>soapHeader when direction=unwrap</td>
+ *   <td>soapHeader when inputWrapper of pipeline and direction=unwrap, empty otherwise</td>
  * </tr>
  * <tr><td>{@link #setEncodingStyle(String) encodingStyle}</td><td>the encodingStyle to be set in the SOAP Header</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceNamespace(String) serviceNamespace}</td><td>the namespace of the message sent. Identifies the service to be called. May be overriden by an actual namespace setting in the message to be sent</td><td>&nbsp;</td></tr>
