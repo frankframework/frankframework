@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -222,7 +222,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public static final String RCV_RESUMED_MONITOR_EVENT = "Receiver Operation Resumed";
 	public static final String RCV_THREAD_EXIT_MONITOR_EVENT = "Receiver Thread Exited";
 	public static final String RCV_MESSAGE_TO_ERRORSTORE_EVENT = "Receiver Moved Message to ErrorStorage";
-	
+
+	public static final String RCV_MESSAGE_LOG_COMMENTS = "log";
+
 	public static final int RCV_SUSPENSION_MESSAGE_THRESHOLD=60;
 	// Should be smaller than the transaction timeout as the delay takes place
 	// within the transaction. WebSphere default transaction timeout is 120.
@@ -1073,7 +1075,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 //			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 			try {
 				if (getMessageLog()!=null) {
-					getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(),"log",label,pipelineMessage);
+					getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, pipelineMessage);
 				}
 				log.debug(getLogPrefix()+"preparing TimeoutGuard");
 				TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());

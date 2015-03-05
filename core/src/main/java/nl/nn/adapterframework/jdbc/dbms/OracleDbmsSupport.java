@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,6 +44,10 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 
 	public String getNumericKeyFieldType() {
 		return "NUMBER(10)";
+	}
+
+	public String getFromForTablelessSelect() {
+		return "FROM DUAL";
 	}
 
 	public String getAutoIncrementKeyFieldType() {

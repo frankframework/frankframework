@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,7 +43,12 @@ public interface IDbmsSupport {
 	String getSysDate();
 
 	String getNumericKeyFieldType();
-	
+
+	/**
+	 * http://en.wikipedia.org/wiki/DUAL_table
+	 */
+	String getFromForTablelessSelect();
+
 	String getAutoIncrementKeyFieldType();
 	boolean autoIncrementKeyMustBeInserted();
 	String autoIncrementInsertValue(String sequenceName);

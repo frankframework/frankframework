@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -828,7 +828,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			if (StringUtils.isEmpty(messageLog.getSlotId())) {
 				messageLog.setSlotId(getName());
 			}
-			messageLog.setType(JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE);
+			if (StringUtils.isEmpty(messageLog.getType())) {
+				messageLog.setType(JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE);
+			}
 		}
 	}
 	public ITransactionalStorage getMessageLog() {

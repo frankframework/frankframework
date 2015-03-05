@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -177,12 +177,14 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 	at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
    </pre>
  * 
- * @author  Gerrit van Brakel
- * @since 	4.1
+ * @author Gerrit van Brakel
+ * @author Jaco de Groot
+ * @since 4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
 
 	public final static String TYPE_ERRORSTORAGE="E";
+	public final static String TYPE_MESSAGESTORAGE="M";
 	public final static String TYPE_MESSAGELOG_PIPE="L";
 	public final static String TYPE_MESSAGELOG_RECEIVER="A";
 
@@ -215,6 +217,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String prefix="";
 	private int retention = 30;
 	private String schemaOwner4Check=null;
+	private boolean onlyStoreWhenMessageIdUnique=false;
 	
 	private String order;
 	private String messagesOrder=AppConstants.getInstance().getString("browse.messages.order","");
@@ -543,14 +546,15 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						(StringUtils.isNotEmpty(getLabelField())?getLabelField()+",":"")+
 						getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getExpiryDateField()+
 						(isStoreFullMessage()?","+getMessageField():"")+
-						") VALUES ("+
+						(isOnlyStoreWhenMessageIdUnique()?") SELECT ":") VALUES (")+
 						(keyFieldsNeedsInsert?dbmsSupport.autoIncrementInsertValue(getPrefix()+getSequenceName())+",":"")+
 						(StringUtils.isNotEmpty(getTypeField())?"?,":"")+
 						(StringUtils.isNotEmpty(getSlotId())?"?,":"")+
 						(StringUtils.isNotEmpty(getHostField())?"?,":"")+
 						(StringUtils.isNotEmpty(getLabelField())?"?,":"")+
 						"?,?,?,?,?"+
-						(isStoreFullMessage()?","+(blobFieldsNeedsEmptyBlobInsert?dbmsSupport.emptyBlobValue():"?"):"")+")";
+						(isStoreFullMessage()?","+(blobFieldsNeedsEmptyBlobInsert?dbmsSupport.emptyBlobValue():"?"):"")+
+						(isOnlyStoreWhenMessageIdUnique()?" "+dbmsSupport.getFromForTablelessSelect()+" WHERE NOT EXISTS (SELECT * FROM IBISSTORE WHERE "+getIdField()+" = ?"+(StringUtils.isNotEmpty(getSlotId())?" AND "+getSlotIdField()+" = ?":"")+")":")");
 		deleteQuery = "DELETE FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
 		selectKeyQuery = dbmsSupport.getInsertedAutoIncrementValueQuery(getPrefix()+getSequenceName());
 		selectKeyQueryIsDbmsSupported=StringUtils.isNotEmpty(selectKeyQuery);
@@ -770,7 +774,11 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		try { 
 			IDbmsSupport dbmsSupport=getDbmsSupport();
 			if (log.isDebugEnabled()) log.debug("preparing insert statement ["+insertQuery+"]");
-			stmt = conn.prepareStatement(insertQuery);			
+			if (!dbmsSupport.mustInsertEmptyBlobBeforeData()) {
+				stmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
+			} else {
+				stmt = conn.prepareStatement(insertQuery);
+			}
 			stmt.clearParameters();
 			int parPos=0;
 			
@@ -805,6 +813,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}
 	
 			if (!isStoreFullMessage()) {
+				if (isOnlyStoreWhenMessageIdUnique()) {
+					stmt.setString(++parPos, messageId);
+					stmt.setString(++parPos, slotId);
+				}
 				stmt.execute();
 				return null;
 			}
@@ -822,57 +834,78 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				}
 				
 				stmt.setBytes(++parPos, out.toByteArray());
-
+				if (isOnlyStoreWhenMessageIdUnique()) {
+					stmt.setString(++parPos, messageId);
+					stmt.setString(++parPos, slotId);
+				}
 				stmt.execute();
-				return null;
+				ResultSet rs = stmt.getGeneratedKeys();
+				if (rs.next()) {
+					return rs.getString(1);
+				} else {
+					return null;
+				}
+			}
+			if (isOnlyStoreWhenMessageIdUnique()) {
+				stmt.setString(++parPos, messageId);
+				stmt.setString(++parPos, slotId);
 			}
 			stmt.execute();
-
-			if (log.isDebugEnabled()) log.debug("preparing select statement ["+selectKeyQuery+"]");
-			stmt = conn.prepareStatement(selectKeyQuery);			
-			ResultSet rs = null;
-			try {
-				// retrieve the key
-				rs = stmt.executeQuery();
-				if (!rs.next()) {
-					throw new SenderException("could not retrieve key of stored message");
-				}
-				String newKey = rs.getString(1);
-				rs.close();
-
-				// and update the blob
-				if (log.isDebugEnabled()) log.debug("preparing update statement ["+updateBlobQuery+"]");
-				stmt = conn.prepareStatement(updateBlobQuery);			
-				stmt.clearParameters();
-				stmt.setString(1,newKey);
-
-				rs = stmt.executeQuery();
-				if (!rs.next()) {
-					throw new SenderException("could not retrieve row for stored message ["+ messageId+"]");
-				}
-//						String newKey = rs.getString(1);
-//						BLOB blob = (BLOB)rs.getBlob(2);
-				Object blobHandle=dbmsSupport.getBlobUpdateHandle(rs, 1);
-				OutputStream out = dbmsSupport.getBlobOutputStream(rs, 1, blobHandle);
-//					OutputStream out = JdbcUtil.getBlobUpdateOutputStream(rs,1);
-				if (isBlobsCompressed()) {
-					DeflaterOutputStream dos = new DeflaterOutputStream(out);
-					ObjectOutputStream oos = new ObjectOutputStream(dos);
-					oos.writeObject(message);
-					oos.close();
-					dos.close();
-				} else {
-					ObjectOutputStream oos = new ObjectOutputStream(out);
-					oos.writeObject(message);
-					oos.close();
-				}
-				out.close();
-				dbmsSupport.updateBlob(rs, 1, blobHandle);
-				return newKey;
-			
-			} finally {
-				if (rs!=null) {
+			int updateCount = stmt.getUpdateCount();
+			if (log.isDebugEnabled()) log.debug("update count for insert statement: "+updateCount);
+			if (updateCount > 0) {
+				if (log.isDebugEnabled()) log.debug("preparing select statement ["+selectKeyQuery+"]");
+				stmt = conn.prepareStatement(selectKeyQuery);			
+				ResultSet rs = null;
+				try {
+					// retrieve the key
+					rs = stmt.executeQuery();
+					if (!rs.next()) {
+						throw new SenderException("could not retrieve key of stored message");
+					}
+					String newKey = rs.getString(1);
 					rs.close();
+	
+					// and update the blob
+					if (log.isDebugEnabled()) log.debug("preparing update statement ["+updateBlobQuery+"]");
+					stmt = conn.prepareStatement(updateBlobQuery);			
+					stmt.clearParameters();
+					stmt.setString(1,newKey);
+	
+					rs = stmt.executeQuery();
+					if (!rs.next()) {
+						throw new SenderException("could not retrieve row for stored message ["+ messageId+"]");
+					}
+	//						String newKey = rs.getString(1);
+	//						BLOB blob = (BLOB)rs.getBlob(2);
+					Object blobHandle=dbmsSupport.getBlobUpdateHandle(rs, 1);
+					OutputStream out = dbmsSupport.getBlobOutputStream(rs, 1, blobHandle);
+	//					OutputStream out = JdbcUtil.getBlobUpdateOutputStream(rs,1);
+					if (isBlobsCompressed()) {
+						DeflaterOutputStream dos = new DeflaterOutputStream(out);
+						ObjectOutputStream oos = new ObjectOutputStream(dos);
+						oos.writeObject(message);
+						oos.close();
+						dos.close();
+					} else {
+						ObjectOutputStream oos = new ObjectOutputStream(out);
+						oos.writeObject(message);
+						oos.close();
+					}
+					out.close();
+					dbmsSupport.updateBlob(rs, 1, blobHandle);
+					return newKey;
+				
+				} finally {
+					if (rs!=null) {
+						rs.close();
+					}
+				}
+			} else {
+				if (isOnlyStoreWhenMessageIdUnique()) {
+					return "already there";
+				} else {
+					throw new SenderException("update count for update statement not greater than 0 ["+updateCount+"]");
 				}
 			}
 	
@@ -1597,5 +1630,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 	public void setStoreFullMessage(boolean storeFullMessage) {
 		this.storeFullMessage = storeFullMessage;
+	}
+
+	public boolean isOnlyStoreWhenMessageIdUnique() {
+		return onlyStoreWhenMessageIdUnique;
+	}
+	public void setOnlyStoreWhenMessageIdUnique(boolean onlyStoreWhenMessageIdUnique) {
+		this.onlyStoreWhenMessageIdUnique = onlyStoreWhenMessageIdUnique;
 	}
 }
