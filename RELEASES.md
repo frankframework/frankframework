@@ -69,6 +69,9 @@ Upcoming
 - Add charset parameter to MailSender
 - Make MailSender parameters messageType and messageBase64 thread-safe
 - Add queueRegex attribute to GetTibcoQueues
+- Add defaultValueMethods to Parameter
+- Don't use ConversationId from previous sender response
+- Add GetPrincipalPipe and IsUserInRolePipe to stub4testtool.xsl
 
 
 

@@ -12,6 +12,8 @@
 		- add the attribute returnFixedDate with value true to all pipe elements PutSystemDateInSession
 		- replace the value '{now,...,...}' of the attribute pattern in all param elements with the value '{fixeddate,...,...}'
 		- add the attribute useFixedValues with value true to all pipe, inputWrapper and outputWrapper elements SoapWrapperPipe
+		- stub the pipe element GetPrincipalPipe by a pipe element FixedResult with attribute returnString set to tst9
+		- stub the pipe element IsUserInRolePipe by a pipe element EchoPipe
 		- stub the pipe element FtpFileRetrieverPipe by a pipe element GenericMessageSendingPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
 		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements GenericMessageSendingPipe and ForEachChildElementPipe
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Request/Action' to all pipe and inputWrapper elements SoapWrapperPipe with attribute direction=wrap 
@@ -221,6 +223,21 @@
 							<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Response</xsl:attribute>
 						</xsl:element>
 					</xsl:if>
+				</xsl:element>
+			</xsl:when>
+			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.pipes.GetPrincipalPipe'">
+				<xsl:element name="pipe">
+					<xsl:apply-templates select="@*" />
+					<xsl:attribute name="className">nl.nn.adapterframework.pipes.FixedResult</xsl:attribute>
+					<xsl:attribute name="returnString">tst9</xsl:attribute>
+					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+				</xsl:element>
+			</xsl:when>
+			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.pipes.IsUserInRolePipe'">
+				<xsl:element name="pipe">
+					<xsl:apply-templates select="@*" />
+					<xsl:attribute name="className">nl.nn.adapterframework.pipes.EchoPipe</xsl:attribute>
+					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 				</xsl:element>
 			</xsl:when>
 			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe'">
