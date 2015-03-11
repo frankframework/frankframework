@@ -37,6 +37,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
@@ -44,7 +45,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DurationFormatUtils;
 
 import com.tibco.tibjms.admin.ACLEntry;
 import com.tibco.tibjms.admin.BridgeTarget;
@@ -212,7 +212,12 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		QueueBrowser queueBrowser = jSession.createBrowser(queue);
 		Enumeration enm = queueBrowser.getEnumeration();
 		int count = 0;
-		while (enm.hasMoreElements()) {
+		boolean found = false;
+		String chompCharSizeString = AppConstants.getInstance().getString(
+				"browseQueue.chompCharSize", null);
+		int chompCharSize = (int) Misc.toFileSize(chompCharSizeString, -1);
+
+		while (enm.hasMoreElements() && !found) {
 			count++;
 			if (count == queueItem) {
 				qNameXml.addAttribute("item", count);
@@ -235,19 +240,28 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 						msgText = msg.toString();
 						qTextXml.addAttribute("text", false);
 					}
+					int msgSize = msgText.length();
 					if (isHideMessage()) {
-						qTextXml.setCdataValue("[length=" + msgText.length()
-								+ "]");
+						qTextXml.setCdataValue("***HIDDEN***");
 					} else {
-						qTextXml.setCdataValue(msgText);
+						if (chompCharSize >= 0 && msgSize > chompCharSize) {
+							qTextXml.setCdataValue(msgText.substring(0,
+									chompCharSize) + "...");
+							qTextXml.addAttribute("chomped", true);
+						} else {
+							qTextXml.setCdataValue(msgText);
+						}
 					}
 					qMessageXml.addSubElement(qTextXml);
+					XmlBuilder qTextSizeXml = new XmlBuilder("qTextSize");
+					qTextSizeXml.setValue(Misc.toFileSize(msgSize));
+					qMessageXml.addSubElement(qTextSizeXml);
 				}
+				found = true;
 			} else {
 				enm.nextElement();
 			}
 		}
-		qNameXml.addAttribute("count", count);
 		qMessageXml.addSubElement(qNameXml);
 
 		Map aclMap = getAclMap(admin);
