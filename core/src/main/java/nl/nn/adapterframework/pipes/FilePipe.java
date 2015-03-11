@@ -54,7 +54,7 @@ public class FilePipe extends FixedForwardPipe {
 	 */
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		try {
-			return new PipeRunResult(getForward(), fileHandler.handle(input, session));
+			return new PipeRunResult(getForward(), fileHandler.handle(input, session, getParameterList()));
 		}
 		catch(Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"Error while executing file action(s)", e); 

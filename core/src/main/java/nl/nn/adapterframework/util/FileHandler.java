@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +32,11 @@ import java.util.StringTokenizer;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -77,6 +83,12 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>(only used when actions=delete) when set to <code>true</code>, the directory from which a file is deleted is also deleted when it contains no other files</td><td>false</td></tr>
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code>, <code>bytes</code> or <code>stream</code></td><td>"string"</td></tr>
  * <tr><td>{@link #setFileSource(String) fileSource}</td><td>(action=read) either <code>filesystem</code> or <code>classpath</code></td><td>"filesystem"</td></tr>
+ * </table>
+ * </p>
+ * <table border="1">
+ * <p><b>Parameters:</b>
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr><td></td>writeSuffix<td><i>String</i></td><td>When a parameter with name writeSuffix is present, it is used instead of the writeSuffix specified by the attribute</td></tr>
  * </table>
  * </p>
  * 
@@ -159,6 +171,10 @@ public class FileHandler {
 	}
 	
 	public Object handle(Object input, IPipeLineSession session) throws Exception {
+		return handle(input, session, null);
+	}
+	
+	public Object handle(Object input, IPipeLineSession session, ParameterList paramList) throws Exception {
 		Object output = null;
 		if (input instanceof byte[]) {
 			output = (byte[])input;
@@ -175,15 +191,15 @@ public class FileHandler {
 			TransformerAction transformerAction = (TransformerAction)it.next();
 			if (!it.hasNext() && "stream".equals(outputType)) {
 				if (transformerAction instanceof TransformerActionWithOutputTypeStream) {
-					output = ((TransformerActionWithOutputTypeStream)transformerAction).go((byte[])output, session, "stream");
+					output = ((TransformerActionWithOutputTypeStream)transformerAction).go((byte[])output, session, paramList, "stream");
 				} else {
-					output = new ByteArrayInputStream(transformerAction.go((byte[])output, session));
+					output = new ByteArrayInputStream(transformerAction.go((byte[])output, session, paramList));
 				}
 			} else {
 				if (output instanceof InputStream) {
-					output = ((TransformerActionWithInputTypeStream)transformerAction).go((InputStream)output, session);
+					output = ((TransformerActionWithInputTypeStream)transformerAction).go((InputStream)output, session, paramList);
 				} else {
-					output = transformerAction.go((byte[])output, session);
+					output = transformerAction.go((byte[])output, session, paramList);
 				}
 			}
 		}
@@ -207,15 +223,15 @@ public class FileHandler {
 		 * transform the in and return the result
 		 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
 		 */
-		byte[] go(byte[] in, IPipeLineSession session) throws Exception;
+		byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception;
 	}
 	
 	protected interface TransformerActionWithInputTypeStream extends TransformerAction {
-		byte[] go(InputStream in, IPipeLineSession session) throws Exception;
+		byte[] go(InputStream in, IPipeLineSession session, ParameterList paramList) throws Exception;
 	}
 	
 	protected interface TransformerActionWithOutputTypeStream extends TransformerAction {
-		InputStream go(byte[] in, IPipeLineSession session, String outputType) throws Exception;
+		InputStream go(byte[] in, IPipeLineSession session, ParameterList paramList, String outputType) throws Exception;
 	}
 	
 	/**
@@ -223,7 +239,7 @@ public class FileHandler {
 	 */
 	private class Encoder implements TransformerAction {
 		public void configure() {}
-		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
+		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
 			return Base64.encodeBase64(in);
 		}
 	}
@@ -233,27 +249,45 @@ public class FileHandler {
 	 */
 	private class Decoder implements TransformerAction {
 		public void configure() {}
-		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
+		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
 			return Base64.decodeBase64(in == null ? null : new String(in));
 		}
 	}
 
-	private File createFile(IPipeLineSession session) throws IOException {
+	private File createFile(IPipeLineSession session, ParameterList paramList) throws IOException, ParameterException {
 		File tmpFile;
-			
+
+		String writeSuffix_work = null;
+		if (paramList != null) {
+			ParameterResolutionContext prc = new ParameterResolutionContext(
+					(String) null, session);
+			ParameterValueList pvl = prc.getValues(paramList);
+			if (pvl != null) {
+				ParameterValue writeSuffixParamValue = pvl
+						.getParameterValue("writeSuffix");
+				if (writeSuffixParamValue != null) {
+					writeSuffix_work = (String) writeSuffixParamValue
+							.getValue();
+				}
+			}
+		}
+		if (writeSuffix_work == null) {
+			writeSuffix_work = getWriteSuffix();
+		}
+		
 		String name = fileName;
 		if (StringUtils.isEmpty(name)) {
 			name = (String)session.get(fileNameSessionKey);
 		}
 		if (StringUtils.isEmpty(getDirectory())) {
 			if (StringUtils.isEmpty(name)) {
-				tmpFile = File.createTempFile("ibis", writeSuffix);
+				tmpFile = File.createTempFile("ibis", writeSuffix_work);
 			} else {
 				tmpFile = new File(name);
 			}
 		} else {
 			if (StringUtils.isEmpty(name)) {
-				tmpFile = File.createTempFile("ibis", writeSuffix, new File(getDirectory()));
+				tmpFile = File.createTempFile("ibis", writeSuffix_work, new File(getDirectory()));
 			} else {
 				tmpFile = new File(getDirectory() + File.separator + name);
 			}
@@ -278,11 +312,11 @@ public class FileHandler {
 				}
 			}
 		}
-		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
-			return go(new ByteArrayInputStream(in), session);
+		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+			return go(new ByteArrayInputStream(in), session, paramList);
 		}
-		public byte[] go(InputStream in, IPipeLineSession session) throws Exception {
-			File tmpFile=createFile(session);
+		public byte[] go(InputStream in, IPipeLineSession session, ParameterList paramList) throws Exception {
+			File tmpFile=createFile(session, paramList);
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
 					if (tmpFile.getParentFile().mkdirs()) {
@@ -322,8 +356,8 @@ public class FileHandler {
 				}
 			}
 		}
-		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
-			File tmpFile=createFile(session);
+		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+			File tmpFile=createFile(session, paramList);
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
 					if (tmpFile.getParentFile().mkdirs()) {
@@ -370,7 +404,7 @@ public class FileHandler {
 				throw new ConfigurationException(getLogPrefix(null)+"illegal value for fileSource ["+outputType+"], must be 'filesystem' or 'classpath'");
 			}
 		}
-		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
+		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
 			File file = getFile(in, session);
 			FileInputStream fis = new FileInputStream(file);
 			try {
@@ -395,7 +429,7 @@ public class FileHandler {
 					file.delete();
 			}
 		}
-		public InputStream go(byte[] in, IPipeLineSession session,
+		public InputStream go(byte[] in, IPipeLineSession session, ParameterList paramList,
 				String outputType) throws Exception {
 			return new FileDeleteAfterReadInputStream(getFile(in, session), deleteAfterRead);
 		}
@@ -433,7 +467,7 @@ public class FileHandler {
 			}
 			
 		}
-		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
+		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
 			File file;
 			
 			/* take filename from 
@@ -508,7 +542,7 @@ public class FileHandler {
 			}
 		}
 
-		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
+		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
 			String name = fileName;
 			
 			if (StringUtils.isEmpty(name)) { 
@@ -550,7 +584,7 @@ public class FileHandler {
 			}
 		}
 
-		public byte[] go(byte[] in, IPipeLineSession session) throws Exception {
+		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
 			File file;
 			 
 			String name = (String)session.get(fileNameSessionKey);;
@@ -567,7 +601,7 @@ public class FileHandler {
 
 			XmlBuilder fileXml = new XmlBuilder("file");
 			XmlBuilder fullName = new XmlBuilder("fullName");
-			fullName.setValue(file.getPath());
+			fullName.setValue(file.getCanonicalPath());
 			fileXml.addSubElement(fullName);
 			XmlBuilder directory = new XmlBuilder("directory");
 			String dir = file.getParent();
@@ -585,6 +619,18 @@ public class FileHandler {
 			XmlBuilder extension = new XmlBuilder("extension");
 			extension.setValue(FileUtils.getFileNameExtension(sname));
 			fileXml.addSubElement(extension);
+			XmlBuilder size = new XmlBuilder("size");
+			size.setValue(Long.toString(file.length()));
+			fileXml.addSubElement(size);
+			Date lastModified = new Date(file.lastModified());
+			String date = DateUtils.format(lastModified, DateUtils.FORMAT_DATE);
+			XmlBuilder modificationDate = new XmlBuilder("modificationDate");
+			modificationDate.setValue(date);
+			fileXml.addSubElement(modificationDate);
+			String time = DateUtils.format(lastModified, DateUtils.FORMAT_TIME_HMS);
+			XmlBuilder modificationTime = new XmlBuilder("modificationTime");
+			modificationTime.setValue(time);
+			fileXml.addSubElement(modificationTime);
 			return fileXml.toXML().getBytes();
 		}
 	}
