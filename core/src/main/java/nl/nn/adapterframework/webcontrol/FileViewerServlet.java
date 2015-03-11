@@ -209,16 +209,18 @@ public class FileViewerServlet extends HttpServlet  {
 		ServletOutputStream outputStream = response.getOutputStream();
 		if (type.equalsIgnoreCase("zip")) {
 			response.setContentType("application/zip");
-			String lastPart;
-			try {
-				File f= new File(filename);
-				lastPart=f.getName();
-			} catch (Throwable t) {
-				lastPart=filename;
-			}
-			response.setHeader("Content-Disposition","attachment; filename=\""+lastPart+"\"");
-			Misc.streamToStream(inputStream, outputStream);;
+		} else {
+			response.setContentType("application/octet-stream");
 		}
+		String lastPart;
+		try {
+			File f= new File(filename);
+			lastPart=f.getName();
+		} catch (Throwable t) {
+			lastPart=filename;
+		}
+		response.setHeader("Content-Disposition","attachment; filename=\""+lastPart+"\"");
+		Misc.streamToStream(inputStream, outputStream);;
 		outputStream.close();
 	}
 
@@ -300,7 +302,7 @@ public class FileViewerServlet extends HttpServlet  {
 					}
 
 				} else {
-					if (type.equalsIgnoreCase("zip")) {
+					if (type.equalsIgnoreCase("zip") || type.equalsIgnoreCase("bin")) {
 						showInputStreamContents(new DataInputStream(new FileInputStream(fileName)), fileName, type, response);
 					} else {
 //						Reader r=new BufferedReader(new InputStreamReader(new FileInputStream(fileName),"ISO-8859-1"));
