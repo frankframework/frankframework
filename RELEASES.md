@@ -73,6 +73,9 @@ Upcoming
 - Don't use ConversationId from previous sender response
 - Add GetPrincipalPipe and IsUserInRolePipe to stub4testtool.xsl
 - Add MessageStoreSender and MessageStoreListener
+- Add size of message to response in GetTibcoQueues (and chomp very large message)
+- Add writeSuffix parameter to FileHandler (next to writeSuffix attribute)
+- Add file type bin for mime type application/octet-stream in FileViewerServlet
 
 
 
