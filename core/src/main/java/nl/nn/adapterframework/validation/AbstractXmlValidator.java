@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import java.util.*;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XmlValidator</td><td>&nbsp;</td></tr>
-* <tr><td>{@link #setFullSchemaChecking(boolean) fullSchemaChecking}</td><td>Perform addional memory intensive checks</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setFullSchemaChecking(boolean) fullSchemaChecking}</td><td>Perform addional memory intensive checks</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>Should the XmlValidator throw a PipeRunException on a validation error (if not, a forward with name "failure" should be defined.</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setReasonSessionKey(String) reasonSessionKey}</td><td>if set: key of session variable to store reasons of mis-validation in</td><td>failureReason</td></tr>
  * <tr><td>{@link #setXmlReasonSessionKey(String) xmlReasonSessionKey}</td><td>like <code>reasonSessionKey</code> but stores reasons in xml format and more extensive</td><td>xmlFailureReason</td></tr>
@@ -265,16 +265,8 @@ public abstract class AbstractXmlValidator {
 		return ignoreUnknownNamespaces == null ? false : ignoreUnknownNamespaces;
 	}
 
-	protected static class RetryException extends XNIException {
-		private static final long serialVersionUID = 1L;
-		public RetryException(Exception e) {
-			super(e);
-		}
-	}
-
 	protected static class MyErrorHandler implements XMLErrorHandler {
 		protected Logger log = LogUtil.getLogger(this);
-		protected boolean throwRetryException = false;
 		protected boolean warn = true;
 
 		public void warning(String domain, String key, XMLParseException e) throws XNIException {
@@ -293,9 +285,6 @@ public abstract class AbstractXmlValidator {
 			if (e.getMessage() != null
 					&& e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
 				throw e;
-			}
-			if (throwRetryException) {
-				throw new RetryException(e);
 			}
 			if (warn) {
 				ConfigurationWarnings.getInstance().add(log, e.getMessage());

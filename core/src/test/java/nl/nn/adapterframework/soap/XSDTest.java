@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.soap;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.XSD;
@@ -8,6 +9,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,61 +32,36 @@ import static org.junit.Assert.assertEquals;
 public class XSDTest {
 
 	@Test
-	public void xsdName() throws URISyntaxException, XMLStreamException, IOException {
-		XSD xsd = new XSD(
-                ClassUtils.getResourceURL("v1 test.xsd"),
-                "http://test",
-                false,
-                null);
-		assertEquals("v1 test.xsd", xsd.getName());
+	public void xsdName() throws URISyntaxException, XMLStreamException, IOException, ConfigurationException {
+		XSD xsd = new XSD();
+		xsd.setResource("v1 test.xsd");
+		xsd.setNamespace("http://test");
+		xsd.init();
+		assertEquals("v1 test.xsd", xsd.getResourceTarget());
 	}
 
 	@Test
-	public void xsdNamespace() throws URISyntaxException, XMLStreamException, IOException {
-        XSD xsd = new XSD(
-                ClassUtils.getResourceURL("v1 test.xsd"),
-                "http://test",
-                false,
-                null);
+	public void xsdNamespace() throws URISyntaxException, XMLStreamException, IOException, ConfigurationException {
+        XSD xsd = new XSD();
+        xsd.setResource("v1 test.xsd");
+        xsd.setNamespace("http://test");
+        xsd.init();
         assertEquals("http://test",
                 xsd.getNamespace());
         assertEquals("http://www.ing.com/pim",
                 xsd.getTargetNamespace());
 	}
 
-
-	@Test
-	public void baseUrlXsd() throws URISyntaxException, IOException, XMLStreamException {
-        URL url = ClassUtils.getResourceURL("XSDTest/pim_imported.xsd");
-		XSD xsd = new XSD(
-				url,
-                "http://test",
-                false,
-                null);
-		assertEquals("XSDTest/", xsd.getBaseUrl());
-	}
-
-	@Test
-	public void baseUrlXsdWebsphere() throws URISyntaxException, XMLStreamException, IOException {
-		XSD xsd = new XSD(
-                new URL("file:/data/WAS/6.1/wasap02/appl/Ibis4WUB-010_20111221-1815_wasap02.ear/Ibis4WUB.war/WEB-INF/classes/CalculateQuoteAndPolicyValuesLifeRetail/xsd/Calculation.xsd"),
-                "http://test",
-                false, null);
-
-		assertEquals("CalculateQuoteAndPolicyValuesLifeRetail/xsd/", xsd.getBaseUrl());
-	}
-
-
 	@Test
     @Ignore("Fails!!")
-	public void writeXSD() throws XMLStreamException, IOException, ParserConfigurationException, SAXException, URISyntaxException {
-		XSD xsd = new XSD(
-                ClassUtils.getResourceURL("XSDTest/test.xsd"),
-                "http://test", false, null);
+	public void writeXSD() throws XMLStreamException, IOException, ParserConfigurationException, SAXException, URISyntaxException, ConfigurationException {
+		XSD xsd = new XSD();
+		xsd.setResource("XSDTest/test.xsd");
+		xsd.setNamespace("http://test");
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		XMLStreamWriter writer = WsdlUtils.getWriter(out, false);
-		SchemaUtils.xsdToXmlStreamWriter(xsd, writer, true);
+		SchemaUtils.xsdToXmlStreamWriter(xsd, writer);
 
 		DocumentBuilder dbuilder = WsdlTest.createDocumentBuilder();
 		Document result = dbuilder.parse(new ByteArrayInputStream(out.toByteArray()));

@@ -209,15 +209,6 @@ public class XmlValidatorTest {
         validator.validate(getTestXml("/intermediaryagreementdetails.xml"), new PipeLineSessionBase());
     }
 
-
-    @Test
-    public  void unusedXsi() throws ConfigurationException, IOException, PipeRunException, XmlValidatorException {
-        XmlValidator validator = getValidator(
-            "http://www.ing.com/geenidee " +
-                "/xsd/Unisys_xsd/REQ1000.xsd");
-        validator.validate(getTestXml("/unusedXsi.xml"), new PipeLineSessionBase());
-
-    }
     static PipeForward getSuccess() {
         PipeForward forward = new PipeForward();
         forward.setName("success");

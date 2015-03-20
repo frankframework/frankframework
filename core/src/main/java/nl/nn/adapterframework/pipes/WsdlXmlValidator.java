@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,16 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -23,7 +33,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.com.ibm.wsdl.extensions.schema.SchemaSerializer;
+import nl.nn.adapterframework.validation.SchemaUtils;
+import nl.nn.adapterframework.validation.XSD;
 import nl.nn.javax.wsdl.Definition;
 import nl.nn.javax.wsdl.WSDLException;
 import nl.nn.javax.wsdl.extensions.ExtensibilityElement;
@@ -31,16 +42,10 @@ import nl.nn.javax.wsdl.extensions.schema.Schema;
 import nl.nn.javax.wsdl.factory.WSDLFactory;
 import nl.nn.javax.wsdl.xml.WSDLReader;
 import nl.nn.javax.xml.namespace.QName;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
-
-import javax.xml.XMLConstants;
-import java.io.*;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Wsdl based input validator. Given an WSDL, it validates input.
@@ -49,10 +54,7 @@ import java.util.Map;
  * @author Jaco de Groot
  */
 public class WsdlXmlValidator extends SoapValidator {
-
 	private static final Logger LOG = LogUtil.getLogger(WsdlXmlValidator.class);
-
-	private static final QName SCHEMA = new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "schema", "");
 
 	private static final WSDLFactory FACTORY;
 	static {
@@ -66,6 +68,8 @@ public class WsdlXmlValidator extends SoapValidator {
 		FACTORY = f;
 	}
 
+	private static final String RESOURCE_INTERNAL_REFERENCE_PREFIX = "schema";
+	
 	private String wsdl;
 	private Definition definition;
 
@@ -86,6 +90,14 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 	}
 
+	@Override
+	public void setSchemaLocation(String schemaLocation) {
+		this.schemaLocation = schemaLocation;
+	}
+
+	public String getWsdl() {
+		return wsdl;
+	}
 
     public boolean isValidateSoapEnvelope() {
         return validateSoapEnvelope != null;
@@ -105,12 +117,10 @@ public class WsdlXmlValidator extends SoapValidator {
     }
 
 	@Override
-	public void configure() throws ConfigurationException {
-		// Prevent super.configure() from throwing an exception because
-		// schemaLocation is empty.
-		schemaLocation = "dummy";
-		super.configure();
-		schemaLocation = null;
+	protected void checkSchemaSpecified() throws ConfigurationException {
+		if (StringUtils.isEmpty(getWsdl())) {
+			throw new ConfigurationException(getLogPrefix(null) + "wsdl attribute cannot be empty");
+		}
 	}
 
 	@Override
@@ -123,16 +133,11 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 	}
 
-	@Override
-	public void setSchemaLocation(String schemaLocation) {
-		throw new IllegalArgumentException("The schemaLocation attribute isn't supported");
-	}
-
 	protected static Definition getDefinition(URL url) throws WSDLException, IOException {
 		InputSource source = new InputSource(url.openStream());
 		source.setSystemId(url.toString());
 		WSDLReader reader  = FACTORY.newWSDLReader();
-		reader.setFeature("javax.wsdl.verbose",         true);
+		reader.setFeature("javax.wsdl.verbose",         false);
 		reader.setFeature("javax.wsdl.importDocuments", true);
 		return reader.readWSDL(url.toString(), source);
 	}
@@ -146,73 +151,70 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 	}
 
-	private InputStream toInputStream(Schema wsdlSchema) throws WSDLException, UnsupportedEncodingException {
-		return new ByteArrayInputStream(toBytes(wsdlSchema));
-	}
-
-	private byte[] toBytes(Schema wsdlSchema) throws WSDLException, UnsupportedEncodingException {
-		SchemaSerializer schemaSerializer = new SchemaSerializer();
-		StringWriter w = new StringWriter();
-		PrintWriter res = new PrintWriter(w);
-		schemaSerializer.marshall(Object.class, SCHEMA, wsdlSchema, res,
-				definition, definition.getExtensionRegistry());
-		return w.toString().trim().getBytes("UTF-8");
-	}
-
 	@Override
 	public String getSchemasId() {
 		return wsdl;
 	}
 
 	@Override
-	public List<nl.nn.adapterframework.validation.Schema> getSchemas() throws ConfigurationException {
-		List<nl.nn.adapterframework.validation.Schema> result = new ArrayList<nl.nn.adapterframework.validation.Schema>();
-        if (validateSoapEnvelope != null) {
-            result.add(
-                    new nl.nn.adapterframework.validation.Schema() {
-                        public InputStream getInputStream() throws IOException {
-                            if (validateSoapEnvelope.xsd == null) {
-                                throw new IOException(validateSoapEnvelope + " has  no xsd");
-                            }
-                            return ClassUtils.getResourceURL(validateSoapEnvelope.xsd).openStream();
-                        }
-                        public String getSystemId() {
-                            return ClassUtils.getResourceURL(validateSoapEnvelope.xsd).toExternalForm();
-                        }
-
-                    }
-            );
-        }
+	public Set<XSD> getXsds() throws ConfigurationException {
+		Set<XSD> xsds = new HashSet<XSD>();
+		if (validateSoapEnvelope != null) {
+			XSD xsd = new XSD();
+			xsd.setNamespace(validateSoapEnvelope.schema);
+			xsd.setResource(validateSoapEnvelope.xsd);
+			xsd.init();
+			xsds.add(xsd);
+		}
+		List<Schema> schemas = new ArrayList<Schema>();
 		List types = definition.getTypes().getExtensibilityElements();
 		for (Iterator i = types.iterator(); i.hasNext();) {
-			ExtensibilityElement type = (ExtensibilityElement) i.next();
+			ExtensibilityElement type = (ExtensibilityElement)i.next();
 			QName qn = type.getElementType();
-			if (SCHEMA.equals(qn)) {
+			if (SchemaUtils.WSDL_SCHEMA.equals(qn)) {
 				final Schema schema = (Schema) type;
 				addNamespaces(schema, definition.getNamespaces());
-				result.add(
-					new nl.nn.adapterframework.validation.Schema() {
-
-						public InputStream getInputStream() {
-							try {
-								return toInputStream(schema);
-							} catch (WSDLException e) {
-                                throw new RuntimeException("WSDLException while reading schema " + e.getMessage(), e);
-							} catch (UnsupportedEncodingException e) {
-                                // can not happen
-                                throw new RuntimeException(e);
-                            }
-                        }
-
-						public String getSystemId() {
-							return ClassUtils.getResourceURL(wsdl).toExternalForm();
-						}
-
-					}
-				);
+				schemas.add(schema);
 			}
 		}
-		return result;
+		List<Schema> filteredSchemas;
+		Map<Schema, String> filteredReferences = null;
+		Map<Schema, String> filteredNamespaces = null;
+		if (StringUtils.isEmpty(schemaLocation)) {
+			filteredSchemas = schemas;
+		} else {
+			filteredSchemas = new ArrayList<Schema>();
+			filteredReferences = new HashMap<Schema, String>();
+			filteredNamespaces = new HashMap<Schema, String>();
+			String[] split =  schemaLocation.trim().split("\\s+");
+			if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + schemaLocation);
+			for (int i = 0; i < split.length; i += 2) {
+				if (!split[i + 1].startsWith(RESOURCE_INTERNAL_REFERENCE_PREFIX)) {
+					throw new ConfigurationException("Schema reference " + split[i + 1] + " should start with '" + RESOURCE_INTERNAL_REFERENCE_PREFIX + "'");
+				}
+				try {
+					int j = Integer.parseInt(split[i + 1].substring(RESOURCE_INTERNAL_REFERENCE_PREFIX.length())) - 1;
+					filteredSchemas.add(schemas.get(j));
+					filteredReferences.put(schemas.get(j), RESOURCE_INTERNAL_REFERENCE_PREFIX + (j + 1));
+					filteredNamespaces.put(schemas.get(j), split[i]);
+				} catch(Exception e) {
+					throw new ConfigurationException("Schema reference " + split[i + 1] + " not valid or not found");
+				}
+			}
+		}
+		for (Schema schema : filteredSchemas) {
+			XSD xsd = new XSD();
+			xsd.setWsdlSchema(definition, schema);
+			xsd.setResource(getWsdl());
+			if (StringUtils.isNotEmpty(schemaLocation)) {
+				xsd.setResourceInternalReference(filteredNamespaces.get(schema));
+				xsd.setNamespace(filteredNamespaces.get(schema));
+			}
+			xsd.setAddNamespaceToSchema(isAddNamespaceToSchema());
+			xsd.init();
+			xsds.add(xsd);
+		}
+		return xsds;
 	}
 
 }

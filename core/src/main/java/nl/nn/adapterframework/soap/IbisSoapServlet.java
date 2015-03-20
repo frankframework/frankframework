@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpUtils;
 import javax.xml.stream.XMLStreamException;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
@@ -76,6 +77,8 @@ public class IbisSoapServlet extends HttpServlet {
                 throw new ServletException(e);
             } catch (NamingException e) {
                 throw new ServletException(e);
+            } catch (ConfigurationException e) {
+                throw new ServletException(e);
             }
         } else {
             res.setContentType("text/html; charset=UTF-8");
@@ -83,7 +86,7 @@ public class IbisSoapServlet extends HttpServlet {
         }
     }
 
-     private void zip(HttpServletRequest req, HttpServletResponse res) throws IOException, XMLStreamException, NamingException {
+     private void zip(HttpServletRequest req, HttpServletResponse res) throws IOException, XMLStreamException, NamingException, ConfigurationException {
          Adapter adapter = getAdapter(ibisManager, req.getPathInfo());
          Wsdl wsdl = new Wsdl(adapter.getPipeLine());
          wsdl.setUseIncludes(true);
@@ -166,14 +169,13 @@ public class IbisSoapServlet extends HttpServlet {
         w.write("<ol>");
 
         int count = 0;
-        for (IAdapter a : ibisManager.getConfiguration().getAdapterService().getAdapters().values()) {
+        for (IAdapter a : ibisManager.getConfiguration().getRegisteredAdapters()) {
             count++;
             w.write("<li>");
             try {
                 Adapter adapter = (Adapter) a;
                 Wsdl wsdl = new Wsdl(adapter.getPipeLine());
                 setDocumentation(wsdl, req);
-                wsdl.init(true);
                 String url =
                     req.getContextPath() +
                         req.getServletPath() +
@@ -196,7 +198,12 @@ public class IbisSoapServlet extends HttpServlet {
                 w.write(" <a href='" + zip + "'>zip</a>)");
 
             } catch (Exception e) {
-                w.write(e.getMessage());
+                w.write(a.getName() + ": ");
+                if (e.getMessage() != null) {
+                    w.write(e.getMessage());
+                } else {
+                    w.write(e.toString());
+                }
             }
             w.write("</li>");
         }

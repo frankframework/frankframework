@@ -67,8 +67,9 @@ public class WsdlTest {
 		PipeLine simple = mockPipeLine(
 				getXmlValidatorInstance("a", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 				getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "Test1");
-
-		test(new Wsdl(simple).init(), "WsdlTest/webservice1.test.wsdl");
+		Wsdl wsdl = new Wsdl(simple);
+		wsdl.init();
+		test(wsdl, "WsdlTest/webservice1.test.wsdl");
 	}
 
 	@Test
@@ -101,8 +102,9 @@ public class WsdlTest {
         PipeLine simple = mockPipeLine(
             getXmlValidatorInstance(null, "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
             getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "TestRootTag");
-
-        test(new Wsdl(simple).init(), "WsdlTest/noroottag.test.wsdl");
+        Wsdl wsdl = new Wsdl(simple);
+        wsdl.init();
+        test(wsdl, "WsdlTest/noroottag.test.wsdl");
     }
 
 
@@ -119,7 +121,8 @@ public class WsdlTest {
                 "http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response " +
 						"WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd"),
             "http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail", "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail");
-        Wsdl wsdl = new Wsdl(pipe).init();
+        Wsdl wsdl = new Wsdl(pipe);
+        wsdl.init();
         wsdl.setUseIncludes(true);
         test(wsdl, "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail.test.wsdl");
 
@@ -136,7 +139,8 @@ public class WsdlTest {
 						"WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd"),
             "http://wub2nn.nn.nl/FindIntermediary",
 				"WsdlTest/FindIntermediary");
-        Wsdl wsdl = new Wsdl(pipe).init();
+        Wsdl wsdl = new Wsdl(pipe);
+        wsdl.init();
         wsdl.setUseIncludes(true);
         assertTrue(wsdl.isUseIncludes());
 		test(wsdl, "WsdlTest/FindIntermediary.test.wsdl");
@@ -144,37 +148,8 @@ public class WsdlTest {
         // assertEquals(2, wsdl.getXSDs(true).size()); TODO?
     }
 
-    @Test
-    @Ignore("TODO!! #7")
-    public void fromWsdl() throws ConfigurationException, IOException, XMLStreamException, SAXException, NamingException, ParserConfigurationException, URISyntaxException {
-        WsdlXmlValidator inputValidator = new WsdlXmlValidator();
-        inputValidator.setWsdl("/GetPolicyAndPartyDetails/wsdl/PolicyNL_GPAPD_Concrete_20140502_API.wsdl");
-        inputValidator.setSoapBody("GetPolicyDetailsForCustomer_Request");
-        inputValidator.setSchemaLocation("\thttp://nn.nl/XSD/Generic/MessageHeader/1 schema1\n" +
-                "\t\t\t\t\thttp://api.nn.nl/GetPolicyDetailsForCustomer schema2");
-        inputValidator.setAddNamespaceToSchema(true);
-        inputValidator.setThrowException(true);
 
-        WsdlXmlValidator outputValidator = new WsdlXmlValidator();
-        outputValidator.setWsdl("/GetPolicyAndPartyDetails/wsdl/PolicyNL_GPAPD_Concrete_20140502_API.wsdl");
-        outputValidator.setSoapBody("GetPolicyDetailsForCustomer_Resonse");
-        outputValidator.setSchemaLocation("\thttp://nn.nl/XSD/Generic/MessageHeader/1 schema1\n" +
-                "\t\t\t\t\thttp://api.nn.nl/GetPolicyDetailsForCustomer schema2");
-        outputValidator.setAddNamespaceToSchema(true);
-        outputValidator.setThrowException(true);
-
-
-        PipeLine pipe = mockPipeLine(
-                inputValidator, outputValidator,
-                "http://wub2nn.nn.nl/FindIntermediary",
-                "WsdlTest/FindIntermediary");
-        Wsdl wsdl = new Wsdl(pipe).init();
-        test(wsdl, "WsdlTest/FindIntermediary.test.wsdl");
-    }
-
-
-
-    protected void test(Wsdl wsdl, String testWsdl) throws IOException, SAXException, ParserConfigurationException, XMLStreamException, URISyntaxException, NamingException {
+    protected void test(Wsdl wsdl, String testWsdl) throws IOException, SAXException, ParserConfigurationException, XMLStreamException, URISyntaxException, NamingException, ConfigurationException {
         wsdl.setDocumentation("test");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         wsdl.wsdl(out, "Test");
@@ -191,7 +166,7 @@ public class WsdlTest {
         zip(wsdl);
 
     }
-    protected void zip(Wsdl wsdl) throws IOException, XMLStreamException, URISyntaxException, NamingException {
+    protected void zip(Wsdl wsdl) throws IOException, XMLStreamException, URISyntaxException, NamingException, ConfigurationException {
         File dir = new File(System.getProperty("java.io.tmpdir") + File.separator + "zipfiles");
         File zipFile = new File(dir, wsdl.getName() + ".zip");
 		zipFile.getParentFile().mkdirs();

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
 */
 package nl.nn.adapterframework.validation;
 
+import java.util.List;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-
-import java.util.List;
 
 /*
  * When getSchemasId() returns a value the schemas loaded at initialisation time
@@ -46,4 +46,5 @@ public interface SchemasProvider {
 	 * Schemas to load at run time.
 	 */
 	List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException;
+
 }

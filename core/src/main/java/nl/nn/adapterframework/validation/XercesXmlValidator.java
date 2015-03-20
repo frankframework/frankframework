@@ -19,8 +19,10 @@ package nl.nn.adapterframework.validation;
 import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -100,12 +102,10 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	protected void init() throws ConfigurationException {
 		if (needsInit) {
 			super.init();
-            if (schemasProvider == null) {
-                throw new IllegalStateException("No schema provider");
-            }
+			if (schemasProvider == null) throw new IllegalStateException("No schema provider");
 			String schemasId = schemasProvider.getSchemasId();
 			if (schemasId != null) {
-				preparse(schemasId, new ArrayList<Schema>(schemasProvider.getSchemas()));
+				preparse(schemasId, schemasProvider.getSchemas());
 			}
 		}
 	}
@@ -125,26 +125,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			MyErrorHandler errorHandler = new MyErrorHandler();
 			errorHandler.warn = warn;
 			preparser.setErrorHandler(errorHandler);
-			// Loop over the definitions until nothing changes
-			// This makes sure that the _order_ is not important in the 'schemas'.
-			errorHandler.throwRetryException = true;
-			boolean changes;
-			do {
-				changes = false;
-				for (Iterator<Schema> i = schemas.iterator(); i.hasNext();) {
-					Schema schema = i.next();
-					try {
-						Grammar grammar = preparse(preparser, schemasId, schema);
-						registerNamespaces(grammar, namespaceSet);
-						changes = true;
-						i.remove();
-					} catch (RetryException e) {
-						// Try in next iteration
-					}
-				}
-			} while (changes);
-			// loop the remaining ones, they seem to be unresolvable, so let the exception go then
-			errorHandler.throwRetryException = false;
 			for (Schema schema : schemas) {
 				Grammar grammar = preparse(preparser, schemasId, schema);
 				registerNamespaces(grammar, namespaceSet);
@@ -258,12 +238,13 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return XML_VALIDATOR_VALID_MONITOR_EVENT;
 	}
 
-	private static XMLInputSource stringToXMLInputSource(Schema schema) throws IOException {
-        // SystemId is needed in case the schema has an import. Maybe we should
-		// already resolve this at the SchemaProvider side (when using
-		// addNamespaceToSchema this is now already done).
-        String systemId = schema.getSystemId();
-        return new XMLInputSource(null, systemId, null, schema.getInputStream(), null);
+	private static XMLInputSource stringToXMLInputSource(Schema schema) throws IOException, ConfigurationException {
+		// SystemId is needed in case the schema has an import. Maybe we should
+		// already resolve this at the SchemaProvider side (except when
+		// noNamespaceSchemaLocation is being used this is already done in
+		// (Wsdl)XmlValidator (using
+		// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludeswhen)).
+		return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
 	}
 
 }

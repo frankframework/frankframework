@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,17 @@
 package nl.nn.adapterframework.pipes;
 
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+
+import javax.xml.namespace.QName;
+import javax.xml.transform.TransformerConfigurationException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
@@ -27,15 +38,16 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.validation.*;
+import nl.nn.adapterframework.validation.AbstractXmlValidator;
+import nl.nn.adapterframework.validation.Schema;
+import nl.nn.adapterframework.validation.SchemaUtils;
+import nl.nn.adapterframework.validation.SchemasProvider;
+import nl.nn.adapterframework.validation.XSD;
+import nl.nn.adapterframework.validation.XercesXmlValidator;
+import nl.nn.adapterframework.validation.XmlValidatorException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-import javax.xml.namespace.QName;
-import javax.xml.transform.TransformerConfigurationException;
-import java.io.*;
-import java.net.URL;
-import java.util.*;
 
 
 /**
@@ -96,6 +108,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected String noNamespaceSchemaLocation;
 	protected String schemaSessionKey;
 
+	protected ConfigurationException configurationException;
+
 	/**
 	 * Configure the XmlValidator
 	 * @throws ConfigurationException when:
@@ -107,68 +121,81 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		super.configure();
-		if ((StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
-				StringUtils.isNotEmpty(getSchemaLocation())) &&
-				StringUtils.isNotEmpty(getSchemaSessionKey())) {
-			throw new ConfigurationException(getLogPrefix(null) + "cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
+		try {
+			super.configure();
+			if ((StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
+					StringUtils.isNotEmpty(getSchemaLocation())) &&
+					StringUtils.isNotEmpty(getSchemaSessionKey())) {
+				throw new ConfigurationException(getLogPrefix(null) + "cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
+			}
+			checkSchemaSpecified();
+			if (StringUtils.isNotEmpty(getSoapNamespace())) {
+				// Don't use this warning yet as it is used for the IFSA to Tibco
+				// migration where an adapter with Tibco listener (with SOAP
+				// Envelope and an adapter with IFSA listener (without SOAP Envelop)
+				// call an adapter with XmlValidator which should validate both.
+				// ConfigurationWarnings.getInstance().add(log, "Using XmlValidator with soapNamespace for Soap validation is deprecated. Please use " + SoapValidator.class.getName());
+				String extractNamespaceDefs = "soapenv=" + getSoapNamespace();
+				String extractBodyXPath     = "/soapenv:Envelope/soapenv:Body/*";
+				try {
+					transformerPoolExtractSoapBody = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, "xml"));
+				} catch (TransformerConfigurationException te) {
+					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getSoapBody", te);
+				}
+			}
+	
+			String getRootNamespace_xslt = XmlUtils.makeGetRootNamespaceXslt();
+			try {
+				transformerPoolGetRootNamespace = new TransformerPool(getRootNamespace_xslt, true);
+			} catch (TransformerConfigurationException te) {
+				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getRootNamespace", te);
+			}
+	
+			String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
+			try {
+				transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
+			} catch (TransformerConfigurationException te) {
+				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
+			}
+	
+			if (!isForwardFailureToSuccess() && !isThrowException()){
+				if (findForward("failure")==null) {
+					throw new ConfigurationException(getLogPrefix(null)+ "must either set throwException true, forwardFailureToSuccess true or have a forward with name [failure]");
+				}
+			}
+	
+			// Different default value for ignoreUnknownNamespaces when using
+			// noNamespaceSchemaLocation.
+			if (validator.getIgnoreUnknownNamespaces() == null) {
+				if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
+					validator.setIgnoreUnknownNamespaces(true);
+				} else {
+					validator.setIgnoreUnknownNamespaces(false);
+				}
+			}
+			validator.setSchemasProvider(this);
+			validator.configure(getLogPrefix(null));
+			registerEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
+			registerEvent(AbstractXmlValidator.XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);
+			registerEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
+		} catch(ConfigurationException e) {
+			configurationException = e;
+			throw e;
 		}
+	}
+
+	protected void checkSchemaSpecified() throws ConfigurationException {
 		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation()) &&
 				StringUtils.isEmpty(getSchemaLocation()) &&
 				StringUtils.isEmpty(getSchemaSessionKey())) {
 			throw new ConfigurationException(getLogPrefix(null) + "must have either schemaSessionKey, schemaLocation or noNamespaceSchemaLocation");
 		}
-
-		if (StringUtils.isNotEmpty(getSoapNamespace())) {
-			// Don't use this warning yet as it is used for the IFSA to Tibco
-			// migration where an adapter with Tibco listener (with SOAP
-			// Envelope and an adapter with IFSA listener (without SOAP Envelop)
-			// call an adapter with XmlValidator which should validate both.
-			// ConfigurationWarnings.getInstance().add(log, "Using XmlValidator with soapNamespace for Soap validation is deprecated. Please use " + SoapValidator.class.getName());
-			String extractNamespaceDefs = "soapenv=" + getSoapNamespace();
-			String extractBodyXPath     = "/soapenv:Envelope/soapenv:Body/*";
-			try {
-				transformerPoolExtractSoapBody = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, "xml"));
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getSoapBody", te);
-			}
-		}
-
-		String getRootNamespace_xslt = XmlUtils.makeGetRootNamespaceXslt();
-		try {
-			transformerPoolGetRootNamespace = new TransformerPool(getRootNamespace_xslt, true);
-		} catch (TransformerConfigurationException te) {
-			throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getRootNamespace", te);
-		}
-
-		String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
-		try {
-			transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
-		} catch (TransformerConfigurationException te) {
-			throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
-		}
-
-		if (!isForwardFailureToSuccess() && !isThrowException()){
-			if (findForward("failure")==null) {
-				throw new ConfigurationException(getLogPrefix(null)+ "must either set throwException true, forwardFailureToSuccess true or have a forward with name [failure]");
-			}
-		}
-
-		// Different default value for ignoreUnknownNamespaces when using
-		// noNamespaceSchemaLocation.
-		if (validator.getIgnoreUnknownNamespaces() == null) {
-			if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
-				validator.setIgnoreUnknownNamespaces(true);
-			} else {
-				validator.setIgnoreUnknownNamespaces(false);
-			}
-		}
-		validator.setSchemasProvider(this);
-		validator.configure(getLogPrefix(null));
-		registerEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
-		registerEvent(AbstractXmlValidator.XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);
-		registerEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
 	}
+
+	public ConfigurationException getConfigurationException() {
+		return configurationException;
+	}
+
 
      /**
       * Validate the XML string
@@ -453,71 +480,43 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return null;
 	}
 
-	public List<Schema> getSchemas() throws ConfigurationException {
-		List<Schema> schemas = new ArrayList<Schema>();
+	public Set<XSD> getXsds() throws ConfigurationException {
+		Set<XSD> xsds = new HashSet<XSD>();
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
-			schemas.add(
-				new Schema() {
-					public InputStream getInputStream() throws IOException {
-						return ClassUtils.getResourceURL(getNoNamespaceSchemaLocation()).openStream();
-					}
-					public String getSystemId() {
-						return ClassUtils.getResourceURL(getNoNamespaceSchemaLocation()).toExternalForm();
-					}
-				}
-			);
-		} else if (StringUtils.isNotEmpty(getSchemaLocation())) {
-			if (isAddNamespaceToSchema()) {
-				final Map<String, ByteArrayOutputStream> schemaStreams;
-				try {
-					Set<XSD> xsds = SchemaUtils.getXsds(getSchemaLocation(), null, true, false);
-					xsds = SchemaUtils.getXsdsRecursive(xsds);
-					Map<String, Set<XSD>> xsdsGroupedByNamespace =
-							SchemaUtils.getXsdsGroupedByNamespace(xsds);
-					schemaStreams = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
-							xsdsGroupedByNamespace, null);
-				} catch(Exception e) {
-					throw new ConfigurationException(getLogPrefix(null) + "could not read schema's", e);
-				}
-				for (final String namespace : schemaStreams.keySet()) {
-					schemas.add(
-						new Schema() {
-							public InputStream getInputStream() throws IOException {
-								return new ByteArrayInputStream(schemaStreams.get(namespace).toByteArray());
-							}
-							public String getSystemId() {
-								return null;
-							}
-						}
-					);
-				}
-			} else {
-				StringTokenizer stringTokenizer = new StringTokenizer(getSchemaLocation());
-				while (stringTokenizer.hasMoreTokens()) {
-					final String namespace = stringTokenizer.nextToken();
-					if (stringTokenizer.hasMoreTokens()) {
-						final String location = stringTokenizer.nextToken();
-						URL url = ClassUtils.getResourceURL(XmlUtils.class, location);
-						if (url != null) {
-							schemas.add(
-								new Schema() {
-									public InputStream getInputStream() throws IOException {
-										return ClassUtils.getResourceURL(location).openStream();
-									}
-									public String getSystemId() {
-										return ClassUtils.getResourceURL(location).toExternalForm();
-									}
-								}
-							);
-						} else {
-							throw new ConfigurationException(getLogPrefix(null) + "could not resolve location [" + location + "] for namespace ["+namespace+"] to URL");
-						}
-					} else {
-						log.warn(getLogPrefix(null) + "no location for namespace ["+namespace+"]");
-					}
-				}
+			XSD xsd = new XSD();
+			xsd.setNoNamespaceSchemaLocation(getNoNamespaceSchemaLocation());
+			xsd.init();
+			xsds.add(xsd);
+		} else {
+			String[] split =  schemaLocation.trim().split("\\s+");
+			if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + schemaLocation);
+			for (int i = 0; i < split.length; i += 2) {
+				XSD xsd = new XSD();
+				xsd.setNamespace(split[i]);
+				xsd.setResource(split[i + 1]);
+				xsd.setAddNamespaceToSchema(isAddNamespaceToSchema());
+				xsd.init();
+				xsds.add(xsd);
 			}
 		}
+		return xsds;
+	}
+
+	public List<Schema> getSchemas() throws ConfigurationException {
+		Set<XSD> xsds = getXsds();
+		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
+			xsds = SchemaUtils.getXsdsRecursive(xsds);
+			try {
+				Map<String, Set<XSD>> xsdsGroupedByNamespace =
+						SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
+				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
+						xsdsGroupedByNamespace, null);
+			} catch(Exception e) {
+				throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
+			}
+		}
+		List<Schema> schemas = new ArrayList<Schema>();
+		SchemaUtils.sortByDependencies(xsds, schemas);
 		return schemas;
 	}
 
@@ -534,24 +533,21 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	public List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException {
+		List<Schema> xsds = new ArrayList<Schema>();
 		String schemaLocation = getSchemasId(session);
 		if (schemaSessionKey != null) {
 			final URL url = ClassUtils.getResourceURL(schemaLocation);
 			if (url == null) {
-				throw new PipeRunException(null, getLogPrefix(session) + "could not find schema at [" + schemaLocation + "]");
+				throw new PipeRunException(this, getLogPrefix(session) + "could not find schema at [" + schemaLocation + "]");
 			}
-			List<Schema> schemas = new ArrayList<Schema>();
-			schemas.add(
-				new Schema() {
-					public InputStream getInputStream() throws IOException {
-						return url.openStream();
-					}
-					public String getSystemId() {
-						return url.toExternalForm();
-					}
-				}
-			);
-			return schemas;
+			XSD xsd = new XSD();
+			xsd.setNoNamespaceSchemaLocation(schemaLocation);
+			try {
+				xsd.init();
+			} catch (ConfigurationException e) {
+				throw new PipeRunException(this, "Could not init xsd", e);
+			}
+			xsds.add(xsd);
 		}
 		return null;
 	}
