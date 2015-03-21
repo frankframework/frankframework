@@ -76,6 +76,7 @@ Upcoming
 - Add size of message to response in GetTibcoQueues (and chomp very large message)
 - Add writeSuffix parameter to FileHandler (next to writeSuffix attribute)
 - Add file type bin for mime type application/octet-stream in FileViewerServlet
+- Make it possible to generate a WSDL based on WsdlXmlValidator
 
 
 
