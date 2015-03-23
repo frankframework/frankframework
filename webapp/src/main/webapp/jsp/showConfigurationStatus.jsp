@@ -141,6 +141,7 @@
 						<subHeader>State</subHeader>
 						<subHeader>Configured</subHeader>
 						<subHeader>up since</subHeader>
+						<subHeader>Last Message</subHeader>
 						<subHeader>Messages with error</subHeader>
 						<subHeader>Messages processed/in process</subHeader>
 						<subHeader>Actions</subHeader>
@@ -165,7 +166,14 @@
 
 						</td>
 						<td><booleanImage value="<xtags:valueOf select="@configured"/>"/></td>
-						<td><xtags:valueOf select="@upSince"/></td>
+						<td>
+							<xtags:valueOf select="@upSince"/>
+							<xtags:if test="@upSinceAge!=''"> (<xtags:valueOf select="@upSinceAge"/>)</xtags:if>
+						</td>
+						<td>
+							<xtags:valueOf select="@lastMessageDate"/>
+							<xtags:if test="@lastMessageDateAge!=''"> (<xtags:valueOf select="@lastMessageDateAge"/>)</xtags:if>
+							</td>
 						<td align="right"><xtags:valueOf select="@messagesInError"/></td>
 						<td align="right"><xtags:valueOf select="@messagesProcessed"/>/<xtags:valueOf select="@messagesInProcess"/></td>
 						<td>
@@ -222,7 +230,7 @@
 							<td></td>
 							<subHeader>state</subHeader>
 							<subHeader colspan="2">receiver name</subHeader>
-							<subHeader>listener/sender</subHeader>
+							<subHeader colspan="2">listener/sender</subHeader>
 
 							<subHeader>messages received/retried/rejected</subHeader>
 							<subHeader>Actions</subHeader>
@@ -257,7 +265,7 @@
 									<xtags:valueOf select="@name"/>
 								</td>
 
-							 	<td class="receiverRow">
+							 	<td colspan="2" class="receiverRow">
 							 		<xtags:valueOf select="@listenerClass"/>
 							 		<xtags:if test="@listenerDestination!=''">(<xtags:valueOf select="@listenerDestination"/>)</xtags:if>
 							 		<xtags:if test="@senderClass!=''">/<xtags:valueOf select="@senderClass"/>
@@ -366,7 +374,7 @@
 						<tr>
 							<td></td>
 							<subHeader colspan="3">message sending pipes</subHeader>
-							<subHeader colspan="2">sender/listener</subHeader>
+							<subHeader colspan="3">sender/listener</subHeader>
 							<subHeader>Show Log</subHeader>
 						</tr>
 						<xtags:forEach select="pipes/pipe[@sender!='' and (@isJdbcSender='true'=false() or @hasMessageLog='true')]">
@@ -376,7 +384,7 @@
 							 <tr >
 								<td></td>
 								<td colspan="3" class="receiverRow"><xtags:valueOf select="@name"/></td>
-								<td colspan="2" class="receiverRow">
+								<td colspan="3" class="receiverRow">
 									<xtags:valueOf select="@sender"/>
 							 		<xtags:if test="@destination!=''">(<xtags:valueOf select="@destination"/>)</xtags:if>
 							 		<xtags:if test="@listenerClass!=''">/<xtags:valueOf select="@listenerClass"/>
@@ -413,12 +421,12 @@
 					<xtags:forEach select="adapterMessages">
 						<tr>
 							<td></td>
-							<subHeader colspan="6">Messages</subHeader>
+							<subHeader colspan="7">Messages</subHeader>
 						</tr>
 						<xtags:forEach select="adapterMessage">
 						<tr>
 							<td></td>
-							<td colspan="6" class="messagesRow">
+							<td colspan="7" class="messagesRow">
 								<xtags:choose>
 									<xtags:when test="@level='ERROR'">
 										<font color="red">

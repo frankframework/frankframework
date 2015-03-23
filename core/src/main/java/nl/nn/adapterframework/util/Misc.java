@@ -36,6 +36,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -47,12 +48,10 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.log4j.Logger;
 
 
@@ -779,5 +778,25 @@ public class Misc {
 				return null;
 			}
 		}
+	  }
+
+	public static String getAge(long value) {
+		long currentTime = (new Date()).getTime();
+		long age = currentTime - value;
+		String ageString = DurationFormatUtils.formatDuration(age, "d") + "d";
+		if (ageString.equals("0d")) {
+			;
+			ageString = DurationFormatUtils.formatDuration(age, "H") + "h";
+			if (ageString.equals("0h")) {
+				;
+				ageString = DurationFormatUtils.formatDuration(age, "m") + "m";
+				if (ageString.equals("0m")) {
+					;
+					ageString = DurationFormatUtils.formatDuration(age, "s")
+							+ "s";
+				}
+			}
+		}
+		return ageString;
 	}
 }

@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Iterator;
 
 import javax.servlet.ServletException;
@@ -41,6 +42,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -159,8 +161,16 @@ public final class ShowConfigurationStatus extends ActionBase {
 				countAdapterStateError++;
 			}
 			adapterXML.addAttribute("configured", ""+adapter.configurationSucceeded());
-			adapterXML.addAttribute("upSince", adapter.getStatsUpSince());
-			adapterXML.addAttribute("lastMessageDate", adapter.getLastMessageDate());
+			adapterXML.addAttribute("upSince", adapter.getStatsUpSince(DateUtils.FORMAT_GENERICDATETIME));
+			Date statsUpSinceDate = adapter.getStatsUpSinceDate();
+			if (statsUpSinceDate!=null) {
+				adapterXML.addAttribute("upSinceAge", Misc.getAge(statsUpSinceDate.getTime()));
+			}
+			adapterXML.addAttribute("lastMessageDate", adapter.getLastMessageDate(DateUtils.FORMAT_GENERICDATETIME));
+			Date lastMessageDate = adapter.getLastMessageDateDate();
+			if (lastMessageDate!=null) {
+				adapterXML.addAttribute("lastMessageDateAge", Misc.getAge(lastMessageDate.getTime()));
+			}
 			adapterXML.addAttribute("messagesInProcess", ""+adapter.getNumOfMessagesInProcess());
 			adapterXML.addAttribute("messagesProcessed", ""+adapter.getNumOfMessagesProcessed());
 			adapterXML.addAttribute("messagesInError", ""+adapter.getNumOfMessagesInError());

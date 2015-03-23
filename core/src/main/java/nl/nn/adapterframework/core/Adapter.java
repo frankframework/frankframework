@@ -281,9 +281,12 @@ public class Adapter implements IAdapter, NamedBean {
 	 * retrieve the date and time of the last message.
 	 */
 	public String getLastMessageDate() {
+		return getLastMessageDate(DateUtils.FORMAT_FULL_GENERIC);
+	}
+	public String getLastMessageDate(String dateFormat) {
 		String result = "";
 		if (lastMessageDate != 0)
-			result = DateUtils.format(new Date(lastMessageDate), DateUtils.FORMAT_FULL_GENERIC);
+			result = DateUtils.format(new Date(lastMessageDate), dateFormat);
 		else
 			result = "-";
 		return result;
@@ -458,7 +461,10 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @return String  Date
 	 */
 	public String getStatsUpSince() {
-		return DateUtils.format(new Date(statsUpSince), DateUtils.FORMAT_FULL_GENERIC);
+		return getStatsUpSince(DateUtils.FORMAT_FULL_GENERIC);
+	}
+	public String getStatsUpSince(String dateFormat) {
+		return DateUtils.format(new Date(statsUpSince), dateFormat);
 	}
 	public Date getStatsUpSinceDate() {
 		return new Date(statsUpSince);
