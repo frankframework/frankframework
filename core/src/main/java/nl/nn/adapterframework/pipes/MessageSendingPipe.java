@@ -375,21 +375,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getInputValidator().registerForward(pf);
-			if (getInputValidator() instanceof IExtendedPipe) {
-				((IExtendedPipe)getInputValidator()).configure(getPipeLine());
-			} else {
-				getInputValidator().configure();
-			}
 		}
 		if (getOutputValidator()!=null) {
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getOutputValidator().registerForward(pf);
-			if (getOutputValidator() instanceof IExtendedPipe) {
-				((IExtendedPipe)getOutputValidator()).configure(getPipeLine());
-			} else {
-				getOutputValidator().configure();
-			}
 		}
 		if (getInputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
@@ -400,21 +390,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				ISender sender = getSender();
 				eswPipe.retrievePhysicalDestinationFromSender(sender);
 			}
-			if (getInputWrapper() instanceof IExtendedPipe) {
-				((IExtendedPipe)getInputWrapper()).configure(getPipeLine());
-			} else {
-				getInputWrapper().configure();
-			}
 		}
 		if (getOutputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getOutputWrapper().registerForward(pf);
-			if (getOutputWrapper() instanceof IExtendedPipe) {
-				((IExtendedPipe)getOutputWrapper()).configure(getPipeLine());
-			} else {
-				getOutputWrapper().configure();
-			}
 		}
 
 		registerEvent(PIPE_TIMEOUT_MONITOR_EVENT);

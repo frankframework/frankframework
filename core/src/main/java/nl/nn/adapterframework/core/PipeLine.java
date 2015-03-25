@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -194,30 +194,6 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		}
 		pipesByName.put(name, pipe);
 		pipes.add(pipe);
-		pipeStatistics.put(name, new StatisticsKeeper(name));
-		if (pipe instanceof MessageSendingPipe) {
-			MessageSendingPipe messageSendingPipe = (MessageSendingPipe)pipe;
-			if (messageSendingPipe.getInputValidator() != null) {
-				String subName = messageSendingPipe.getInputValidator().getName();
-				pipeStatistics.put(subName, new StatisticsKeeper(subName));
-			}
-			if (messageSendingPipe.getOutputValidator() != null) {
-				String subName = messageSendingPipe.getOutputValidator().getName();
-				pipeStatistics.put(subName, new StatisticsKeeper(subName));
-			}
-			if (messageSendingPipe.getInputWrapper() != null) {
-				String subName = messageSendingPipe.getInputWrapper().getName();
-				pipeStatistics.put(subName, new StatisticsKeeper(subName));
-			}
-			if (messageSendingPipe.getOutputWrapper() != null) {
-				String subName = messageSendingPipe.getOutputWrapper().getName();
-				pipeStatistics.put(subName, new StatisticsKeeper(subName));
-			}
-			if (messageSendingPipe.getMessageLog() != null) {
-				String subName = messageSendingPipe.getMessageLog().getName();
-				pipeStatistics.put(subName, new StatisticsKeeper(subName));
-			}
-		}
 		if (pipe.getMaxThreads() > 0) {
 			pipeWaitingStatistics.put(name, new StatisticsKeeper(name));
 		}
@@ -268,8 +244,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		for (int i=0; i < pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
 
-			String pipeName=pipe.getName();
-			log.debug("Pipeline of [" + owner.getName() + "] configuring Pipe ["+pipeName+"]");
+			log.debug("Pipeline of [" + owner.getName() + "] configuring Pipe ["+pipe.getName()+"]");
 			// register the global forwards at the Pipes
 			// the pipe will take care that if a local, pipe-specific
 			// forward is defined, it is not overwritten by the globals
@@ -299,35 +274,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 					}
 				}
 			}
-
-			try {
-				if (pipe instanceof IExtendedPipe) {
-					IExtendedPipe epipe=(IExtendedPipe)pipe;
-					epipe.configure(this);
-					if (epipe.getDurationThreshold() >= 0) {
-						epipe.registerEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
-					}
-					epipe.registerEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
-					if (getMessageSizeWarnNum() >= 0) {
-						epipe.registerEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
-					}
-					if (epipe.hasSizeStatistics()) {
-						pipeSizeStats.put(pipe.getName(), new SizeStatisticsKeeper(pipe.getName()));
-					}
-				} else {
-					pipe.configure();
-				}
-				//congestionSensors.addSensor(pipe);
-			} catch (Throwable t) {
-				if (t instanceof ConfigurationException) {
-					throw (ConfigurationException)t;
-				}
-				throw new ConfigurationException("Exception configuring Pipe ["+pipeName+"]",t);
-			}
-			if (log.isDebugEnabled()) {
-                log.debug("Pipeline of [" + owner.getName() + "]: Pipe ["+pipeName+"] successfully configured: ["+pipe.toString()+"]");
-            }
-
+			configure(pipe);
 		}
 	    if (pipeLineExits.size() < 1) {
 		    throw new ConfigurationException("no PipeLine Exits specified");
@@ -345,12 +292,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 			pf.setName("success");
 			getInputValidator().registerForward(pf);
 			getInputValidator().setName(INPUT_VALIDATOR_NAME);
-			if (getInputValidator() instanceof IExtendedPipe) {
-				((IExtendedPipe)getInputValidator()).configure(this);
-			} else {
-				getInputValidator().configure();
-			}
-		    pipeStatistics.put(getInputValidator().getName(), new StatisticsKeeper(getInputValidator().getName()));
+			configure(getInputValidator());
 		}
 		if (getOutputValidator()!=null) {
 			log.debug("Pipeline of [" + owner.getName() + "] configuring OutputValidator");
@@ -358,12 +300,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 			pf.setName("success");
 			getOutputValidator().registerForward(pf);
 			getOutputValidator().setName(OUTPUT_VALIDATOR_NAME);
-			if (adapter!=null && getOutputValidator() instanceof IExtendedPipe) {
-				((IExtendedPipe)getOutputValidator()).configure(this);
-			} else {
-				getOutputValidator().configure();
-			}
-		    pipeStatistics.put(getOutputValidator().getName(), new StatisticsKeeper(getOutputValidator().getName()));
+			configure(getOutputValidator());
 		}
 
 		if (getInputWrapper()!=null) {
@@ -372,12 +309,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 			pf.setName("success");
 			getInputWrapper().registerForward(pf);
 			getInputWrapper().setName(INPUT_WRAPPER_NAME);
-			if (getInputWrapper() instanceof IExtendedPipe) {
-				((IExtendedPipe)getInputWrapper()).configure(this);
-			} else {
-				getInputWrapper().configure();
-			}
-		    pipeStatistics.put(getInputWrapper().getName(), new StatisticsKeeper(getInputWrapper().getName()));
+			configure(getInputWrapper());
 		}
 		if (getOutputWrapper()!=null) {
 			log.debug("Pipeline of [" + owner.getName() + "] configuring OutputWrapper");
@@ -402,12 +334,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 					}
 				}
 			}
-			if (adapter!=null && getOutputWrapper() instanceof IExtendedPipe) {
-				((IExtendedPipe)getOutputWrapper()).configure(this);
-			} else {
-				getOutputWrapper().configure();
-			}
-		    pipeStatistics.put(getOutputWrapper().getName(), new StatisticsKeeper(getOutputWrapper().getName()));
+			configure(getOutputWrapper());
 		}
 
 		requestSizeStats = new SizeStatisticsKeeper("- pipeline in");
@@ -428,6 +355,55 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+getTransactionAttribute()+"], timeout ["+getTransactionTimeout()+"]");
 		txDef = SpringTxManagerProxy.getTransactionDefinition(txOption,getTransactionTimeout());
 		log.debug("Pipeline of [" + owner.getName() + "] successfully configured");
+	}
+
+	public void configure(IPipe pipe) throws ConfigurationException {
+		try {
+			if (pipe instanceof IExtendedPipe) {
+				IExtendedPipe epipe=(IExtendedPipe)pipe;
+				epipe.configure(this);
+				if (epipe.getDurationThreshold() >= 0) {
+					epipe.registerEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
+				}
+				epipe.registerEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
+				if (getMessageSizeWarnNum() >= 0) {
+					epipe.registerEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
+				}
+				if (epipe.hasSizeStatistics()) {
+					pipeSizeStats.put(pipe.getName(), new SizeStatisticsKeeper(pipe.getName()));
+				}
+			} else {
+				pipe.configure();
+			}
+			if (pipe instanceof MessageSendingPipe) {
+				MessageSendingPipe messageSendingPipe = (MessageSendingPipe) pipe;
+				if (messageSendingPipe.getInputValidator() != null) {
+					configure(messageSendingPipe.getInputValidator());
+				}
+				if (messageSendingPipe.getOutputValidator() != null) {
+					configure(messageSendingPipe.getOutputValidator());
+				}
+				if (messageSendingPipe.getInputWrapper() != null) {
+					configure(messageSendingPipe.getInputWrapper());
+				}
+				if (messageSendingPipe.getOutputWrapper() != null) {
+					configure(messageSendingPipe.getOutputWrapper());
+				}
+				if (messageSendingPipe.getMessageLog() != null) {
+					pipeStatistics.put(messageSendingPipe.getMessageLog().getName(), new StatisticsKeeper(messageSendingPipe.getMessageLog().getName()));
+				}
+			}
+			pipeStatistics.put(pipe.getName(), new StatisticsKeeper(pipe.getName()));
+			//congestionSensors.addSensor(pipe);
+		} catch (Throwable t) {
+			if (t instanceof ConfigurationException) {
+				throw (ConfigurationException)t;
+			}
+			throw new ConfigurationException("Exception configuring Pipe ["+pipe.getName()+"]",t);
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Pipeline of [" + owner.getName() + "]: Pipe ["+pipe.getName()+"] successfully configured: ["+pipe.toString()+"]");
+		}
 	}
 
 	public PipeLineExit findExitByState(String state) {
@@ -459,16 +435,16 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 				MessageSendingPipe messageSendingPipe = (MessageSendingPipe) pipe;
 				if (messageSendingPipe.getInputValidator() != null) {
 					handlePipeStat(messageSendingPipe.getInputValidator(), pipeStatistics, pipeStatsData, hski, true, action);
-					}
+				}
 				if (messageSendingPipe.getOutputValidator() != null) {
 					handlePipeStat(messageSendingPipe.getOutputValidator(), pipeStatistics, pipeStatsData, hski, true, action);
-					}
+				}
 				if (messageSendingPipe.getInputWrapper() != null) {
 					handlePipeStat(messageSendingPipe.getInputWrapper(), pipeStatistics, pipeStatsData, hski, true, action);
-					}
+				}
 				if (messageSendingPipe.getOutputWrapper() != null) {
 					handlePipeStat(messageSendingPipe.getOutputWrapper(), pipeStatistics, pipeStatsData, hski, true, action);
-					}
+				}
 				if (messageSendingPipe.getMessageLog() != null) {
 					handlePipeStat(messageSendingPipe.getMessageLog(),pipeStatistics,pipeStatsData,hski, true, action);
 				}

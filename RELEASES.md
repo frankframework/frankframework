@@ -78,6 +78,7 @@ Upcoming
 - Add file type bin for mime type application/octet-stream in FileViewerServlet
 - Make it possible to generate a WSDL based on WsdlXmlValidator
 - Add Last Message to Show ConfigurationStatus
+- Bugfix monitoring events for input/output-Validators/Wrappers being ignored
 
 
 
