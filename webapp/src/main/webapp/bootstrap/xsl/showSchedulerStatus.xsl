@@ -71,12 +71,12 @@
 										<td class="actions">
 											<xsl:choose>
 												<xsl:when test="@isPaused = 'False'">
-													<a href="http://localhost/ibis4voorbeeld/schedulerHandler.do?action=pauseScheduler">	
+													<a href="schedulerHandler.do?action=pauseScheduler">	
 													<img src="bootstrap/img/start.gif"/>		
 													</a>									
 												</xsl:when>
 												<xsl:otherwise>
-													<a href="http://localhost/ibis4voorbeeld/schedulerHandler.do?action=startScheduler">
+													<a href="schedulerHandler.do?action=startScheduler">
 													<img src="bootstrap/img/pause.gif"/>	
 													</a>											
 												</xsl:otherwise>
