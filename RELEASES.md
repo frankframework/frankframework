@@ -79,6 +79,7 @@ Upcoming
 - Make it possible to generate a WSDL based on WsdlXmlValidator
 - Add Last Message to Show ConfigurationStatus
 - Bugfix monitoring events for input/output-Validators/Wrappers being ignored
+- Add support for multiple versions of the ESB Common Message Header
 
 
 

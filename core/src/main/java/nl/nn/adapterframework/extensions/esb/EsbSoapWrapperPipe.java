@@ -17,17 +17,17 @@ package nl.nn.adapterframework.extensions.esb;
 
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.Misc;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Extension to SoapWrapperPipe for separate modes.
@@ -36,6 +36,7 @@ import nl.nn.adapterframework.util.Misc;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setMode(String) mode}</td><td>either <code>i2t</code> (ifsa2tibco), <code>reg</code> (regular) or <code>bis</code> (Business Integration Services)</td><td>reg</td></tr>
+ * <tr><td>{@link #setVersion(int) version}</td><td>(only used when <code>mode=reg</code>) version of mode (1 or 2)</td><td>0</td></tr>
  * <tr><td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td><td>if direction=<code>unwrap</code>: </td><td>soapHeader</td></tr>
  * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>if direction=<code>wrap</code> and mode=<code>i2t</code>:</td><td>/xml/xsl/esb/soapHeader.xsl</td></tr>
  * <tr><td></td><td>if direction=<code>wrap</code> and mode=<code>reg</code>:</td><td>TODO (for now identical to the "<code>i2t</code>" SOAP Header)</td></tr>
@@ -52,7 +53,7 @@ import nl.nn.adapterframework.util.Misc;
  * <table border="1">
  * <tr><th>element</th><th>level</th><th>value</th></tr>
  * <tr><td>MessageHeader</td><td>0</td><td>&nbsp;</td></tr>
- * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns="http://nn.nl/XSD/Generic/MessageHeader/1"</td></tr>
+ * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns=$namespace</td></tr>
  * <tr><td>From</td><td>1</td><td>&nbsp;</td></tr>
  * <tr><td>Id</td><td>2</td><td>$fromId</td></tr>
  * <tr><td>To</td><td>1</td><td>&nbsp;</td></tr>
@@ -64,6 +65,7 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>MessageId</td><td>2</td><td>$messageId</td></tr>
  * <tr><td>ExternalRefToMessageId</td><td>2</td><td>$externalRefToMessageId (if empty then skip this element)</td></tr>
  * <tr><td>Timestamp</td><td>2</td><td>$timestamp</td></tr>
+ * <tr><td>TransactionId</td><td>2</td><td>$transactionId (only used when $mode=reg and $version=2; if empty then skip this element)</td></tr>
  * <tr><td>Service</td><td>1</td><td>&nbsp;</td></tr>
  * <tr><td>Name</td><td>2</td><td>$serviceName</td></tr>
  * <tr><td>Context</td><td>2</td><td>$serviceContext</td></tr>
@@ -75,6 +77,9 @@ import nl.nn.adapterframework.util.Misc;
  * <b>Parameters:</b>
  * <table border="1">
  * <tr><th>name</th><th>default</th></tr>
+ * <tr><td>mode</td><td>copied from <code>mode</code></td></tr>
+ * <tr><td>version</td><td>copied from <code>version</code></td></tr>
+ * <tr><td>namespace</td><td>"http://nn.nl/XSD/Generic/MessageHeader/2" (only when $mode=reg and $version=2)</br>"http://nn.nl/XSD/Generic/MessageHeader/1" (otherwise)</td></tr>
  * <tr><td>businessDomain</td><td>&nbsp;</td></tr>
  * <tr><td>serviceName</td><td>&nbsp;</td></tr>
  * <tr><td>serviceContext</td><td>&nbsp;</td></tr>
@@ -94,6 +99,7 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>correlationId</td><td>if $paradigm equals 'Response' then copied from MessageId in the original (received) SOAP Header</td></tr>
  * <tr><td>externalRefToMessageId</td><td>if applicable, copied from the original (received) SOAP Header</td></tr>
  * <tr><td>timestamp</td><td>parameter pattern '{now,date,yyyy-MM-dd'T'HH:mm:ss}'</td></tr>
+ * <tr><td>transactionId</td><td>if applicable, copied from the original (received) SOAP Header</td></tr>
  * </table>
  * </p>
  * <p>
@@ -127,7 +133,7 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><th>element</th><th>level</th><th>value</th></tr>
  * <tr><td>[Payload]</td><td>0</td><td>if $errorCode is empty then the complete payload will be copied and if not already existing a Result tag will be added<br/>else only the root tag will be copied</td></tr>
  * <tr><td>Result</td><td>1</td><td>this element will be the last child in the copied root tag (only applicable for $paradigm 'Response'); if $errorCode is empty and a Result tag already exists then skip this element including its child elements</td></tr>
- * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns="http://nn.nl/XSD/Generic/MessageHeader/1"</td></tr>
+ * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns=$namespace</td></tr>
  * <tr><td>Status</td><td>2</td><td>if $errorCode is empty then 'OK'</br>else 'ERROR'</td></tr>
  * <tr><td>ErrorList</td><td>2</td><td>if $errorCode is empty then skip this element including its child elements</td></tr>
  * <tr><td>Error</td><td>3</td><td>&nbsp;</td></tr>
@@ -157,7 +163,9 @@ import nl.nn.adapterframework.util.Misc;
  * <b>Parameters:</b>
  * <table border="1">
  * <tr><th>name</th><th>default</th></tr>
- * <tr><td>namespace</td><td>"http://www.ing.com/CSP/XSD/General/Message_2"</td></tr>
+ * <tr><td>mode</td><td>copied from <code>mode</code></td></tr>
+ * <tr><td>version</td><td>copied from <code>version</code></td></tr>
+ * <tr><td>namespace</td><td>"http://nn.nl/XSD/Generic/MessageHeader/2" (only when $mode=reg and $version=2)</br>"http://nn.nl/XSD/Generic/MessageHeader/1" (otherwise)</td></tr>
  * <tr><td>errorCode</td><td>&nbsp;</td></tr>
  * <tr><td>errorReason</td><td>&nbsp;</td></tr>
  * <tr><td>errorDetailCode</td><td>&nbsp;</td></tr>
@@ -205,6 +213,7 @@ import nl.nn.adapterframework.util.Misc;
  * <b>Parameters:</b>
  * <table border="1">
  * <tr><th>name</th><th>default</th></tr>
+ * <tr><td>namespace</td><td>"http://www.ing.com/CSP/XSD/General/Message_2"</td></tr>
  * <tr><td>errorCode</td><td>&nbsp;</td></tr>
  * <tr><td>errorReason</td><td>&nbsp;</td></tr>
  * <tr><td>errorDetailCode</td><td>&nbsp;</td></tr>
@@ -241,6 +250,9 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	protected final static String EXTERNALREFTOMESSAGEID = "externalRefToMessageId";
 	protected final static String TIMESTAMP = "timestamp";
 	protected final static String FIXRESULTNAMESPACE = "fixResultNamespace";
+	protected final static String TRANSACTIONID = "transactionId";
+	protected final static String MODE = "mode";
+	protected final static String VERSION = "version";
 
 	private boolean useFixedValues=false; 
 	private boolean fixResultNamespace=false; 
@@ -252,11 +264,33 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
     }
 
 	private Mode mode = Mode.REG;
+	private int version = 0;
 	private boolean addOutputNamespace = false;
 	private boolean retrievePhysicalDestination = true;
-
+	
     @Override
 	public void configure() throws ConfigurationException {
+		if (mode == Mode.REG) {
+			if (version < 1 || version > 2) {
+				ConfigurationWarnings configWarnings = ConfigurationWarnings
+						.getInstance();
+				String msg = getLogPrefix(null) + "version [" + version
+						+ "] for mode [" + mode.toString()
+						+ "] should be set to '1' or '2', assuming '1'";
+				configWarnings.add(log, msg);
+				version = 1;
+			}
+		} else {
+			if (version != 0) {
+				ConfigurationWarnings configWarnings = ConfigurationWarnings
+						.getInstance();
+				String msg = getLogPrefix(null) + "version [" + version
+						+ "] for mode [" + mode.toString()
+						+ "] should not be set, assuming '0'";
+				configWarnings.add(log, msg);
+				version = 0;
+			}
+		}
 		if ("wrap".equalsIgnoreCase(getDirection())) {
 			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
 				setSoapHeaderSessionKey(DEFAULT_SOAP_HEADER_SESSION_KEY);
@@ -558,6 +592,22 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			p.setValue(String.valueOf(isFixResultNamespace()));
 			addParameter(p);
 		}
+		if (parameterList.findParameter(TRANSACTIONID)==null) {
+			p = new Parameter();
+			p.setName(TRANSACTIONID);
+			p.setSessionKey(getSoapHeaderSessionKey());
+			p.setXpathExpression("MessageHeader/HeaderFields/TransactionId");
+			p.setRemoveNamespaces(true);
+			addParameter(p);
+		}
+		p = new Parameter();
+		p.setName(MODE);
+		p.setValue(getMode());
+		addParameter(p);
+		p = new Parameter();
+		p.setName(VERSION);
+		p.setValue(String.valueOf(getVersion()));
+		addParameter(p);
 	}
 	public void setMode(String string) {
 		mode = Mode.valueOf(string.toUpperCase());
@@ -565,6 +615,14 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 
 	public String getMode() {
 		return mode.toString();
+	}
+
+	public void setVersion(int i) {
+		version = i;
+	}
+
+	public int getVersion() {
+		return version;
 	}
 
 	public void setAddOutputNamespace(boolean b) {

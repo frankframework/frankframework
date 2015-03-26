@@ -15,13 +15,14 @@
 */
 package nl.nn.adapterframework.extensions.esb;
 
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe.Mode;
 import nl.nn.adapterframework.soap.SoapValidator;
 
 /**
@@ -40,16 +41,18 @@ public class EsbSoapValidator extends SoapValidator {
             this.xsd   = xsd;
             this.tag   = new QName(this.xmlns, "MessageHeader");
         }
-
     }
 
-    private static final Map<EsbSoapWrapperPipe.Mode, HeaderInformation> GENERIC_HEADER;
+    private static final Map<String, HeaderInformation> GENERIC_HEADER;
     static {
-        Map<EsbSoapWrapperPipe.Mode, HeaderInformation> temp = new HashMap<EsbSoapWrapperPipe.Mode, HeaderInformation>();
-        temp.put(EsbSoapWrapperPipe.Mode.REG, new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/1", "/xml/xsd/CommonMessageHeader.xsd"));
-        temp.put(EsbSoapWrapperPipe.Mode.I2T, new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/1", "/xml/xsd/CommonMessageHeader.xsd"));
-        temp.put(EsbSoapWrapperPipe.Mode.BIS, new HeaderInformation("http://www.ing.com/CSP/XSD/General/Message_2", "/xml/xsd/cspXML_2.xsd"));
-        GENERIC_HEADER = new EnumMap<EsbSoapWrapperPipe.Mode, HeaderInformation>(temp);
+        Map<String, HeaderInformation> temp = new HashMap<String, HeaderInformation>();
+        // first put to avoid NullPointerException
+        temp.put(getModeKey(EsbSoapWrapperPipe.Mode.REG), new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/1", "/xml/xsd/CommonMessageHeader.xsd"));
+        temp.put(getModeKey(EsbSoapWrapperPipe.Mode.REG,1), new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/1", "/xml/xsd/CommonMessageHeader.xsd"));
+        temp.put(getModeKey(EsbSoapWrapperPipe.Mode.REG,2), new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/2", "/xml/xsd/CommonMessageHeader_2.xsd"));
+        temp.put(getModeKey(EsbSoapWrapperPipe.Mode.I2T), new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/1", "/xml/xsd/CommonMessageHeader.xsd"));
+        temp.put(getModeKey(EsbSoapWrapperPipe.Mode.BIS), new HeaderInformation("http://www.ing.com/CSP/XSD/General/Message_2", "/xml/xsd/cspXML_2.xsd"));
+        GENERIC_HEADER = new HashMap<String, HeaderInformation>(temp);
     }
 
     // This is unused now, we use to to have an extra tag on the output.
@@ -62,20 +65,54 @@ public class EsbSoapValidator extends SoapValidator {
 
     private Direction direction = null;
     private EsbSoapWrapperPipe.Mode mode = EsbSoapWrapperPipe.Mode.REG;
+    private int version = 0;
     private String explicitSchemaLocation = null;
 
     @Override
     public void configure() throws ConfigurationException {
-        super.setSoapHeader(GENERIC_HEADER.get(mode).tag.getLocalPart());
+		if (mode == EsbSoapWrapperPipe.Mode.REG) {
+			if (version < 1 || version > 2) {
+				ConfigurationWarnings configWarnings = ConfigurationWarnings
+						.getInstance();
+				String msg = getLogPrefix(null) + "version [" + version
+						+ "] for mode [" + mode.toString()
+						+ "] should be set to '1' or '2', assuming '1'";
+				configWarnings.add(log, msg);
+				version = 1;
+			}
+		} else {
+			if (version != 0) {
+				ConfigurationWarnings configWarnings = ConfigurationWarnings
+						.getInstance();
+				String msg = getLogPrefix(null) + "version [" + version
+						+ "] for mode [" + mode.toString()
+						+ "] should not be set, assuming '0'";
+				configWarnings.add(log, msg);
+				version = 0;
+			}
+		}
+        super.setSoapHeader(GENERIC_HEADER.get(getModeKey(mode,version)).tag.getLocalPart());
         super.configure();
     }
 
     @Override
     public void setSchemaLocation(String schemaLocation) {
-        super.setSchemaLocation(schemaLocation + " " + GENERIC_HEADER.get(mode).xmlns + " " + GENERIC_HEADER.get(mode).xsd);
+    	super.setSchemaLocation(schemaLocation + " " + GENERIC_HEADER.get(getModeKey()).xmlns + " " + GENERIC_HEADER.get(getModeKey()).xsd);
         explicitSchemaLocation = schemaLocation;
     }
 
+    private String getModeKey() {
+    	return getModeKey(mode, version);
+    }
+
+    private static String getModeKey(EsbSoapWrapperPipe.Mode mode) {
+    	return getModeKey(mode, 0);
+    }
+
+    private static String getModeKey(EsbSoapWrapperPipe.Mode mode, int version) {
+    	return mode.toString() + "_" + version;
+    }
+    
     @Override
     public void setSoapHeader(String soapHeader) {
         throw new IllegalArgumentException("Esb soap is unmodifiable, it is: " + getSoapHeader());
@@ -97,4 +134,12 @@ public class EsbSoapValidator extends SoapValidator {
     public String getMode() {
         return mode.toString();
     }
+
+	public void setVersion(int i) {
+		version = i;
+	}
+
+	public int getVersion() {
+		return version;
+	}
 }

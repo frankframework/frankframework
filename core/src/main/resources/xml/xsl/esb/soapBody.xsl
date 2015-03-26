@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
-	<xsl:param name="namespace">http://nn.nl/XSD/Generic/MessageHeader/1</xsl:param>
+	<xsl:param name="mode"/>
+	<xsl:param name="version"/>
+	<xsl:param name="namespace"/>
 	<xsl:param name="errorCode"/>
 	<xsl:param name="errorReason"/>
 	<xsl:param name="errorDetailCode"/>
@@ -21,6 +23,19 @@
 		 - the root tag of the input message is copied
 		 - a result tag is wrapped in this copied root tag
 	-->
+	<xsl:variable name="ns">
+		<xsl:choose>
+			<xsl:when test="string-length($namespace)=0">
+				<xsl:choose>
+					<xsl:when test="number($version)=2">http://nn.nl/XSD/Generic/MessageHeader/2</xsl:when>
+					<xsl:otherwise>http://nn.nl/XSD/Generic/MessageHeader/1</xsl:otherwise>
+				</xsl:choose>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="$namespace"/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
 	<xsl:variable name="result_exists">
 		<xsl:choose>
 			<xsl:when test="*/*[local-name(.)='Result']">true</xsl:when>
@@ -40,7 +55,7 @@
 	<xsl:template match="*|@*|comment()|processing-instruction()|text()" mode="ok">
 		<xsl:choose>
 			<xsl:when test="self::* and local-name(.)='Result' and $fixResultNamespace='true'">
-				<xsl:element name="Result" namespace="{$namespace}">
+				<xsl:element name="Result" namespace="{$ns}">
 					<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" mode="fixResultNamespace"/>
 				</xsl:element>
 			</xsl:when>
@@ -57,7 +72,7 @@
 	<xsl:template match="*|@*|comment()|processing-instruction()|text()" mode="fixResultNamespace">
 		<xsl:choose>
 			<xsl:when test="self::*">
-				<xsl:element name="{local-name(.)}" namespace="{$namespace}">
+				<xsl:element name="{local-name(.)}" namespace="{$ns}">
 					<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" mode="fixResultNamespace" />
 				</xsl:element>
 			</xsl:when>
@@ -77,19 +92,19 @@
 		</xsl:if>
 	</xsl:template>
 	<xsl:template name="Result">
-		<xsl:element name="Result" namespace="{$namespace}">
+		<xsl:element name="Result" namespace="{$ns}">
 			<xsl:choose>
 				<xsl:when test="string-length($errorCode)=0">
-					<xsl:element name="Status" namespace="{$namespace}">OK</xsl:element>
+					<xsl:element name="Status" namespace="{$ns}">OK</xsl:element>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:element name="Status" namespace="{$namespace}">ERROR</xsl:element>
-					<xsl:element name="ErrorList" namespace="{$namespace}">
-						<xsl:element name="Error" namespace="{$namespace}">
-							<xsl:element name="Code" namespace="{$namespace}">
+					<xsl:element name="Status" namespace="{$ns}">ERROR</xsl:element>
+					<xsl:element name="ErrorList" namespace="{$ns}">
+						<xsl:element name="Error" namespace="{$ns}">
+							<xsl:element name="Code" namespace="{$ns}">
 								<xsl:value-of select="$errorCode"/>
 							</xsl:element>
-							<xsl:element name="Reason" namespace="{$namespace}">
+							<xsl:element name="Reason" namespace="{$ns}">
 								<xsl:choose>
 									<xsl:when test="string-length($errorReason)=0">
 										<xsl:choose>
@@ -107,33 +122,33 @@
 									</xsl:otherwise>
 								</xsl:choose>
 							</xsl:element>
-							<xsl:element name="Service" namespace="{$namespace}">
-								<xsl:element name="Name" namespace="{$namespace}">
+							<xsl:element name="Service" namespace="{$ns}">
+								<xsl:element name="Name" namespace="{$ns}">
 									<xsl:value-of select="$serviceName"/>
 								</xsl:element>
-								<xsl:element name="Context" namespace="{$namespace}">
+								<xsl:element name="Context" namespace="{$ns}">
 									<xsl:value-of select="$serviceContext"/>
 								</xsl:element>
-								<xsl:element name="Action" namespace="{$namespace}">
-									<xsl:element name="Paradigm" namespace="{$namespace}">
+								<xsl:element name="Action" namespace="{$ns}">
+									<xsl:element name="Paradigm" namespace="{$ns}">
 										<xsl:value-of select="$paradigm"/>
 									</xsl:element>
-									<xsl:element name="Name" namespace="{$namespace}">
+									<xsl:element name="Name" namespace="{$ns}">
 										<xsl:value-of select="$operationName"/>
 									</xsl:element>
-									<xsl:element name="Version" namespace="{$namespace}">
+									<xsl:element name="Version" namespace="{$ns}">
 										<xsl:value-of select="$operationVersion"/>
 									</xsl:element>
 								</xsl:element>
 							</xsl:element>
 							<xsl:if test="string-length($errorDetailCode)&gt;0">
-								<xsl:element name="DetailList" namespace="{$namespace}">
-									<xsl:element name="Detail" namespace="{$namespace}">
-										<xsl:element name="Code" namespace="{$namespace}">
+								<xsl:element name="DetailList" namespace="{$ns}">
+									<xsl:element name="Detail" namespace="{$ns}">
+										<xsl:element name="Code" namespace="{$ns}">
 											<xsl:value-of select="$errorDetailCode"/>
 										</xsl:element>
 										<xsl:if test="string-length($errorDetailText)&gt;0">
-											<xsl:element name="Text" namespace="{$namespace}">
+											<xsl:element name="Text" namespace="{$ns}">
 												<xsl:text disable-output-escaping="yes">&lt;![CDATA[</xsl:text>
 												<xsl:value-of select="$errorDetailText"/>
 												<xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
