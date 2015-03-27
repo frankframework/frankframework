@@ -74,33 +74,33 @@ public class EsbSoapValidator extends SoapValidator {
 
     private Direction direction = null;
     private EsbSoapWrapperPipe.Mode mode = EsbSoapWrapperPipe.Mode.REG;
-    private int version = 0;
+    private int cmhVersion = 0;
     private String explicitSchemaLocation = null;
 
     @Override
     public void configure() throws ConfigurationException {
 		if (mode == EsbSoapWrapperPipe.Mode.REG) {
-			if (version < 1 || version > 2) {
+			if (cmhVersion < 1 || cmhVersion > 2) {
 				ConfigurationWarnings configWarnings = ConfigurationWarnings
 						.getInstance();
-				String msg = getLogPrefix(null) + "version [" + version
+				String msg = getLogPrefix(null) + "cmhVersion [" + cmhVersion
 						+ "] for mode [" + mode.toString()
 						+ "] should be set to '1' or '2', assuming '1'";
 				configWarnings.add(log, msg);
-				version = 1;
+				cmhVersion = 1;
 			}
 		} else {
-			if (version != 0) {
+			if (cmhVersion != 0) {
 				ConfigurationWarnings configWarnings = ConfigurationWarnings
 						.getInstance();
-				String msg = getLogPrefix(null) + "version [" + version
+				String msg = getLogPrefix(null) + "cmhVersion [" + cmhVersion
 						+ "] for mode [" + mode.toString()
 						+ "] should not be set, assuming '0'";
 				configWarnings.add(log, msg);
-				version = 0;
+				cmhVersion = 0;
 			}
 		}
-        super.setSoapHeader(GENERIC_HEADER.get(getModeKey(mode,version)).tag.getLocalPart());
+        super.setSoapHeader(GENERIC_HEADER.get(getModeKey(mode,cmhVersion)).tag.getLocalPart());
         super.configure();
     }
 
@@ -111,15 +111,15 @@ public class EsbSoapValidator extends SoapValidator {
     }
 
     private String getModeKey() {
-    	return getModeKey(mode, version);
+    	return getModeKey(mode, cmhVersion);
     }
 
     private static String getModeKey(EsbSoapWrapperPipe.Mode mode) {
     	return getModeKey(mode, 0);
     }
 
-    private static String getModeKey(EsbSoapWrapperPipe.Mode mode, int version) {
-    	return mode.toString() + "_" + version;
+    private static String getModeKey(EsbSoapWrapperPipe.Mode mode, int cmhVersion) {
+    	return mode.toString() + "_" + cmhVersion;
     }
     
     @Override
@@ -144,11 +144,11 @@ public class EsbSoapValidator extends SoapValidator {
         return mode.toString();
     }
 
-	public void setVersion(int i) {
-		version = i;
+	public void setCmhVersion(int i) {
+		cmhVersion = i;
 	}
 
-	public int getVersion() {
-		return version;
+	public int getCmhVersion() {
+		return cmhVersion;
 	}
 }

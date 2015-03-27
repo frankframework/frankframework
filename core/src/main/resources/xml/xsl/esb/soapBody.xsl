@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
 	<xsl:param name="mode"/>
-	<xsl:param name="version"/>
+	<xsl:param name="cmhVersion"/>
 	<xsl:param name="namespace"/>
 	<xsl:param name="errorCode"/>
 	<xsl:param name="errorReason"/>
@@ -27,7 +27,7 @@
 		<xsl:choose>
 			<xsl:when test="string-length($namespace)=0">
 				<xsl:choose>
-					<xsl:when test="number($version)=2">http://nn.nl/XSD/Generic/MessageHeader/2</xsl:when>
+					<xsl:when test="number($cmhVersion)=2">http://nn.nl/XSD/Generic/MessageHeader/2</xsl:when>
 					<xsl:otherwise>http://nn.nl/XSD/Generic/MessageHeader/1</xsl:otherwise>
 				</xsl:choose>
 			</xsl:when>

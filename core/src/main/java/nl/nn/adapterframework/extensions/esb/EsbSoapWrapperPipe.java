@@ -36,7 +36,7 @@ import org.apache.commons.lang.StringUtils;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setMode(String) mode}</td><td>either <code>i2t</code> (ifsa2tibco), <code>reg</code> (regular) or <code>bis</code> (Business Integration Services)</td><td>reg</td></tr>
- * <tr><td>{@link #setVersion(int) version}</td><td>(only used when <code>mode=reg</code>) version of mode (1 or 2)</td><td>0</td></tr>
+ * <tr><td>{@link #setCmhVersion(int) cmhVersion}</td><td>(only used when <code>mode=reg</code>) Common Message Header version (1 or 2)</td><td>0</td></tr>
  * <tr><td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td><td>if direction=<code>unwrap</code>: </td><td>soapHeader</td></tr>
  * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>if direction=<code>wrap</code> and mode=<code>i2t</code>:</td><td>/xml/xsl/esb/soapHeader.xsl</td></tr>
  * <tr><td></td><td>if direction=<code>wrap</code> and mode=<code>reg</code>:</td><td>TODO (for now identical to the "<code>i2t</code>" SOAP Header)</td></tr>
@@ -65,7 +65,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>MessageId</td><td>2</td><td>$messageId</td></tr>
  * <tr><td>ExternalRefToMessageId</td><td>2</td><td>$externalRefToMessageId (if empty then skip this element)</td></tr>
  * <tr><td>Timestamp</td><td>2</td><td>$timestamp</td></tr>
- * <tr><td>TransactionId</td><td>2</td><td>$transactionId (only used when $mode=reg and $version=2; if empty then skip this element)</td></tr>
+ * <tr><td>TransactionId</td><td>2</td><td>$transactionId (only used when $mode=reg and $cmhVersion=2; if empty then skip this element)</td></tr>
  * <tr><td>Service</td><td>1</td><td>&nbsp;</td></tr>
  * <tr><td>Name</td><td>2</td><td>$serviceName</td></tr>
  * <tr><td>Context</td><td>2</td><td>$serviceContext</td></tr>
@@ -78,8 +78,8 @@ import org.apache.commons.lang.StringUtils;
  * <table border="1">
  * <tr><th>name</th><th>default</th></tr>
  * <tr><td>mode</td><td>copied from <code>mode</code></td></tr>
- * <tr><td>version</td><td>copied from <code>version</code></td></tr>
- * <tr><td>namespace</td><td>"http://nn.nl/XSD/Generic/MessageHeader/2" (only when $mode=reg and $version=2)</br>"http://nn.nl/XSD/Generic/MessageHeader/1" (otherwise)</td></tr>
+ * <tr><td>cmhVersion</td><td>copied from <code>cmhVersion</code></td></tr>
+ * <tr><td>namespace</td><td>"http://nn.nl/XSD/Generic/MessageHeader/2" (only when $mode=reg and $cmhVersion=2)</br>"http://nn.nl/XSD/Generic/MessageHeader/1" (otherwise)</td></tr>
  * <tr><td>businessDomain</td><td>&nbsp;</td></tr>
  * <tr><td>serviceName</td><td>&nbsp;</td></tr>
  * <tr><td>serviceContext</td><td>&nbsp;</td></tr>
@@ -164,8 +164,8 @@ import org.apache.commons.lang.StringUtils;
  * <table border="1">
  * <tr><th>name</th><th>default</th></tr>
  * <tr><td>mode</td><td>copied from <code>mode</code></td></tr>
- * <tr><td>version</td><td>copied from <code>version</code></td></tr>
- * <tr><td>namespace</td><td>"http://nn.nl/XSD/Generic/MessageHeader/2" (only when $mode=reg and $version=2)</br>"http://nn.nl/XSD/Generic/MessageHeader/1" (otherwise)</td></tr>
+ * <tr><td>cmhVersion</td><td>copied from <code>cmhVersion</code></td></tr>
+ * <tr><td>namespace</td><td>"http://nn.nl/XSD/Generic/MessageHeader/2" (only when $mode=reg and $cmhVersion=2)</br>"http://nn.nl/XSD/Generic/MessageHeader/1" (otherwise)</td></tr>
  * <tr><td>errorCode</td><td>&nbsp;</td></tr>
  * <tr><td>errorReason</td><td>&nbsp;</td></tr>
  * <tr><td>errorDetailCode</td><td>&nbsp;</td></tr>
@@ -252,7 +252,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	protected final static String FIXRESULTNAMESPACE = "fixResultNamespace";
 	protected final static String TRANSACTIONID = "transactionId";
 	protected final static String MODE = "mode";
-	protected final static String VERSION = "version";
+	protected final static String CMHVERSION = "cmhVersion";
 
 	private boolean useFixedValues=false; 
 	private boolean fixResultNamespace=false; 
@@ -264,31 +264,31 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
     }
 
 	private Mode mode = Mode.REG;
-	private int version = 0;
+	private int cmhVersion = 0;
 	private boolean addOutputNamespace = false;
 	private boolean retrievePhysicalDestination = true;
 	
     @Override
 	public void configure() throws ConfigurationException {
 		if (mode == Mode.REG) {
-			if (version < 1 || version > 2) {
+			if (cmhVersion < 1 || cmhVersion > 2) {
 				ConfigurationWarnings configWarnings = ConfigurationWarnings
 						.getInstance();
-				String msg = getLogPrefix(null) + "version [" + version
+				String msg = getLogPrefix(null) + "cmhVersion [" + cmhVersion
 						+ "] for mode [" + mode.toString()
 						+ "] should be set to '1' or '2', assuming '1'";
 				configWarnings.add(log, msg);
-				version = 1;
+				cmhVersion = 1;
 			}
 		} else {
-			if (version != 0) {
+			if (cmhVersion != 0) {
 				ConfigurationWarnings configWarnings = ConfigurationWarnings
 						.getInstance();
-				String msg = getLogPrefix(null) + "version [" + version
+				String msg = getLogPrefix(null) + "cmhVersion [" + cmhVersion
 						+ "] for mode [" + mode.toString()
 						+ "] should not be set, assuming '0'";
 				configWarnings.add(log, msg);
-				version = 0;
+				cmhVersion = 0;
 			}
 		}
 		if ("wrap".equalsIgnoreCase(getDirection())) {
@@ -605,8 +605,8 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		p.setValue(getMode());
 		addParameter(p);
 		p = new Parameter();
-		p.setName(VERSION);
-		p.setValue(String.valueOf(getVersion()));
+		p.setName(CMHVERSION);
+		p.setValue(String.valueOf(getCmhVersion()));
 		addParameter(p);
 	}
 	public void setMode(String string) {
@@ -617,12 +617,12 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return mode.toString();
 	}
 
-	public void setVersion(int i) {
-		version = i;
+	public void setCmhVersion(int i) {
+		cmhVersion = i;
 	}
 
-	public int getVersion() {
-		return version;
+	public int getCmhVersion() {
+		return cmhVersion;
 	}
 
 	public void setAddOutputNamespace(boolean b) {

@@ -15,7 +15,7 @@
 	<xsl:param name="serviceLayer" />
 	<!-- other elements -->
 	<xsl:param name="mode"/>
-	<xsl:param name="version"/>
+	<xsl:param name="cmhVersion"/>
 	<xsl:param name="namespace"/>
 	<xsl:param name="fromId" />
 	<xsl:param name="cpaId" />
@@ -29,7 +29,7 @@
 		<xsl:choose>
 			<xsl:when test="string-length($namespace)=0">
 				<xsl:choose>
-					<xsl:when test="number($version)=2">http://nn.nl/XSD/Generic/MessageHeader/2</xsl:when>
+					<xsl:when test="number($cmhVersion)=2">http://nn.nl/XSD/Generic/MessageHeader/2</xsl:when>
 					<xsl:otherwise>http://nn.nl/XSD/Generic/MessageHeader/1</xsl:otherwise>
 				</xsl:choose>
 			</xsl:when>
@@ -80,7 +80,7 @@
 				<xsl:element name="Timestamp" namespace="{$ns}">
 					<xsl:value-of select="$timestamp" />
 				</xsl:element>
-				<xsl:if test="number($version)=2 and string-length($transactionId)&gt;0">
+				<xsl:if test="number($cmhVersion)=2 and string-length($transactionId)&gt;0">
 					<xsl:element name="TransactionId" namespace="{$ns}">
 						<xsl:value-of select="$transactionId" />
 					</xsl:element>
