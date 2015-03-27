@@ -270,11 +270,7 @@ public abstract class AbstractXmlValidator {
 		protected boolean warn = true;
 
 		public void warning(String domain, String key, XMLParseException e) throws XNIException {
-			// The schema location http://www.w3.org/2001/xml.xsd is a special
-			// case which we ignore. It's used in envelope-1.2.xsd and
-			// soap-1.2.xsd.
-			if (warn && !(e.getMessage() != null
-					&& e.getMessage().startsWith("schema_reference.4: Failed to read schema document 'http://www.w3.org/2001/xml.xsd'"))) {
+			if (warn) {
 				ConfigurationWarnings.getInstance().add(log, e.getMessage());
 			}
 		}

@@ -15,16 +15,29 @@
 */
 package nl.nn.adapterframework.soap;
 
+import java.util.Arrays;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.util.LogUtil;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import java.util.Arrays;
-
 /**
- * XmlValidator that will automatically add the SOAP envelope XSD.
+ * XmlValidator that will automatically add the SOAP envelope XSD to the set of
+ * XSD's used for validation.
+ * 
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>*</td><td>all attributes available on {@link XmlValidator} can be used except the root attribute</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRoot(String) root}</td><td>always Envelope (not allowed to change)</td><td>Envelope</td></tr>
+ * <tr><td>{@link #setSoapBody(String) soapBody}</td><td>name of the child element of the SOAP body</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSoapHeader(String) soapHeader}</td><td>name of the child element of the SOAP header</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSoapVersion(String) soapVersion}</td><td>SOAP envelope XSD version to use: 1.1, 1.2 or any (both 1.1 and 1.2)</td><td>1.1</td></tr>
+ * </table>
+ *
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
@@ -32,8 +45,9 @@ public class SoapValidator extends XmlValidator {
 
     private static final Logger LOG = LogUtil.getLogger(SoapValidator.class);
 
-    private String soapBody   = "";
-    private String soapHeader = "";
+    private String soapBody    = "";
+    private String soapHeader  = "";
+    private String soapVersion = "1.1";
 
     private SoapVersion[] versions = new SoapVersion[] {SoapVersion.fromAttribute("1.1")};
 
@@ -78,15 +92,6 @@ public class SoapValidator extends XmlValidator {
         throw new IllegalArgumentException("The root element of a soap envelope is always " + getRoot());
     }
 
-    public void setVersion(String s) {
-        if ("any".equals(s) || StringUtils.isBlank(s)) {
-            this.versions = SoapVersion.values();
-        } else {
-            this.versions = new SoapVersion[] {SoapVersion.fromAttribute(s)};
-        }
-        setSchemaLocation(setSchemaLocation);
-    }
-
     public void setSoapBody(String soapBody) {
         this.soapBody = soapBody;
     }
@@ -101,6 +106,20 @@ public class SoapValidator extends XmlValidator {
 
     public String getSoapHeader() {
         return soapHeader;
+    }
+
+    public void setSoapVersion(String soapVersion) {
+        this.soapVersion = soapVersion;
+        if ("any".equals(soapVersion) || StringUtils.isBlank(soapVersion)) {
+            this.versions = SoapVersion.values();
+        } else {
+            this.versions = new SoapVersion[] {SoapVersion.fromAttribute(soapVersion)};
+        }
+        setSchemaLocation(setSchemaLocation);
+    }
+
+    public String getSoapVersion() {
+        return soapVersion;
     }
 
     public static enum SoapVersion {

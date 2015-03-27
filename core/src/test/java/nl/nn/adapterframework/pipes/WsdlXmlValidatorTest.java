@@ -42,15 +42,6 @@ public class WsdlXmlValidatorTest {
     }
 
     @Test
-    public void getInputSchemaWithInclude() throws IOException, WSDLException, ConfigurationException {
-        WsdlXmlValidator val = new WsdlXmlValidator();
-        val.setValidateSoapEnvelope("false");
-        val.setWsdl(SIMPLE_WITH_INCLUDE);
-       /* Schema inputSchema = val.getInputSchema();
-        assertNotNull(inputSchema);
-        System.out.println("" + val.toString(inputSchema));*/
-    }
-    @Test
     public void wsdlValidateWithInclude() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(SIMPLE_WITH_INCLUDE);

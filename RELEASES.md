@@ -80,6 +80,7 @@ Upcoming
 - Add Last Message to Show ConfigurationStatus
 - Bugfix monitoring events for input/output-Validators/Wrappers being ignored
 - Add support for multiple versions of the ESB Common Message Header
+- Add SOAP 1.2 support for WsdlXmlValidator and WSDL generator
 
 
 

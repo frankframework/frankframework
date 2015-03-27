@@ -48,8 +48,17 @@ import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
 
 /**
- * Wsdl based input validator. Given an WSDL, it validates input.
- *
+ * XmlValidator that will read the XSD's to use from a WSDL. As it extends the
+ * SoapValidator is will also add the SOAP envelope XSD.
+ * 
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>*</td><td>all attributes available on {@link SoapValidator} can be used</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWsdl(String) wsdl}</td><td>the WSDL to read the XSD's from</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSchemaLocation(String) schemaLocation}</td><td>see schemaLocation attribute on XmlValidator except that the schema locations are referring to schema's in the WSDL, schema1 refers to the first, schema2 refers to the second and so on</td><td>&nbsp;</td></tr>
+ * </table>
+ * 
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
@@ -73,8 +82,6 @@ public class WsdlXmlValidator extends SoapValidator {
 	private String wsdl;
 	private Definition definition;
 
-	private SoapValidator.SoapVersion validateSoapEnvelope = SoapValidator.SoapVersion.VERSION_1_1;
-
 	public void setWsdl(String wsdl) throws ConfigurationException {
 		this.wsdl = wsdl;
 		URL url = ClassUtils.getResourceURL(wsdl);
@@ -90,31 +97,14 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 	}
 
-	@Override
-	public void setSchemaLocation(String schemaLocation) {
-		this.schemaLocation = schemaLocation;
-	}
-
 	public String getWsdl() {
 		return wsdl;
 	}
 
-    public boolean isValidateSoapEnvelope() {
-        return validateSoapEnvelope != null;
-    }
-    /**
-     * You can disable validating the SOAP envelope. If for some reason that is possible and desirable.
-     * @param validateSoapEnvelope false, true, 1.1 or 1.2
-     */
-    public void setValidateSoapEnvelope(String validateSoapEnvelope) {
-        if (validateSoapEnvelope == null || "false".equals(validateSoapEnvelope)) {
-            this.validateSoapEnvelope = null;
-        } else if ("true".equals(validateSoapEnvelope)) {
-            this.validateSoapEnvelope = SoapValidator.SoapVersion.VERSION_1_2;
-        } else {
-            this.validateSoapEnvelope = SoapValidator.SoapVersion.fromAttribute(validateSoapEnvelope);
-        }
-    }
+	@Override
+	public void setSchemaLocation(String schemaLocation) {
+		this.schemaLocation = schemaLocation;
+	}
 
 	@Override
 	protected void checkSchemaSpecified() throws ConfigurationException {
@@ -159,10 +149,17 @@ public class WsdlXmlValidator extends SoapValidator {
 	@Override
 	public Set<XSD> getXsds() throws ConfigurationException {
 		Set<XSD> xsds = new HashSet<XSD>();
-		if (validateSoapEnvelope != null) {
+		if (getSoapVersion() == null || "1.1".equals(getSoapVersion()) || "any".equals(getSoapVersion())) {
 			XSD xsd = new XSD();
-			xsd.setNamespace(validateSoapEnvelope.schema);
-			xsd.setResource(validateSoapEnvelope.xsd);
+			xsd.setNamespace(SoapValidator.SoapVersion.VERSION_1_1.schema);
+			xsd.setResource(SoapValidator.SoapVersion.VERSION_1_1.xsd);
+			xsd.init();
+			xsds.add(xsd);
+		}
+		if ("1.2".equals(getSoapVersion()) || "any".equals(getSoapVersion())) {
+			XSD xsd = new XSD();
+			xsd.setNamespace(SoapValidator.SoapVersion.VERSION_1_2.schema);
+			xsd.setResource(SoapValidator.SoapVersion.VERSION_1_2.xsd);
 			xsd.init();
 			xsds.add(xsd);
 		}

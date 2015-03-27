@@ -67,7 +67,7 @@ public class SoapValidatorTest {
     @Test(expected = PipeRunException.class)
     public void validate12_invalidversion() throws ConfigurationException, IOException, PipeRunException {
         SoapValidator xml = getSoapValidator();
-        xml.setVersion("1.2");
+        xml.setSoapVersion("1.2");
         xml.doPipe(getTestXml("/valid_soap.xml"), new PipeLineSessionBase());
 
     }
@@ -75,7 +75,7 @@ public class SoapValidatorTest {
     @Test(expected = PipeRunException.class)
     public void validate12_invalid() throws ConfigurationException, IOException, PipeRunException {
         SoapValidator xml = getSoapValidator();
-        xml.setVersion("1.2");
+        xml.setSoapVersion("1.2");
         xml.doPipe(getTestXml("/invalid_soap.xml"), new PipeLineSessionBase());
 
     }
@@ -83,7 +83,7 @@ public class SoapValidatorTest {
     @Test(expected = PipeRunException.class)
     public void validate12_invalid_body() throws ConfigurationException, IOException, PipeRunException {
         SoapValidator xml = getSoapValidator();
-        xml.setVersion("1.1");
+        xml.setSoapVersion("1.1");
         xml.doPipe(getTestXml("/invalid_soap_body.xml"), new PipeLineSessionBase());
 
     }
@@ -91,7 +91,7 @@ public class SoapValidatorTest {
     @Test(expected = PipeRunException.class)
     public void validate12_unknown_namespace_body() throws ConfigurationException, IOException, PipeRunException {
         SoapValidator xml = getSoapValidator();
-        xml.setVersion("1.1");
+        xml.setSoapVersion("1.1");
         xml.doPipe(getTestXml("/unknown_namespace_soap_body.xml"), new PipeLineSessionBase());
 
     }
@@ -129,7 +129,7 @@ public class SoapValidatorTest {
             validator.setAddNamespaceToSchema(addNamespaceToSchema);
         }
         if (soapVersion != null) {
-            validator.setVersion(soapVersion);
+            validator.setSoapVersion(soapVersion);
         }
         validator.setSchemaLocation(
             "http://www.ing.com/CSP/XSD/General/Message_2 " +
