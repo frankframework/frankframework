@@ -376,7 +376,7 @@ public class JobDef {
 
     private String name;
     private String cronExpression;
-    private long interval;
+    private long interval = -1;
     private String function;
     private String adapterName;
     private String description;
