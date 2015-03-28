@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -70,6 +70,7 @@ import org.springframework.transaction.TransactionStatus;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Job</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDescription(String) description}</td><td>optional description of the job</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCronExpression(String) cronExpression}</td><td>cron expression that determines the frequency of excution (see below)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInterval(long) interval}</td><td>Repeat the job at the specified number of ms. Set to 0 to only run once just after all adapters have been started. Keep cronExpression empty to use interval.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFunction(String) function}</td><td>one of: StopAdapter, StartAdapter, StopReceiver, StartReceiver, SendMessage, ExecuteQuery</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAdapterName(String) adapterName}</td><td>Adapter on which job operates</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReceiverName(String) receiverName}</td><td>Receiver on which job operates. If function is 'sendMessage' is used this name is also used as name of JavaListener</td><td>&nbsp;</td></tr>
@@ -375,6 +376,7 @@ public class JobDef {
 
     private String name;
     private String cronExpression;
+    private long interval;
     private String function;
     private String adapterName;
     private String description;
@@ -394,7 +396,7 @@ public class JobDef {
 	private TransactionDefinition txDef=null;
 	private PlatformTransactionManager txManager;
 
-	private String jobGroup=AppConstants.getInstance().getString("scheduler.defaultJobGroup", "DEFAULT");
+	private String jobGroup = Scheduler.DEFAULT_GROUP;
 
 	private String fxfDir;
 	private long fxfRetention = 30L * 24L * 60L * 60L * 1000L;
@@ -527,17 +529,14 @@ public class JobDef {
 	}
 
 	public JobDetail getJobDetail(IbisManager ibisManager) {
-		JobDetail jobDetail = new JobDetail(getName(), Scheduler.DEFAULT_GROUP, ConfiguredJob.class);;
-		
+		JobDetail jobDetail = new JobDetail(getName(), getJobGroup(), ConfiguredJob.class);
 		jobDetail.getJobDataMap().put("manager", ibisManager); // reference to manager.
 		jobDetail.getJobDataMap().put("jobdef", this);
-		
 		if (StringUtils.isNotEmpty(getDescription())) {
 			jobDetail.setDescription(getDescription());
 		}
-		return jobDetail;		
+		return jobDetail;
 	}
-
 
 	protected void executeJob(IbisManager ibisManager) {
 		if (incrementCountThreads()) { 
@@ -847,11 +846,6 @@ public class JobDef {
 		return "Job ["+getName()+"] ";
 	}
 
-   /**
-     * Defaults to the value under key <code>scheduler.defaultJobGroup</code> in the {@link AppConstants}.
-     * If the value is not specified, it assumes <code>DEFAULT</code>
-     * @param jobGroup
-     */
 	public void setJobGroup(String jobGroup) {
 		this.jobGroup = jobGroup;
 	}
@@ -878,6 +872,14 @@ public class JobDef {
 	}
 	public String getCronExpression() {
 		return cronExpression;
+	}
+
+	public void setInterval(long interval) {
+		this.interval = interval;
+	}
+
+	public long getInterval() {
+		return interval;
 	}
 
 	public void setFunction(String function) {

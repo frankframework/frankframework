@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,19 @@
 */
 package nl.nn.adapterframework.scheduler;
 
+import java.text.ParseException;
+
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.LogUtil;
 
-import java.text.ParseException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.quartz.*;
+import org.quartz.CronTrigger;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleTrigger;
+import org.quartz.Trigger;
 
 /**
  * The SchedulerHelper encapsulates the quarz scheduler.
@@ -36,31 +41,39 @@ public class SchedulerHelper {
 
 	public void scheduleJob(IbisManager ibisManager, JobDef jobdef) throws Exception {
 		JobDetail jobDetail = jobdef.getJobDetail(ibisManager);
-
-		scheduleJob(jobdef.getName(), jobDetail, jobdef.getCronExpression(), true);
+		scheduleJob(jobDetail, jobdef.getCronExpression(), jobdef.getInterval(), true);
 	}
 
-	public void scheduleJob(String jobName, JobDetail jobDetail, String cronExpression, boolean overwrite) throws SchedulerException, ParseException {
-		scheduleJob(jobName, Scheduler.DEFAULT_GROUP, jobDetail, cronExpression, overwrite);
-	}
-
-	public void scheduleJob(String jobName, String jobGroup, JobDetail jobDetail, String cronExpression, boolean overwrite) throws SchedulerException, ParseException {
+	public void scheduleJob(JobDetail jobDetail, String cronExpression, long interval, boolean overwrite) throws SchedulerException, ParseException {
 		Scheduler sched = getScheduler();
 
 		// if the job already exists, remove it.
-		if ((sched.getTrigger(jobName, jobGroup)) != null) {
+		if ((sched.getTrigger(jobDetail.getName(), jobDetail.getGroup())) != null) {
 			if (overwrite)
-				sched.unscheduleJob(jobName, jobGroup);
+				sched.unscheduleJob(jobDetail.getName(), jobDetail.getGroup());
 			else
-				throw new SchedulerException("Job with name [" + jobName + "] already exists");
+				throw new SchedulerException("Job with name [" + jobDetail.getName() + "] already exists");
 		}
-
+ 
 		if (StringUtils.isNotEmpty(cronExpression)) {
-			CronTrigger cronTrigger = new CronTrigger(jobName, jobGroup);
+			CronTrigger cronTrigger = new CronTrigger(jobDetail.getName(), jobDetail.getGroup());
 			cronTrigger.setCronExpression(cronExpression);
 			sched.scheduleJob(jobDetail, cronTrigger);
+		} if (interval > -1) {
+			SimpleTrigger simpleTrigger = new SimpleTrigger(jobDetail.getName(), jobDetail.getGroup());
+			if (interval == 0) {
+				// Keep trigger active to keep it available in GUI
+				simpleTrigger.setRepeatCount(1);
+				simpleTrigger.setRepeatInterval(1000L * 60L * 60L * 24L * 365L * 100L);
+			} else {
+				// New Quartz version seems to have repeatForever(), for now set
+				// repeat count to Integer.MAX_VALUE.
+				simpleTrigger.setRepeatCount(Integer.MAX_VALUE);
+				simpleTrigger.setRepeatInterval(interval);
+			}
+			sched.scheduleJob(jobDetail, simpleTrigger);
 		} else {
-			log.warn("no cronexpression for job [" + jobName + "], cannot schedule");
+			log.warn("no cronexpression or interval for job [" + jobDetail.getName() + "], cannot schedule");
 		}
 	}
 

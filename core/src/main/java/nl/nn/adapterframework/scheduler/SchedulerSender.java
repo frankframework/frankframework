@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 	
 	private String javaListener;
 	private String cronExpressionPattern;
-	private String jobGroup;
+	private String jobGroup = Scheduler.DEFAULT_GROUP;
 	private String jobNamePattern;
 	private SchedulerHelper schedulerHelper;
     
@@ -116,20 +116,16 @@ public class SchedulerSender extends SenderWithParametersBase {
 	 * Schedule the job
 	 */
 	private void schedule(String jobName, String cronExpression, String correlationId, String message) throws Exception {
-		JobDetail jobDetail = new JobDetail(jobName, Scheduler.DEFAULT_GROUP, ServiceJob.class);
+		JobDetail jobDetail = new JobDetail(jobName, jobGroup, ServiceJob.class);
 		jobDetail.getJobDataMap().put(JAVALISTENER, javaListener);
 		jobDetail.getJobDataMap().put(MESSAGE, message);
 		jobDetail.getJobDataMap().put(CORRELATIONID, correlationId);
-
-		if (StringUtils.isEmpty(jobGroup))
-			schedulerHelper.scheduleJob(jobName, jobDetail, cronExpression, false);
-		else 
-			schedulerHelper.scheduleJob(jobName, jobGroup, jobDetail, cronExpression, false);
-
+		schedulerHelper.scheduleJob(jobDetail, cronExpression, -1, false);
 		if (log.isDebugEnabled()) {
 			log.debug("SchedulerSender ["+ getName() +"] has send job [" + jobName + "] to the scheduler");
 		}
 	}
+
 	public void setCronExpressionPattern(String string) {
 		cronExpressionPattern = string;
 	}

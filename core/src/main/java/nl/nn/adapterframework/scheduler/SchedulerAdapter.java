@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -314,10 +314,13 @@ public class SchedulerAdapter {
             xbRoot.addAttribute("misfireInstruction", Integer.toString(trigger.getMisfireInstruction()));
             if (trigger instanceof CronTrigger) {
                 xbRoot.addAttribute("triggerType", "cron");
-                 xbRoot.addAttribute( "cronExpression", ((CronTrigger)trigger).getCronExpression());
+                xbRoot.addAttribute("cronExpression", ((CronTrigger)trigger).getCronExpression());
+            } else if (trigger instanceof SimpleTrigger) {
+                xbRoot.addAttribute("triggerType", "simple");
+                xbRoot.addAttribute("repeatInterval", ((SimpleTrigger)trigger).getRepeatInterval());
+            } else {
+                xbRoot.addAttribute("triggerType", "unknown");
             }
-            else if (trigger instanceof SimpleTrigger) xbRoot.addAttribute("triggerType", "simple");
-            else xbRoot.addAttribute("triggerType", "unknown");
 
             xbRoot.addAttribute("jobGroup", trigger.getJobGroup());
             xbRoot.addAttribute("jobName", trigger.getJobName());

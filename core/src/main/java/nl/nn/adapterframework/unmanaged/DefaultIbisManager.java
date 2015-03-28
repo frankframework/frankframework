@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,11 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.unmanaged;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -30,11 +35,6 @@ import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.quartz.SchedulerException;
@@ -104,8 +104,8 @@ public class DefaultIbisManager implements IbisManager {
     public void shutdownIbis() {
         log.info("* IBIS Shutdown: Initiating shutdown of IBIS instance [" + name + "]");
         // Stop Adapters and the Scheduler
-        stopAdapters();
         shutdownScheduler();
+        stopAdapters();
         if (listenerPortPoller != null) {
             listenerPortPoller.clear();
         }

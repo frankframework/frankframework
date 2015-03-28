@@ -110,30 +110,33 @@
 							
 						</td>
 					</tr>
-						<xtags:forEach select="../triggersForJob/triggerDetail">
+					<xtags:forEach select="../triggersForJob/triggerDetail">
 						<tr>
 							<td></td>
 							<td colspan="3">
-
 								<table>
-								<tr>
-									<td>Group</td><td><xtags:valueOf select="@triggerGroup"/></td>
-								</tr>
-								<tr>
-									<td>StartTime</td><td><xtags:valueOf select="@startTime"/></td>
-								</tr>
-								<tr>
-									<td>next fire</td><td><xtags:valueOf select="@nextFireTime"/></td>
-									<td>cronExpression</td><td><xtags:valueOf select="@cronExpression"/></td>
-								</tr>
+									<xtags:if test="@triggerType='cron'">
+										<tr>
+											<td>Cron expression</td><td><xtags:valueOf select="@cronExpression"/></td>
+										</tr>
+									</xtags:if>
+									<xtags:if test="@triggerType='simple'">
+										<tr>
+											<td>Repeat interval</td><td><xtags:valueOf select="@repeatInterval"/></td>
+										</tr>
+									</xtags:if>
+									<tr>
+										<td>Start time</td><td><xtags:valueOf select="@startTime"/></td>
+									</tr>
+									<tr>
+										<td>Next fire</td><td><xtags:valueOf select="@nextFireTime"/></td>
+									</tr>
 								</table>
 							</td>
 							<td>
 							 </td>
 						</tr>
-						</xtags:forEach> <!-- trigger -->
-
-				
+					</xtags:forEach> <!-- trigger -->
 					<xtags:forEach select="../jobMessages">
 						<tr>
 							<td></td>
