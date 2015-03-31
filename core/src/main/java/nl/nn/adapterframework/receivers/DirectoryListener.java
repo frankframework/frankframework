@@ -1,5 +1,6 @@
 /*
    Copyright 2013 Nationale-Nederlanden
+   Copyright 2015 ING
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -529,26 +530,29 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		boolean fileStartElementFound = false;
 		StringBuffer fileName;
 
-		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) {
 			if ("file".equals(localName)) {
 				fileStartElementFound = true;
 				fileName = new StringBuffer();
 			}
 		}
 
+		@Override
 		public void characters(char[] ch, int start, int length) {
 			if (fileStartElementFound) {
 				fileName.append(ch, start, length);
 			}
 		}
 
-		public void endElement(String uri, String localName, String qname) throws SAXException {
+		@Override
+		public void endElement(String uri, String localName, String qname) {
 			if ("file".equals(localName)) {
 				fileStartElementFound = false;
 				try {
 					moveFileAfterProcessing(fileName.toString());
 				} catch (ListenerException e) {
-					throw new SAXException(e);
+					log.error("Could not move file after processing", e);
 				}
 				fileName = null;
 			}

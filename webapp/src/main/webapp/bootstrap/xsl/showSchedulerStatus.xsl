@@ -175,27 +175,47 @@
 									<xsl:for-each select="../triggersForJob/triggerDetail">
 									<tr>
 										<td></td>
-										<td colspan="3">			
+										<td colspan="3">
 											<table class="table table-bordered">
+												<xsl:if test="@triggerType='cron'">
+													<tr>
+														<td>Cron expression</td>
+														<td><xsl:value-of select="@cronExpression"/></td>
+													</tr>
+												</xsl:if>
+												<xsl:if test="@triggerType='simple'">
+													<tr>
+														<td>Repeat interval</td>
+														<td><xsl:value-of select="@repeatInterval"/></td>
+													</tr>
+												</xsl:if>
 												<tr>
-													<td>Group</td>
-													<td><xsl:value-of select="@triggerGroup"/></td>
-												</tr>
-												<tr>
-													<td>StartTime</td>
+													<td>Start time</td>
 													<td><xsl:value-of select="@startTime"/></td>
 												</tr>
 												<tr>
-													<td>next fire</td>
+													<td>Next fire</td>
 													<td><xsl:value-of select="@nextFireTime"/></td>
-													<td>cronExpression</td>
-													<td><xsl:value-of select="@cronExpression"/></td>
 												</tr>
 											</table>
 										</td>
 										<td></td>
 									</tr>
-									</xsl:for-each> <!-- trigger -->	
+									</xsl:for-each> <!-- trigger -->
+									<xsl:for-each select="../jobMessages">
+										<tr>
+											<td></td>
+											<subHeader colspan="3">Messages</subHeader>
+										</tr>
+										<xsl:for-each select="jobMessage">
+											<tr>
+												<td></td>
+												<td colspan="3" class="messagesRow">
+													<xsl:value-of select="@date"/> : <xsl:value-of select="."/>
+												</td>
+											</tr>
+										</xsl:for-each>
+									</xsl:for-each>
 								</xsl:for-each> <!-- jobDetail -->
 								</tbody>
 							</table>
