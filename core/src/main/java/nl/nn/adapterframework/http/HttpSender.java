@@ -128,6 +128,7 @@ import org.htmlcleaner.TagNode;
  * <tr><td>{@link #setMultiPart(boolean) multipart}</td><td>when true and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body</td><td>false</td></tr>
  * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)</td><td>false</td></tr>
  * <tr><td>{@link #setBase64(boolean) base64}</td><td>when true, the result is base64 encoded</td><td>false</td></tr>
+ * <tr><td>{@link #setProtocol(String) protocol}</td><td>Secure socket protocol (such as "SSL" and "TLS") to use when a SSLContext object is generated. If empty the protocol "SSL" is used</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -247,6 +248,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private boolean multipart=false;
 	private boolean streamResultToServlet=false;
 	private boolean base64=false;
+	private String protocol=null;
 	
 	private TransformerPool transformerPool=null;
 
@@ -367,6 +369,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
 							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(),
 							isAllowSelfSignedCertificates(), isVerifyHostname(), isIgnoreCertificateExpiredException());
+					}
+					if (StringUtils.isNotEmpty(getProtocol())) {
+						socketfactory.setProtocol(getProtocol());
 					}
 					socketfactory.initSSLContext();	
 				} catch (Throwable t) {
@@ -1174,5 +1179,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public boolean isBase64() {
 		return base64;
+	}
+
+	public String getProtocol() {
+		return protocol;
+	}
+
+	public void setProtocol(String string) {
+		protocol = string;
 	}
 }
