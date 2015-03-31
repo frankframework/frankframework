@@ -83,6 +83,7 @@ Upcoming
 - Add SOAP 1.2 support for WsdlXmlValidator and WSDL generator
 - Add interval attribute to scheduler job (run job directly after all adapters are started)
 - Continue moving files of directory listener file list after failure
+- Add protocol attribute to HttpSender (to use TLS next to SSL)
 
 
 
