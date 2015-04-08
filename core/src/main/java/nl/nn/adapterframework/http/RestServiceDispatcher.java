@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013-2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public class RestServiceDispatcher  {
 	 * @param request the <code>String</code> with the request/input
 	 * @return String with the result of processing the <code>request</code> throught the <code>serviceName</code>
      */
-	public String dispatchRequest(String uri, String method, String etag, String contentType, String request, Map context, HttpServletResponse httpServletResponse) throws ListenerException {
+	public String dispatchRequest(String restPath, String uri, String method, String etag, String contentType, String request, Map context, HttpServletResponse httpServletResponse) throws ListenerException {
 		
 		if (log.isDebugEnabled()) log.debug("searching listener for uri ["+uri+"] method ["+method+"]");
 		
@@ -93,6 +93,7 @@ public class RestServiceDispatcher  {
 		if (context==null) {
 			context=new HashMap();
 		}
+		context.put("restPath", restPath);
 		context.put("uri", uri);
 		context.put("method", method);
 		context.put("etag", etag);

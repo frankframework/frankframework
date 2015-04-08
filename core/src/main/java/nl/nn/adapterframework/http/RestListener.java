@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,12 @@
 */
 package nl.nn.adapterframework.http;
 
+import java.util.Map;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPushingListener;
+import nl.nn.adapterframework.core.ListenerException;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -46,13 +49,24 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	private String method;
 	private String etagSessionKey;
 	private String contentTypeSessionKey;
-
+	private String restPath = "/rest";
+	
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
 	public void configure() throws ConfigurationException {
 		super.configure();
 		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), method, etagSessionKey, contentTypeSessionKey);
+	}
+
+	public String processRequest(String correlationId, String message,
+			Map requestContext) throws ListenerException {
+		String requestRestPath = (String) requestContext.get("restPath");
+		if (!getRestPath().equals(requestRestPath)) {
+			throw new ListenerException("illegal restPath value ["
+					+ requestRestPath + "], must be '" + getRestPath() + "'");
+		}
+		return super.processRequest(correlationId, message, requestContext);
 	}
 
 	public String getPhysicalDestinationName() {
@@ -88,4 +102,10 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		this.contentTypeSessionKey = contentTypeSessionKey;
 	}
 
+	public String getRestPath() {
+		return restPath;
+	}
+	public void setRestPath(String restPath) {
+		this.restPath = restPath;
+	}
 }

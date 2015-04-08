@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013-2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ public class RestListenerServlet extends HttpServlet {
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		String path=request.getPathInfo();
+		String restPath=request.getServletPath();
 		String body = "";
 			
 		String etag=request.getHeader("etag");
@@ -112,7 +113,7 @@ public class RestListenerServlet extends HttpServlet {
 		}
 		try {
 			log.debug("RestListenerServlet calling service ["+path+"]");
-			String result=sd.dispatchRequest(path, request.getMethod(), etag, contentType, body, messageContext, response);
+			String result=sd.dispatchRequest(restPath, path, request.getMethod(), etag, contentType, body, messageContext, response);
 			if (StringUtils.isEmpty(result)) {
 				log.debug("RestListenerServlet finished with result set in pipeline");
 			} else {

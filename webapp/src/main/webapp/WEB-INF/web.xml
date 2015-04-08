@@ -193,6 +193,10 @@
     	<servlet-name>RestListener</servlet-name>
     	<url-pattern>/rest/*</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+    	<servlet-name>RestListener</servlet-name>
+    	<url-pattern>/rest-public/*</url-pattern>
+    </servlet-mapping>
 
     <!-- Action Servlet Mapping -->
     <servlet-mapping>
