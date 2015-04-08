@@ -34,6 +34,9 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
+import nl.nn.adapterframework.extensions.esb.EsbUtils;
+import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
@@ -45,6 +48,7 @@ import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
@@ -253,6 +257,14 @@ public final class ShowConfigurationStatus extends ActionBase {
 							receiverXML.addAttribute("restUriPattern", path);
 							receiverXML.addAttribute("restMethod", rl.getMethod());
 						}
+						boolean isEsbJmsFFListener = false;
+						if (listener instanceof EsbJmsListener) {
+							EsbJmsListener ejl = (EsbJmsListener) listener;
+							if (ejl.getMessageProtocol().equalsIgnoreCase("FF")) {
+								isEsbJmsFFListener = true;
+							}
+						}
+						receiverXML.addAttribute("isEsbJmsFFListener", isEsbJmsFFListener);
 					}
 
 					if (receiver instanceof HasSender) {

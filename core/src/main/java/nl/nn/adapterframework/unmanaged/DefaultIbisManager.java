@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,9 +26,15 @@ import nl.nn.adapterframework.configuration.ConfigurationDigester;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IThreadCountControllable;
+import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.ejb.ListenerPortPoller;
+import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
+import nl.nn.adapterframework.extensions.esb.EsbUtils;
+import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
+import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.senders.IbisLocalSender;
@@ -197,6 +203,40 @@ public class DefaultIbisManager implements IbisManager {
             }
 //          ServiceDispatcher.getInstance().dispatchRequest(receiverName, "");
         }
+        else if (action.equalsIgnoreCase("MOVEMESSAGE")) {
+			IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
+			IReceiver receiver = adapter.getReceiverByName(receiverName);
+			if (receiver instanceof ReceiverBase) {
+				ReceiverBase rb = (ReceiverBase) receiver;
+				ITransactionalStorage errorStorage = rb.getErrorStorage();
+				if (errorStorage == null) {
+					log.error("action ["
+							+ action
+							+ "] is only allowed for receivers with an ErrorStorage");
+				} else {
+					if (errorStorage instanceof JdbcTransactionalStorage) {
+						JdbcTransactionalStorage jdbcErrorStorage = (JdbcTransactionalStorage) rb
+								.getErrorStorage();
+						IListener listener = rb.getListener();
+						if (listener instanceof EsbJmsListener) {
+							EsbJmsListener esbJmsListener = (EsbJmsListener) listener;
+							EsbUtils.receiveMessageAndMoveToErrorStorage(
+									esbJmsListener, jdbcErrorStorage);
+						} else {
+							log.error("action ["
+									+ action
+									+ "] is currently only allowed for EsbJmsListener, not for type ["
+									+ listener.getClass().getName() + "]");
+						}
+					} else {
+						log.error("action ["
+								+ action
+								+ "] is currently only allowed for JdbcTransactionalStorage, not for type ["
+								+ errorStorage.getClass().getName() + "]");
+					}
+				}
+			}
+    	}
     }
 
     public void shutdownScheduler() {

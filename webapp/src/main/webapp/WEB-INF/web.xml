@@ -296,7 +296,6 @@
         <web-resource-collection>
             <web-resource-name>AdminAccessResourceCollection</web-resource-name>
             <description>collection of url's for administrator access</description>
-            <url-pattern>/adapterHandler.do</url-pattern>
             <url-pattern>/ConfigurationServlet</url-pattern>
             <url-pattern>/alterTracingConfiguration.do</url-pattern>
             <url-pattern>/tracingHandler.do</url-pattern>
@@ -316,6 +315,7 @@
         <web-resource-collection>
             <web-resource-name>DataAdminAccessResourceCollection</web-resource-name>
             <description>collection of url's for data administrator access</description>
+            <url-pattern>/adapterHandler.do</url-pattern>
             <url-pattern>/logHandler.do</url-pattern>
             <url-pattern>/browserExecute.do</url-pattern>
             <url-pattern>/schedulerHandler.do</url-pattern>

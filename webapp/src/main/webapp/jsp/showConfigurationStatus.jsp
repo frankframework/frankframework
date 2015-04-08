@@ -245,6 +245,7 @@
 							<xtags:variable id="isRestListener" select="@isRestListener"/>
 							<xtags:variable id="restUriPattern" select="@restUriPattern"/>
 							<xtags:variable id="restMethod" select="@restMethod"/>
+							<xtags:variable id="isEsbJmsFFListener" select="@isEsbJmsFFListener"/>
 							 <tr >
 								<td></td>
 								<td class="receiverRow">
@@ -328,6 +329,15 @@
 												href="<%=restUriPattern%>"
 												type="showashtml"
 												alt="<%=receiverName%>"/>
+							<% } if ( "true".equalsIgnoreCase(isEsbJmsFFListener) && "true".equalsIgnoreCase(hasErrorStorage) ) { %>
+											<imagelink
+												href="adapterHandler.do"
+												type="move"
+												alt="move message">
+												<parameter name="action">movemessage</parameter>
+												<parameter name="adapterName"><%=java.net.URLEncoder.encode(adapterName)%></parameter>
+												<parameter name="receiverName"><%=java.net.URLEncoder.encode(receiverName)%></parameter>
+											 </imagelink>
 							<% } if ( "true".equalsIgnoreCase(hasErrorStorage) ) { %>
 									<xtags:choose>
 										<xtags:when test="@errorStorageCount=-1">

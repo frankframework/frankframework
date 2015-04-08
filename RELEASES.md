@@ -84,6 +84,8 @@ Upcoming
 - Add interval attribute to scheduler job (run job directly after all adapters are started)
 - Continue moving files of directory listener file list after failure
 - Add protocol attribute to HttpSender (to use TLS next to SSL)
+- `(end of v6.0-RC1)`
+- Add move message action to EsbJmsFFListeners in the main page of the IBIS console
 
 
 

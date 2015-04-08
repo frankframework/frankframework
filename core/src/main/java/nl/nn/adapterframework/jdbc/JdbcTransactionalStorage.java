@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013-2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -916,8 +916,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
-
-
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
 		TransactionStatus txStatus=null;
 		if (txManager!=null) {
@@ -925,7 +923,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 		try {
 			Connection conn;
-			String result;
 			if (messageId==null) {
 				throw new SenderException("messageId cannot be null");
 			}
@@ -938,27 +935,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				throw new SenderException(e);
 			}
 			try {
-				Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
-				if (messageId.length()>MAXIDLEN) {
-					messageId=messageId.substring(0,MAXIDLEN);
-				}
-				if (correlationId.length()>MAXCIDLEN) {
-					correlationId=correlationId.substring(0,MAXCIDLEN);
-				}
-				if (comments!=null && comments.length()>MAXCOMMENTLEN) {
-					comments=comments.substring(0,MAXCOMMENTLEN);
-				}
-				if (label!=null && label.length()>MAXLABELLEN) {
-					label=label.substring(0,MAXLABELLEN);
-				}
-				result = storeMessageInDatabase(conn, messageId, correlationId, receivedDateTime, comments, label, message);
-				if (result==null) {
-					result=retrieveKey(conn,messageId,correlationId,receivedDateTime);
-				}
-				return result;
-			
-			} catch (Exception e) {
-				throw new SenderException("cannot serialize message",e);
+				return storeMessage(conn, messageId, correlationId, receivedDate, comments, label, message);
 			} finally {
 				try {
 					conn.close();
@@ -972,6 +949,32 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}
 		}
 		
+	}
+
+	public String storeMessage(Connection conn, String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
+		String result;
+		try {
+			Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
+			if (messageId.length()>MAXIDLEN) {
+				messageId=messageId.substring(0,MAXIDLEN);
+			}
+			if (correlationId.length()>MAXCIDLEN) {
+				correlationId=correlationId.substring(0,MAXCIDLEN);
+			}
+			if (comments!=null && comments.length()>MAXCOMMENTLEN) {
+				comments=comments.substring(0,MAXCOMMENTLEN);
+			}
+			if (label!=null && label.length()>MAXLABELLEN) {
+				label=label.substring(0,MAXLABELLEN);
+			}
+			result = storeMessageInDatabase(conn, messageId, correlationId, receivedDateTime, comments, label, message);
+			if (result==null) {
+				result=retrieveKey(conn,messageId,correlationId,receivedDateTime);
+			}
+			return result;
+		} catch (Exception e) {
+			throw new SenderException("cannot serialize message",e);
+		}
 	}
 
 	private class ResultSetIterator implements IMessageBrowsingIterator {
