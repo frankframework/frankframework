@@ -87,6 +87,7 @@ Upcoming
 - `(end of v6.0-RC1)`
 - Add move message action to EsbJmsFFListeners in the main page of the IBIS console
 - Add facility to provide public rest services
+- Extend functionality of GetTibcoQueues (currently used in "ShowTibcoQueues" in IJA_TiBeT2)
 
 
 

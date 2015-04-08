@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013-2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,10 @@
  */
 package nl.nn.adapterframework.extensions.tibco;
 
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -49,8 +53,10 @@ import org.apache.commons.lang.StringUtils;
 import com.tibco.tibjms.admin.ACLEntry;
 import com.tibco.tibjms.admin.BridgeTarget;
 import com.tibco.tibjms.admin.QueueInfo;
+import com.tibco.tibjms.admin.ServerInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;
 import com.tibco.tibjms.admin.TibjmsAdminException;
+import com.tibco.tibjms.admin.TibjmsAdminInvalidNameException;
 import com.tibco.tibjms.admin.UserInfo;
 
 /**
@@ -65,7 +71,7 @@ import com.tibco.tibjms.admin.UserInfo;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used </td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used. When multiple URLs are defined (comma separated list), the first URL is used of which the server has an active state</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -84,6 +90,7 @@ import com.tibco.tibjms.admin.UserInfo;
  * <tr><td>queueName</td><td>string</td><td>the name of the queue which is used for browsing one queue</code></td></tr>
  * <tr><td>queueItem</td><td>string</td><td>the number of the queue message which is used for browsing one queue (default is 1)</td></tr>
  * <tr><td>showAge</td><td>boolean</td><td>when set to <code>true</code> and <code>pendingMsgCount&gt;0</code> and <code>receiverCount=0</code>, the age of the current first message in the queue is shown in the queues overview (default is false)</td></tr>
+ * <tr><td>countOnly</td><td>boolean</td><td>when set to <code>true</code> and <code>queueName</code> is filled, only the number of pending messages is returned (default is false)</td></tr>
  * </table>
  * </p>
  * 
@@ -145,16 +152,37 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		Session jSession = null;
 		TibjmsAdmin admin = null;
 		try {
+			String[] uws = url_work.split(",");
+			boolean uws_ok = false;
+			for (int i = 0; !uws_ok && i < uws.length; i++) {
+				admin = new TibjmsAdmin(uws[i].trim(), cf.getUsername(),
+						cf.getPassword());
+				if (admin.getInfo().getState() == ServerInfo.SERVER_ACTIVE) {
+					uws_ok = true;
+				}
+			}
+			if (!uws_ok) {
+				throw new PipeRunException(this,
+						"could not find an active server");
+			}
+
+			queueName_work = getParameterValue(pvl, "queueName");
+			if (StringUtils.isNotEmpty(queueName_work)) {
+				String countOnly_work = getParameterValue(pvl, "countOnly");
+				boolean countOnly = ("true".equalsIgnoreCase(countOnly_work) ? true
+						: false);
+				if (countOnly) {
+					return getQueueMessageCountOnly(admin, queueName_work);
+				}
+			}
+			
 			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(
 					url_work);
 			connection = factory.createConnection(cf.getUsername(),
 					cf.getPassword());
 			jSession = connection.createSession(false,
 					javax.jms.Session.AUTO_ACKNOWLEDGE);
-			admin = new TibjmsAdmin(url_work, cf.getUsername(),
-					cf.getPassword());
-
-			queueName_work = getParameterValue(pvl, "queueName");
+			
 			if (StringUtils.isNotEmpty(queueName_work)) {
 				String queueItem_work = getParameterValue(pvl, "queueItem");
 				int qi;
@@ -203,65 +231,86 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			String queueName, int queueItem) throws TibjmsAdminException,
 			JMSException {
 		XmlBuilder qMessageXml = new XmlBuilder("qMessage");
-		qMessageXml.addAttribute("url", admin.getInfo().getURL());
+		ServerInfo serverInfo = admin.getInfo();
+		String url = serverInfo.getURL();
+		qMessageXml.addAttribute("url", url);
+		String resolvedUrl = getResolvedUrl(url);
+		if (resolvedUrl != null) {
+			qMessageXml.addAttribute("resolvedUrl", resolvedUrl);
+		}
 		qMessageXml.addAttribute("timestamp", DateUtils.getIsoTimeStamp());
+		qMessageXml.addAttribute("startTime", DateUtils.format(
+				serverInfo.getStartTime(), DateUtils.fullIsoFormat));
 		XmlBuilder qNameXml = new XmlBuilder("qName");
 		qNameXml.setCdataValue(queueName);
 
 		Queue queue = jSession.createQueue(queueName);
-		QueueBrowser queueBrowser = jSession.createBrowser(queue);
-		Enumeration enm = queueBrowser.getEnumeration();
-		int count = 0;
-		boolean found = false;
-		String chompCharSizeString = AppConstants.getInstance().getString(
-				"browseQueue.chompCharSize", null);
-		int chompCharSize = (int) Misc.toFileSize(chompCharSizeString, -1);
+		QueueBrowser queueBrowser = null;
+		try {
+			queueBrowser = jSession.createBrowser(queue);
+			Enumeration enm = queueBrowser.getEnumeration();
+			int count = 0;
+			boolean found = false;
+			String chompCharSizeString = AppConstants.getInstance().getString(
+					"browseQueue.chompCharSize", null);
+			int chompCharSize = (int) Misc.toFileSize(chompCharSizeString, -1);
 
-		while (enm.hasMoreElements() && !found) {
-			count++;
-			if (count == queueItem) {
-				qNameXml.addAttribute("item", count);
-				Object o = enm.nextElement();
-				if (o instanceof Message) {
-					Message msg = (Message) o;
-					XmlBuilder qMessageId = new XmlBuilder("qMessageId");
-					qMessageId.setCdataValue(msg.getJMSMessageID());
-					qMessageXml.addSubElement(qMessageId);
-					XmlBuilder qTimestamp = new XmlBuilder("qTimestamp");
-					qTimestamp.setCdataValue(DateUtils.format(
-							msg.getJMSTimestamp(), DateUtils.fullIsoFormat));
-					qMessageXml.addSubElement(qTimestamp);
-					XmlBuilder qTextXml = new XmlBuilder("qText");
-					String msgText;
-					try {
-						TextMessage textMessage = (TextMessage) msg;
-						msgText = textMessage.getText();
-					} catch (ClassCastException e) {
-						msgText = msg.toString();
-						qTextXml.addAttribute("text", false);
-					}
-					int msgSize = msgText.length();
-					if (isHideMessage()) {
-						qTextXml.setCdataValue("***HIDDEN***");
-					} else {
-						if (chompCharSize >= 0 && msgSize > chompCharSize) {
-							qTextXml.setCdataValue(msgText.substring(0,
-									chompCharSize) + "...");
-							qTextXml.addAttribute("chomped", true);
-						} else {
-							qTextXml.setCdataValue(msgText);
+			while (enm.hasMoreElements() && !found) {
+				count++;
+				if (count == queueItem) {
+					qNameXml.addAttribute("item", count);
+					Object o = enm.nextElement();
+					if (o instanceof Message) {
+						Message msg = (Message) o;
+						XmlBuilder qMessageId = new XmlBuilder("qMessageId");
+						qMessageId.setCdataValue(msg.getJMSMessageID());
+						qMessageXml.addSubElement(qMessageId);
+						XmlBuilder qTimestamp = new XmlBuilder("qTimestamp");
+						qTimestamp.setCdataValue(DateUtils.format(
+								msg.getJMSTimestamp(), DateUtils.fullIsoFormat));
+						qMessageXml.addSubElement(qTimestamp);
+						XmlBuilder qTextXml = new XmlBuilder("qText");
+						String msgText;
+						try {
+							TextMessage textMessage = (TextMessage) msg;
+							msgText = textMessage.getText();
+						} catch (ClassCastException e) {
+							msgText = msg.toString();
+							qTextXml.addAttribute("text", false);
 						}
+						int msgSize = msgText.length();
+						if (isHideMessage()) {
+							qTextXml.setCdataValue("***HIDDEN***");
+						} else {
+							if (chompCharSize >= 0 && msgSize > chompCharSize) {
+								qTextXml.setCdataValue(msgText.substring(0,
+										chompCharSize) + "...");
+								qTextXml.addAttribute("chomped", true);
+							} else {
+								qTextXml.setCdataValue(msgText);
+							}
+						}
+						qMessageXml.addSubElement(qTextXml);
+						XmlBuilder qTextSizeXml = new XmlBuilder("qTextSize");
+						qTextSizeXml.setValue(Misc.toFileSize(msgSize));
+						qMessageXml.addSubElement(qTextSizeXml);
 					}
-					qMessageXml.addSubElement(qTextXml);
-					XmlBuilder qTextSizeXml = new XmlBuilder("qTextSize");
-					qTextSizeXml.setValue(Misc.toFileSize(msgSize));
-					qMessageXml.addSubElement(qTextSizeXml);
+					found = true;
+				} else {
+					enm.nextElement();
 				}
-				found = true;
-			} else {
-				enm.nextElement();
+			}
+		} finally {
+			if (queueBrowser != null) {
+				try {
+					queueBrowser.close();
+				} catch (JMSException e) {
+					log.warn(getLogPrefix(null)
+							+ "exception on closing queue browser", e);
+				}
 			}
 		}
+		
 		qMessageXml.addSubElement(qNameXml);
 
 		Map aclMap = getAclMap(admin);
@@ -275,13 +324,28 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return qMessageXml.toXML();
 	}
 
+	private String getQueueMessageCountOnly(TibjmsAdmin admin, String queueName)
+			throws TibjmsAdminInvalidNameException, TibjmsAdminException {
+		QueueInfo queueInfo = admin.getQueue(queueName);
+		long pendingMessageCount = queueInfo.getPendingMessageCount();
+		return "<qCount>" + String.valueOf(pendingMessageCount) + "</qCount>";
+	}
+
 	private String getQueuesInfo(Session jSession, TibjmsAdmin admin,
 			boolean showAge) throws TibjmsAdminException {
 		XmlBuilder qInfosXml = new XmlBuilder("qInfos");
-		qInfosXml.addAttribute("url", admin.getInfo().getURL());
+		ServerInfo serverInfo = admin.getInfo();
+		String url = serverInfo.getURL();
+		qInfosXml.addAttribute("url", url);
+		String resolvedUrl = getResolvedUrl(url);
+		if (resolvedUrl != null) {
+			qInfosXml.addAttribute("resolvedUrl", resolvedUrl);
+		}
 		long currentTime = (new Date()).getTime();
 		qInfosXml.addAttribute("timestamp",
 				DateUtils.format(currentTime, DateUtils.fullIsoFormat));
+		qInfosXml.addAttribute("startTime",
+				DateUtils.format(serverInfo.getStartTime(), DateUtils.fullIsoFormat));
 
 		Map aclMap = getAclMap(admin);
 		QueueInfo[] qInfos = admin.getQueues();
@@ -433,6 +497,26 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return aclMap;
 	}
 
+	private String getResolvedUrl(String url) {
+		URI uri = null;
+		try {
+			uri = new URI(url);
+		} catch (URISyntaxException e) {
+			log.debug("Caught URISyntaxException while resolving url [" + url + "]: "
+					+ e.getMessage());
+			return null;
+		}
+		InetAddress inetAddress = null;
+		try {
+			inetAddress = InetAddress.getByName(uri.getHost());
+		} catch (UnknownHostException e) {
+			log.debug("Caught UnknownHostException while resolving url [" + url + "]: "
+					+ e.getMessage());
+			return null;
+		}
+		return inetAddress.getCanonicalHostName();
+	}
+	
 	public String getUrl() {
 		return url;
 	}
