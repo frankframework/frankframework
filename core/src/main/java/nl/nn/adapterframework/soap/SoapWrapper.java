@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -171,10 +171,10 @@ public class SoapWrapper {
 		String encodingStyle="";
 		String targetObjectNamespaceClause="";
 		if (!StringUtils.isEmpty(encodingStyleUri)) {
-			encodingStyle="soapenv:encodingStyle=\""+ encodingStyleUri+"\" ";
+			encodingStyle=" soapenv:encodingStyle=\""+ encodingStyleUri+"\"";
 		}
 		if (!StringUtils.isEmpty(targetObjectNamespace)) {
-			targetObjectNamespaceClause=" xmlns=\""+ targetObjectNamespace+"\" ";
+			targetObjectNamespaceClause=" xmlns=\""+ targetObjectNamespace+"\"";
 		}
 		if (StringUtils.isNotEmpty(soapHeader)) {
 			soapHeader="<soapenv:Header>"+XmlUtils.skipXmlDeclaration(soapHeader)+"</soapenv:Header>";
@@ -201,8 +201,8 @@ public class SoapWrapper {
 			soapns = soapNamespace;
 		}
 		String soapmsg= 
-		"<soapenv:Envelope " + 
-			"xmlns:soapenv=\"" + soapns + "\" "+encodingStyle +
+		"<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" +
+			encodingStyle +
 			targetObjectNamespaceClause +
 //			"xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" " + 
 //			"xmlns:xsd=\"http://www.w3.org/1999/XMLSchema\" " +
