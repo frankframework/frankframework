@@ -246,7 +246,7 @@ public class WebServiceSender extends HttpSender {
 	}
 	
 	public void setEncodingStyleURI(String encodingStyle) {
-		ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'serviceNamespaceURI' has been renamed 'serviceNamespace'");
+		ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'encodingStyleURI' has been renamed 'encodingStyle'");
 		setEncodingStyle(encodingStyle);
 	}
 	public void setEncodingStyle(String encodingStyle) {
