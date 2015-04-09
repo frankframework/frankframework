@@ -1420,6 +1420,10 @@ public class TestTool {
 				if (serviceNamespaceURI != null) {
 					webServiceSender.setServiceNamespaceURI(serviceNamespaceURI);
 				}
+				String serviceNamespace = (String)properties.get(name + ".serviceNamespace");
+				if (serviceNamespace != null) {
+					webServiceSender.setServiceNamespace(serviceNamespace);
+				}
 				try {
 					webServiceSender.configure();
 				} catch(ConfigurationException e) {
