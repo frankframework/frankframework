@@ -4,28 +4,7 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/resources"/>
-        <dependent-module archiveName="ibis-adapterframework-larva-5.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-larva/iaf-larva">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-core-5.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-core/iaf-core">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-ifsa-5.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ifsa/iaf-ifsa">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-tibco-5.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-tibco/iaf-tibco">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-sap-5.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-sap/iaf-sap">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-coolgen-5.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-coolgen/iaf-coolgen">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-ibm-5.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ibm/iaf-ibm">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module deploy-path="/" handle="module:/overlay/prj/iaf-webapp?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
+        <dependent-module deploy-path="/" handle="module:/overlay/var/M2_REPO/org/ibissource/ibis-adapterframework-webapp/5.7-SNAPSHOT/ibis-adapterframework-webapp-5.7-SNAPSHOT.war?unpackFolder=target/m2e-wtp/overlays&amp;includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
             <dependency-type>consumes</dependency-type>
         </dependent-module>
         <dependent-module deploy-path="/" handle="module:/overlay/slf/?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
