@@ -70,6 +70,11 @@
 							<xsl:copy-of select="." />
 						</xsl:if>
 					</xsl:for-each>
+					<xsl:for-each select="parent::*[name()='adapter']/receiver/errorSender[@className='nl.nn.adapterframework.senders.IbisLocalSender']">
+						<xsl:if test="position()=1">
+							<xsl:copy-of select="." />
+						</xsl:if>
+					</xsl:for-each>
 					<xsl:for-each select="parent::*[name()='adapter']/receiver/messageLog[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage']">
 						<xsl:if test="position()=1">
 							<xsl:copy-of select="." />
