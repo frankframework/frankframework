@@ -1200,9 +1200,8 @@ public class XmlUtils {
 			return null;
 		} else {
 			int length = string.length();
-			if (log.isDebugEnabled()) log.debug("replacing non valid xml characters to ["+to+"] in string of length ["+length+"]");
-
 			StringBuilder encoded = new StringBuilder(length);
+			int counter = 0;
 			for (int i = 0; i < length; i++) {
 				char c=string.charAt(i);
 				if (isPrintableUnicodeChar(c)) {
@@ -1213,7 +1212,11 @@ public class XmlUtils {
 					} else {
 						encoded.append(to);
 					}
+					counter++;
 				}
+			}
+			if (counter>0) {
+				if (log.isDebugEnabled()) log.debug("replaced ["+counter+"] non valid xml characters to ["+to+"] in string of length ["+length+"]");
 			}
 			return encoded.toString();
 		}
@@ -1221,14 +1224,18 @@ public class XmlUtils {
 
 	public static String stripNonValidXmlCharacters(String string) {
 		int length = string.length();
-		if (log.isDebugEnabled()) log.debug("stripping non valid xml characters in string of length ["+length+"]");
-
 		StringBuilder encoded = new StringBuilder(length);
+		int counter = 0;
 		for (int i = 0; i < length; i++) {
 			char c=string.charAt(i);
 			if (isPrintableUnicodeChar(c)) {
 				encoded.append(c);
+			} else {
+				counter++;
 			}
+		}
+		if (counter>0) {
+			if (log.isDebugEnabled()) log.debug("stripped ["+counter+"] non valid xml characters in string of length ["+length+"]");
 		}
 		return encoded.toString();
 	}
