@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.extensions.esb;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.DatabaseMetaData;
@@ -34,6 +35,7 @@ import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -56,7 +58,6 @@ import bitronix.tm.resource.jms.PoolingConnectionFactory;
 public class EsbUtils {
 	protected static Logger log = LogUtil.getLogger(EsbUtils.class);
 
-	
 	public static String receiveMessageAndMoveToErrorStorage(
 			EsbJmsListener esbJmsListener, JdbcTransactionalStorage errorStorage) {
 		String result = null;
@@ -71,6 +72,20 @@ public class EsbUtils {
 			if (jmsConnectionFactory != null) {
 				jdbcDataSource = getPoolingDataSource(errorStorage);
 				if (jdbcDataSource != null) {
+					String instanceNameLc = AppConstants.getInstance()
+							.getString("instance.name.lc", null);
+					String logDir = AppConstants.getInstance().getString(
+							"log.dir", null);
+					TransactionManagerServices.getConfiguration().setServerId(
+							instanceNameLc + ".tm");
+					TransactionManagerServices.getConfiguration()
+							.setLogPart1Filename(
+									logDir + File.separator + instanceNameLc
+											+ "-btm1.tlog");
+					TransactionManagerServices.getConfiguration()
+							.setLogPart2Filename(
+									logDir + File.separator + instanceNameLc
+											+ "-btm2.tlog");
 					btm = TransactionManagerServices.getTransactionManager();
 
 					jmsConnection = jmsConnectionFactory.createConnection();
@@ -207,7 +222,7 @@ public class EsbUtils {
 		}
 		return null;
 	}
-	
+
 	public static PoolingDataSource getPoolingDataSource(
 			JdbcTransactionalStorage errorStorage) {
 		String dsUrl = null;
@@ -324,7 +339,9 @@ public class EsbUtils {
 					log.warn("did not expect context factory of type ["
 							+ contextFactoryClassname + "]");
 				} else {
-					return new EsbConnectionFactoryInfo(managedConnectionFactory, contextFactoryClassname, cfUrl, cfUserName, cfPassword);
+					return new EsbConnectionFactoryInfo(
+							managedConnectionFactory, contextFactoryClassname,
+							cfUrl, cfUserName, cfPassword);
 				}
 			}
 		}
