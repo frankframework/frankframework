@@ -361,7 +361,10 @@ public class Wsdl {
         for (String namespace: xsdsGroupedByNamespace.keySet()) {
             // When a schema has targetNamespace="http://www.w3.org/XML/1998/namespace"
             // it needs to be ignored as prefix xml is the only allowed prefix
-            // for namespace http://www.w3.org/XML/1998/namespace.
+            // for namespace http://www.w3.org/XML/1998/namespace. The xml
+            // prefix doesn't have to be declared as the prefix xml is by
+            // definition bound to the namespace name http://www.w3.org/XML/1998/namespace
+            // (see http://www.w3.org/TR/xml-names/#ns-decl).
             if (!"http://www.w3.org/XML/1998/namespace".equals(namespace)) {
                 for (XSD xsd: xsdsGroupedByNamespace.get(namespace)) {
                     prefixByXsd.put(xsd, "ns" + prefixCount);

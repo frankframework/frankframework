@@ -206,6 +206,8 @@ public class WsdlXmlValidator extends SoapValidator {
 			if (StringUtils.isNotEmpty(schemaLocation)) {
 				xsd.setResourceInternalReference(filteredNamespaces.get(schema));
 				xsd.setNamespace(filteredNamespaces.get(schema));
+			} else {
+				xsd.setResourceInternalReference(RESOURCE_INTERNAL_REFERENCE_PREFIX + (filteredSchemas.indexOf(schema) + 1));
 			}
 			xsd.setAddNamespaceToSchema(isAddNamespaceToSchema());
 			xsd.init();
