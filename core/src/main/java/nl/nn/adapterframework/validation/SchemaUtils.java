@@ -142,7 +142,7 @@ public class SchemaUtils {
 		Set<XSD> resultXsds = new HashSet<XSD>();
 		for (String namespace: xsdsGroupedByNamespace.keySet()) {
 			Set<XSD> xsds = xsdsGroupedByNamespace.get(namespace);
-			// Get attributes of root element and get import elements from all XSD's
+			// Get attributes of root elements and get import elements from all XSD's
 			List<Attribute> rootAttributes = new ArrayList<Attribute>();
 			List<Attribute> rootNamespaceAttributes = new ArrayList<Attribute>();
 			List<XMLEvent> imports = new ArrayList<XMLEvent>();
@@ -151,25 +151,6 @@ public class SchemaUtils {
 				XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, XmlUtils.STREAM_FACTORY_ENCODING);
 				xsdToXmlStreamWriter(xsd, w, false, true, false, false,
 						rootAttributes, rootNamespaceAttributes, imports, true);
-			}
-			// Remove doubles
-			for (int i = 0; i < rootAttributes.size(); i++) {
-				Attribute attribute1 = rootAttributes.get(i);
-				for (int j = 0; j < rootAttributes.size(); j++) {
-					Attribute attribute2 = rootAttributes.get(j);
-					if (i != j && XmlUtils.attributesEqual(attribute1, attribute2)) {
-						rootAttributes.remove(j);
-					}
-				}
-			}
-			for (int i = 0; i < rootNamespaceAttributes.size(); i++) {
-				Attribute attribute1 = rootNamespaceAttributes.get(i);
-				for (int j = 0; j < rootNamespaceAttributes.size(); j++) {
-					Attribute attribute2 = rootNamespaceAttributes.get(j);
-					if (i != j && XmlUtils.attributesEqual(attribute1, attribute2)) {
-						rootNamespaceAttributes.remove(j);
-					}
-				}
 			}
 			// Write XSD's with merged root element
 			XSD resultXsd = null;
@@ -281,15 +262,31 @@ public class SchemaUtils {
 								if (noOutput) {
 									// First call to this method collecting
 									// schema attributes.
-									Iterator iterator = startElement.getAttributes();
+									Iterator<Attribute> iterator = startElement.getAttributes();
 									while (iterator.hasNext()) {
-										Attribute attribute = (Attribute)iterator.next();
-										rootAttributes.add(attribute);
+										Attribute attribute = iterator.next();
+										boolean add = true;
+										for (Attribute attribute2 : rootAttributes) {
+											if (XmlUtils.attributesEqual(attribute, attribute2)) {
+												add = false;
+											}
+										}
+										if (add) {
+											rootAttributes.add(attribute);
+										}
 									}
 									iterator = startElement.getNamespaces();
 									while (iterator.hasNext()) {
-										Attribute attribute = (Attribute)iterator.next();
-										rootNamespaceAttributes.add(attribute);
+										Attribute attribute = iterator.next();
+										boolean add = true;
+										for (Attribute attribute2 : rootNamespaceAttributes) {
+											if (XmlUtils.attributesEqual(attribute, attribute2)) {
+												add = false;
+											}
+										}
+										if (add) {
+											rootNamespaceAttributes.add(attribute);
+										}
 									}
 								} else {
 									// Second call to this method writing attributes

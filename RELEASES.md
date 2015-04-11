@@ -89,6 +89,7 @@ Upcoming
 - Add facility to provide public rest services
 - Extend functionality of GetTibcoQueues (currently used in "ShowTibcoQueues" in IJA_TiBeT2)
 - Remove useless space in SOAP envelop element
+- Improve code to prevent double attributes in merged schema
 
 
 
