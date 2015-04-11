@@ -75,7 +75,6 @@ public class EsbSoapValidator extends SoapValidator {
     private Direction direction = null;
     private EsbSoapWrapperPipe.Mode mode = EsbSoapWrapperPipe.Mode.REG;
     private int cmhVersion = 0;
-    private String explicitSchemaLocation = null;
 
     @Override
     public void configure() throws ConfigurationException {
@@ -100,15 +99,10 @@ public class EsbSoapValidator extends SoapValidator {
 				cmhVersion = 0;
 			}
 		}
-        super.setSoapHeader(GENERIC_HEADER.get(getModeKey(mode,cmhVersion)).tag.getLocalPart());
-        super.configure();
-    }
-
-    @Override
-    public void setSchemaLocation(String schemaLocation) {
-    	super.setSchemaLocation(schemaLocation + " " + GENERIC_HEADER.get(getModeKey()).xmlns + " " + GENERIC_HEADER.get(getModeKey()).xsd);
-        explicitSchemaLocation = schemaLocation;
-    }
+		super.setSchemaLocation(schemaLocation + " " + GENERIC_HEADER.get(getModeKey()).xmlns + " " + GENERIC_HEADER.get(getModeKey()).xsd);
+		super.setSoapHeader(GENERIC_HEADER.get(getModeKey()).tag.getLocalPart());
+		super.configure();
+	}
 
     private String getModeKey() {
     	return getModeKey(mode, cmhVersion);
@@ -137,7 +131,6 @@ public class EsbSoapValidator extends SoapValidator {
 
     public void setMode(String mode) { // Why does PropertyUtil not understand enums?
         this.mode = EsbSoapWrapperPipe.Mode.valueOf(mode.toUpperCase());
-        if (explicitSchemaLocation != null) setSchemaLocation(explicitSchemaLocation);
     }
 
     public String getMode() {

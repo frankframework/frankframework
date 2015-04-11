@@ -102,8 +102,9 @@ public class WsdlXmlValidator extends SoapValidator {
 	}
 
 	@Override
-	public void setSchemaLocation(String schemaLocation) {
-		this.schemaLocation = schemaLocation;
+	public void configure() throws ConfigurationException {
+		addSoapEnvelopeToSchemaLocation = false;
+		super.configure();
 	}
 
 	@Override

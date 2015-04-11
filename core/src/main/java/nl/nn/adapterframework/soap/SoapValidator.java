@@ -51,13 +51,21 @@ public class SoapValidator extends XmlValidator {
 
     private SoapVersion[] versions = new SoapVersion[] {SoapVersion.fromAttribute("1.1")};
 
-    private String setSchemaLocation = "";
+    protected boolean addSoapEnvelopeToSchemaLocation = true;
 
 
     @Override
     public void configure() throws ConfigurationException {
         setSoapNamespace("");
         super.setRoot(getRoot());
+        if ("any".equals(soapVersion) || StringUtils.isBlank(soapVersion)) {
+            versions = SoapVersion.values();
+        } else {
+            versions = new SoapVersion[] {SoapVersion.fromAttribute(soapVersion)};
+        }
+        if (addSoapEnvelopeToSchemaLocation) {
+            super.setSchemaLocation(schemaLocation + (schemaLocation.length() > 0 ? " "  : "") + StringUtils.join(versions, " "));
+        }
         super.configure();
         if (StringUtils.isNotEmpty(soapBody)) {
             validator.addRootValidation(Arrays.asList("Envelope", "Body", soapBody));
@@ -65,12 +73,6 @@ public class SoapValidator extends XmlValidator {
         if (StringUtils.isNotEmpty(soapHeader)) {
             validator.addRootValidation(Arrays.asList("Envelope", "Header", soapHeader));
         }
-    }
-
-    @Override
-    public void setSchemaLocation(String schemaLocation) {
-        super.setSchemaLocation(schemaLocation + (schemaLocation.length() > 0 ? " "  : "") + StringUtils.join(versions, " "));
-        setSchemaLocation = schemaLocation;
     }
 
     @Override
@@ -110,12 +112,6 @@ public class SoapValidator extends XmlValidator {
 
     public void setSoapVersion(String soapVersion) {
         this.soapVersion = soapVersion;
-        if ("any".equals(soapVersion) || StringUtils.isBlank(soapVersion)) {
-            this.versions = SoapVersion.values();
-        } else {
-            this.versions = new SoapVersion[] {SoapVersion.fromAttribute(soapVersion)};
-        }
-        setSchemaLocation(setSchemaLocation);
     }
 
     public String getSoapVersion() {
