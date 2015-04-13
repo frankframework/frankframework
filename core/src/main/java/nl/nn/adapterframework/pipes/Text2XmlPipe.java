@@ -39,6 +39,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setIncludeXmlDeclaration(boolean) includeXmlDeclaration}</td><td>controls whether a declation is included above the Xml text</td><td>true</td></tr>
  * <tr><td>{@link #setSplitLines(boolean) splitLines}</td><td>controls whether the lines of the input are places in separated &lt;line&gt; tags</td><td>false</td></tr>
  * <tr><td>{@link #setReplaceNonXmlChars(boolean) replaceNonXmlChars}</td><td>Replace all non XML chars (not in the <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char">character range as specified by the XML specification</a>) with the inverted question mark (0x00BF)</td><td>true</td></tr>
+ * <tr><td>{@link #setUseCdataSection(boolean) useCdataSection}</td><td>controls whether the text to encapsulate should be put in a CDATA section</td><td>true</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -56,6 +57,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	private boolean includeXmlDeclaration = true;
 	private boolean splitLines = false;
 	private boolean replaceNonXmlChars = true;
+	private boolean useCdataSection = true;
 	
 	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#configure()
@@ -85,7 +87,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 				StringBuffer result = new StringBuffer();
 
 				while ((l = br.readLine()) != null) {
-					result.append("<line><![CDATA["+l+"]]></line>");
+					result.append("<line>"+addCdataSection(l)+"</line>");
 				}
 					
 				input = result.toString();
@@ -97,9 +99,9 @@ public class Text2XmlPipe extends FixedForwardPipe {
 			
 						
 		} else if (replaceNonXmlChars && input != null) {
-			input = "<![CDATA["+ XmlUtils.encodeCdataString(input.toString()) +"]]>";
+			input = addCdataSection(XmlUtils.encodeCdataString(input.toString()));
 		} else {
-			input = "<![CDATA["+ input +"]]>";
+			input = addCdataSection(input.toString());
 		}
 			
 		String resultString = (isIncludeXmlDeclaration()?"<?xml version=\"1.0\" encoding=\"UTF-8\"?>":"") +
@@ -107,6 +109,14 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), resultString);
 	}
 
+	private String addCdataSection(String input) {
+		if (isUseCdataSection()) {
+			return "<![CDATA["+ input +"]]>";
+		} else {
+			return input;
+		}
+	}
+	
 	/**
 	 * @return the xml tag to encapsulate the text in
 	 */
@@ -141,5 +151,11 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		replaceNonXmlChars = b;
 	}
 
-}
+	public boolean isUseCdataSection() {
+		return useCdataSection;
+	}
 
+	public void setUseCdataSection(boolean b) {
+		useCdataSection = b;
+	}
+}
