@@ -165,22 +165,22 @@ public final class AppConstants extends Properties implements Serializable{
 					props.putAll(System.getProperties());
 					theFilename = StringResolver.substVars(theFilename, props);
 				}
-				URL url = null;
 				InputStream is = null;
-				if (directory == null) {
+				if (directory != null) {
+					File file = new File(directory + "/" + theFilename);
+					if (file.exists()) {
+						is = new FileInputStream(file);
+					} else {
+						log.debug("cannot find file ["+theFilename+"] to load additional properties from, ignoring");
+					}
+				}
+				URL url = null;
+				if (is == null) {
 					url = ClassUtils.getResourceURL(this, theFilename);
 					if (url == null) {
 						log.debug("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
 					} else {
 						is = url.openStream();
-					}
-				} else {
-					theFilename = directory + "/" + theFilename;
-					File file = new File(theFilename);
-					if (file.exists()) {
-						is = new FileInputStream(file);
-					} else {
-						log.debug("cannot find file ["+theFilename+"] to load additional properties from, ignoring");
 					}
 				}
 				if (is != null) {
