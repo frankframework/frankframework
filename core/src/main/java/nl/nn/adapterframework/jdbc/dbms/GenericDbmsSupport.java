@@ -386,5 +386,11 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return false;
 	}
 	
-	
+	public String getRowNumber(String order, String sort) {
+		return "";
+	}
+
+	public String getRowNumberShortName() {
+		return "";
+	}
 }

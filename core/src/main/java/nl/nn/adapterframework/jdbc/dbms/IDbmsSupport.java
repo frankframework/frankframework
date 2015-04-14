@@ -96,4 +96,7 @@ public interface IDbmsSupport {
 	boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException;
 
 	boolean isUniqueConstraintViolation(SQLException e);
+	
+	String getRowNumber(String order, String sort);
+	String getRowNumberShortName();
 }

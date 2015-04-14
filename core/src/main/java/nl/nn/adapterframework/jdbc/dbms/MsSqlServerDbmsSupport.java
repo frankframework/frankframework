@@ -118,4 +118,12 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 			return false;
 		}
 	}
+
+	public String getRowNumber(String order, String sort) {
+		return "row_number() over (order by "+order+(sort==null?"":" "+sort)+") "+getRowNumberShortName();
+	}
+
+	public String getRowNumberShortName() {
+		return "rn";
+	}
 }
