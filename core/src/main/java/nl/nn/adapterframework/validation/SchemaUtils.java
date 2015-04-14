@@ -469,7 +469,7 @@ public class SchemaUtils {
 		if (xsds.size() == xsdsWithDependencies.size()) {
 			String message = "Circural dependencies between schemas:";
 			for (XSD xsd : xsdsWithDependencies) {
-				message = message + " [" + xsd + " with imported namespaces " + xsd.getImportedNamespaces() + "]";
+				message = message + " [" + xsd.toString() + " with target namespace " + xsd.getTargetNamespace() + " and imported namespaces " + xsd.getImportedNamespaces() + "]";
 			}
 			throw new ConfigurationException(message);
 		}
