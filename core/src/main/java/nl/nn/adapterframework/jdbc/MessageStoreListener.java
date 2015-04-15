@@ -33,7 +33,7 @@ import org.apache.commons.lang.text.StrTokenizer;
  * 
  * Example configuration:
  * <code><pre>
-		<listener
+		&lt;listener
 			name="MyListener"
 			className="nl.nn.adapterframework.jdbc.MessageStoreListener"
 			jmsRealm="jdbc"

@@ -50,15 +50,15 @@ import org.apache.commons.lang.text.StrBuilder;
  * 
  * Example configuration:
  * <code><pre>
-		<sender
+		&lt;sender
 			className="nl.nn.adapterframework.jdbc.MessageStoreSender"
 			jmsRealm="jdbc"
 			slotId="${instance.name}/ServiceName"
 			sessionKeys="key1,key2"
 			>
-			<param name="messageId" xpathExpression="/Envelope/Header/MessageID"/>
-		</sender>
-		<messageLog
+			&lt;param name="messageId" xpathExpression="/Envelope/Header/MessageID"/>
+		&lt;/sender>
+		&lt;messageLog
 			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
 			jmsRealm="jdbc"
 			slotId="${instance.name}/ServiceName"
