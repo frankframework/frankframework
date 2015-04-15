@@ -172,7 +172,7 @@ public class XSD implements Schema, Comparable<XSD> {
 					toString = toString + ", ";
 				}
 				resourceTarget = resourceTarget + xsd.getResourceTarget().replaceAll("/", "_");
-				toString = toString + xsd.getResourceTarget();
+				toString = toString + xsd.toString();
 			}
 			resourceTarget = resourceTarget + "].xsd";
 			toString = toString + "]";
