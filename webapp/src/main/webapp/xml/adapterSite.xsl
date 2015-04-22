@@ -166,9 +166,16 @@
 			</td></tr>
 			
 			<tr><td/>
-				<td class="breadCrumb">
-					<xsl:apply-templates select="//breadCrumb"/>
-				</td>
+				<xsl:choose>
+					<xsl:when test="count(//breadCrumb)=0">
+						<td/>
+					</xsl:when>
+					<xsl:otherwise>
+						<td class="breadCrumb">
+							<xsl:apply-templates select="//breadCrumb"/>
+						</td>
+					</xsl:otherwise>
+				</xsl:choose>
 				<td/>
 			</tr>
 			<tr><td width="50px"></td>
