@@ -120,6 +120,9 @@
 				</xsl:choose>
 			</xsl:attribute>
 			<table width="100%" class="page" >
+			<tr><td colspan="3" height="50">
+				<xsl:apply-templates select="//menuBar"/>
+			</td></tr>
 			<tr><td colspan="3">
 					<table width="100%"><tr>
 					<td>
@@ -159,12 +162,8 @@
 
 			</tr>
 			<tr><td colspan="3">
-				<xsl:apply-templates select="//menuBar"/>
-			</td></tr>
-			<tr><td colspan="3">
 				<img src="images/pixel.gif" height="20px" border="0" alt=""/>
 			</td></tr>
-			
 			<tr><td/>
 				<xsl:choose>
 					<xsl:when test="count(//breadCrumb)=0">

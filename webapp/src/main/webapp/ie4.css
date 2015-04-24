@@ -13,7 +13,7 @@ td.utilmenu:hover{height:24px;border:1px solid;border-left-color:#3e9ade;
 border-bottom-color:#003399;border-right-color:#003399;border-top-color:#3e9ade;}
 
 .tabBar{background-color:#0083d7; border:2px solid;border-left-color:#3e9ade; 
-	border-bottom-color:#003399;border-right-color:#003399;border-top-color:#3e9ade;} 
+	border-bottom-color:#003399;border-right-color:#003399;border-top-color:#3e9ade;position: fixed; left:0px;top:0px; width:100%; padding:5px;} 
 
 
 
@@ -38,7 +38,7 @@ border-bottom-color:#003399;border-right-color:#003399;border-top-color:white;}
 /* the ApplicationName */
 .appName{color: #333366;}
 
-table.page {background-color: transparent}
+table.page {background-color: transparent;}
 table.page td.pagePanel{background-color:#b4e2ff;border:1px solid #0083d7; padding: 20px; }
 table.borderedTable{border:1px solid #0083d7; font-size: 11px;}
 table.page td.breadCrumb {background-color:transparent; border:1px solid #0083d7; padding:5px; font-weight : bold; color:#333366;}
