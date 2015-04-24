@@ -91,7 +91,11 @@ Upcoming
 - Remove useless space in SOAP envelop element
 - Improve code to prevent double attributes in merged schema
 - Add useCdataSection attribute to Text2XmlPipe
-- Add getRowNumber method to dbms support classes 
+- Add getRowNumber method to dbms support classes
+- Always show 'Reload configuration' link in 'Show configurationStatus'
+- Fix menubar at top of page in IBIS console
+- Add list of REST services next to list of WSDL's and renamed IBIS console function WSDL's to Webservices
+- Avoid exception "RestListener for uriPattern [...] method [...] already configured" for ConfigurationServlet
 
 
 

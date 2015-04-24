@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -173,7 +174,7 @@ public class ConfigurationServlet extends HttpServlet {
         out.println("<html>");
         out.println("<body>");
 
-		if (loadConfig()) {
+		if (loadConfig(true)) {
 			out.println("<p> Configuration successfully completed</p></body>");
 		} else {
 			out.println("<p> Errors occured during configuration. Please, examine logfiles</p>");
@@ -188,7 +189,14 @@ public class ConfigurationServlet extends HttpServlet {
     }
 
 	private boolean loadConfig() {
+		return loadConfig(false);
+	}
+
+	private boolean loadConfig(boolean reload) {
 		if (areAdaptersStopped()) {
+			if (reload) {
+				unloadConfig();
+			}
 			IbisContext ibisContext = new IbisContext();
 			String configurationFile = getInitParameter("configuration");
 			String autoStart = getInitParameter("autoStart");
@@ -209,9 +217,11 @@ public class ConfigurationServlet extends HttpServlet {
 			lastErrorMessage= "Action cancelled: some adapters are still running.";
 			return false;
 		}
+    }
+
+	private void unloadConfig() {
+		RestServiceDispatcher.getInstance().unregisterAllServiceClients();
 	}
-
-
 
     public Configuration getConfiguration() {
         IbisManager ibisManager = getIbisManager();

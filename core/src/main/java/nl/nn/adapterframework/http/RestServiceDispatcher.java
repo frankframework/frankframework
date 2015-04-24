@@ -150,4 +150,8 @@ public class RestServiceDispatcher  {
 		if (StringUtils.isNotEmpty(etagSessionKey)) listenerConfig.put(KEY_ETAG_KEY, etagSessionKey);
 		if (StringUtils.isNotEmpty(contentTypeSessionKey)) listenerConfig.put(KEY_CONTENT_TYPE_KEY, contentTypeSessionKey);
 	}
+
+	public void unregisterAllServiceClients() {
+		patternClients.clear();
+	}
 }
