@@ -47,7 +47,7 @@
 			<imagelink
 				href="servlet/rpcrouter"
 				type="wsdl"
-				alt="WSDL's">
+				alt="Webservices">
 			</imagelink>
 			<imagelink
 				href="showSchedulerStatus.do"

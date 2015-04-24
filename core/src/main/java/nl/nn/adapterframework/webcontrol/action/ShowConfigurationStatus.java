@@ -253,8 +253,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 						receiverXML.addAttribute("isRestListener", isRestListener);
 						if (isRestListener) {
 							RestListener rl = (RestListener) listener;
-							String path = getServlet().getServletContext().getInitParameter("restListenerPathPrefix") + "/" + rl.getUriPattern();
-							receiverXML.addAttribute("restUriPattern", path);
+							receiverXML.addAttribute("restUriPattern", rl.getRestUriPattern());
 							receiverXML.addAttribute("restMethod", rl.getMethod());
 						}
 						boolean isEsbJmsFFListener = false;

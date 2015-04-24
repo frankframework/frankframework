@@ -17,6 +17,8 @@
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Enumeration;
+import java.util.Iterator;
 
 import javax.naming.NamingException;
 import javax.servlet.ServletConfig;
@@ -33,8 +35,13 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.http.RestListener;
+import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
  /**
@@ -163,10 +170,18 @@ public class IbisSoapServlet extends HttpServlet {
     protected void list(HttpServletRequest req, Writer w) throws IOException {
         w.write("<html>");
         w.write(  "<head>");
-        w.write(     "<title>Available WSDL's</title>");
+        w.write(     "<title>Webservices</title>");
         w.write(  "</head>");
         w.write("<body>");
-        w.write("<ol>");
+        w.write("<h1>Webservices</h1>");
+        listRestServices(req, w);
+        listWsdls(req, w);
+        w.write("</body></html>");
+    }
+
+    protected void listWsdls(HttpServletRequest req, Writer w) throws IOException {
+    	w.write("<h2>Available WSDL's:</h2>");
+    	w.write("<ol>");
 
         int count = 0;
         for (IAdapter a : ibisManager.getConfiguration().getRegisteredAdapters()) {
@@ -209,9 +224,38 @@ public class IbisSoapServlet extends HttpServlet {
         }
         w.write("</ol>");
         if (count == 0) {
-            w.write("<p>No registered listeners found</p>");
+            w.write("No registered listeners found");
         }
-        w.write("</body></html>");
     }
 
+    protected void listRestServices(HttpServletRequest req, Writer w) throws IOException {
+    	w.write("<h2>Available REST services:</h2>");
+        w.write("<ol>");
+
+        int count = 0;
+        for (IAdapter a : ibisManager.getConfiguration().getRegisteredAdapters()) {
+			Adapter adapter = (Adapter) a;
+			Iterator recIt=adapter.getReceiverIterator();
+			while (recIt.hasNext()){
+				IReceiver receiver=(IReceiver) recIt.next();
+				if (receiver instanceof ReceiverBase ) {
+					ReceiverBase rb = (ReceiverBase) receiver;
+					IListener listener = rb.getListener();
+					if (listener instanceof RestListener) {
+						RestListener rl = (RestListener) listener;
+						if (rl.getMethod().equalsIgnoreCase("GET")) {
+				        	count++;
+				            w.write("<li>");
+			                w.write("<a href=../" + rl.getRestUriPattern() + ">" + rb.getName() + "</a>");
+				            w.write("</li>");
+						}
+					}
+				}
+			}
+        }
+        w.write("</ol>");
+        if (count == 0) {
+            w.write("No rest listeners found");
+        }
+    }
 }

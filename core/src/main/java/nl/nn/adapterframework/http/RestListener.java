@@ -73,6 +73,9 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return "uriPattern: "+(getUriPattern()==null?"-any-":getUriPattern())+"; method: "+(getMethod()==null?"all":getMethod());
 	}
 
+	public String getRestUriPattern() {
+		return getRestPath().substring(1) + "/" + getUriPattern();
+	}
 	
 	public String getUriPattern() {
 		return uriPattern;
