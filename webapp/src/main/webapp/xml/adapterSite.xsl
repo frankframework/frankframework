@@ -422,6 +422,7 @@
 			<xsl:when test="@type='stop'"				>images/stop.gif</xsl:when>
 			<xsl:when test="@type='flow'"				>images/flow.gif</xsl:when>
 			<xsl:when test="@type='move'"				>images/move.gif</xsl:when>
+			<xsl:when test="@type='reload'"				>images/reload.gif</xsl:when>
 		</xsl:choose>
 	</xsl:template>
 

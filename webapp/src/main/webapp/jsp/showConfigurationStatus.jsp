@@ -79,6 +79,12 @@
 			<parameter name="adapterName">**ALL**</parameter>
 	 </imagelink>
 	<imagelink
+			href="ConfigurationServlet"
+			type="reload"
+			alt="reload"
+			text="Reload configuration"
+			/>
+	<imagelink
 			href="images/flow/IBIS.svg"
 			type="flow"
 			alt="flow"
@@ -86,17 +92,9 @@
 			newwindow="true"
 			/>
 
-
 	<xtags:forEach select="//registeredAdapters">
 
 		<xtags:forEach select="exceptions">
-			<imagelink
-					href="ConfigurationServlet"
-					type="reload"
-					alt="reload"
-					text="Reload Configuration"
-					>
-			 </imagelink>
 			<contentTable>
 				<caption>Exceptions</caption>
 				<tbody>
