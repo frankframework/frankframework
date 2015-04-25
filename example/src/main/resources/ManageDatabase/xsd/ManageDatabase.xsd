@@ -14,6 +14,7 @@
 				<xsd:element name="sql" type="sqlType"/>
 			</xsd:choice>
 		</xsd:sequence>
+		<xsd:attribute name="returnResults" type="xsd:boolean" use="optional"/>
 	</xsd:complexType>
 	<xsd:complexType name="manageDatabaseRLYType">
 		<xsd:sequence>

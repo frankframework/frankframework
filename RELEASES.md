@@ -96,6 +96,7 @@ Upcoming
 - Fix menubar at top of page in IBIS console
 - Add list of REST services next to list of WSDL's and renamed IBIS console function WSDL's to Webservices
 - Avoid exception "RestListener for uriPattern [...] method [...] already configured" for ConfigurationServlet
+- Add returnResults to ManageDatabase
 
 
 

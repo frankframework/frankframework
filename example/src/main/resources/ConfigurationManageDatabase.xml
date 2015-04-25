@@ -21,6 +21,7 @@
 				<forward name="success" path="ManageDatabaseRLY" />
 			</pipe>
 			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="ManageDatabaseRLY" styleSheetName="/ManageDatabase/xsl/ManageDatabaseRLY.xsl">
+				<param name="returnResults" sessionKey="originalMessage" xpathExpression="/manageDatabaseREQ/@returnResults" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- ERRORS -->
