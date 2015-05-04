@@ -1,5 +1,6 @@
 BODY {	
 	background-repeat: repeat;
+	overflow: visible;
 }
 BODY.stub {	
 	background-image: url('images/stub.png');
