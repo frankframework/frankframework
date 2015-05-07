@@ -97,6 +97,11 @@ Upcoming
 - Add list of REST services next to list of WSDL's and renamed IBIS console function WSDL's to Webservices
 - Avoid exception "RestListener for uriPattern [...] method [...] already configured" for ConfigurationServlet
 - Add returnResults to ManageDatabase
+- Update to latest Ladybug Test Tool version
+    - Show error message for Rerun on Report level too
+    - Show error message for Run in Test tab
+    - Prevent java.io.NotSerializableException when the application wants to persist sessions
+    - Prevent problems with control characters in GUI (replace them with inverted question mark + "#" + number of character + ";")
 
 
 
