@@ -36,7 +36,7 @@ import org.apache.commons.lang.StringUtils;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setMode(String) mode}</td><td>either <code>i2t</code> (ifsa2tibco), <code>reg</code> (regular) or <code>bis</code> (Business Integration Services)</td><td>reg</td></tr>
- * <tr><td>{@link #setCmhVersion(int) cmhVersion}</td><td>(only used when <code>mode=reg</code>) Common Message Header version (1 or 2)</td><td>0</td></tr>
+ * <tr><td>{@link #setCmhVersion(int) cmhVersion}</td><td>(only used when <code>mode=reg</code>) Common Message Header version (1 or 2)</td><td>1 when <code>mode=reg</code>, 0 otherwise</td></tr>
  * <tr><td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td><td>if direction=<code>unwrap</code>: </td><td>soapHeader</td></tr>
  * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>if direction=<code>wrap</code> and mode=<code>i2t</code>:</td><td>/xml/xsl/esb/soapHeader.xsl</td></tr>
  * <tr><td></td><td>if direction=<code>wrap</code> and mode=<code>reg</code>:</td><td>TODO (for now identical to the "<code>i2t</code>" SOAP Header)</td></tr>
@@ -271,7 +271,9 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
     @Override
 	public void configure() throws ConfigurationException {
 		if (mode == Mode.REG) {
-			if (cmhVersion < 1 || cmhVersion > 2) {
+			if (cmhVersion == 0) {
+				cmhVersion = 1;
+			} else if (cmhVersion < 0 || cmhVersion > 2) {
 				ConfigurationWarnings configWarnings = ConfigurationWarnings
 						.getInstance();
 				String msg = getLogPrefix(null) + "cmhVersion [" + cmhVersion

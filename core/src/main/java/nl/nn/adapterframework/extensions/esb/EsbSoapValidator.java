@@ -22,7 +22,6 @@ import javax.xml.namespace.QName;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe.Mode;
 import nl.nn.adapterframework.soap.SoapValidator;
 
 /**
@@ -55,8 +54,6 @@ public class EsbSoapValidator extends SoapValidator {
     private static final Map<String, HeaderInformation> GENERIC_HEADER;
     static {
         Map<String, HeaderInformation> temp = new HashMap<String, HeaderInformation>();
-        // first put to avoid NullPointerException
-        temp.put(getModeKey(EsbSoapWrapperPipe.Mode.REG), new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/1", "/xml/xsd/CommonMessageHeader.xsd"));
         temp.put(getModeKey(EsbSoapWrapperPipe.Mode.REG,1), new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/1", "/xml/xsd/CommonMessageHeader.xsd"));
         temp.put(getModeKey(EsbSoapWrapperPipe.Mode.REG,2), new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/2", "/xml/xsd/CommonMessageHeader_2.xsd"));
         temp.put(getModeKey(EsbSoapWrapperPipe.Mode.I2T), new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/1", "/xml/xsd/CommonMessageHeader.xsd"));
@@ -79,7 +76,9 @@ public class EsbSoapValidator extends SoapValidator {
     @Override
     public void configure() throws ConfigurationException {
 		if (mode == EsbSoapWrapperPipe.Mode.REG) {
-			if (cmhVersion < 1 || cmhVersion > 2) {
+			if (cmhVersion == 0) {
+				cmhVersion = 1;
+			} else if (cmhVersion < 0 || cmhVersion > 2) {
 				ConfigurationWarnings configWarnings = ConfigurationWarnings
 						.getInstance();
 				String msg = getLogPrefix(null) + "cmhVersion [" + cmhVersion
