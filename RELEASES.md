@@ -100,8 +100,6 @@ Upcoming
 - Update to latest Ladybug Test Tool version
     - Show error message for Rerun on Report level too
     - Show error message for Run in Test tab
-    - Prevent java.io.NotSerializableException when the application wants to persist sessions
-    - Prevent problems with control characters in GUI (replace them with inverted question mark + "#" + number of character + ";")
 
 
 
