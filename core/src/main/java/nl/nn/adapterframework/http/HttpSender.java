@@ -49,6 +49,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HostConfiguration;
@@ -837,22 +838,26 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			throw new SenderException("Failed to recover from exception");
 		}
 		
-		if (isXhtml()
-				&& StringUtils.isNotEmpty(result)
-				&& (result.trim().startsWith("<html>") || result.trim()
-						.startsWith("<html "))) {
-			CleanerProperties props = new CleanerProperties();
-			HtmlCleaner cleaner = new HtmlCleaner(props);
-			TagNode tagNode = cleaner.clean(result);
-			result = new SimpleXmlSerializer(props).getXmlAsString(tagNode);
+		if (isXhtml() && StringUtils.isNotEmpty(result)) {
+			result = XmlUtils.skipDocTypeDeclaration(result.trim());
+			if (result.startsWith("<html>") || result.startsWith("<html ")) {
+				CleanerProperties props = new CleanerProperties();
+				HtmlCleaner cleaner = new HtmlCleaner(props);
+				TagNode tagNode = cleaner.clean(result);
+				result = new SimpleXmlSerializer(props).getXmlAsString(tagNode);
 
-			if (transformerPool!=null) {
-				log.debug(getLogPrefix()+ " transforming result [" + result + "]");
-				ParameterResolutionContext prc_xslt = new ParameterResolutionContext(result, null, true, true); 
-				try {
-					result = transformerPool.transform(prc_xslt.getInputSource(), null);
-				} catch (Exception e) {
-					throw new SenderException("Exception on transforming input", e);
+				if (transformerPool != null) {
+					log.debug(getLogPrefix() + " transforming result ["
+							+ result + "]");
+					ParameterResolutionContext prc_xslt = new ParameterResolutionContext(
+							result, null, true, true);
+					try {
+						result = transformerPool.transform(
+								prc_xslt.getInputSource(), null);
+					} catch (Exception e) {
+						throw new SenderException(
+								"Exception on transforming input", e);
+					}
 				}
 			}
 		}
