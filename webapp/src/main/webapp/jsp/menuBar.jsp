@@ -105,10 +105,9 @@
 				alt="Ladybug Test Tool">
 			</imagelink>
 			<imagelink
-				href="<%= AppConstants.getInstance().getResolvedProperty("help.url") %>"
-				type="help"
-				alt="Help"
-				newwindow="true">
+				href="javascript:void(0)"
+				type="info"
+				alt="Information">
 			</imagelink>
 			<imagelink
 				href="<%=XmlUtils.encodeChars(themeSwitchQueryString)%>"

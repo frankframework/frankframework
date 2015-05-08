@@ -17,83 +17,75 @@
 		<caption>Summary</caption>
 		<tbody>
 			<tr>
-				<td></td>
-				<subHeader colspan="5" align="center">count</subHeader>
-				<td colspan="2"></td>
-				<subHeader colspan="3" align="center">count</subHeader>
-			</tr>
-			<tr>
-				<subHeader>state</subHeader>
+				<subHeader>State</subHeader>
 				<subHeader align="center"><img src="images/connected.gif" title="started"/></subHeader>
 				<subHeader align="center"><img src="images/connecting.gif" title="starting"/></subHeader>
 				<subHeader align="center"><img src="images/disconnected.gif" title="stopped"/></subHeader>
 				<subHeader align="center"><img src="images/disconnecting.gif" title="stopping"/></subHeader>
 				<subHeader align="center"><img src="images/error.gif" title="error"/></subHeader>
+				<subHeader align="center">Actions</subHeader>
 				<td></td>
-				<subHeader>level</subHeader>
+				<subHeader>Level</subHeader>
 				<subHeader align="center">INFO</subHeader>
 				<subHeader align="center">WARN</subHeader>
 				<subHeader align="center">ERROR</subHeader>
 			</tr>
 			<tr>
-				<subHeader>adapters</subHeader>
+				<subHeader>Adapters</subHeader>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/adapterState/@started"/></td>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/adapterState/@starting"/></td>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/adapterState/@stopped"/></td>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/adapterState/@stopping"/></td>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/adapterState/@error"/></td>
+				<td>
+					<imagelink
+						href="adapterHandler.do"
+						type="stop"
+						alt="stop all adapters"
+						>
+						<parameter name="action">stopadapter</parameter>
+						<parameter name="adapterName">**ALL**</parameter>
+					 </imagelink>
+					<imagelink
+						href="adapterHandler.do"
+						type="start"
+						alt="start all adapters"
+						>
+						<parameter name="action">startadapter</parameter>
+						<parameter name="adapterName">**ALL**</parameter>
+					 </imagelink>
+					<imagelink
+						href="ConfigurationServlet"
+						type="reload"
+						alt="reload configuration"
+						/>
+					<imagelink
+						href="images/flow/IBIS.svg"
+						type="flow"
+						alt="show adapter references"
+						newwindow="true"
+						/>
+				</td>
 				<td></td>
-				<subHeader>messages</subHeader>
+				<subHeader>Messages</subHeader>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/messageLevel/@info"/></td>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/messageLevel/@warn"/></td>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/messageLevel/@error"/></td>
 			</tr>
 			<tr>
-				<subHeader>receivers</subHeader>
+				<subHeader>Receivers</subHeader>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/receiverState/@started"/></td>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/receiverState/@starting"/></td>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/receiverState/@stopped"/></td>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/receiverState/@stopping"/></td>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/receiverState/@error"/></td>
+				<td></td>
 			</tr>
 		</tbody>
 	</contentTable>
-	<br/><br/><br/>
-
-	<imagelink
-			href="adapterHandler.do"
-			type="stop"
-			alt="stopadapter"
-			text="Stop all adapters"
-			>
-			<parameter name="action">stopadapter</parameter>
-			<parameter name="adapterName">**ALL**</parameter>
-	 </imagelink>
-	<imagelink
-			href="adapterHandler.do"
-			type="start"
-			alt="start"
-			text="Start all adapters"
-			>
-			<parameter name="action">startadapter</parameter>
-			<parameter name="adapterName">**ALL**</parameter>
-	 </imagelink>
-	<imagelink
-			href="ConfigurationServlet"
-			type="reload"
-			alt="reload"
-			text="Reload configuration"
-			/>
-	<imagelink
-			href="images/flow/IBIS.svg"
-			type="flow"
-			alt="flow"
-			text="Show adapter references"
-			newwindow="true"
-			/>
+	<br/>
 
 	<xtags:forEach select="//registeredAdapters">
-
 		<xtags:forEach select="exceptions">
 			<contentTable>
 				<caption>Exceptions</caption>
@@ -105,6 +97,7 @@
 					</xtags:forEach>
 				</tbody>
 			</contentTable>
+			<br/>
 		</xtags:forEach>
 		<xtags:forEach select="warnings">
 			<contentTable>
@@ -128,7 +121,9 @@
 					</xtags:forEach>
 				</tbody>
 			</contentTable>
+			<br/>
 		</xtags:forEach>
+
 			<contentTable>
 				<caption>Configured Adapters</caption>
 				<tbody>
@@ -210,7 +205,7 @@
 								<imagelink
 									href="images/flow/<%=FileUtils.encodeFileName(adapterName)%>.svg"
 									type="flow"
-									alt="flow"
+									alt="show Adapter Flow"
 									newwindow="true"
 									/>
 
@@ -460,8 +455,5 @@
 				</tbody>
 			</contentTable>
 	</xtags:forEach>
-
-
-
 </page>
 

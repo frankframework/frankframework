@@ -125,13 +125,39 @@
 			<tr><td colspan="3" height="50">
 				<xsl:apply-templates select="//menuBar"/>
 			</td></tr>
-			<tr><td colspan="3">
-					<table width="100%"><tr>
-					<td>
-						<h1><xsl:value-of select="@title"/></h1>
-					</td>
-					<td align="right">
-						<div class="appName">
+			<tr><td width="10px"></td>
+			<td>
+				<h1><xsl:value-of select="@title"/></h1>
+			</td>
+			<td width="10px"></td>
+			</tr>			
+			<tr><td/>
+				<xsl:choose>
+					<xsl:when test="count(//breadCrumb)=0">
+						<td/>
+					</xsl:when>
+					<xsl:otherwise>
+				<td class="breadCrumb">
+					<xsl:apply-templates select="//breadCrumb"/>
+				</td>
+					</xsl:otherwise>
+				</xsl:choose>
+				<td/>
+			</tr>
+			<tr><td width="10px"></td>
+			<td class="pagePanel">
+				<xsl:apply-templates select="//errors"/>
+				<xsl:apply-templates select="//messages"/>
+				<xsl:apply-templates />
+			</td>
+			<td width="10px"></td>
+			</tr>
+			</table>
+			<div id="overlay" class="overlay"/>
+			<div id="popupInfo" class="popupInfo">
+				<h1>Information</h1>
+				<p>
+					<div>
 						<xsl:value-of select="//applicationConstants/properties/property[@name='application.name']"/><xsl:value-of select="' '"/>
 						<xsl:value-of select="//applicationConstants/properties/property[@name='application.version']"/>:<xsl:value-of select="' '"/>
 						<xsl:value-of select="//applicationConstants/properties/property[@name='instance.name']"/><xsl:value-of select="' '"/>
@@ -143,51 +169,49 @@
 						<xsl:value-of select="//applicationConstants/properties/property[@name='instance.build_id']"/><xsl:value-of select="', '"/>
 						buildscript <xsl:value-of select="//applicationConstants/properties/property[@name='build.xml.version']"/><xsl:value-of select="', '"/>
 						size: <xsl:value-of select="//applicationConstants/properties/property[@name='instance.size']"/>
-						</div>
-						<div>
+					</div>
+					<div>
 						running on <xsl:value-of select="//machineName"/> using <xsl:value-of select="//requestInfo/servletRequest/serverInfo"/>
-						</div>
-						<div>
+					</div>
+					<div>
 						heap size: <xsl:value-of select="//processMetrics/properties/property[@name='heapSize']"/>,
 						total JVM memory: <xsl:value-of select="//processMetrics/properties/property[@name='totalMemory']"/>
-						</div>
-						<xsl:if test="//fileSystem/totalSpace!='null'">
-							<div>
+					</div>
+					<xsl:if test="//fileSystem/totalSpace!='null'">
+						<div>
 							free space: <xsl:value-of select="//fileSystem/freeSpace"/>,
 							total space: <xsl:value-of select="//fileSystem/totalSpace"/>
-							</div>
-						</xsl:if>
-						<div id="clock"/>
-					</td>
-					</tr></table>
-				</td>
-
-			</tr>
-			<tr><td colspan="3">
-				<img src="images/pixel.gif" height="20px" border="0" alt=""/>
-			</td></tr>
-			<tr><td/>
-				<xsl:choose>
-					<xsl:when test="count(//breadCrumb)=0">
-						<td/>
-					</xsl:when>
-					<xsl:otherwise>
-						<td class="breadCrumb">
-							<xsl:apply-templates select="//breadCrumb"/>
-						</td>
-					</xsl:otherwise>
-				</xsl:choose>
-				<td/>
-			</tr>
-			<tr><td width="50px"></td>
-			<td class="pagePanel">
-				<xsl:apply-templates select="//errors"/>
-				<xsl:apply-templates select="//messages"/>
-			<xsl:apply-templates />		
-			</td>
-			<td width="50px"></td>
-			</tr>
-			</table>
+						</div>
+					</xsl:if>
+					<div id="clock"/>
+				</p>
+				<p>
+					<table valign="center">
+						<tr>
+							<td>
+								<img src="bootstrap/img/github.png" alt="GitHub"/>
+							</td>
+							<td>
+								<a href="https://github.com/ibissource/iaf">https://github.com/ibissource/iaf</a>
+							</td>
+						</tr>
+					</table>
+				</p>
+				<p>
+					<table width="100%">
+						<tr>
+							<td>
+								<a href="http://www.integrationpartners.nl/ibis-adapter-framework/handleiding-iaf-beheerconsole">
+									<img src="images/help.gif" alt="Help"/>
+								</a>
+							</td>
+							<td align="right">
+								<button onclick="document.getElementById('popupInfo').style.display='none';document.getElementById('overlay').style.display='none'">OK</button>
+							</td>
+						</tr>
+					</table>
+				</p>
+			</div>
 		</body>
 		</html>
 	</xsl:template>
@@ -367,6 +391,9 @@
 			<xsl:if test="@newwindow">
 				<xsl:attribute name="target">_blank</xsl:attribute>
 			</xsl:if>
+			<xsl:if test="@type='info'">
+				<xsl:attribute name="onclick">document.getElementById('popupInfo').style.display='block';document.getElementById('overlay').style.display='block'</xsl:attribute>
+			</xsl:if>
 	
 			<xsl:call-template name="buildIcon" />
 		</xsl:element>
@@ -400,7 +427,7 @@
 			<xsl:when test="@type='browsetable'"		>images/table.gif</xsl:when>
 			<xsl:when test="@type='dump'"				>images/dump.gif</xsl:when>
 			<xsl:when test="@type='edit'"				>images/edit.gif</xsl:when>
-			<xsl:when test="@type='help'"				>images/help.gif</xsl:when>
+			<xsl:when test="@type='info'"				>images/info.gif</xsl:when>
 			<xsl:when test="@type='ladybug'"			>images/ladybug.gif</xsl:when>
 			<xsl:when test="@type='larva'"				>images/larva.gif</xsl:when>
 			<xsl:when test="@type='showsummary'"		>images/ibisstore.gif</xsl:when>
@@ -426,7 +453,6 @@
 			<xsl:when test="@type='reload'"				>images/reload.gif</xsl:when>
 		</xsl:choose>
 	</xsl:template>
-
 	
 	<xsl:template name="buildIcon">
 		<xsl:variable name="src">
@@ -479,10 +505,5 @@
 			<xsl:apply-templates select="@*|node()"/>
 		</xsl:copy>
 	</xsl:template>
-	
-
-	
-
-	
 </xsl:stylesheet>
 

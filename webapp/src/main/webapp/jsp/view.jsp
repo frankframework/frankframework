@@ -10,7 +10,7 @@
 
 
 <%@ page language="java" %>
-
+ 
 <%
 	String view=request.getParameter("view");
 	String theme = request.getParameter("theme");
