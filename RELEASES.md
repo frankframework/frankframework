@@ -103,6 +103,7 @@ Upcoming
 - Adjust IBIS console classic theme to look more like bootstrap theme
 - `(end of v6.0-RC2)`
 - Add WebServiceListener to ManageDatabase to generate WSDL (on LOC, DEV and TST)
+- Improve show configuration status page layout and add flow images
 
 
 

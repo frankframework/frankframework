@@ -5,17 +5,17 @@
 	
 	<xsl:template match="contentTable">
 		<table>
-		<!-- process a TABLE element. 
-		      First process the CAPTION element if present, transforming it to a TabHeader,
-		      Then processing subsequent TR or TBODY elements
-		 -->
-		<xsl:variable name="theNode"><xsl:value-of select="TBODY"/></xsl:variable>
-
-		<!-- <xsl:call-template name="panel">
-			<xsl:with-param name="title"><xsl:value-of select="CAPTION"/></xsl:with-param>
-			<xsl:with-param name="body"><xsl:value-of select="TBODY"/></xsl:with-param>
-		</xsl:call-template>
-		-->
+			<xsl:copy-of select="@*"/>
+			<!-- process a TABLE element. 
+			      First process the CAPTION element if present, transforming it to a TabHeader,
+			      Then processing subsequent TR or TBODY elements
+			 -->
+			<xsl:variable name="theNode"><xsl:value-of select="TBODY"/></xsl:variable>
+			<!-- <xsl:call-template name="panel">
+				<xsl:with-param name="title"><xsl:value-of select="CAPTION"/></xsl:with-param>
+				<xsl:with-param name="body"><xsl:value-of select="TBODY"/></xsl:with-param>
+			</xsl:call-template>
+			-->
 			<xsl:apply-templates/>
 		</table>
 	</xsl:template>
