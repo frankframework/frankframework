@@ -95,7 +95,6 @@
 					</xtags:forEach>
 				</tbody>
 			</contentTable>
-			<br/>
 		</xtags:forEach>
 
 		<xtags:forEach select="warnings">
@@ -130,7 +129,7 @@
 			<contentTable width="100%">
 				<tbody>
 					<xtags:variable id="adapterState" select="@state"/>
-					<tr><subHeader colspan="7"><h1><xtags:valueOf select="@name"/></h1></subHeader></tr>
+					<tr><subHeader colspan="7"><h1><xtags:valueOf select="@name"/><xtags:if test="@description!=''"> (<xtags:valueOf select="@description"/>)</xtags:if></h1></subHeader></tr>
 					<tr>
 						<subHeader>State</subHeader>
 						<subHeader>Configured</subHeader>
