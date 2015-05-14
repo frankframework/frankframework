@@ -1,5 +1,5 @@
 <module>
-	<adapter name="HelloWorlds">
+	<adapter name="HelloWorlds" active="${HelloWorlds.active}">
 		<receiver
 			name="HelloWorlds"
 			className="nl.nn.adapterframework.receivers.GenericReceiver"
@@ -9,10 +9,49 @@
 				className="nl.nn.adapterframework.receivers.JavaListener"
 			/>
 		</receiver>
-		<pipeline firstPipe="HelloWorlds">
+		<pipeline firstPipe="CheckInputIsXml">
 			<exits>
 				<exit path="EXIT" state="success"/>
 			</exits>
+			<pipe
+				name="CheckInputIsXml"
+				className="nl.nn.adapterframework.pipes.XmlWellFormedChecker"
+				>
+				<forward name="success" path="HelloWorlds"/>
+				<forward name="failure" path="Text2Xml"/>
+			</pipe>
+			<pipe
+				name="Text2Xml"
+				className="nl.nn.adapterframework.pipes.Text2XmlPipe"
+				includeXmlDeclaration="false"
+				xmlTag="tests"
+				splitLines="true"
+				>
+				<forward name="success" path="RenameElementLineToTest"/>
+			</pipe>
+			<pipe
+				name="RenameElementLineToTest"
+				className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="HelloWorlds/xsl/RenameElementLineToTest.xsl"
+				>
+				<forward name="success" path="CheckEmptyMessage"/>
+			</pipe>
+			<pipe
+				name="CheckEmptyMessage"
+				className="nl.nn.adapterframework.pipes.CompareStringPipe"
+				>
+				<param name="operand1" value="&lt;tests/>"/>
+				<forward name="equals" path="CreateNewMessage"/>
+				<forward name="lessthan" path="HelloWorlds"/>
+				<forward name="greaterthan" path="HelloWorlds"/>
+			</pipe>
+			<pipe
+				name="CreateNewMessage"
+				className="nl.nn.adapterframework.pipes.FixedResult"
+				returnString="&lt;tests>&lt;test>1&lt;/test>&lt;/tests>"
+				>
+				<forward name="success" path="HelloWorlds"/>
+			</pipe>
 			<pipe
 				name="HelloWorlds"
 				className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
@@ -29,4 +68,14 @@
 			</pipe>
 		</pipeline>
 	</adapter>
+	<scheduler>
+		<job
+			name="HelloWorlds"
+			adapterName="HelloWorlds"
+			receiverName="HelloWorlds"
+			cronExpression="0 55 2 * * ?"
+			function="sendMessage"
+			active="${HelloWorlds.active}"
+		/>
+	</scheduler>
 </module>

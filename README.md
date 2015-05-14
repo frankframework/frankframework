@@ -1,26 +1,17 @@
 Ibis AdapterFramework
 =====================
 
-Build adapters using XML configuration. Build application using adapters.
+Build adapters using XML configuration. Build applications using adapters.
 
 ![Ibis AdapterFramework](IAF.png)
 
-Small XML configuration example which defines an adapter:
+Some example XML configurations:
 
-	<adapter name="HelloWorld" description="Little example">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="HelloWorld">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="HelloWorld"/>
-		</receiver>
-		<pipeline firstPipe="HelloWorld">
-			<exits>
-				<exit path="EXIT" state="success"/>
-			</exits>
-			<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResult" returnString="Hello World">
-				<forward name="success" path="EXIT"/>
-			</pipe>
-		</pipeline>
-	</adapter>
+- [HelloWorld](example/src/main/resources/ConfigurationHelloWorld.xml)
+- [HelloWorlds](example/src/main/resources/ConfigurationHelloWorlds.xml)
+- [ManageDatabase](example/src/main/resources/ConfigurationManageDatabase.xml)
 
+See them in action: http://ibis4example.ibissource.org/
 
 
 Releases

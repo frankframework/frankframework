@@ -105,7 +105,8 @@ Upcoming
 - Add WebServiceListener to ManageDatabase to generate WSDL (on LOC, DEV and TST)
 - Improve show configuration status page layout and add flow images
 - Prevent "Premature end of file" in System.err on isWellFormed check
-
+- Print adapter description on show configuration status page
+- Improve HelloWorld(s) adapter
 
 
 
