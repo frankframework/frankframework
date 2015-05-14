@@ -104,6 +104,8 @@ Upcoming
 - `(end of v6.0-RC2)`
 - Add WebServiceListener to ManageDatabase to generate WSDL (on LOC, DEV and TST)
 - Improve show configuration status page layout and add flow images
+- Prevent "Premature end of file" in System.err on isWellFormed check
+
 
 
 

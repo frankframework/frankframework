@@ -64,6 +64,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
+import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -1324,10 +1325,15 @@ public class XmlUtils {
 		}
 		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(
 				null, rootValidations, true);
+		XmlValidatorErrorHandler xmlValidatorErrorHandler =
+				new XmlValidatorErrorHandler(xmlHandler, "Is not well formed");
+		xmlHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
 		try {
 			SAXSource saxSource = stringToSAXSource(input, true, false);
 			XMLReader xmlReader = saxSource.getXMLReader();
 			xmlReader.setContentHandler(xmlHandler);
+			// Prevent message in System.err: [Fatal Error] :-1:-1: Premature end of file.
+			xmlReader.setErrorHandler(xmlValidatorErrorHandler);
 			xmlReader.parse(saxSource.getInputSource());
 		} catch (Exception e) {
 			return false;
