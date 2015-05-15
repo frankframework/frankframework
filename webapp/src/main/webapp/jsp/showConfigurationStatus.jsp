@@ -14,9 +14,6 @@
 	<contentTable width="100%">
 		<tbody>
 			<tr>
-				<subHeader colspan="10"><h1>Summary</h1></subHeader>
-			</tr>
-			<tr>
 				<subHeader>State</subHeader>
 				<subHeader align="center"><img src="images/connected.gif" title="started"/></subHeader>
 				<subHeader align="center"><img src="images/connecting.gif" title="starting"/></subHeader>
@@ -86,7 +83,7 @@
 			<contentTable width="100%">
 				<tbody>
 					<tr>
-						<subHeader><h1>Exceptions</h1></subHeader>
+						<subHeader><h1 style="color:red">Exceptions</h1></subHeader>
 					</tr>
 					<xtags:forEach select="exception">
 						<tr>
@@ -102,7 +99,7 @@
 			<contentTable width="100%">
 				<tbody>
 					<tr>
-						<subHeader><h1>Warnings</h1></subHeader>
+						<subHeader><h1 style="color:black">Warnings</h1></subHeader>
 					</tr>
 					<xtags:forEach select="warning">
 						<tr>
@@ -129,7 +126,7 @@
 			<contentTable width="100%">
 				<tbody>
 					<xtags:variable id="adapterState" select="@state"/>
-					<tr><subHeader colspan="7"><h1><xtags:valueOf select="@name"/><xtags:if test="@description!=''"> (<xtags:valueOf select="@description"/>)</xtags:if></h1></subHeader></tr>
+					<tr><subHeader colspan="7"><h1 style="color:white"><xtags:valueOf select="@name"/><xtags:if test="@description!=''"> (<xtags:valueOf select="@description"/>)</xtags:if></h1></subHeader></tr>
 					<tr>
 						<subHeader>State</subHeader>
 						<subHeader>Configured</subHeader>
@@ -426,10 +423,17 @@
 										</xtags:otherwise>
 									</xtags:choose>
 								</td>
-								<% if (first) { %>
-									<td rowspan="<%= nrOfAdapterMessages %>" width="200">
-										<%-- https://code.google.com/p/chromium/issues/detail?id=423749 --%>
-										<% if (!request.getHeader("User-Agent").contains("MSIE 8.0") && !request.getHeader("User-Agent").contains("Chrome")) { %>
+								<% if (first) {
+									boolean active = true;
+									// https://code.google.com/p/chromium/issues/detail?id=423749
+									if (request.getHeader("User-Agent").contains("MSIE 8.0")
+											|| request.getHeader("User-Agent").contains("Chrome")) {
+										active = false;
+									}
+								
+								%>
+									<td rowspan="<%= nrOfAdapterMessages %>" width="200"<% if (active) { %> bgcolor="white"<% } %>>
+										<% if (active) { %>
 											<a href="images/flow/<%=FileUtils.encodeFileName(adapterName)%>.svg" newwindow="true">
 												<img src="images/flow/<%=java.net.URLEncoder.encode(adapterName)%>.svg" title="<%=adapterName%>" width="200" height="200"/>
 											</a>
