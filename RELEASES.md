@@ -107,6 +107,7 @@ Upcoming
 - Prevent "Premature end of file" in System.err on isWellFormed check
 - Print adapter description on show configuration status page
 - Improve HelloWorld(s) adapter
+- Improve javadoc for soap attribute of WebServiceListener
 
 
 

@@ -43,7 +43,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrlParam(String) urlParam}</td><td>parameter that is used to obtain url; overrides url-attribute.</td><td>url</td></tr>
  * <tr><td>{@link #setContentType(String) contentType}</td><td>content-type of the request, only for POST methods</td><td>text/xml; charset=UTF-8</td></tr>
- * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope and the SOAP envelope is removed from received messages</td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope and the SOAP envelope is removed from received messages (SOAP envelope will not be visible to the pipeline)</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>the SOAPActionUri to be set in the requestheader</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapActionURI(String) soapActionURI}</td><td>deprecated: Please use soapAction instead</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapActionParam(String) soapActionParam}</td><td>parameter to obtain the SOAPActionUri</td><td>&nbsp;</td></tr>
