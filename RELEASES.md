@@ -108,7 +108,7 @@ Upcoming
 - Print adapter description on show configuration status page
 - Improve HelloWorld(s) adapter
 - Improve javadoc for soap attribute of WebServiceListener
-
+- Bugfix losing message when OutOfMemoryError during resend message from ErrorLog
 
 
 5.6.1
