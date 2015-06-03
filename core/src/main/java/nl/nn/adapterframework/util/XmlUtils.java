@@ -1460,6 +1460,9 @@ public class XmlUtils {
 	}
 	
 	public static Map getIbisContext(String input) {
+		if (input.startsWith("<") && !input.startsWith("<?") && !input.startsWith("<!")) {
+			return null;
+		}
 		if (isWellFormed(input)) {
 			String getIbisContext_xslt = XmlUtils.makeGetIbisContextXslt();
 			try {
