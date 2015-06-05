@@ -220,7 +220,7 @@
 							<xtags:variable id="hasMessageLog" select="@hasMessageLog"/>
 							<xtags:variable id="isRestListener" select="@isRestListener"/>
 							<xtags:variable id="restUriPattern" select="@restUriPattern"/>
-							<xtags:variable id="restMethod" select="@restMethod"/>
+							<xtags:variable id="isView" select="@isView"/>
 							<xtags:variable id="isEsbJmsFFListener" select="@isEsbJmsFFListener"/>
 							<tr>
 								<td class="receiverRow">
@@ -294,7 +294,7 @@
 											<parameter name="adapterName"><%=java.net.URLEncoder.encode(adapterName)%></parameter>
 											<parameter name="receiverName"><%=java.net.URLEncoder.encode(receiverName)%></parameter>
 										 </imagelink>
-									<% } if ( "true".equalsIgnoreCase(isRestListener) && "GET".equalsIgnoreCase(restMethod) ) { %>
+									<% } if ( "true".equalsIgnoreCase(isRestListener) && "true".equalsIgnoreCase(isView) ) { %>
 										<imagelink
 											href="<%=restUriPattern%>"
 											type="showashtml"

@@ -243,7 +243,7 @@ public class IbisSoapServlet extends HttpServlet {
 					IListener listener = rb.getListener();
 					if (listener instanceof RestListener) {
 						RestListener rl = (RestListener) listener;
-						if (rl.getMethod().equalsIgnoreCase("GET")) {
+						if (rl.isView()) {
 				        	count++;
 				            w.write("<li>");
 			                w.write("<a href=../" + rl.getRestUriPattern() + ">" + rb.getName() + "</a>");

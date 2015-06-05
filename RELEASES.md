@@ -110,6 +110,7 @@ Upcoming
 - Improve javadoc for soap attribute of WebServiceListener
 - Bugfix losing message when OutOfMemoryError during resend message from ErrorLog
 - Add functionality to easily create IBIS specific views
+- Add view attribute to RestListener (to put a link in the IBIS console)
 
 
 5.6.1
