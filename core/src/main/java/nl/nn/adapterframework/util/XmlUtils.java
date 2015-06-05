@@ -73,6 +73,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import org.dom4j.tree.DefaultDocument;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -121,6 +122,8 @@ public class XmlUtils {
 			+ "<xsl:template match=\"@*|*|processing-instruction()|comment()\">"
 			+ "<xsl:copy><xsl:apply-templates select=\"*|@*|text()|processing-instruction()|comment()\" />"
 			+ "</xsl:copy></xsl:template></xsl:stylesheet>";
+
+	private static final String ADAPTERSITE_XSLT = "/xml/xsl/web/adapterSite.xsl";
 
 	public static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
 	public static final XMLInputFactory INPUT_FACTORY   = XMLInputFactory.newInstance();
@@ -1600,4 +1603,26 @@ public class XmlUtils {
 		return true;
 	}
 
+	public static String getAdapterSite(Object document)
+			throws DomBuilderException, IOException, TransformerException {
+		String input;
+		if (document instanceof DefaultDocument) {
+			DefaultDocument defaultDocument = (DefaultDocument) document;
+			input = defaultDocument.asXML();
+		} else {
+			input = document.toString();
+		}
+		return getAdapterSite(input, null);
+	}
+
+	public static String getAdapterSite(String input, Map parameters)
+			throws IOException, DomBuilderException, TransformerException {
+		URL xsltSource = ClassUtils.getResourceURL(XmlUtils.class,
+				ADAPTERSITE_XSLT);
+		Transformer transformer = XmlUtils.createTransformer(xsltSource);
+		if (parameters != null) {
+			XmlUtils.setTransformerParameters(transformer, parameters);
+		}
+		return XmlUtils.transformXml(transformer, input);
+	}
 }

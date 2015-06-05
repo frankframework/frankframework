@@ -113,7 +113,7 @@ public class RestListenerServlet extends HttpServlet {
 		}
 		try {
 			log.debug("RestListenerServlet calling service ["+path+"]");
-			String result=sd.dispatchRequest(restPath, path, request.getMethod(), etag, contentType, body, messageContext, response);
+			String result=sd.dispatchRequest(restPath, path, request, etag, contentType, body, messageContext, response, getServletContext());
 			if (StringUtils.isEmpty(result)) {
 				log.debug("RestListenerServlet finished with result set in pipeline");
 			} else {

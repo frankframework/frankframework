@@ -175,7 +175,7 @@
 	</abstractPage>  
 
 	</xtags:parse>
-	<xtags:style xsl="/xml/adapterSite.xsl" document="<%=doc1%>"/>
+	<%=XmlUtils.getAdapterSite(doc1)%>
 <%
 	} 
 %>

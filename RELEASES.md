@@ -109,6 +109,7 @@ Upcoming
 - Improve HelloWorld(s) adapter
 - Improve javadoc for soap attribute of WebServiceListener
 - Bugfix losing message when OutOfMemoryError during resend message from ErrorLog
+- Add functionality to easily create IBIS specific views
 
 
 5.6.1

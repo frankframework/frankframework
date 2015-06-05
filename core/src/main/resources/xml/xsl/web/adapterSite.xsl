@@ -14,19 +14,33 @@
 <xsl:include href="tableStyler.xsl"/>
 <xsl:include href="blockStyler.xsl"/>
 
-
+	<xsl:param name="requestInfo" select="//requestInfo"/>
+	<xsl:param name="machineName" select="//machineName"/>
+	<xsl:param name="fileSystem" select="//fileSystem"/>
+	<xsl:param name="applicationConstants" select="//applicationConstants"/>
+	<xsl:param name="processMetrics" select="//processMetrics"/>
+	<xsl:param name="menuBar" select="//menuBar"/>
+	<xsl:param name="srcPrefix" select="''"/>
 
 	<xsl:template match="page">
 		<html>
 		<head>
-			<link rel="shortcut icon" href="favicon.ico"></link>
-			<link href="ie4.css" type="text/css" rel="stylesheet"></link>
-			<link href="body.css" type="text/css" rel="stylesheet"></link>
-			<SCRIPT LANGUAGE="JavaScript" SRC="./js/functions.js"></SCRIPT>
-			<title><xsl:value-of select="//applicationConstants/properties/property[@name='instance.name']"/>@<xsl:value-of select="//requestInfo/servletRequest/serverName"/><xsl:if test="//requestInfo/servletRequest/serverName!=//machineName">(<xsl:value-of select="//machineName"/>)</xsl:if>:<xsl:value-of select="@title"/></title>
+			<link rel="shortcut icon">
+				<xsl:attribute name="href"><xsl:value-of select="concat($srcPrefix,'favicon.ico')"/></xsl:attribute>
+			</link>
+			<link type="text/css" rel="stylesheet">
+				<xsl:attribute name="href"><xsl:value-of select="concat($srcPrefix,'ie4.css')"/></xsl:attribute>
+			</link>
+			<link type="text/css" rel="stylesheet">
+				<xsl:attribute name="href"><xsl:value-of select="concat($srcPrefix,'body.css')"/></xsl:attribute>
+			</link>
+			<SCRIPT LANGUAGE="JavaScript">
+				<xsl:attribute name="SRC"><xsl:value-of select="concat($srcPrefix,'./js/functions.js')"/></xsl:attribute>
+			</SCRIPT>
+			<title><xsl:value-of select="$applicationConstants/properties/property[@name='instance.name']"/>@<xsl:value-of select="$requestInfo/servletRequest/serverName"/><xsl:if test="$requestInfo/servletRequest/serverName!=$machineName">(<xsl:value-of select="$machineName"/>)</xsl:if>:<xsl:value-of select="@title"/></title>
 			<script type="text/javascript">
 				var serverDate = new Date();
-				var sd = "<xsl:value-of select="//processMetrics/properties/property[@name='currentTime']"/>";
+				var sd = "<xsl:value-of select="$processMetrics/properties/property[@name='currentTime']"/>";
 				serverDate.setFullYear(sd.substring(0,4));
 				serverDate.setMonth(sd.substring(5,7)-1);
 				serverDate.setDate(sd.substring(8,10));
@@ -81,13 +95,13 @@
 		<body onload="runClock()">
 			<xsl:attribute name="class">
 				<xsl:variable name="stubConfig">
-					<xsl:value-of select="//applicationConstants/properties/property[@name='stub4testtool.configuration']"/>
+					<xsl:value-of select="$applicationConstants/properties/property[@name='stub4testtool.configuration']"/>
 				</xsl:variable>
 				<xsl:variable name="otapStage">
-					<xsl:value-of select="//applicationConstants/properties/property[@name='otap.stage']"/>
+					<xsl:value-of select="$applicationConstants/properties/property[@name='otap.stage']"/>
 				</xsl:variable>
 				<xsl:variable name="otapSide">
-					<xsl:value-of select="//applicationConstants/properties/property[@name='otap.side']"/>
+					<xsl:value-of select="$applicationConstants/properties/property[@name='otap.side']"/>
 				</xsl:variable>
 				<xsl:choose>
 					<xsl:when test="$stubConfig='true'">stub</xsl:when>
@@ -123,7 +137,7 @@
 			</xsl:attribute>
 			<table width="100%" class="page" >
 			<tr><td colspan="3" height="50">
-				<xsl:apply-templates select="//menuBar"/>
+				<xsl:apply-templates select="$menuBar"/>
 			</td></tr>
 			<tr><td width="10px"></td>
 			<td>
@@ -158,29 +172,29 @@
 				<h1>Information</h1>
 				<p>
 					<div>
-						<xsl:value-of select="//applicationConstants/properties/property[@name='application.name']"/><xsl:value-of select="' '"/>
-						<xsl:value-of select="//applicationConstants/properties/property[@name='application.version']"/>:<xsl:value-of select="' '"/>
-						<xsl:value-of select="//applicationConstants/properties/property[@name='instance.name']"/><xsl:value-of select="' '"/>
-						<xsl:variable name="release" select="//applicationConstants/properties/property[@name='instance.release']"/>
+						<xsl:value-of select="$applicationConstants/properties/property[@name='application.name']"/><xsl:value-of select="' '"/>
+						<xsl:value-of select="$applicationConstants/properties/property[@name='application.version']"/>:<xsl:value-of select="' '"/>
+						<xsl:value-of select="$applicationConstants/properties/property[@name='instance.name']"/><xsl:value-of select="' '"/>
+						<xsl:variable name="release" select="$applicationConstants/properties/property[@name='instance.release']"/>
 						<xsl:if test="string-length($release)&gt;0">
 							<xsl:value-of select="$release"/><xsl:value-of select="' '"/>
 						</xsl:if>
-						<xsl:value-of select="//applicationConstants/properties/property[@name='instance.version']"/><xsl:value-of select="' '"/>
-						<xsl:value-of select="//applicationConstants/properties/property[@name='instance.build_id']"/><xsl:value-of select="', '"/>
-						buildscript <xsl:value-of select="//applicationConstants/properties/property[@name='build.xml.version']"/><xsl:value-of select="', '"/>
-						size: <xsl:value-of select="//applicationConstants/properties/property[@name='instance.size']"/>
+						<xsl:value-of select="$applicationConstants/properties/property[@name='instance.version']"/><xsl:value-of select="' '"/>
+						<xsl:value-of select="$applicationConstants/properties/property[@name='instance.build_id']"/><xsl:value-of select="', '"/>
+						buildscript <xsl:value-of select="$applicationConstants/properties/property[@name='build.xml.version']"/><xsl:value-of select="', '"/>
+						size: <xsl:value-of select="$applicationConstants/properties/property[@name='instance.size']"/>
 					</div>
 					<div>
-						running on <xsl:value-of select="//machineName"/> using <xsl:value-of select="//requestInfo/servletRequest/serverInfo"/>
+						running on <xsl:value-of select="$machineName"/> using <xsl:value-of select="$requestInfo/servletRequest/serverInfo"/>
 					</div>
 					<div>
-						heap size: <xsl:value-of select="//processMetrics/properties/property[@name='heapSize']"/>,
-						total JVM memory: <xsl:value-of select="//processMetrics/properties/property[@name='totalMemory']"/>
+						heap size: <xsl:value-of select="$processMetrics/properties/property[@name='heapSize']"/>,
+						total JVM memory: <xsl:value-of select="$processMetrics/properties/property[@name='totalMemory']"/>
 					</div>
-					<xsl:if test="//fileSystem/totalSpace!='null'">
+					<xsl:if test="$fileSystem/totalSpace!='null'">
 						<div>
-							free space: <xsl:value-of select="//fileSystem/freeSpace"/>,
-							total space: <xsl:value-of select="//fileSystem/totalSpace"/>
+							free space: <xsl:value-of select="$fileSystem/freeSpace"/>,
+							total space: <xsl:value-of select="$fileSystem/totalSpace"/>
 						</div>
 					</xsl:if>
 					<div id="clock"/>
@@ -189,7 +203,9 @@
 					<table valign="center">
 						<tr>
 							<td>
-								<img src="bootstrap/img/github.png" alt="GitHub"/>
+								<img alt="GitHub">
+									<xsl:attribute name="src"><xsl:value-of select="concat($srcPrefix,'./bootstrap/img/github.png')"/></xsl:attribute>
+								</img>
 							</td>
 							<td>
 								<a href="https://github.com/ibissource/iaf">https://github.com/ibissource/iaf</a>
@@ -202,7 +218,9 @@
 						<tr>
 							<td>
 								<a href="http://www.integrationpartners.nl/ibis-adapter-framework/handleiding-iaf-beheerconsole">
-									<img src="images/help.gif" alt="Help"/>
+									<img alt="Help">
+										<xsl:attribute name="src"><xsl:value-of select="concat($srcPrefix,'./images/help.gif')"/></xsl:attribute>
+									</img>
 								</a>
 							</td>
 							<td align="right">
@@ -463,7 +481,7 @@
 		<xsl:choose>
 			<xsl:when test="$src!=''">
 				<xsl:element name="img">
-					<xsl:attribute name="src"><xsl:value-of select="$src"/></xsl:attribute>
+					<xsl:attribute name="src"><xsl:value-of select="concat($srcPrefix,$src)"/></xsl:attribute>
 					<xsl:attribute name="align">middle</xsl:attribute>
 					<xsl:attribute name="hspace">2</xsl:attribute>
 					<xsl:attribute name="vspace">2</xsl:attribute>
