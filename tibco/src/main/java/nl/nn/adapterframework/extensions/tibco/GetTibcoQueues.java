@@ -22,6 +22,8 @@ import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 
 import javax.jms.Connection;
@@ -52,6 +54,8 @@ import org.apache.commons.lang.StringUtils;
 
 import com.tibco.tibjms.admin.ACLEntry;
 import com.tibco.tibjms.admin.BridgeTarget;
+import com.tibco.tibjms.admin.ConnectionInfo;
+import com.tibco.tibjms.admin.ConsumerInfo;
 import com.tibco.tibjms.admin.QueueInfo;
 import com.tibco.tibjms.admin.ServerInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;
@@ -153,17 +157,43 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		TibjmsAdmin admin = null;
 		try {
 			String[] uws = url_work.split(",");
+			String uw = null;
 			boolean uws_ok = false;
 			for (int i = 0; !uws_ok && i < uws.length; i++) {
-				admin = new TibjmsAdmin(uws[i].trim(), cf.getUsername(),
-						cf.getPassword());
-				if (admin.getInfo().getState() == ServerInfo.SERVER_ACTIVE) {
-					uws_ok = true;
+				uw = uws[i].trim();
+				try {
+					admin = new TibjmsAdmin(uw, cf.getUsername(),
+							cf.getPassword());
+				} catch (Exception e) {
+					log.warn(getLogPrefix(session)
+							+ "exception on starting Tibjms Admin on server ["
+							+ uw + "]", e);
+					admin = null;
+				}
+				if (admin != null) {
+					if (admin.getInfo().getState() == ServerInfo.SERVER_ACTIVE) {
+						uws_ok = true;
+					} else {
+						log.debug(getLogPrefix(session) + "server [" + uw
+								+ "] is not active, state ["
+								+ admin.getInfo().getState() + "]");
+						try {
+							admin.close();
+						} catch (TibjmsAdminException e) {
+							log.warn(
+									getLogPrefix(session)
+											+ "exception on closing Tibjms Admin on server ["
+											+ uw + "]", e);
+						}
+					}
 				}
 			}
 			if (!uws_ok) {
 				throw new PipeRunException(this,
 						"could not find an active server");
+			} else {
+				log.debug(getLogPrefix(session) + "found active server [" + uw
+						+ "]");
 			}
 
 			queueName_work = getParameterValue(pvl, "queueName");
@@ -269,6 +299,24 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 						qTimestamp.setCdataValue(DateUtils.format(
 								msg.getJMSTimestamp(), DateUtils.fullIsoFormat));
 						qMessageXml.addSubElement(qTimestamp);
+
+						StringBuffer sb = new StringBuffer("");
+						Enumeration propertyNames = msg.getPropertyNames();
+						while (propertyNames.hasMoreElements()) {
+							String propertyName = (String) propertyNames
+									.nextElement();
+							Object object = msg.getObjectProperty(propertyName);
+							if (sb.length() > 0) {
+								sb.append("; ");
+							}
+							sb.append(propertyName);
+							sb.append("=");
+							sb.append(object);
+						}
+						XmlBuilder qPropsXml = new XmlBuilder("qProps");
+						qPropsXml.setCdataValue(sb.toString());
+
+						qMessageXml.addSubElement(qPropsXml);
 						XmlBuilder qTextXml = new XmlBuilder("qText");
 						String msgText;
 						try {
@@ -321,6 +369,18 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		qInfoXml.addSubElement(aclXml);
 		qMessageXml.addSubElement(qInfoXml);
 
+		Map consumersMap = getConnectedConsumersMap(admin);
+		XmlBuilder consumerXml = new XmlBuilder("connectedConsumers");
+		if (consumersMap.containsKey(qInfo.getName())) {
+			LinkedList<String> consumers = (LinkedList<String>) consumersMap
+					.get(qInfo.getName());
+			String consumersString = listToString(consumers);
+			if (consumersString != null) {
+				consumerXml.setCdataValue(consumersString);
+			}
+		}
+		qInfoXml.addSubElement(consumerXml);
+
 		return qMessageXml.toXML();
 	}
 
@@ -348,6 +408,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				DateUtils.format(serverInfo.getStartTime(), DateUtils.fullIsoFormat));
 
 		Map aclMap = getAclMap(admin);
+		Map consumersMap = getConnectedConsumersMap(admin);
 		QueueInfo[] qInfos = admin.getQueues();
 		for (int i = 0; i < qInfos.length; i++) {
 			QueueInfo qInfo = qInfos[i];
@@ -359,6 +420,16 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				XmlBuilder aclXml = new XmlBuilder("acl");
 				aclXml.setValue((String) aclMap.get(qInfo.getName()));
 				qInfoXml.addSubElement(aclXml);
+				XmlBuilder consumerXml = new XmlBuilder("connectedConsumers");
+				if (consumersMap.containsKey(qInfo.getName())) {
+					LinkedList<String> consumers = (LinkedList<String>) consumersMap
+							.get(qInfo.getName());
+					String consumersString = listToString(consumers);
+					if (consumersString != null) {
+						consumerXml.setCdataValue(consumersString);
+					}
+				}
+				qInfoXml.addSubElement(consumerXml);
 				if (showAge) {
 					if (qInfo.getReceiverCount() == 0
 							&& qInfo.getPendingMessageCount() > 0) {
@@ -456,6 +527,20 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return qInfoXml;
 	}
 
+	private String listToString(LinkedList list) {
+		String string = null;
+		if (list != null) {
+			for (Iterator<String> it = list.iterator(); it.hasNext();) {
+				if (string == null) {
+					string = (String) it.next();
+				} else {
+					string = string + "; " + it.next();
+				}
+			}
+		}
+		return string;
+	}
+	
 	private Map getAclMap(TibjmsAdmin admin) throws TibjmsAdminException {
 		Map userMap = new HashMap();
 		Map aclMap = new HashMap();
@@ -515,6 +600,45 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			return null;
 		}
 		return inetAddress.getCanonicalHostName();
+	}
+
+	private Map getConnectedConsumersMap(TibjmsAdmin admin)
+			throws TibjmsAdminException {
+		Map connectionMap = new HashMap();
+		ConnectionInfo[] connectionInfos = admin.getConnections();
+		for (int i = 0; i < connectionInfos.length; i++) {
+			ConnectionInfo connectionInfo = connectionInfos[i];
+			long id = connectionInfo.getID();
+			String clientId = connectionInfo.getClientID();
+			if (StringUtils.isNotEmpty(clientId)) {
+				connectionMap.put(id, clientId);
+			}
+		}
+
+		Map consumerMap = new HashMap();
+		ConsumerInfo[] consumerInfos = admin.getConsumers();
+		for (int i = 0; i < consumerInfos.length; i++) {
+			ConsumerInfo consumerInfo = consumerInfos[i];
+			String destinationName = consumerInfo.getDestinationName();
+			long connectionId = consumerInfo.getConnectionID();
+			if (connectionMap.containsKey(connectionId)) {
+				String ci = (String) connectionMap.get(connectionId);
+				if (consumerMap.containsKey(destinationName)) {
+					LinkedList consumers = (LinkedList) consumerMap
+							.get(destinationName);
+					if (!consumers.contains(ci)) {
+						consumers.add(ci);
+						consumerMap.remove(consumers);
+						consumerMap.put(destinationName, consumers);
+					}
+				} else {
+					LinkedList consumers = new LinkedList();
+					consumers.add(ci);
+					consumerMap.put(destinationName, consumers);
+				}
+			}
+		}
+		return consumerMap;
 	}
 	
 	public String getUrl() {
