@@ -37,6 +37,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
@@ -78,7 +79,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @version $Id$
  */
 
-public class SendTibcoMessage extends FixedForwardPipe {
+public class SendTibcoMessage extends TimeoutGuardPipe {
 	private final static String REQUEST_REPLY = "RR";
 	private final static String FIRE_AND_FORGET = "FF";
 
@@ -90,7 +91,7 @@ public class SendTibcoMessage extends FixedForwardPipe {
 	private String messageProtocol;
 	private int replyTimeout = 5000;
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
+	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session)
 			throws PipeRunException {
 		Connection connection = null;
 		Session jSession = null;
@@ -254,7 +255,7 @@ public class SendTibcoMessage extends FixedForwardPipe {
 				}
 			}
 		}
-		return new PipeRunResult(getForward(), result);
+		return result;
 	}
 
 	private String getParameterValue(ParameterValueList pvl,
