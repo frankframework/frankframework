@@ -180,6 +180,7 @@ Upcoming
 - Introduction of XmlFileElementIteratorPipe; streamed processing of (very large) xml files
 - Better integration of Maven and Eclipse (using Kepler SR2).
 - added "Transaction Service" to console function "Show Security Items", and added configuration warning "receiver/pipeline transaction timeout exceeds system transaction timeout"
+- Improve Larva txt diff performance (especially for large messages)
 
 
 

@@ -12,7 +12,7 @@ function saveResults(formName, cmd) {
 		confirmed = confirm(msg);
 	}
 	if (confirmed) {
-		window.open("saveResultToFile.jsp", "saveResultWindow", 'width=200,height=200,left=400,top=400');
+		window.open("saveResultToFile.jsp?init=true&cmd=" + cmd, "saveResultWindow", 'width=200,height=200,left=400,top=400');
 		document.forms[formName].target = "saveResultWindow";
 		document.forms[formName]["cmd"].value = cmd
 		document.forms[formName].submit();

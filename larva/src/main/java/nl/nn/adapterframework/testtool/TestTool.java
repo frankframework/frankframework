@@ -583,8 +583,8 @@ public class TestTool {
 		String diffBoxId = formName + "DiffBox";
 
 		writeLog("<div class='error container'>", method, writers, false);
-		writeLog("<form name='"+formName+"' action='saveResultToFile.jsp' method='post' accept-charset='UTF-8'>", method, writers, false);
-		writeLog("<input name=\"iehack\" type=\"hidden\" value=\"&#9760;\" />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
+		writeLog("<form name='"+formName+"' action='saveResultToFile.jsp' method='post' target='saveResultWindow' accept-charset='UTF-8'>", method, writers, false);
+		writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
 		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
 		
 		writeLog("<hr/>", method, writers, false);
@@ -597,8 +597,8 @@ public class TestTool {
 
 		writeLog("<div class='expectedContainer'>", method, writers, false);
 		writeLog(writeCommands(expectedBoxId, true, null), method, writers, true);
-		writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' >", method, writers, false);
-		writeLog("<input type='hidden' name='cmd'>", method, writers, false);
+		writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' />", method, writers, false);
+		writeLog("<input type='hidden' name='cmd' />", method, writers, false);
 		writeLog("<h5>Expected (raw):</h5>", method, writers, false);
 		writeLog("<textarea name='expectedBox' id='"+expectedBoxId+"'>" + XmlUtils.encodeChars(pipelineMessageExpected) + "</textarea>", method, writers, false);
 		writeLog("</div>", method, writers, false);
@@ -632,8 +632,8 @@ public class TestTool {
 		String diffBoxId = formName + "DiffBox";
 
 		writeLog("<div class='error container'>", method, writers, false);
-		writeLog("<form name='"+formName+"' action='saveResultToFile.jsp' method='post' accept-charset='UTF-8'>", method, writers, false);
-		writeLog("<input name=\"iehack\" type=\"hidden\" value=\"&#9760;\" />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
+		writeLog("<form name='"+formName+"' action='saveResultToFile.jsp' method='post' target='saveResultWindow' accept-charset='UTF-8'>", method, writers, false);
+		writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
 		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
 		messageCounter ++;
 		
@@ -648,8 +648,8 @@ public class TestTool {
 		messageCounter++;
 		writeLog("<div class='expectedContainer'>", method, writers, false);
 		writeLog(writeCommands(expectedBoxId, true, null), method, writers, false);
-		writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' >", method, writers, false);
-		writeLog("<input type='hidden' name='cmd'>", method, writers, false);
+		writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' />", method, writers, false);
+		writeLog("<input type='hidden' name='cmd' />", method, writers, false);
 		writeLog("<h5>Expected (prepared for diff):</h5>", method, writers, false);
 		writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlUtils.encodeChars(pipelineMessageExpectedPreparedForDiff) + "</textarea>", method, writers, false);
 		writeLog("</div>", method, writers, false);
@@ -3026,8 +3026,8 @@ public class TestTool {
 			} else {
 				debugMessage("Strings are not identical", writers);
 				String message = null;
-				String diffActual = "";
-				String diffExcpected = "";
+				StringBuilder diffActual = new StringBuilder();
+				StringBuilder diffExcpected = new StringBuilder();
 				int j = formattedPreparedActualResult.length();
 				if (formattedPreparedExpectedResult.length() > i) {
 					j = formattedPreparedExpectedResult.length();
@@ -3039,12 +3039,20 @@ public class TestTool {
 							message = "Starting at char " + (i + 1);
 						}
 						if (i < formattedPreparedActualResult.length()) {
-							diffActual = diffActual + formattedPreparedActualResult.charAt(i);
+							diffActual.append(formattedPreparedActualResult.charAt(i));
 						}
 						if (i < formattedPreparedExpectedResult.length()) {
-							diffExcpected = diffExcpected + formattedPreparedExpectedResult.charAt(i);
+							diffExcpected.append(formattedPreparedExpectedResult.charAt(i));
 						}
 					}
+				}
+				if (diffActual.length() > 250) {
+					diffActual.delete(250, diffActual.length() - 250);
+					diffActual.append(" ...");
+				}
+				if (diffExcpected.length() > 250) {
+					diffExcpected.delete(250, diffExcpected.length() - 250);
+					diffExcpected.append(" ...");
 				}
 				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
 				wrongPipelineMessage(stepDisplayName, message, printableActualResult, printableExpectedResult, writers);
