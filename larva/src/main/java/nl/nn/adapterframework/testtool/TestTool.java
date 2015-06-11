@@ -1812,9 +1812,13 @@ public class TestTool {
 				queues = null;
 				errorMessage("Could not find filename property for " + queueName, writers);
 			} else {
-				String filenameAbsolutePath = (String)properties.get(queueName + ".filename.absolutepath");
+				Boolean fromClasspath = new Boolean((String)properties.get(queueName + ".fromClasspath"));
+				if (!fromClasspath) {
+					filename = (String)properties.get(queueName + ".filename.absolutepath");
+				}
 				XsltProviderListener xsltProviderListener = new XsltProviderListener();
-				xsltProviderListener.setFilename(filenameAbsolutePath);
+				xsltProviderListener.setFromClasspath(fromClasspath);
+				xsltProviderListener.setFilename(filename);
 				String xslt2String = (String)properties.get(queueName + ".xslt2");
 				if (xslt2String != null) {
 					try {

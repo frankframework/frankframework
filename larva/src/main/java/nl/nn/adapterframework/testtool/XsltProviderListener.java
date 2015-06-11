@@ -9,6 +9,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -20,17 +21,22 @@ import nl.nn.adapterframework.util.TransformerPool;
  */
 public class XsltProviderListener {
 	String filename;
+	boolean fromClasspath = false;
 	boolean xslt2 = false;
 	boolean namespaceAware = true;
 	TransformerPool transformerPool = null;
 	String result;
 
 	public void init() throws ListenerException {
-		File file = new File(filename);
-		StreamSource streamSource = new StreamSource(file);
 		try {
-			transformerPool = new TransformerPool(streamSource, xslt2);
-		} catch (TransformerConfigurationException e) {
+			if (fromClasspath) {
+				transformerPool = new TransformerPool(ClassUtils.getResourceURL(filename), xslt2);
+			} else {
+				File file = new File(filename);
+				StreamSource streamSource = new StreamSource(file);
+				transformerPool = new TransformerPool(streamSource, xslt2);
+			}
+		} catch (Exception e) {
 			throw new ListenerException("Exception creating transformer pool for file '" + filename + "': " + e.getMessage(), e);
 		}
 	}
@@ -55,6 +61,10 @@ public class XsltProviderListener {
 
 	public void setFilename(String filename) {
 		this.filename = filename;
+	}
+
+	public void setFromClasspath(boolean fromClasspath) {
+		this.fromClasspath = fromClasspath;
 	}
 
 	public void setXslt2(boolean xslt2) {
