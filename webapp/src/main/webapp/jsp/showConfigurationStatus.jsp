@@ -14,12 +14,15 @@
 	<contentTable width="100%">
 		<tbody>
 			<tr>
+				<subHeader colspan="10" align="center"><h7>Summary</h7></subHeader>
+			</tr>
+			<tr>
 				<subHeader>State</subHeader>
-				<subHeader align="center"><img src="images/connected.gif" title="started"/></subHeader>
-				<subHeader align="center"><img src="images/connecting.gif" title="starting"/></subHeader>
-				<subHeader align="center"><img src="images/disconnected.gif" title="stopped"/></subHeader>
-				<subHeader align="center"><img src="images/disconnecting.gif" title="stopping"/></subHeader>
-				<subHeader align="center"><img src="images/error.gif" title="error"/></subHeader>
+				<subHeader align="center"><image type="started" title="started"/></subHeader>
+				<subHeader align="center"><image type="starting" title="starting"/></subHeader>
+				<subHeader align="center"><image type="stopped" title="stopped"/></subHeader>
+				<subHeader align="center"><image type="stopping" title="stopping"/></subHeader>
+				<subHeader align="center"><image type="error" title="error"/></subHeader>
 				<subHeader align="center">INFO messages</subHeader>
 				<subHeader align="center">WARN messages</subHeader>
 				<subHeader align="center">ERROR messages</subHeader>
@@ -99,7 +102,7 @@
 			<contentTable width="100%">
 				<tbody>
 					<tr>
-						<subHeader><h1 style="color:black">Warnings</h1></subHeader>
+						<subHeader align="center"><h7>Warnings</h7></subHeader>
 					</tr>
 					<xtags:forEach select="warning">
 						<tr>
@@ -126,7 +129,7 @@
 			<contentTable width="100%">
 				<tbody>
 					<xtags:variable id="adapterState" select="@state"/>
-					<tr><subHeader colspan="7"><h1 style="color:white"><xtags:valueOf select="@name"/><xtags:if test="@description!=''"> (<xtags:valueOf select="@description"/>)</xtags:if></h1></subHeader></tr>
+					<tr><subHeader colspan="7"><h8><xtags:valueOf select="@name"/><xtags:if test="@description!=''"> (<xtags:valueOf select="@description"/>)</xtags:if></h8></subHeader></tr>
 					<tr>
 						<subHeader>State</subHeader>
 						<subHeader>Configured</subHeader>
@@ -139,16 +142,16 @@
 
 					<tr ref="adapterRow">
 						<td>
-							<%    if (RunStateEnum.STOPPED.isState(adapterState)) { %>
-								<img src="images/disconnected.gif" title="stopped"/>
+							<%   if (RunStateEnum.STOPPED.isState(adapterState)) { %>
+								<image type="stopped" title="stopped"/>
 							<% } if (RunStateEnum.STARTED.isState(adapterState)) { %>
-								<img src="images/connected.gif" title="started"/>
+								<image type="started" title="started"/>
 							<% } if (RunStateEnum.ERROR.isState(adapterState)) { %>
-								<img src="images/error.gif" title="error"/>
+								<image type="error" title="error"/>
 							<% } if (RunStateEnum.STOPPING.isState(adapterState)) { %>
-								<img src="images/disconnecting.gif" title="stopping"/>
+								<image type="stopping" title="stopping"/>
 							<% } if (RunStateEnum.STARTING.isState(adapterState)) { %>
-								<img src="images/connecting.gif" title="starting"/>
+								<image type="starting" title="starting"/>
 							<%}%>
 						</td>
 						<td><booleanImage value="<xtags:valueOf select="@configured"/>"/></td>
@@ -225,15 +228,15 @@
 							<tr>
 								<td class="receiverRow">
 							<%   if (RunStateEnum.STOPPED.isState(receiverState) ){ %>
-								<img src="images/disconnected.gif" title="stopped"/>
+								<image type="stopped" title="stopped"/>
 							<% } if (RunStateEnum.STARTED.isState(receiverState) ){ %>
-								<img src="images/connected.gif" title="started"/>
+								<image type="started" title="started"/>
 							<% } if (RunStateEnum.ERROR.isState(receiverState) ){ %>
-								<img src="images/error.gif" title="error"/>
+								<image type="error" title="error"/>
 							<% } if (RunStateEnum.STOPPING.isState(receiverState) ){ %>
-								<img src="images/disconnecting.gif" title="stopping"/>
+								<image type="stopping" title="stopping"/>
 							<% } if (RunStateEnum.STARTING.isState(receiverState) ){ %>
-								<img src="images/connecting.gif" title="starting"/>
+								<image type="starting" title="starting"/>
 							<%}%>
 								</td>
 								<td colspan="2" class="receiverRow">
@@ -456,7 +459,7 @@
 		<contentTable width="100%">
 			<tbody>
 				<tr>
-					<subHeader colspan="12"><h1>Adapter references</h1></subHeader>
+					<subHeader colspan="12" align="center"><h7>Adapter references</h7></subHeader>
 				</tr>
 				<tr>
 					<td colspan="12">

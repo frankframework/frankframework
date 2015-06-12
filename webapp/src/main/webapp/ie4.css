@@ -139,6 +139,14 @@ H5 {
 H6 {
 	MARGIN-BOTTOM: 0.5em; FONT: bold 100% tahoma,verdana,arial,helvetica
 }
+H7 {
+	color: #b4e2ff;
+	MARGIN: 0px 0px 0px; FONT: bold 125% tahoma,verdana,arial,helvetica
+}
+H8 {
+	color: #b4e2ff;
+	MARGIN: 0px 0px 0px; FONT: bold 125% tahoma,verdana,arial,helvetica; FONT-STYLE:italic
+}
 TABLE.clsInfoHeader {
 	FONT-FAMILY: tahoma,verdana,arial,helvetica,sans-serif;
 	COLOR: black;

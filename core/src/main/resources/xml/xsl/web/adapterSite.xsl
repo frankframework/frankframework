@@ -356,10 +356,16 @@
 	<xsl:template match="booleanImage">
 		<xsl:choose>
 		<xsl:when test="@value='true' or @value='True'">
-			<img src="images/check.gif" border="0"/>	
+			<xsl:call-template name="iconImage"> 
+				<xsl:with-param name="src" select="'images/check.gif'"/>
+				<xsl:with-param name="title" select="'true'"/>
+			</xsl:call-template>
 		</xsl:when>
 		<xsl:when test="@value='false' or @value='False'">
-			<img src="images/no.gif" border="0"/>	
+			<xsl:call-template name="iconImage"> 
+				<xsl:with-param name="src" select="'images/no.gif'"/>
+				<xsl:with-param name="title" select="'false'"/>
+			</xsl:call-template>
 		</xsl:when>
 		</xsl:choose>
 
@@ -469,6 +475,12 @@
 			<xsl:when test="@type='flow'"				>images/flow.gif</xsl:when>
 			<xsl:when test="@type='move'"				>images/move.gif</xsl:when>
 			<xsl:when test="@type='reload'"				>images/reload.gif</xsl:when>
+
+			<xsl:when test="@type='started'"			>images/connected.gif</xsl:when>
+			<xsl:when test="@type='starting'"			>images/connecting.gif</xsl:when>
+			<xsl:when test="@type='stopped'"			>images/disconnected.gif</xsl:when>
+			<xsl:when test="@type='stopping'"			>images/disconnecting.gif</xsl:when>
+			<xsl:when test="@type='error'"				>images/error.gif</xsl:when>
 		</xsl:choose>
 	</xsl:template>
 	
@@ -480,21 +492,11 @@
 		</xsl:variable>
 		<xsl:choose>
 			<xsl:when test="$src!=''">
-				<xsl:element name="img">
-					<xsl:attribute name="src"><xsl:value-of select="concat($srcPrefix,$src)"/></xsl:attribute>
-					<xsl:attribute name="align">middle</xsl:attribute>
-					<xsl:attribute name="hspace">2</xsl:attribute>
-					<xsl:attribute name="vspace">2</xsl:attribute>
-					<xsl:attribute name="border">0</xsl:attribute>
-					<xsl:choose>
-						<xsl:when test="@alt">
-							<xsl:attribute name="alt"><xsl:value-of select="@alt"/></xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="alt"></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
-				</xsl:element>					
+				<xsl:call-template name="iconImage"> 
+					<xsl:with-param name="src" select="$src"/>
+					<xsl:with-param name="alt" select="@alt"/>
+					<xsl:with-param name="title" select="@title"/>
+				</xsl:call-template>
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:choose>
@@ -508,6 +510,30 @@
 		</xsl:choose>
 		<xsl:if test="@text"><xsl:value-of select="@text"/></xsl:if>
 		<xsl:if test="text"><xsl:value-of select="text"/></xsl:if>
+	</xsl:template>
+
+	<xsl:template name="iconImage">
+		<xsl:param name="src"/>
+		<xsl:param name="alt"/>
+		<xsl:param name="title"/>
+		<xsl:element name="img">
+			<xsl:attribute name="src"><xsl:value-of select="concat($srcPrefix,$src)"/></xsl:attribute>
+			<xsl:attribute name="align">middle</xsl:attribute>
+			<xsl:attribute name="hspace">2</xsl:attribute>
+			<xsl:attribute name="vspace">2</xsl:attribute>
+			<xsl:attribute name="border">0</xsl:attribute>
+			<xsl:choose>
+				<xsl:when test="string-length($alt)&gt;0">
+					<xsl:attribute name="alt"><xsl:value-of select="$alt"/></xsl:attribute>
+				</xsl:when>
+				<xsl:when test="string-length($title)&gt;0">
+					<xsl:attribute name="title"><xsl:value-of select="$title"/></xsl:attribute>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:attribute name="alt"></xsl:attribute>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:element>					
 	</xsl:template>
 
 	<xsl:template match="menuBar">
