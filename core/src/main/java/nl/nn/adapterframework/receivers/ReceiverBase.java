@@ -230,6 +230,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	// within the transaction. WebSphere default transaction timeout is 120.
 	public static final int MAX_RETRY_INTERVAL=100;
 	private boolean suspensionMessagePending=false;
+
+	private boolean configurationSucceeded = false;
    
 	private BeanFactory beanFactory;
 
@@ -347,7 +349,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		String correlationId;
 		String comments;
 	}
-    
+
+	public boolean configurationSucceeded() {
+		return configurationSucceeded;
+	}
+
 	private IPipeLineSession createProcessingContext(String correlationId, Map threadContext, String messageId) {
 		IPipeLineSession pipelineSession = new PipeLineSessionBase();
 		if (threadContext != null) {
@@ -520,6 +526,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 
 	public void configure() throws ConfigurationException {		
+		configurationSucceeded = false;
 		try {
 			if (StringUtils.isEmpty(getName())) {
 				if (getListener()!=null) {
@@ -682,7 +689,14 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				adapter.getMessageKeeper().add(getLogPrefix()+"initialization complete");
 			}
 			throwEvent(RCV_CONFIGURED_MONITOR_EVENT);
-		} catch(ConfigurationException e){
+			configurationSucceeded = true;
+		} catch (Throwable t) {
+			ConfigurationException e = null;
+			if (t instanceof ConfigurationException) {
+				e = (ConfigurationException)t;
+			} else {
+				e = new ConfigurationException("Exception configuring receiver ["+getName()+"]",t);
+			}
 			throwEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
 			log.debug(getLogPrefix()+"Errors occured during configuration, setting runstate to ERROR");
 			runState.setRunState(RunStateEnum.ERROR);
@@ -692,6 +706,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 
 	public void startRunning() {
+        if (!configurationSucceeded) {
+            log.error(
+                "configuration of receiver ["
+                    + getName()
+                    + "] did not succeed, therefore starting the receiver is not possible");
+            warn("configuration did not succeed. Starting the receiver ["+getName()+"] is not possible");
+            runState.setRunState(RunStateEnum.ERROR);
+            return;
+        }
 		// if this receiver is on an adapter, the StartListening method
 		// may only be executed when the adapter is started.
 		if (adapter != null) {

@@ -30,15 +30,16 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.extensions.esb.EsbJmsListenerChecker;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.task.TimeoutGuard;
@@ -48,6 +49,7 @@ import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 import org.apache.commons.lang.StringUtils;
@@ -372,7 +374,7 @@ public class JobDef {
 	public static final String JOB_FUNCTION_DUMPSTATSFULL="dumpStatisticsFull";	
 	public static final String JOB_FUNCTION_CLEANUPDB="cleanupDatabase";
 	public static final String JOB_FUNCTION_CLEANUPFXF="cleanupFxf";
-	public static final String JOB_FUNCTION_CHECKESBJMSLISTENERS="checkEsbJmsListeners";
+	public static final String JOB_FUNCTION_RECOVER_ADAPTERS="recoverAdapters";
 
     private String name;
     private String cronExpression;
@@ -456,7 +458,7 @@ public class JobDef {
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATSFULL) ||
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPDB) ||
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPFXF) ||
-				getFunction().equalsIgnoreCase(JOB_FUNCTION_CHECKESBJMSLISTENERS)
+				getFunction().equalsIgnoreCase(JOB_FUNCTION_RECOVER_ADAPTERS)
 			)) {
 			throw new ConfigurationException("jobdef ["+getName()+"] function ["+getFunction()+"] must be one of ["+
 			JOB_FUNCTION_STOP_ADAPTER+","+
@@ -469,7 +471,7 @@ public class JobDef {
 			JOB_FUNCTION_DUMPSTATSFULL+","+
 			JOB_FUNCTION_CLEANUPDB+","+
 			JOB_FUNCTION_CLEANUPFXF+
-			JOB_FUNCTION_CHECKESBJMSLISTENERS+
+			JOB_FUNCTION_RECOVER_ADAPTERS+
 			"]");
 		}
 		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS)) {
@@ -492,7 +494,7 @@ public class JobDef {
 				}
 			}
 		} else 
-		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_CHECKESBJMSLISTENERS)) {
+		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_RECOVER_ADAPTERS)) {
 			// nothing special for now
 		} else 
 		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_QUERY)) {
@@ -639,8 +641,8 @@ public class JobDef {
 		if (function.equalsIgnoreCase(JOB_FUNCTION_CLEANUPFXF)) {
 			cleanupFxf(ibisManager);
 		} else
-		if (function.equalsIgnoreCase(JOB_FUNCTION_CHECKESBJMSLISTENERS)) {
-			EsbJmsListenerChecker.doCheck(ibisManager, getTxManager(), getLogPrefix());
+		if (function.equalsIgnoreCase(JOB_FUNCTION_RECOVER_ADAPTERS)) {
+			recoverAdapters(ibisManager);
 		} else
 		if (function.equalsIgnoreCase(JOB_FUNCTION_QUERY)) {
 			executeQueryJob();
@@ -839,6 +841,82 @@ public class JobDef {
 			String msg = "Error while sending message (as part of scheduled job execution): " + e.getMessage();
 			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
 			log.error(getLogPrefix()+msg);
+		}
+	}
+
+	private void recoverAdapters(IbisManager ibisManager) {
+		Configuration config = ibisManager.getConfiguration();
+		for (IAdapter adapter : config.getRegisteredAdapters()) {
+			if (adapter instanceof Adapter) {
+				Adapter at = null;
+				if (adapter instanceof Adapter) {
+					at = (Adapter) adapter;
+				}
+				RunStateEnum runState = adapter.getRunState();
+				if (runState.equals(RunStateEnum.ERROR)) {
+					log.debug("trying to recover adapter [" + adapter.getName()
+							+ "]");
+					try {
+						at.setRecover(true);
+						adapter.configure();
+					} catch (ConfigurationException e) {
+						// do nothing
+						log.warn("error during recovering adapter ["
+								+ adapter.getName() + "]: " + e.getMessage());
+					} finally {
+						at.setRecover(false);
+					}
+					if (at.configurationSucceeded()) {
+						adapter.stopRunning();
+						int count = 10;
+						while (count-- >= 0
+								&& !adapter.getRunState().equals(
+										RunStateEnum.STOPPED)) {
+							try {
+								Thread.sleep(1000);
+							} catch (InterruptedException e) {
+								// do nothing
+							}
+						}
+					}
+					// check for start is in method startRunning in Adapter self
+					if (adapter.isAutoStart()) {
+						adapter.startRunning();
+					}
+					log.debug("finished recovering adapter ["
+							+ adapter.getName() + "]");
+				} else {
+					for (Iterator receiverIt = adapter.getReceiverIterator(); receiverIt
+							.hasNext();) {
+						IReceiver receiver = (IReceiver) receiverIt.next();
+						if (receiver.getRunState().equals(RunStateEnum.ERROR)) {
+							log.debug("trying to recover receiver ["
+									+ receiver.getName() + "] of adapter ["
+									+ adapter.getName() + "]");
+							at.configureReceiver(receiver);
+							if (receiver instanceof ReceiverBase) {
+								ReceiverBase rb = (ReceiverBase) receiver;
+								if (rb.configurationSucceeded()) {
+									receiver.stopRunning();
+									int count = 10;
+									while (count-- >= 0
+											&& !receiver.getRunState().equals(
+													RunStateEnum.STOPPED)) {
+										try {
+											Thread.sleep(1000);
+										} catch (InterruptedException e) {
+											// do nothing
+										}
+									}
+								}
+								// check for start is in method startRunning in
+								// ReceiverBase self
+								receiver.startRunning();
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 

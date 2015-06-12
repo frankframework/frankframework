@@ -124,6 +124,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private boolean autoStart = true;
 	private int msgLogLevel = MsgLogUtil.getMsgLogLevelByDefault();
 	private boolean msgLogHidden = MsgLogUtil.getMsgLogHiddenByDefault();
+	private boolean recover = false;
 
 	// state to put in PipeLineResult when a PipeRunException occurs;
 	private String errorState = "ERROR";
@@ -166,21 +167,23 @@ public class Adapter implements IAdapter, NamedBean {
 			Iterator it = receivers.iterator();
 			while (it.hasNext()) {
 				IReceiver receiver = (IReceiver) it.next();
-				
-				log.info("Adapter [" + name + "] is initializing receiver [" + receiver.getName() + "]");
-				receiver.setAdapter(this);
-				try {
-					receiver.configure();
-					messageKeeper.add("receiver [" + receiver.getName() + "] successfully configured");
-				} catch (ConfigurationException e) {
-					error(true, "error initializing receiver [" + receiver.getName() + "]",e);
-				}
-
+				configureReceiver(receiver);
 			}
 			configurationSucceeded = true;
 		}
 		catch (ConfigurationException e) {
 			error(true, "error initializing pipeline", e);
+		}
+	}
+
+	public void configureReceiver(IReceiver receiver) {
+		log.info("Adapter [" + name + "] is initializing receiver [" + receiver.getName() + "]");
+		receiver.setAdapter(this);
+		try {
+			receiver.configure();
+			messageKeeper.add("receiver [" + receiver.getName() + "] successfully configured");
+		} catch (ConfigurationException e) {
+			error(true, "error initializing receiver [" + receiver.getName() + "]",e);
 		}
 	}
 
@@ -728,12 +731,7 @@ public class Adapter implements IAdapter, NamedBean {
                     Iterator it = receivers.iterator();
                     while (it.hasNext()) {
                         IReceiver receiver = (IReceiver) it.next();
-                        if (receiver.getRunState() != RunStateEnum.ERROR) {
-                            log.info("Adapter [" + getName() + "] is starting receiver [" + receiver.getName() + "]");
-                            receiver.startRunning();
-                        }
-                        else
-                            log.warn("Adapter [" + getName() + "] will NOT start receiver [" + receiver.getName() + "] as it is in state ERROR");
+                        receiver.startRunning();
                     } //while
 
 //                    // wait until the stopRunning is called
@@ -948,5 +946,13 @@ public class Adapter implements IAdapter, NamedBean {
 
 	public boolean isMsgLogHidden() {
 		return msgLogHidden;
+	}
+
+	public void setRecover(boolean b) {
+		recover = b;
+	}
+
+	public boolean isRecover() {
+		return recover;
 	}
 }

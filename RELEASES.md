@@ -111,7 +111,7 @@ Upcoming
 - Bugfix losing message when OutOfMemoryError during resend message from ErrorLog
 - Add functionality to easily create IBIS specific views
 - Add view attribute to RestListener (to put a link in the IBIS console)
-
+- Add facility to recover adapters
 
 5.6.1
 ---

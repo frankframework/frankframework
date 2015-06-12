@@ -276,16 +276,17 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		if (current==null){
 			pipeForwards.put(forward.getName(), forward);
 		} else {
-			if (forward.getPath().equals(current.getPath())) {
-				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-				String msg = getLogPrefix(null)+"PipeForward ["+forward.getName()+"] pointing to ["+forward.getPath()+"] already registered";
-				configWarnings.add(log, msg);
-			} else {
-				log.info(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+			if (!getPipeLine().getAdapter().isRecover()) {
+				if (forward.getPath().equals(current.getPath())) {
+					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+					String msg = getLogPrefix(null)+"PipeForward ["+forward.getName()+"] pointing to ["+forward.getPath()+"] already registered";
+					configWarnings.add(log, msg);
+				} else {
+					log.info(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+				}
 			}
 		}
  	}
-
 
 	/**
 	  * Perform necessary action to start the pipe. This method is executed
