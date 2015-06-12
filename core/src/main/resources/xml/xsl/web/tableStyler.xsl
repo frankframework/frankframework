@@ -5,6 +5,7 @@
 	
 	<xsl:template match="contentTable">
 		<table>
+			<xsl:copy-of select="@*"/>
 		<!-- process a TABLE element. 
 		      First process the CAPTION element if present, transforming it to a TabHeader,
 		      Then processing subsequent TR or TBODY elements
