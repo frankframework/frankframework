@@ -255,7 +255,7 @@
 										<td class="receiverRow">
 											<%@ include file="receiverInfo.jsp" %>
 									 	</td>
-										<td class="receiverRow">
+										<td class="receiverRow" align="right">
 											<xtags:valueOf select="@pendingMessagesCount"/>
 									 	</td>
 									</xtags:when>
