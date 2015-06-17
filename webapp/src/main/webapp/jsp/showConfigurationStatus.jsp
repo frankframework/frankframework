@@ -210,7 +210,15 @@
 						<tr>
 							<subHeader>State</subHeader>
 							<subHeader colspan="2">Receiver name</subHeader>
-							<subHeader colspan="2">Listener/Sender</subHeader>
+							<xtags:choose>
+								<xtags:when test="count(receiver[@pendingMessagesCount!=''])!=0">
+									<subHeader>Listener/Sender</subHeader>
+									<subHeader>Messages pending</subHeader>
+								</xtags:when>
+								<xtags:otherwise>
+									<subHeader colspan="2">Listener/Sender</subHeader>
+								</xtags:otherwise>							
+							</xtags:choose>
 							<subHeader>Messages received/retried/rejected</subHeader>
 							<subHeader>Actions</subHeader>
 						</tr>
@@ -242,40 +250,21 @@
 								<td colspan="2" class="receiverRow">
 									<xtags:valueOf select="@name"/>
 								</td>
-								<td colspan="2" class="receiverRow">
-									<xtags:valueOf select="@listenerClass"/>
-									<xtags:if test="@listenerDestination!=''">(<xtags:valueOf select="@listenerDestination"/>)</xtags:if>
-									<xtags:if test="@senderClass!=''">/<xtags:valueOf select="@senderClass"/>
-										<xtags:if test="@senderDestination!=''">(<xtags:valueOf select="@senderDestination"/>)</xtags:if>
-									</xtags:if>
-									<xtags:if test="@threadCount!=0">
-									  <br/>( <xtags:valueOf select="@threadCount"/>/<xtags:valueOf select="@maxThreadCount"/>
-									  thread<xtags:if test="@maxThreadCount!=1">s</xtags:if><xtags:if test="@threadCountControllable='true'">,
-									  
-										<imagelink
-												href="adapterHandler.do"
-												type="incthreads"
-												alt="increase the maximum number of threads"
-												text="inc"
-											>
-											<parameter name="action">incthreads</parameter>
-											<parameter name="adapterName"><%=java.net.URLEncoder.encode(adapterName)%></parameter>
-											<parameter name="receiverName"><%=java.net.URLEncoder.encode(receiverName)%></parameter>
-										 </imagelink> -
-										<imagelink
-												href="adapterHandler.do"
-												type="decthreads"
-												alt="decrease the maximum number of threads"
-												text="dec"
-											>
-											<parameter name="action">decthreads</parameter>
-											<parameter name="adapterName"><%=java.net.URLEncoder.encode(adapterName)%></parameter>
-											<parameter name="receiverName"><%=java.net.URLEncoder.encode(receiverName)%></parameter>
-										 </imagelink>
-										</xtags:if>
-									  )
-									</xtags:if>
-							 	</td>
+								<xtags:choose>
+									<xtags:when test="@pendingMessagesCount!=''">
+										<td class="receiverRow">
+											<%@ include file="receiverInfo.jsp" %>
+									 	</td>
+										<td class="receiverRow">
+											<xtags:valueOf select="@pendingMessagesCount"/>
+									 	</td>
+									</xtags:when>
+									<xtags:otherwise>
+										<td colspan="2" class="receiverRow">
+											<%@ include file="receiverInfo.jsp" %>
+									 	</td>
+									</xtags:otherwise>							
+								</xtags:choose>
 								<td class="receiverRow" align="right"><xtags:valueOf select="@messagesReceived"/>/<xtags:valueOf select="@messagesRetried"/>/<xtags:valueOf select="@messagesRejected"/></td>
 								<td nowrap="true" width="200">
 									<% if (RunStateEnum.STOPPED.isState(receiverState)){ %>

@@ -83,9 +83,9 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 
 	public int getMessageCount() throws ListenerException {
 		QueueBrowser queueBrowser=null;
-		QueueSession session = null;
+		Session session = null;
 		try {
-			session = (QueueSession)(createSession());
+			session = createSession();
 			if (StringUtils.isEmpty(getSelector())) {
 				queueBrowser=session.createBrowser((Queue)getDestination());
 			} else {

@@ -112,6 +112,9 @@ Upcoming
 - Add functionality to easily create IBIS specific views
 - Add view attribute to RestListener (to put a link in the IBIS console)
 - Add facility to recover adapters
+- Add facility to show pending message count for receiving queues in 'Show configurationStatus'
+
+
 
 5.6.1
 ---

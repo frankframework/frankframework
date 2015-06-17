@@ -35,10 +35,10 @@ import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
-import nl.nn.adapterframework.extensions.esb.EsbUtils;
-import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
+import nl.nn.adapterframework.jms.JmsListenerBase;
+import nl.nn.adapterframework.jms.JmsMessageBrowser;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
@@ -48,7 +48,6 @@ import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
@@ -75,6 +74,9 @@ public final class ShowConfigurationStatus extends ActionBase {
 			return (mapping.findForward("noconfig"));
 		}
 
+		String countStr = request.getParameter("count");
+		boolean count = Boolean.valueOf(countStr);
+		
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
 		long esr = 0;
@@ -95,7 +97,6 @@ public final class ShowConfigurationStatus extends ActionBase {
 				}
 			}
 		}
-
 		
 		XmlBuilder adapters=new XmlBuilder("registeredAdapters");
 		if (config.getConfigurationException()!=null) {
@@ -257,6 +258,37 @@ public final class ShowConfigurationStatus extends ActionBase {
 							RestListener rl = (RestListener) listener;
 							receiverXML.addAttribute("restUriPattern", rl.getRestUriPattern());
 							receiverXML.addAttribute("isView", rl.isView());
+						}
+						if (count) {
+							if (listener instanceof JmsListenerBase) {
+								JmsListenerBase jlb = (JmsListenerBase) listener;
+								JmsMessageBrowser jmsBrowser;
+								if (StringUtils.isEmpty(jlb
+										.getMessageSelector())) {
+									jmsBrowser = new JmsMessageBrowser();
+								} else {
+									jmsBrowser = new JmsMessageBrowser(
+											jlb.getMessageSelector());
+								}
+								jmsBrowser.setName("MessageBrowser_"
+										+ jlb.getName());
+								jmsBrowser.setJmsRealm(jlb.getJmsRealName());
+								jmsBrowser.setDestinationName(jlb
+										.getDestinationName());
+								jmsBrowser.setDestinationType(jlb
+										.getDestinationType());
+								String numMsgs;
+								try {
+									int messageCount = jmsBrowser
+											.getMessageCount();
+									numMsgs = String.valueOf(messageCount);
+								} catch (Throwable t) {
+									log.warn(t);
+									numMsgs = "?";
+								}
+								receiverXML.addAttribute(
+										"pendingMessagesCount", numMsgs);
+							}
 						}
 						boolean isEsbJmsFFListener = false;
 						if (listener instanceof EsbJmsListener) {
