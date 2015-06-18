@@ -22,7 +22,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.WildCardFilter;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -133,8 +132,9 @@ public class MoveFilePipe extends FixedForwardPipe {
 			} else {
 				wc = (String)session.get(getWildcardSessionKey());
 			}
-			WildCardFilter filter = new WildCardFilter(wc);
-			File[] srcFiles = srcFile.listFiles(filter);
+			//WildCardFilter filter = new WildCardFilter(wc);
+			//File[] srcFiles = srcFile.listFiles(filter);
+			File[] srcFiles = FileUtils.getFiles(srcFile.getPath(), wc, null, -1);
 			int count = (srcFiles == null ? 0 : srcFiles.length);
 			if (count==0) {
 				log.info(getLogPrefix(session) + "no files with wildcard [" + wc + "] found in directory [" + srcFile.getAbsolutePath() +"]");
