@@ -114,6 +114,7 @@ Upcoming
 - Add facility to recover adapters
 - Add facility to show pending message count for receiving queues in 'Show configurationStatus'
 - Extend checkForDuplicates facility in ReceiverBase with correlationID (next to messageID)
+- Make CleanupOldFilesPipe more flexible
 
 
 

@@ -25,7 +25,6 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.WildCardFilter;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -39,10 +38,13 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setFilePattern(String) filePattern}</td><td>files that match this pattern will be deleted. Parameters of the pipe are applied to this pattern. If this attribute is not set, the input of the pipe is interpreted as the file to be removed</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFilePatternSessionKey(String) filePatternSessionKey}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSubdirectories(boolean) subdirectories}</td><td>when <code>true</code>, files  in subdirectories will be deleted, too</td><td>false</td></tr>
  * <tr><td>{@link #setLastModifiedDelta(long) lastModifiedDelta}</td><td>time in milliseconds that must have passed at least before a file will be deleted</td><td>0</td></tr>
  * <tr><td>{@link #setDeleteEmptySubdirectories(boolean) deleteEmptySubdirectories}</td><td>when <code>true</code>, empty subdirectories will be deleted, too</td><td>false</td></tr>
  * <tr><td>{@link #setWildcard(String) wildcard}</td><td>filter of files to delete. If not set and a directory is specified, all files in the directory are interpreted to be deleted</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setExcludeWildcard(String) excludeWildcard}</td><td>Filter of files to be excluded for deletion</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMinStableTime(long) minStableTime}</td><td>minimal age of file in milliseconds, to avoid deleting a file while it is still being written</td><td>1000 [ms]</td></tr>
  * </table>
  * </p>
  * 
@@ -52,10 +54,13 @@ import org.apache.commons.lang.StringUtils;
 public class CleanupOldFilesPipe extends FixedForwardPipe {
 	
 	private String filePattern;
+	private String filePatternSessionKey;
 	private boolean subdirectories=false;
 	private long lastModifiedDelta=0;
 	private boolean deleteEmptySubdirectories=false;
 	private String wildcard;
+	private String excludeWildcard;
+	private long minStableTime = 1000;
 
 	private _FileFilter fileFilter = new _FileFilter();
 	private _DirFilter dirFilter = new _DirFilter();
@@ -67,11 +72,15 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 			if (StringUtils.isNotEmpty(getFilePattern())) {
 				filename = FileUtils.getFilename(getParameterList(), session, "", getFilePattern());
 			} else {
-				if (StringUtils.isEmpty((String)input)) {
-					throw new PipeRunException(this, "input empty, but should contain filename to delete");
+				if (StringUtils.isNotEmpty(getFilePatternSessionKey())) {
+					filename = FileUtils.getFilename(getParameterList(), session, "", (String)session.get(getFilePatternSessionKey()));
 				} else {
-					File in = new File(input.toString());
-					filename = in.getName();
+					if (StringUtils.isEmpty((String)input)) {
+						throw new PipeRunException(this, "input empty, but should contain filename to delete");
+					} else {
+						File in = new File(input.toString());
+						filename = in.getName();
+					}
 				}
 			}
 			
@@ -123,8 +132,9 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	private void getFilesForDeletion(List result, File directory) {
 		File[] files;
 		if (getWildcard()!=null) {
-			WildCardFilter filter = new WildCardFilter(getWildcard());
-			files = directory.listFiles(filter);
+			//WildCardFilter filter = new WildCardFilter(getWildcard());
+			//files = directory.listFiles(filter);
+			files=FileUtils.getFiles(directory.getPath(), getWildcard(), getExcludeWildcard(), getMinStableTime());
 			for (int i = 0; i < files.length; i++) {
 				if (FileUtils.getLastModifiedDelta(files[i]) > getLastModifiedDelta()) {
 					result.add(files[i]);
@@ -187,6 +197,13 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return filePattern;
 	}
 
+	public void setFilePatternSessionKey(String string) {
+		filePatternSessionKey = string;
+	}
+	public String getFilePatternSessionKey() {
+		return filePatternSessionKey;
+	}
+
 	public void setLastModifiedDelta(long l) {
 		lastModifiedDelta = l;
 	}
@@ -213,5 +230,19 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	}
 	public String getWildcard() {
 		return wildcard;
+	}
+
+	public void setExcludeWildcard(String excludeWildcard) {
+		this.excludeWildcard = excludeWildcard;
+	}
+	public String getExcludeWildcard() {
+		return excludeWildcard;
+	}
+
+	public void setMinStableTime(long minStableTime) {
+		this.minStableTime = minStableTime;
+	}
+	public long getMinStableTime() {
+		return minStableTime;
 	}
 }
