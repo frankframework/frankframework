@@ -115,6 +115,7 @@ Upcoming
 - Add facility to show pending message count for receiving queues in 'Show configurationStatus'
 - Extend checkForDuplicates facility in ReceiverBase with correlationID (next to messageID)
 - Make CleanupOldFilesPipe more flexible
+- Add support for subdirectories to UnzipPipe
 
 
 

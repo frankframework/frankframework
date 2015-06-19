@@ -36,7 +36,6 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Assumes input to be a ZIP archive, and unzips it to a directory.
- * Currently no subdirectories in zip files are supported.
  *
  * <br>
  * The output of each unzipped item is returned in XML as follows:
@@ -64,6 +63,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setDirectory(String) directory}</td>       <td>directory to extract the archive to</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDeleteOnExit(boolean) deleteOnExit}</td><td>when true, file is automatially deleted upon normal JVM termination</td><td>true</td></tr>
  * <tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>if set <code>false</code>, only a small summary is returned</td><td>true</td></tr>
+ * <tr><td>{@link #setKeepOriginalFileName(boolean) keepOriginalFileName}</td><td>if set <code>false</code>, a suffix is added to the original filename to be sure it is unique</td><td>false</td></tr>
+ * <tr><td>{@link #setCreateSubdirectories(boolean) createSubdirectories}</td><td>if set <code>true</code>, subdirectories in the zip file are supported</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -82,6 +83,8 @@ public class UnzipPipe extends FixedForwardPipe {
     private String directory;
     private boolean deleteOnExit=true;
 	private boolean collectResults=true;
+	private boolean keepOriginalFileName=false;
+	private boolean createSubdirectories=false;
     
 	private File dir; // File representation of directory
     
@@ -118,19 +121,54 @@ public class UnzipPipe extends FixedForwardPipe {
 			ZipEntry ze;
 			while ((ze=zis.getNextEntry())!=null) {
 				if (ze.isDirectory()) {
-					log.warn(getLogPrefix(session)+"skipping directory entry ["+ze.getName()+"]");
+					if (isCreateSubdirectories()) {
+						File tmpFile = new File(dir, ze.getName());
+						if (!tmpFile.exists()) {
+							if (tmpFile.mkdirs()) {
+								log.debug(getLogPrefix(session)+"created directory ["+tmpFile.getPath()+"]");
+							} else {
+								log.warn(getLogPrefix(session)+"directory ["+tmpFile.getPath()+"] could not be created");
+							}
+						} else {
+							log.debug(getLogPrefix(session)+"directory entry ["+tmpFile.getPath()+"] already exists");
+						}
+					} else {
+						log.warn(getLogPrefix(session)+"skipping directory entry ["+ze.getName()+"]");
+					}
 				} else {
 					String filename=ze.getName();
+					String basename=null;
 					String extension=null;
 					int dotPos=filename.indexOf('.');
 					if (dotPos>=0) {
 						extension=filename.substring(dotPos);
-						filename=filename.substring(0,dotPos);
-						log.debug(getLogPrefix(session)+"parsed filename ["+filename+"] extension ["+extension+"]");
+						basename=filename.substring(0,dotPos);
+						log.debug(getLogPrefix(session)+"parsed filename ["+basename+"] extension ["+extension+"]");
+					} else {
+						basename=filename;
 					}
-					File tmpFile = File.createTempFile(filename, extension, dir);
+					File tmpFile;
+					if (isKeepOriginalFileName()) {
+						tmpFile = new File(dir, filename);
+						if (tmpFile.exists()) {
+							throw new PipeRunException(this, "file [" + tmpFile.getAbsolutePath() + "] already exists"); 
+						}
+					} else {
+						tmpFile = File.createTempFile(basename, extension, dir);
+					}
 					if (isDeleteOnExit()) {
 						tmpFile.deleteOnExit();
+					}
+					if (isCreateSubdirectories()) {
+						//extra check
+						File tmpDir = tmpFile.getParentFile();
+						if (!tmpDir.exists()) {
+							if (tmpDir.mkdirs()) {
+								log.debug(getLogPrefix(session)+"created directory ["+tmpDir.getPath()+"]");
+							} else {
+								log.warn(getLogPrefix(session)+"directory ["+tmpDir.getPath()+"] could not be created");
+							}
+						}
 					}
 					FileOutputStream fos = new FileOutputStream(tmpFile);
 					log.debug(getLogPrefix(session)+"writing ZipEntry ["+ze.getName()+"] to file ["+tmpFile.getPath()+"]");
@@ -174,5 +212,19 @@ public class UnzipPipe extends FixedForwardPipe {
 	}
 	public boolean isCollectResults() {
 		return collectResults;
+	}
+
+	public void setKeepOriginalFileName(boolean b) {
+		keepOriginalFileName = b;
+	}
+	public boolean isKeepOriginalFileName() {
+		return keepOriginalFileName;
+	}
+
+	public void setCreateSubdirectories(boolean b) {
+		createSubdirectories = b;
+	}
+	public boolean isCreateSubdirectories() {
+		return createSubdirectories;
 	}
 }
