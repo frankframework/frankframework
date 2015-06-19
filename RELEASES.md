@@ -113,6 +113,7 @@ Upcoming
 - Add view attribute to RestListener (to put a link in the IBIS console)
 - Add facility to recover adapters
 - Add facility to show pending message count for receiving queues in 'Show configurationStatus'
+- Extend checkForDuplicates facility in ReceiverBase with correlationID (next to messageID)
 
 
 

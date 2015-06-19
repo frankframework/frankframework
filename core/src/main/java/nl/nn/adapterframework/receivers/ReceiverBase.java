@@ -134,6 +134,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * <tr><td>{@link #setMaxDeliveries(int) maxDeliveries}</td><td>The maximum delivery count after which to stop processing the message. When -1 the delivery count is ignored</td><td>5</td></tr>
  * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a processing attempt is retried after an exception is caught or rollback is experienced (only applicable for transacted receivers). If maxRetries &lt; 0 the number of attempts is infinite</td><td>1</td></tr>
  * <tr><td>{@link #setCheckForDuplicates(boolean) checkForDuplicates}</td><td>if set to <code>true</code>, each message is checked for presence in the message log. If already present, it is not processed again. (only required for non XA compatible messaging). Requires messagelog!</code></td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setCheckForDuplicatesMethod(String) checkForDuplicatesMethod}</td><td>(only used when <code>checkForDuplicates=true</code>) Either 'CORRELATIONID' or 'MESSAGEID'. Indicates whether the messageID or the correlationID is used for checking presence in the message log</td><td>MESSAGEID</td></tr>
  * <tr><td>{@link #setPollInterval(int) pollInterval}</td><td>The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. (only for polling listeners, not for e.g. IFSA, JMS, WebService or JavaListeners)</td><td>10</td></tr>
  * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Receiver</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
@@ -149,6 +150,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * <tr><td>{@link #setElementToMove(String) elementToMove}</td><td>if set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: "{sessionKey:" + <code>elementToMoveSessionKey</code> + "}"</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setElementToMoveSessionKey(String) elementToMoveSessionKey}</td><td>(only used when <code>elementToMove</code> is set) name of the session key under which the character data is stored</td><td>"ref_" + the name of the element</td></tr>
  * <tr><td>{@link #setElementToMoveChain(String) elementToMoveChain}</td><td>like <code>elementToMove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. "adapter;pipeline;pipe")</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setXslt2(boolean) xslt2}</td><td>when set <code>true</code> XSLT processor 2.0 (net.sf.saxon) will be used for extracting correlationID and label, otherwise XSLT processor 1.0 (org.apache.xalan)</td><td>false</td></tr>
  * </table>
  * </p>
  * <p>
@@ -240,6 +242,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private String returnedSessionKeys=null;
 	private String hiddenInputSessionKeys=null;
 	private boolean checkForDuplicates=false;
+	private String checkForDuplicatesMethod="MESSAGEID";
 	private String correlationIDNamespaceDefs;
 	private String correlationIDXPath;
 	private String correlationIDStyleSheet;
@@ -252,6 +255,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
     private String elementToMoveSessionKey = null;
     private String elementToMoveChain = null;
 	private boolean removeCompactMsgNamespaces = true;
+	private boolean xslt2 = false;
 
 	public static final String ONERROR_CONTINUE = "continue";
 	public static final String ONERROR_CLOSE = "close";
@@ -647,7 +651,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					info(getLogPrefix()+"has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName());
 				}
 				if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-					labelTp=TransformerPool.configureTransformer(getLogPrefix(),getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null);
+					labelTp=TransformerPool.configureTransformer0(getLogPrefix(),getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,isXslt2());
 				}
 			}
 			if (isTransacted()) {
@@ -682,7 +686,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			} 
 
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(), getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null);
+				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null,isXslt2());
 			}
 
 			if (adapter != null) {
@@ -794,7 +798,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		} else {
 			rcvDate=new Date();
 		}
-		if (isTransacted() || (getErrorStorage() != null && (!isCheckForDuplicates() || !getErrorStorage().containsMessageId(messageId)))) {
+		if (isTransacted() || (getErrorStorage() != null && (!isCheckForDuplicates() || !getErrorStorage().containsMessageId(messageId) || !isDuplicateAndSkip(getErrorStorage(), messageId, correlationId)))) {
 			moveInProcessToError(messageId, correlationId, message, rcvDate, comments, rawMessage, TXREQUIRED);
 		}
 		PipeLineResult plr = new PipeLineResult();
@@ -1060,6 +1064,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (!isTransacted()) {
 				log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which has a problematic history; aborting processing");
 			}
+			numRejected.increase();
+			return result;
+		}
+		if (isDuplicateAndSkip(getMessageLog(), messageId, businessCorrelationId)) {
 			numRejected.increase();
 			return result;
 		}
@@ -1390,6 +1398,34 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		} 
 		if (isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId)) {
 			return true;
+		}
+		return false;
+	}
+
+	/*
+	 * returns true if message should not be processed
+	 */
+	private boolean isDuplicateAndSkip(
+			ITransactionalStorage transactionStorage, String messageId,
+			String correlationId) throws ListenerException {
+		if (isCheckForDuplicates() && transactionStorage != null) {
+			if ("CORRELATIONID".equalsIgnoreCase(getCheckForDuplicatesMethod())) {
+				if (transactionStorage.containsCorrelationId(correlationId)) {
+					warn(getLogPrefix() + "message with correlationId ["
+							+ correlationId + "] already exists in ["
+							+ transactionStorage.getName()
+							+ "], will not process");
+					return true;
+				}
+			} else {
+				if (transactionStorage.containsMessageId(messageId)) {
+					warn(getLogPrefix() + "message with messageId ["
+							+ messageId + "] already exists in ["
+							+ transactionStorage.getName()
+							+ "], will not process");
+					return true;
+				}
+			}
 		}
 		return false;
 	}
@@ -2056,6 +2092,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return checkForDuplicates;
 	}
 
+	public void setCheckForDuplicatesMethod(String method) {
+		checkForDuplicatesMethod=method;
+	}
+	public String getCheckForDuplicatesMethod() {
+		return checkForDuplicatesMethod;
+	}
+
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}
@@ -2138,5 +2181,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 	public boolean isRemoveCompactMsgNamespaces() {
 		return removeCompactMsgNamespaces;
+	}
+
+	public boolean isXslt2() {
+		return xslt2;
+	}
+	public void setXslt2(boolean b) {
+		xslt2 = b;
 	}
 }

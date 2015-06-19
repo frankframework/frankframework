@@ -242,6 +242,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	protected String selectContextQuery;
 	protected String selectDataQuery;
     protected String checkMessageIdQuery;
+    protected String checkCorrelationIdQuery;
 	protected String getMessageCountQuery;
     
 	protected boolean selectKeyQueryIsDbmsSupported;
@@ -570,6 +571,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						  " ORDER BY "+getDateField()+(StringUtils.isNotEmpty(getOrder())?" " + getOrder():"")+provideTrailingFirstRowsHint(dbmsSupport);
 		selectDataQuery = "SELECT "+getMessageField()+  " FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
         checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
+        checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getCorrelationIdField() +"=?",false);
 		getMessageCountQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*) FROM "+getPrefix()+getTableName()+ getWhereClause(null,false);
 		if (dbmsSupport.mustInsertEmptyBlobBeforeData()) {
 			updateBlobQuery = dbmsSupport.getUpdateBlobQuery(getPrefix()+getTableName(), getMessageField(), getKeyField()); 
@@ -583,6 +585,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 					documentQuery("selectListQuery",selectListQuery,"Haal een lijst van regels op, op volgorde van de index. Haalt niet altijd alle regels op")+
 					documentQuery("selectDataQuery",selectDataQuery,"Haal de blob van een regel op, via de primary key")+
 					documentQuery("checkMessageIdQuery",checkMessageIdQuery,"bekijk of een messageId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
+					documentQuery("checkCorrelationIdQuery",checkCorrelationIdQuery,"bekijk of een correlationId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
 					documentQuery("getMessageCountQuery",getMessageCountQuery,"tel het aantal regels in een gedeelte van de tabel. Kan via index.")+
 					documentQuery("updateBlobQuery",updateBlobQuery,"Geef de blob een waarde, via de primary key")
 //					+"\n"
@@ -923,6 +926,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 		try {
 			Connection conn;
+			String result;
 			if (messageId==null) {
 				throw new SenderException("messageId cannot be null");
 			}
@@ -935,7 +939,27 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				throw new SenderException(e);
 			}
 			try {
-				return storeMessage(conn, messageId, correlationId, receivedDate, comments, label, message);
+				Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
+				if (messageId.length()>MAXIDLEN) {
+					messageId=messageId.substring(0,MAXIDLEN);
+				}
+				if (correlationId.length()>MAXCIDLEN) {
+					correlationId=correlationId.substring(0,MAXCIDLEN);
+				}
+				if (comments!=null && comments.length()>MAXCOMMENTLEN) {
+					comments=comments.substring(0,MAXCOMMENTLEN);
+				}
+				if (label!=null && label.length()>MAXLABELLEN) {
+					label=label.substring(0,MAXLABELLEN);
+				}
+				result = storeMessageInDatabase(conn, messageId, correlationId, receivedDateTime, comments, label, message);
+				if (result==null) {
+					result=retrieveKey(conn,messageId,correlationId,receivedDateTime);
+				}
+				return result;
+			
+			} catch (Exception e) {
+				throw new SenderException("cannot serialize message",e);
 			} finally {
 				try {
 					conn.close();
@@ -1225,7 +1249,36 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}
 		}
     }
- 
+
+    public boolean containsCorrelationId(String correlationId) throws ListenerException {
+		Connection conn;
+		try {
+			conn = getConnection();
+		} catch (JdbcException e) {
+			throw new ListenerException(e);
+		}
+		try {
+			PreparedStatement stmt = conn.prepareStatement(checkCorrelationIdQuery);	
+			applyStandardParameters(stmt, correlationId, false);
+			ResultSet rs =  stmt.executeQuery();
+
+			if (!rs.next()) {
+				return false;
+			}
+			
+			return true;
+			
+		} catch (Exception e) {
+			throw new ListenerException("cannot deserialize message",e);
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				log.error("error closing JdbcConnection", e);
+			}
+		}
+    }
+
 	public IMessageBrowsingIteratorItem getContext(String messageId) throws ListenerException {
 		Connection conn;
 		try {

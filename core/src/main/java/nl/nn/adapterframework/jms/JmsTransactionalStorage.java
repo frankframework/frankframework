@@ -113,6 +113,13 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
         Object msg = doBrowse(FIELD_ORIGINAL_ID, originalMessageId);
         return msg != null;
     }
+
+	public boolean containsCorrelationId(String correlationId) throws ListenerException {
+		log.warn("could not determine correct presence of a message with correlationId ["
+				+ correlationId + "], assuming it doesnot exist");
+		//TODO: check presence of a message with correlationId 
+		return false;
+	}
     
 	public Object browseMessage(String messageId) throws ListenerException {
 		try {

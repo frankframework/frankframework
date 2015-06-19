@@ -50,7 +50,9 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
      * (as passed to storeMessage).
      */
     public boolean containsMessageId(String originalMessageId) throws ListenerException;
-    
+
+    public boolean containsCorrelationId(String correlationId) throws ListenerException;
+
 	public void setName(String name);
 
 	/**
