@@ -49,6 +49,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to move to is created if it does not exist</td><td>false</td></tr>
  * <tr><td>{@link #setPrefix(String) prefix}</td><td>string which is inserted at the start of the destination file</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSuffix(String) suffix}</td><td>string which is inserted at the end of the destination file (and replaces the extension if present)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>when <code>true</code>, <code>numberOfBackups</code> is set to 0 and the destination file already exists a PipeRunException is thrown (instead of adding a counter to the destination filename)</td><td>false</td></tr>
  * </table>
  * </p>
  * 
@@ -74,6 +75,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 	private boolean createDirectory = false;
 	private String prefix;
 	private String suffix;
+	private boolean throwException = false;
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -211,7 +213,11 @@ public class MoveFilePipe extends FixedForwardPipe {
 				}			 
 			} else {
 				if (!isOverwrite() && getNumberOfBackups()==0) {
-					dstFile = FileUtils.getFreeFile(dstFile);
+					if (dstFile.exists() && isThrowException()) {
+						throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"] because it already exists"); 
+					} else {
+						dstFile = FileUtils.getFreeFile(dstFile);
+					}
 				}
 				if (FileUtils.moveFile(srcFile, dstFile, isOverwrite(), getNumberOfBackups(), getNumberOfAttempts(), getWaitBeforeRetry()) == null) {
 					throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]"); 
@@ -334,5 +340,12 @@ public class MoveFilePipe extends FixedForwardPipe {
 	}
 	public String getSuffix() {
 		return suffix;
+	}
+
+	public void setThrowException(boolean b) {
+		throwException = b;
+	}
+	public boolean isThrowException() {
+		return throwException;
 	}
 }
