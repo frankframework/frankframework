@@ -36,6 +36,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> which contains the inputstream</td><td>file</td></tr>
  * <tr><td>{@link #setDirectory(String) directory}</td><td>base directory where files are unzipped to</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDirectorySessionKey(String) directorySessionKey}</td><td>the session key that contains the base directory where files are unzipped to</td><td>destination</td></tr>
  * </table>
  * </p>
  * 
@@ -45,10 +46,12 @@ import org.apache.commons.lang.StringUtils;
 public class UploadFilePipe extends FixedForwardPipe {
 
 	private String directory;
+	protected String directorySessionKey = "destination";
 	private String sessionKey = "file";
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+/*
 		if (StringUtils.isEmpty(getDirectory())) {
 			throw new ConfigurationException("no value specified for directory");
 		} else {
@@ -59,6 +62,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 						+ "] is invalid. It is not a directory ");
 			}
 		}
+*/
 	}
 
 	public PipeRunResult doPipe(Object input, IPipeLineSession session)
@@ -70,7 +74,17 @@ public class UploadFilePipe extends FixedForwardPipe {
 					+ getSessionKey() + "]");
 		}
 
-		File dir = new File(getDirectory());
+		File dir;
+		if (StringUtils.isNotEmpty(getDirectory())) {
+			dir = new File(getDirectory());
+		} else {
+			if (StringUtils.isNotEmpty(getDirectorySessionKey())) {
+				dir = new File((String) session.get(getDirectorySessionKey()));
+			} else {
+				dir = new File(input.toString());
+			}
+		}
+		
 		String fileName;
 		try {
 			fileName = (String) session.get("fileName");
@@ -96,6 +110,14 @@ public class UploadFilePipe extends FixedForwardPipe {
 
 	public String getDirectory() {
 		return directory;
+	}
+
+	public void setDirectorySessionKey(String string) {
+		directorySessionKey = string;
+	}
+
+	public String getDirectorySessionKey() {
+		return directorySessionKey;
 	}
 
 	public String getSessionKey() {
