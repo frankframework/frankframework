@@ -70,7 +70,10 @@ public class ShowLogging extends ActionBase {
 				error("access to path ("+path+") not allowed", null);
 				listresult="<directory/>";
 		} else {
-			String wildcard=AppConstants.getInstance().getProperty("logging.wildcard");
+			String wildcard=request.getParameter("wildcard");
+			if (StringUtils.isEmpty(wildcard)) {
+				wildcard=AppConstants.getInstance().getProperty("logging.wildcard");
+			}
 			if (wildcard!=null) dx.setWildCard(wildcard);
 			try {
 				listresult=dx.getDirList(showDirectories, maxItems);

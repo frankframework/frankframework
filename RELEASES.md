@@ -116,6 +116,7 @@ Upcoming
 - Extend checkForDuplicates facility in ReceiverBase with correlationID (next to messageID)
 - Make CleanupOldFilesPipe more flexible
 - Add support for subdirectories to UnzipPipe
+- Add facility to use wildcard in 'Adapter Logging'
 
 
 
