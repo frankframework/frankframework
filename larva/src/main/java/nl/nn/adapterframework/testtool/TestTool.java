@@ -3051,11 +3051,11 @@ public class TestTool {
 					}
 				}
 				if (diffActual.length() > 250) {
-					diffActual.delete(250, diffActual.length() - 250);
+					diffActual.delete(250, diffActual.length());
 					diffActual.append(" ...");
 				}
 				if (diffExcpected.length() > 250) {
-					diffExcpected.delete(250, diffExcpected.length() - 250);
+					diffExcpected.delete(250, diffExcpected.length());
 					diffExcpected.append(" ...");
 				}
 				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";

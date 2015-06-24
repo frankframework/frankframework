@@ -111,6 +111,8 @@ Upcoming
 - Bugfix losing message when OutOfMemoryError during resend message from ErrorLog
 - Add functionality to easily create IBIS specific views
 - Add view attribute to RestListener (to put a link in the IBIS console)
+- Improve Larva txt diff performance (especially for large messages)
+- Add fromClasspath to Larva XsltProviderListener
 - Add facility to recover adapters
 - Add facility to show pending message count for receiving queues in 'Show configurationStatus'
 - Extend checkForDuplicates facility in ReceiverBase with correlationID (next to messageID)
@@ -188,8 +190,6 @@ Upcoming
 - Introduction of XmlFileElementIteratorPipe; streamed processing of (very large) xml files
 - Better integration of Maven and Eclipse (using Kepler SR2).
 - added "Transaction Service" to console function "Show Security Items", and added configuration warning "receiver/pipeline transaction timeout exceeds system transaction timeout"
-- Improve Larva txt diff performance (especially for large messages)
-- Add fromClasspath to Larva XsltProviderListener
 
 
 
