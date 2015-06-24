@@ -117,6 +117,7 @@ Upcoming
 - Make CleanupOldFilesPipe more flexible
 - Add support for subdirectories to UnzipPipe
 - Add facility to use wildcard in 'Adapter Logging'
+- Add FxfListener with possibility to move file after being processed
 
 
 

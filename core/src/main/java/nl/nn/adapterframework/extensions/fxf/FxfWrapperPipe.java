@@ -69,6 +69,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	private String clientFilenameSessionKey = "clientFilename";
 	private String flowIdSessionKey = "flowId";
 	private String fxfDirSessionKey = "fxfDir";
+	private String fxfFileSessionKey = "fxfFile";
 
 
 	public void configure() throws ConfigurationException {
@@ -201,10 +202,11 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			// Transform the filename as it is known locally on the IUF state
 			// machine to the filename as know on the application server (which
 			// has a mount to the IUF state machine).
-			String result = fxfDir + File.separator + flowId + File.separator
+			String fxfFile = fxfDir + File.separator + flowId + File.separator
 							+ "in" + File.separator
 							+ new File(clientFilename).getName();
-			return new PipeRunResult(getForward(), result);
+			session.put(getFxfFileSessionKey(), fxfFile);
+			return new PipeRunResult(getForward(), fxfFile);
 		}
 	}
 
@@ -272,4 +274,11 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		this.fxfDirSessionKey = fxfDirSessionKey;
 	}
 
+	public String getFxfFileSessionKey() {
+		return fxfFileSessionKey;
+	}
+
+	public void setFxfFileSessionKey(String fxfFileSessionKey) {
+		this.fxfFileSessionKey = fxfFileSessionKey;
+	}
 }
