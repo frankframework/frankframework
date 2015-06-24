@@ -42,6 +42,7 @@ import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
@@ -696,14 +697,23 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 */
 	public String getStringFromRawMessage(Object rawMessage, Map context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, DomBuilderException, TransformerException, IOException {
 		TextMessage message = null;
+		String rawMessageText;
+/*
 		try {
 			message = (TextMessage) rawMessage;
 		} catch (ClassCastException e) {
 			log.error("message received by listener on ["+ getDestinationName()+ "] was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
 			return null;
 		}
-		String rawMessageText;
 		rawMessageText= message.getText();
+*/
+		if (rawMessage instanceof IMessageWrapper) {
+			rawMessageText = ((IMessageWrapper)rawMessage).getText();
+		} else if (rawMessage instanceof TextMessage) {
+			rawMessageText = ((TextMessage)rawMessage).getText();
+		} else {
+			rawMessageText = (String)rawMessage;
+		}
 		if (!soap) {
 			return rawMessageText;
 		}
