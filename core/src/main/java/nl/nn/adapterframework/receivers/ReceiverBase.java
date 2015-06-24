@@ -1012,8 +1012,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				SAXParserFactory parserFactory = XmlUtils.getSAXParserFactory();
 				parserFactory.setNamespaceAware(true);
 				SAXParser saxParser = parserFactory.newSAXParser();
-				saxParser.parse(xmlInput, handler);
-				message = handler.getXmlString();
+				try {
+					saxParser.parse(xmlInput, handler);
+					message = handler.getXmlString();
+				} catch (Exception e) {
+					warn("received message could not be compacted: " + e.getMessage());
+				}
 				handler = null;
 			} catch (Exception e) {
 				throw new ListenerException("error during compacting received message to more compact format: " + e.getMessage());
@@ -1218,10 +1222,22 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				Attributes attributes) throws SAXException {
 					
 			printCharBuffer();
+			
+			StringBuffer attributeBuffer = new StringBuffer();
+			for (int i = 0; i < attributes.getLength(); i++) {
+				attributeBuffer.append(" ");
+				attributeBuffer.append(attributes.getQName(i));
+				attributeBuffer.append("=\"");
+				attributeBuffer.append(attributes.getValue(i));
+				attributeBuffer.append("\"");
+			}
+
 			if (isRemoveCompactMsgNamespaces()) {
-				messageBuffer.append("<" + localName + ">");
+				messageBuffer.append("<" + localName
+						+ attributeBuffer.toString() + ">");
 			} else {
-				messageBuffer.append("<" + qName + namespaceBuffer + ">");
+				messageBuffer.append("<" + qName + namespaceBuffer
+						+ attributeBuffer.toString() + ">");
 			}
 			elements.add(localName);
 			namespaceBuffer.setLength(0);
