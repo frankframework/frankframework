@@ -119,6 +119,11 @@ Upcoming
 - Add facility to use wildcard in 'Adapter Logging'
 - Add FxfListener with possibility to move file after being processed
 
+### Non backwards compatible changes
+
+- The use of 'xsd:import' and 'xsd:include' in xsd files in XmlValidator (and subclasses) has become more strictly.
+	- When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.
+
 
 
 5.6.1
@@ -155,7 +160,7 @@ Upcoming
 ### Non backwards compatible changes
 
 - Attribute enforceMQCompliancy on JmsSender has been removed, use nl.nn.adapterframework.extensions.ibm.MQSender instead of nl.nn.adapterframework.jms.JmsSender when setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ) is needed.
-- Support for FXF 1 and 2 as been dropped.
+- Support for FXF 1 and 2 has been dropped.
 
 
 
