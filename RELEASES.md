@@ -120,6 +120,7 @@ Upcoming
 - Add support for subdirectories to UnzipPipe
 - Add facility to use wildcard in 'Adapter Logging'
 - Add FxfListener with possibility to move file after being processed
+- Larva indent function: Normalise spaces around attribute names and values
 
 ### Non backwards compatible changes
 
