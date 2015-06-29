@@ -57,7 +57,7 @@ public class TracingEventsPipeProcessor extends PipeProcessorBase {
 					sb.append(" current result ["+ message +"] ");
 				}
 			}
-			log.info(sb.toString());
+			log.debug(sb.toString());
 		}
 
 		// start it

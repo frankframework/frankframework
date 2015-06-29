@@ -121,6 +121,7 @@ Upcoming
 - Add facility to use wildcard in 'Adapter Logging'
 - Add FxfListener with possibility to move file after being processed
 - Larva indent function: Normalise spaces around attribute names and values
+- Use log.debug instead of log.info for "is about to call pipe" (was/is only called when log.level is DEBUG because log.isDebugEnabled() is used)
 
 ### Non backwards compatible changes
 
