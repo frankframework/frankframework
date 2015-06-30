@@ -32,8 +32,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.log4j.Logger;
 
-import com.tibco.tibjms.admin.TibjmsAdminException;
-
 /**
  * Some utilities for working with TIBCO.
  * 
@@ -44,7 +42,7 @@ public class TibcoUtils {
 
 	public static long getQueueFirstMessageAge(String provUrl,
 			String authAlias, String userName, String password, String queueName)
-			throws JMSException, TibjmsAdminException {
+			throws JMSException {
 		return getQueueFirstMessageAge(provUrl, authAlias, userName, password,
 				queueName, null);
 	}
@@ -55,18 +53,11 @@ public class TibcoUtils {
 	 */
 	public static long getQueueFirstMessageAge(String provUrl,
 			String authAlias, String userName, String password,
-			String queueName, String messageSelector) throws JMSException,
-			TibjmsAdminException {
-		String url = StringUtils.replace(provUrl, "tibjmsnaming:", "tcp:");
-		CredentialFactory cf = new CredentialFactory(authAlias, userName,
-				password);
+			String queueName, String messageSelector) throws JMSException {
 		Connection connection = null;
 		Session jSession = null;
 		try {
-			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(
-					url);
-			connection = factory.createConnection(cf.getUsername(),
-					cf.getPassword());
+			connection = getConnection(provUrl, authAlias, userName, password);
 			jSession = connection.createSession(false,
 					javax.jms.Session.AUTO_ACKNOWLEDGE);
 			return getQueueFirstMessageAge(jSession, queueName, messageSelector);
@@ -79,6 +70,16 @@ public class TibcoUtils {
 				}
 			}
 		}
+	}
+
+	public static Connection getConnection(String provUrl, String authAlias,
+			String userName, String password) throws JMSException {
+		String url = StringUtils.replace(provUrl, "tibjmsnaming:", "tcp:");
+		CredentialFactory cf = new CredentialFactory(authAlias, userName,
+				password);
+		ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(
+				url);
+		return factory.createConnection(cf.getUsername(), cf.getPassword());
 	}
 
 	protected static long getQueueFirstMessageAge(Session jSession,
@@ -100,35 +101,46 @@ public class TibcoUtils {
 	protected static long getQueueFirstMessageAge(Session jSession,
 			String queueName, String messageSelector, long currentTime)
 			throws JMSException {
-		return getQueueFirstMessageAge(jSession, queueName, messageSelector, currentTime, true);
+		return getQueueFirstMessageAge(jSession, queueName, messageSelector,
+				currentTime, true);
 	}
 
 	protected static long getQueueFirstMessageAge(Session jSession,
-			String queueName, String messageSelector, long currentTime, boolean warn)
-			throws JMSException {
-		Queue queue = jSession.createQueue(queueName);
-		QueueBrowser queueBrowser;
-		if (messageSelector == null) {
-			queueBrowser = jSession.createBrowser(queue);
-		} else {
-			queueBrowser = jSession.createBrowser(queue, messageSelector);
-		}
-		Enumeration enm = queueBrowser.getEnumeration();
-		if (enm.hasMoreElements()) {
-			Object o = enm.nextElement();
-			if (o instanceof Message) {
-				Message msg = (Message) o;
-				long jmsTimestamp = msg.getJMSTimestamp();
-				return currentTime - jmsTimestamp;
+			String queueName, String messageSelector, long currentTime,
+			boolean warn) throws JMSException {
+		QueueBrowser queueBrowser = null;
+		try {
+			Queue queue = jSession.createQueue(queueName);
+			if (messageSelector == null) {
+				queueBrowser = jSession.createBrowser(queue);
 			} else {
-				if (warn) {
-					log.warn("message was not of type Message, but ["
-							+ o.getClass().getName() + "]");
-				}
-				return -2;
+				queueBrowser = jSession.createBrowser(queue, messageSelector);
 			}
-		} else {
-			return -1;
+			Enumeration enm = queueBrowser.getEnumeration();
+			if (enm.hasMoreElements()) {
+				Object o = enm.nextElement();
+				if (o instanceof Message) {
+					Message msg = (Message) o;
+					long jmsTimestamp = msg.getJMSTimestamp();
+					return currentTime - jmsTimestamp;
+				} else {
+					if (warn) {
+						log.warn("message was not of type Message, but ["
+								+ o.getClass().getName() + "]");
+					}
+					return -2;
+				}
+			} else {
+				return -1;
+			}
+		} finally {
+			if (queueBrowser != null) {
+				try {
+					queueBrowser.close();
+				} catch (JMSException e) {
+					log.warn("Exception on closing queueBrowser", e);
+				}
+			}
 		}
 	}
 
@@ -146,6 +158,54 @@ public class TibcoUtils {
 			}
 		} catch (JMSException e) {
 			return "?";
+		}
+	}
+
+	public static long getQueueMessageCount(String provUrl, String authAlias,
+			String userName, String password, String queueName,
+			String messageSelector) throws JMSException {
+		Connection connection = null;
+		Session jSession = null;
+		try {
+			connection = getConnection(provUrl, authAlias, userName, password);
+			jSession = connection.createSession(false,
+					javax.jms.Session.AUTO_ACKNOWLEDGE);
+			return getQueueMessageCount(jSession, queueName, messageSelector);
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (JMSException e) {
+					log.warn("Exception on closing connection", e);
+				}
+			}
+		}
+	}
+
+	protected static long getQueueMessageCount(Session jSession,
+			String queueName, String messageSelector) throws JMSException {
+		QueueBrowser queueBrowser = null;
+		try {
+			Queue queue = jSession.createQueue(queueName);
+			if (messageSelector == null) {
+				queueBrowser = jSession.createBrowser(queue);
+			} else {
+				queueBrowser = jSession.createBrowser(queue, messageSelector);
+			}
+			int count = 0;
+			for (Enumeration enm = queueBrowser.getEnumeration(); enm
+					.hasMoreElements(); enm.nextElement()) {
+				count++;
+			}
+			return count;
+		} finally {
+			if (queueBrowser != null) {
+				try {
+					queueBrowser.close();
+				} catch (JMSException e) {
+					log.warn("Exception on closing queueBrowser", e);
+				}
+			}
 		}
 	}
 }

@@ -416,4 +416,46 @@ public class EsbUtils {
 		jdbcDataSource.init();
 		return jdbcDataSource;
 	}
+
+	public static String getQueueMessageCount(EsbJmsListener esbJmsListener) {
+		EsbConnectionFactoryInfo ecfi = getEsbConnectionFactoryInfo(esbJmsListener);
+		if (ecfi != null) {
+			return getQueueMessageCount(ecfi.getUrl(), null,
+					ecfi.getUserName(), ecfi.getPassword(),
+					esbJmsListener.getPhysicalDestinationShortName(),
+					esbJmsListener.getMessageSelector());
+		}
+		return null;
+	}
+	
+	public static String getQueueMessageCount(String provUrl, String authAlias,
+			String userName, String password, String queueName,
+			String messageSelector) {
+		try {
+			Class<?>[] args_types = new Class<?>[6];
+			args_types[0] = String.class;
+			args_types[1] = String.class;
+			args_types[2] = String.class;
+			args_types[3] = String.class;
+			args_types[4] = String.class;
+			args_types[5] = String.class;
+			Object[] args = new Object[6];
+			args[0] = provUrl;
+			args[1] = authAlias;
+			args[2] = userName;
+			args[3] = password;
+			args[4] = queueName;
+			args[5] = messageSelector;
+			long messageCount = (Long) Class
+					.forName(
+							"nl.nn.adapterframework.extensions.tibco.TibcoUtils")
+					.getMethod("getQueueMessageCount", args_types)
+					.invoke(null, args);
+			return String.valueOf(messageCount);
+		} catch (Exception e) {
+			log.warn("error occured during getting queue message count: "
+					+ e.getMessage());
+		}
+		return null;
+	}
 }

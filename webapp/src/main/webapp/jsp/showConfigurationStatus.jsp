@@ -256,7 +256,14 @@
 											<%@ include file="receiverInfo.jsp" %>
 									 	</td>
 										<td class="receiverRow" align="right">
-											<xtags:valueOf select="@pendingMessagesCount"/>
+											<xtags:choose>
+												<xtags:when test="@esbPendingMessagesCount!=''">
+													<xtags:valueOf select="@pendingMessagesCount"/>/<xtags:valueOf select="@esbPendingMessagesCount"/>
+												</xtags:when>
+												<xtags:otherwise>
+													<xtags:valueOf select="@pendingMessagesCount"/>
+												</xtags:otherwise>							
+											</xtags:choose>
 									 	</td>
 									</xtags:when>
 									<xtags:otherwise>

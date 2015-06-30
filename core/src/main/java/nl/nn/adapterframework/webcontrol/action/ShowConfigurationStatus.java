@@ -34,7 +34,9 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.extensions.esb.EsbConnectionFactoryInfo;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
+import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.jms.JmsListenerBase;
@@ -295,6 +297,14 @@ public final class ShowConfigurationStatus extends ActionBase {
 							EsbJmsListener ejl = (EsbJmsListener) listener;
 							if (ejl.getMessageProtocol().equalsIgnoreCase("FF")) {
 								isEsbJmsFFListener = true;
+							}
+							if (count) {
+								String esbNumMsgs = EsbUtils.getQueueMessageCount(ejl);
+								if (esbNumMsgs == null) {
+									esbNumMsgs = "?";
+								}
+								receiverXML.addAttribute(
+										"esbPendingMessagesCount", esbNumMsgs);
 							}
 						}
 						receiverXML.addAttribute("isEsbJmsFFListener", isEsbJmsFFListener);
