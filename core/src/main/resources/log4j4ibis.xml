@@ -40,6 +40,7 @@
 	</appender>
 	<appender name="appwrap" class="nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper">
 		<param name="maxMessageLength" value="${log.lengthLogRecords}"/>
+		<param name="hideRegex" value="${log.hideRegex}"/>
 		<appender-ref ref="file"/>
 		<appender-ref ref="XML"/>
 	</appender>

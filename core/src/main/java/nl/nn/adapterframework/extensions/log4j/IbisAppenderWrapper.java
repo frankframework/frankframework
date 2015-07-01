@@ -6,6 +6,9 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
+import nl.nn.adapterframework.util.Misc;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.AppenderAttachable;
@@ -20,7 +23,8 @@ import org.apache.log4j.spi.LoggingEvent;
 public class IbisAppenderWrapper extends AppenderSkeleton implements
 		AppenderAttachable {
 	protected int maxMessageLength = -1;
-
+	protected String hideRegex;
+	
 	private final List<Appender> appenders = new ArrayList<Appender>();
 
 	public void close() {
@@ -41,6 +45,9 @@ public class IbisAppenderWrapper extends AppenderSkeleton implements
 		if (maxMessageLength >= 0
 				&& modifiedMessage.length() > maxMessageLength) {
 			modifiedMessage = modifiedMessage.substring(0, maxMessageLength) + "...(" + (modifiedMessage.length() - maxMessageLength) + " characters more)";
+		}
+		if (StringUtils.isNotEmpty(hideRegex)) {
+			modifiedMessage = Misc.hideAll(modifiedMessage, hideRegex);
 		}
 		LoggingEvent modifiedEvent = new LoggingEvent(
 				event.getFQNOfLoggerClass(), event.getLogger(),
@@ -121,5 +128,13 @@ public class IbisAppenderWrapper extends AppenderSkeleton implements
 
 	public int getMaxMessageLength() {
 		return maxMessageLength;
+	}
+
+	public String getHideRegex() {
+		return hideRegex;
+	}
+
+	public void setHideRegex(String string) {
+		hideRegex = string;
 	}
 }

@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
@@ -798,5 +800,20 @@ public class Misc {
 			}
 		}
 		return ageString;
+	}
+
+	public static String hideAll(String inputString, String regex) {
+		StringBuilder result = new StringBuilder();
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(inputString);
+		int previous = 0;
+		while (matcher.find()) {
+			result.append(inputString.substring(previous, matcher.start()));
+			result.append(StringUtils.repeat("*",
+					(matcher.end() - matcher.start())));
+			previous = matcher.end();
+		}
+		result.append(inputString.substring(previous, inputString.length()));
+		return result.toString();
 	}
 }
