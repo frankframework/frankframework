@@ -123,6 +123,7 @@ Upcoming
 - Larva indent function: Normalise spaces around attribute names and values
 - Use log.debug instead of log.info for "is about to call pipe" (was/is only called when log.level is DEBUG because log.isDebugEnabled() is used)
 - Add facility to hide strings in log records
+- `(end of v6.0-RC3)`
 
 ### Non backwards compatible changes
 
