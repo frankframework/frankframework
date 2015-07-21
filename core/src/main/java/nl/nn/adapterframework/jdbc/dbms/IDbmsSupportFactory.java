@@ -27,6 +27,7 @@ public interface IDbmsSupportFactory {
 	final int DBMS_ORACLE=1;
 	final int DBMS_MSSQLSERVER=2;
 	final int DBMS_DB2=3;
+	final int DBMS_H2=4;
 	
 	IDbmsSupport getDbmsSupport(Connection conn);
 
