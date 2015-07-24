@@ -30,7 +30,7 @@
 			if (request.getParameter("cmd").equals("indentWindiff")) {
 				out.print("<p>Comparing actual result with expected result...</p>");
 				out.flush();
-				TestTool.windiff(request.getParameter("expectedFileName"), request.getParameter("resultBox"), request.getParameter("expectedBox"));
+				TestTool.windiff(request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
 			} else {
 				out.print("<p>Overwriting expected result with actual result...</p>");
 				out.flush();

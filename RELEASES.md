@@ -125,6 +125,7 @@ Upcoming
 - Add facility to hide strings in log records
 - `(end of v6.0-RC3)`
 - Add H2 database support
+- Larva: Switch parameters for WinDiff to show colors as intended
 
 ### Non backwards compatible changes
 
