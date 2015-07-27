@@ -126,6 +126,7 @@ Upcoming
 - `(end of v6.0-RC3)`
 - Add H2 database support
 - Larva: Switch parameters for WinDiff to show colors as intended
+- Don't check Errorlog for records when errorStore.count.show=false
 
 ### Non backwards compatible changes
 

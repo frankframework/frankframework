@@ -83,20 +83,24 @@ public final class ShowConfigurationStatus extends ActionBase {
 
 		long esr = 0;
 		if (null!=config) {
-			for(Iterator adapterIt=config.getRegisteredAdapters().iterator(); adapterIt.hasNext();) {
-				Adapter adapter = (Adapter)adapterIt.next();
-				for(Iterator receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
-					ReceiverBase receiver=(ReceiverBase)receiverIt.next();
-					ITransactionalStorage errorStorage=receiver.getErrorStorage();
-					if (errorStorage!=null) {
-						try {
-							esr += errorStorage.getMessageCount();
-						} catch (Exception e) {
-							error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
-						    log.warn("assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+			if (showCountErrorStore) {
+				for(Iterator adapterIt=config.getRegisteredAdapters().iterator(); adapterIt.hasNext();) {
+					Adapter adapter = (Adapter)adapterIt.next();
+					for(Iterator receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
+						ReceiverBase receiver=(ReceiverBase)receiverIt.next();
+						ITransactionalStorage errorStorage=receiver.getErrorStorage();
+						if (errorStorage!=null) {
+							try {
+								esr += errorStorage.getMessageCount();
+							} catch (Exception e) {
+								error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
+								log.warn("assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+							}
 						}
 					}
 				}
+			} else {
+				esr = -1;
 			}
 		}
 		
@@ -108,12 +112,14 @@ public final class ShowConfigurationStatus extends ActionBase {
 			exceptionsXML.addSubElement(exceptionXML);
 			adapters.addSubElement(exceptionsXML);
 		}
-		if (configWarnings.size()>0 || esr>0) {
+		if (configWarnings.size()>0 || esr!=0) {
 			XmlBuilder warningsXML=new XmlBuilder("warnings");
-			if (esr>0) {
+			if (esr!=0) {
 				XmlBuilder warningXML=new XmlBuilder("warnings");
 				warningXML=new XmlBuilder("warning");
-				if (esr==1) {
+				if (esr==-1) {
+					warningXML.setValue("Errorlog might contain records. This is unknown because errorStore.count.show is not set to true");
+				} else if (esr==1) {
 					warningXML.setValue("Errorlog contains 1 record. Service management should check whether this record has to be resent or deleted");
 				} else {
 					warningXML.setValue("Errorlog contains "+esr+" records. Service Management should check whether these records have to be resent or deleted");
