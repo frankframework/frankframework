@@ -74,38 +74,49 @@ public class FxfListener extends EsbJmsListener {
 			Map threadContext) throws ListenerException {
 		super.afterMessageProcessed(plr, rawMessage, threadContext);
 
-		if (isMoveProcessedFile()) {
+		if (isMoveProcessedFile() && plr.getState().equalsIgnoreCase("success")) {
 			File srcFile = null;
 			File dstFile = null;
 			try {
 				String srcFileName = (String) threadContext
 						.get(getFxfFileSessionKey());
-				srcFile = new File(srcFileName);
-				File srcDir = srcFile.getParentFile();
-				String dstDirName = srcDir.getParent() + File.separator
-						+ getProcessedSiblingDirectory();
-				dstFile = new File(dstDirName, srcFile.getName());
-				dstFile = FileUtils.getFreeFile(dstFile);
-				if (!dstFile.getParentFile().exists()) {
-					if (isCreateProcessedDirectory()) {
-						if (dstFile.getParentFile().mkdirs()) {
-							log.debug("Created directory ["
-									+ dstFile.getParent() + "]");
-						} else {
-							log.warn("Directory [" + dstFile.getParent()
-									+ "] could not be created");
-						}
-					} else {
-						log.warn("Directory [" + dstFile.getParent()
-								+ "] does not exists");
-					}
-				}
-				if (FileUtils.moveFile(srcFile, dstFile, 1, 0) == null) {
-					warn("Could not move file [" + srcFile.getAbsolutePath()
-							+ "] to file [" + dstFile.getAbsolutePath() + "]");
+				if (StringUtils.isEmpty(srcFileName)) {
+					warn("No file to move");
 				} else {
-					log.info("Moved file [" + srcFile.getAbsolutePath()
-							+ "] to file [" + dstFile.getAbsolutePath() + "]");
+					srcFile = new File(srcFileName);
+					if (!srcFile.exists()) {
+						warn("File [" + srcFileName + "] does not exist");
+					} else {
+						File srcDir = srcFile.getParentFile();
+						String dstDirName = srcDir.getParent() + File.separator
+								+ getProcessedSiblingDirectory();
+						dstFile = new File(dstDirName, srcFile.getName());
+						dstFile = FileUtils.getFreeFile(dstFile);
+						if (!dstFile.getParentFile().exists()) {
+							if (isCreateProcessedDirectory()) {
+								if (dstFile.getParentFile().mkdirs()) {
+									log.debug("Created directory ["
+											+ dstFile.getParent() + "]");
+								} else {
+									log.warn("Directory ["
+											+ dstFile.getParent()
+											+ "] could not be created");
+								}
+							} else {
+								log.warn("Directory [" + dstFile.getParent()
+										+ "] does not exist");
+							}
+						}
+						if (FileUtils.moveFile(srcFile, dstFile, 1, 0) == null) {
+							warn("Could not move file ["
+									+ srcFile.getAbsolutePath() + "] to file ["
+									+ dstFile.getAbsolutePath() + "]");
+						} else {
+							log.info("Moved file [" + srcFile.getAbsolutePath()
+									+ "] to file [" + dstFile.getAbsolutePath()
+									+ "]");
+						}
+					}
 				}
 			} catch (Exception e) {
 				warn("Error while moving file [" + srcFile.getAbsolutePath()
