@@ -127,6 +127,7 @@ Upcoming
 - Add H2 database support
 - Larva: Switch parameters for WinDiff to show colors as intended
 - Don't check Errorlog for records when errorStore.count.show=false
+- Add parameter type 'bytes' to QuerySenders
 
 ### Non backwards compatible changes
 
