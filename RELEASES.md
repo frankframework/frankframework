@@ -132,6 +132,7 @@ Upcoming
 - Add support for FxF3 version 2
 - Larva: add DelaySender
 - Add class to scan and report TIBCO sources in Subversion
+- Add facility to GetTibcoQueues to retrieve principal description directly from LDAP
 
 ### Non backwards compatible changes
 

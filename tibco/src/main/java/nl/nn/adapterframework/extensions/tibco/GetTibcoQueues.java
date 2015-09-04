@@ -19,6 +19,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -34,10 +35,14 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.xml.xpath.XPathExpressionException;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.ldap.LdapSender;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -46,6 +51,7 @@ import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -95,6 +101,7 @@ import com.tibco.tibjms.admin.UserInfo;
  * <tr><td>queueItem</td><td>string</td><td>the number of the queue message which is used for browsing one queue (default is 1)</td></tr>
  * <tr><td>showAge</td><td>boolean</td><td>when set to <code>true</code> and <code>pendingMsgCount&gt;0</code> and <code>receiverCount=0</code>, the age of the current first message in the queue is shown in the queues overview (default is false)</td></tr>
  * <tr><td>countOnly</td><td>boolean</td><td>when set to <code>true</code> and <code>queueName</code> is filled, only the number of pending messages is returned (default is false)</td></tr>
+ * <tr><td>ldapUrl</td><td>string</td><td>When present, principal descriptions are retrieved from this LDAP server</td></tr>
  * </table>
  * </p>
  * 
@@ -112,7 +119,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String queueRegex;
 
 	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session)
-			throws PipeRunException {
+		throws PipeRunException {
 		String result;
 		String url_work;
 		String authAlias_work;
@@ -196,6 +203,12 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 						+ "]");
 			}
 
+			String ldapUrl = getParameterValue(pvl, "ldapUrl");
+			LdapSender ldapSender = null;
+			if (StringUtils.isNotEmpty(ldapUrl)) {
+				ldapSender = retrieveLdapSender(ldapUrl, cf);
+			}
+
 			queueName_work = getParameterValue(pvl, "queueName");
 			if (StringUtils.isNotEmpty(queueName_work)) {
 				String countOnly_work = getParameterValue(pvl, "countOnly");
@@ -205,14 +218,14 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 					return getQueueMessageCountOnly(admin, queueName_work);
 				}
 			}
-			
+
 			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(
 					url_work);
 			connection = factory.createConnection(cf.getUsername(),
 					cf.getPassword());
 			jSession = connection.createSession(false,
 					javax.jms.Session.AUTO_ACKNOWLEDGE);
-			
+
 			if (StringUtils.isNotEmpty(queueName_work)) {
 				String queueItem_work = getParameterValue(pvl, "queueItem");
 				int qi;
@@ -221,12 +234,12 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				} else {
 					qi = 1;
 				}
-				result = getQueueMessage(jSession, admin, queueName_work, qi);
+				result = getQueueMessage(jSession, admin, queueName_work, qi, ldapSender);
 			} else {
 				String showAge_work = getParameterValue(pvl, "showAge");
 				boolean showAge = ("true".equalsIgnoreCase(showAge_work) ? true
 						: false);
-				result = getQueuesInfo(jSession, admin, showAge);
+				result = getQueuesInfo(jSession, admin, showAge, ldapSender);
 			}
 		} catch (Exception e) {
 			String msg = getLogPrefix(session)
@@ -257,8 +270,36 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return result;
 	}
 
+	private LdapSender retrieveLdapSender(String ldapUrl, CredentialFactory cf) {
+		try {
+			LdapSender ldapSender = new LdapSender();
+			ldapSender.setProviderURL(ldapUrl);
+			ldapSender.setAttributesToReturn("cn,description");
+			if (StringUtils.isNotEmpty(cf.getAlias())) {
+				ldapSender.setJndiAuthAlias(cf.getAlias());
+			}
+			if (StringUtils.isNotEmpty(cf.getUsername())) {
+				ldapSender.setPrincipal(cf.getUsername());
+			}
+			if (StringUtils.isNotEmpty(cf.getPassword())) {
+				ldapSender.setCredentials(cf.getPassword());
+			}
+			Parameter p = new Parameter();
+			p.setName("entryName");
+			p.setXpathExpression("concat('cn=',*))");
+			p.configure();
+			ldapSender.addParameter(p);
+			ldapSender.configure();
+			return ldapSender;
+		} catch (ConfigurationException e) {
+			log.warn(getLogPrefix(null) + "exception on retrieving ldapSender",
+					e);
+		}
+		return null;
+	}
+
 	private String getQueueMessage(Session jSession, TibjmsAdmin admin,
-			String queueName, int queueItem) throws TibjmsAdminException,
+			String queueName, int queueItem, LdapSender ldapSender) throws TibjmsAdminException,
 			JMSException {
 		XmlBuilder qMessageXml = new XmlBuilder("qMessage");
 		ServerInfo serverInfo = admin.getInfo();
@@ -358,10 +399,10 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				}
 			}
 		}
-		
+
 		qMessageXml.addSubElement(qNameXml);
 
-		Map aclMap = getAclMap(admin);
+		Map aclMap = getAclMap(admin, ldapSender);
 		QueueInfo qInfo = admin.getQueue(queueName);
 		XmlBuilder aclXml = new XmlBuilder("acl");
 		XmlBuilder qInfoXml = qInfoToXml(qInfo);
@@ -392,7 +433,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	}
 
 	private String getQueuesInfo(Session jSession, TibjmsAdmin admin,
-			boolean showAge) throws TibjmsAdminException {
+			boolean showAge, LdapSender ldapSender) throws TibjmsAdminException {
 		XmlBuilder qInfosXml = new XmlBuilder("qInfos");
 		ServerInfo serverInfo = admin.getInfo();
 		String url = serverInfo.getURL();
@@ -407,7 +448,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		qInfosXml.addAttribute("startTime",
 				DateUtils.format(serverInfo.getStartTime(), DateUtils.fullIsoFormat));
 
-		Map aclMap = getAclMap(admin);
+		Map aclMap = getAclMap(admin, ldapSender);
 		Map consumersMap = getConnectedConsumersMap(admin);
 		QueueInfo[] qInfos = admin.getQueues();
 		for (int i = 0; i < qInfos.length; i++) {
@@ -436,7 +477,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 						String qfmAge;
 						if (getQueueRegex() == null || qInfo.getName().matches(getQueueRegex())) {
 							qfmAge = TibcoUtils.getQueueFirstMessageAgeAsString(jSession,
-									qInfo.getName(), currentTime);
+											qInfo.getName(), currentTime);
 						} else {
 							qfmAge = "?";
 						}
@@ -540,8 +581,8 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		}
 		return string;
 	}
-	
-	private Map getAclMap(TibjmsAdmin admin) throws TibjmsAdminException {
+
+	private Map getAclMap(TibjmsAdmin admin, LdapSender ldapSender) throws TibjmsAdminException {
 		Map userMap = new HashMap();
 		Map aclMap = new HashMap();
 		ACLEntry[] aclEntries = admin.getACLEntries();
@@ -555,12 +596,17 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				if (userMap.containsKey(principal)) {
 					principalDescription = (String) userMap.get(principal);
 				} else {
-					UserInfo principalUserInfo = admin.getUser(principal);
-					if (principalUserInfo != null) {
-						principalDescription = principalUserInfo
-								.getDescription();
-						userMap.put(principal, principalDescription);
+					if (ldapSender != null) {
+						principalDescription = getLdapPrincipalDescription(principal, ldapSender);
 					}
+					if (principalDescription == null) {
+						UserInfo principalUserInfo = admin.getUser(principal);
+						if (principalUserInfo != null) {
+							principalDescription = principalUserInfo
+									.getDescription();
+						}
+					}
+					userMap.put(principal, principalDescription);
 				}
 			}
 			String pp;
@@ -580,6 +626,27 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			}
 		}
 		return aclMap;
+	}
+
+	private String getLdapPrincipalDescription(String principal, LdapSender ldapSender) {
+		String principalDescription = null;
+		String ldapRequest = "<req>" + principal + "</req>";
+		try {
+			String ldapResult = ldapSender.sendMessage(null, ldapRequest);
+			if (ldapResult != null) {
+				Collection<String> c = XmlUtils.evaluateXPathNodeSet(
+						ldapResult,
+						"attributes/attribute[@name='description']/@value");
+				if (c != null && c.size() > 0) {
+					principalDescription = c.iterator().next();
+				}
+			}
+		} catch (Exception e) {
+			log.debug("Caught exception retrieving description for principal ["
+					+ principal + "]: " + e.getMessage());
+			return null;
+		}
+		return principalDescription;
 	}
 
 	private String getResolvedUrl(String url) {
@@ -640,7 +707,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		}
 		return consumerMap;
 	}
-	
+
 	public String getUrl() {
 		return url;
 	}
