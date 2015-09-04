@@ -112,4 +112,8 @@ public class FilePipe extends FixedForwardPipe {
 	public void setDeleteEmptyDirectory(boolean b) {
 		fileHandler.setDeleteEmptyDirectory(b);
 	}
+
+	public void setStreamResultToServlet(boolean b) {
+		fileHandler.setStreamResultToServlet(b);
+	}
 }

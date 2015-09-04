@@ -22,12 +22,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
@@ -83,6 +86,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>(only used when actions=delete) when set to <code>true</code>, the directory from which a file is deleted is also deleted when it contains no other files</td><td>false</td></tr>
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code>, <code>bytes</code> or <code>stream</code></td><td>"string"</td></tr>
  * <tr><td>{@link #setFileSource(String) fileSource}</td><td>(action=read) either <code>filesystem</code> or <code>classpath</code></td><td>"filesystem"</td></tr>
+ * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>(only used when outputType=stream) if set, the result is streamed to the HttpServletResponse object which is stored in session key "restListenerServletResponse"</td><td>false</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -114,6 +118,7 @@ public class FileHandler {
 	protected boolean testCanWrite = true;
 	protected boolean skipBOM = false;
 	protected boolean deleteEmptyDirectory = false;
+	protected boolean streamResultToServlet=false;
 
 	protected List transformers;
 	protected byte[] eolArray=null;
@@ -204,7 +209,24 @@ public class FileHandler {
 			}
 		}
 		if (output == null || "bytes".equals(outputType) || "stream".equals(outputType)) {
-			return output;
+			if ("stream".equals(outputType) && isStreamResultToServlet()) {
+				InputStream inputStream = (InputStream) output;
+				HttpServletResponse response = (HttpServletResponse) session.get("restListenerServletResponse");
+				String contentType = (String) session.get("contentType");
+				String contentDisposition = (String) session.get("contentDisposition");
+				if (StringUtils.isNotEmpty(contentType)) {
+					response.setHeader("Content-Type", contentType); 
+				}
+				if (StringUtils.isNotEmpty(contentDisposition)) {
+					response.setHeader("Content-Disposition", contentDisposition); 
+				}
+				OutputStream outputStream = response.getOutputStream();
+				Misc.streamToStream(inputStream, outputStream);
+				log.debug(getLogPrefix(session) + "copied response body input stream [" + inputStream + "] to output stream [" + outputStream + "]");
+				return "";
+			} else {
+				return output;
+			}
 		} else {
 			return new String((byte[])output, charset);
 		}
@@ -745,6 +767,13 @@ public class FileHandler {
 	}
 	public boolean isDeleteEmptyDirectory() {
 		return deleteEmptyDirectory;
+	}
+
+	public void setStreamResultToServlet(boolean b) {
+		streamResultToServlet = b;
+	}
+	public boolean isStreamResultToServlet() {
+		return streamResultToServlet;
 	}
 
 	private class FileDeleteAfterReadInputStream extends FileInputStream {
