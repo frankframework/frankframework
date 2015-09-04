@@ -128,6 +128,7 @@ Upcoming
 - Larva: Switch parameters for WinDiff to show colors as intended
 - Don't check Errorlog for records when errorStore.count.show=false
 - Add parameter type 'bytes' to QuerySenders
+- Add TimeoutGuardSenderWithParametersBase for better timeout handling in senders
 
 ### Non backwards compatible changes
 

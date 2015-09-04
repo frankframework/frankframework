@@ -41,6 +41,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutGuardSenderWithParametersBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -198,7 +199,7 @@ import org.htmlcleaner.TagNode;
  * @author Gerrit van Brakel
  * @since 4.2c
  */
-public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
+public class HttpSender extends TimeoutGuardSenderWithParametersBase implements HasPhysicalDestination {
 
 	private String url;
 	private String urlParam="url";
@@ -730,7 +731,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		log.debug(getLogPrefix() + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
 	}
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public String sendMessageWithTimeoutGuarded(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		try {
 			if (prc !=null && paramList !=null) {
@@ -868,16 +869,12 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		return sendMessage(correlationID, message, null);
 	}
 
-
-
 	public String getPhysicalDestinationName() {
 		if (urlParameter!=null) {
 			return "dynamic url";
 		}
 		return getUrl();
 	}
-
-
 
 	public String getUrl() {
 		return url;
@@ -912,6 +909,10 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public void setTimeout(int i) {
 		timeout = i;
+	}
+
+	public int retrieveTymeout() {
+		return (getTimeout() / 1000) + 1;
 	}
 
 	public int getMaxConnections() {
@@ -999,8 +1000,6 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		proxyRealm = string;
 	}
 
-
-	
 	public String getCertificate() {
 		return certificate;
 	}
