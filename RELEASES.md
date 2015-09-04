@@ -130,6 +130,7 @@ Upcoming
 - Add parameter type 'bytes' to QuerySenders
 - Add TimeoutGuardSenderWithParametersBase for better timeout handling in senders
 - Add support for FxF3 version 2
+- Larva: add DelaySender
 
 ### Non backwards compatible changes
 

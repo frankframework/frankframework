@@ -54,6 +54,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.senders.DelaySender;
 import nl.nn.adapterframework.senders.IbisJavaSender;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CaseInsensitiveComparator;
@@ -1008,6 +1009,7 @@ public class TestTool {
 		List webServiceListeners = new ArrayList();
 		List httpSenders = new ArrayList();
 		List ibisJavaSenders = new ArrayList();
+		List delaySenders = new ArrayList();
 		List javaListeners = new ArrayList();
 		List fileSenders = new ArrayList();
 		List fileListeners = new ArrayList();
@@ -1054,6 +1056,10 @@ public class TestTool {
 							&& !ibisJavaSenders.contains(queueName)) {
 						debugMessage("Adding ibisJavaSender queue: " + queueName, writers);
 						ibisJavaSenders.add(queueName);
+					} else if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))
+							&& !delaySenders.contains(queueName)) {
+						debugMessage("Adding delaySender queue: " + queueName, writers);
+						delaySenders.add(queueName);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))
 							&& !javaListeners.contains(queueName)) {
 						debugMessage("Adding javaListener queue: " + queueName, writers);
@@ -1626,6 +1632,24 @@ public class TestTool {
 			}
 		}
 
+		debugMessage("Initialize delay senders", writers);
+		iterator = delaySenders.iterator();
+		while (queues != null && iterator.hasNext()) {
+			String name = (String)iterator.next();
+			Boolean convertExceptionToMessage = new Boolean((String)properties.get(name + ".convertExceptionToMessage"));
+			String delayTime = (String)properties.get(name + ".delayTime");
+			DelaySender delaySender = new DelaySender();
+			if (delayTime!=null) {
+				delaySender.setDelayTime(Long.parseLong(delayTime));
+			}
+			delaySender.setName("Test Tool DelaySender");
+			Map delaySenderInfo = new HashMap();
+			delaySenderInfo.put("delaySender", delaySender);
+			delaySenderInfo.put("convertExceptionToMessage", convertExceptionToMessage);
+			queues.put(name, delaySenderInfo);
+			debugMessage("Opened delay sender '" + name + "'", writers);
+		}
+		
 		debugMessage("Initialize java listeners", writers);
 		iterator = javaListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
@@ -2063,6 +2087,21 @@ public class TestTool {
 			}
 		}
 
+		debugMessage("Close delay senders", writers);
+		iterator = queues.keySet().iterator();
+		while (iterator.hasNext()) {
+			String queueName = (String)iterator.next();
+			if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))) {
+				DelaySender delaySender = (DelaySender)((Map)queues.get(queueName)).get("delaySender");
+				try {
+					delaySender.close();
+					debugMessage("Closed delay sender '" + queueName + "'", writers);
+				} catch(SenderException e) {
+					errorMessage("Could not close delay sender '" + queueName + "': " + e.getMessage(), e, writers);
+				}
+			}
+		}
+		
 		debugMessage("Close java listeners", writers);
 		iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
@@ -2283,6 +2322,20 @@ public class TestTool {
 		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
 		try {
 			fileSender.sendMessage(fileContent);
+			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
+			result = true;
+		} catch(Exception e) {
+			errorMessage("Exception writing to file: " + e.getMessage(), e, writers);
+		}
+		return result;
+	}
+
+	private static boolean executeDelaySenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
+		boolean result = false;
+		Map delaySenderInfo = (Map)queues.get(queueName);
+		DelaySender delaySender = (DelaySender)delaySenderInfo.get("delaySender");
+		try {
+			delaySender.sendMessage(null, fileContent);
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
 			result = true;
 		} catch(Exception e) {
@@ -2639,6 +2692,8 @@ public class TestTool {
 						stepPassed = executeFileSenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeXsltProviderListenerWrite(stepDisplayName, queues, writers, queueName, fileName, fileContent, properties);
+					} else if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))) {
+						stepPassed = executeDelaySenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
 					} else {
 						errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
 					}
