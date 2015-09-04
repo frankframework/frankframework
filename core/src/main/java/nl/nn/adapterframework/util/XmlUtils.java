@@ -61,6 +61,11 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
@@ -569,10 +574,14 @@ public class XmlUtils {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, false);
 	}
 
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List params, boolean stripSpace, boolean xslt2) throws TransformerConfigurationException {
+		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, xslt2, null);
+	}
+
 	/*
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
 	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List params, boolean stripSpace, boolean xslt2) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List params, boolean stripSpace, boolean xslt2, String separator) throws TransformerConfigurationException {
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
 
@@ -606,6 +615,10 @@ public class XmlUtils {
 				paramsString = paramsString + "<xsl:param name=\"" + it.next() + "\"/>";
 			}
 		}
+		String separatorString = "";
+		if (separator != null) {
+			separatorString = " separator=\"" + separator + "\"";
+		}
 		String xsl =
 			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
 			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+(xslt2?"2.0":"1.0")+"\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
@@ -613,7 +626,7 @@ public class XmlUtils {
 			(stripSpace?"<xsl:strip-space elements=\"*\"/>":"") +
 			paramsString +
 			"<xsl:template match=\"/\">" +
-			"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XPathExpression + "\"/>" +
+			"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XPathExpression + "\"" + separatorString + "/>" +
 			"</xsl:template>" +
 			"</xsl:stylesheet>";
 
@@ -1624,5 +1637,105 @@ public class XmlUtils {
 			XmlUtils.setTransformerParameters(transformer, parameters);
 		}
 		return XmlUtils.transformXml(transformer, input);
+	}
+
+	public static Collection<String> evaluateXPathNodeSet(String input,
+			String xpathExpr) throws DomBuilderException,
+			XPathExpressionException {
+		String msg = XmlUtils.removeNamespaces(input);
+
+		Collection<String> c = new LinkedList<String>();
+		Document doc = buildDomDocument(msg, true, true);
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		XPathExpression xPathExpression = xPath.compile(xpathExpr);
+		Object result = xPathExpression.evaluate(doc, XPathConstants.NODESET);
+		NodeList nodes = (NodeList) result;
+		for (int i = 0; i < nodes.getLength(); i++) {
+			if (nodes.item(i).getNodeType() == Node.ATTRIBUTE_NODE) {
+				c.add(nodes.item(i).getNodeValue());
+			} else {
+				//c.add(nodes.item(i).getTextContent());
+				c.add(nodes.item(i).getFirstChild().getNodeValue());
+			}
+		}
+		if (c != null && c.size() > 0) {
+			return c;
+		}
+		return null;
+	}
+
+	public static String evaluateXPathNodeSetFirstElement(String input,
+			String xpathExpr) throws DomBuilderException,
+			XPathExpressionException {
+		Collection<String> c = evaluateXPathNodeSet(input, xpathExpr);
+		if (c != null && c.size() > 0) {
+			return c.iterator().next();
+		}
+		return null;
+	}
+
+	public static Double evaluateXPathNumber(String input,
+			String xpathExpr) throws DomBuilderException,
+			XPathExpressionException {
+		String msg = XmlUtils.removeNamespaces(input);
+
+		Document doc = buildDomDocument(msg, true, true);
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		XPathExpression xPathExpression = xPath.compile(xpathExpr);
+		Object result = xPathExpression.evaluate(doc, XPathConstants.NUMBER);
+		return (Double) result;
+	}
+
+	public static Map<String, String> evaluateXPathNodeSet(String input,
+			String xpathExpr, String keyElement, String valueElement)
+			throws DomBuilderException, XPathExpressionException {
+		String msg = XmlUtils.removeNamespaces(input);
+
+		Map<String, String> m = new HashMap<String, String>();
+		Document doc = buildDomDocument(msg, true, true);
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		XPathExpression xPathExpression = xPath.compile(xpathExpr);
+		Object result = xPathExpression.evaluate(doc, XPathConstants.NODESET);
+		NodeList nodes = (NodeList) result;
+		for (int i = 0; i < nodes.getLength(); i++) {
+			Node node = nodes.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element element = (Element) node;
+				String key = getChildTagAsString(element, keyElement);
+				String value = getChildTagAsString(element, valueElement);
+				m.put(key, value);
+			}
+		}
+		if (m != null && m.size() > 0) {
+			return m;
+		}
+		return null;
+	}
+
+	public static Collection<String> evaluateXPathNodeSet(String input,
+			String xpathExpr, String xpathExpr2) throws DomBuilderException,
+			XPathExpressionException {
+		String msg = XmlUtils.removeNamespaces(input);
+
+		Collection<String> c = new LinkedList<String>();
+		Document doc = buildDomDocument(msg, true, true);
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		XPathExpression xPathExpression = xPath.compile(xpathExpr);
+		Object result = xPathExpression.evaluate(doc, XPathConstants.NODESET);
+		NodeList nodes = (NodeList) result;
+		for (int i = 0; i < nodes.getLength(); i++) {
+			Node node = nodes.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element element = (Element) node;
+				XPathExpression xPathExpression2 = xPath.compile(xpathExpr2);
+				Object result2 = xPathExpression2.evaluate(element,
+						XPathConstants.STRING);
+				c.add((String) result2);
+			}
+		}
+		if (c != null && c.size() > 0) {
+			return c;
+		}
+		return null;
 	}
 }

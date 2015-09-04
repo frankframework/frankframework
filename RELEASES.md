@@ -131,6 +131,7 @@ Upcoming
 - Add TimeoutGuardSenderWithParametersBase for better timeout handling in senders
 - Add support for FxF3 version 2
 - Larva: add DelaySender
+- Add class to scan and report TIBCO sources in Subversion
 
 ### Non backwards compatible changes
 
