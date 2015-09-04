@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.NDC;
 
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -35,6 +36,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>when <code>true</code>, a SenderException (or TimeOutException) is thrown. Otherwise the output is only logged as an error (and returned in a XML string with 'error' tags)</td><td>true</td></tr>
+ * <tr><td>{@link #setXmlTag(String) xmlTag}</td><td>when not empty, the xml tag to encapsulate the result in</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -45,6 +47,7 @@ public class TimeoutGuardSenderWithParametersBase extends
 
 	private boolean throwException = true;
 	private int tymeout = 30;
+	private String xmlTag;
 
 	public class SendMessage implements Callable<String> {
 		private String correlationID;
@@ -83,6 +86,10 @@ public class TimeoutGuardSenderWithParametersBase extends
 			log.debug(getLogPrefix() + "setting timeout of ["
 					+ retrieveTymeout() + "] s");
 			result = (String) future.get(retrieveTymeout(), TimeUnit.SECONDS);
+			if (StringUtils.isNotEmpty(getXmlTag())) {
+				result = "<" + getXmlTag() + "><![CDATA[" + result + "]]></"
+						+ getXmlTag() + ">";
+			}
 		} catch (Exception e) {
 			boolean timedOut = false;
 			Throwable t = e.getCause();
@@ -145,4 +152,11 @@ public class TimeoutGuardSenderWithParametersBase extends
 		return tymeout;
 	}
 
+	public void setXmlTag(String string) {
+		xmlTag = string;
+	}
+
+	public String getXmlTag() {
+		return xmlTag;
+	}
 }
