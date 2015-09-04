@@ -133,6 +133,8 @@ Upcoming
 - Larva: add DelaySender
 - Add class to scan and report TIBCO sources in Subversion
 - Add facility to GetTibcoQueues to retrieve principal description directly from LDAP
+- Add facility of streaming result from HttpSender to file
+- Add methodTypes HEAD and REPORT to HttpSender
 
 ### Non backwards compatible changes
 

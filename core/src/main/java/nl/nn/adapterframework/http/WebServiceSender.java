@@ -180,10 +180,10 @@ public class WebServiceSender extends HttpSender {
 	}
 
 
-	public String extractResult(HttpMethod httpmethod) throws SenderException, IOException {
+	public String extractResult(HttpMethod httpmethod, String fileName) throws SenderException, IOException {
 		String httpResult;
 		try {
-			httpResult = super.extractResult(httpmethod);
+			httpResult = super.extractResult(httpmethod, fileName);
 		} catch (SenderException e) {
 			soapWrapper.checkForSoapFault(getResponseBodyAsString(httpmethod), e);
 			throw e;

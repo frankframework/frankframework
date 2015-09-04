@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.http;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,16 +31,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import jcifs.util.Base64;
-
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerConfigurationException;
 
+import jcifs.util.Base64;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.core.TimeoutGuardSenderWithParametersBase;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -48,11 +47,14 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -66,6 +68,7 @@ import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
@@ -75,10 +78,14 @@ import org.apache.commons.httpclient.methods.multipart.PartSource;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.lang.StringUtils;
+import org.apache.jackrabbit.webdav.DavException;
+import org.apache.jackrabbit.webdav.client.methods.ReportMethod;
+import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
+import org.w3c.dom.Element;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE.
@@ -90,7 +97,7 @@ import org.htmlcleaner.TagNode;
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrlParam(String) urlParam}</td><td>parameter that is used to obtain url; overrides url-attribute.</td><td>url</td></tr>
- * <tr><td>{@link #setMethodType(String) methodType}</td><td>type of method to be executed, either 'GET', 'POST', 'PUT' or 'DELETE'</td><td>GET</td></tr>
+ * <tr><td>{@link #setMethodType(String) methodType}</td><td>type of method to be executed, either 'GET', 'POST', 'PUT', 'DELETE', 'HEAD' or 'REPORT'</td><td>GET</td></tr>
  * <tr><td>{@link #setContentType(String) contentType}</td><td>content-type of the request, only for POST and PUT methods</td><td>text/html; charset=UTF-8</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout in ms of obtaining a connection/result. 0 means no timeout</td><td>10000</td></tr>
  * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>the maximum number of concurrent connections</td><td>10</td></tr>
@@ -131,6 +138,7 @@ import org.htmlcleaner.TagNode;
  * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)</td><td>false</td></tr>
  * <tr><td>{@link #setBase64(boolean) base64}</td><td>when true, the result is base64 encoded</td><td>false</td></tr>
  * <tr><td>{@link #setProtocol(String) protocol}</td><td>Secure socket protocol (such as "SSL" and "TLS") to use when a SSLContext object is generated. If empty the protocol "SSL" is used</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStreamResultToFileNameSessionKey(String) streamResultToFileNameSessionKey}</td><td>if set, the result is streamed to a file (instead of passed as a String)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -249,6 +257,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	private String styleSheetName=null;
 	private boolean multipart=false;
 	private boolean streamResultToServlet=false;
+	private String streamResultToFileNameSessionKey=null;
 	private boolean base64=false;
 	private String protocol=null;
 	
@@ -550,11 +559,32 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 				}
 				return deleteMethod;
 			}
+			if (getMethodType().equals("HEAD")) {
+				HeadMethod headMethod = new HeadMethod(path.toString());
+				if (StringUtils.isNotEmpty(getContentType())) {
+					headMethod.setRequestHeader("Content-Type",getContentType());
+				}
+				return headMethod;
+			}
+			if (getMethodType().equals("REPORT")) {
+				Element element = XmlUtils.buildElement(message, true);
+				ReportInfo reportInfo = new ReportInfo(element, 0);
+				ReportMethod reportMethod = new ReportMethod(path.toString(), reportInfo);
+				if (StringUtils.isNotEmpty(getContentType())) {
+					reportMethod.setRequestHeader("Content-Type",getContentType());
+				}
+				return reportMethod;
+			}
 			throw new SenderException("unknown methodtype ["+getMethodType()+"], must be either POST, GET, PUT or DELETE");
 		} catch (URIException e) {
 			throw new SenderException(getLogPrefix()+"cannot find path from url ["+getUrl()+"]", e);
+		} catch (DavException e) {
+			throw new SenderException(e);
+		} catch (DomBuilderException e) {
+			throw new SenderException(e);
+		} catch (IOException e) {
+			throw new SenderException(e);
 		}
-
 	}
 
 	protected PostMethod getPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, ParameterResolutionContext prc) throws SenderException {
@@ -657,11 +687,11 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		}
 	}
 	
-	public String extractResult(HttpMethod httpmethod) throws SenderException, IOException {
-		return extractResult(httpmethod, null);
+	public String extractResult(HttpMethod httpmethod, String fileName) throws SenderException, IOException {
+		return extractResult(httpmethod, null, fileName);
 	}
 	
-	public String extractResult(HttpMethod httpmethod, HttpServletResponse response) throws SenderException, IOException {
+	public String extractResult(HttpMethod httpmethod, HttpServletResponse response, String fileName) throws SenderException, IOException {
 		int statusCode = httpmethod.getStatusCode();
 		boolean ok = false;
 		if (statusCode==HttpServletResponse.SC_OK) {
@@ -679,11 +709,18 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 					+ " body: " + getResponseBodyAsString(httpmethod));
 		}
 		if (response==null) {
-			if (isBase64()) {
-				return getResponseBodyAsBase64(httpmethod);
+			if (fileName==null) {
+				if (isBase64()) {
+					return getResponseBodyAsBase64(httpmethod);
+				} else {
+					//return httpmethod.getResponseBodyAsString();
+					return getResponseBodyAsString(httpmethod);
+				}
 			} else {
-				//return httpmethod.getResponseBodyAsString();
-				return getResponseBodyAsString(httpmethod);
+					InputStream is = httpmethod.getResponseBodyAsStream();
+					File file = new File(fileName);
+					Misc.streamToFile(is, file);
+					return fileName;
 			}
 		} else {
 			streamResponseBody(httpmethod, response);
@@ -694,6 +731,17 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	public String getResponseBodyAsString(HttpMethod httpmethod) throws IOException {
 		String charset = ((HttpMethodBase)httpmethod).getResponseCharSet();
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
+		if ("HEAD".equals(getMethodType())) {
+			XmlBuilder headersXml = new XmlBuilder("headers");
+			Header[] headers = httpmethod.getResponseHeaders();
+			for (Header header : headers) {
+				XmlBuilder headerXml = new XmlBuilder("header");
+				headerXml.addAttribute("name", header.getName());
+				headerXml.setCdataValue(header.getValue());
+				headersXml.addSubElement(headerXml);
+			}
+			return headersXml.toXML();
+		}
 		InputStream is = httpmethod.getResponseBodyAsStream();
 		if (is == null) {
 			return null;
@@ -763,7 +811,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 				httpmethod=getPostMethodWithParamsInBody(uri, message, pvl, headersParamsMap, prc);
 			} else {
 				httpmethod=getMethod(uri, message, pvl, headersParamsMap);
-				if (!"POST".equals(getMethodType()) && !"PUT".equals(getMethodType()) ) {
+				if (!"POST".equals(getMethodType()) && !"PUT".equals(getMethodType()) && !"REPORT".equals(getMethodType())) {
 					httpmethod.setFollowRedirects(isFollowRedirects());
 				}
 			}
@@ -807,9 +855,13 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 				}
 				if (isStreamResultToServlet()) {
 					HttpServletResponse response = (HttpServletResponse) prc.getSession().get("restListenerServletResponse");
-					result = extractResult(httpmethod, response);	
+					result = extractResult(httpmethod, response, null);	
 				} else {
-					result = extractResult(httpmethod);	
+					String fileName = null;
+					if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
+						fileName = (String) prc.getSession().get(getStreamResultToFileNameSessionKey());
+					}
+					result = extractResult(httpmethod, fileName);	
 				}
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"retrieved result ["+result+"]");
 			} catch (HttpException e) {
@@ -869,12 +921,16 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		return sendMessage(correlationID, message, null);
 	}
 
+
+
 	public String getPhysicalDestinationName() {
 		if (urlParameter!=null) {
 			return "dynamic url";
 		}
 		return getUrl();
 	}
+
+
 
 	public String getUrl() {
 		return url;
@@ -912,6 +968,8 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	}
 
 	public int retrieveTymeout() {
+		// add 1 second to timeout to be sure HttpClient timeout is not
+		// overruled
 		return (getTimeout() / 1000) + 1;
 	}
 
@@ -1000,6 +1058,8 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		proxyRealm = string;
 	}
 
+
+	
 	public String getCertificate() {
 		return certificate;
 	}
@@ -1191,5 +1251,12 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 
 	public void setProtocol(String string) {
 		protocol = string;
+	}
+
+	public String getStreamResultToFileNameSessionKey() {
+		return streamResultToFileNameSessionKey;
+	}
+	public void setStreamResultToFileNameSessionKey(String string) {
+		streamResultToFileNameSessionKey = string;
 	}
 }
