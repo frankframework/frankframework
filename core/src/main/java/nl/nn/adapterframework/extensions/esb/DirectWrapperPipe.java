@@ -15,6 +15,8 @@
  */
 package nl.nn.adapterframework.extensions.esb;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -34,6 +36,8 @@ import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 
 public class DirectWrapperPipe extends TimeoutGuardPipe {
 	protected final static String DESTINATION = "destination";
+	protected final static String CMHVERSION = "cmhVersion";
+	protected final static String ADDOUTPUTNAMESPACE = "addOutputNamespace";
 
 	public String doPipeWithTimeoutGuarded(Object input,
 			IPipeLineSession session) throws PipeRunException {
@@ -52,14 +56,25 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 		}
 
 		String destination = getParameterValue(pvl, DESTINATION);
+		String cmhVersion = getParameterValue(pvl, CMHVERSION);
+		String addOutputNamespace = getParameterValue(pvl, ADDOUTPUTNAMESPACE);
 
 		EsbSoapWrapperPipe eswPipe = new EsbSoapWrapperPipe();
-		eswPipe.setAddOutputNamespace(true);
+		if (addOutputNamespace != null) {
+			if ("on".equalsIgnoreCase(addOutputNamespace)) {
+				eswPipe.setAddOutputNamespace(true);
+			}
+		}
 		if (destination != null) {
 			Parameter p = new Parameter();
 			p.setName(DESTINATION);
 			p.setValue(destination);
 			eswPipe.addParameter(p);
+		}
+		if (cmhVersion != null) {
+			if (StringUtils.isNumeric(cmhVersion)) {
+				eswPipe.setCmhVersion(Integer.parseInt(cmhVersion));
+			}
 		}
 		PipeForward pf = new PipeForward();
 		pf.setName("success");
