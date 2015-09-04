@@ -129,6 +129,7 @@ Upcoming
 - Don't check Errorlog for records when errorStore.count.show=false
 - Add parameter type 'bytes' to QuerySenders
 - Add TimeoutGuardSenderWithParametersBase for better timeout handling in senders
+- Add support for FxF3 version 2
 
 ### Non backwards compatible changes
 

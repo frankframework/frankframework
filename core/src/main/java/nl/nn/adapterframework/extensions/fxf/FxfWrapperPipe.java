@@ -50,6 +50,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
  * <tr><td>{@link #setFlowId(String) flowId}</td><td>The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline.</td><td></td></tr>
  * <tr><td>{@link #setTransformFilename(boolean) transformFilename}</td><td>When true and direction=wrap the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine.</td><td>true</td></tr>
+ * <tr><td>{@link #setFxfVersion(int) fxfVersion}</td><td>&nbsp;</td><td>1</td></tr>
  * </table>
  * 
  * @author Jaco de Groot
@@ -62,6 +63,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	private String flowId;
 	private String environment;
 	private boolean transformFilename = true;
+	private int fxfVersion = 1;
 	private TransformerPool transferFlowIdTp = null;
 	private TransformerPool clientFilenameTp = null;
 	private String soapBodySessionKey = "soapBody";
@@ -80,7 +82,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			if (parameter == null) {
 				parameter = new Parameter();
 				parameter.setName(DESTINATION);
-				parameter.setValue("ESB.Infrastructure.US.Transfer.FileTransfer.1.StartTransfer.1.Action");
+				parameter.setValue("ESB.Infrastructure.US.Transfer.FileTransfer.1.StartTransfer."+getFxfVersion()+".Action");
 				parameterList.add(parameter);
 			}
 		}
@@ -156,7 +158,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if ("wrap".equalsIgnoreCase(getDirection())) {
 			XmlBuilder xmlStartTransfer_Action = new XmlBuilder("StartTransfer_Action");
-			xmlStartTransfer_Action.addAttribute("xmlns", "http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/1");
+			xmlStartTransfer_Action.addAttribute("xmlns", "http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/"+getFxfVersion());
 			XmlBuilder xmlTransferDetails = new XmlBuilder("TransferDetails");
 			xmlStartTransfer_Action.addSubElement(xmlTransferDetails);
 			XmlBuilder xmlSenderApplication = new XmlBuilder("SenderApplication");
@@ -280,5 +282,13 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 
 	public void setFxfFileSessionKey(String fxfFileSessionKey) {
 		this.fxfFileSessionKey = fxfFileSessionKey;
+	}
+
+	public void setFxfVersion(int i) {
+		fxfVersion = i;
+	}
+
+	public int getFxfVersion() {
+		return fxfVersion;
 	}
 }
