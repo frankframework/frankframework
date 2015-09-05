@@ -9,7 +9,7 @@
 <html:xhtml/>
 
 <xtags:parse>
-		<bean:write name="messages" scope="request" filter="false"/>
+	<% out.write(XmlUtils.replaceNonValidXmlCharacters(request.getAttribute("messages").toString())); %>
 </xtags:parse>
 
 <xtags:forEach select="messages">

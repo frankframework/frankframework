@@ -2,13 +2,13 @@
 <%@ taglib uri="/WEB-INF/struts-html.tld" prefix="html" %>
 <%@ taglib uri="http://jakarta.apache.org/taglibs/xtags-1.0" prefix="xtags" %>
 <%@ page import="nl.nn.adapterframework.util.RunStateEnum" %>
-<%@ page import="nl.nn.adapterframework.util.FileUtils" %> 
-
+<%@ page import="nl.nn.adapterframework.util.FileUtils" %>
+<%@ page import="nl.nn.adapterframework.util.XmlUtils" %>
 
 <page title="Show configuration status" refresh="showConfigurationStatus.do">
 
 	<xtags:parse>
-			<bean:write name="adapters" scope="request" filter="false"/>
+		<% out.write(XmlUtils.replaceNonValidXmlCharacters(request.getAttribute("adapters").toString())); %>
 	</xtags:parse>
 
 	<contentTable width="100%">

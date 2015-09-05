@@ -136,6 +136,7 @@ Upcoming
 - Add facility of streaming result from HttpSender to file
 - Add methodTypes HEAD and REPORT to HttpSender
 - Add facility of streaming a file to a RestListener
+- Prevent problems with control characters in console
 
 ### Non backwards compatible changes
 
