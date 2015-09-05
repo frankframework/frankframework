@@ -36,16 +36,23 @@ somebody online on IRC using the
 Eclipse
 =======
 
-- Download
-  [Eclipse Kepler SR2](http://eclipse.org/downloads/packages/eclipse-ide-java-ee-developers/keplersr2)
-- Unzip and start Eclipse.
+- Download and unzip
+  [Eclipse Kepler SR2](http://eclipse.org/downloads/packages/eclipse-ide-java-ee-developers/keplersr2).
+- Start Eclipse with Java 7. You might want to
+  [use -vm in eclipse.ini](http://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM).
 - Close Welcome.
 - Make sure Maven is able to access the internet. E.g. when behind a proxy:
   Window, Preferences, Maven, User Settings, settings.xml should exist and
   contain proxy configuration.
 - Window, Open Perspective, Other..., Git, OK, Clone a Git repository,
   URI: https://github.com/ibissource/iaf.git, Next, Next, Finish.
-- Right click iaf, Import projects..., Next, Finish.
+- Optionally (when you have access to the proprietary jars some modules depend
+  on) also clone:
+  URI: https://bitbucket.org/ibissource/mvn-repo-proprietary.git, User: ...,
+  Password: ..., Next, Next, Finish. 
+- Right click iaf, Import projects..., Next, unless you cloned
+  mvn-repo-proprietary deselect: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap and
+  iaf-tibco, Finish.
 - Window, Open Perspective, Other..., Java EE.
 - Servers, No servers are available. Click this link to create a new server...,
   Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a
@@ -53,11 +60,23 @@ Eclipse
   [Tomcat](http://tomcat.apache.org/) (version 7.0.22 is known to work, but
   other version are expected to work too)), OK, Finish.
 - Double click Tomcat v7.0 Server at localhost, Open launch configuration,
-  Arguments, VM arguments, add -Dapplication.server.type=TOMCAT6, OK, Modules,
+  Arguments, VM arguments, add -Dapplication.server.type=TOMCAT6 and
+  -Dlog.dir=C:\\Temp (or any other folder), OK, Modules,
   Add Web Module..., iaf-example, OK, File, Save
 - Right click Tomcat v7.0 Server at localhost, Start.
 - Browse the IAF console at
   [http://localhost:8081/iaf-example/](http://localhost:8081/iaf-example/).
+
+In some cases you might want/need to:
+
+- Rightclick iaf, Maven, Update Project..., OK.
+- Change newlines in .classpath and org.eclipse.wst.common.component files
+  back to Unix newlines.
+- Rightclick pom.xml (in iaf), Run As, Maven build..., JRE, make sure a JDK
+  (not a JRE) is used (use Java 5 to compile with the minimal Java version for
+  the IAF project), Refresh, Refresh resources upon completion,
+  Specific resources, Specify Resources..., iaf (Using "The project containing
+  the selected resource" doesn't seem to work), Finish, Run.
 
 
 
