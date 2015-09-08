@@ -50,7 +50,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
  * <tr><td>{@link #setFlowId(String) flowId}</td><td>The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline.</td><td></td></tr>
  * <tr><td>{@link #setTransformFilename(boolean) transformFilename}</td><td>When true and direction=wrap the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine.</td><td>true</td></tr>
- * <tr><td>{@link #setFxfVersion(int) fxfVersion}</td><td>&nbsp;</td><td>1</td></tr>
+ * <tr><td>{@link #setFxfVersion(String) fxfVersion}</td><td>either 3.1 or 3.2</td><td>3.1</td></tr>
  * </table>
  * 
  * @author Jaco de Groot
@@ -63,7 +63,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	private String flowId;
 	private String environment;
 	private boolean transformFilename = true;
-	private int fxfVersion = 1;
+	private String fxfVersion = "3.1";
 	private TransformerPool transferFlowIdTp = null;
 	private TransformerPool clientFilenameTp = null;
 	private String soapBodySessionKey = "soapBody";
@@ -82,7 +82,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			if (parameter == null) {
 				parameter = new Parameter();
 				parameter.setName(DESTINATION);
-				parameter.setValue("ESB.Infrastructure.US.Transfer.FileTransfer.1.StartTransfer."+getFxfVersion()+".Action");
+				parameter.setValue("ESB.Infrastructure.US.Transfer.FileTransfer.1.StartTransfer."+retrieveStartTransferVersion()+".Action");
 				parameterList.add(parameter);
 			}
 		}
@@ -125,6 +125,10 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 					"/OnCompletedTransferNotify_Action/ClientFilename", null,
 					"text", false, getParameterList(), true);
 		}
+		if (!getFxfVersion().equals("3.1") && !getFxfVersion().equals("3.2")) {
+			throw new ConfigurationException("illegal value for fxfVersion ["
+					+ getFxfVersion() + "], must be '3.1' or '3.2'");
+		}
 	}
 
 	public void start() throws PipeStartException {
@@ -158,7 +162,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if ("wrap".equalsIgnoreCase(getDirection())) {
 			XmlBuilder xmlStartTransfer_Action = new XmlBuilder("StartTransfer_Action");
-			xmlStartTransfer_Action.addAttribute("xmlns", "http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/"+getFxfVersion());
+			xmlStartTransfer_Action.addAttribute("xmlns", "http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/"+retrieveStartTransferVersion());
 			XmlBuilder xmlTransferDetails = new XmlBuilder("TransferDetails");
 			xmlStartTransfer_Action.addSubElement(xmlTransferDetails);
 			XmlBuilder xmlSenderApplication = new XmlBuilder("SenderApplication");
@@ -212,6 +216,15 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		}
 	}
 
+	private int retrieveStartTransferVersion() {
+		if ("3.1".equals(getFxfVersion())) {
+			return 1;
+		} else if ("3.2".equals(getFxfVersion())) {
+			return 2;
+		}
+		return 0;
+	}
+	
 	public AppConstants getAppConstants() {
 		return appConstants;
 	}
@@ -284,11 +297,11 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		this.fxfFileSessionKey = fxfFileSessionKey;
 	}
 
-	public void setFxfVersion(int i) {
-		fxfVersion = i;
+	public void setFxfVersion(String fxfVersion) {
+		this.fxfVersion = fxfVersion;
 	}
 
-	public int getFxfVersion() {
+	public String getFxfVersion() {
 		return fxfVersion;
 	}
 }

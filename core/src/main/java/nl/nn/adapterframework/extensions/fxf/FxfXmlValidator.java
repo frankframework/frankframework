@@ -31,14 +31,14 @@ import nl.nn.adapterframework.pipes.WsdlXmlValidator;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.extensions.fxf.FxfListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>send</code> or <code>receive</code></td><td>send</td></tr>
- * <tr><td>{@link #setFxfVersion(int) fxfVersion}</td><td>&nbsp;</td><td>1</td></tr>
+ * <tr><td>{@link #setFxfVersion(String) fxfVersion}</td><td>either 3.1 or 3.2</td><td>3.1</td></tr>
  * </table>
  * 
  * @author Jaco de Groot
  */
 public class FxfXmlValidator extends WsdlXmlValidator {
 	private String direction = "send";
-	private int fxfVersion = 1;
+	private String fxfVersion = "3.1";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -47,7 +47,7 @@ public class FxfXmlValidator extends WsdlXmlValidator {
 			setWsdl("xml/wsdl/OnCompletedTransferNotify_FxF3_1.1.4_abstract.wsdl");
 			setSoapBody("OnCompletedTransferNotify_Action");
 		} else {
-			if (fxfVersion==2) {
+			if ("3.2".equals(fxfVersion)) {
 				setWsdl("xml/wsdl/StartTransfer_FxF3v2_abstract.wsdl");
 			} else {
 				setWsdl("xml/wsdl/StartTransfer_FxF3_1.1.4_abstract.wsdl");
@@ -56,6 +56,10 @@ public class FxfXmlValidator extends WsdlXmlValidator {
 			setSoapBody("StartTransfer_Action");
 		}
 		super.configure();
+		if (!getFxfVersion().equals("3.1") && !getFxfVersion().equals("3.2")) {
+			throw new ConfigurationException("illegal value for fxfVersion ["
+					+ getFxfVersion() + "], must be '3.1' or '3.2'");
+		}
 	}
 
 	public String getDirection() {
@@ -66,11 +70,11 @@ public class FxfXmlValidator extends WsdlXmlValidator {
 		this.direction = direction;
 	}
 
-	public void setFxfVersion(int i) {
-		fxfVersion = i;
+	public void setFxfVersion(String fxfVersion) {
+		this.fxfVersion = fxfVersion;
 	}
 
-	public int getFxfVersion() {
+	public String getFxfVersion() {
 		return fxfVersion;
 	}
 }
