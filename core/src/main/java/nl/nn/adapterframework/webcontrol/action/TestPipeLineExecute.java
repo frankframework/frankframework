@@ -216,14 +216,9 @@ public final class TestPipeLineExecute extends ActionBase {
 	
 	    // refresh list of stopped adapters
 	    // =================================
-	    List adapters = new ArrayList();
-	    adapters.add("-- select an adapter --");
-	
-	    // get the names of the Adapters
-		for(int i=0; i<config.getRegisteredAdapters().size(); i++) {
-			IAdapter adapter = config.getRegisteredAdapter(i);
-			adapters.add(adapter.getName());
-		}
+		List<String> adapters = new ArrayList<String>();
+		adapters.add("-- select an adapter --");
+		adapters.addAll(config.getSortedStartedAdapterNames());	
 	    pipeLineTestForm.set("adapters", adapters);
 	    if (null!=message) pipeLineTestForm.set("message", message);
 	    if (null != result) {

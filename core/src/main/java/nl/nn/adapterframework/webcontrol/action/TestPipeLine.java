@@ -53,19 +53,9 @@ public final class TestPipeLine extends ActionBase {
 	
 	    DynaActionForm pipeLineTestForm = getPersistentForm(mapping, form, request);
 	
-	    List startedAdapters = new ArrayList();
-	
-		for(int i=0; i<config.getRegisteredAdapters().size(); i++) {
-			IAdapter adapter = config.getRegisteredAdapter(i);
-	        // add the adapter if it is started.
-	        if (adapter.getRunState().equals(RunStateEnum.STARTED)) {
-		        startedAdapters.add(adapter.getName());
-	        }
-	    }
-		Collections.sort(startedAdapters, String.CASE_INSENSITIVE_ORDER);
-		List adapters = new ArrayList();
+		List<String> adapters = new ArrayList<String>();
 		adapters.add("-- select an adapter --");
-		adapters.addAll(startedAdapters);	
+		adapters.addAll(config.getSortedStartedAdapterNames());	
 		pipeLineTestForm.set("adapters", adapters);
 	
 	    // Forward control to the specified success URI

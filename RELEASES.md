@@ -137,6 +137,7 @@ Upcoming
 - Add methodTypes HEAD and REPORT to HttpSender
 - Add facility of streaming a file to a RestListener
 - Prevent problems with control characters in console
+- Bugfix adapters not sorted in 'Test a PipeLine' after run
 
 ### Non backwards compatible changes
 

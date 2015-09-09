@@ -26,6 +26,7 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.RunStateEnum;
 
 import java.net.URL;
 import java.util.*;
@@ -153,12 +154,25 @@ public class Configuration {
         return new ArrayList<IAdapter>(adapterService.getAdapters().values());
 	}
 
+	public List<String> getSortedStartedAdapterNames() {
+		List<String> startedAdapters = new ArrayList<String>();
+		for (int i = 0; i < getRegisteredAdapters().size(); i++) {
+			IAdapter adapter = getRegisteredAdapter(i);
+			// add the adapterName if it is started.
+			if (adapter.getRunState().equals(RunStateEnum.STARTED)) {
+				startedAdapters.add(adapter.getName());
+			}
+		}
+		Collections.sort(startedAdapters, String.CASE_INSENSITIVE_ORDER);
+		return startedAdapters;
+	}
+    
     //Returns a sorted list of registered adapter names as an <code>Iterator</code>
     @Deprecated
     public Iterator<IAdapter> getRegisteredAdapterNames() {
         return adapterService.getAdapters().values().iterator();
     }
-
+    
     public AdapterService getAdapterService() {
         return adapterService;
     }
