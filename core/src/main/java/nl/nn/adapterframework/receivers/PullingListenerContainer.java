@@ -25,7 +25,6 @@ import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.Semaphore;
-import nl.nn.adapterframework.util.TracingUtil;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
@@ -202,7 +201,6 @@ public class PullingListenerContainer implements IThreadCountControllable {
 							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
 							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
 							// found a message, process it
-							TracingUtil.beforeEvent(this);
 							startProcessingTimestamp = System.currentTimeMillis();
 							try {
 								receiver.processRawMessage(listener, rawMessage, threadContext);
@@ -215,7 +213,6 @@ public class PullingListenerContainer implements IThreadCountControllable {
 									}
 								}
 							} catch (Exception e) {
-								TracingUtil.exceptionEvent(this);
 								if (txStatus != null && !txStatus.isCompleted()) {
 									txManager.rollback(txStatus);
 								}
@@ -225,8 +222,6 @@ public class PullingListenerContainer implements IThreadCountControllable {
 									receiver.error(receiver.getLogPrefix()+"stopping receiver after exception in processing message", e);
 									receiver.stopRunning();
 								}
-							} finally {
-								TracingUtil.afterEvent(this);
 							}
 						}
 					} finally  {
@@ -325,7 +320,6 @@ public class PullingListenerContainer implements IThreadCountControllable {
 //					if (rawMessage != null) {
 //						// found a message, process it
 //						try {
-//							TracingUtil.beforeEvent(this);
 //							startProcessingTimestamp = System.currentTimeMillis();
 //							try {
 //								receiver.processRawMessage(listener, rawMessage, threadContext, finishProcessingTimestamp - startProcessingTimestamp);
@@ -338,7 +332,6 @@ public class PullingListenerContainer implements IThreadCountControllable {
 //									}
 //								}
 //							} catch (Exception e) {
-//								TracingUtil.exceptionEvent(this);
 //								if (txStatus != null && !txStatus.isCompleted()) {
 //									txManager.rollback(txStatus);
 //								}
@@ -351,7 +344,6 @@ public class PullingListenerContainer implements IThreadCountControllable {
 //							}
 //						} finally {
 //							finishProcessingTimestamp = System.currentTimeMillis();
-//							TracingUtil.afterEvent(this);
 //						}
 //					} else {
 //						// no message found, cleanup

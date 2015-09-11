@@ -24,7 +24,7 @@
 		</init-param>
 		<init-param>
 			<param-name>allowedObserverPaths</param-name>
-			<param-value>/index.jsp /showConfigurationStatus.do /showConfiguration.do /configHandler.do /showAdapterStatistics.do /showTracingConfiguration.do /showLogging.do /browseQueue.do /browseQueueExecute.do /browseJdbcTable.do /showSchedulerStatus.do /FileViewerServlet /DumpIbisConsole /showEnvironmentVariables.do /browser.do /showSecurityItems.do /showMonitors.do /showEvents.do /editMonitor.do /editTrigger.do /showIbisstoreSummary.do /Download /testtool /jsp/view.jsp /servlet/rpcrouter</param-value>
+			<param-value>/index.jsp /showConfigurationStatus.do /showConfiguration.do /configHandler.do /showAdapterStatistics.do /showLogging.do /browseQueue.do /browseQueueExecute.do /browseJdbcTable.do /showSchedulerStatus.do /FileViewerServlet /DumpIbisConsole /showEnvironmentVariables.do /browser.do /showSecurityItems.do /showMonitors.do /showEvents.do /editMonitor.do /editTrigger.do /showIbisstoreSummary.do /Download /testtool /jsp/view.jsp /servlet/rpcrouter</param-value>
 		</init-param>
 		<init-param>
 			<param-name>allowedDataAdminPaths</param-name>
@@ -265,7 +265,6 @@
             <url-pattern>/showConfiguration.do</url-pattern>
             <url-pattern>/configHandler.do</url-pattern>
             <url-pattern>/showAdapterStatistics.do</url-pattern>
-            <url-pattern>/showTracingConfiguration.do</url-pattern>
             <url-pattern>/showLogging.do</url-pattern>
             <url-pattern>/browseQueue.do</url-pattern>
             <url-pattern>/browseQueueExecute.do</url-pattern>
@@ -301,9 +300,6 @@
             <web-resource-name>AdminAccessResourceCollection</web-resource-name>
             <description>collection of url's for administrator access</description>
             <url-pattern>/ConfigurationServlet</url-pattern>
-            <url-pattern>/alterTracingConfiguration.do</url-pattern>
-            <url-pattern>/tracingHandler.do</url-pattern>
-            <url-pattern>/alterTracingProperties.do</url-pattern>
         </web-resource-collection>
         <auth-constraint>
         	<description></description>

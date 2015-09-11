@@ -184,7 +184,7 @@
 
 	<bean
 		name="pipeProcessor,inputValidatorProcessor,outputValidatorProcessor,inputWrapperProcessor,outputWrapperProcessor"
-		class="nl.nn.adapterframework.processors.TracingEventsPipeProcessor"
+		class="nl.nn.adapterframework.processors.MonitoringPipeProcessor"
 		autowire="byName"
 		scope="prototype"
 		>

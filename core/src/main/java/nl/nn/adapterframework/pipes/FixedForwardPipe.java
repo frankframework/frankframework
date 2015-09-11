@@ -49,9 +49,6 @@ import nl.nn.adapterframework.core.PipeForward;
  *   <tr><td colspan="1" rowspan="2">Never</td>       <td>none</td><td>none</td></tr>
  * 											      <tr><td>T1</td>  <td>error</td></tr>
  *  </table></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Pipe</td><td>-1 (disabled)</td></tr>
- * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Pipe is finished</td><td>-1 (disabled)</td></tr>
- * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Pipe resulted in an exception</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * </table>
  * </p>

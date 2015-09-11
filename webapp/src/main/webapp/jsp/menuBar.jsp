@@ -74,11 +74,6 @@
 				type="dump"
 				alt="Dump Ibis Console">
 			</imagelink>
-			<imagelink 
-				href="showTracingConfiguration.do"
-				type="tracingConfiguration"
-				alt="Show Tracing Configuration">
-			 </imagelink>
 			<imagelink
 				href="showSecurityItems.do"
 				type="security"

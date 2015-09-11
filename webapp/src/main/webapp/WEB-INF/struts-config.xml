@@ -138,23 +138,6 @@
                         <form-property name="lengthLogRecords"	type="java.lang.Integer"/>
         </form-bean>
 
-        <form-bean      name="AlterTracingConfigurationForm"
-                        type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
-                        <form-property name="action" 			type="java.lang.String"/>
-                        <form-property name="adapterName"		type="java.lang.String"/>
-                        <form-property name="receiverName"		type="java.lang.String"/>
-                        <form-property name="pipeName"       	type="java.lang.String"/>
-                        <form-property name="beforeEvent" 		type="java.lang.Integer"/>
-                        <form-property name="afterEvent"    	type="java.lang.Integer"/>
-                        <form-property name="exceptionEvent"	type="java.lang.Integer"/>
-        </form-bean>
-
-        <form-bean      name="AlterTracingPropertiesForm"
-                        type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
-                        <form-property name="action" 			type="java.lang.String"/>
-                        <form-property name="properties"		type="java.lang.String"/>
-        </form-bean>
-
         <form-bean      name="MonitorForm"
                         type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
                         <form-property name="action" 			type="java.lang.String"/>
@@ -273,50 +256,6 @@
                 type="nl.nn.adapterframework.webcontrol.action.ShowAdapterStatistics"
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/showAdapterStatistics.jsp"/>
-        </action>
-        <action path="/showTracingConfiguration" 
-                type="nl.nn.adapterframework.webcontrol.action.ShowTracingConfiguration"
-                validate="false">
-            <forward name="success" path="/jsp/view.jsp?view=/jsp/showTracingConfiguration.jsp"/>
-        </action>
-        <action path="/alterTracingConfiguration" 
-                type="nl.nn.adapterframework.webcontrol.action.AlterTracingConfiguration"
-                scope="session" 
-                name="AlterTracingConfigurationForm"
-                input="/jsp/view.jsp?view=/jsp/alterTracingConfiguration.jsp"
-                validate="false">
-            <forward name="success" path="/jsp/view.jsp?view=/jsp/alterTracingConfiguration.jsp"/>
-        </action>
-        <action path="/alterTracingConfigurationExecute" 
-                type="nl.nn.adapterframework.webcontrol.action.AlterTracingConfigurationExecute"
-                scope="session" 
-                name="AlterTracingConfigurationForm"
-                input="/jsp/view.jsp?view=/jsp/alterTracingConfiguration.jsp"
-                validate="false">
-            <forward name="success" path="/showTracingConfiguration.do"/>
-        	<forward name="cancel" path="/showTracingConfiguration.do" />
-        </action>
-        <action path="/tracingHandler" 
-                type="nl.nn.adapterframework.webcontrol.action.TracingHandler"
-                validate="false">
-            <forward name="success" path="/showTracingConfiguration.do"/>
-        </action>
-        <action path="/alterTracingProperties" 
-                type="nl.nn.adapterframework.webcontrol.action.AlterTracingProperties"
-                scope="session" 
-                name="AlterTracingPropertiesForm"
-                input="/jsp/view.jsp?view=/jsp/alterTracingProperties.jsp"
-                validate="false">
-            <forward name="success" path="/jsp/view.jsp?view=/jsp/alterTracingProperties.jsp"/>
-        </action>
-        <action path="/alterTracingPropertiesExecute" 
-                type="nl.nn.adapterframework.webcontrol.action.AlterTracingPropertiesExecute"
-                scope="session" 
-                name="AlterTracingPropertiesForm"
-                input="/jsp/view.jsp?view=/jsp/alterTracingProperties.jsp"
-                validate="false">
-            <forward name="success" path="/showTracingConfiguration.do"/>
-        	<forward name="cancel" path="/showTracingConfiguration.do" />
         </action>
         <action path="/showLogging" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowLogging"

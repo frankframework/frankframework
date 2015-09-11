@@ -79,7 +79,6 @@ import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
-import nl.nn.adapterframework.util.TracingEventNumbers;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -136,9 +135,6 @@ import org.xml.sax.helpers.DefaultHandler;
  * <tr><td>{@link #setCheckForDuplicates(boolean) checkForDuplicates}</td><td>if set to <code>true</code>, each message is checked for presence in the message log. If already present, it is not processed again. (only required for non XA compatible messaging). Requires messagelog!</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setCheckForDuplicatesMethod(String) checkForDuplicatesMethod}</td><td>(only used when <code>checkForDuplicates=true</code>) Either 'CORRELATIONID' or 'MESSAGEID'. Indicates whether the messageID or the correlationID is used for checking presence in the message log</td><td>MESSAGEID</td></tr>
  * <tr><td>{@link #setPollInterval(int) pollInterval}</td><td>The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. (only for polling listeners, not for e.g. IFSA, JMS, WebService or JavaListeners)</td><td>10</td></tr>
- * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Receiver</td><td>-1 (disabled)</td></tr>
- * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
- * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Receiver resulted in an exception</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDNamespaceDefs(String) correlationIDNamespaceDefs}</td><td>namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDStyleSheet(String) correlationIDStyleSheet}</td><td>stylesheet to extract correlationID from message</td><td>&nbsp;</td></tr>
@@ -209,7 +205,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author     Gerrit van Brakel
  * @since 4.2
  */
-public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
+public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -310,11 +306,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private TransformerPool correlationIDTp=null;
 	private TransformerPool labelTp=null;
  
-	// METT event numbers
-	private int beforeEvent=-1;
-	private int afterEvent=-1;
-	private int exceptionEvent=-1;
-
 	int retryInterval=1;
 	private int poisonMessageIdCacheSize = 100;
 	private int processResultCacheSize = 100;
@@ -1955,30 +1946,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public void setNumThreadsPolling(int i) {
 		numThreadsPolling = i;
 	}
-
-	// event numbers for tracing
-	public void setBeforeEvent(int i) {
-		beforeEvent = i;
-	}
-	public int getBeforeEvent() {
-		return beforeEvent;
-	}
-	public void setAfterEvent(int i) {
-		afterEvent = i;
-	}
-	public int getAfterEvent() {
-		return afterEvent;
-	}
-	public void setExceptionEvent(int i) {
-		exceptionEvent = i;
-	}
-	public int getExceptionEvent() {
-		return exceptionEvent;
-	}
-
-
-
-
 
 	public int getMaxDeliveries() {
 		return maxDeliveries;

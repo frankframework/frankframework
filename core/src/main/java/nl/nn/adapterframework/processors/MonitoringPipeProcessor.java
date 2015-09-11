@@ -24,14 +24,13 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.TracingUtil;
 
 import org.apache.log4j.Logger;
 
 /**
  * @author Jaco de Groot
  */
-public class TracingEventsPipeProcessor extends PipeProcessorBase {
+public class MonitoringPipeProcessor extends PipeProcessorBase {
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
 
 	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Object message, IPipeLineSession pipeLineSession) throws PipeRunException {
@@ -43,7 +42,6 @@ public class TracingEventsPipeProcessor extends PipeProcessorBase {
 			pe = (IExtendedPipe)pipe;
 		}
     	
-		TracingUtil.beforeEvent(pipe);
 		long pipeStartTime= System.currentTimeMillis();
 		
 		if (log.isDebugEnabled()){  // for performance reasons
@@ -66,21 +64,17 @@ public class TracingEventsPipeProcessor extends PipeProcessorBase {
 		try {
 			pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, messageId, message, pipeLineSession);
 		} catch (PipeRunException pre) {
-			TracingUtil.exceptionEvent(pipe);
 			if (pe!=null) {
 				pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
 			}
 			throw pre;
 		} catch (RuntimeException re) {
-			TracingUtil.exceptionEvent(pipe);
 			if (pe!=null) {
 				pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
 			}
 			throw new PipeRunException(pipe, "Uncaught runtime exception running pipe '"
 					+ (pipe==null?"null":pipe.getName()) + "'", re);
 		} finally {
-			TracingUtil.afterEvent(pipe);
-			
 			long pipeEndTime = System.currentTimeMillis();
 			pipeDuration = pipeEndTime - pipeStartTime;
 			StatisticsKeeper sk = pipeLine.getPipeStatistics(pipe);

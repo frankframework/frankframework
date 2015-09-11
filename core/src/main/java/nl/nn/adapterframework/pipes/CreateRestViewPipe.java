@@ -261,9 +261,6 @@ public class CreateRestViewPipe extends XsltPipe {
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"DumpIbisConsole", "dump", "Dump Ibis Console"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"showTracingConfiguration.do", "tracingConfiguration",
-				"Show Tracing Configuration"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"showSecurityItems.do", "security", "Show Security Items"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"showMonitors.do", "monitoring", "Show Monitors"));

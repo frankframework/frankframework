@@ -53,9 +53,6 @@
 	<logger name="org.apache.commons">
 		<level value="WARN"/>
 	</logger>
-	<logger name="com.ing.coins.mett">
-		<level value="INFO"/>
-	</logger>
 	<logger name="GALM" additivity="false">
 		<level value="INFO"/>
 		<appender-ref ref="galm"/>

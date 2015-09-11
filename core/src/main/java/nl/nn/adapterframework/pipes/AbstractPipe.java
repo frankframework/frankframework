@@ -39,7 +39,6 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.TracingEventNumbers;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -101,9 +100,6 @@ import org.springframework.transaction.TransactionDefinition;
  * 											      <tr><td>T1</td>  <td>error</td></tr>
  *  </table></td><td>Supports</td></tr>
  * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to process a message.</td><td><code>0</code> (use system default)</code></td></tr>
- * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Pipe</td><td>-1 (disabled)</td></tr>
- * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Pipe is finished</td><td>-1 (disabled)</td></tr>
- * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Pipe resulted in an exception</td><td>-1 (disabled)</td></tr>
  * </table>
  * </p>
  * 
@@ -118,7 +114,7 @@ import org.springframework.transaction.TransactionDefinition;
  *
  * @see nl.nn.adapterframework.core.IPipeLineSession
  */
-public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers, EventThrowing {
+public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, EventThrowing {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -137,11 +133,6 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private int transactionTimeout=0;
 	private boolean sizeStatistics=false;
 	private Locker locker;
-
-	// METT event numbers
-	private int beforeEvent=-1;
-	private int afterEvent=-1;
-	private int exceptionEvent=-1;
 
 	private boolean active=true;
 
@@ -442,34 +433,6 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	public boolean isNamespaceAware() {
 		return namespaceAware;
 	}
-
-
-	// event numbers for tracing
-
-	public int getAfterEvent() {
-		return afterEvent;
-	}
-
-	public int getBeforeEvent() {
-		return beforeEvent;
-	}
-
-	public int getExceptionEvent() {
-		return exceptionEvent;
-	}
-
-	public void setAfterEvent(int i) {
-		afterEvent = i;
-	}
-
-	public void setBeforeEvent(int i) {
-		beforeEvent = i;
-	}
-
-	public void setExceptionEvent(int i) {
-		exceptionEvent = i;
-	}
-
 
 	public void setTransactionAttribute(String attribute) throws ConfigurationException {
 		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);

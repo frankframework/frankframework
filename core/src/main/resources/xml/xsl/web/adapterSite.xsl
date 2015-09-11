@@ -462,12 +462,9 @@
 			<xsl:when test="@type='monitoring'"			>images/monitoring.gif</xsl:when>
 			<xsl:when test="@type='configuration'"		>images/configuration.gif</xsl:when>
 			<xsl:when test="@type='adapterStatistics'"	>images/statistics.gif</xsl:when>
-			<xsl:when test="@type='tracingConfiguration'">images/trc.gif</xsl:when>
-
 
 			<xsl:when test="@type='showashtml'"			>images/showashtml.gif</xsl:when>
 			<xsl:when test="@type='showastext'"			>images/showastext.gif</xsl:when>
-
 
 			<xsl:when test="@type='start'"				>images/start.gif</xsl:when>
 			<xsl:when test="@type='pause'"				>images/pause.gif</xsl:when>

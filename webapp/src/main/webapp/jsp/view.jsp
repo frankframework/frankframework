@@ -132,12 +132,6 @@
 			<jsp:include page="/jsp/testIfsaService.jsp" flush="true"/> 
 		<%} else if (view.equals("/jsp/showAdapterStatistics.jsp")) {%>
 			<jsp:include page="/jsp/showAdapterStatistics.jsp" flush="true"/>
-		<%} else if (view.equals("/jsp/showTracingConfiguration.jsp")) {%>
-			<jsp:include page="/jsp/showTracingConfiguration.jsp" flush="true"/>
-		<%} else if (view.equals("/jsp/alterTracingConfiguration.jsp")) {%>
-			<jsp:include page="/jsp/alterTracingConfiguration.jsp" flush="true"/>
-		<%} else if (view.equals("/jsp/alterTracingProperties.jsp")) {%>
-			<jsp:include page="/jsp/alterTracingProperties.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/testService.jsp")) {%> 
 			<jsp:include page="/jsp/testService.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/testPipeLine.jsp")) {%>

@@ -138,6 +138,7 @@ Upcoming
 - Add facility of streaming a file to a RestListener
 - Prevent problems with control characters in console
 - Bugfix adapters not sorted in 'Test a PipeLine' after run
+- Remove METT tracing functionality
 
 ### Non backwards compatible changes
 
