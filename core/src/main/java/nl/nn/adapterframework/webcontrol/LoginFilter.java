@@ -61,10 +61,10 @@ import org.apache.log4j.Logger;
  *   <tr><td>Basic</td><td>all IbisObserver pages are accessible, but only when the user has been authenticated</td></tr>
  *   <tr><td>Full</td><td>all IbisObserver and IbisDataAdmin pages are accessible, but only when the user has been authenticated and authorized</td></tr>
  *  </table></td><td>None</td></tr>
- * <tr><td>ldap.auth.url</td><td>URL to the LDAP server</td><td>when <code>otap.stage</code>=PRD then <code>ldaps://cds.insim.biz:636</code>, else <code>ldaps://acceptance.cds.insim.biz:636</code></td></tr>
- * <tr><td>ldap.auth.user.base</td><td>LDAP DN for the username</td><td>uid=%UID%,ou=People,o=ing (where %UID% will be replaced by the entered username)</td></tr>
- * <tr><td>ldap.auth.observer.base</td><td>LDAP DN to authorize user for IbisObserver</td><td>cn=developers,cn=support,ou=IBIS,ou=Services,ou=Groups,o=ing</td></tr>
- * <tr><td>ldap.auth.dataadmin.base</td><td>LDAP DN to authorize user for IbisDataAdmin</td><td>cn=developers,cn=support,ou=IBIS,ou=Services,ou=Groups,o=ing</td></tr>
+ * <tr><td>ldap.auth.url</td><td>URL to the LDAP server</td><td>&nbsp;</td></tr>
+ * <tr><td>ldap.auth.user.base</td><td>LDAP DN for the username</td><td>&nbsp;</td></tr>
+ * <tr><td>ldap.auth.observer.base</td><td>LDAP DN to authorize user for IbisObserver</td><td>&nbsp;</td></tr>
+ * <tr><td>ldap.auth.dataadmin.base</td><td>LDAP DN to authorize user for IbisDataAdmin</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
