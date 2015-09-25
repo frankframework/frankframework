@@ -140,6 +140,7 @@ Upcoming
 - Bugfix adapters not sorted in 'Test a PipeLine' after run
 - Remove METT tracing functionality
 - Add possibility to log user info to separate log file (*-SEC.log) about IBIS console usage
+- Add authorization roles to RestListener
 
 ### Non backwards compatible changes
 

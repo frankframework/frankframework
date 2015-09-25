@@ -41,6 +41,7 @@ import nl.nn.adapterframework.core.ListenerException;
  *   </table>
  * </td><td>true</td></tr>
  * <tr><td>{@link #setView(boolean) view}</td><td>indicates whether this listener supports a view (and a link should be put in the IBIS console)</td><td>if <code>method=GET</code> then <code>true</code>, else <code>false</code></td></tr> 
+ * <tr><td>{@link #seAuthRoles(String) authRoles}</td><td>comma separated list of authorization roles which are granted for this REST service</td><td>IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService</td></tr>
  * </table>
  * @author  Gerrit van Brakel 
  */
@@ -52,6 +53,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	private String contentTypeSessionKey;
 	private String restPath = "/rest";
 	private Boolean view = null;
+	private String authRoles="IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService";
 	
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -138,5 +140,12 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 			}
 		}
 		return defaultValue;
+	}
+
+	public void setAuthRoles(String string) {
+		authRoles = string;
+	}
+	public String getAuthRoles() {
+		return authRoles;
 	}
 }

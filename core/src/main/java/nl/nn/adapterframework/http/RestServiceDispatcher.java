@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import javax.servlet.ServletContext;
@@ -107,19 +108,33 @@ public class RestServiceDispatcher  {
 		ServiceClient listener=(ServiceClient)methodConfig.get(KEY_LISTENER);
 		String etagKey=(String)methodConfig.get(KEY_ETAG_KEY);
 		String contentTypeKey=(String)methodConfig.get(KEY_CONTENT_TYPE_KEY);
-		
+
+		if (listener instanceof RestListener) {
+			RestListener restListener = (RestListener) listener;
+			boolean authorized = false;
+			String authRoles = restListener.getAuthRoles();
+			if (StringUtils.isNotEmpty(authRoles)) {
+				StringTokenizer st = new StringTokenizer(authRoles, ",;");
+				while (st.hasMoreTokens()) {
+					String authRole = st.nextToken();
+					if (httpServletRequest.isUserInRole(authRole)) {
+						authorized = true;
+					}
+				}
+			}
+			if (!authorized) {
+				throw new ListenerException("Not allowed for uri [" + uri + "]");
+			}
+			String ctName = Thread.currentThread().getName();
+			Thread.currentThread().setName(restListener.getName() + "["+ctName+"]");
+		}
+
 		if (etagKey!=null) context.put(etagKey,etag);
 		if (contentTypeKey!=null) context.put(contentTypeKey,contentType);
 		if (log.isDebugEnabled()) log.debug("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
 		if (httpServletRequest!=null) context.put("restListenerServletRequest", httpServletRequest);
 		if (httpServletResponse!=null) context.put("restListenerServletResponse", httpServletResponse);
 		if (servletContext!=null) context.put("restListenerServletContext", servletContext);
-
-		if (listener instanceof RestListener) {
-			RestListener restListener = (RestListener) listener;
-			String ctName = Thread.currentThread().getName();
-			Thread.currentThread().setName(restListener.getName() + "["+ctName+"]");
-		}
 
 		if (secLogEnabled) {
 			secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
