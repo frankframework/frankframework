@@ -74,7 +74,7 @@ public final class ShowSecurityItems extends ActionBase {
 	public static final String AUTHALIAS_XSLT = "xml/xsl/authAlias.xsl";
 	public static final String GETCONNPOOLPROP_XSLT = "xml/xsl/getConnectionPoolProperties.xsl";
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
 		// Initialize action
 		initAction(request);

@@ -74,7 +74,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 	}
 	private Map slotmap = new HashMap();
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		IniDynaActionForm showIbisstoreSummaryForm = (IniDynaActionForm) form;
 		// Initialize action
 		initAction(request);

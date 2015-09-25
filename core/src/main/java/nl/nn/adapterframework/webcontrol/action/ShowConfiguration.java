@@ -72,7 +72,7 @@ public final class ShowConfiguration extends ActionBase {
 		linklist.add(configuration);
 	}
 	
-	public ActionForward execute(
+	public ActionForward executeSub(
 	    ActionMapping mapping,
 	    ActionForm form,
 	    HttpServletRequest request,

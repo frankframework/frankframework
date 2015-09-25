@@ -22,6 +22,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.scheduler.SchedulerAdapter;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
@@ -37,7 +38,7 @@ import org.quartz.SchedulerException;
  */
 public class SchedulerHandler extends ActionBase {
 	
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	    // Extract attributes we will need
 	    initAction(request);
 	
@@ -66,23 +67,23 @@ public class SchedulerHandler extends ActionBase {
 		}
 	    try {
 	        if (action.equalsIgnoreCase("startScheduler")) {
-	            log.info("start scheduler:" + new Date() + getCommandIssuedBy(request));
+	            log.info("start scheduler:" + new Date() + HttpUtils.getCommandIssuedBy(request));
 	            scheduler.start();
 	        } else
 	            if (action.equalsIgnoreCase("pauseScheduler")) {
-	                log.info("pause scheduler:" + new Date() + getCommandIssuedBy(request));
+	                log.info("pause scheduler:" + new Date() + HttpUtils.getCommandIssuedBy(request));
 	                scheduler.pause();
 	            } else
 	                if (action.equalsIgnoreCase("deleteJob")) {
 	                    log.info("delete job jobName [" + jobName
 	                            + "] groupName [" + groupName
-	                            + "] " + getCommandIssuedBy(request));
+	                            + "] " + HttpUtils.getCommandIssuedBy(request));
 	                    scheduler.deleteJob(jobName, groupName);
 	                } else
 	                    if (action.equalsIgnoreCase("triggerJob")) {
 	                        log.info("trigger job jobName [" + jobName
 	                                + "] groupName [" + groupName
-	                                + "] " + getCommandIssuedBy(request));
+	                                + "] " + HttpUtils.getCommandIssuedBy(request));
 	                        scheduler.triggerJob(jobName, groupName);
 	                    } else {
 	                        log.error("no valid argument for SchedulerHandler:" + action);

@@ -43,7 +43,7 @@ import org.apache.struts.action.DynaActionForm;
  */
 public final class TestPipeLine extends ActionBase {
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
 	    // Initialize action
 	    initAction(request);

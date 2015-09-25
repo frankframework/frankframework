@@ -68,7 +68,7 @@ public class ShowEnvironmentVariables extends ActionBase {
 		addPropertiesToXmlBuilder(container, props, setName, null);
 	}
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		// Initialize action
 		initAction(request);
 		// Retrieve environment variables for browsing

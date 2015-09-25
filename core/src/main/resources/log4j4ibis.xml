@@ -38,6 +38,15 @@
 			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
 		</layout>
 	</appender>
+	<appender name="sec" class="nl.nn.adapterframework.extensions.log4j.IbisDailyRollingFileAppender">
+		<param name="Append" value="true"/>
+		<param name="DatePattern" value="'.'yyyy-MM-dd"/>
+		<param name="File" value="${log.dir}/${instance.name.lc}-SEC.log"/>
+		<param name="RetentionDays" value="14"/>
+		<layout class="org.apache.log4j.EnhancedPatternLayout">
+			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
+		</layout>
+	</appender>
 	<appender name="appwrap" class="nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper">
 		<param name="maxMessageLength" value="${log.lengthLogRecords}"/>
 		<param name="hideRegex" value="${log.hideRegex}"/>
@@ -60,6 +69,10 @@
 	<logger name="MSG" additivity="false">
 		<level value="INFO"/>
 		<appender-ref ref="msg"/>
+	</logger>
+	<logger name="SEC" additivity="false">
+		<level value="INFO"/>
+		<appender-ref ref="sec"/>
 	</logger>
 	<root>
 		<level value="${log.level}"/>

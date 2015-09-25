@@ -38,7 +38,7 @@ import org.apache.struts.action.DynaActionForm;
  */
 public class TestService extends ActionBase {
 	
-	public ActionForward execute(
+	public ActionForward executeSub(
 	    ActionMapping mapping,
 	    ActionForm form,
 	    HttpServletRequest request,

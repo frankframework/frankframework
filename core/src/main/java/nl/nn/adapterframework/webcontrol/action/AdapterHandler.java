@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.webcontrol.action;
 
+import nl.nn.adapterframework.http.HttpUtils;
+
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -22,6 +24,7 @@ import org.apache.struts.action.ActionMapping;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 /**
  * Handles various function for an adapter: start, stop.
@@ -33,7 +36,7 @@ public final class AdapterHandler extends ActionBase {
 
 
 
-public ActionForward execute(
+public ActionForward executeSub(
     ActionMapping mapping,
     ActionForm form,
     HttpServletRequest request,
@@ -58,7 +61,7 @@ public ActionForward execute(
 
     //commandIssuedBy containes information about the location the
     // command is sent from
-	String commandIssuedBy= getCommandIssuedBy(request);
+	String commandIssuedBy= HttpUtils.getCommandIssuedBy(request);
 	        
     ibisManager.handleAdapter(action,adapterName,receiverName, commandIssuedBy);
     

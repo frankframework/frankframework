@@ -41,7 +41,7 @@ import org.apache.struts.action.ActionMapping;
 
 public final class ExecuteJdbcQuery extends ActionBase {
 
-	public ActionForward execute(
+	public ActionForward executeSub(
 		ActionMapping mapping,
 		ActionForm form,
 		HttpServletRequest request,

@@ -52,7 +52,7 @@ public class ShowLogging extends ActionBase {
 	boolean showDirectories = AppConstants.getInstance().getBoolean("logging.showdirectories", false);
 	int maxItems = AppConstants.getInstance().getInt("logging.items.max", 500); 
 	
-	public ActionForward execute(ActionMapping mapping, ActionForm form,
+	public ActionForward executeSub(ActionMapping mapping, ActionForm form,
 			HttpServletRequest request, HttpServletResponse response)
 					throws IOException, ServletException {
 	

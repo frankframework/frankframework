@@ -47,7 +47,7 @@ public class BrowseJdbcTableExecute extends ActionBase {
 	private static Logger log = LogUtil.getLogger(BrowseJdbcTableExecute.class);
 	private static final String permissionRules = AppConstants.getInstance().getResolvedProperty("browseJdbcTable.permission.rules");
 
-	public ActionForward execute(
+	public ActionForward executeSub(
 		ActionMapping mapping,
 		ActionForm form,
 		HttpServletRequest request,

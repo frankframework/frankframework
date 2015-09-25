@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ServiceClient;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -42,11 +43,14 @@ import org.apache.log4j.Logger;
  */
 public class RestServiceDispatcher  {
 	protected Logger log = LogUtil.getLogger(this);
+	protected Logger secLog = LogUtil.getLogger("SEC");
 	
 	private final String WILDCARD="*";
 	private final String KEY_LISTENER="listener";
 	private final String KEY_ETAG_KEY="etagKey";
 	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
+
+	private boolean secLogEnabled = AppConstants.getInstance().getBoolean("sec.log.enabled", false);
 
 	private SortedMap patternClients=new TreeMap(new RestUriComparator());
 	
@@ -115,6 +119,10 @@ public class RestServiceDispatcher  {
 			RestListener restListener = (RestListener) listener;
 			String ctName = Thread.currentThread().getName();
 			Thread.currentThread().setName(restListener.getName() + "["+ctName+"]");
+		}
+
+		if (secLogEnabled) {
+			secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
 		}
 		
 		String result=listener.processRequest(null, request, context);

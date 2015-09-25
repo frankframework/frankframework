@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
@@ -64,7 +65,7 @@ public class Browse extends ActionBase {
 		return false;
 	}
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
 		// Initialize action
 		initAction(request);
@@ -155,7 +156,7 @@ public class Browse extends ActionBase {
 		skipMessages=Integer.parseInt(skipMessagesStr);
 		//commandIssuedBy containes information about the location the
 		// command is sent from
-		String commandIssuedBy= getCommandIssuedBy(request);
+		String commandIssuedBy= HttpUtils.getCommandIssuedBy(request);
 		log.debug("storageType ["+storageType+"] action ["+action+"] submit ["+submit+"] adapterName ["+adapterName+"] receiverName ["+receiverName+"] pipeName ["+pipeName+"] issued by ["+commandIssuedBy+"]");
 
 		

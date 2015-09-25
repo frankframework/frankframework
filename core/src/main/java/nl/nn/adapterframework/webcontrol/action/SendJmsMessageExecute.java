@@ -58,7 +58,7 @@ import org.apache.struts.upload.FormFile;
  */
 public final class SendJmsMessageExecute extends ActionBase {
 	
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
 	    // Initialize action
 	    initAction(request);

@@ -62,7 +62,7 @@ import org.apache.struts.upload.FormFile;
  */
 public final class TestPipeLineExecute extends ActionBase {
 	
-	public ActionForward execute(
+	public ActionForward executeSub(
 	    ActionMapping mapping,
 	    ActionForm form,
 	    HttpServletRequest request,

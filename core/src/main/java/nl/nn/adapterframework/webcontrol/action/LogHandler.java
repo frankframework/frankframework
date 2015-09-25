@@ -40,7 +40,7 @@ import org.apache.struts.action.DynaActionForm;
  */
 public class LogHandler extends ActionBase {
 	
-	 public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
+	 public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
 
 

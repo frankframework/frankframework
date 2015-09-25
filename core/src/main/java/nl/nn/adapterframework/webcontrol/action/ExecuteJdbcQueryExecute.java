@@ -45,7 +45,7 @@ import org.apache.struts.action.DynaActionForm;
 public final class ExecuteJdbcQueryExecute extends ActionBase {
 	public static final String DB2XML_XSLT="xml/xsl/dbxml2csv.xslt";
 
-	public ActionForward execute(
+	public ActionForward executeSub(
 		ActionMapping mapping,
 		ActionForm form,
 		HttpServletRequest request,

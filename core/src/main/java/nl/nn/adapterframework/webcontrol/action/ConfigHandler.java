@@ -33,7 +33,7 @@ import java.io.IOException;
 
 public final class ConfigHandler extends ActionBase {
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		String adapterName = null;
 		String receiverName = null;
 		// Initialize action

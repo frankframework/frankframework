@@ -26,6 +26,7 @@ import javax.servlet.http.HttpSession;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -53,13 +54,16 @@ import org.apache.struts.util.MessageResources;
  * @author  Johan Verrips
  * @see     org.apache.struts.action.Action
  */
-public class ActionBase extends Action {
+public abstract class ActionBase extends Action {
 	protected Logger log = LogUtil.getLogger(this);
+	protected Logger secLog = LogUtil.getLogger("SEC");
 
     protected Locale locale;
 	protected MessageResources messageResources;
 	protected ActionErrors errors;
 	protected HttpSession session;
+	
+	private boolean secLogEnabled = AppConstants.getInstance().getBoolean("sec.log.enabled", false);
 
     /**
      *the <code>Configuration</code> object
@@ -79,20 +83,15 @@ public class ActionBase extends Action {
      */
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
-
-        // Forward control to the specified success URI
-        log.debug("forward to success");
-        return (mapping.findForward("success"));
-
+		if (secLogEnabled) {
+			secLog.info(HttpUtils.getExtendedCommandIssuedBy(request));
+		}
+		return executeSub(mapping, form, request, response);
     }
 
-	public String getCommandIssuedBy(HttpServletRequest request){
-	    String commandIssuedBy= " remoteHost ["+request.getRemoteHost()+"]";
-		commandIssuedBy+=" remoteAddress ["+request.getRemoteAddr()+"]";
-		commandIssuedBy+=" remoteUser ["+request.getRemoteUser()+"]";
-		return commandIssuedBy;
-	}
-
+    public abstract ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException;
+    
     /**
      * looks under the session for an attribute named forward. Returns it as an ActionForward
      */

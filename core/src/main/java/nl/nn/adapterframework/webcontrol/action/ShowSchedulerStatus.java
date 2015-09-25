@@ -39,7 +39,7 @@ import org.quartz.SchedulerException;
 
 public final class ShowSchedulerStatus extends ActionBase {
 
-    public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
+    public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
 
 
