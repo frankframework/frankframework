@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.receivers.ReceiverBase;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -288,6 +289,13 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		return receiver;
 	}
 
+	public ReceiverBase getReceiverBase() {
+		if (receiver instanceof ReceiverBase) {
+			ReceiverBase rb = (ReceiverBase) receiver;
+			return rb;
+		}
+		return null;
+	}
 
 	public void setCacheMode(String string) {
 		cacheMode = string;

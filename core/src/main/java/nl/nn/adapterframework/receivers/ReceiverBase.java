@@ -252,6 +252,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
     private String elementToMoveChain = null;
 	private boolean removeCompactMsgNamespaces = true;
 	private boolean xslt2 = false;
+	private boolean recover = false;
 
 	public static final String ONERROR_CONTINUE = "continue";
 	public static final String ONERROR_CLOSE = "close";
@@ -2171,5 +2172,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 	public void setXslt2(boolean b) {
 		xslt2 = b;
+	}
+
+	public void setRecover(boolean b) {
+		recover = b;
+	}
+
+	public boolean isRecover() {
+		return recover;
 	}
 }

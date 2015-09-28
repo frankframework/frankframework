@@ -67,8 +67,10 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		if (getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY)) {
 			setForceMessageIdAsCorrelationId(true);
 			if (CACHE_CONSUMER.equals(getCacheMode())) {
-				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-				configWarnings.add(log, "attribute [cacheMode] already has a default value [" + CACHE_CONSUMER + "]");
+				if (!getReceiverBase().isRecover()) {
+					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+					configWarnings.add(log, "attribute [cacheMode] already has a default value [" + CACHE_CONSUMER + "]");
+				}
 			}
 			setCacheMode("CACHE_CONSUMER");
 		} else {

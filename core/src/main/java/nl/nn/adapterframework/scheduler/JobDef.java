@@ -893,9 +893,21 @@ public class JobDef {
 							log.debug("trying to recover receiver ["
 									+ receiver.getName() + "] of adapter ["
 									+ adapter.getName() + "]");
-							at.configureReceiver(receiver);
+							ReceiverBase rb = null;
 							if (receiver instanceof ReceiverBase) {
-								ReceiverBase rb = (ReceiverBase) receiver;
+								rb = (ReceiverBase) receiver;
+							}
+							try {
+								if (rb!=null) {
+									rb.setRecover(true);
+								}
+								at.configureReceiver(receiver);
+							} finally {
+								if (rb!=null) {
+									rb.setRecover(false);
+								}
+							}
+							if (rb!=null) {
 								if (rb.configurationSucceeded()) {
 									receiver.stopRunning();
 									int count = 10;
