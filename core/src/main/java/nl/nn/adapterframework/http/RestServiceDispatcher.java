@@ -112,13 +112,17 @@ public class RestServiceDispatcher  {
 		if (listener instanceof RestListener) {
 			RestListener restListener = (RestListener) listener;
 			boolean authorized = false;
-			String authRoles = restListener.getAuthRoles();
-			if (StringUtils.isNotEmpty(authRoles)) {
-				StringTokenizer st = new StringTokenizer(authRoles, ",;");
-				while (st.hasMoreTokens()) {
-					String authRole = st.nextToken();
-					if (httpServletRequest.isUserInRole(authRole)) {
-						authorized = true;
+			if (httpServletRequest.getUserPrincipal() == null) {
+				authorized = true;
+			} else {
+				String authRoles = restListener.getAuthRoles();
+				if (StringUtils.isEmpty(authRoles)) {
+					StringTokenizer st = new StringTokenizer(authRoles, ",;");
+					while (st.hasMoreTokens()) {
+						String authRole = st.nextToken();
+						if (httpServletRequest.isUserInRole(authRole)) {
+							authorized = true;
+						}
 					}
 				}
 			}
