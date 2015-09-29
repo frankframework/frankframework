@@ -15,6 +15,7 @@ import nl.nn.adapterframework.util.FileUtils;
  */
 public class FileListener {
 	private String filename;
+	private String filename2;
 	private String directory;
 	private String wildcard;
 	private long waitBeforeRead = -1;
@@ -47,53 +48,65 @@ public class FileListener {
 		} else {
 			file = new File(filename);
 		}
-		long startTime = System.currentTimeMillis();
-		while ((file == null || !file.exists()) && System.currentTimeMillis() < startTime + timeOut) {
+		if (filename2 != null) {
 			try {
-				Thread.sleep(interval);
-			} catch(InterruptedException e) {
-				throw new ListenerException("Exception waiting for file: " + e.getMessage(), e);
-			}
-			if (filename == null) {
-				File[] files = FileUtils.getFiles(directory, wildcard, null, 0);
-				if (files.length > 0) {
-					file = files[0];
-				}
-			}
-		}
-		if (file != null && file.exists()) {
-			StringBuffer stringBuffer = new StringBuffer();
-			FileInputStream fileInputStream = null;
-			try {
-				fileInputStream = new FileInputStream(file);
-			} catch(IOException e) {
-				throw new ListenerException("Exception opening file '" + file.getAbsolutePath() + "': " + e.getMessage(), e);
-			}
-			byte[] buffer = new byte[1024];
-			try {
-				int length = fileInputStream.read(buffer);
-				while (length != -1) {
-					stringBuffer.append(new String(buffer, 0, length, "UTF-8"));
-					length = fileInputStream.read(buffer);
-				}
-			} catch(IOException e) {
-				try {
-					fileInputStream.close();
-				} catch(Exception e2) {
-				}
-				throw new ListenerException("Exception reading file '" + file.getAbsolutePath() + "': " + e.getMessage(), e);
-			}
-			try {
-				fileInputStream.close();
-			} catch(IOException e) {
-				throw new ListenerException("Exception closing file '" + file.getAbsolutePath() + "': " + e.getMessage(), e);
-			}
-			result = stringBuffer.toString();
-			if (!file.delete()) {
-				throw new ListenerException("Could not delete file '" + file.getAbsolutePath() + "'.");
+				File file2 = new File(filename2);
+				boolean equal = FileUtils.isFileBinaryEqual(file, file2);
+				result = Boolean.toString(equal);
+			} catch (IOException e) {
+				throw new ListenerException("Exception comparing files '"
+						+ filename + "' and '" + filename2 + "': "
+						+ e.getMessage(), e);
 			}
 		} else {
-			throw new TimeOutException("Time out waiting for file.");
+			long startTime = System.currentTimeMillis();
+			while ((file == null || !file.exists()) && System.currentTimeMillis() < startTime + timeOut) {
+				try {
+					Thread.sleep(interval);
+				} catch(InterruptedException e) {
+					throw new ListenerException("Exception waiting for file: " + e.getMessage(), e);
+				}
+				if (filename == null) {
+					File[] files = FileUtils.getFiles(directory, wildcard, null, 0);
+					if (files.length > 0) {
+						file = files[0];
+					}
+				}
+			}
+			if (file != null && file.exists()) {
+				StringBuffer stringBuffer = new StringBuffer();
+				FileInputStream fileInputStream = null;
+				try {
+					fileInputStream = new FileInputStream(file);
+				} catch(IOException e) {
+					throw new ListenerException("Exception opening file '" + file.getAbsolutePath() + "': " + e.getMessage(), e);
+				}
+				byte[] buffer = new byte[1024];
+				try {
+					int length = fileInputStream.read(buffer);
+					while (length != -1) {
+						stringBuffer.append(new String(buffer, 0, length, "UTF-8"));
+						length = fileInputStream.read(buffer);
+					}
+				} catch(IOException e) {
+					try {
+						fileInputStream.close();
+					} catch(Exception e2) {
+					}
+					throw new ListenerException("Exception reading file '" + file.getAbsolutePath() + "': " + e.getMessage(), e);
+				}
+				try {
+					fileInputStream.close();
+				} catch(IOException e) {
+					throw new ListenerException("Exception closing file '" + file.getAbsolutePath() + "': " + e.getMessage(), e);
+				}
+				result = stringBuffer.toString();
+				if (!file.delete()) {
+					throw new ListenerException("Could not delete file '" + file.getAbsolutePath() + "'.");
+				}
+			} else {
+				throw new TimeOutException("Time out waiting for file.");
+			}
 		}
 		return result;
 	}
@@ -105,6 +118,20 @@ public class FileListener {
 	 */
 	public void setFilename(String filename) {
 		this.filename = filename;
+	}
+
+	/**
+	 * When used, filename and filename2 are binary compared (returns 'true' or
+	 * 'false' instead of the file content).
+	 * 
+	 * @param filename
+	 */
+	public void setFilename2(String filename2) {
+		this.filename2 = filename2;
+	}
+
+	public String getFilename2() {
+		return filename2;
 	}
 
 	/**

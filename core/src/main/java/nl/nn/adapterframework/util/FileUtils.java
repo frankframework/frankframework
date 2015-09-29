@@ -712,4 +712,54 @@ public class FileUtils {
 	public static long getLastModifiedDelta(File file) {
 		return System.currentTimeMillis() - file.lastModified();
 	}
+
+	public static boolean isFileBinaryEqual(File first, File second)
+			throws IOException {
+		boolean retval = false;
+
+		if ((first.exists()) && (second.exists()) && (first.isFile())
+				&& (second.isFile())) {
+			if (first.getCanonicalPath().equals(second.getCanonicalPath())) {
+				retval = true;
+			} else {
+				FileInputStream firstInput = null;
+				FileInputStream secondInput = null;
+				BufferedInputStream bufFirstInput = null;
+				BufferedInputStream bufSecondInput = null;
+
+				try {
+					firstInput = new FileInputStream(first);
+					secondInput = new FileInputStream(second);
+					bufFirstInput = new BufferedInputStream(firstInput);
+					bufSecondInput = new BufferedInputStream(secondInput);
+
+					int firstByte;
+					int secondByte;
+
+					while (true) {
+						firstByte = bufFirstInput.read();
+						secondByte = bufSecondInput.read();
+						if (firstByte != secondByte) {
+							break;
+						}
+						if ((firstByte < 0) && (secondByte < 0)) {
+							retval = true;
+							break;
+						}
+					}
+				} finally {
+					try {
+						if (bufFirstInput != null) {
+							bufFirstInput.close();
+						}
+					} finally {
+						if (bufSecondInput != null) {
+							bufSecondInput.close();
+						}
+					}
+				}
+			}
+		}
+		return retval;
+	}
 }

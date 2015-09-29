@@ -142,6 +142,7 @@ Upcoming
 - Add possibility to log user info to separate log file (*-SEC.log) about IBIS console usage
 - Add authorization roles to RestListener
 - Introduction of XmlBuilderPipe to convert special characters to their xml equivalents
+- Larva: add possibility to compare binary files (via FileListener)
 
 ### Non backwards compatible changes
 

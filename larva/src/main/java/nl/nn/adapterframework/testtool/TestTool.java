@@ -1774,6 +1774,7 @@ public class TestTool {
 		while (queues != null && iterator.hasNext()) {
 			String queueName = (String)iterator.next();
 			String filename  = (String)properties.get(queueName + ".filename");
+			String filename2  = (String)properties.get(queueName + ".filename2");
 			String directory = null;
 			String wildcard = null;
 			if (filename == null) {
@@ -1815,6 +1816,9 @@ public class TestTool {
 					fileListener.setInterval(interval);
 					debugMessage("Interval set to '" + interval + "'", writers);
 				} catch(Exception e) {
+				}
+				if (filename2!=null) {
+					fileListener.setFilename2(filename2);
 				}
 				Map fileListenerInfo = new HashMap();
 				fileListenerInfo.put("fileListener", fileListener);
@@ -2204,6 +2208,9 @@ public class TestTool {
 	public static boolean fileListenerCleanUp(String queueName, FileListener fileListener, Map writers) {
 		boolean remainingMessagesFound = false;
 		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
+		if (fileListener.getFilename2()!=null) {
+			return false;
+		}
 		long oldTimeOut = fileListener.getTimeOut();
 		fileListener.setTimeOut(0);
 		boolean empty = false;
