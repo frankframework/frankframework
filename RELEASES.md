@@ -141,6 +141,7 @@ Upcoming
 - Remove METT tracing functionality
 - Add possibility to log user info to separate log file (*-SEC.log) about IBIS console usage
 - Add authorization roles to RestListener
+- Introduction of XmlBuilderPipe to convert special characters to their xml equivalents
 
 ### Non backwards compatible changes
 
