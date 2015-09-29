@@ -59,7 +59,7 @@ public class SchedulerHelper {
 			CronTrigger cronTrigger = new CronTrigger(jobDetail.getName(), jobDetail.getGroup());
 			cronTrigger.setCronExpression(cronExpression);
 			sched.scheduleJob(jobDetail, cronTrigger);
-		} if (interval > -1) {
+		} else if (interval > -1) {
 			SimpleTrigger simpleTrigger = new SimpleTrigger(jobDetail.getName(), jobDetail.getGroup());
 			if (interval == 0) {
 				// Keep trigger active to keep it available in GUI
