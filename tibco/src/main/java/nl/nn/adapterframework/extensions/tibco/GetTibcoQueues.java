@@ -286,7 +286,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			}
 			Parameter p = new Parameter();
 			p.setName("entryName");
-			p.setXpathExpression("concat('cn=',*))");
+			p.setXpathExpression("concat('cn=',*)");
 			p.configure();
 			ldapSender.addParameter(p);
 			ldapSender.configure();
