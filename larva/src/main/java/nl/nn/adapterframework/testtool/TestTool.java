@@ -67,6 +67,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
@@ -3254,6 +3255,7 @@ public class TestTool {
 			} catch (IOException e) {
 				errorMessage("Could not canonicalise filepath: " + e.getMessage(), e, writers);
 			}
+			result = FilenameUtils.normalize(result);
 		} else {
 			int i = result.indexOf(key1);
 			while (i != -1 && result.length() > i + key1.length()) {
@@ -3266,6 +3268,7 @@ public class TestTool {
 					} catch (IOException e) {
 						errorMessage("Could not canonicalise filepath: " + e.getMessage(), e, writers);
 					}
+					fileName = FilenameUtils.normalize(fileName);
 					result = result.substring(0, i) + key1 + fileName + result.substring(j);
 					i = result.indexOf(key1, i + key1.length() + fileName.length() + key2.length());
 				} else {
