@@ -49,10 +49,12 @@ public class LogUtil {
 	public static final String LOG4J_XML_FILE = "log4j4ibis.xml";
 	public static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 
+	private static Properties log4jProperties;
 	private static Hierarchy hierarchy=null;
 
 	static {
-		String l4jxml;		URL url = LogUtil.class.getClassLoader().getResource(LOG4J_XML_FILE);
+		String l4jxml;
+		URL url = LogUtil.class.getClassLoader().getResource(LOG4J_XML_FILE);
 		if (url == null) {
 			l4jxml = null;
 			System.out.println(DEBUG_LOG_PREFIX + "did not find " + LOG4J_XML_FILE + ", will try " + LOG4J_PROPS_FILE + " instead" + DEBUG_LOG_SUFFIX);
@@ -65,7 +67,7 @@ public class LogUtil {
 			}
 		}
 
-		Properties log4jProperties = getProperties(LOG4J_PROPS_FILE);
+		log4jProperties = getProperties(LOG4J_PROPS_FILE);
 		if (log4jProperties != null) {
 			Properties dsProperties = getProperties("DeploymentSpecifics.properties");
 			if (dsProperties != null) {
@@ -116,6 +118,9 @@ public class LogUtil {
 		return getLogger(owner.getClass());
 	}
 
+	public static Properties getLog4jProperties() {
+		return log4jProperties;
+	}
 
 	private static Properties getProperties(String resourceName) {
 		Properties properties = null;

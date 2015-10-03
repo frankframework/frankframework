@@ -143,6 +143,8 @@ Upcoming
 - Add authorization roles to RestListener
 - Introduction of XmlBuilderPipe to convert special characters to their xml equivalents
 - Larva: add possibility to compare binary files (via FileListener)
+- Ladybug: Hide the same data as is hidden in the Ibis logfiles based on the log.hideRegex property in log4j4ibis.properties
+- Ladybug: Prefix html title with "Ladybug"
 
 ### Non backwards compatible changes
 
