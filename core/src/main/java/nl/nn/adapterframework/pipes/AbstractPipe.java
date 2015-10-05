@@ -308,10 +308,13 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	  *
 	  **/
 
-
-
     public String toString() {
-		return ToStringBuilder.reflectionToString(this);
+		try {
+			return ToStringBuilder.reflectionToString(this);
+		} catch (Throwable t) {
+			log.warn("exception getting string representation of pipe ["+getName()+"]", t);
+		}
+		return null;
     }
 
 	/**

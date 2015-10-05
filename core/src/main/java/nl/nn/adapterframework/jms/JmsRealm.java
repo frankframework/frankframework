@@ -216,10 +216,15 @@ public class JmsRealm {
    *
    **/
   public String toString() {
-	return  ToStringBuilder.reflectionToString(this);
+		try {
+			return ToStringBuilder.reflectionToString(this);
+		} catch (Throwable t) {
+			log.warn("exception getting string representation of jmsRealm ["+getRealmName()+"]", t);
+		}
+		return null;
+	}
 
-  }
-	/**
+  /**
 	 * Returns the queueConnectionFactoryNameXA.
 	 */
 	public String getQueueConnectionFactoryNameXA() {
