@@ -3214,12 +3214,10 @@ public class TestTool {
 
 	public static String replaceKey(String string, String from, String to) {
 		String result = string;
-		if (!from.equals(to)) {
-			int i = result.indexOf(from);
-			while (i != -1) {
-				result = result.substring(0, i) + to + result.substring(i + from.length());
-				i = result.indexOf(from, i);
-			}
+		int i = result.indexOf(from);
+		while (i != -1) {
+			result = result.substring(0, i) + to + result.substring(i + from.length());
+			i = result.indexOf(from, i);
 		}
 		return result;
 	}
