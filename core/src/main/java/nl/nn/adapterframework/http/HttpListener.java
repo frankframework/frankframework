@@ -28,7 +28,7 @@ import org.apache.commons.lang.StringUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.http.WebServiceListener</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.http.HttpListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>name of the service that is provided by the adapter of this listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setApplicationFaultsAsExceptions(boolean) applicationFaultsAsExceptions}</td><td>Controls the behavior when an application-fault occurrs: 
