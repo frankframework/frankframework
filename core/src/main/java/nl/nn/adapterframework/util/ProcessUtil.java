@@ -100,8 +100,8 @@ public class ProcessUtil {
 		Process process;
 		try {
 			process = Runtime.getRuntime().exec((String[])command.toArray(new String[0]));
-		} catch (IOException e) {
-			throw new SenderException("Could not execute command ["+getCommandLine(command)+"]",e);
+		} catch (Throwable t) {
+			throw new SenderException("Could not execute command ["+getCommandLine(command)+"]",t);
 		}
 		TimeoutGuard tg = new TimeoutGuard("ProcessUtil ");
 		tg.activateGuard(timeout);
