@@ -145,6 +145,7 @@ Upcoming
 - Larva: add possibility to compare binary files (via FileListener)
 - Ladybug: Hide the same data as is hidden in the Ibis logfiles based on the log.hideRegex property in log4j4ibis.properties
 - Ladybug: Prefix html title with "Ladybug"
+- Ladybug: Add functionality to easily replace fixed strings
 
 ### Non backwards compatible changes
 

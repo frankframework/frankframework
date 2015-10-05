@@ -2995,6 +2995,21 @@ public class TestTool {
 				removeKeyProcessed = true;
 			}
 		}
+		debugMessage("Check replaceKey properties", writers);
+		boolean replaceKeyProcessed = false;
+		i = 1;
+		while (!replaceKeyProcessed) {
+			String key1 = properties.getProperty("replaceKey" + i + ".key1");
+			String key2 = properties.getProperty("replaceKey" + i + ".key2");
+			if (key1 != null && key2 != null) {
+				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
+				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
+				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
+				i++;
+			} else {
+				replaceKeyProcessed = true;
+			}
+		}
 		debugMessage("Check ignoreCurrentTimeBetweenKeys properties", writers);
 		boolean ignoreCurrentTimeBetweenKeysProcessed = false;
 		i = 1;
@@ -3193,6 +3208,18 @@ public class TestTool {
 		while (i != -1) {
 			result = result.substring(0, i) + result.substring(i + key.length());
 			i = result.indexOf(key, i);
+		}
+		return result;
+	}
+
+	public static String replaceKey(String string, String from, String to) {
+		String result = string;
+		if (!from.equals(to)) {
+			int i = result.indexOf(from);
+			while (i != -1) {
+				result = result.substring(0, i) + to + result.substring(i + from.length());
+				i = result.indexOf(from, i);
+			}
 		}
 		return result;
 	}
