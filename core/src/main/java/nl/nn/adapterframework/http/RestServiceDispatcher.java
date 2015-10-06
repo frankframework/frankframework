@@ -116,7 +116,7 @@ public class RestServiceDispatcher  {
 				authorized = true;
 			} else {
 				String authRoles = restListener.getAuthRoles();
-				if (StringUtils.isEmpty(authRoles)) {
+				if (StringUtils.isNotEmpty(authRoles)) {
 					StringTokenizer st = new StringTokenizer(authRoles, ",;");
 					while (st.hasMoreTokens()) {
 						String authRole = st.nextToken();
