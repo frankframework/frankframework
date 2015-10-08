@@ -21,6 +21,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
@@ -267,7 +268,15 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		if (current==null){
 			pipeForwards.put(forward.getName(), forward);
 		} else {
-			if (!getPipeLine().getAdapter().isRecover()) {
+			boolean recovered = false;
+			PipeLine pipeLine = getPipeLine();
+			if (pipeLine != null) {
+				Adapter adapter = pipeLine.getAdapter();
+				if (adapter != null) {
+					recovered = adapter.isRecover();
+				}
+			}
+			if (!recovered) {
 				if (forward.getPath().equals(current.getPath())) {
 					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 					String msg = getLogPrefix(null)+"PipeForward ["+forward.getName()+"] pointing to ["+forward.getPath()+"] already registered";

@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.jms.JmsListener;
+import nl.nn.adapterframework.receivers.ReceiverBase;
 
 /**
  * ESB (Enterprise Service Bus) extension of JmsListener.
@@ -67,7 +68,12 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		if (getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY)) {
 			setForceMessageIdAsCorrelationId(true);
 			if (CACHE_CONSUMER.equals(getCacheMode())) {
-				if (!getReceiverBase().isRecover()) {
+				boolean recovered = false;
+				ReceiverBase receiverBase = getReceiverBase();
+				if (receiverBase != null) {
+					recovered = receiverBase.isRecover();
+				}
+				if (!recovered) {
 					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 					configWarnings.add(log, "attribute [cacheMode] already has a default value [" + CACHE_CONSUMER + "]");
 				}
