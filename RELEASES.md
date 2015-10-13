@@ -147,6 +147,10 @@ Upcoming
 - `(end of v6.0-RC4)`
 - Ladybug: Hide the same data as is hidden in the Ibis logfiles based on the log.hideRegex property in log4j4ibis.properties
 - Ladybug: Prefix html title with "Ladybug"
+- Support multiple operations/listeners per service/adapter in generated WSDL
+- Improve values of name attributes in generated WSDL which will make a WSDL easier to understand
+- Use generic targetNamespace prefix (ibis->tns) in generated WSDL
+
 
 ### Non backwards compatible changes
 
