@@ -155,7 +155,10 @@ Upcoming
 ### Non backwards compatible changes
 
 - The use of 'xsd:import' and 'xsd:include' in xsd files in XmlValidator (and subclasses) has become more strictly.
-	- When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.
+	- ``sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'http://nn/nl/XSD/Generic/MessageHeader/1, ...'.``
+	* When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.
+	- ``src-resolve: Cannot resolve the name 'cmh:Result' to a(n) 'element declaration' component.``
+	* For validating ESB SOAP messages use the EsbSoapValidator and not the XmlValidator.
 
 
 
