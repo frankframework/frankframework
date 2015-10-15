@@ -1,52 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-                  xmlns:ibis="http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail/wsdl/"
-                  xmlns:ns1="http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail"
-                  xmlns:ns2="http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response"
-                  targetNamespace="http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail/wsdl/">
-  <wsdl:documentation><![CDATA[test]]></wsdl:documentation>
-  <wsdl:types>
-    <xsd:schema targetNamespace="http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail">
-      <xsd:include schemaLocation="WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRequestv2.1.xsd"/>
-    </xsd:schema>
-    <xsd:schema targetNamespace="http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response">
-      <xsd:include schemaLocation="WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd"/>
-    </xsd:schema>
-  </wsdl:types>
-  <wsdl:message name="PipeLineInput">
-    <wsdl:part name="CalculationRequest" element="ns1:CalculationRequest"/>
-  </wsdl:message>
-  <wsdl:message name="PipeLineOutput">
-    <wsdl:part name="CalculationResponse" element="ns2:CalculationResponse"/>
-  </wsdl:message>
-  <wsdl:portType name="PipeLine">
-    <wsdl:operation name="Process">
-      <wsdl:input message="ibis:PipeLineInput"/>
-      <wsdl:output message="ibis:PipeLineOutput"/>
-    </wsdl:operation>
-  </wsdl:portType>
-  <wsdl:binding name="SoapBinding" type="ibis:PipeLine">
-    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
-    <wsdl:operation name="Process">
-      <soap:operation style="document" soapAction="defaultAction"/>
-      <wsdl:input>
-        <!--
-        <ns1:CalculationRequest use="literal"/>
-        -->
-        <soap:body parts="CalculationRequest" use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <!--
-        <ns2:CalculationResponse use="literal"/>
-        -->
-        <soap:body parts="CalculationResponse" use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-  </wsdl:binding>
-  <wsdl:service name="WsdlTest_CalculateQuoteAndPolicyValuesLifeRetail">
-    <wsdl:port name="SoapHttp" binding="ibis:SoapBinding">
-      <soap:address location="Test"/>
-    </wsdl:port>
-  </wsdl:service>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail/wsdl/" xmlns:ns1="http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail" xmlns:ns2="http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response" targetNamespace="http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail/wsdl/">
+	<wsdl:documentation>test</wsdl:documentation>
+	<wsdl:types>
+		<xsd:schema targetNamespace="http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail">
+			<xsd:include schemaLocation="WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRequestv2.1.xsd"/>
+		</xsd:schema>
+		<xsd:schema targetNamespace="http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response">
+			<xsd:include schemaLocation="WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd"/>
+		</xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="Message_CalculationRequest">
+		<wsdl:part name="Part_CalculationRequest" element="ns1:CalculationRequest"/>
+	</wsdl:message>
+	<wsdl:message name="Message_CalculationResponse">
+		<wsdl:part name="Part_CalculationResponse" element="ns2:CalculationResponse"/>
+	</wsdl:message>
+	<wsdl:portType name="PortType_WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail">
+		<wsdl:operation name="Operation_defaultAction">
+			<wsdl:input message="tns:Message_CalculationRequest"/>
+			<wsdl:output message="tns:Message_CalculationResponse"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="Binding_WsdlTest_CalculateQuoteAndPolicyValuesLifeRetail" type="tns:PortType_WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail">
+		<soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+		<wsdl:operation name="Operation_defaultAction">
+			<soap:operation style="document" soapAction="defaultAction"/>
+			<wsdl:input>
+				<soap:body parts="Part_CalculationRequest" use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body parts="Part_CalculationResponse" use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="Service_WsdlTest_CalculateQuoteAndPolicyValuesLifeRetail">
+		<wsdl:port name="Port_WsdlTest_CalculateQuoteAndPolicyValuesLifeRetail" binding="tns:Binding_WsdlTest_CalculateQuoteAndPolicyValuesLifeRetail">
+			<soap:address location="Test"/>
+		</wsdl:port>
+	</wsdl:service>
 </wsdl:definitions>
+<!--Warning: XSD 'WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd' doesn't have a targetNamespace and addNamespaceToSchema is false-->
+<!--Warning: XSD 'WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRequestv2.1.xsd' doesn't have a targetNamespace and addNamespaceToSchema is false-->

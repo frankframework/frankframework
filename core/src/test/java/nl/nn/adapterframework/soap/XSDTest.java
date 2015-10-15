@@ -66,10 +66,9 @@ public class XSDTest {
 		DocumentBuilder dbuilder = WsdlTest.createDocumentBuilder();
 		Document result = dbuilder.parse(new ByteArrayInputStream(out.toByteArray()));
 		Document expected = dbuilder.parse(getClass().getClassLoader().getResourceAsStream("XSDTest/test_expected.xsd"));
-		System.out.println(new String(out.toByteArray()));
 		XMLUnit.setIgnoreWhitespace(false);
 
-		assertXMLEqual("test xml not similar to control xml", expected, result);
+		assertXMLEqual("expected xml (XSDTest/test_expected.xsd) not similar to result xml:\n" + new String(out.toByteArray()), expected, result);
 
 
 	}

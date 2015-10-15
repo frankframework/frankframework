@@ -94,11 +94,22 @@ public class Wsdl {
     private final XmlValidator inputValidator;
     private final XmlValidator outputValidator;
     private String webServiceListenerNamespace;
+    private Set<XSD> inputXsds;
+    private Set<XSD> outputXsds;
     private Set<XSD> xsds;
     private Set<XSD> rootXsds;
     private Map<String, Set<XSD>> xsdsGroupedByNamespace;
     private LinkedHashMap<XSD, String> prefixByXsd;
     private LinkedHashMap<String, String> namespaceByPrefix;
+    private String inputRoot;
+    private String outputRoot;
+    private QName inputHeaderElement;
+    private QName inputBodyElement;
+    private QName outputHeaderElement;
+    private QName outputBodyElement;
+
+    private boolean httpActive = false;
+    private boolean jmsActive = false;
 
     private final String targetNamespace;
     private String targetNamespacePrefix = TARGET_NAMESPACE_PREFIX;
@@ -199,9 +210,9 @@ public class Wsdl {
                     warn("Could not determine operation version");
                 } else {
                     String wsdlType = "abstract";
-                    for(IListener l : WsdlUtils.getListeners(pipeLine.getAdapter())) {
-                        if (l instanceof WebServiceListener
-                                || l instanceof JmsListener) {
+                    for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+                        if (listener instanceof WebServiceListener
+                                || listener instanceof JmsListener) {
                             wsdlType = "concrete";
                         }
                     }
@@ -245,9 +256,9 @@ public class Wsdl {
                 }
             }
             if (tns == null) {
-                for(IListener l : WsdlUtils.getListeners(pipeLine.getAdapter())) {
-                    if (l instanceof WebServiceListener) {
-                        webServiceListenerNamespace = ((WebServiceListener)l).getServiceNamespaceURI();
+                for(IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+                    if (listener instanceof WebServiceListener) {
+                        webServiceListenerNamespace = ((WebServiceListener)listener).getServiceNamespaceURI();
                         tns = webServiceListenerNamespace;
                     }
                 }
@@ -327,13 +338,22 @@ public class Wsdl {
     }
 
     public void init() throws IOException, XMLStreamException, ConfigurationException {
-        rootXsds = new HashSet<XSD>();
-        rootXsds.addAll(getXsds(inputValidator));
-        if (outputValidator != null) {
-            rootXsds.addAll(getXsds(outputValidator));
-        }
+        inputXsds = new HashSet<XSD>();
+        outputXsds = new HashSet<XSD>();
         xsds = new HashSet<XSD>();
-        xsds.addAll(SchemaUtils.getXsdsRecursive(rootXsds));
+        rootXsds = new HashSet<XSD>();
+        Set<XSD> inputRootXsds = new HashSet<XSD>();
+        inputRootXsds.addAll(getXsds(inputValidator));
+        rootXsds.addAll(inputRootXsds);
+        inputXsds.addAll(SchemaUtils.getXsdsRecursive(inputRootXsds));
+        xsds.addAll(inputXsds);
+        if (outputValidator != null) {
+            Set<XSD> outputRootXsds = new HashSet<XSD>();
+            outputRootXsds.addAll(getXsds(outputValidator));
+            rootXsds.addAll(outputRootXsds);
+            outputXsds.addAll(SchemaUtils.getXsdsRecursive(outputRootXsds));
+            xsds.addAll(outputXsds);
+        }
         prefixByXsd = new LinkedHashMap<XSD, String>();
         namespaceByPrefix = new LinkedHashMap<String, String>();
         int prefixCount = 1;
@@ -359,6 +379,21 @@ public class Wsdl {
                     && !xsd.isAddNamespaceToSchema()) {
                 warn("XSD '" + xsd
                         + "' doesn't have a targetNamespace and addNamespaceToSchema is false");
+            }
+        }
+        inputRoot = getRoot(inputValidator);
+        inputHeaderElement = getHeaderElement(inputValidator, inputXsds);
+        inputBodyElement = getBodyElement(inputValidator, inputXsds, "inputValidator");
+        if (outputValidator != null) {
+            outputRoot = getRoot(outputValidator);
+            outputHeaderElement = getHeaderElement(outputValidator, outputXsds);
+            outputBodyElement = getBodyElement(outputValidator, outputXsds, "outputValidator");
+        }
+        for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+            if (listener instanceof WebServiceListener) {
+                httpActive = true;
+            } else if (listener instanceof JmsListener) {
+                jmsActive = true;
             }
         }
     }
@@ -437,11 +472,13 @@ public class Wsdl {
         w.setPrefix(WSDL_NAMESPACE_PREFIX, WSDL_NAMESPACE);
         w.setPrefix(XSD_NAMESPACE_PREFIX, XSD_NAMESPACE);
         w.setPrefix(soapPrefix, soapNamespace);
-        if (esbSoap) {
-            w.setPrefix(SOAP_JMS_NAMESPACE_PREFIX,  ESB_SOAP_JMS_NAMESPACE);
-            w.setPrefix(ESB_SOAP_JNDI_NAMESPACE_PREFIX, ESB_SOAP_JNDI_NAMESPACE);
-        } else {
-            w.setPrefix(SOAP_JMS_NAMESPACE_PREFIX,  SOAP_JMS_NAMESPACE);
+        if (jmsActive) {
+            if (esbSoap) {
+                w.setPrefix(SOAP_JMS_NAMESPACE_PREFIX, ESB_SOAP_JMS_NAMESPACE);
+                w.setPrefix(ESB_SOAP_JNDI_NAMESPACE_PREFIX, ESB_SOAP_JNDI_NAMESPACE);
+            } else {
+                w.setPrefix(SOAP_JMS_NAMESPACE_PREFIX, SOAP_JMS_NAMESPACE);
+            }
         }
         w.setPrefix(getTargetNamespacePrefix(), getTargetNamespace());
         for (String prefix: namespaceByPrefix.keySet()) {
@@ -510,22 +547,29 @@ public class Wsdl {
      */
     protected void messages(XMLStreamWriter w) throws XMLStreamException, IOException, ConfigurationException {
         List<QName> parts = new ArrayList<QName>();
-        parts.addAll(getInputHeaderParts());
-        parts.addAll(getInputBodyParts());
-        message(w, inputValidator, parts);
-        XmlValidator outputValidator = (XmlValidator) pipeLine.getOutputValidator();
+        if (inputHeaderElement != null) {
+            parts.add(inputHeaderElement);
+        }
+        if (inputBodyElement != null) {
+            parts.add(inputBodyElement);
+        }
+        message(w, inputRoot, parts);
         if (outputValidator != null) {
             parts.clear();
-            parts.addAll(getOutputHeaderParts());
-            parts.addAll(getOutputBodyParts());
-            message(w, outputValidator, parts);
+            if (outputHeaderElement != null) {
+                parts.add(outputHeaderElement);
+            }
+            if (outputBodyElement != null) {
+                parts.add(outputBodyElement);
+            }
+            message(w, outputRoot, parts);
         }
     }
 
-    protected void message(XMLStreamWriter w, XmlValidator xmlValidator, Collection<QName> parts) throws XMLStreamException, IOException {
+    protected void message(XMLStreamWriter w, String root, Collection<QName> parts) throws XMLStreamException, IOException {
         if (!parts.isEmpty()) {
             w.writeStartElement(WSDL_NAMESPACE, "message");
-            w.writeAttribute("name", "Message_" + getRootTag(xmlValidator));
+            w.writeAttribute("name", "Message_" + root);
             {
                 for (QName part : parts) {
                     w.writeEmptyElement(WSDL_NAMESPACE, "part");
@@ -545,11 +589,13 @@ public class Wsdl {
                 if (listener instanceof WebServiceListener || listener instanceof JmsListener) {
                     w.writeStartElement(WSDL_NAMESPACE, "operation");
                     w.writeAttribute("name", "Operation_" + WsdlUtils.getNCName(getSoapAction(listener))); {
-                        w.writeEmptyElement(WSDL_NAMESPACE, "input");
-                        w.writeAttribute("message", getTargetNamespacePrefix() + ":" + "Message_" + getRootTag(inputValidator));
-                        if (outputValidator != null) {
+                        if (StringUtils.isNotEmpty(inputRoot)) {
+                            w.writeEmptyElement(WSDL_NAMESPACE, "input");
+                            w.writeAttribute("message", getTargetNamespacePrefix() + ":" + "Message_" + inputRoot);
+                        }
+                        if (StringUtils.isNotEmpty(outputRoot)) {
                             w.writeEmptyElement(WSDL_NAMESPACE, "output");
-                            w.writeAttribute("message", getTargetNamespacePrefix() + ":" + "Message_" + getRootTag(outputValidator));
+                            w.writeAttribute("message", getTargetNamespacePrefix() + ":" + "Message_" + outputRoot);
                         }
                     }
                     w.writeEndElement();
@@ -583,25 +629,16 @@ public class Wsdl {
     }
 
     protected void binding(XMLStreamWriter w) throws XMLStreamException, IOException, ConfigurationException {
-        boolean httpBinding = false;
-        boolean jmsBinding = false;
-        for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
-            if (listener instanceof WebServiceListener) {
-                httpBinding = true;
-            } else if (listener instanceof JmsListener) {
-                jmsBinding = true;
-            }
-        }
         String httpPrefix = "";
         String jmsPrefix = "";
-        if (httpBinding && jmsBinding) {
+        if (httpActive && jmsActive) {
             httpPrefix = "Http";
             jmsPrefix = "Jms";
         }
-        if (httpBinding) {
+        if (httpActive) {
             httpBinding(w, httpPrefix);
         }
-        if (jmsBinding) {
+        if (jmsActive) {
             jmsBinding(w, jmsPrefix);
         }
     }
@@ -629,14 +666,14 @@ public class Wsdl {
             w.writeAttribute("style", "document");
             w.writeAttribute("soapAction", getSoapAction(listener));
             w.writeStartElement(WSDL_NAMESPACE, "input"); {
-                writeSoapHeader(w, inputValidator, getInputHeaderParts());
-                writeSoapBody(w, getInputBodyParts());
+                writeSoapHeader(w, inputRoot, inputHeaderElement);
+                writeSoapBody(w, inputBodyElement);
             }
             w.writeEndElement();
             if (outputValidator != null) {
                 w.writeStartElement(WSDL_NAMESPACE, "output"); {
-                    writeSoapHeader(w, outputValidator, getOutputHeaderParts());
-                    writeSoapBody(w, getOutputBodyParts());
+                    writeSoapHeader(w, outputRoot, outputHeaderElement);
+                    writeSoapBody(w, outputBodyElement);
                 }
                 w.writeEndElement();
             }
@@ -644,31 +681,21 @@ public class Wsdl {
         w.writeEndElement();
     }
 
-    protected void writeSoapHeader(XMLStreamWriter w, XmlValidator xmlValidator, Collection<QName> parts) throws XMLStreamException, IOException {
-        if (!parts.isEmpty()) {
-            if (parts.size() > 1) {
-                warn("Can only deal with one soap header. Taking only the first of " + parts);
-            }
+    protected void writeSoapHeader(XMLStreamWriter w, String root, QName headerElement) throws XMLStreamException, IOException {
+        if (headerElement != null) {
             w.writeEmptyElement(soapNamespace, "header");
-            w.writeAttribute("part", parts.iterator().next().getLocalPart());
+            w.writeAttribute("part", "Part_" + headerElement.getLocalPart());
             w.writeAttribute("use", "literal");
-            w.writeAttribute("message", getTargetNamespacePrefix() + ":" + "Message_" + getRootTag(xmlValidator));
+            w.writeAttribute("message", getTargetNamespacePrefix() + ":" + "Message_" + root);
         }
     }
 
-    protected void writeSoapBody(XMLStreamWriter w, Collection<QName> parts) throws XMLStreamException, IOException {
-        w.writeEmptyElement(soapNamespace, "body");
-        writeParts(w, parts);
-        w.writeAttribute("use", "literal");
-    }
-
-    protected void writeParts(XMLStreamWriter w, Collection<QName> parts) throws XMLStreamException {
-        StringBuilder builder = new StringBuilder();
-        for (QName part : parts) {
-            if (builder.length() > 0) builder.append(" ");
-            builder.append("Part_" + part.getLocalPart());
+    protected void writeSoapBody(XMLStreamWriter w, QName bodyElement) throws XMLStreamException, IOException {
+        if (bodyElement != null) {
+            w.writeEmptyElement(soapNamespace, "body");
+            w.writeAttribute("parts", "Part_" + bodyElement.getLocalPart());
+            w.writeAttribute("use", "literal");
         }
-        w.writeAttribute("parts", builder.toString());
     }
 
     protected void jmsBinding(XMLStreamWriter w, String namePrefix) throws XMLStreamException, IOException, ConfigurationException {
@@ -694,25 +721,16 @@ public class Wsdl {
     }
 
     protected void service(XMLStreamWriter w, String servlet) throws XMLStreamException, NamingException {
-        boolean httpService = false;
-        boolean jmsService = false;
-        for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
-            if (listener instanceof WebServiceListener) {
-                httpService = true;
-            } else if (listener instanceof JmsListener) {
-                jmsService = true;
-            }
-        }
         String httpPrefix = "";
         String jmsPrefix = "";
-        if (httpService && jmsService) {
+        if (httpActive && jmsActive) {
             httpPrefix = "Http";
             jmsPrefix = "Jms";
         }
-        if (httpService) {
+        if (httpActive) {
             httpService(w, servlet, httpPrefix);
         }
-        if (jmsService) {
+        if (jmsActive) {
             for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
                 if (listener instanceof JmsListener) {
                     jmsService(w, (JmsListener)listener, jmsPrefix);
@@ -834,7 +852,7 @@ public class Wsdl {
         return pipeLine;
     }
 
-    protected String getRootTag(XmlValidator xmlValidator) {
+    protected String getRoot(XmlValidator xmlValidator) {
         if (xmlValidator instanceof SoapValidator) {
             return ((SoapValidator)xmlValidator).getSoapBody();
         } else {
@@ -842,60 +860,46 @@ public class Wsdl {
         }
     }
 
-    protected QName getRootTag(XmlValidator xmlValidator, String tag) throws ConfigurationException {
-        if (StringUtils.isNotEmpty(tag)) {
-            for (XSD xsd : xmlValidator.getXsds()) {
-                for (String rootTag : xsd.getRootTags()) {
-                    if (tag.equals(rootTag)) {
-                        String prefix = prefixByXsd.get(xsd);
-                        return new QName(namespaceByPrefix.get(prefix), tag, prefix);
-                    }
+    protected QName getRootElement(Set<XSD> xsds, String root) {
+        for (XSD xsd : xsds) {
+            for (String rootTag : xsd.getRootTags()) {
+                if (root.equals(rootTag)) {
+                    String prefix = prefixByXsd.get(xsd);
+                    return new QName(namespaceByPrefix.get(prefix), root, prefix);
                 }
             }
-            warn("Root element '" + tag + "' not found in XSD's");
+        }
+        warn("Root element '" + root + "' not found in XSD's");
+        return null;
+    }
+
+    protected QName getHeaderElement(XmlValidator xmlValidator, Set<XSD> xsds) {
+        if (xmlValidator instanceof SoapValidator) {
+            String root = ((SoapValidator)xmlValidator).getSoapHeader();
+            if (StringUtils.isNotEmpty(root)) {
+                return getRootElement(xsds, root);
+            }
         }
         return null;
     }
 
-    protected Collection<QName> getHeaderParts(XmlValidator xmlValidator) throws ConfigurationException {
-        if (xmlValidator instanceof SoapValidator) {
-            String root = ((SoapValidator)xmlValidator).getSoapHeader();
-            QName q = getRootTag(xmlValidator, root);
-            if (q != null) {
-                return Collections.singleton(q);
-            }
-        }
-        return Collections.emptyList();
-    }
-
-    protected Collection<QName> getBodyParts(XmlValidator xmlValidator) throws ConfigurationException {
+    protected QName getBodyElement(XmlValidator xmlValidator, Set<XSD> xsds, String type) {
         String root;
         if (xmlValidator instanceof SoapValidator) {
             root = ((SoapValidator)xmlValidator).getSoapBody();
+            if (StringUtils.isEmpty(root)) {
+                warn("Attribute soapBody for " + type + " not found or empty");
+            }
         } else {
             root = xmlValidator.getRoot();
+            if (StringUtils.isEmpty(root)) {
+                warn("Attribute root for " + type + " not found or empty");
+            }
         }
-        QName q = getRootTag(xmlValidator, root);
-        if (q != null) {
-            return Collections.singleton(q);
+        if (StringUtils.isNotEmpty(root)) {
+            return getRootElement(xsds, root);
         }
-        return Collections.emptyList();
-    }
-
-    protected Collection<QName> getInputHeaderParts() throws ConfigurationException {
-        return getHeaderParts(inputValidator);
-    }
-
-    protected Collection<QName> getInputBodyParts() throws ConfigurationException {
-        return getBodyParts(inputValidator);
-    }
-
-    protected Collection<QName> getOutputHeaderParts() throws ConfigurationException {
-        return getHeaderParts(outputValidator);
-    }
-
-    protected Collection<QName> getOutputBodyParts() throws ConfigurationException {
-        return getBodyParts(outputValidator);
+        return null;
     }
 
     protected void warn(String warning) {

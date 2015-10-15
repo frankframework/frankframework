@@ -154,14 +154,13 @@ public class WsdlTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         wsdl.wsdl(out, "Test");
         DocumentBuilder dbuilder = createDocumentBuilder();
-        //System.out.println(new String(out.toByteArray()));
         Document result = dbuilder.parse(new ByteArrayInputStream(out.toByteArray()));
 
         Document expected = dbuilder.parse(getClass().getClassLoader().getResourceAsStream(testWsdl));
         XMLUnit.setIgnoreWhitespace(true);
         XMLUnit.setIgnoreComments(true);
 
-        assertXMLEqual("test xml not similar to control xml" + new String(out.toByteArray()), expected, result);
+        assertXMLEqual("expected xml (" + testWsdl + ") not similar to result xml:\n" + new String(out.toByteArray()), expected, result);
 
         zip(wsdl);
 

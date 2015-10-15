@@ -150,6 +150,7 @@ Upcoming
 - Support multiple operations/listeners per service/adapter in generated WSDL
 - Improve values of name attributes in generated WSDL which will make a WSDL easier to understand
 - Use generic targetNamespace prefix (ibis->tns) in generated WSDL
+- Only add jms namespace when needed in generated WSDL
 
 
 ### Non backwards compatible changes
