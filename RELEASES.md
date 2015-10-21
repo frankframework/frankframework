@@ -151,6 +151,7 @@ Upcoming
 - Improve values of name attributes in generated WSDL which will make a WSDL easier to understand
 - Use generic targetNamespace prefix (ibis->tns) in generated WSDL
 - Only add jms namespace when needed in generated WSDL
+- Ladybug: Prevent NPE (due to previous change) when Tibet2 specific Report is instantiated
 
 
 ### Non backwards compatible changes
