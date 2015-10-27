@@ -153,6 +153,7 @@ Upcoming
 - Only add jms namespace when needed in generated WSDL
 - Ladybug: Prevent NPE (due to previous change) when Tibet2 specific Report is instantiated
 - Fix broken flow images for adapters which contain space in name
+- Don't show svg (flow) images in IE 9 and 10
 
 
 ### Non backwards compatible changes

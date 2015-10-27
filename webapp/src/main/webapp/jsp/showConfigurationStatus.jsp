@@ -425,8 +425,10 @@
 								<% if (first) {
 									boolean active = true;
 									// https://code.google.com/p/chromium/issues/detail?id=423749
-									if (request.getHeader("User-Agent").contains("MSIE 8.0")
-											|| request.getHeader("User-Agent").contains("Chrome")) {
+									if (request.getHeader("User-Agent").contains("Chrome")
+											|| request.getHeader("User-Agent").contains("MSIE 8.0")
+											|| request.getHeader("User-Agent").contains("MSIE 9.0")
+											|| request.getHeader("User-Agent").contains("MSIE 10.")) {
 										active = false;
 									}
 								
