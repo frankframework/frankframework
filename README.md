@@ -21,15 +21,12 @@ See [release notes](RELEASES.md).
 
 
 
-Mailing list and IRC
-====================
+Mailing list
+============
 
 The Ibis community can be contacted via
 https://groups.google.com/d/forum/ibissource. You can join this mailing list by 
-sending a message to ibissource+subscribe@googlegroups.com. Or try to find
-somebody online on IRC using the
-[web interface](http://irc.codehaus.org/?channels=ibis&uio=d4) or an
-[IRC client](irc://irc.codehaus.org/ibis).
+sending a message to ibissource+subscribe@googlegroups.com.
 
 
 
