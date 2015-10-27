@@ -434,7 +434,7 @@
 									<td rowspan="<%= nrOfAdapterMessages %>" width="200"<% if (active) { %> bgcolor="white"<% } %>>
 										<% if (active) { %>
 											<a href="images/flow/<%=FileUtils.encodeFileName(adapterName)%>.svg" newwindow="true">
-												<img src="images/flow/<%=java.net.URLEncoder.encode(adapterName)%>.svg" title="<%=adapterName%>" width="200" height="200"/>
+												<img src="images/flow/<%=FileUtils.encodeFileName(adapterName)%>.svg" title="<%=adapterName%>" width="200" height="200"/>
 											</a>
 										<% } %>
 									</td>
