@@ -101,7 +101,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		} else if (replaceNonXmlChars && input != null) {
 			input = addCdataSection(XmlUtils.encodeCdataString(input.toString()));
 		} else {
-			input = addCdataSection(input.toString());
+			input = addCdataSection((input == null ? null : input.toString()));
 		}
 			
 		String resultString = (isIncludeXmlDeclaration()?"<?xml version=\"1.0\" encoding=\"UTF-8\"?>":"") +
