@@ -71,12 +71,12 @@ import org.springframework.transaction.TransactionStatus;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Job</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDescription(String) description}</td><td>optional description of the job</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCronExpression(String) cronExpression}</td><td>cron expression that determines the frequency of excution (see below)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCronExpression(String) cronExpression}</td><td>cron expression that determines the frequency of execution (see below)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInterval(long) interval}</td><td>Repeat the job at the specified number of ms. Set to 0 to only run once just after all adapters have been started. Keep cronExpression empty to use interval.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFunction(String) function}</td><td>one of: StopAdapter, StartAdapter, StopReceiver, StartReceiver, SendMessage, ExecuteQuery</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAdapterName(String) adapterName}</td><td>Adapter on which job operates</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReceiverName(String) receiverName}</td><td>Receiver on which job operates. If function is 'sendMessage' is used this name is also used as name of JavaListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be excecuted</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be executed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
  *   <table border="1">
@@ -363,6 +363,7 @@ import org.springframework.transaction.TransactionStatus;
  */
 public class JobDef {
 	protected Logger log=LogUtil.getLogger(this);
+	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
 	public static final String JOB_FUNCTION_STOP_ADAPTER="StopAdapter";	
 	public static final String JOB_FUNCTION_START_ADAPTER="StartAdapter";	
@@ -845,15 +846,20 @@ public class JobDef {
 	}
 
 	private void recoverAdapters(IbisManager ibisManager) {
+		int countAdapter=0;
+		int countAdapterStateStarted=0;
+		int countReceiver=0;
+		int countReceiverStateStarted=0;
 		Configuration config = ibisManager.getConfiguration();
 		for (IAdapter adapter : config.getRegisteredAdapters()) {
+			countAdapter++;
 			if (adapter instanceof Adapter) {
 				Adapter at = null;
 				if (adapter instanceof Adapter) {
 					at = (Adapter) adapter;
 				}
-				RunStateEnum runState = adapter.getRunState();
-				if (runState.equals(RunStateEnum.ERROR)) {
+				RunStateEnum adapterRunState = adapter.getRunState();
+				if (adapterRunState.equals(RunStateEnum.ERROR)) {
 					log.debug("trying to recover adapter [" + adapter.getName()
 							+ "]");
 					try {
@@ -885,51 +891,83 @@ public class JobDef {
 					}
 					log.debug("finished recovering adapter ["
 							+ adapter.getName() + "]");
+				}
+				String message = "adapter [" + adapter.getName()
+						+ "] has state [" + adapterRunState + "]";
+				adapterRunState = adapter.getRunState();
+				if (adapterRunState.equals(RunStateEnum.STARTED)) {
+					countAdapterStateStarted++;
+					heartbeatLog.info(message);
+				} else if (adapterRunState.equals(RunStateEnum.ERROR)) {
+					heartbeatLog.error(message);
 				} else {
-					for (Iterator receiverIt = adapter.getReceiverIterator(); receiverIt
-							.hasNext();) {
-						IReceiver receiver = (IReceiver) receiverIt.next();
-						if (receiver.getRunState().equals(RunStateEnum.ERROR)) {
-							log.debug("trying to recover receiver ["
-									+ receiver.getName() + "] of adapter ["
-									+ adapter.getName() + "]");
-							ReceiverBase rb = null;
-							if (receiver instanceof ReceiverBase) {
-								rb = (ReceiverBase) receiver;
-							}
-							try {
-								if (rb!=null) {
-									rb.setRecover(true);
-								}
-								at.configureReceiver(receiver);
-							} finally {
-								if (rb!=null) {
-									rb.setRecover(false);
-								}
-							}
+					heartbeatLog.warn(message);
+				}
+				for (Iterator receiverIt = adapter.getReceiverIterator();
+						receiverIt.hasNext();) {
+					countReceiver++;
+					IReceiver receiver = (IReceiver) receiverIt.next();
+					RunStateEnum receiverRunState = receiver.getRunState();
+					if (!adapterRunState.equals(RunStateEnum.ERROR)
+							&& receiverRunState.equals(RunStateEnum.ERROR)) {
+						log.debug("trying to recover receiver ["
+								+ receiver.getName() + "] of adapter ["
+								+ adapter.getName() + "]");
+						ReceiverBase rb = null;
+						if (receiver instanceof ReceiverBase) {
+							rb = (ReceiverBase) receiver;
+						}
+						try {
 							if (rb!=null) {
-								if (rb.configurationSucceeded()) {
-									receiver.stopRunning();
-									int count = 10;
-									while (count-- >= 0
-											&& !receiver.getRunState().equals(
-													RunStateEnum.STOPPED)) {
-										try {
-											Thread.sleep(1000);
-										} catch (InterruptedException e) {
-											// do nothing
-										}
-									}
-								}
-								// check for start is in method startRunning in
-								// ReceiverBase self
-								receiver.startRunning();
+								rb.setRecover(true);
+							}
+							at.configureReceiver(receiver);
+						} finally {
+							if (rb!=null) {
+								rb.setRecover(false);
 							}
 						}
+						if (rb!=null) {
+							if (rb.configurationSucceeded()) {
+								receiver.stopRunning();
+								int count = 10;
+								while (count-- >= 0
+										&& !receiver.getRunState().equals(
+												RunStateEnum.STOPPED)) {
+									try {
+										Thread.sleep(1000);
+									} catch (InterruptedException e) {
+										// do nothing
+									}
+								}
+							}
+							// check for start is in method startRunning in
+							// ReceiverBase self
+							receiver.startRunning();
+							log.debug("finished recovering receiver ["
+									+ receiver.getName() + "] of adapter ["
+									+ adapter.getName() + "]");
+						}
+					}
+					receiverRunState = receiver.getRunState();
+					message = "receiver [" + receiver.getName()
+							+ "] of adapter [" + adapter.getName()
+							+ "] has state [" + receiverRunState + "]";
+					if (receiverRunState.equals(RunStateEnum.STARTED)) {
+						countReceiverStateStarted++;
+						heartbeatLog.info(message);
+					} else if (receiverRunState.equals(RunStateEnum.ERROR)) {
+						heartbeatLog.error(message);
+					} else {
+						heartbeatLog.warn(message);
 					}
 				}
 			}
 		}
+		heartbeatLog.info("[" + countAdapterStateStarted + "/" + countAdapter
+				+ "] adapters and [" + countReceiverStateStarted + "/"
+				+ countReceiver + "] receivers have state ["
+				+ RunStateEnum.STARTED + "]");
 	}
 
 	public String getLogPrefix() {
