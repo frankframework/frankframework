@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.w3c.dom.Element;
 
 /**
  * Shows the logging files.
@@ -63,6 +64,13 @@ public class ShowLogging extends ActionBase {
 		if (StringUtils.isEmpty(path)) {
 			path=AppConstants.getInstance().getResolvedProperty("logging.path");
 		}
+
+		boolean sizeFormat = true;
+		String sizeFormatString=request.getParameter("sizeFormat");
+		if (StringUtils.isNotEmpty(sizeFormatString)) {
+			sizeFormat = Boolean.parseBoolean(sizeFormatString);
+		}
+		
 		Dir2Xml dx=new Dir2Xml();
 		dx.setPath(path);
 		String listresult;
@@ -78,7 +86,10 @@ public class ShowLogging extends ActionBase {
 			try {
 				listresult=dx.getDirList(showDirectories, maxItems);
 				if (listresult!=null) {
-					String countStr = XmlUtils.buildDomDocument(listresult).getDocumentElement().getAttribute("count");
+					Element root = XmlUtils.buildDomDocument(listresult).getDocumentElement();
+					root.setAttribute("sizeFormat", Boolean.toString(sizeFormat));
+					listresult = XmlUtils.nodeToString(root);
+					String countStr = root.getAttribute("count");
 					if (countStr!=null) {
 						int count = Integer.parseInt(countStr);
 						if (count > maxItems) {

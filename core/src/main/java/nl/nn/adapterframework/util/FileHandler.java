@@ -642,8 +642,12 @@ public class FileHandler {
 			extension.setValue(FileUtils.getFileNameExtension(sname));
 			fileXml.addSubElement(extension);
 			XmlBuilder size = new XmlBuilder("size");
-			size.setValue(Long.toString(file.length()));
+			long fileSize = file.length();
+			size.setValue(Long.toString(fileSize));
 			fileXml.addSubElement(size);
+			XmlBuilder fSize = new XmlBuilder("fSize");
+			fSize.setValue(Misc.toFileSize(fileSize,true));
+			fileXml.addSubElement(fSize);
 			Date lastModified = new Date(file.lastModified());
 			String date = DateUtils.format(lastModified, DateUtils.FORMAT_DATE);
 			XmlBuilder modificationDate = new XmlBuilder("modificationDate");

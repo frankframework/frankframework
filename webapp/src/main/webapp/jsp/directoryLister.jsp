@@ -9,6 +9,7 @@
 <br/>
 
 <xtags:forEach select="directory">
+	<xtags:variable id="sizeFormat" select="@sizeFormat"/>
 	<tr><th>Name</th>
 		<th>Size</th>
 		<th>Date</th>
@@ -22,7 +23,16 @@
 				<xtags:valueOf select="@name"/>
 			</td>
 			<td align="right">
-				<xtags:valueOf select="@size"/>
+				<xtags:if test="@directory='false'">
+					<xtags:choose>
+						<xtags:when test="$sizeFormat='true'">
+							<xtags:valueOf select="@fSize"/>
+						</xtags:when>
+						<xtags:otherwise>
+							<xtags:valueOf select="@size"/>
+						</xtags:otherwise>					
+					</xtags:choose>
+				</xtags:if>
 			</td>
 			<td align="right">
 				<xtags:valueOf select="@modificationDate"/>
@@ -53,7 +63,6 @@
 					</xtags:otherwise>
 				</xtags:choose>
 			</td>
-			
 		</tr>	
 	</xtags:forEach>
 </xtags:forEach>

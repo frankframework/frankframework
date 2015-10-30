@@ -95,7 +95,9 @@ public class Dir2Xml  {
 	
 		XmlBuilder fileXml = new XmlBuilder("file");
 		fileXml.addAttribute("name", nameShown);
-		fileXml.addAttribute("size", "" + file.length());
+		long fileSize = file.length();
+		fileXml.addAttribute("size", "" + fileSize);
+		fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize,true));
 		fileXml.addAttribute("directory", "" + file.isDirectory());
 		try {
 			fileXml.addAttribute("canonicalName", file.getCanonicalPath());

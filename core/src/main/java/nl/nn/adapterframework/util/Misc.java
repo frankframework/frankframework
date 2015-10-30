@@ -630,6 +630,10 @@ public class Misc {
 	  }
 
 	public static String toFileSize(long value) {
+		return toFileSize(value, false);
+	}
+
+	public static String toFileSize(long value, boolean format) {
 		long divider = 1024*1024*1024;
 		String suffix = null;
 		if (value>=divider) {
@@ -641,15 +645,27 @@ public class Misc {
 			} else {
 				divider = 1024;
 				if (value>=divider) {
-					suffix = "KB";
+					if (format) {
+						suffix = "kB";
+					} else {
+						suffix = "KB";
+					}
 				}
 			}
 		}
 		if (suffix==null) {
-			return Long.toString(value);
+			if (format) {
+				if (value>0) {
+					return "1 kB";
+				} else {
+					return "0 kB";
+				}
+			} else {
+				return Long.toString(value);
+			}
 		} else {
 			float f = (float)value / divider;
-			return Math.round(f) + suffix;
+			return Math.round(f) + (format?" ":"") + suffix;
 		}
 	}
 
