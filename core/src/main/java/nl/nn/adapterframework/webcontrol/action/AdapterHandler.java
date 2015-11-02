@@ -34,8 +34,13 @@ import java.io.IOException;
 
 public final class AdapterHandler extends ActionBase {
 
-
-
+	public AdapterHandler() {
+		setWriteToSecLog(true);
+		addSecLogParamName("action");
+		addSecLogParamName("adapterName");
+		addSecLogParamName("receiverName");
+	}
+	
 public ActionForward executeSub(
     ActionMapping mapping,
     ActionForm form,

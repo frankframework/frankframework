@@ -57,7 +57,13 @@ import org.apache.struts.upload.FormFile;
  * @author  Johan Verrips
  */
 public final class SendJmsMessageExecute extends ActionBase {
-	
+
+	public SendJmsMessageExecute() {
+		setWriteToSecLog(true);
+		addSecLogParamName("jmsRealm");
+		addSecLogParamName("destinationName");
+	}
+
 	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
 	    // Initialize action

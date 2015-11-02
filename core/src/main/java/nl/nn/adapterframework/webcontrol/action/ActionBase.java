@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import javax.servlet.ServletException;
@@ -64,6 +66,8 @@ public abstract class ActionBase extends Action {
 	protected HttpSession session;
 	
 	private boolean secLogEnabled = AppConstants.getInstance().getBoolean("sec.log.enabled", false);
+	private boolean writeToSecLog = false;
+	private List<String> secLogParamNames = new ArrayList<String>();
 
     /**
      *the <code>Configuration</code> object
@@ -83,8 +87,8 @@ public abstract class ActionBase extends Action {
      */
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
-		if (secLogEnabled) {
-			secLog.info(HttpUtils.getExtendedCommandIssuedBy(request));
+    	if (secLogEnabled && getWriteToSecLog()) {
+			secLog.info(HttpUtils.getExtendedCommandIssuedBy(request, secLogParamNames));
 		}
 		return executeSub(mapping, form, request, response);
     }
@@ -263,5 +267,17 @@ public abstract class ActionBase extends Action {
 			}
 		}
 		errors.add(key, new ActionError(category, XmlUtils.encodeChars(message)));
+	}
+
+	public void setWriteToSecLog(boolean b) {
+		writeToSecLog = b;
+	}
+	
+	public boolean getWriteToSecLog() {
+		return writeToSecLog;
+	}
+
+	public void addSecLogParamName(String paramName) {
+		secLogParamNames.add(paramName);
 	}
 }

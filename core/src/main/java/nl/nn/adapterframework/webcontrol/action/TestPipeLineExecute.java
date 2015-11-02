@@ -61,7 +61,12 @@ import org.apache.struts.upload.FormFile;
  * @see nl.nn.adapterframework.core.PipeLine
  */
 public final class TestPipeLineExecute extends ActionBase {
-	
+
+	public TestPipeLineExecute() {
+		setWriteToSecLog(true);
+		addSecLogParamName("adapterName");
+	}
+
 	public ActionForward executeSub(
 	    ActionMapping mapping,
 	    ActionForm form,

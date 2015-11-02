@@ -15,6 +15,9 @@
  */
 package nl.nn.adapterframework.http;
 
+import java.util.Enumeration;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -35,13 +38,38 @@ public class HttpUtils {
 	}
 
 	public static String getExtendedCommandIssuedBy(HttpServletRequest request) {
+		return getExtendedCommandIssuedBy(request, null);
+	}
+
+	public static String getExtendedCommandIssuedBy(HttpServletRequest request,
+			List<String> secLogParamNames) {
 		String contextPath = request.getContextPath();
 		String requestUri = request.getRequestURI();
 		String reqUri = StringUtils.substringAfter(requestUri, contextPath);
 		if (StringUtils.isEmpty(reqUri)) {
 			reqUri = requestUri;
 		}
-		return ("requestUri [" + reqUri + "] method [" + request.getMethod()
-				+ "]" + getCommandIssuedBy(request));
+		return ("requestUri [" + reqUri + "] params ["
+				+ getParametersAsString(request, secLogParamNames)
+				+ "] method [" + request.getMethod() + "]" + getCommandIssuedBy(request));
+	}
+
+	private static String getParametersAsString(HttpServletRequest request,
+			List<String> secLogParamNames) {
+		String result = "";
+		Enumeration paramnames = request.getParameterNames();
+		while (paramnames.hasMoreElements()) {
+			String paramname = (String) paramnames.nextElement();
+			if (secLogParamNames.contains(paramname)) {
+				String paramvalue = request.getParameter(paramname);
+				if (StringUtils.isNotEmpty(paramvalue)) {
+					if (result.length() > 0) {
+						result = result + ",";
+					}
+					result = result + paramname + "=" + paramvalue;
+				}
+			}
+		}
+		return result;
 	}
 }

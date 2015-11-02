@@ -109,8 +109,10 @@ public class RestServiceDispatcher  {
 		String etagKey=(String)methodConfig.get(KEY_ETAG_KEY);
 		String contentTypeKey=(String)methodConfig.get(KEY_CONTENT_TYPE_KEY);
 
+		boolean writeToSecLog = false;
 		if (listener instanceof RestListener) {
 			RestListener restListener = (RestListener) listener;
+			writeToSecLog = restListener.isWriteToSecLog();
 			boolean authorized = false;
 			if (httpServletRequest.getUserPrincipal() == null) {
 				authorized = true;
@@ -140,7 +142,7 @@ public class RestServiceDispatcher  {
 		if (httpServletResponse!=null) context.put("restListenerServletResponse", httpServletResponse);
 		if (servletContext!=null) context.put("restListenerServletContext", servletContext);
 
-		if (secLogEnabled) {
+		if (secLogEnabled && writeToSecLog) {
 			secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
 		}
 		

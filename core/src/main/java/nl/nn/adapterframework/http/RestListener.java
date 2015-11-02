@@ -54,6 +54,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	private String restPath = "/rest";
 	private Boolean view = null;
 	private String authRoles="IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService";
+	private boolean writeToSecLog = false;
 	
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -147,5 +148,12 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 	public String getAuthRoles() {
 		return authRoles;
+	}
+
+	public void setWriteToSecLog(boolean b) {
+		writeToSecLog = b;
+	}
+	public boolean isWriteToSecLog() {
+		return writeToSecLog;
 	}
 }

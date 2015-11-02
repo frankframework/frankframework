@@ -156,6 +156,7 @@ Upcoming
 - Don't show svg (flow) images in IE 9 and 10
 - Log status of adapters and receivers to separate heartbeat log at regular intervals
 - Show formatted file size in IBIS console function "Adapter logging"
+- Only include modify functions for security log
 
 
 ### Non backwards compatible changes
