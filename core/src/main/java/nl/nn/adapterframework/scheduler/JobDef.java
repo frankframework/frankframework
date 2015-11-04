@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import java.io.File;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -43,7 +42,7 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.task.TimeoutGuard;
-import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DirectoryCleaner;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
@@ -374,7 +373,7 @@ public class JobDef {
 	public static final String JOB_FUNCTION_DUMPSTATS="dumpStatistics";	
 	public static final String JOB_FUNCTION_DUMPSTATSFULL="dumpStatisticsFull";	
 	public static final String JOB_FUNCTION_CLEANUPDB="cleanupDatabase";
-	public static final String JOB_FUNCTION_CLEANUPFXF="cleanupFxf";
+	public static final String JOB_FUNCTION_CLEANUPFS="cleanupFileSystem";
 	public static final String JOB_FUNCTION_RECOVER_ADAPTERS="recoverAdapters";
 
     private String name;
@@ -401,8 +400,7 @@ public class JobDef {
 
 	private String jobGroup = Scheduler.DEFAULT_GROUP;
 
-	private String fxfDir;
-	private long fxfRetention = 30L * 24L * 60L * 60L * 1000L;
+	private List<DirectoryCleaner> directoryCleaners = new ArrayList<DirectoryCleaner>();
 
 	private class MessageLogObject {
 		private String jmsRealmName;
@@ -458,7 +456,7 @@ public class JobDef {
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS) ||
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATSFULL) ||
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPDB) ||
-				getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPFXF) ||
+				getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPFS) ||
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_RECOVER_ADAPTERS)
 			)) {
 			throw new ConfigurationException("jobdef ["+getName()+"] function ["+getFunction()+"] must be one of ["+
@@ -471,7 +469,7 @@ public class JobDef {
 			JOB_FUNCTION_DUMPSTATS+","+
 			JOB_FUNCTION_DUMPSTATSFULL+","+
 			JOB_FUNCTION_CLEANUPDB+","+
-			JOB_FUNCTION_CLEANUPFXF+
+			JOB_FUNCTION_CLEANUPFS+
 			JOB_FUNCTION_RECOVER_ADAPTERS+
 			"]");
 		}
@@ -484,16 +482,8 @@ public class JobDef {
 		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPDB)) {
 			// nothing special for now
 		} else 
-		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPFXF)) {
-			fxfDir = AppConstants.getInstance().getResolvedProperty("fxf.dir");
-			String retention = AppConstants.getInstance().getResolvedProperty("fxf.retention");
-			if (retention != null) {
-				try {
-					fxfRetention = Long.parseLong(retention);
-				} catch(NumberFormatException e) {
-					throw new ConfigurationException("Invalid value for fxf.retention: " + retention);
-				}
-			}
+		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPFS)) {
+			// nothing special for now
 		} else 
 		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_RECOVER_ADAPTERS)) {
 			// nothing special for now
@@ -639,8 +629,8 @@ public class JobDef {
 		if (function.equalsIgnoreCase(JOB_FUNCTION_CLEANUPDB)) {
 			cleanupDatabase(ibisManager);
 		} else 
-		if (function.equalsIgnoreCase(JOB_FUNCTION_CLEANUPFXF)) {
-			cleanupFxf(ibisManager);
+		if (function.equalsIgnoreCase(JOB_FUNCTION_CLEANUPFS)) {
+			cleanupFileSystem(ibisManager);
 		} else
 		if (function.equalsIgnoreCase(JOB_FUNCTION_RECOVER_ADAPTERS)) {
 			recoverAdapters(ibisManager);
@@ -750,52 +740,13 @@ public class JobDef {
 		}
 	}
 
-	private void cleanupFxf(IbisManager ibisManager) {
-		if (fxfDir != null) {
-			File fxfDirectory = new File(fxfDir);
-			log.debug("Clean FxF directory: " + fxfDirectory);
-			File[] flowDirectories = fxfDirectory.listFiles();
-			if (flowDirectories != null) {
-				for (int i = 0; i < flowDirectories.length; i++) {
-					File flowDirectory = flowDirectories[i];
-					if (flowDirectory.isDirectory()) {
-						log.debug("Clean flow directory: " + flowDirectory);
-						File inDirectory = new File(flowDirectory, "in");
-						if (inDirectory.exists()) {
-							cleanDirectory(inDirectory, fxfRetention);
-						}
-						File outDirectory = new File(flowDirectory, "out");
-						if (outDirectory.exists()) {
-							cleanDirectory(outDirectory, fxfRetention);
-						}
-					}
-				}
-			}
+	private void cleanupFileSystem(IbisManager ibisManager) {
+		for (Iterator it=directoryCleaners.iterator();it.hasNext();) {
+			DirectoryCleaner directoryCleaner = (DirectoryCleaner)it.next();
+			directoryCleaner.cleanup();
 		}
 	}
 
-	private void cleanDirectory(File directory, long retention) {
-		if (directory.isDirectory()) {
-			File[] files = directory.listFiles();
-			for (int i = 0; i < files.length; i++) {
-				File file = files[i];
-				if (file.isFile()) {
-					if (file.lastModified() < System.currentTimeMillis() - retention) {
-						if (file.delete()) {
-							log.info("File (older than " + retention + " ms) deleted: " + file);
-						} else {
-							log.warn("Could not delete file: " + file);
-						}
-					} else {
-						log.debug("File (younger than " + retention + " ms) not deleted: " + file);
-					}
-				}
-			}
-		} else {
-			log.warn("Not a directory: " + directory);
-		}
-	}
-	
 	private void executeQueryJob() {
 		DirectQuerySender qs = new DirectQuerySender();
 		try {
@@ -1101,5 +1052,9 @@ public class JobDef {
 
 	public void setMessageKeeperSize(int size) {
 		this.messageKeeperSize = size;
+	}
+
+	public void addDirectoryCleaner(DirectoryCleaner directoryCleaner) {
+		directoryCleaners.add(directoryCleaner);
 	}
 }

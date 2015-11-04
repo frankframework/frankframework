@@ -172,6 +172,12 @@
     <set-next-rule methodname="addParameter" />
   </pattern>
 
+  <pattern value="*/directoryCleaner">
+    <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory" />
+    <set-properties-rule/>
+    <set-next-rule methodname="addDirectoryCleaner" />
+  </pattern>
+
   <!-- batch related rules -->
   <pattern value="*/readerFactory">
     <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/>

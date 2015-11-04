@@ -818,6 +818,37 @@ public class Misc {
 		return ageString;
 	}
 
+	public static long parseAge(String value, long defaultValue) {
+		if (value == null)
+			return defaultValue;
+
+		String s = value.trim().toUpperCase();
+		long multiplier = 1;
+		int index;
+
+		if ((index = s.indexOf("S")) != -1) {
+			multiplier = 1000L;
+			s = s.substring(0, index);
+		} else if ((index = s.indexOf("M")) != -1) {
+			multiplier = 60L * 1000L;
+			s = s.substring(0, index);
+		} else if ((index = s.indexOf("H")) != -1) {
+			multiplier = 60L * 60L * 1000L;
+			s = s.substring(0, index);
+		} else if ((index = s.indexOf("D")) != -1) {
+			multiplier = 24L * 60L * 60L * 1000L;
+			s = s.substring(0, index);
+		}
+		if (s != null) {
+			try {
+				return Long.valueOf(s).longValue() * multiplier;
+			} catch (NumberFormatException e) {
+				log.error("[" + value + "] not in expected format", e);
+			}
+		}
+		return defaultValue;
+	}
+	
 	public static String hideAll(String inputString, String regex) {
 		StringBuilder result = new StringBuilder();
 		Pattern pattern = Pattern.compile(regex);

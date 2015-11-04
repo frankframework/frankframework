@@ -360,6 +360,13 @@
 	/>
 
 	<bean
+		name="proto-directoryCleaner"
+		class="nl.nn.adapterframework.util.DirectoryCleaner"
+		autowire="byName"
+		scope="prototype"
+	/>
+
+	<bean
 		name="proto-statisticsHandlers"
 		class="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandlerCollection"
 		autowire="byName"

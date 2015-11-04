@@ -157,6 +157,7 @@ Upcoming
 - Log status of adapters and receivers to separate heartbeat log at regular intervals
 - Show formatted file size in IBIS console function "Adapter logging"
 - Only include modify functions for security log
+- Replace job cleanupFxf by new job cleanupFileSystem to easily add other directories to cleanup
 
 
 ### Non backwards compatible changes

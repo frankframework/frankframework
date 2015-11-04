@@ -176,6 +176,7 @@ abstract public class ConfigurationDigester {
             digester.addRule("*/pipeline/exits/exit", attributeChecker);
             digester.addRule("*/scheduler/job", attributeChecker);
             digester.addRule("*/locker", attributeChecker);
+            digester.addRule("*/directoryCleaner", attributeChecker);
             digester.addRule("*/statistics", attributeChecker);
             digester.addRule("*/handler", attributeChecker);
             digester.addRule("*/cache", attributeChecker);
