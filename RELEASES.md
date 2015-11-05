@@ -144,7 +144,9 @@ Upcoming
 - Introduction of XmlBuilderPipe to convert special characters to their xml equivalents
 - Larva: add possibility to compare binary files (via FileListener)
 - Larva: Add functionality to easily replace fixed strings
+- Change interval recover job from 15 minutes to 5 minutes
 - `(end of v6.0-RC4)`
+- Avoid NumberFormatException in log4j (which was introduced in September 2015 and caused by slf4j jar file)
 - Ladybug: Hide the same data as is hidden in the Ibis logfiles based on the log.hideRegex property in log4j4ibis.properties
 - Ladybug: Prefix html title with "Ladybug"
 - Support multiple operations/listeners per service/adapter in generated WSDL
@@ -152,6 +154,7 @@ Upcoming
 - Use generic targetNamespace prefix (ibis->tns) in generated WSDL
 - Only add jms namespace when needed in generated WSDL
 - Ladybug: Prevent NPE (due to previous change) when Tibet2 specific Report is instantiated
+- Avoid NPE in TextXmlPipe (which was introduced in April 2015)
 - Fix broken flow images for adapters which contain space in name
 - Don't show svg (flow) images in IE 9 and 10
 - Log status of adapters and receivers to separate heartbeat log at regular intervals
@@ -163,10 +166,10 @@ Upcoming
 ### Non backwards compatible changes
 
 - The use of 'xsd:import' and 'xsd:include' in xsd files in XmlValidator (and subclasses) has become more strictly.
-	- ``sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'http://nn/nl/XSD/Generic/MessageHeader/1, ...'.``
-	* When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.
-	- ``src-resolve: Cannot resolve the name 'cmh:Result' to a(n) 'element declaration' component.``
-	* For validating ESB SOAP messages use the EsbSoapValidator and not the XmlValidator.
+	- ``sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'http://nn/nl/XSD/Generic/MessageHeader/1, ...'.``  
+	When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.
+	- ``src-resolve: Cannot resolve the name 'cmh:Result' to a(n) 'element declaration' component.``  
+	For validating ESB SOAP messages use the EsbSoapValidator and not the XmlValidator.
 
 
 
