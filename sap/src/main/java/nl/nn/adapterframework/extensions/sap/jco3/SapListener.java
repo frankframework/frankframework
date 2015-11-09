@@ -140,11 +140,16 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 			// Delete doesn't work after stopping the server, when calling
 			// delete first the stop method will fail.
 			// serverDataEventListener.deleted(getName());
-			Environment.unregisterServerDataProvider(this);
 		} catch (Exception e) {
 			throw new ListenerException(getLogPrefix()+"could not stop", e);
 		} finally {
-			closeFacade();
+			try {
+				Environment.unregisterServerDataProvider(this);
+			} catch (Exception e) {
+				throw new ListenerException(getLogPrefix()+"could not unregister", e);
+			} finally {
+				closeFacade();
+			}
 		}
 	}
 

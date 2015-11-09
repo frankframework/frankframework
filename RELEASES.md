@@ -161,6 +161,7 @@ Upcoming
 - Show formatted file size in IBIS console function "Adapter logging"
 - Only include modify functions for security log
 - Replace job cleanupFxf by new job cleanupFileSystem to easily add other directories to cleanup
+- Prevent IllegalStateException "ServerDataProvider already registered" when reconnecting SapListener
 
 
 ### Non backwards compatible changes
