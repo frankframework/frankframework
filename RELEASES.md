@@ -162,6 +162,7 @@ Upcoming
 - Only include modify functions for security log
 - Replace job cleanupFxf by new job cleanupFileSystem to easily add other directories to cleanup
 - Prevent IllegalStateException "ServerDataProvider already registered" when reconnecting SapListener
+- Add log directory to job cleanupFileSystem (with 60 days retention and without subdirectories)
 
 
 ### Non backwards compatible changes
