@@ -164,6 +164,7 @@ Upcoming
 - Prevent IllegalStateException "ServerDataProvider already registered" when reconnecting SapListener
 - Add log directory to job cleanupFileSystem (with 60 days retention and without subdirectories)
 - Use lower cases for all files in the log directory
+- `(end of v6.0-RC5)`
 
 
 ### Non backwards compatible changes
