@@ -22,7 +22,7 @@
 		<layout class="org.apache.log4j.xml.XMLLayout"/>
 	</appender>
 	<appender name="galm" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="${log.dir}/${instance.name.lc}-GALM.log"/>
+		<param name="File" value="${log.dir}/${instance.name.lc}-galm.log"/>
 		<param name="MaxBackupIndex" value="5"/>
 		<param name="MaxFileSize" value="100KB"/>
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
@@ -32,7 +32,7 @@
 	<appender name="msg" class="nl.nn.adapterframework.extensions.log4j.IbisDailyRollingFileAppender">
 		<param name="Append" value="true"/>
 		<param name="DatePattern" value="'.'yyyy-MM-dd"/>
-		<param name="File" value="${log.dir}/${instance.name.lc}-MSG.log"/>
+		<param name="File" value="${log.dir}/${instance.name.lc}-messages.log"/>
 		<param name="RetentionDays" value="7"/>
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
 			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>

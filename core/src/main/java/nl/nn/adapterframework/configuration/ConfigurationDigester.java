@@ -258,7 +258,7 @@ abstract public class ConfigurationDigester {
 
 	private void saveConfig(String config) {
 		String directoryName = AppConstants.getInstance().getResolvedProperty("log.dir");
-		String fileName = AppConstants.getInstance().getResolvedProperty("instance.name")+"-config.xml";
+		String fileName = AppConstants.getInstance().getResolvedProperty("instance.name.lc")+"-config.xml";
 		File file = new File(directoryName, fileName);
 		FileWriter fileWriter = null;
 		try {

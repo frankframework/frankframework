@@ -53,7 +53,7 @@ public class StatisticsKeeperLogger extends StatisticsKeeperXmlBuilder {
 
 		if (StringUtils.isNotEmpty(getDirectory())) {
 			AppConstants ac = AppConstants.getInstance();		
-			String filenamePattern=ac.getResolvedProperty("instance.name")+"-stats_";
+			String filenamePattern=ac.getResolvedProperty("instance.name.lc")+"-stats_";
 			String extension=".log";
 			File outfile=FileUtils.getWeeklyRollingFile(directory, filenamePattern, extension, retentionDays);
 

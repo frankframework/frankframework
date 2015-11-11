@@ -163,6 +163,7 @@ Upcoming
 - Replace job cleanupFxf by new job cleanupFileSystem to easily add other directories to cleanup
 - Prevent IllegalStateException "ServerDataProvider already registered" when reconnecting SapListener
 - Add log directory to job cleanupFileSystem (with 60 days retention and without subdirectories)
+- Use lower cases for all files in the log directory
 
 
 ### Non backwards compatible changes
@@ -172,6 +173,7 @@ Upcoming
 	When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.
 	- ``src-resolve: Cannot resolve the name 'cmh:Result' to a(n) 'element declaration' component.``  
 	For validating ESB SOAP messages use the EsbSoapValidator and not the XmlValidator.
+- (from RC5) From now all files in the log directory are in lower cases. This can affect applications which are case sensitive and use one or more files from the IBIS log directory.
 
 
 
