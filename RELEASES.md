@@ -165,6 +165,7 @@ Upcoming
 - Add log directory to job cleanupFileSystem (with 60 days retention and without subdirectories)
 - Use lower cases for all files in the log directory
 - `(end of v6.0-RC5)`
+- Avoid NPE in ShowConfigurationStatus when queueConnectionFactory jmsRealm is not defined
 
 
 ### Non backwards compatible changes

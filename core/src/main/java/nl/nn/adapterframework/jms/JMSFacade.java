@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -465,7 +465,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		if (StringUtils.isNotEmpty(getMessageSelector())) {
 			result+=" selector ["+getMessageSelector()+"]";
 		}
-		JmsRealm jmsRealm=JmsRealmFactory.getInstance().getJmsRealm(getJmsRealName());
+		JmsRealm jmsRealm=null;
+		if (getJmsRealName()!=null) {
+			jmsRealm=JmsRealmFactory.getInstance().getJmsRealm(getJmsRealName());
+		}
 	    if (jmsRealm==null) {
 	    	log.warn("Could not find jmsRealm ["+getJmsRealName()+"]");
 	    } else {
