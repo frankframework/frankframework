@@ -77,6 +77,7 @@ import org.apache.log4j.Logger;
 * <tr><td>{@link #setIgnoreUnknownNamespaces(boolean) ignoreUnknownNamespaces}</td><td>ignore namespaces in the input message which are unknown</td><td>true when schema or noNamespaceSchemaLocation is used, false otherwise</td></tr>
 * <tr><td>{@link #setWarn(boolean) warn}</td><td>when set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)</td><td><code>true</code></td></tr>
 * <tr><td>{@link #setForwardFailureToSuccess(boolean) forwardFailureToSuccess}</td><td>when set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)</td><td><code>false</code></td></tr>
+* <tr><td>{@link #setAddNamespaceToSchema(boolean) addNamespaceToSchema}</td><td>when set <code>true</code>, the namespace from schemaLocation is added to the schema document</td><td><code>false</code></td></tr>
 * </table>
 * <p><b>Exits:</b>
 * <table border="1">
@@ -174,6 +175,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				}
 			}
 			validator.setSchemasProvider(this);
+			if (isRecoverAdapter()) {
+				validator.reset();
+			}
 			validator.configure(getLogPrefix(null));
 			registerEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
 			registerEvent(AbstractXmlValidator.XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);

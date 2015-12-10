@@ -110,6 +110,12 @@ public abstract class AbstractXmlValidator {
 		}
 	}
 
+	public void reset() {
+		if (!needsInit) {
+			needsInit = true;
+		}
+	}
+
 	protected String handleFailures(
 			XmlValidatorErrorHandler xmlValidatorErrorHandler,
 			IPipeLineSession session, String event, Throwable t)

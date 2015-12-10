@@ -268,15 +268,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		if (current==null){
 			pipeForwards.put(forward.getName(), forward);
 		} else {
-			boolean recovered = false;
-			PipeLine pipeLine = getPipeLine();
-			if (pipeLine != null) {
-				Adapter adapter = pipeLine.getAdapter();
-				if (adapter != null) {
-					recovered = adapter.isRecover();
-				}
-			}
-			if (!recovered) {
+			if (!isRecoverAdapter()) {
 				if (forward.getPath().equals(current.getPath())) {
 					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 					String msg = getLogPrefix(null)+"PipeForward ["+forward.getName()+"] pointing to ["+forward.getPath()+"] already registered";
@@ -288,6 +280,18 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		}
  	}
 
+	protected boolean isRecoverAdapter() {
+		boolean recover = false;
+		PipeLine pipeLine = getPipeLine();
+		if (pipeLine != null) {
+			Adapter adapter = pipeLine.getAdapter();
+			if (adapter != null) {
+				recover = adapter.isRecover();
+			}
+		}
+		return recover;
+	}	
+	
 	/**
 	  * Perform necessary action to start the pipe. This method is executed
 	  * after the {@link #configure()} method, for eacht start and stop command of the

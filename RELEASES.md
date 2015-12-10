@@ -166,6 +166,7 @@ Upcoming
 - Use lower cases for all files in the log directory
 - `(end of v6.0-RC5)`
 - Avoid NPE in ShowConfigurationStatus when queueConnectionFactory jmsRealm is not defined
+- Bugfix XmlValidator recovers wrongly
 
 
 ### Non backwards compatible changes
