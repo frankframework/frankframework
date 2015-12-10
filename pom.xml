@@ -172,14 +172,6 @@
 
   <repositories>
     <repository>
-      <id>java.net-mvn-repo</id>
-      <url>http://download.java.net/maven/2</url>
-    </repository>
-    <repository>
-      <id>ibiblio-mvn-repo</id>
-      <url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
-    </repository>
-    <repository>
       <id>ibis-mvn-repo</id>
       <url>${ibissource.maven.repository.https}/releases</url>
     </repository>

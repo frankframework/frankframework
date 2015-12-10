@@ -167,6 +167,7 @@ Upcoming
 - `(end of v6.0-RC5)`
 - Avoid NPE in ShowConfigurationStatus when queueConnectionFactory jmsRealm is not defined
 - Bugfix XmlValidator recovers wrongly
+- Remove obsolete/broken repositories from pom.xml
 
 
 ### Non backwards compatible changes
