@@ -100,6 +100,17 @@ public class EsbSoapValidator extends SoapValidator {
 		}
 		super.setSchemaLocation(schemaLocation + " " + GENERIC_HEADER.get(getModeKey()).xmlns + " " + GENERIC_HEADER.get(getModeKey()).xsd);
 		super.setSoapHeader(GENERIC_HEADER.get(getModeKey()).tag.getLocalPart());
+		if (mode == EsbSoapWrapperPipe.Mode.I2T) {
+			super.setImportedSchemaLocationsToIgnore("CommonMessageHeader.xsd");
+			super.setUseBaseImportedSchemaLocationsToIgnore(true);
+		} else if (mode == EsbSoapWrapperPipe.Mode.REG) {
+			if (cmhVersion == 1) {
+				super.setImportedSchemaLocationsToIgnore("CommonMessageHeader.xsd");
+			} else {
+				super.setImportedSchemaLocationsToIgnore("CommonMessageHeader_2.xsd");
+			}
+			super.setUseBaseImportedSchemaLocationsToIgnore(true);
+		}
 		super.configure();
 	}
 

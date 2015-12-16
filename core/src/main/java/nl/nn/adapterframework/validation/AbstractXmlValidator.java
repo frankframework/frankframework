@@ -78,6 +78,9 @@ public abstract class AbstractXmlValidator {
 
     protected String logPrefix = "";
     protected boolean addNamespaceToSchema = false;
+	protected String importedSchemaLocationsToIgnore;
+    protected boolean useBaseImportedSchemaLocationsToIgnore = false;
+	protected String importedNamespacesToIgnore;
 	protected Boolean ignoreUnknownNamespaces;
 
     public boolean isAddNamespaceToSchema() {
@@ -87,6 +90,30 @@ public abstract class AbstractXmlValidator {
     public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
         this.addNamespaceToSchema = addNamespaceToSchema;
     }
+
+	public void setImportedSchemaLocationsToIgnore(String string) {
+		importedSchemaLocationsToIgnore = string;
+	}
+
+	public String getImportedSchemaLocationsToIgnore() {
+		return importedSchemaLocationsToIgnore;
+	}
+
+    public boolean isUseBaseImportedSchemaLocationsToIgnore() {
+        return useBaseImportedSchemaLocationsToIgnore;
+    }
+
+    public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
+        this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
+    }
+
+	public void setImportedNamespacesToIgnore(String string) {
+		importedNamespacesToIgnore = string;
+	}
+
+	public String getImportedNamespacesToIgnore() {
+		return importedNamespacesToIgnore;
+	}
 
     /**
      * Configure the XmlValidator

@@ -77,7 +77,10 @@ import org.apache.log4j.Logger;
 * <tr><td>{@link #setIgnoreUnknownNamespaces(boolean) ignoreUnknownNamespaces}</td><td>ignore namespaces in the input message which are unknown</td><td>true when schema or noNamespaceSchemaLocation is used, false otherwise</td></tr>
 * <tr><td>{@link #setWarn(boolean) warn}</td><td>when set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)</td><td><code>true</code></td></tr>
 * <tr><td>{@link #setForwardFailureToSuccess(boolean) forwardFailureToSuccess}</td><td>when set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)</td><td><code>false</code></td></tr>
-* <tr><td>{@link #setAddNamespaceToSchema(boolean) addNamespaceToSchema}</td><td>when set <code>true</code>, the namespace from schemaLocation is added to the schema document</td><td><code>false</code></td></tr>
+* <tr><td>{@link #setAddNamespaceToSchema(boolean) addNamespaceToSchema}</td><td>when set <code>true</code>, the namespace from schemaLocation is added to the schema document</td><td><code>true when targetNamespace and no default namespace, otherwise false</code></td></tr>
+* <tr><td>{@link #setImportedSchemaLocationsToIgnore(String) importedSchemaLocationsToIgnore}</td><td>comma separated list of schemaLocations which are excluded from an import or include in the schema document</td><td>&nbsp;</td></tr>
+* <tr><td>{@link #setUseBaseImportedSchemaLocationsToIgnore(boolean) useBaseImportedSchemaLocationsToIgnore}</td><td>when set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path</td><td><code>false</code></td></tr>
+* <tr><td>{@link #setImportedNamespacesToIgnore(String) importedNamespacesToIgnore}</td><td>comma separated list of namespaces which are excluded from an import or include in the schema document</td><td>&nbsp;</td></tr>
 * </table>
 * <p><b>Exits:</b>
 * <table border="1">
@@ -449,6 +452,30 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
         validator.setAddNamespaceToSchema(addNamespaceToSchema);
     }
 
+	public void setImportedSchemaLocationsToIgnore(String string) {
+		validator.setImportedSchemaLocationsToIgnore(string);
+    }
+
+	public String getImportedSchemaLocationsToIgnore() {
+		return validator.getImportedSchemaLocationsToIgnore();
+	}
+
+    public boolean isUseBaseImportedSchemaLocationsToIgnore() {
+        return validator.isUseBaseImportedSchemaLocationsToIgnore();
+    }
+
+    public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
+        validator.setUseBaseImportedSchemaLocationsToIgnore(useBaseImportedSchemaLocationsToIgnore);
+    }
+
+	public void setImportedNamespacesToIgnore(String string) {
+		validator.setImportedNamespacesToIgnore(string);
+	}
+
+	public String getImportedNamespacesToIgnore() {
+		return validator.getImportedNamespacesToIgnore();
+	}
+
     @Deprecated
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
@@ -499,6 +526,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				xsd.setNamespace(split[i]);
 				xsd.setResource(split[i + 1]);
 				xsd.setAddNamespaceToSchema(isAddNamespaceToSchema());
+				xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
+				xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
+				xsd.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
 				xsd.init();
 				xsds.add(xsd);
 			}

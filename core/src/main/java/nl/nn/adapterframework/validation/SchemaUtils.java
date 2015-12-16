@@ -185,6 +185,10 @@ public class SchemaUtils {
 						rootNamespaceAttributes, imports, false);
 			}
 			if (resultXsd != null) {
+				XSD firstXsd = xsds.iterator().next();
+				resultXsd.setImportedSchemaLocationsToIgnore(firstXsd.getImportedSchemaLocationsToIgnore());
+				resultXsd.setUseBaseImportedSchemaLocationsToIgnore(firstXsd.isUseBaseImportedSchemaLocationsToIgnore());
+				resultXsd.setImportedNamespacesToIgnore(firstXsd.getImportedNamespacesToIgnore());
 				resultXsd.init();
 				resultXsds.add(resultXsd);
 			}

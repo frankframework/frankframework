@@ -168,15 +168,18 @@ Upcoming
 - Avoid NPE in ShowConfigurationStatus when queueConnectionFactory jmsRealm is not defined
 - Bugfix XmlValidator recovers wrongly
 - Remove obsolete/broken repositories from pom.xml
+- Improve validation (also to support backward compatibility)
 
 
 ### Non backwards compatible changes
 
 - The use of 'xsd:import' and 'xsd:include' in xsd files in XmlValidator (and subclasses) has become more strictly.
-	- ``sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'http://nn/nl/XSD/Generic/MessageHeader/1, ...'.``  
-	When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.
+	- ~~``sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'http://nn/nl/XSD/Generic/MessageHeader/1, ...'.``  
+	When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.~~
 	- ``src-resolve: Cannot resolve the name 'cmh:Result' to a(n) 'element declaration' component.``  
 	For validating ESB SOAP messages use the EsbSoapValidator and not the XmlValidator.
+	- ``Circural dependencies between schemas.``  
+	Unused imported or included schemas can be removed by using the validator attributes importedSchemaLocationsToIgnore and importedNamespacesToIgnore.
 - (from RC5) From now all files in the log directory are in lower cases. This can affect applications which are case sensitive and use one or more files from the IBIS log directory.
 
 

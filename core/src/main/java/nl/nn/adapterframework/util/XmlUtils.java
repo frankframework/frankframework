@@ -590,7 +590,6 @@ public class XmlUtils {
 			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
 			while (st1.hasMoreTokens()) {
 				String namespaceDef = st1.nextToken();
-				log.debug("namespaceDef [" + namespaceDef + "]");
 				int separatorPos = namespaceDef.indexOf('=');
 				if (separatorPos < 1) {
 					throw new TransformerConfigurationException("cannot parse namespace definition from string [" + namespaceDef + "]");
@@ -598,7 +597,6 @@ public class XmlUtils {
 					namespaceClause += " xmlns:" + namespaceDef.substring(0, separatorPos) + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"";
 				}
 			}
-			log.debug("namespaceClause [" + namespaceClause + "]");
 		}
 
 

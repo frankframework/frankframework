@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -29,6 +31,7 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
@@ -39,6 +42,8 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.javax.wsdl.WSDLException;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.InputSource;
@@ -64,11 +69,16 @@ public class XSD implements Schema, Comparable<XSD> {
 	private String toString;
 	private String namespace;
 	private boolean addNamespaceToSchema = false;
+	private String importedSchemaLocationsToIgnore;
+    protected boolean useBaseImportedSchemaLocationsToIgnore = false;
+	private String importedNamespacesToIgnore;
 	private String parentLocation;
 	private boolean isRootXsd = true;
 	private String targetNamespace;
 	private List<String> rootTags = new ArrayList<String>();
 	private Set<String> importedNamespaces = new HashSet<String>();
+	private String xsdTargetNamespace;
+	private String xsdDefaultNamespace;
 
 	public void setWsdlSchema(
 			nl.nn.javax.wsdl.Definition wsdlDefinition,
@@ -111,6 +121,30 @@ public class XSD implements Schema, Comparable<XSD> {
 
 	public boolean isAddNamespaceToSchema() {
 		return addNamespaceToSchema;
+	}
+
+	public void setImportedSchemaLocationsToIgnore(String string) {
+		importedSchemaLocationsToIgnore = string;
+	}
+
+	public String getImportedSchemaLocationsToIgnore() {
+		return importedSchemaLocationsToIgnore;
+	}
+
+    public boolean isUseBaseImportedSchemaLocationsToIgnore() {
+        return useBaseImportedSchemaLocationsToIgnore;
+    }
+
+    public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
+        this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
+    }
+
+	public void setImportedNamespacesToIgnore(String string) {
+		importedNamespacesToIgnore = string;
+	}
+
+	public String getImportedNamespacesToIgnore() {
+		return importedNamespacesToIgnore;
 	}
 
 	public void setParentLocation(String parentLocation) {
@@ -181,7 +215,6 @@ public class XSD implements Schema, Comparable<XSD> {
 			this.parentLocation = "";
 		}
 		try {
-			String tns = null;
 			InputStream in = getInputStream();
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in,
 					XmlUtils.STREAM_FACTORY_ENCODING);
@@ -195,13 +228,32 @@ public class XSD implements Schema, Comparable<XSD> {
 					if (el.getName().equals(SchemaUtils.SCHEMA)) {
 						Attribute a = el.getAttributeByName(SchemaUtils.TNS);
 						if (a != null) {
-							tns = a.getValue();
+							xsdTargetNamespace = a.getValue();
 						}
+				    	Iterator<Namespace> nsIterator = el.getNamespaces();
+				    	while (nsIterator.hasNext() && StringUtils.isEmpty(xsdDefaultNamespace)) {
+				    		Namespace ns = nsIterator.next();
+	                    	if (StringUtils.isEmpty(ns.getPrefix())) {
+	                    		xsdDefaultNamespace = ns.getNamespaceURI();
+	                    	}
+				    	}
 					} else if (el.getName().equals(SchemaUtils.IMPORT)) {
 						Attribute a =
 								el.getAttributeByName(SchemaUtils.NAMESPACE);
 						if (a != null) {
-							importedNamespaces.add(a.getValue());
+							boolean skip = false;
+                            ArrayList ans= null;
+                            if (StringUtils.isNotEmpty(getImportedNamespacesToIgnore())) {
+                                ans= new ArrayList(Arrays.asList(getImportedNamespacesToIgnore().split(",")));
+                            }
+                            if (StringUtils.isNotEmpty(a.getValue()) && ans!=null) {
+                                if (ans.contains(a.getValue())) {
+                                	skip = true;
+                                }
+                            }
+                            if (!skip) {
+                            	importedNamespaces.add(a.getValue());
+                            }
 						}
 					} else if (el.getName().equals(SchemaUtils.ELEMENT)) {
 						if (elementDepth == 2) {
@@ -214,10 +266,14 @@ public class XSD implements Schema, Comparable<XSD> {
 					break;
 				}
 			}
-			this.targetNamespace = tns;
+			this.targetNamespace = xsdTargetNamespace;
 			if (namespace == null) {
 				// In case WsdlXmlValidator doesn't have schemaLocation
-				namespace = tns;
+				namespace = xsdTargetNamespace;
+			}
+			if (StringUtils.isEmpty(xsdDefaultNamespace) && StringUtils.isNotEmpty(xsdTargetNamespace)) {
+        		//add namespace when default namespace doesn't exist and targetNamespace exists)
+				setAddNamespaceToSchema(true);
 			}
 		} catch (IOException e) {
 			String message = "IOException reading XSD";
@@ -312,7 +368,7 @@ public class XSD implements Schema, Comparable<XSD> {
 
     public Set<XSD> getXsdsRecursive(Set<XSD> xsds)
             throws ConfigurationException {
-        try {
+    	try {
             InputStream in = getInputStream();
             if (in == null) return null;
             XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in,
@@ -322,33 +378,75 @@ public class XSD implements Schema, Comparable<XSD> {
                 switch (e.getEventType()) {
                 case XMLStreamConstants.START_ELEMENT:
                     StartElement el = e.asStartElement();
-                    if (el.getName().equals(SchemaUtils.IMPORT) ||
+					if (el.getName().equals(SchemaUtils.IMPORT) ||
                         el.getName().equals(SchemaUtils.INCLUDE)
                         ) {
-                        Attribute schemaLocation = el.getAttributeByName(SchemaUtils.SCHEMALOCATION);
+                        Attribute schemaLocationAttribute = el.getAttributeByName(SchemaUtils.SCHEMALOCATION);
+                    	Attribute namespaceAttribute = el.getAttributeByName(SchemaUtils.NAMESPACE);
                         String namespace = this.namespace;
                         boolean addNamespaceToSchema = this.addNamespaceToSchema;
                         if (el.getName().equals(SchemaUtils.IMPORT)) {
-                            Attribute attribute =
-                                    el.getAttributeByName(SchemaUtils.NAMESPACE);
-                            if (attribute != null) {
-                                namespace = attribute.getValue();
+                            if (namespaceAttribute == null && StringUtils.isEmpty(xsdDefaultNamespace) && StringUtils.isNotEmpty(xsdTargetNamespace)) {
+                            	//TODO: concerning import without namespace when in head xsd default namespace doesn't exist and targetNamespace does)
+                            	namespace=null;
                             } else {
-                                namespace = targetNamespace;
+                            	if (namespaceAttribute != null) {
+    	                            namespace = namespaceAttribute.getValue();
+    	                        } else {
+    	                            namespace = targetNamespace;
+    	                        }
                             }
                             addNamespaceToSchema = false;
                         }
-                        if (schemaLocation != null) {
-                            XSD x = new XSD();
-                            x.setNamespace(namespace);
-                            x.setResource(getResourceBase() + schemaLocation.getValue());
-                            x.setAddNamespaceToSchema(addNamespaceToSchema);
-                            x.setParentLocation(getResourceBase());
-                            x.setRootXsd(false);
-                            x.init();
-                            if (xsds.add(x)) {
-                                x.getXsdsRecursive(xsds);
+                        if (schemaLocationAttribute != null) {
+                            boolean skip = false;
+                            if (el.getName().equals(SchemaUtils.IMPORT) && namespaceAttribute == null) {
+                            	if (StringUtils.isNotEmpty(xsdDefaultNamespace) && StringUtils.isNotEmpty(xsdTargetNamespace)) {
+                            		//ignore import without namespace when in head xsd default namespace and targetNamespace exists)
+                                	skip = true;
+                            	}
                             }
+                            if (!skip) {
+                                String sl = schemaLocationAttribute.getValue();
+                                ArrayList aslti= null;
+                                if (StringUtils.isNotEmpty(getImportedSchemaLocationsToIgnore())) {
+                                    aslti= new ArrayList(Arrays.asList(getImportedSchemaLocationsToIgnore().split(",")));
+                                }
+                                if (StringUtils.isNotEmpty(sl) && aslti!=null) {
+                                    if (isUseBaseImportedSchemaLocationsToIgnore()) {
+                                    	sl = FilenameUtils.getName(sl);
+                                    }
+                                    if (aslti.contains(sl)) {
+                                    	skip = true;
+                                    }
+                                }
+                            }
+                            if (!skip) {
+                                ArrayList ans= null;
+                                if (StringUtils.isNotEmpty(getImportedNamespacesToIgnore())) {
+                                    ans= new ArrayList(Arrays.asList(getImportedNamespacesToIgnore().split(",")));
+                                }
+                            	if (StringUtils.isNotEmpty(namespace) && ans!=null) {
+                                    if (ans.contains(namespace)) {
+                                    	skip = true;
+                                    }
+                            	}
+                            }
+                            if (!skip) {
+                                XSD x = new XSD();
+                                x.setNamespace(namespace);
+                                x.setResource(getResourceBase() + schemaLocationAttribute.getValue());
+                                x.setAddNamespaceToSchema(addNamespaceToSchema);
+                                x.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
+                                x.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
+                                x.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
+                                x.setParentLocation(getResourceBase());
+                                x.setRootXsd(false);
+                                x.init();
+                                if (xsds.add(x)) {
+                                    x.getXsdsRecursive(xsds);
+                                }
+                        	}
                         }
                     }
                     break;
