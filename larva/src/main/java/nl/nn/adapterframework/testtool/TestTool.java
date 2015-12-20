@@ -1497,7 +1497,7 @@ public class TestTool {
 				} catch(ListenerException e) {
 					closeQueues(queues, properties, writers);
 					queues = null;
-					errorMessage("Could not open java listener '" + name + "': " + e.getMessage(), e, writers);
+					errorMessage("Could not open web service listener '" + name + "': " + e.getMessage(), e, writers);
 				}
 			}
 		}
