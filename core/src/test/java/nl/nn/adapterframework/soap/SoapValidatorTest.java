@@ -140,6 +140,8 @@ public class SoapValidatorTest {
             "/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/bankingcustomer_generate_01_getpartybasicdatabanking_request_01.xsd"
 
         );
+        validator.setSoapHeader("MessageHeader");
+        validator.setSoapBody("Request");
         validator.registerForward(getSuccess());
         validator.setThrowException(true);
         validator.setFullSchemaChecking(true);

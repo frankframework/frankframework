@@ -35,6 +35,7 @@ public class WsdlXmlValidatorTest {
     public void wsdlValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(SIMPLE);
+        val.setSoapBody("TradePriceRequest");
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
@@ -45,6 +46,7 @@ public class WsdlXmlValidatorTest {
     public void wsdlValidateWithInclude() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(SIMPLE_WITH_INCLUDE);
+        val.setSoapBody("TradePriceRequest");
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
@@ -55,6 +57,7 @@ public class WsdlXmlValidatorTest {
     public void wsdlValidateWithReference() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(SIMPLE_WITH_REFERENCE);
+        val.setSoapBody("TradePriceRequest");
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
@@ -77,11 +80,13 @@ public class WsdlXmlValidatorTest {
     public void wsdlTibco() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(TIBCO);
+        val.setSoapHeader("MessageHeader");
+        val.setSoapBody("Request");
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
         val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-                "  <Body>\n" +
+                "  <Header>\n" +
                 "    <MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
                 "      <From>\n" +
                 "        <Id>Ibis4Toegang</Id>\n" +
@@ -93,6 +98,8 @@ public class WsdlXmlValidatorTest {
                 "        <Timestamp>2001-12-17T09:30:47</Timestamp>\n" +
                 "      </HeaderFields>\n" +
                 "    </MessageHeader>\n" +
+                "  </Header>\n" +
+                "  <Body>\n" +
                 "    <Request xmlns=\"http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01\">\n" +
                 "      <BankSparen xmlns=\"http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01\">\n" +
                 "        <PRD>\n" +

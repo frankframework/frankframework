@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
-  <Body>
+  <Header>
     <MessageHeader xmlns="http://www.ing.com/CSP/XSD/General/Message_2">
       <From>
         <Id>Ibis4Toegang</Id>
@@ -12,6 +12,8 @@
         <Timestamp>2001-12-17T09:30:47</Timestamp>
       </HeaderFields>
     </MessageHeader>
+  </Header>
+  <Body>
     <Request xmlns="http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01">
       <BankSparen xmlns="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01">
         <PRD>
