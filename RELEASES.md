@@ -169,6 +169,13 @@ Upcoming
 - Bugfix XmlValidator recovers wrongly
 - Remove obsolete/broken repositories from pom.xml
 - Improve validation (also to support backward compatibility)
+- Improve validation on root, soapBody and soapHeader
+    - Add configuration warning when root not specified
+    - Add configuration warning when soapBody not specified
+    - Add configuration warning when root, soapBody and soapHeader not found in available XSD's
+    - Don't allow any element when soapHeader not specified
+    - Don't allow any element when soapBody not specified
+    - Don't allow soapHeader or soapBody to have soap namespace (e.g. when element doesn't have an xmlns attribute)
 
 
 ### Non backwards compatible changes

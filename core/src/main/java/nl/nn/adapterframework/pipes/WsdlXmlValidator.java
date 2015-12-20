@@ -152,15 +152,15 @@ public class WsdlXmlValidator extends SoapValidator {
 		Set<XSD> xsds = new HashSet<XSD>();
 		if (getSoapVersion() == null || "1.1".equals(getSoapVersion()) || "any".equals(getSoapVersion())) {
 			XSD xsd = new XSD();
-			xsd.setNamespace(SoapValidator.SoapVersion.VERSION_1_1.schema);
-			xsd.setResource(SoapValidator.SoapVersion.VERSION_1_1.xsd);
+			xsd.setNamespace(SoapValidator.SoapVersion.VERSION_1_1.namespace);
+			xsd.setResource(SoapValidator.SoapVersion.VERSION_1_1.location);
 			xsd.init();
 			xsds.add(xsd);
 		}
 		if ("1.2".equals(getSoapVersion()) || "any".equals(getSoapVersion())) {
 			XSD xsd = new XSD();
-			xsd.setNamespace(SoapValidator.SoapVersion.VERSION_1_2.schema);
-			xsd.setResource(SoapValidator.SoapVersion.VERSION_1_2.xsd);
+			xsd.setNamespace(SoapValidator.SoapVersion.VERSION_1_2.namespace);
+			xsd.setResource(SoapValidator.SoapVersion.VERSION_1_2.location);
 			xsd.init();
 			xsds.add(xsd);
 		}

@@ -1338,7 +1338,7 @@ public class XmlUtils {
 			rootValidations.add(path);
 		}
 		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(
-				null, rootValidations, true);
+				null, rootValidations, null, true);
 		XmlValidatorErrorHandler xmlValidatorErrorHandler =
 				new XmlValidatorErrorHandler(xmlHandler, "Is not well formed");
 		xmlHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);

@@ -179,40 +179,40 @@ public class XSD implements Schema, Comparable<XSD> {
 			}
 			resourceTarget = noNamespaceSchemaLocation;
 			toString = noNamespaceSchemaLocation;
-			return;
-		}
-		if (resource != null) {
-			url = ClassUtils.getResourceURL(resource);
-			if (url == null) {
-				throw new ConfigurationException("Cannot find [" + resource + "]");
-			}
-			resourceTarget = resource;
-			toString = resource;
-			if (resourceInternalReference != null) {
-				resourceTarget = resourceTarget + "-" + resourceInternalReference + ".xsd";
-				toString =  toString + "!" + resourceInternalReference;
-			}
-		} else if (sourceXsds == null) {
-			throw new ConfigurationException("None of noNamespaceSchemaLocation, resource or mergedResources is specified");
 		} else {
-			resourceTarget = "[";
-			toString = "[";
-			boolean first = true;
-			for (XSD xsd : sourceXsds) {
-				if (first) {
-					first = false;
-				} else {
-					resourceTarget = resourceTarget + ", ";
-					toString = toString + ", ";
+			if (resource != null) {
+				url = ClassUtils.getResourceURL(resource);
+				if (url == null) {
+					throw new ConfigurationException("Cannot find [" + resource + "]");
 				}
-				resourceTarget = resourceTarget + xsd.getResourceTarget().replaceAll("/", "_");
-				toString = toString + xsd.toString();
+				resourceTarget = resource;
+				toString = resource;
+				if (resourceInternalReference != null) {
+					resourceTarget = resourceTarget + "-" + resourceInternalReference + ".xsd";
+					toString =  toString + "!" + resourceInternalReference;
+				}
+			} else if (sourceXsds == null) {
+				throw new ConfigurationException("None of noNamespaceSchemaLocation, resource or mergedResources is specified");
+			} else {
+				resourceTarget = "[";
+				toString = "[";
+				boolean first = true;
+				for (XSD xsd : sourceXsds) {
+					if (first) {
+						first = false;
+					} else {
+						resourceTarget = resourceTarget + ", ";
+						toString = toString + ", ";
+					}
+					resourceTarget = resourceTarget + xsd.getResourceTarget().replaceAll("/", "_");
+					toString = toString + xsd.toString();
+				}
+				resourceTarget = resourceTarget + "].xsd";
+				toString = toString + "]";
 			}
-			resourceTarget = resourceTarget + "].xsd";
-			toString = toString + "]";
-		}
-		if (parentLocation == null) {
-			this.parentLocation = "";
+			if (parentLocation == null) {
+				this.parentLocation = "";
+			}
 		}
 		try {
 			InputStream in = getInputStream();

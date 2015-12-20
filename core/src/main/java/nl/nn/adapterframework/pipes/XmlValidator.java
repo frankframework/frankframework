@@ -189,6 +189,11 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			configurationException = e;
 			throw e;
 		}
+		if (getRoot() == null) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			String msg = getLogPrefix(null) + "Root not specified";
+			configWarnings.add(log, msg);
+		}
 	}
 
 	protected void checkSchemaSpecified() throws ConfigurationException {
@@ -538,6 +543,29 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	public List<Schema> getSchemas() throws ConfigurationException {
 		Set<XSD> xsds = getXsds();
+		if (validator.getRootValidations() != null) {
+			for (List<String> path: validator.getRootValidations()) {
+				boolean found = false;
+				String element = path.get(path.size() - 1);
+				if (StringUtils.isNotEmpty(element)) {
+					List<String> allRootTags = new ArrayList<String>();
+					for (XSD xsd : xsds) {
+						for (String rootTag : xsd.getRootTags()) {
+							allRootTags.add(rootTag);
+							if (element.equals(rootTag)) {
+								found = true;
+							}
+						}
+					}
+					if (!found) {
+						ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+						String msg = getLogPrefix(null) + "Element '" + element +
+						"' not in list of available root elements " + allRootTags;
+						configWarnings.add(log, msg);
+					}
+				}
+			}
+		}
 		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
 			xsds = SchemaUtils.getXsdsRecursive(xsds);
 			try {

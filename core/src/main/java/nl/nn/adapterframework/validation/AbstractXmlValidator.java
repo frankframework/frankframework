@@ -70,6 +70,7 @@ public abstract class AbstractXmlValidator {
 	private String xmlReasonSessionKey = "xmlFailureReason";
 	private String root;
 	protected Set<List<String>> rootValidations;
+	protected Map<List<String>, List<String>> invalidRootNamespaces;
 	private boolean validateFile=false;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	protected boolean warn = AppConstants.getInstance().getBoolean("xmlValidator.warn", true);
@@ -288,6 +289,17 @@ public abstract class AbstractXmlValidator {
 			rootValidations = new HashSet<List<String>>();
 		}
 		rootValidations.add(path);
+	}
+
+	public Set<List<String>> getRootValidations() {
+		return rootValidations;
+	}
+
+	public void addInvalidRootNamespaces(List<String> path, List<String> invalidRootNamespaces) {
+		if (this.invalidRootNamespaces == null) {
+			this.invalidRootNamespaces = new HashMap<List<String>, List<String>>();
+		}
+		this.invalidRootNamespaces.put(path, invalidRootNamespaces);
 	}
 
 	public void setIgnoreUnknownNamespaces(boolean b) {

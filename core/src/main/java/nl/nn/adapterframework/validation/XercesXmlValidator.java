@@ -202,7 +202,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 		XmlValidatorContentHandler xmlValidatorContentHandler =
 				new XmlValidatorContentHandler(namespacesSet, rootValidations,
-						getIgnoreUnknownNamespaces());
+						invalidRootNamespaces, getIgnoreUnknownNamespaces());
 		XmlValidatorErrorHandler xmlValidatorErrorHandler =
 				new XmlValidatorErrorHandler(xmlValidatorContentHandler,
 						mainFailureMessage);

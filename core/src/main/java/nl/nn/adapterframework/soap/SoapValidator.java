@@ -15,9 +15,12 @@
 */
 package nl.nn.adapterframework.soap;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -66,13 +69,20 @@ public class SoapValidator extends XmlValidator {
         if (addSoapEnvelopeToSchemaLocation) {
             super.setSchemaLocation(schemaLocation + (schemaLocation.length() > 0 ? " "  : "") + StringUtils.join(versions, " "));
         }
+        if (StringUtils.isEmpty(soapBody)) {
+            ConfigurationWarnings configWarnings = ConfigurationWarnings
+                    .getInstance();
+            configWarnings.add(log, "soapBody not specified");
+        }
+        validator.addRootValidation(Arrays.asList("Envelope", "Body", soapBody));
+        validator.addRootValidation(Arrays.asList("Envelope", "Header", soapHeader));
+        List<String> invalidRootNamespaces = new ArrayList<String>();
+        for (SoapVersion version : versions) {
+            invalidRootNamespaces.add(version.getNamespace());
+        }
+        validator.addInvalidRootNamespaces(Arrays.asList("Envelope", "Body", soapBody), invalidRootNamespaces);
+        validator.addInvalidRootNamespaces(Arrays.asList("Envelope", "Header", soapHeader), invalidRootNamespaces);
         super.configure();
-        if (StringUtils.isNotEmpty(soapBody)) {
-            validator.addRootValidation(Arrays.asList("Envelope", "Body", soapBody));
-        }
-        if (StringUtils.isNotEmpty(soapHeader)) {
-            validator.addRootValidation(Arrays.asList("Envelope", "Header", soapHeader));
-        }
     }
 
     @Override
@@ -123,21 +133,26 @@ public class SoapValidator extends XmlValidator {
         VERSION_1_1("http://schemas.xmlsoap.org/soap/envelope/", "/xml/xsd/soap/envelope.xsd"),
         VERSION_1_2("http://www.w3.org/2003/05/soap-envelope",   "/xml/xsd/soap/envelope-1.2.xsd");
 
-        public final String schema;
-        public final String xsd;
+        public final String namespace;
+        public final String location;
 
-        SoapVersion(String schema, String s) {
-            this.schema = schema;
-            this.xsd    = s;
+        SoapVersion(String namespace, String location) {
+            this.namespace = namespace;
+            this.location = location;
         }
 
         public static SoapVersion fromAttribute(String s) {
             if (StringUtils.isBlank(s)) return VERSION_1_1;
             return valueOf("VERSION_" + s.replaceAll("\\.", "_"));
         }
+
+        public String getNamespace() {
+            return namespace;
+        }
+
         @Override
         public String toString() {
-            return schema + " " + xsd;
+            return namespace + " " + location;
         }
 
     }

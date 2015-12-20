@@ -44,21 +44,23 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 		reasons = mainMessage + ":";
 	}
 
-	protected void addReason(String message, String location) {
-		String xpath = xmlValidatorContentHandler.getXpath();
+	protected void addReason(String message, String xpath, String location) {
+		if (xpath == null) {
+			xpath = xmlValidatorContentHandler.getXpath();
+		}
 
 		XmlBuilder reason = new XmlBuilder("reason");
 		XmlBuilder detail;
 
-		detail = new XmlBuilder("xpath");;
+		detail = new XmlBuilder("xpath");
 		detail.setValue(xpath);
 		reason.addSubElement(detail);
 
-		detail = new XmlBuilder("location");;
+		detail = new XmlBuilder("location");
 		detail.setValue(location);
 		reason.addSubElement(detail);
 
-		detail = new XmlBuilder("message");;
+		detail = new XmlBuilder("message");
 		detail.setValue(message);
 		reason.addSubElement(detail);
 
@@ -94,7 +96,7 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 			printWriter.close();
 			message = stringWriter.toString();
 		}
-		addReason(message,location);
+		addReason(message, null, location);
 	}
 
 	public void warning(SAXParseException exception) {
