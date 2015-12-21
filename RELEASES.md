@@ -176,6 +176,7 @@ Upcoming
     - Don't allow any element when soapHeader not specified
     - Don't allow any element when soapBody not specified
     - Don't allow soapHeader or soapBody to have soap namespace (e.g. when element doesn't have an xmlns attribute)
+- `(end of v6.0-RC6)`
 
 
 ### Non backwards compatible changes
@@ -186,7 +187,7 @@ Upcoming
 	- ``src-resolve: Cannot resolve the name 'cmh:Result' to a(n) 'element declaration' component.``  
 	For validating ESB SOAP messages use the EsbSoapValidator and not the XmlValidator.
 	- ``Circural dependencies between schemas.``  
-	Unused imported or included schemas can be removed by using the validator attributes importedSchemaLocationsToIgnore and importedNamespacesToIgnore.
+	Unused imported or included schemas can be ignored by using the validator attributes importedSchemaLocationsToIgnore and importedNamespacesToIgnore.
 - (from RC5) From now all files in the log directory are in lower cases. This can affect applications which are case sensitive and use one or more files from the IBIS log directory.
 
 
