@@ -543,6 +543,19 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	public List<Schema> getSchemas() throws ConfigurationException {
 		Set<XSD> xsds = getXsds();
+		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
+			xsds = SchemaUtils.getXsdsRecursive(xsds);
+			try {
+				Map<String, Set<XSD>> xsdsGroupedByNamespace =
+						SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
+				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
+						xsdsGroupedByNamespace, null);
+			} catch(Exception e) {
+				throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
+			}
+		}
+		List<Schema> schemas = new ArrayList<Schema>();
+		SchemaUtils.sortByDependencies(xsds, schemas);
 		if (validator.getRootValidations() != null) {
 			for (List<String> path: validator.getRootValidations()) {
 				boolean found = false;
@@ -566,19 +579,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				}
 			}
 		}
-		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
-			xsds = SchemaUtils.getXsdsRecursive(xsds);
-			try {
-				Map<String, Set<XSD>> xsdsGroupedByNamespace =
-						SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
-				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
-						xsdsGroupedByNamespace, null);
-			} catch(Exception e) {
-				throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
-			}
-		}
-		List<Schema> schemas = new ArrayList<Schema>();
-		SchemaUtils.sortByDependencies(xsds, schemas);
 		return schemas;
 	}
 

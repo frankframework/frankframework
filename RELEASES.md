@@ -177,6 +177,7 @@ Upcoming
     - Don't allow any element when soapBody not specified
     - Don't allow soapHeader or soapBody to have soap namespace (e.g. when element doesn't have an xmlns attribute)
 - `(end of v6.0-RC6)`
+- Prevent warnings about root elements which are actually available in imports and/or includes
 
 
 ### Non backwards compatible changes
