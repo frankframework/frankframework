@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.validation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.xerces.xni.grammars.Grammar;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
@@ -81,7 +81,8 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 				int i = elements.size();
 				if (path.size() == i + 1
 						&& elements.equals(path.subList(0, i))) {
-					if (StringUtils.isEmpty(path.get(i))) {
+					String validElements = path.get(i);
+					if (StringUtils.isEmpty(validElements)) {
 						String message = "Illegal element '" + lName
 								+ "'. No element expected.";
 						if (xmlValidatorErrorHandler != null) {
@@ -89,41 +90,44 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 						} else {
 							throw new IllegalRootElementException(message);
 						}
-					} else if (path.get(i).equals(lName)) {
-						if (rootElementsFound.contains(path)) {
-							String message = "Element '" + lName
-									+ "' should occur only once.";
+					} else {
+						List<String> validElementsAsList = Arrays.asList(validElements.split(",", -1));
+						if (validElementsAsList.contains(lName)) {
+							if (rootElementsFound.contains(path)) {
+								String message = "Element(s) '" + lName
+										+ "' should occur only once.";
+								if (xmlValidatorErrorHandler != null) {
+									xmlValidatorErrorHandler.addReason(message, null, null);
+								} else {
+									throw new IllegalRootElementException(message);
+								}
+							} else {
+								String message = null;
+								if (invalidRootNamespaces != null) {
+									List<String> invalidNamespaces =
+											invalidRootNamespaces.get(path);
+									if (invalidNamespaces != null
+											&& invalidNamespaces.contains(namespaceURI)) {
+										message = "Invalid namespace '"
+											+ namespaceURI + "' for element '"
+											+ lName + "'";
+										if (xmlValidatorErrorHandler != null) {
+											xmlValidatorErrorHandler.addReason(message, null, null);
+										} else {
+											throw new UnknownNamespaceException(message);
+										}
+									}
+								}
+								rootElementsFound.add(path);
+							}
+						} else {
+							String message = "Illegal element '" + lName
+									+ "'. Element(s) '" + validElements + "' expected.";
 							if (xmlValidatorErrorHandler != null) {
 								xmlValidatorErrorHandler.addReason(message, null, null);
 							} else {
 								throw new IllegalRootElementException(message);
 							}
-						} else {
-							String message = null;
-							if (invalidRootNamespaces != null) {
-								List<String> invalidNamespaces =
-										invalidRootNamespaces.get(path);
-								if (invalidNamespaces != null
-										&& invalidNamespaces.contains(namespaceURI)) {
-									message = "Invalid namespace '"
-										+ namespaceURI + "' for element '"
-										+ lName + "'";
-									if (xmlValidatorErrorHandler != null) {
-										xmlValidatorErrorHandler.addReason(message, null, null);
-									} else {
-										throw new UnknownNamespaceException(message);
-									}
-								}
-							}
-							rootElementsFound.add(path);
-						}
-					} else {
-						String message = "Illegal element '" + lName
-								+ "'. Element '" + path.get(i) + "' expected.";
-						if (xmlValidatorErrorHandler != null) {
-							xmlValidatorErrorHandler.addReason(message, null, null);
-						} else {
-							throw new IllegalRootElementException(message);
 						}
 					}
 				}
@@ -145,9 +149,11 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	public void endDocument() throws SAXException {
 		if (rootValidations != null) {
 			for (List<String> path: rootValidations) {
-				if (StringUtils.isNotEmpty(path.get(path.size() - 1))
+				String validElements = path.get(path.size() - 1);
+				List<String> validElementsAsList = Arrays.asList(validElements.split("\\,", -1));
+				if (!validElementsAsList.contains("")
 						&& !rootElementsFound.contains(path)) {
-					String message = "Element '" + path.get(path.size() - 1) + "' not found";
+					String message = "Element(s) '" + validElements + "' not found";
 					if (xmlValidatorErrorHandler != null) {
 						xmlValidatorErrorHandler.addReason(message, getXpath(path.subList(0, path.size() - 1)), null);
 					} else {

@@ -18,6 +18,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +71,7 @@ import org.apache.log4j.Logger;
 * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>Should the XmlValidator throw a PipeRunException on a validation error (if not, a forward with name "failure" should be defined.</td><td><code>false</code></td></tr>
 * <tr><td>{@link #setReasonSessionKey(String) reasonSessionKey}</td><td>if set: key of session variable to store reasons of mis-validation in</td><td>failureReason</td></tr>
 * <tr><td>{@link #setXmlReasonSessionKey(String) xmlReasonSessionKey}</td><td>like <code>reasonSessionKey</code> but stores reasons in xml format and more extensive</td><td>xmlFailureReason</td></tr>
-* <tr><td>{@link #setRoot(String) root}</td><td>name of the root element</td><td>&nbsp;</td></tr>
+* <tr><td>{@link #setRoot(String) root}</td><td>name of the root element. Or a comma separated list of names to choose from (only one is allowed)</td><td>&nbsp;</td></tr>
 * <tr><td>{@link #setValidateFile(boolean) validateFile}</td><td>when set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated</td><td><code>false</code></td></tr>
 * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code></td><td>UTF-8</td></tr>
 * <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>the namespace of the SOAP Envelope, when this property has a value and the input message is a SOAP Message the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate. Please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.SoapValidator} is now the preferred solution in case a SOAP Message needs to be validated, in other cases give this property an empty value</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
@@ -559,22 +560,25 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		if (validator.getRootValidations() != null) {
 			for (List<String> path: validator.getRootValidations()) {
 				boolean found = false;
-				String element = path.get(path.size() - 1);
-				if (StringUtils.isNotEmpty(element)) {
-					List<String> allRootTags = new ArrayList<String>();
-					for (XSD xsd : xsds) {
-						for (String rootTag : xsd.getRootTags()) {
-							allRootTags.add(rootTag);
-							if (element.equals(rootTag)) {
-								found = true;
+				String validElements = path.get(path.size() - 1);
+				List<String> validElementsAsList = Arrays.asList(validElements.split(","));
+				for (String validElement : validElementsAsList) {
+					if (StringUtils.isNotEmpty(validElement)) {
+						List<String> allRootTags = new ArrayList<String>();
+						for (XSD xsd : xsds) {
+							for (String rootTag : xsd.getRootTags()) {
+								allRootTags.add(rootTag);
+								if (validElement.equals(rootTag)) {
+									found = true;
+								}
 							}
 						}
-					}
-					if (!found) {
-						ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-						String msg = getLogPrefix(null) + "Element '" + element +
-						"' not in list of available root elements " + allRootTags;
-						configWarnings.add(log, msg);
+						if (!found) {
+							ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+							String msg = getLogPrefix(null) + "Element '" + validElement +
+							"' not in list of available root elements " + allRootTags;
+							configWarnings.add(log, msg);
+						}
 					}
 				}
 			}

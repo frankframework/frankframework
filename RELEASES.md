@@ -178,6 +178,7 @@ Upcoming
     - Don't allow soapHeader or soapBody to have soap namespace (e.g. when element doesn't have an xmlns attribute)
 - `(end of v6.0-RC6)`
 - Prevent warnings about root elements which are actually available in imports and/or includes
+- Add option to specify root elements as comma separated list of names to choose from (only one is allowed)
 
 
 ### Non backwards compatible changes
