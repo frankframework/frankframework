@@ -544,10 +544,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	public List<Schema> getSchemas() throws ConfigurationException {
-		checkRootValidations();
 		Set<XSD> xsds = getXsds();
 		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
 			xsds = SchemaUtils.getXsdsRecursive(xsds);
+			checkRootValidations(xsds);
 			try {
 				Map<String, Set<XSD>> xsdsGroupedByNamespace =
 						SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
@@ -556,16 +556,17 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			} catch(Exception e) {
 				throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
 			}
+		} else {
+			Set<XSD> xsds_temp = SchemaUtils.getXsdsRecursive(xsds, false);
+			checkRootValidations(xsds_temp);
 		}
 		List<Schema> schemas = new ArrayList<Schema>();
 		SchemaUtils.sortByDependencies(xsds, schemas);
 		return schemas;
 	}
 
-	private void checkRootValidations() throws ConfigurationException {
+	private void checkRootValidations(Set<XSD> xsds) throws ConfigurationException {
 		if (validator.getRootValidations() != null) {
-			Set<XSD> xsds = getXsds();
-			xsds = SchemaUtils.getXsdsRecursive(xsds, false);
 			for (List<String> path: validator.getRootValidations()) {
 				boolean found = false;
 				String validElements = path.get(path.size() - 1);
