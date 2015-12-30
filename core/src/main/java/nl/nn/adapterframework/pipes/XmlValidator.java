@@ -557,6 +557,21 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
 			}
 		} else {
+			// Support redefine for noNamespaceSchemaLocation for backwards
+			// compatibility. It's deprecated in the latest specification:
+			// http://www.w3.org/TR/xmlschema11-1/#modify-schema
+			// It's difficult to support redefine in
+			// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes so
+			// we only use getXsdsRecursive here for root validation. Xerces
+			// will need to resolving the imports, includes an redefines itself.
+			// See comment in method XercesXmlValidator.stringToXMLInputSource()
+			// too. The latest specification also specifies override:
+			// http://www.w3.org/TR/xmlschema11-1/#override-schema
+			// But this functionality doesn't seem to be (properly) supported by
+			// Xerces (yet). WSDL generation was the main reason to introduce
+			// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes, in case of
+			// noNamespaceSchemaLocation the WSDL generator doesn't use
+			// XmlValidator.getXsds(). See comment in Wsdl.getXsds() too.
 			Set<XSD> xsds_temp = SchemaUtils.getXsdsRecursive(xsds, false);
 			checkRootValidations(xsds_temp);
 		}

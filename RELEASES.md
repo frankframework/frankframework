@@ -199,6 +199,7 @@ Upcoming
 	For validating ESB SOAP messages use the EsbSoapValidator and not the XmlValidator.
 	- ``Circural dependencies between schemas.``  
 	Unused imported or included schemas can be ignored by using the validator attributes importedSchemaLocationsToIgnore and importedNamespacesToIgnore.
+- The use of 'xsd:redefine' doesn't work for schemaLocation anymore (still works for schema). It's deprecated in the latest specification (http://www.w3.org/TR/xmlschema11-1/#modify-schema) and difficult to support in WSDL generation.
 - (from RC5) From now all files in the log directory are in lower cases. This can affect applications which are case sensitive and use one or more files from the IBIS log directory.
 
 

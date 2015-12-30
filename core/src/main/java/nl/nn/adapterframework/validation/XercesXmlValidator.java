@@ -243,7 +243,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		// already resolve this at the SchemaProvider side (except when
 		// noNamespaceSchemaLocation is being used this is already done in
 		// (Wsdl)XmlValidator (using
-		// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludeswhen)).
+		// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes)).
+		// See comment in method XmlValidator.getSchemas() too.
 		return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
 	}
 
