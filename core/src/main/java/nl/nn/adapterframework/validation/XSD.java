@@ -363,10 +363,20 @@ public class XSD implements Schema, Comparable<XSD> {
 
     public Set<XSD> getXsdsRecursive()
             throws ConfigurationException {
-        return getXsdsRecursive(new HashSet<XSD>());
+    	return getXsdsRecursive(true);
+    }
+
+    public Set<XSD> getXsdsRecursive(boolean ignoreRedefine)
+            throws ConfigurationException {
+        return getXsdsRecursive(new HashSet<XSD>(), ignoreRedefine);
     }
 
     public Set<XSD> getXsdsRecursive(Set<XSD> xsds)
+            throws ConfigurationException {
+    	return getXsdsRecursive(xsds, true);
+	}
+
+    public Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean ignoreRedefine)
             throws ConfigurationException {
     	try {
             InputStream in = getInputStream();
@@ -379,7 +389,8 @@ public class XSD implements Schema, Comparable<XSD> {
                 case XMLStreamConstants.START_ELEMENT:
                     StartElement el = e.asStartElement();
 					if (el.getName().equals(SchemaUtils.IMPORT) ||
-                        el.getName().equals(SchemaUtils.INCLUDE)
+                        el.getName().equals(SchemaUtils.INCLUDE)||
+                        (el.getName().equals(SchemaUtils.REDEFINE) && !ignoreRedefine)
                         ) {
                         Attribute schemaLocationAttribute = el.getAttributeByName(SchemaUtils.SCHEMALOCATION);
                     	Attribute namespaceAttribute = el.getAttributeByName(SchemaUtils.NAMESPACE);
@@ -444,7 +455,7 @@ public class XSD implements Schema, Comparable<XSD> {
                                 x.setRootXsd(false);
                                 x.init();
                                 if (xsds.add(x)) {
-                                    x.getXsdsRecursive(xsds);
+                                    x.getXsdsRecursive(xsds, ignoreRedefine);
                                 }
                         	}
                         }

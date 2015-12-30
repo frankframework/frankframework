@@ -69,6 +69,7 @@ public class SchemaUtils {
 	public static final QName ELEMENT		 = new QName(XSD,  "element");
 	public static final QName IMPORT		 = new QName(XSD,  "import");
 	public static final QName INCLUDE		 = new QName(XSD,  "include");
+	public static final QName REDEFINE		 = new QName(XSD,  "redefine");
 	public static final QName TNS			 = new QName(null, "targetNamespace");
 	public static final QName ELFORMDEFAULT	 = new QName(null, "elementFormDefault");
 	public static final QName SCHEMALOCATION = new QName(null, "schemaLocation");
@@ -79,10 +80,15 @@ public class SchemaUtils {
 
 	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds)
 			throws ConfigurationException {
+		return getXsdsRecursive(xsds, true);
+	}
+	
+	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean ignoreRedefine)
+			throws ConfigurationException {
 		Set<XSD> xsdsRecursive = new HashSet<XSD>();
 		xsdsRecursive.addAll(xsds);
 		for (XSD xsd : xsds) {
-			xsdsRecursive.addAll(xsd.getXsdsRecursive());
+			xsdsRecursive.addAll(xsd.getXsdsRecursive(ignoreRedefine));
 		}
 		return xsdsRecursive;
 	}
@@ -360,6 +366,8 @@ public class SchemaUtils {
 							}
 						} else if (startElement.getName().equals(INCLUDE)) {
 							continue;
+//						} else if (startElement.getName().equals(REDEFINE)) {
+//							continue;
 						} else if (startElement.getName().equals(IMPORT)) {
 							if (imports == null || noOutput) {
 								// Not collecting or writing import elements.
@@ -412,6 +420,8 @@ public class SchemaUtils {
 							}
 						} else if (endElement.getName().equals(INCLUDE)) {
 							continue;
+//						} else if (endElement.getName().equals(REDEFINE)) {
+//							continue;
 						} else if (imports != null) {
 							if (endElement.getName().equals(IMPORT)) {
 								if (noOutput) {

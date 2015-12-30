@@ -522,6 +522,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			XSD xsd = new XSD();
 			xsd.setNoNamespaceSchemaLocation(getNoNamespaceSchemaLocation());
+			xsd.setResource(getNoNamespaceSchemaLocation());
 			xsd.init();
 			xsds.add(xsd);
 		} else {
@@ -543,6 +544,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	public List<Schema> getSchemas() throws ConfigurationException {
+		checkRootValidations();
 		Set<XSD> xsds = getXsds();
 		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
 			xsds = SchemaUtils.getXsdsRecursive(xsds);
@@ -557,7 +559,13 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 		List<Schema> schemas = new ArrayList<Schema>();
 		SchemaUtils.sortByDependencies(xsds, schemas);
+		return schemas;
+	}
+
+	private void checkRootValidations() throws ConfigurationException {
 		if (validator.getRootValidations() != null) {
+			Set<XSD> xsds = getXsds();
+			xsds = SchemaUtils.getXsdsRecursive(xsds, false);
 			for (List<String> path: validator.getRootValidations()) {
 				boolean found = false;
 				String validElements = path.get(path.size() - 1);
@@ -583,7 +591,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				}
 			}
 		}
-		return schemas;
 	}
 
 	public String getSchemasId(IPipeLineSession session) throws PipeRunException {

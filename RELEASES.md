@@ -179,6 +179,7 @@ Upcoming
 - `(end of v6.0-RC6)`
 - Prevent warnings about root elements which are actually available in imports and/or includes
 - Add option to specify root elements as comma separated list of names to choose from (only one is allowed)
+- Prevent warnings about root elements which are actually available in redefines
 
 
 ### Non backwards compatible changes
