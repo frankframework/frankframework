@@ -51,3 +51,7 @@ Release on Windows 7 behind a proxy
     - i, Release ibis-adapterframework-parent-[version], esc, :, wq, enter
 - git status
 - git push
+- In Eclipse:
+  - Team, Pull
+  - Wait for Building workspace to finish
+  - Commit and Push the two changed org.eclipse.wst.common.component files
