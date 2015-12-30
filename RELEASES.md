@@ -9,8 +9,16 @@ Upcoming
 --------
 
 [JavaDocs](http://www.ibissource.org/iaf/maven/apidocs/index.html)
-[Commits](https://github.com/ibissource/iaf/compare/v5.6.1...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v6.0...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+
+
+6.0
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v5.6.1...v6.0)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v6.0)](https://travis-ci.org/ibissource/iaf)
 
 - Add support for jetty-maven-plugin
 - Add note "Theme Bootstrap is part of a beta version" in main page of IBIS console for theme "bootstrap"
@@ -176,7 +184,7 @@ Upcoming
     - Don't allow any element when soapHeader not specified
     - Don't allow any element when soapBody not specified
     - Don't allow soapHeader or soapBody to have soap namespace (e.g. when element doesn't have an xmlns attribute)
-- `(end of v6.0-RC6)`
+- `(end of v6.0)`
 - Prevent warnings about root elements which are actually available in imports and/or includes
 - Add option to specify root elements as comma separated list of names to choose from (only one is allowed)
 - Prevent warnings about root elements which are actually available in redefines
