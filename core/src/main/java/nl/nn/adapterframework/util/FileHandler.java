@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,14 +49,26 @@ import org.apache.log4j.Logger;
 /**
  * FileHandler, available to the Ibis developer as {@link nl.nn.adapterframework.senders.FileSender} and
  * {@link nl.nn.adapterframework.pipes.FilePipe}, allows to write to or read from a file.
- * Write will create a file in the specified directory. If a directory is not
- * specified, the fileName is expected to include the directory. If both the
- * fileName and the directory are not specified a temporary file is created as
- * specified by the {@link java.io.File.createTempFile} method using the string "ibis"
- * as a prefix and a suffix as specified bij the writeSuffix attribute. If only
+ * 
+ * <p>
+ * Actions take place on the file specified by the fileName attribute (or when
+ * not available the fileNameSessionKey, when empty too the input of the pipe is
+ * used as file name). When a directory is not specified, the fileName is
+ * expected to include the directory.
+ * </p>
+ * 
+ * <p>
+ * When a file needs to be created and both the fileName and the directory are
+ * not specified a temporary file is created as specified by the
+ * {@link java.io.File.createTempFile} method using the string "ibis" as a
+ * prefix and a suffix as specified bij the writeSuffix attribute. If only
  * the directory is specified, the temporary file is created the same way except
- * that the temporay file is created in the specified directory.
+ * that the temporary file is created in the specified directory.
+ * </p>
+ * 
+ * <p>
  * The pipe also support base64 en- and decoding.
+ * </p>
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -85,7 +97,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setSkipBOM(boolean) skipBOM}</td><td>when set to <code>true</code>, a possible Bytes Order Mark (BOM) at the start of the file is skipped (only used for the action read and encoding UFT-8)</td><td>false</td></tr>
  * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>(only used when actions=delete) when set to <code>true</code>, the directory from which a file is deleted is also deleted when it contains no other files</td><td>false</td></tr>
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code>, <code>bytes</code> or <code>stream</code></td><td>"string"</td></tr>
- * <tr><td>{@link #setFileSource(String) fileSource}</td><td>(action=read) either <code>filesystem</code> or <code>classpath</code></td><td>"filesystem"</td></tr>
+ * <tr><td>{@link #setFileSource(String) fileSource}</td><td>either <code>filesystem</code> or <code>classpath</code> (only for actions "read" and "info")</td><td>"filesystem"</td></tr>
  * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>(only used when outputType=stream) if set, the result is streamed to the HttpServletResponse object which is stored in session key "restListenerServletResponse"</td><td>false</td></tr>
  * </table>
  * </p>
@@ -276,7 +288,34 @@ public class FileHandler {
 		}
 	}
 
-	private File createFile(IPipeLineSession session, ParameterList paramList) throws IOException, ParameterException {
+	private String getEffectiveFileName(byte[] in, IPipeLineSession session) {
+		String name = fileName;
+		if (StringUtils.isEmpty(name)) {
+			name = (String)session.get(fileNameSessionKey);
+		}
+		if (in != null && StringUtils.isEmpty(name)) {
+			name = new String(in);
+		}
+		return name;
+	}
+
+	private File getEffectiveFile(byte[] in, IPipeLineSession session, boolean allowClasspath) {
+		File file;
+		String name = getEffectiveFileName(in, session);
+		if (allowClasspath && fileSource.equals("classpath")) {
+			URL resource = ClassUtils.getResourceURL(this, name);
+			file = new File(resource.getFile());
+		} else {
+			if (StringUtils.isNotEmpty(getDirectory())) {
+				file = new File(getDirectory(), name);
+			} else {
+				file = new File(name);
+			}
+		}
+		return file;
+	}
+
+	private File createFile(byte[] in, IPipeLineSession session, ParameterList paramList) throws IOException, ParameterException {
 		File tmpFile;
 
 		String writeSuffix_work = null;
@@ -297,10 +336,7 @@ public class FileHandler {
 			writeSuffix_work = getWriteSuffix();
 		}
 		
-		String name = fileName;
-		if (StringUtils.isEmpty(name)) {
-			name = (String)session.get(fileNameSessionKey);
-		}
+		String name = getEffectiveFileName(in, session);
 		if (StringUtils.isEmpty(getDirectory())) {
 			if (StringUtils.isEmpty(name)) {
 				tmpFile = File.createTempFile("ibis", writeSuffix_work);
@@ -338,7 +374,7 @@ public class FileHandler {
 			return go(new ByteArrayInputStream(in), session, paramList);
 		}
 		public byte[] go(InputStream in, IPipeLineSession session, ParameterList paramList) throws Exception {
-			File tmpFile=createFile(session, paramList);
+			File tmpFile=createFile(null, session, paramList);
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
 					if (tmpFile.getParentFile().mkdirs()) {
@@ -379,7 +415,7 @@ public class FileHandler {
 			}
 		}
 		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
-			File tmpFile=createFile(session, paramList);
+			File tmpFile=createFile(in, session, paramList);
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
 					if (tmpFile.getParentFile().mkdirs()) {
@@ -456,22 +492,7 @@ public class FileHandler {
 			return new FileDeleteAfterReadInputStream(getFile(in, session), deleteAfterRead);
 		}
 		private File getFile(byte[] in, IPipeLineSession session) {
-			File file;
-			String name = (String)session.get(fileNameSessionKey);
-			if (StringUtils.isEmpty(name)) {
-				name = new String(in);
-			}
-			if (fileSource.equals("classpath")) {
-				URL resource = ClassUtils.getResourceURL(this, name);
-				file = new File(resource.getFile());
-			} else {
-				if (StringUtils.isNotEmpty(getDirectory())) {
-					file = new File(getDirectory(), name);
-				} else {
-					file = new File(name);
-				}
-			}
-			return file;
+			return getEffectiveFile(in, session, !deleteAfterRead);
 		}
 	}
 
@@ -490,44 +511,16 @@ public class FileHandler {
 			
 		}
 		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
-			File file;
-			
-			/* take filename from 
-			 * 1) fileName attribute
-			 * 2) fileNameSessionKey
-			 * 3) otherwise take the pipe input  
-			*/
-			
-			String name = fileName;
-			
-			if (StringUtils.isEmpty(name)) { 
-				if (!(StringUtils.isEmpty(fileNameSessionKey))) { 
-					name = (String)session.get(fileNameSessionKey); 
-				}
-			  	else {	
-			  		name = new String(in); 
-			  	}
-			}
+			File file = getEffectiveFile(in, session, false);
 
-			/* check for directory path 
-			 * if param directory not filled, 
-			 * then filename's filepath.
-			 */					
-			if ( getDirectory() != null ) {
-				file = new File(getDirectory(), name);
-			} 
-			else {
-				file = new File( name );
-			}
-											
 			/* if file exists, delete the file */
 			if (file.exists()) {
 				boolean success = file.delete();
 				if (!success){
-				   log.warn( getLogPrefix(session) + "could not delete file [" + file.toString() +"]");
+					log.warn( getLogPrefix(session) + "could not delete file [" + file.toString() +"]");
 				} 
 				else {
-				   log.debug(getLogPrefix(session) + "deleted file [" + file.toString() +"]");
+					log.debug(getLogPrefix(session) + "deleted file [" + file.toString() +"]");
 				} 
 			}
 			else {
@@ -540,16 +533,16 @@ public class FileHandler {
 				if (directory.exists() && directory.list().length==0) {
 					boolean success = directory.delete();
 					if (!success){
-					   log.warn( getLogPrefix(session) + "could not delete directory [" + directory.toString() +"]");
+						log.warn( getLogPrefix(session) + "could not delete directory [" + directory.toString() +"]");
 					} 
 					else {
-					   log.debug(getLogPrefix(session) + "deleted directory [" + directory.toString() +"]");
+						log.debug(getLogPrefix(session) + "deleted directory [" + directory.toString() +"]");
 					} 
 				} else {
-					   log.debug(getLogPrefix(session) + "directory [" + directory.toString() +"] doesn't exist or is not empty");
+						log.debug(getLogPrefix(session) + "directory [" + directory.toString() +"] doesn't exist or is not empty");
 				}
 			}
-			
+
 			return in;
 		}
 	}
@@ -565,16 +558,7 @@ public class FileHandler {
 		}
 
 		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
-			String name = fileName;
-			
-			if (StringUtils.isEmpty(name)) { 
-				if (!(StringUtils.isEmpty(fileNameSessionKey))) { 
-					name = (String)session.get(fileNameSessionKey); 
-				}
-				else {	
-					name = new String(in); 
-				}
-			}
+			String name = getEffectiveFileName(in, session);
 
 			String dir = getDirectory();
 			if (StringUtils.isEmpty(dir)) {
@@ -607,20 +591,7 @@ public class FileHandler {
 		}
 
 		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
-			File file;
-			 
-			String name = (String)session.get(fileNameSessionKey);;
-			
-			if (StringUtils.isEmpty(name)) {
-				name = new String(in);
-			}
-															
-			if (StringUtils.isNotEmpty(getDirectory())) {
-				file = new File(getDirectory(), name);
-			} else {
-				file = new File(name);
-			}
-
+			File file = getEffectiveFile(in, session, true);
 			XmlBuilder fileXml = new XmlBuilder("file");
 			XmlBuilder fullName = new XmlBuilder("fullName");
 			fullName.setValue(file.getCanonicalPath());
