@@ -59,13 +59,12 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 /**
  * JDBC implementation of {@link ITransactionalStorage}.
  * 
- * The default implementation works for Cloudscape databases.
- * 
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.JdbcTransactionalStorage</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSlotId(String) slotId}</td><td>optional identifier for this storage, to be able to share the physical table between a number of receivers</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setType(String) type}</td><td>possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). ReceiverBase will always set type to E for errorStorage and always set type to A for messageLog. GenericMessageSendingPipe will set type to L for messageLog (when type isn't specified). See {@link MessageStoreSender} for type M</td><td>E for errorStorage on receiver, A for messageLog on receiver and L for messageLog on pipe</td></tr>
  * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(String) username}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
