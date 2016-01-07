@@ -15,6 +15,7 @@ Upcoming
 - Equalize/refactor file name determination for FilePipe/Sender (for action "create" also considers pipe input, for action "read" also consider attribute fileName and for action "info" also consider attributes fileName and classpath)
 - Add CrlPipe
 - Document JdbcTransactionalStorage type attribute
+- Add storeResultAsStreamInSessionKey to HttpSender
 
 
 

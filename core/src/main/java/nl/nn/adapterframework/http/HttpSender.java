@@ -139,6 +139,7 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setBase64(boolean) base64}</td><td>when true, the result is base64 encoded</td><td>false</td></tr>
  * <tr><td>{@link #setProtocol(String) protocol}</td><td>Secure socket protocol (such as "SSL" and "TLS") to use when a SSLContext object is generated. If empty the protocol "SSL" is used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStreamResultToFileNameSessionKey(String) streamResultToFileNameSessionKey}</td><td>if set, the result is streamed to a file (instead of passed as a String)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStoreResultAsStreamInSessionKey(String) storeResultAsStreamInSessionKey}</td><td>if set, a pointer to an input stream of the result is put in the specified sessionKey (as the sender interface only allows a sender to return a string a sessionKey is used instead to return the stream)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -260,6 +261,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	private String streamResultToFileNameSessionKey=null;
 	private boolean base64=false;
 	private String protocol=null;
+	private String storeResultAsStreamInSessionKey;
 	
 	private TransformerPool transformerPool=null;
 
@@ -686,12 +688,8 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 			return len;
 		}
 	}
-	
-	public String extractResult(HttpMethod httpmethod, String fileName) throws SenderException, IOException {
-		return extractResult(httpmethod, null, fileName);
-	}
-	
-	public String extractResult(HttpMethod httpmethod, HttpServletResponse response, String fileName) throws SenderException, IOException {
+
+	public String extractResult(HttpMethod httpmethod, ParameterResolutionContext prc, HttpServletResponse response, String fileName) throws SenderException, IOException {
 		int statusCode = httpmethod.getStatusCode();
 		boolean ok = false;
 		if (statusCode==HttpServletResponse.SC_OK) {
@@ -712,6 +710,9 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 			if (fileName==null) {
 				if (isBase64()) {
 					return getResponseBodyAsBase64(httpmethod);
+				} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
+					prc.getSession().put(getStoreResultAsStreamInSessionKey(), new ReleaseConnectionAfterReadInputStream(httpmethod));
+					return "";
 				} else {
 					//return httpmethod.getResponseBodyAsString();
 					return getResponseBodyAsString(httpmethod);
@@ -853,16 +854,15 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 				} else {
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"status ["+statusCode+"]");
 				}
+				HttpServletResponse response = null;
 				if (isStreamResultToServlet()) {
-					HttpServletResponse response = (HttpServletResponse) prc.getSession().get("restListenerServletResponse");
-					result = extractResult(httpmethod, response, null);	
-				} else {
-					String fileName = null;
-					if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
-						fileName = (String) prc.getSession().get(getStreamResultToFileNameSessionKey());
-					}
-					result = extractResult(httpmethod, fileName);	
+					response = (HttpServletResponse) prc.getSession().get("restListenerServletResponse");
 				}
+				String fileName = null;
+				if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
+					fileName = (String) prc.getSession().get(getStreamResultToFileNameSessionKey());
+				}
+				result = extractResult(httpmethod, prc, response, fileName);
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"retrieved result ["+result+"]");
 			} catch (HttpException e) {
 				Throwable throwable = e.getCause();
@@ -879,7 +879,11 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 				} 
 				throw new SenderException(e);
 			} finally {
-				httpmethod.releaseConnection();
+				// In case of storeResultAsStreamInSessionKey release connection
+				// is done by ReleaseConnectionAfterReadInputStream.
+				if (StringUtils.isEmpty(getStoreResultAsStreamInSessionKey())) {
+					httpmethod.releaseConnection();
+				}
 			}
 		}
 
@@ -1258,5 +1262,51 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	}
 	public void setStreamResultToFileNameSessionKey(String string) {
 		streamResultToFileNameSessionKey = string;
+	}
+
+	public String getStoreResultAsStreamInSessionKey() {
+		return storeResultAsStreamInSessionKey;
+	}
+	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
+		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
+	}
+
+	private class ReleaseConnectionAfterReadInputStream extends InputStream {
+		InputStream inputStream;
+		HttpMethod httpMethod;
+
+		public ReleaseConnectionAfterReadInputStream(HttpMethod httpMethod) throws IOException {
+			this.httpMethod = httpMethod;
+			this.inputStream = httpMethod.getResponseBodyAsStream();
+		}
+
+		public int read() throws IOException {
+			int i = inputStream.read();
+			if (i == -1) {
+				httpMethod.releaseConnection();
+			}
+			return i;
+		}
+
+		public int read(byte[] b) throws IOException {
+			int i = inputStream.read(b);
+			if (i == -1) {
+				httpMethod.releaseConnection();
+			}
+			return i;
+		}
+
+		public int read(byte[] b, int off, int len) throws IOException {
+			int i = inputStream.read(b, off, len);
+			if (i == -1) {
+				httpMethod.releaseConnection();
+			}
+			return i;
+		}
+
+		public void close() throws IOException {
+			inputStream.close();
+			httpMethod.releaseConnection();
+		}
 	}
 }
