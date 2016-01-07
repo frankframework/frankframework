@@ -16,6 +16,7 @@ Upcoming
 - Add CrlPipe
 - Document JdbcTransactionalStorage type attribute
 - Add storeResultAsStreamInSessionKey to HttpSender
+- Remove IbisLocalSender and IbisJavaSender from pipes package (some time ago deprecated and moved to senders package)
 
 
 
