@@ -45,7 +45,7 @@ import org.apache.commons.lang.text.StrTokenizer;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.JdbcTransactionalStorage</td><td>&nbsp;</td></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.MessageStoreListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSlotId(String) slotId}</td><td>identifier for this service</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSessionKeys(String) sessionKeys}</td><td>comma separated list of sessionKey's to be read together with the message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMoveToMessageLog(boolean) moveToMessageLog}</td><td>move to messageLog after processing, as the message is already stored in the IbisStore only some fields need to be updated, use a messageLog element with class {@link DummyTransactionalStorage} to enable it in the console</td><td>true</td></tr>

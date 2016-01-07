@@ -76,7 +76,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * 
  * @author Miel Hoppenbrouwers
  * @author Jaco de Groot
- * @author Tim van der Heijden
+ * @author Tom van der Heijden
  */
 public class CrlPipe extends FixedForwardPipe {
 	private String issuerSessionKey;
