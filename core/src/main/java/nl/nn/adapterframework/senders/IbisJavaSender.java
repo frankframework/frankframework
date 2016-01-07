@@ -31,10 +31,10 @@ import nl.nn.adapterframework.util.Misc;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Posts a message to another IBIS-adapter in the same JVM.
+ * Posts a message to another IBIS-adapter or application in the same JVM using IbisServiceDispatcher.
  *
- * An IbisJavaSender makes a call to a Receiver a {@link nl.nn.adapterframework.receivers.JavaListener JavaListener}
- * or any other application in the same JVM that has registered a <code>RequestProcessor</code> with the IbisServiceDispatcher. 
+ * An IbisJavaSender makes a call to a Receiver with a {@link nl.nn.adapterframework.receivers.JavaListener JavaListener}
+ * or any other application in the same JVM that has registered a <code>RequestProcessor</code> with the IbisServiceDispatcher.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
