@@ -18,10 +18,13 @@ package nl.nn.adapterframework.http;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -179,11 +182,11 @@ public class WebServiceSender extends HttpSender {
 		return method;
 	}
 
-
-	public String extractResult(HttpMethod httpmethod, String fileName) throws SenderException, IOException {
+	@Override
+	public String extractResult(HttpMethod httpmethod, ParameterResolutionContext prc, HttpServletResponse response, String fileName) throws SenderException, IOException {
 		String httpResult;
 		try {
-			httpResult = super.extractResult(httpmethod, fileName);
+			httpResult = super.extractResult(httpmethod, prc, response, fileName);
 		} catch (SenderException e) {
 			soapWrapper.checkForSoapFault(getResponseBodyAsString(httpmethod), e);
 			throw e;
