@@ -39,7 +39,7 @@ import org.apache.commons.lang.StringUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.pipes.IbisLocalSender</td><td>&nbsp;</td></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.senders.IbisJavaSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>serviceName of the 
  * {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called</td><td>&nbsp;</td></tr>
