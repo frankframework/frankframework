@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,19 +26,17 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.CredentialFactory;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Sends a message to a Tibco queue.
@@ -59,6 +57,8 @@ import nl.nn.adapterframework.util.CredentialFactory;
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReplyTimeout(int) replyTimeout}</td><td>maximum time in ms to wait for a reply. 0 means no timeout. (Only for messageProtocol=RR)</td><td>5000</td></tr>
+ * <tr><td>{@link #setQueueName(String) queueName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>if empty then derived from queueName (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion)</td></tr>
  * </table>
  * </p>
  * <p>
@@ -72,6 +72,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * <tr><td>queueName</td><td>string</td><td>When a parameter with name queueName is present, it is used instead of the queueName specified by the attribute</td></tr>
  * <tr><td>messageProtocol</td><td>string</td><td>When a parameter with name messageProtocol is present, it is used instead of the messageProtocol specified by the attribute</td></tr>
  * <tr><td>replyTimeout</td><td>string</td><td>When a parameter with name replyTimeout is present, it is used instead of the replyTimeout specified by the attribute</td></tr>
+ * <tr><td>soapAction</td><td>string</td><td>When a parameter with name soapAction is present, it is used instead of the soapAction specified by the attribute</td></tr>
  * </table>
  * </p>
  * 
@@ -90,6 +91,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 	private String queueName;
 	private String messageProtocol;
 	private int replyTimeout = 5000;
+	private String soapAction;
 
 	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session)
 			throws PipeRunException {
@@ -105,6 +107,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		String queueName_work;
 		String messageProtocol_work;
 		int replyTimeout_work;
+		String soapAction_work;
 
 		String result = null;
 
@@ -150,6 +153,10 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		} else {
 			replyTimeout_work = Integer.parseInt(replyTimeout_work_str);
 		}
+		soapAction_work = getParameterValue(pvl, "soapAction");
+		if (soapAction_work == null) {
+			soapAction_work = getSoapAction();
+		}
 
 		if (messageProtocol_work == null) {
 			throw new PipeRunException(this, getLogPrefix(session)
@@ -185,18 +192,19 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				msg.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
 				msgProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
 			}
-			String soapAction = null;
-			if (queueName_work.contains(".")) {
-				String[] q = StringUtils.split(queueName_work, ".");
-				if (q[0].equalsIgnoreCase("P2P") && q.length>=4) {
-					soapAction = q[2] + "_" + q[3];
-				} else if (q[0].equalsIgnoreCase("ESB") && q.length>=8) {
-					soapAction = q[6] + "_" + q[7];
+			if (StringUtils.isEmpty(soapAction_work)) {
+				if (queueName_work.contains(".")) {
+					String[] q = StringUtils.split(queueName_work, ".");
+					if (q[0].equalsIgnoreCase("P2P") && q.length>=4) {
+						soapAction_work = q[3];
+					} else if (q[0].equalsIgnoreCase("ESB") && q.length>=8) {
+						soapAction_work = q[6] + "_" + q[7];
+					}
 				}
 			}
-			if (soapAction != null) {
-				log.debug(getLogPrefix(session) + "setting [SoapAction] property to value [" + soapAction + "]");
-				msg.setStringProperty("SoapAction", soapAction);
+			if (StringUtils.isNotEmpty(soapAction_work)) {
+				log.debug(getLogPrefix(session) + "setting [SoapAction] property to value [" + soapAction_work + "]");
+				msg.setStringProperty("SoapAction", soapAction_work);
 			}
 			msgProducer.send(msg);
 			if (log.isDebugEnabled()) {
@@ -326,5 +334,13 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 
 	public void setReplyTimeout(int i) {
 		replyTimeout = i;
+	}
+
+	public void setSoapAction(String string) {
+		soapAction = string;
+	}
+
+	public String getSoapAction() {
+		return soapAction;
 	}
 }
