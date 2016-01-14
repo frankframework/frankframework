@@ -48,17 +48,17 @@
 					<xtags:otherwise>
 						<% if (canonicalName.indexOf("_xml.log")!=-1) { %>
 							<a href="FileViewerServlet?resultType=xml&amp;fileName=<%=canonicalName%>">xml</a>
-							<a href="FileViewerServlet?resultType=text&amp;fileName=<%=canonicalName%>">plain</a>
+							<a href="FileViewerServlet?resultType=bin&amp;fileName=<%=canonicalName%>">bin</a>
 							<a href="FileViewerServlet?resultType=html&amp;fileName=<%=canonicalName%>&amp;log4j=true">2html</a>
 							<a href="FileViewerServlet?resultType=text&amp;fileName=<%=canonicalName%>&amp;log4j=true">2text</a>
 						<% } else { %>
 						<% if (canonicalName.indexOf("-stats_")!=-1) { %>
 							<a href="FileViewerServlet?resultType=xml&amp;fileName=<%=canonicalName%>">xml</a>
-							<a href="FileViewerServlet?resultType=text&amp;fileName=<%=canonicalName%>">plain</a>
+							<a href="FileViewerServlet?resultType=bin&amp;fileName=<%=canonicalName%>">bin</a>
 							<a href="FileViewerServlet?resultType=html&amp;fileName=<%=canonicalName%>&amp;stats=true">2html</a>
 						<% } else { %>
 							<a href="FileViewerServlet?resultType=html&amp;fileName=<%=canonicalName%>">html</a>
-							<a href="FileViewerServlet?resultType=text&amp;fileName=<%=canonicalName%>">text</a>
+							<a href="FileViewerServlet?resultType=bin&amp;fileName=<%=canonicalName%>">bin</a>
 						<% }} %>
 					</xtags:otherwise>
 				</xtags:choose>
