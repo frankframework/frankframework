@@ -19,6 +19,9 @@ Upcoming
 - Remove IbisLocalSender and IbisJavaSender from pipes package (some time ago deprecated and moved to senders package)
 - Add soapAction attribute and parameter to SendTibcoMessage
 - Replace 'text' and 'plain' links in IBIS console function "Adapter logging" by 'bin' links
+- Add attribute emptyInputReplacement to IExtendedPipe
+- Add attributes skipOnEmptyInput, ifParam and ifValue to FixedForwardPipe
+
 
 
 6.0

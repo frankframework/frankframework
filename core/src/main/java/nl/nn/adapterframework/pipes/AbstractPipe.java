@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -80,6 +80,7 @@ import org.springframework.transaction.TransactionDefinition;
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified, then the message is logged informatory</td><td>-1</td></tr>
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setGetInputFromFixedValue(String) getInputFromFixedValue}</td><td>when set, this fixed value is taken as input, instead of regular input</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setEmptyInputReplacement(String) emptyInputReplacement}</td><td>when set and the regular input is empty, this fixed value is taken as input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
  * <tr><td>{@link #setRestoreMovedElements(boolean) restoreMovedElements}</td><td>when set <code>true</code>, compacted messages are restored to their original format (see also  {@link nl.nn.adapterframework.receivers.ReceiverBase#setElementToMove(java.lang.String)})</td><td>false</td></tr>
@@ -134,6 +135,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private int transactionTimeout=0;
 	private boolean sizeStatistics=false;
 	private Locker locker;
+	private String emptyInputReplacement=null;
 
 	private boolean active=true;
 
@@ -495,4 +497,11 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return locker;
 	}
 
+	public void setEmptyInputReplacement(String string) {
+		emptyInputReplacement = string;
+	}
+
+	public String getEmptyInputReplacement() {
+		return emptyInputReplacement;
+	}
 }

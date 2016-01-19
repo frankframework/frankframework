@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -34,7 +35,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 
 	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Object message, IPipeLineSession pipeLineSession) throws PipeRunException {
 		Object preservedObject = message;
-		PipeRunResult pipeRunResult;
+		PipeRunResult pipeRunResult = null;
 		INamedObject owner = pipeLine.getOwner();
 
 		IExtendedPipe pe=null;
@@ -52,9 +53,21 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with fixed value ["+pe.getGetInputFromFixedValue()+"]");
 				message=pe.getGetInputFromFixedValue();
 			}
+			if ((message == null || StringUtils.isEmpty(message.toString()))
+					&& StringUtils.isNotEmpty(pe.getEmptyInputReplacement())) {
+				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing empty input for pipe ["+pe.getName()+"] with fixed value ["+pe.getEmptyInputReplacement()+"]");
+				message = pe.getEmptyInputReplacement();
+			}
 		}
 
-		pipeRunResult=pipeProcessor.processPipe(pipeLine, pipe, messageId, message, pipeLineSession);
+		if (pipe instanceof FixedForwardPipe) {
+			FixedForwardPipe ffPipe = (FixedForwardPipe) pipe;
+			pipeRunResult = ffPipe.doInitialPipe(message, pipeLineSession);
+		}
+		
+		if (pipeRunResult==null){
+			pipeRunResult=pipeProcessor.processPipe(pipeLine, pipe, messageId, message, pipeLineSession);
+		}
 		if (pipeRunResult==null){
 			throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] received null result from pipe ["+pipe.getName()+"]d");
 		}
