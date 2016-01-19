@@ -52,9 +52,9 @@ import org.apache.log4j.Logger;
  * 
  * <p>
  * Actions take place on the file specified by the fileName attribute (or when
- * not available the fileNameSessionKey, when empty too the input of the pipe is
- * used as file name). When a directory is not specified, the fileName is
- * expected to include the directory.
+ * not available the fileNameSessionKey, when fileNameSessionKey is empty too
+ * the input of the pipe is used as file name). When a directory is not
+ * specified, the fileName is expected to include the directory.
  * </p>
  * 
  * <p>
@@ -336,7 +336,7 @@ public class FileHandler {
 			writeSuffix_work = getWriteSuffix();
 		}
 		
-		String name = getEffectiveFileName(in, session);
+		String name = getEffectiveFileName(null, session);
 		if (StringUtils.isEmpty(getDirectory())) {
 			if (StringUtils.isEmpty(name)) {
 				tmpFile = File.createTempFile("ibis", writeSuffix_work);

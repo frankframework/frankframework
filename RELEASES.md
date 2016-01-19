@@ -12,7 +12,7 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v6.0...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
-- Equalize/refactor file name determination for FilePipe/Sender (for action "create" also considers pipe input, for action "read" also consider attribute fileName and for action "info" also consider attributes fileName and classpath)
+- Equalize/refactor file name determination for FilePipe/Sender (for action "read" also consider attribute fileName and for action "info" also consider attributes fileName and classpath)
 - Add CrlPipe
 - Document JdbcTransactionalStorage type attribute
 - Add storeResultAsStreamInSessionKey to HttpSender
