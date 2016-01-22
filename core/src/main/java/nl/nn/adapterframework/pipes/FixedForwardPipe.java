@@ -131,7 +131,7 @@ public class FixedForwardPipe extends AbstractPipe {
 		return null;
 	}
 
-	private String getParameterValue(ParameterValueList pvl,
+	protected String getParameterValue(ParameterValueList pvl,
 			String parameterName) {
 		ParameterList parameterList = getParameterList();
 		if (pvl != null && parameterList != null) {
