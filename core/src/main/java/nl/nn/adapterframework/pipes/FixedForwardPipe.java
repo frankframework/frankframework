@@ -29,7 +29,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 
 /**
- * Provides provides a base-class for a Pipe that has always the same forward.
+ * Provides a base-class for a Pipe that always has the same forward.
  * Ancestor classes should call <code>super.configure()</code> in their <code>configure()</code>-methods.
  *
  * <p><b>Configuration:</b>
