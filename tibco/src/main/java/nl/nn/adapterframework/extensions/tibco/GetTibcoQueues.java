@@ -494,20 +494,6 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return qInfosXml.toXML();
 	}
 
-	private String getParameterValue(ParameterValueList pvl,
-			String parameterName) {
-		ParameterList parameterList = getParameterList();
-		if (pvl != null && parameterList != null) {
-			for (int i = 0; i < parameterList.size(); i++) {
-				Parameter parameter = parameterList.getParameter(i);
-				if (parameter.getName().equalsIgnoreCase(parameterName)) {
-					return pvl.getParameterValue(i).asStringValue(null);
-				}
-			}
-		}
-		return null;
-	}
-
 	private XmlBuilder qInfoToXml(QueueInfo qInfo) {
 		XmlBuilder qInfoXml = new XmlBuilder("qInfo");
 		XmlBuilder qNameXml = new XmlBuilder("qName");

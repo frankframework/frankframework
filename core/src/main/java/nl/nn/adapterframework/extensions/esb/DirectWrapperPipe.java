@@ -89,18 +89,4 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 		}
 		return result;
 	}
-
-	private String getParameterValue(ParameterValueList pvl,
-			String parameterName) {
-		ParameterList parameterList = getParameterList();
-		if (pvl != null && parameterList != null) {
-			for (int i = 0; i < parameterList.size(); i++) {
-				Parameter parameter = parameterList.getParameter(i);
-				if (parameter.getName().equalsIgnoreCase(parameterName)) {
-					return pvl.getParameterValue(i).asStringValue(null);
-				}
-			}
-		}
-		return null;
-	}
 }

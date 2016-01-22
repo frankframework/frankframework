@@ -21,6 +21,7 @@ Upcoming
 - Replace 'text' and 'plain' links in IBIS console function "Adapter logging" by 'bin' links
 - Add attribute emptyInputReplacement to IExtendedPipe
 - Add attributes skipOnEmptyInput, ifParam and ifValue to FixedForwardPipe
+- Add value '!false' (equals 'true') to attribute active 
 
 
 
