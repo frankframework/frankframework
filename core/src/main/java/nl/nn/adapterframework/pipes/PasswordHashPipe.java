@@ -38,7 +38,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.PasswordHashPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setHashSessionKey(String) hashSessionKey}</td>name of sessionKey that holds the hash which will be used to validate the password (input of the pipe)<td></td><td></td></tr>
+ * <tr><td>{@link #setHashSessionKey(String) hashSessionKey}</td><td>name of sessionKey that holds the hash which will be used to validate the password (input of the pipe)</td><td></td></tr>
  * </table>
  * </p>
  * 
