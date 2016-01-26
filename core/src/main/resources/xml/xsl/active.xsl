@@ -13,7 +13,7 @@
 		<xsl:choose>
 			<xsl:when test="@active">
 				<xsl:variable name="activeLC" select="translate(@active,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')" />
-				<xsl:if test="$activeLC='true'">
+				<xsl:if test="$activeLC='true' or $activeLC='!false'">
 					<xsl:call-template name="copy" />
 				</xsl:if>
 			</xsl:when>
