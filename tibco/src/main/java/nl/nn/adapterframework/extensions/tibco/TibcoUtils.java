@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,10 @@ import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.log4j.Logger;
+
+import com.tibco.tibjms.admin.ServerInfo;
+import com.tibco.tibjms.admin.TibjmsAdmin;
+import com.tibco.tibjms.admin.TibjmsAdminException;
 
 /**
  * Some utilities for working with TIBCO.
@@ -206,6 +210,40 @@ public class TibcoUtils {
 					log.warn("Exception on closing queueBrowser", e);
 				}
 			}
+		}
+	}
+
+	protected static TibjmsAdmin getActiveServerAdmin(String url,
+			CredentialFactory cf) throws TibjmsAdminException {
+		TibjmsAdmin admin = null;
+		String[] uws = url.split(",");
+		String uw = null;
+		boolean uws_ok = false;
+		for (int i = 0; !uws_ok && i < uws.length; i++) {
+			uw = uws[i].trim();
+			admin = new TibjmsAdmin(uw, cf.getUsername(), cf.getPassword());
+			if (admin != null) {
+				if (admin.getInfo().getState() == ServerInfo.SERVER_ACTIVE) {
+					uws_ok = true;
+				} else {
+					log.debug("Server [" + uw + "] is not active, state ["
+							+ admin.getInfo().getState() + "]");
+					try {
+						admin.close();
+					} catch (TibjmsAdminException e) {
+						log.warn(
+								"Exception on closing Tibjms Admin on server ["
+										+ uw + "]", e);
+					}
+				}
+			}
+		}
+		if (!uws_ok) {
+			log.warn("Could not find an active server");
+			return null;
+		} else {
+			log.debug("Found active server [" + uw + "]");
+			return admin;
 		}
 	}
 }

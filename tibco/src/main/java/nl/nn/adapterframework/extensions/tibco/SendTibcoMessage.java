@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013-2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,14 +29,16 @@ import javax.jms.TextMessage;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 import org.apache.commons.lang.StringUtils;
+
+import com.tibco.tibjms.admin.QueueInfo;
+import com.tibco.tibjms.admin.TibjmsAdmin;
+import com.tibco.tibjms.admin.TibjmsAdminException;
 
 /**
  * Sends a message to a Tibco queue.
@@ -172,12 +174,41 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 
 		CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
 		try {
+			TibjmsAdmin admin;
+			try {
+				admin = TibcoUtils.getActiveServerAdmin(url_work, cf);
+			} catch (TibjmsAdminException e) {
+				log.debug(getLogPrefix(session) + "caught exception", e);
+				admin = null;
+			}
+			if (admin != null) {
+				QueueInfo queueInfo;
+				try {
+					queueInfo = admin.getQueue(queueName_work);
+				} catch (Exception e) {
+					throw new PipeRunException(this, getLogPrefix(session)
+							+ " exception on getting queue info", e);
+				}
+				if (queueInfo == null) {
+					throw new PipeRunException(this, getLogPrefix(session)
+							+ " queue [" + queueName_work + "] does not exist");
+				}
+
+				try {
+					admin.close();
+				} catch (TibjmsAdminException e) {
+					log.warn(getLogPrefix(session)
+							+ "exception on closing Tibjms Admin", e);
+				}
+			}			
+			
 			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(
 					url_work);
 			connection = factory.createConnection(cf.getUsername(), cf.getPassword());
 			jSession = connection.createSession(false,
 					javax.jms.Session.AUTO_ACKNOWLEDGE);
 			destination = jSession.createQueue(queueName_work);
+			
 			msgProducer = jSession.createProducer(destination);
 			TextMessage msg = jSession.createTextMessage();
 			msg.setText(input.toString());

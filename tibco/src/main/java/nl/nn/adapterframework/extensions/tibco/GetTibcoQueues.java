@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2015 Nationale-Nederlanden
+   Copyright 2013-2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,23 +35,19 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.xml.xpath.XPathExpressionException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.ldap.LdapSender;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -106,7 +102,7 @@ import com.tibco.tibjms.admin.UserInfo;
  * </p>
  * 
  * @author Peter Leeuwenburgh
- * @version $Id: GetTibcoQueues.java,v 1.14 2014/12/17 15:09:22 m168309 Exp $
+ * @version $Id$
  */
 
 public class GetTibcoQueues extends TimeoutGuardPipe {
@@ -163,44 +159,10 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		Session jSession = null;
 		TibjmsAdmin admin = null;
 		try {
-			String[] uws = url_work.split(",");
-			String uw = null;
-			boolean uws_ok = false;
-			for (int i = 0; !uws_ok && i < uws.length; i++) {
-				uw = uws[i].trim();
-				try {
-					admin = new TibjmsAdmin(uw, cf.getUsername(),
-							cf.getPassword());
-				} catch (Exception e) {
-					log.warn(getLogPrefix(session)
-							+ "exception on starting Tibjms Admin on server ["
-							+ uw + "]", e);
-					admin = null;
-				}
-				if (admin != null) {
-					if (admin.getInfo().getState() == ServerInfo.SERVER_ACTIVE) {
-						uws_ok = true;
-					} else {
-						log.debug(getLogPrefix(session) + "server [" + uw
-								+ "] is not active, state ["
-								+ admin.getInfo().getState() + "]");
-						try {
-							admin.close();
-						} catch (TibjmsAdminException e) {
-							log.warn(
-									getLogPrefix(session)
-											+ "exception on closing Tibjms Admin on server ["
-											+ uw + "]", e);
-						}
-					}
-				}
-			}
-			if (!uws_ok) {
+			admin = TibcoUtils.getActiveServerAdmin(url_work, cf);
+			if (admin == null) {
 				throw new PipeRunException(this,
 						"could not find an active server");
-			} else {
-				log.debug(getLogPrefix(session) + "found active server [" + uw
-						+ "]");
 			}
 
 			String ldapUrl = getParameterValue(pvl, "ldapUrl");
@@ -301,6 +263,11 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String getQueueMessage(Session jSession, TibjmsAdmin admin,
 			String queueName, int queueItem, LdapSender ldapSender) throws TibjmsAdminException,
 			JMSException {
+		QueueInfo qInfo = admin.getQueue(queueName);
+		if (qInfo == null) {
+			throw new JMSException(" queue [" + queueName + "] does not exist");
+		}
+		
 		XmlBuilder qMessageXml = new XmlBuilder("qMessage");
 		ServerInfo serverInfo = admin.getInfo();
 		String url = serverInfo.getURL();
@@ -403,7 +370,6 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		qMessageXml.addSubElement(qNameXml);
 
 		Map aclMap = getAclMap(admin, ldapSender);
-		QueueInfo qInfo = admin.getQueue(queueName);
 		XmlBuilder aclXml = new XmlBuilder("acl");
 		XmlBuilder qInfoXml = qInfoToXml(qInfo);
 		aclXml.setValue((String) aclMap.get(qInfo.getName()));
