@@ -24,6 +24,7 @@ Upcoming
 - Add value '!false' (equals 'true') to attribute active
 - Add PasswordHashPipe
 - Add check on queue existence in GetTibcoQueues and SendTibcoMessage (currently used in IJA_TiBeT2)
+- Introduction of ExchangeMailListener
 
 
 
