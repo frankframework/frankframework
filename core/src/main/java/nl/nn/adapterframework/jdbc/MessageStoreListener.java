@@ -28,7 +28,7 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import org.apache.commons.lang.text.StrTokenizer;
 
 /**
- * Read messages from the IbisStore previously stored by a
+ * Read messages from the ibisstore previously stored by a
  * {@link MessageStoreSender}.
  * 
  * Example configuration:
@@ -40,6 +40,12 @@ import org.apache.commons.lang.text.StrTokenizer;
 			slotId="${instance.name}/MyService"
 			sessionKeys="key1,key2"
 		/>
+		&lt;!-- DummyTransactionalStorage to enable messagelog browser in the console (messages are moved to messagelog by MessageStoreListener hence JdbcTransactionalStorage isn't needed) -->
+		&lt;messageLog
+			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
+			jmsRealm="jdbc"
+			slotId="${instance.name}/ServiceName"
+		/>
  * </pre></code>
  * 
  * <p><b>Configuration:</b>
@@ -48,7 +54,7 @@ import org.apache.commons.lang.text.StrTokenizer;
  * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.MessageStoreListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSlotId(String) slotId}</td><td>identifier for this service</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSessionKeys(String) sessionKeys}</td><td>comma separated list of sessionKey's to be read together with the message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMoveToMessageLog(boolean) moveToMessageLog}</td><td>move to messageLog after processing, as the message is already stored in the IbisStore only some fields need to be updated, use a messageLog element with class {@link DummyTransactionalStorage} to enable it in the console</td><td>true</td></tr>
+ * <tr><td>{@link #setMoveToMessageLog(boolean) moveToMessageLog}</td><td>move to messagelog after processing, as the message is already stored in the ibisstore only some fields need to be updated, use a messageLog element with class {@link DummyTransactionalStorage} to enable it in the console</td><td>true</td></tr>
  * </table>
  * </p>
  * 
@@ -75,7 +81,16 @@ public class MessageStoreListener extends JdbcQueryListener {
 				// optional delay attribute but this functionality wasn't used
 				// anymore and the condition is Oracle specific.
 				// + "AND SYSTIMESTAMP >= MESSAGEDATE + INTERVAL '" + delay + "' SECOND");
-		String query = "UPDATE IBISSTORE SET TYPE = '" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "', COMMENTS = '" + ReceiverBase.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = {fn now()} WHERE MESSAGEKEY = ?";
+		String query = "UPDATE IBISSTORE SET TYPE = '" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "', COMMENTS = '" + ReceiverBase.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = {fn now() + 30} WHERE MESSAGEKEY = ?";
+		
+//		Date date = new Date();
+//		Calendar cal = Calendar.getInstance();
+//		cal.setTime(date);
+//		cal.add(Calendar.DAY_OF_MONTH, getRetention());
+//		stmt.setTimestamp(++parPos, new Timestamp(cal.getTime().getTime()));
+
+		
+		
 		if (!isMoveToMessageLog()) {
 			query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY = ?";
 		}

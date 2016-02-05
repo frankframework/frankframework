@@ -33,14 +33,14 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.text.StrBuilder;
 
 /**
- * Send messages to the IbisStore to have them processed exactly-once by another
+ * Send messages to the ibisstore to have them processed exactly-once by another
  * adapter which will read the messages using a {@link MessageStoreListener}.
  * This other adapter will process the messages asynchronously and (optionally)
  * under transaction control. Duplicate messages are ignored based on the
  * messageId (except when onlyStoreWhenMessageIdUnique is set to false), hence
  * the sender of the message can retry sending the message until a valid reply
  * is received in which case it can be certain that the message is stored in the
- * IbisStore.
+ * ibisstore.
  * 
  * Add a messageLog element with class {@link DummyTransactionalStorage} to
  * prevent the warning "... has no messageLog..." and enable the message
@@ -58,11 +58,12 @@ import org.apache.commons.lang.text.StrBuilder;
 			>
 			&lt;param name="messageId" xpathExpression="/Envelope/Header/MessageID"/>
 		&lt;/sender>
+		&lt;!-- DummyTransactionalStorage to enable messagestore browser in the console (JdbcTransactionalStorage would store an extra record in the ibisstore) -->
 		&lt;messageLog
 			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
 			jmsRealm="jdbc"
 			slotId="${instance.name}/ServiceName"
-			type="A"
+			type="M"
 		/>
 </pre></code>
  * 
