@@ -127,6 +127,10 @@ public class BrowseJdbcTableExecute extends ActionBase {
 						qs.open();
 
 						ResultSet rs = qs.getConnection().getMetaData().getColumns(null, null, form_tableName, null);
+						if (!rs.isBeforeFirst()) {
+							rs = qs.getConnection().getMetaData().getColumns(null, null, form_tableName.toUpperCase(), null);
+						}
+						
 						String fielddefinition = "<fielddefinition>";
 						while(rs.next()) {
 							String field = "<field name=\""
