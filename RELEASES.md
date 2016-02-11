@@ -26,6 +26,7 @@ Upcoming
 - Add check on queue existence in GetTibcoQueues and SendTibcoMessage (currently used in IJA_TiBeT2)
 - Introduction of ExchangeMailListener
 - Bugfix not showing length of blob fields in "Browse a Jdbc table" in case of multiple records
+- Improve javadoc for MessageStoreSender/Listener
 
 
 

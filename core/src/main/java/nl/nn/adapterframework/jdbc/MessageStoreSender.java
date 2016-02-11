@@ -72,7 +72,7 @@ import org.apache.commons.lang.text.StrBuilder;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.JdbcTransactionalStorage</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSlotId(String) slotId}</td><td>identifier for this service</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSessionKeys(String) sessionKeys}</td><td>comma separated list of sessionKey's to be stored together with the message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSessionKeys(String) sessionKeys}</td><td>comma separated list of sessionKey's to be stored together with the message. Please note: corresponding {@link MessageStoreListener} must have the same value for this attribute</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOnlyStoreWhenMessageIdUnique(boolean) onlyStoreWhenMessageIdUnique}</td><td>&nbsp;</td><td>true</td></tr>
  * </table>
  * </p>
