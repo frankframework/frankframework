@@ -28,6 +28,7 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -121,7 +122,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private String description;
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private int messageKeeperSize = 10; //default length
-	private boolean autoStart = true;
+	private boolean autoStart = AppConstants.getInstance().getBoolean("adapters.autoStart", true);
 	private int msgLogLevel = MsgLogUtil.getMsgLogLevelByDefault();
 	private boolean msgLogHidden = MsgLogUtil.getMsgLogHiddenByDefault();
 	private boolean recover = false;
