@@ -32,6 +32,7 @@ import microsoft.exchange.webservices.data.core.exception.service.local.ServiceL
 import microsoft.exchange.webservices.data.core.service.folder.Folder;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.item.Item;
+import microsoft.exchange.webservices.data.core.service.schema.EmailMessageSchema;
 import microsoft.exchange.webservices.data.core.service.schema.FolderSchema;
 import microsoft.exchange.webservices.data.core.service.schema.ItemSchema;
 import microsoft.exchange.webservices.data.credential.ExchangeCredentials;
@@ -40,9 +41,11 @@ import microsoft.exchange.webservices.data.property.complex.Attachment;
 import microsoft.exchange.webservices.data.property.complex.AttachmentCollection;
 import microsoft.exchange.webservices.data.property.complex.EmailAddress;
 import microsoft.exchange.webservices.data.property.complex.EmailAddressCollection;
+import microsoft.exchange.webservices.data.property.complex.FolderId;
 import microsoft.exchange.webservices.data.property.complex.InternetMessageHeader;
 import microsoft.exchange.webservices.data.property.complex.InternetMessageHeaderCollection;
 import microsoft.exchange.webservices.data.property.complex.ItemAttachment;
+import microsoft.exchange.webservices.data.property.complex.Mailbox;
 import microsoft.exchange.webservices.data.property.complex.MessageBody;
 import microsoft.exchange.webservices.data.property.complex.MimeContent;
 import microsoft.exchange.webservices.data.search.FindFoldersResults;
@@ -215,14 +218,20 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 				exchangeService.setUrl(new URI(getUrl()));
 			}
 
-			Folder inbox = Folder.bind(exchangeService,
-					WellKnownFolderName.Inbox);
+			FolderId inboxId;
+			if (StringUtils.isNotEmpty(getMailAddress())) {
+				Mailbox mailbox = new Mailbox(getMailAddress());
+				inboxId = new FolderId(WellKnownFolderName.Inbox, mailbox);
+			} else {
+				inboxId = new FolderId(WellKnownFolderName.Inbox);
+			}
 
+			FindFoldersResults findFoldersResultsIn;
+			FolderView folderViewIn = new FolderView(10);
 			if (StringUtils.isNotEmpty(getInputFolder())) {
 				SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(
 						FolderSchema.DisplayName, getInputFolder());
-				FolderView folderViewIn = new FolderView(10);
-				FindFoldersResults findFoldersResultsIn = inbox.findFolders(
+				findFoldersResultsIn = exchangeService.findFolders(inboxId,
 						searchFilterIn, folderViewIn);
 				if (findFoldersResultsIn.getTotalCount() == 0) {
 					throw new ConfigurationException(
@@ -233,10 +242,11 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 							"multiple (in) folders found with name ["
 									+ getInputFolder() + "]");
 				}
-				folderIn = findFoldersResultsIn.getFolders().get(0);
 			} else {
-				folderIn = inbox;
+				findFoldersResultsIn = exchangeService.findFolders(inboxId,
+						folderViewIn);
 			}
+			folderIn = findFoldersResultsIn.getFolders().get(0);
 
 			if (StringUtils.isNotEmpty(getFilter())) {
 				if (!getFilter().equalsIgnoreCase("NDR")) {
@@ -250,8 +260,8 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 				SearchFilter searchFilterOut = new SearchFilter.IsEqualTo(
 						FolderSchema.DisplayName, getOutputFolder());
 				FolderView folderViewOut = new FolderView(10);
-				FindFoldersResults findFoldersResultsOut = inbox.findFolders(
-						searchFilterOut, folderViewOut);
+				FindFoldersResults findFoldersResultsOut = exchangeService
+						.findFolders(inboxId, searchFilterOut, folderViewOut);
 				if (findFoldersResultsOut.getTotalCount() == 0) {
 					throw new ConfigurationException(
 							"no (out) folder found with name ["
@@ -282,8 +292,12 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 			throws ListenerException {
 		Item item = (Item) rawMessage;
 		try {
+			PropertySet ps = new PropertySet(
+					EmailMessageSchema.DateTimeReceived,
+					EmailMessageSchema.From, EmailMessageSchema.Subject,
+					EmailMessageSchema.Body, EmailMessageSchema.DateTimeSent);
 			EmailMessage emailMessage = EmailMessage.bind(exchangeService,
-					item.getId());
+					item.getId(), ps);
 			XmlBuilder emailXml = new XmlBuilder("email");
 			addEmailInfo(emailMessage, emailXml);
 
