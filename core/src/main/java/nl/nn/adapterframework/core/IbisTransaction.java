@@ -80,12 +80,21 @@ public class IbisTransaction {
 	}
 
 	private String getRealTransactionManager() {
+		if (txManager == null) {
+			return null;
+		}
 		if (txManager instanceof SpringTxManagerProxy) {
 			SpringTxManagerProxy springTxMgr = (SpringTxManagerProxy) txManager;
 			PlatformTransactionManager platformTxMgr = springTxMgr.getRealTxManager();
+			if (platformTxMgr == null) {
+				return springTxMgr.getClass().getName();
+			}
 			if (platformTxMgr instanceof JtaTransactionManager) {
 				JtaTransactionManager jtaTxMgr = (JtaTransactionManager) platformTxMgr;
 				TransactionManager txMgr = jtaTxMgr.getTransactionManager();
+				if (txMgr == null) {
+					return jtaTxMgr.getClass().getName();
+				}
 				return txMgr.getClass().getName();
 			} else {
 				return platformTxMgr.getClass().getName();
