@@ -84,6 +84,16 @@ public class UploadFilePipe extends FixedForwardPipe {
 				dir = new File(input.toString());
 			}
 		}
+
+		if (!dir.exists()) {
+			if (dir.mkdirs()) {
+				log.debug(getLogPrefix(session) + "created directory ["
+						+ dir.getPath() + "]");
+			} else {
+				log.warn(getLogPrefix(session) + "directory [" + dir.getPath()
+						+ "] could not be created");
+			}
+		}
 		
 		String fileName;
 		try {
