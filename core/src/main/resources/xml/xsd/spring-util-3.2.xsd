@@ -8,8 +8,8 @@
 		elementFormDefault="qualified"
 		attributeFormDefault="unqualified">
 
-	<xsd:import namespace="http://www.springframework.org/schema/beans" schemaLocation="spring-beans-2.5.xsd"/>
-	<xsd:import namespace="http://www.springframework.org/schema/tool" schemaLocation="spring-tool-2.5.xsd"/>
+	<xsd:import namespace="http://www.springframework.org/schema/beans" schemaLocation="http://www.springframework.org/schema/beans/spring-beans-3.2.xsd"/>
+	<xsd:import namespace="http://www.springframework.org/schema/tool" schemaLocation="http://www.springframework.org/schema/tool/spring-tool-3.2.xsd"/>
 
 	<xsd:element name="constant">
 		<xsd:annotation>
@@ -19,7 +19,7 @@
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
-			<xsd:attribute name="id" type="xsd:ID"/>
+			<xsd:attribute name="id" type="xsd:string"/>
 			<xsd:attribute name="static-field" type="xsd:string" use="required"/>
 		</xsd:complexType>
 	</xsd:element>
@@ -32,7 +32,7 @@
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
-			<xsd:attribute name="id" type="xsd:ID"/>
+			<xsd:attribute name="id" type="xsd:string"/>
 			<xsd:attribute name="path" type="xsd:string" use="required"/>
 		</xsd:complexType>
 	</xsd:element>
@@ -51,7 +51,7 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="beans:listOrSetType">
-					<xsd:attribute name="id" type="xsd:ID"/>
+					<xsd:attribute name="id" type="xsd:string"/>
 					<xsd:attribute name="list-class" type="xsd:string">
 						<xsd:annotation>
 							<xsd:appinfo>
@@ -92,7 +92,7 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="beans:listOrSetType">
-					<xsd:attribute name="id" type="xsd:ID"/>
+					<xsd:attribute name="id" type="xsd:string"/>
 					<xsd:attribute name="set-class" type="xsd:string">
 						<xsd:annotation>
 							<xsd:appinfo>
@@ -133,7 +133,7 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="beans:mapType">
-					<xsd:attribute name="id" type="xsd:ID"/>
+					<xsd:attribute name="id" type="xsd:string"/>
 					<xsd:attribute name="map-class" type="xsd:string">
 						<xsd:annotation>
 							<xsd:appinfo>
@@ -174,7 +174,7 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="beans:propsType">
-					<xsd:attribute name="id" type="xsd:ID"/>
+					<xsd:attribute name="id" type="xsd:string"/>
 					<xsd:attribute name="location" type="xsd:string">
 						<xsd:annotation>
 							<xsd:appinfo>

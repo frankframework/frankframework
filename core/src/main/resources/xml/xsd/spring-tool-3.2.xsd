@@ -5,6 +5,7 @@
 		targetNamespace="http://www.springframework.org/schema/tool"
 		elementFormDefault="qualified">
 
+	<xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
 
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
@@ -17,9 +18,10 @@
 		<xsd:complexType>
 			<xsd:sequence minOccurs="0">
 				<xsd:element name="expected-type" type="typedParameterType" minOccurs="0" maxOccurs="1"/>
-				<xsd:element name="assignable-to" type="typedParameterType" minOccurs="0" maxOccurs="1"/>
-				<xsd:element name="exports" type="exportsType" minOccurs="0" maxOccurs="1"/>
+				<xsd:element name="assignable-to" type="assignableToType" minOccurs="0" maxOccurs="1"/>
+				<xsd:element name="exports" type="exportsType" minOccurs="0" maxOccurs="unbounded"/>
 				<xsd:element name="registers-scope" type="registersScopeType" minOccurs="0" maxOccurs="unbounded"/>
+				<xsd:element name="expected-method" type="expectedMethodType" minOccurs="0" maxOccurs="unbounded"/>
 			</xsd:sequence>
 			<xsd:attribute name="kind" default="direct">
 				<xsd:simpleType>
@@ -34,6 +36,45 @@
 
 	<xsd:complexType name="typedParameterType">
 		<xsd:attribute name="type" type="xsd:string" use="required"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="assignableToType">
+		<xsd:attribute name="type" type="xsd:string"/>
+		<xsd:attribute name="restriction" default="both">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:NMTOKEN">
+					<xsd:enumeration value="both"/>
+					<xsd:enumeration value="interface-only"/>
+					<xsd:enumeration value="class-only"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="expectedMethodType">
+		<xsd:attribute name="type" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+	Defines an XPath query that can be executed against the node annotated with this
+	type to determine the class for which the this method is valid
+		]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="type-ref" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+	Defines an XPath query that can be executed against the node annotated with this
+	type to determine a referenced bean (by id or alias) for which the given method is valid
+		]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="expression" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+	Defines an AspectJ method execution pointcut expressions that matches valid methods
+		]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 	</xsd:complexType>
 
 	<xsd:complexType name="exportsType">
