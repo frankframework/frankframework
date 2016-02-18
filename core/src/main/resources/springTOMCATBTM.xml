@@ -5,8 +5,8 @@
 	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation=
 		"
-		http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
-		http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
+		http://www.springframework.org/schema/beans xml/xsd/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/util xml/xsd/spring-util-3.2.xsd
 		"
 	>
 
@@ -86,7 +86,6 @@
 		name="activeMQConnectionFactory"
 		class="org.apache.activemq.ActiveMQXAConnectionFactory"
 		scope="singleton"
-		destroy-method="stop"
 		>
 		<property name="brokerURL" value="vm://localhost"/>
 	</bean>

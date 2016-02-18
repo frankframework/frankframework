@@ -8,8 +8,8 @@
 		elementFormDefault="qualified"
 		attributeFormDefault="unqualified">
 
-	<xsd:import namespace="http://www.springframework.org/schema/beans" schemaLocation="spring-beans-2.5.xsd"/>
-	<xsd:import namespace="http://www.springframework.org/schema/tool" schemaLocation="spring-tool-2.5.xsd"/>
+	<xsd:import namespace="http://www.springframework.org/schema/beans" schemaLocation="http://www.springframework.org/schema/beans/spring-beans-3.2.xsd"/>
+	<xsd:import namespace="http://www.springframework.org/schema/tool" schemaLocation="http://www.springframework.org/schema/tool/spring-tool-3.2.xsd"/>
 
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
@@ -24,7 +24,7 @@
 				<xsd:documentation source="java:org.springframework.transaction.interceptor.TransactionInterceptor"><![CDATA[
 	Defines the transactional semantics of the AOP advice that is to be
 	executed.
-	
+
 	That is, this advice element is where the transactional semantics of
 	any	number of methods are defined (where transactional semantics
 	includes the propagation settings, the isolation level, the rollback
@@ -46,7 +46,7 @@
 							<xsd:documentation source="java:org.springframework.transaction.PlatformTransactionManager"><![CDATA[
 	The bean name of the PlatformTransactionManager that is to be used
 	to drive transactions.
-	
+
 	This attribute is not required, and only needs to be specified
 	explicitly if the bean name of the desired PlatformTransactionManager
 	is not 'transactionManager'.
@@ -76,6 +76,9 @@
 
 	Transaction semantics such as propagation settings, the isolation level,
 	the rollback rules, etc are all defined in the annotation metadata.
+
+	See org.springframework.transaction.annotation.EnableTransactionManagement Javadoc
+	for information on code-based alternatives to this XML element.
 				]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:attribute name="transaction-manager" type="xsd:string" default="transactionManager">
@@ -83,7 +86,7 @@
 					<xsd:documentation source="java:org.springframework.transaction.PlatformTransactionManager"><![CDATA[
 	The bean name of the PlatformTransactionManager that is to be used
 	to drive transactions.
-	
+
 	This attribute is not required, and only needs to be specified
 	explicitly if the bean name of the desired PlatformTransactionManager
 	is not 'transactionManager'.
@@ -144,7 +147,7 @@
 			<xsd:documentation><![CDATA[
 	Creates a default JtaTransactionManager bean with name "transactionManager",
 	matching the default bean name expected by the "annotation-driven" tag.
-	Automatically detects WebLogic, WebSphere an OC4J, creating a WebLogicJtaTransactionManager,
+	Automatically detects WebLogic, WebSphere and OC4J: creating a WebLogicJtaTransactionManager,
 	WebSphereUowTransactionManager or OC4JJtaTransactionManager, respectively.
 
 	For customization needs, consider defining a JtaTransactionManager bean as a regular

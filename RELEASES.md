@@ -28,6 +28,7 @@ Upcoming
 - Bugfix not showing length of blob fields in "Browse a Jdbc table" in case of multiple records
 - Improve javadoc for MessageStoreSender/Listener
 - Create directory in UploadFilePipe if it doesn't exist
+- Upgrade Spring from release 2.5.6SEC03 to 3.2.16
 
 
 

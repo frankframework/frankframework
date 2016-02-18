@@ -4,11 +4,12 @@
 		xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 		targetNamespace="http://www.springframework.org/schema/beans">
 
+	<xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
 
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
-	Spring XML Beans Schema, version 2.5
-	Authors: Rob Harrop, Juergen Hoeller, Mark Fisher
+	Spring XML Beans Schema, version 3.2
+	Authors: Juergen Hoeller, Rob Harrop, Mark Fisher, Chris Beams
 
 	This defines a simple and consistent way of creating a namespace
 	of JavaBeans objects, managed by a Spring BeanFactory, read by
@@ -46,10 +47,11 @@
 	is the enclosing bean factory.
 			]]></xsd:documentation>
 		</xsd:annotation>
-		<xsd:attribute name="id" type="xsd:ID">
+		<xsd:attribute name="id" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-	The unique identifier for a bean.
+	The unique identifier for a bean. A bean id may not be used more than once
+	within the same <beans> element.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -59,8 +61,11 @@
 	<xsd:element name="beans">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[
-	The top level (typically root) element. Allows the definition
-	of default values for all nested bean definitions.
+	Container for <bean> and other elements, typically the root element in the document.
+	Allows the definition of default values for all nested bean definitions. May itself
+	be nested for the purpose of defining a subset of beans with certain default values or
+	to be registered only when certain profile(s) are active. Any such nested <beans> element
+	must be declared as the last element in the document.
 			]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
@@ -72,53 +77,69 @@
 					<xsd:element ref="bean"/>
 					<xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
 				</xsd:choice>
+				<xsd:element ref="beans" minOccurs="0" maxOccurs="unbounded"/>
 			</xsd:sequence>
-			<xsd:attribute name="default-lazy-init" default="false" type="xsd:boolean">
+			<xsd:attribute name="profile" use="optional" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+	The set of profiles for which this <beans> element should be parsed. Multiple profiles
+	can be separated by spaces, commas, or semi-colons.
+
+	If one or more of the specified profiles are active at time of parsing, the <beans>
+	element will be parsed, and all of its <bean> elements registered, &lt;import&gt;
+	elements followed, etc.  If none of the specified profiles are active at time of
+	parsing, then the entire element and its contents will be ignored.
+
+	If a profile is prefixed with the NOT operator '!', e.g.
+
+		<beans profile="p1,!p2">
+
+	indicates that the <beans> element should be parsed if profile "p1" is active or
+	if profile "p2" is not active.
+
+	Profiles are activated in one of two ways:
+		Programmatic:
+			ConfigurableEnvironment#setActiveProfiles(String...)
+			ConfigurableEnvironment#setDefaultProfiles(String...)
+
+		Properties (typically through -D system properties, environment variables, or
+		servlet context init params):
+			spring.profiles.active=p1,p2
+			spring.profiles.default=p1,p2
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="default-lazy-init" default="default" type="defaultable-boolean">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 	The default 'lazy-init' value; see the documentation for the
-	'lazy-init' attribute of the '<bean>/' element.
+	'lazy-init' attribute of the 'bean' element.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="default-merge" default="false" type="xsd:boolean">
+			<xsd:attribute name="default-merge" default="default" type="defaultable-boolean">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 	The default 'merge' value; see the documentation for the
-	'merge' attribute of the various collection elements.
+	'merge' attribute of the various collection elements. The default
+	is 'false'.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="default-autowire" default="no">
+			<xsd:attribute name="default-autowire" default="default">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 	The default 'autowire' value; see the documentation for the
-	'autowire' attribute of the '<bean>/' element.
+	'autowire' attribute of the 'bean' element. The default is 'default'.
 					]]></xsd:documentation>
 				</xsd:annotation>
 				<xsd:simpleType>
 					<xsd:restriction base="xsd:NMTOKEN">
+						<xsd:enumeration value="default"/>
 						<xsd:enumeration value="no"/>
 						<xsd:enumeration value="byName"/>
 						<xsd:enumeration value="byType"/>
 						<xsd:enumeration value="constructor"/>
-						<xsd:enumeration value="autodetect"/>
-					</xsd:restriction>
-				</xsd:simpleType>
-			</xsd:attribute>
-			<xsd:attribute name="default-dependency-check" default="none">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[
-	The default 'dependency-check' value; see the documentation for the
-	'dependency-check' attribute of the '<bean>/' element.
-					]]></xsd:documentation>
-				</xsd:annotation>
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:NMTOKEN">
-						<xsd:enumeration value="none"/>
-						<xsd:enumeration value="simple"/>
-						<xsd:enumeration value="objects"/>
-						<xsd:enumeration value="all"/>
 					</xsd:restriction>
 				</xsd:simpleType>
 			</xsd:attribute>
@@ -129,7 +150,7 @@
 	e.g. "*Service", "data*", "*Service*", "data*Service".
 	Also accepts a comma-separated list of patterns: e.g. "*Service,*Dao".
 	See the documentation for the 'autowire-candidate' attribute of the
-	'<bean/>' element for the semantic details of autowire candidate beans.
+	'bean' element for the semantic details of autowire candidate beans.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -137,7 +158,7 @@
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 	The default 'init-method' value; see the documentation for the
-	'init-method' attribute of the '<bean>/' element.
+	'init-method' attribute of the 'bean' element.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -145,7 +166,7 @@
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 	The default 'destroy-method' value; see the documentation for the
-	'destroy-method' attribute of the '<bean>/' element.
+	'destroy-method' attribute of the 'bean' element.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -266,7 +287,7 @@
 	parent settings.
 
 	The remaining settings will always be taken from the child definition:
-	depends on, autowire mode, dependency check, scope, lazy init.
+	depends on, autowire mode, scope, lazy init.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -276,14 +297,13 @@
 	The scope of this bean: typically "singleton" (one shared instance,
 	which will be returned by all calls to getBean with the given id), or
 	"prototype" (independent instance resulting from each call to getBean).
-	Default is "singleton".
+
+	By default, a bean will be a singleton, unless the bean has a parent
+	bean definition in which case it will inherit the parent's scope.
 
 	Singletons are most commonly used, and are ideal for multi-threaded
 	service objects. Further scopes, such as "request" or "session", might
 	be supported by extended bean factories (e.g. in a web environment).
-
-	Note: This attribute will not be inherited by child bean definitions.
-	Hence, it needs to be specified per concrete bean definition.
 
 	Inner bean definitions inherit the singleton status of their containing
 	bean definition, unless explicitly specified: The inner bean will be a
@@ -326,7 +346,7 @@
 	to be coded explicitly in the XML bean definition file, but rather the
 	Spring container works out dependencies.
 
-	There are 5 modes:
+	There are 4 modes:
 
 	1. "no"
 	The traditional Spring default. No automagical wiring. Bean references
@@ -334,33 +354,29 @@
 	attribute). We recommend this in most cases as it makes documentation
 	more explicit.
 
+	Note that this default mode also allows for annotation-driven autowiring,
+	if activated. "no" refers to externally driven autowiring only, not
+	affecting any autowiring demands that the bean class itself expresses.
+
 	2. "byName"
-	Autowiring by property name. If a bean of class Cat exposes a dog
+	Autowiring by property name. If a bean of class Cat exposes a "dog"
 	property, Spring will try to set this to the value of the bean "dog"
 	in the current container. If there is no matching bean by name, nothing
-	special happens; use dependency-check="objects" to raise an error in
-	that case.
+	special happens.
 
 	3. "byType"
 	Autowiring if there is exactly one bean of the property type in the
 	container. If there is more than one, a fatal error is raised, and
 	you cannot use byType autowiring for that bean. If there is none,
-	nothing special happens; use dependency-check="objects" to raise an
-	error in that case.
+	nothing special happens.
 
 	4. "constructor"
 	Analogous to "byType" for constructor arguments. If there is not exactly
 	one bean of the constructor argument type in the bean factory, a fatal
 	error is raised.
 
-	5. "autodetect"
-	Chooses "constructor" or "byType" through introspection of the bean
-	class. If a default constructor is found, "byType" gets applied.
-
 	Note that explicit dependencies, i.e. "property" and "constructor-arg"
-	elements, always override autowiring. Autowire behavior can be combined
-	with dependency checking, which will be performed after all autowiring
-	has been completed.
+	elements, always override autowiring.
 
 	Note: This attribute will not be inherited by child bean definitions.
 	Hence, it needs to be specified per concrete bean definition.
@@ -373,32 +389,6 @@
 					<xsd:enumeration value="byName"/>
 					<xsd:enumeration value="byType"/>
 					<xsd:enumeration value="constructor"/>
-					<xsd:enumeration value="autodetect"/>
-				</xsd:restriction>
-			</xsd:simpleType>
-		</xsd:attribute>
-		<xsd:attribute name="dependency-check" default="default">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-	Controls whether or not to check whether all of this
-	bean's dependencies, expressed in its properties, are satisfied.
-	The default is to perform no dependency checking.
-
-	"simple" type dependency checking includes primitives and String;
-	"objects" includes collaborators (other beans in the factory);
-	"all" includes both types of dependency checking.
-
-	Note: This attribute will not be inherited by child bean definitions.
-	Hence, it needs to be specified per concrete bean definition.
-				]]></xsd:documentation>
-			</xsd:annotation>
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:NMTOKEN">
-					<xsd:enumeration value="default"/>
-					<xsd:enumeration value="none"/>
-					<xsd:enumeration value="simple"/>
-					<xsd:enumeration value="objects"/>
-					<xsd:enumeration value="all"/>
 				</xsd:restriction>
 			</xsd:simpleType>
 		</xsd:attribute>
@@ -445,15 +435,21 @@
 	The name of the custom initialization method to invoke after setting
 	bean properties. The method must have no arguments, but may throw any
 	exception.
+
+	This is an alternative to implementing Spring's InitializingBean
+	interface or marking a method with the PostConstruct annotation.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="destroy-method" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-	The name of the custom destroy method to invoke on bean factory
-	shutdown. The method must have no arguments, but may throw any
-	exception.
+	The name of the custom destroy method to invoke on bean factory shutdown.
+	The method must have no arguments, but may throw any exception.
+
+	This is an alternative to implementing Spring's DisposableBean
+	interface or the standard Java Closeable/AutoCloseable interface,
+	or marking a method with the PreDestroy annotation.
 
 	Note: Only invoked on beans whose lifecycle is under the full
 	control of the factory - which is always the case for singletons,
@@ -577,6 +573,7 @@
 					<xsd:element ref="idref"/>
 					<xsd:element ref="value"/>
 					<xsd:element ref="null"/>
+					<xsd:element ref="array"/>
 					<xsd:element ref="list"/>
 					<xsd:element ref="set"/>
 					<xsd:element ref="map"/>
@@ -599,6 +596,16 @@
 	The exact type of the constructor argument. Only needed to avoid
 	ambiguities, e.g. in case of 2 single argument constructors
 	that can both be converted from a String.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="name" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+	The exact name of the argument in the constructor argument list.
+	Only needed to avoid ambiguities, e.g. in case of 2 arguments of
+	the exact same type. Note: This requires debug symbols to be
+	stored in the class file in order to introspect argument names!
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -773,11 +780,11 @@
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					<xsd:attribute name="local" type="xsd:IDREF">
+					<xsd:attribute name="local" type="xsd:string">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-	The name of the referenced bean. The value must be a bean ID and thus can 
-	be checked by the XML parser. This is therefore the preferred technique 
+	The name of the referenced bean. The value must be a bean ID and will be
+	checked by the Spring container. This is therefore the preferred technique
 	for referencing beans within the same bean factory XML file.
 							]]></xsd:documentation>
 						</xsd:annotation>
@@ -800,8 +807,8 @@
 	The id of another bean in this factory or an external factory
 	(parent or included factory).
 	While a regular 'value' element could instead be used for the
-	same effect, using idref in this case allows validation of local
-	bean ids by the XML parser, and name completion by supporting tools.
+	same effect, using idref indicates that the Spring container
+	should check that the value actually corresponds to a bean id.
 			]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
@@ -814,11 +821,11 @@
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					<xsd:attribute name="local" type="xsd:IDREF">
+					<xsd:attribute name="local" type="xsd:string">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
-	The name of the referenced bean. The value must be a bean ID and thus can 
-	be checked by the XML parser. This is therefore the preferred technique 
+	The name of the referenced bean. The value must be a bean ID and will be
+	checked by the Spring container. This is therefore the preferred technique
 	for referencing beans within the same bean factory XML file.
 							]]></xsd:documentation>
 						</xsd:annotation>
@@ -879,6 +886,7 @@
 				<xsd:element ref="idref"/>
 				<xsd:element ref="value"/>
 				<xsd:element ref="null"/>
+				<xsd:element ref="array"/>
 				<xsd:element ref="list"/>
 				<xsd:element ref="set"/>
 				<xsd:element ref="map"/>
@@ -887,6 +895,29 @@
 			</xsd:choice>
 		</xsd:sequence>
 	</xsd:group>
+
+	<xsd:element name="array">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+	An array can contain multiple inner bean, ref, collection, or value elements.
+	This configuration element will always result in an array, even when being
+	defined e.g. as a value for a map with value type Object.
+			]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="listOrSetType">
+					<xsd:attribute name="merge" default="default" type="defaultable-boolean">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+	Enables/disables merging for collections when using parent/child beans.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
 
 	<xsd:element name="list">
 		<xsd:annotation>
@@ -899,7 +930,7 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="listOrSetType">
-					<xsd:attribute name="merge" type="defaultable-boolean">
+					<xsd:attribute name="merge" default="default" type="defaultable-boolean">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 	Enables/disables merging for collections when using parent/child beans.
@@ -920,7 +951,7 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="listOrSetType">
-					<xsd:attribute name="merge" type="defaultable-boolean">
+					<xsd:attribute name="merge" default="default" type="defaultable-boolean">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 	Enables/disables merging for collections when using parent/child beans.
@@ -941,7 +972,7 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="mapType">
-					<xsd:attribute name="merge" type="defaultable-boolean">
+					<xsd:attribute name="merge" default="default" type="defaultable-boolean">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 	Enables/disables merging for collections when using parent/child beans.
@@ -972,7 +1003,7 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="propsType">
-					<xsd:attribute name="merge" type="defaultable-boolean">
+					<xsd:attribute name="merge" default="default" type="defaultable-boolean">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 	Enables/disables merging for collections when using parent/child beans.
@@ -1024,6 +1055,7 @@
 				<xsd:element ref="idref"/>
 				<xsd:element ref="value"/>
 				<xsd:element ref="null"/>
+				<xsd:element ref="array"/>
 				<xsd:element ref="list"/>
 				<xsd:element ref="set"/>
 				<xsd:element ref="map"/>
@@ -1133,6 +1165,14 @@
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 	A short-cut alternative to a nested "<ref bean='...'/>".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="value-type" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+	A short-cut alternative to a 'type' attribute on a nested
+	"<value type='...' >...</value>" element.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>

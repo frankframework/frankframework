@@ -10,6 +10,10 @@
   <artifactId>ibis-adapterframework-core</artifactId>
   <name>Ibis AdapterFramework core</name>
 
+	<properties>
+		<spring.version>3.2.16.RELEASE</spring.version>
+	</properties>
+
   <dependencies>
     <dependency>
       <groupId>log4j</groupId>
@@ -100,10 +104,45 @@
       <artifactId>xercesImpl</artifactId>
       <version>2.9.1</version><!-- All kind of things don't work with newer versions. -->
     </dependency>
+	<dependency>
+		<groupId>aopalliance</groupId>
+		<artifactId>aopalliance</artifactId>
+		<version>1.0</version>
+	</dependency>
     <dependency>
       <groupId>org.springframework</groupId>
-      <artifactId>spring</artifactId>
-      <version>2.5.6.SEC03</version>
+      <artifactId>spring-beans</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context-support</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jdbc</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jms</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-tx</artifactId>
+      <version>${spring.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
