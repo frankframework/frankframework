@@ -29,6 +29,9 @@ Upcoming
 - Improve javadoc for MessageStoreSender/Listener
 - Create directory in UploadFilePipe if it doesn't exist
 - Upgrade Spring from release 2.5.6SEC03 to 3.2.16
+- Update to latest Ladybug Test Tool version
+    - Fix checkpoints not visible for uploaded reports
+    - Add rerun functionality (principal, okay message, getEmptyInputReplacement)
 
 
 
