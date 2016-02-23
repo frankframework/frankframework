@@ -637,6 +637,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				throw new PipeRunException(this, "Could not init xsd", e);
 			}
 			xsds.add(xsd);
+			return xsds;
 		}
 		return null;
 	}

@@ -32,6 +32,7 @@ Upcoming
 - Update to latest Ladybug Test Tool version
     - Fix checkpoints not visible for uploaded reports
     - Add rerun functionality (principal, okay message, getEmptyInputReplacement)
+ - Bugfix schemaSessionKey in XmlValidator not working (caused in v6.0-RC1)
 
 
 
