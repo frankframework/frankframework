@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td></td><td>if direction=<code>wrap</code> and mode=<code>bis</code>:</td><td>/xml/xsl/esb/bisSoapHeader.xsl</td></tr>
  * <tr><td>{@link #setSoapBodyStyleSheet(String) soapBodyStyleSheet}</td><td>if direction=<code>wrap</code> and mode=<code>reg</code>:</td><td>/xml/xsl/esb/soapBody.xsl</td></tr>
  * <tr><td></td><td>if direction=<code>wrap</code> and mode=<code>bis</code>:</td><td>/xml/xsl/esb/bisSoapBody.xsl</td></tr>
- * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion')</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else is serviceContext is not empty 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceVersion/$operationName/$operationVersion')</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setRetrievePhysicalDestination(boolean) retrievePhysicalDestination}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code></td><td><code>true</code></td></tr>
  * <tr><td>{@link #setUseFixedValues(boolean) useFixedValues}</td><td>If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setFixResultNamespace(boolean) fixResultNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed</td><td><code>false</code></td></tr>
@@ -57,7 +57,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>From</td><td>1</td><td>&nbsp;</td></tr>
  * <tr><td>Id</td><td>2</td><td>$fromId</td></tr>
  * <tr><td>To</td><td>1</td><td>&nbsp;</td></tr>
- * <tr><td>Location</td><td>2</td><td>if $messagingLayer='P2P' then<br/>&nbsp;$messagingLayer.$businessDomain.$applicationName.$applicationFunction.$paradigm<br/>else<br/>&nbsp;$messagingLayer.$businessDomain.$serviceLayer.$serviceName.$serviceContext.$serviceContextVersion.$operationName.$operationVersion.$paradigm</td></tr>
+ * <tr><td>Location</td><td>2</td><td>if $messagingLayer='P2P' then<br/>&nbsp;$messagingLayer.$businessDomain.$applicationName.$applicationFunction.$paradigm<br/>else if $serviceContext is not empty then<br/>&nbsp;$messagingLayer.$businessDomain.$serviceLayer.$serviceName.$serviceContext.$serviceContextVersion.$operationName.$operationVersion.$paradigm<br/>else<br/>&nbsp;$messagingLayer.$businessDomain.$serviceLayer.$serviceName.$serviceVersion.$operationName.$operationVersion.$paradigm</td></tr>
  * <tr><td>HeaderFields</td><td>1</td><td>&nbsp;</td></tr>
  * <tr><td>CPAId</td><td>2</td><td>$cpaId</td></tr>
  * <tr><td>ConversationId</td><td>2</td><td>$conversationId</td></tr>
@@ -83,7 +83,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>businessDomain</td><td>&nbsp;</td></tr>
  * <tr><td>serviceName</td><td>&nbsp;</td></tr>
  * <tr><td>serviceContext</td><td>&nbsp;</td></tr>
- * <tr><td>serviceContextVersion</td><td>1</td></tr>
+ * <tr><td>service(Context)Version</td><td>1</td></tr>
  * <tr><td>operationName</td><td>&nbsp;</td></tr>
  * <tr><td>operationVersion</td><td>1</td></tr>
  * <tr><td>paradigm</td><td>&nbsp;</td></tr>
@@ -323,7 +323,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 					ons = ons +
 					"/" + getBusinessDomain() +
 					"/" + getServiceName() +
-					"/" + getServiceContext() +
+					(StringUtils.isEmpty(getServiceContext()) ? "" : "/" + getServiceContext()) +
 					"/" + getServiceContextVersion() +
 					"/" + getOperationName() +
 					"/" + getOperationVersion();
@@ -419,9 +419,12 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			if (destination.startsWith("ESB.") || destination.startsWith("P2P.")) {
 				//In case the messaging layer is ESB, the destination syntax is:
 				// Destination = [MessagingLayer].[BusinessDomain].[ServiceLayer].[ServiceName].[ServiceContext].[ServiceContextVersion].[OperationName].[OperationVersion].[Paradigm]
+				//or (new standard since January 2016):
+				// Destination = [MessagingLayer].[BusinessDomain].[ServiceLayer].[ServiceName].[ServiceVersion].[OperationName].[OperationVersion].[Paradigm]
 				//In case the messaging layer is P2P, the destination syntax is:
 				// Destination = [MessagingLayer].[BusinessDomain].[ApplicationName].[ApplicationFunction].[Paradigm]
 				boolean p2p = false;
+				boolean esb_new = false;
 				StringTokenizer st = new StringTokenizer(destination,".");
 				int count = 0;
 				while (st.hasMoreTokens()) {
@@ -432,6 +435,11 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			        	case 1:
 			        		if (str.equals("P2P")) {
 			        			p2p = true;
+							} else {
+								int dotCount =  StringUtils.countMatches(destination,".");
+								if (dotCount < 8) {
+									esb_new = true;
+								}
 							}
 			        		p.setName(MESSAGINGLAYER);
 			        		break;
@@ -456,20 +464,40 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			        		if (p2p) {
 				        		p.setName(PARADIGM);
 			        		} else {
-				        		p.setName(SERVICECONTEXT);
+			        			if (esb_new) {
+				        			p.setName(SERVICECONTEXTVERSION);
+			        			} else {
+					        		p.setName(SERVICECONTEXT);
+			        			}
 			        		}
 			        		break;
 			        	case 6:
-		        			p.setName(SERVICECONTEXTVERSION);
+		        			if (esb_new) {
+				        		p.setName(OPERATIONNAME);
+		        			} else {
+			        			p.setName(SERVICECONTEXTVERSION);
+		        			}
 			        		break;
 			        	case 7:
-			        		p.setName(OPERATIONNAME);
+		        			if (esb_new) {
+				        		p.setName(OPERATIONVERSION);
+		        			} else {
+				        		p.setName(OPERATIONNAME);
+		        			}
 			        		break;
 			        	case 8:
-			        		p.setName(OPERATIONVERSION);
+		        			if (esb_new) {
+				        		p.setName(PARADIGM);
+		        			} else {
+				        		p.setName(OPERATIONVERSION);
+		        			}
 			        		break;
 			        	case 9:
-			        		p.setName(PARADIGM);
+		        			if (esb_new) {
+			        			// not possible
+		        			} else {
+				        		p.setName(PARADIGM);
+		        			}
 			        		break;
 			        	default:
 					}

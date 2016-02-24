@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -70,6 +70,7 @@ public class EsbJmsSender extends JmsSender {
 			Parameter p = new Parameter();
 			p.setName("SoapAction");
 			p.setStyleSheetName("/xml/xsl/esb/soapAction.xsl");
+			p.setXslt2(true);
 			p.setRemoveNamespaces(true);
 			addParameter(p);
 		}

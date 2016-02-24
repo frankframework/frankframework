@@ -51,6 +51,9 @@
 						<xsl:when test="$messagingLayer='P2P'">
 							<xsl:value-of select="concat($messagingLayer, '.', $businessDomain, '.', $applicationName, '.', $applicationFunction, '.', $paradigm)"/>
 						</xsl:when>
+						<xsl:when test="string-length($serviceContext)=0">
+							<xsl:value-of select="concat($messagingLayer, '.', $businessDomain, '.', $serviceLayer, '.', $serviceName, '.', $serviceContextVersion, '.', $operationName, '.', $operationVersion, '.', $paradigm)"/>
+						</xsl:when>
 						<xsl:otherwise>
 							<xsl:value-of select="concat($messagingLayer, '.', $businessDomain, '.', $serviceLayer, '.', $serviceName, '.', $serviceContext, '.', $serviceContextVersion, '.', $operationName, '.', $operationVersion, '.', $paradigm)"/>
 						</xsl:otherwise>

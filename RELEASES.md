@@ -33,6 +33,7 @@ Upcoming
     - Fix checkpoints not visible for uploaded reports
     - Add rerun functionality (principal, okay message, getEmptyInputReplacement)
  - Bugfix schemaSessionKey in XmlValidator not working (caused in v6.0-RC1)
+ - Support for new ESB standard (without ServiceContext)
 
 
 
