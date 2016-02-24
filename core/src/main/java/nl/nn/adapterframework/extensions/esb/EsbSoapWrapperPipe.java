@@ -424,7 +424,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 				//In case the messaging layer is P2P, the destination syntax is:
 				// Destination = [MessagingLayer].[BusinessDomain].[ApplicationName].[ApplicationFunction].[Paradigm]
 				boolean p2p = false;
-				boolean esb_new = false;
+				boolean esbDestinationWithoutServiceContext = false;
 				StringTokenizer st = new StringTokenizer(destination,".");
 				int count = 0;
 				while (st.hasMoreTokens()) {
@@ -436,10 +436,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			        		if (str.equals("P2P")) {
 			        			p2p = true;
 							} else {
-								int dotCount =  StringUtils.countMatches(destination,".");
-								if (dotCount < 8) {
-									esb_new = true;
-								}
+								esbDestinationWithoutServiceContext = isEsbDestinationWithoutServiceContext(destination);
 							}
 			        		p.setName(MESSAGINGLAYER);
 			        		break;
@@ -464,7 +461,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			        		if (p2p) {
 				        		p.setName(PARADIGM);
 			        		} else {
-			        			if (esb_new) {
+			        			if (esbDestinationWithoutServiceContext) {
 				        			p.setName(SERVICECONTEXTVERSION);
 			        			} else {
 					        		p.setName(SERVICECONTEXT);
@@ -472,28 +469,28 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			        		}
 			        		break;
 			        	case 6:
-		        			if (esb_new) {
+		        			if (esbDestinationWithoutServiceContext) {
 				        		p.setName(OPERATIONNAME);
 		        			} else {
 			        			p.setName(SERVICECONTEXTVERSION);
 		        			}
 			        		break;
 			        	case 7:
-		        			if (esb_new) {
+		        			if (esbDestinationWithoutServiceContext) {
 				        		p.setName(OPERATIONVERSION);
 		        			} else {
 				        		p.setName(OPERATIONNAME);
 		        			}
 			        		break;
 			        	case 8:
-		        			if (esb_new) {
+		        			if (esbDestinationWithoutServiceContext) {
 				        		p.setName(PARADIGM);
 		        			} else {
 				        		p.setName(OPERATIONVERSION);
 		        			}
 			        		break;
 			        	case 9:
-		        			if (esb_new) {
+		        			if (esbDestinationWithoutServiceContext) {
 			        			// not possible
 		        			} else {
 				        		p.setName(PARADIGM);
@@ -667,7 +664,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		if (namespace != null
 				&& namespace.startsWith(getOutputNamespaceBaseUri())) {
 			String[] split = namespace.split("/");
-			if (split.length == 10) {
+			if (split.length == 9 || split.length == 10) {
 				for (int i = 0; i < split.length; i++) {
 					if (i == 1) {
 						if (split[i].length() != 0) {
@@ -735,6 +732,22 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			p.setName(PHYSICALDESTINATION);
 			p.setValue(physicalDestination);
 			addParameter(p);
+			return true;
+		}
+		return false;
+	}
+
+	public static boolean isEsbDestinationWithoutServiceContext(String destination) {
+		int dotCount = StringUtils.countMatches(destination, ".");
+		if (dotCount < 8) {
+			return true;
+		}
+		return false;
+	}
+
+	public static boolean isEsbNamespaceWithoutServiceContext(String namespace) {
+		int slashCount = StringUtils.countMatches(namespace, "/");
+		if (slashCount < 9) {
 			return true;
 		}
 		return false;

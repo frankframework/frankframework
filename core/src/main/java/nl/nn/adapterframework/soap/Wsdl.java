@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -162,9 +161,11 @@ public class Wsdl {
         if (tns == null) {
             if (inputValidator instanceof EsbSoapValidator) {
                 esbSoap = true;
+                boolean esbNamespaceWithoutServiceContext = false;
                 String schemaLocation = WsdlUtils.getFirstNamespaceFromSchemaLocation(inputValidator);
                 if (EsbSoapWrapperPipe.isValidNamespace(schemaLocation)) {
                     String s = WsdlUtils.getFirstNamespaceFromSchemaLocation(inputValidator);
+                    esbNamespaceWithoutServiceContext = EsbSoapWrapperPipe.isEsbNamespaceWithoutServiceContext(s);
                     int i = s.lastIndexOf('/');
                     esbSoapOperationVersion = s.substring(i + 1);
                     s = s.substring(0, i);
@@ -175,9 +176,11 @@ public class Wsdl {
                     esbSoapServiceContextVersion = s.substring(i + 1);
                     s = s.substring(0, i);
                     i = s.lastIndexOf('/');
-                    esbSoapServiceContext = s.substring(i + 1);
-                    s = s.substring(0, i);
-                    i = s.lastIndexOf('/');
+                    if (!esbNamespaceWithoutServiceContext) {
+                        esbSoapServiceContext = s.substring(i + 1);
+                        s = s.substring(0, i);
+                        i = s.lastIndexOf('/');
+                    }
                     esbSoapServiceName = s.substring(i + 1);
                     s = s.substring(0, i);
                     i = s.lastIndexOf('/');
@@ -200,7 +203,7 @@ public class Wsdl {
                     warn("Could not determine business domain");
                 } else if (esbSoapServiceName == null) {
                     warn("Could not determine service name");
-                } else if (esbSoapServiceContext == null) {
+                } else if (esbSoapServiceContext == null && !esbNamespaceWithoutServiceContext) {
                     warn("Could not determine service context");
                 } else if (esbSoapServiceContextVersion == null) {
                     warn("Could not determine service context version");
@@ -218,7 +221,7 @@ public class Wsdl {
                     }
                     filename = esbSoapBusinessDomain + "_"
                             + esbSoapServiceName + "_"
-                            + esbSoapServiceContext + "_"
+							+ (esbSoapServiceContext == null ? "" : esbSoapServiceContext + "_")
                             + esbSoapServiceContextVersion + "_"
                             + esbSoapOperationName + "_"
                             + esbSoapOperationVersion + "_"
@@ -226,7 +229,7 @@ public class Wsdl {
                     tns = ESB_SOAP_TNS_BASE_URI + "/"
                             + esbSoapBusinessDomain + "/"
                             + esbSoapServiceName + "/"
-                            + esbSoapServiceContext + "/"
+							+ (esbSoapServiceContext == null ? "" : esbSoapServiceContext + "/")
                             + esbSoapServiceContextVersion + "/"
                             + esbSoapOperationName + "/"
                             + esbSoapOperationVersion;
