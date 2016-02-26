@@ -307,7 +307,7 @@ public abstract class AbstractXmlValidator {
 	}
 
 	public Boolean getIgnoreUnknownNamespaces() {
-		return ignoreUnknownNamespaces == null ? false : ignoreUnknownNamespaces;
+		return ignoreUnknownNamespaces;
 	}
 
 	protected static class MyErrorHandler implements XMLErrorHandler {

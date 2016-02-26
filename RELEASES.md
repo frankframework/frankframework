@@ -34,6 +34,7 @@ Upcoming
     - Add rerun functionality (principal, okay message, getEmptyInputReplacement)
  - Bugfix schemaSessionKey in XmlValidator not working (caused in v6.0-RC1)
  - Support for new ESB standard (without ServiceContext)
+ - Bugfix ignoreUnknownNamespaces default not true when noNamespaceSchemaLocation is being used
 
 
 
