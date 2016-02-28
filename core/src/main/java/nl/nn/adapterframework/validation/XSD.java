@@ -271,10 +271,6 @@ public class XSD implements Schema, Comparable<XSD> {
 				// In case WsdlXmlValidator doesn't have schemaLocation
 				namespace = xsdTargetNamespace;
 			}
-			if (StringUtils.isEmpty(xsdDefaultNamespace) && StringUtils.isNotEmpty(xsdTargetNamespace)) {
-        		//add namespace when default namespace doesn't exist and targetNamespace exists)
-				setAddNamespaceToSchema(true);
-			}
 		} catch (IOException e) {
 			String message = "IOException reading XSD";
 			LOG.error(message, e);

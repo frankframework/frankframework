@@ -32,9 +32,15 @@ Upcoming
 - Update to latest Ladybug Test Tool version
     - Fix checkpoints not visible for uploaded reports
     - Add rerun functionality (principal, okay message, getEmptyInputReplacement)
- - Bugfix schemaSessionKey in XmlValidator not working (caused in v6.0-RC1)
- - Support for new ESB standard (without ServiceContext)
- - Bugfix ignoreUnknownNamespaces default not true when noNamespaceSchemaLocation is being used
+- Bugfix schemaSessionKey in XmlValidator not working (caused in v6.0-RC1)
+- Support for new ESB standard (without ServiceContext)
+- Bugfix ignoreUnknownNamespaces default not true when noNamespaceSchemaLocation is being used
+- Don't add namespace to schema by default when targetNamespace present and default namespace is not
+ 
+
+### Non backwards compatible changes
+
+- Don't add namespace to schema by default when targetNamespace present and default namespace is not. This is probably rarely the case. It doesn't make sense to change the default value in this case (only). Explicitly set addNamespaceToSchema to true when needed
 
 
 
