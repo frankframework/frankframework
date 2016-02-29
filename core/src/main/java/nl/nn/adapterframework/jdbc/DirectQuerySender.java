@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * QuerySender that interprets the input message as a query, possibly with attributes.
@@ -74,6 +77,13 @@ public class DirectQuerySender extends JdbcQuerySenderBase {
 
 	private boolean lockRows=false;
 	private int lockWait=-1;
+	
+	public void configure() throws ConfigurationException {
+		super.configure();
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: For better security use FixedQuerySender";
+		configWarnings.add(log, msg);
+	}
 	
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws SQLException, JdbcException {
 		String qry = message;

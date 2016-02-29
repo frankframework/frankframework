@@ -37,6 +37,7 @@ Upcoming
 - Bugfix ignoreUnknownNamespaces default not true when noNamespaceSchemaLocation is being used
 - Don't add namespace to schema by default when targetNamespace present and default namespace is not
 - Determine default application server type (and remove version from type)
+- Add configuration warning to use FixedQuerySender instead of DirectQuerySender
 
  
 
