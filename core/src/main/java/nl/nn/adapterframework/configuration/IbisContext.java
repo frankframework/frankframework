@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ public class IbisContext {
     private ApplicationContext applicationContext;
 	private static String springContextFileName = null;
     private IbisManager ibisManager;
+    private static String applicationServerType = null;
 
 	/**
 	 * Initialize Ibis with all default parameters.
@@ -220,7 +221,7 @@ public class IbisContext {
 
 	private static String getSpringContextFileName() {
 		if (springContextFileName == null) {
-			springContextFileName = "/springContext" + AppConstants.getInstance().getString(APPLICATION_SERVER_TYPE, "") + ".xml";
+			springContextFileName = "/springContext" + getApplicationServerType() + ".xml";
 		}
 		return springContextFileName;
 	}
@@ -262,4 +263,35 @@ public class IbisContext {
 		return applicationContext.isPrototype(beanName);
 	}
 
+	public static void setApplicationServerType (String string) {
+		applicationServerType = string;
+	}
+	
+	public static String getApplicationServerType() {
+		if (applicationServerType == null) {
+			applicationServerType = AppConstants.getInstance().getString(
+					APPLICATION_SERVER_TYPE, null);
+			if (applicationServerType != null) {
+				if (applicationServerType.equalsIgnoreCase("WAS5")
+						|| applicationServerType.equalsIgnoreCase("WAS6")) {
+					ConfigurationWarnings configWarnings = ConfigurationWarnings
+							.getInstance();
+					String msg = "implementing value [" + applicationServerType
+							+ "] of property [" + APPLICATION_SERVER_TYPE
+							+ "] as [WAS]";
+					configWarnings.add(log, msg);
+					applicationServerType = "WAS";
+				} else if (applicationServerType.equalsIgnoreCase("TOMCAT6")) {
+					ConfigurationWarnings configWarnings = ConfigurationWarnings
+							.getInstance();
+					String msg = "implementing value [" + applicationServerType
+							+ "] of property [" + APPLICATION_SERVER_TYPE
+							+ "] as [TOMCAT]";
+					configWarnings.add(log, msg);
+					applicationServerType = "TOMCAT";
+				}
+			}
+		}
+		return applicationServerType;
+	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import javax.naming.NamingException;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.util.AppConstants;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -109,7 +108,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	}
 
 	public String getConnectionFactoryInfo(ConnectionFactory connectionFactory) {
-		if (AppConstants.getInstance().getString(IbisContext.APPLICATION_SERVER_TYPE, "").equals("TIBCOAMX")) {
+		if (IbisContext.getApplicationServerType().equals("TIBCOAMX")) {
 			// Workaround to prevent the following exception:
 			// [org.apache.geronimo.connector.outbound.MCFConnectionInterceptor] - Error occurred creating ManagedConnection for org.apache.geronimo.connector.outbound.ConnectionInfo@#######
 			// javax.resource.ResourceException: JMSJCA-E084: Failed to create session: The JNDI name is null

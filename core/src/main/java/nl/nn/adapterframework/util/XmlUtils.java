@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -759,7 +759,7 @@ public class XmlUtils {
 			// Use a Xalan version with different package names to prevent the
 			// WebSphere Xalan version being used and prevent differences
 			// in XML transformations between WebSphere 5 and WebSphere 6.
-			if (AppConstants.getInstance().getString(IbisContext.APPLICATION_SERVER_TYPE, "").startsWith("WAS")) {
+			if (IbisContext.getApplicationServerType().startsWith("WAS")) {
 				return new nl.nn.org.apache.xalan.processor.TransformerFactoryImpl();
 			} else {
 				return new org.apache.xalan.processor.TransformerFactoryImpl();
@@ -1410,7 +1410,7 @@ public class XmlUtils {
 
 		try {
 			String xalanVersion;
-			if (AppConstants.getInstance().getString(IbisContext.APPLICATION_SERVER_TYPE, "").startsWith("WAS")) {
+			if (IbisContext.getApplicationServerType().startsWith("WAS")) {
 				xalanVersion = nl.nn.org.apache.xalan.Version.getVersion();
 			} else {
 				xalanVersion = org.apache.xalan.Version.getVersion();

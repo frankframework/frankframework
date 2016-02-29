@@ -94,7 +94,6 @@ public class LoginFilter implements Filter {
 	protected static final String AUTH_PATH_MODE_OBSERVER = "Observer";
 	protected static final String AUTH_PATH_MODE_DATAADMIN = "DataAdmin";
 
-	protected String applicationServerType;
 	protected String otapStage;
 	protected String instanceName;
 	protected int ldapAuthModeNum;
@@ -107,8 +106,6 @@ public class LoginFilter implements Filter {
 	protected final List<String> allowedDataAdminPaths = new ArrayList<String>();
 
 	public void init(FilterConfig filterConfig) throws ServletException {
-		applicationServerType = AppConstants.getInstance().getString(
-				IbisContext.APPLICATION_SERVER_TYPE, "");
 		otapStage = AppConstants.getInstance()
 				.getResolvedProperty("otap.stage");
 		instanceName = AppConstants.getInstance().getResolvedProperty(

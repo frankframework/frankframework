@@ -5,8 +5,7 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans xml/xsd/spring-beans-3.2.xsd"
 	>
 	<import resource="springUnmanagedDeployment.xml"/>
-	<!-- <import resource="springEjbDeployment.xml"/> -->
 	<import resource="springCommon.xml"/>
-	<import resource="springWAS6.xml"/>
+	<import resource="springTOMCAT.xml"/>
 	<import resource="springCustom.xml"/>
 </beans>

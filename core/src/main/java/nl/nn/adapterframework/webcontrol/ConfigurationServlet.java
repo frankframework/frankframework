@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.webcontrol;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
@@ -30,6 +31,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -127,9 +129,50 @@ public class ConfigurationServlet extends HttpServlet {
 	@Override
     public void init() throws ServletException {
 		super.init();
+		setApplicationServerType();
 		setUploadPathInServletContext();
 		loadConfig();
 		log.debug("Servlet init finished");
+	}
+
+	private void setApplicationServerType() {
+		ServletContext context = getServletContext();
+		String serverInfo = context.getServerInfo();
+		String applicationServerType;
+		if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere")) {
+			applicationServerType = "WAS";
+		} else if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
+			applicationServerType = "TOMCAT";
+		} else if (StringUtils.containsIgnoreCase(serverInfo, "JBoss")) {
+			applicationServerType = "JBOSS";
+		} else if (StringUtils.containsIgnoreCase(serverInfo, "jetty")) {
+			String javaHome = AppConstants.getInstance().getString("java.home",
+					"");
+			if (StringUtils.containsIgnoreCase(javaHome, "tibco")) {
+				applicationServerType = "TIBCOAMX";
+			} else {
+				applicationServerType = "JETTYMVN";
+			}
+		} else {
+			log.warn("Unknown server info [" + serverInfo + "]");
+			applicationServerType = "UNKNOWN";
+		}
+
+		String applicationServerTypeDefault = IbisContext
+				.getApplicationServerType();
+		if (applicationServerTypeDefault != null) {
+			if (applicationServerType.equals(applicationServerTypeDefault)) {
+				ConfigurationWarnings configWarnings = ConfigurationWarnings
+						.getInstance();
+				String msg = "value [" + applicationServerType
+						+ "] of property ["
+						+ IbisContext.APPLICATION_SERVER_TYPE
+						+ "] is already the retrieved value";
+				configWarnings.add(log, msg);
+			}
+		} else {
+			IbisContext.setApplicationServerType(applicationServerType);
+		}
 	}
 
     private void setUploadPathInServletContext() {
