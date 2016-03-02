@@ -39,6 +39,7 @@ Upcoming
 - Determine default application server type (and remove version from type)
 - Add configuration warning to use FixedQuerySender instead of DirectQuerySender
 - Install a Servlet Filter to protect the Struts 1 Servlet from ClassLoader Manipulation attacks
+- `(end of v6.1-RC1)`
 
  
 
