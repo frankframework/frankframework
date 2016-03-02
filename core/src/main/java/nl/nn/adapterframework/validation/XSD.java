@@ -403,7 +403,6 @@ public class XSD implements Schema, Comparable<XSD> {
     	                            namespace = targetNamespace;
     	                        }
                             }
-                            addNamespaceToSchema = false;
                         }
                         if (schemaLocationAttribute != null) {
                             boolean skip = false;
