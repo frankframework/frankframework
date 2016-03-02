@@ -81,8 +81,8 @@ public class DirectQuerySender extends JdbcQuerySenderBase {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: For better security use FixedQuerySender";
-		configWarnings.add(log, msg);
+		String msg = "The class ["+getClass().getName()+"] is used one or more times. Please change to ["+FixedQuerySender.class.getName()+"] for better security";
+		configWarnings.add(log, msg, true);
 	}
 	
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws SQLException, JdbcException {

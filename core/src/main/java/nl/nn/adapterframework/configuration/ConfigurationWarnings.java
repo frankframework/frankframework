@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,8 +37,16 @@ public final class ConfigurationWarnings extends LinkedList {
 	}
 
 	public boolean add(Logger log, String msg) {
+		return add(log, msg, false);
+	}
+
+	public boolean add(Logger log, String msg, boolean onlyOnce) {
 		log.warn(msg);
-		return super.add(msg);
+		if (!onlyOnce || !super.contains(msg)) {
+			return super.add(msg);
+		} else {
+			return false;
+		}
 	}
 
 	public boolean containsDefaultValueExceptions(String key) {

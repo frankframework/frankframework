@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -71,6 +71,8 @@ import org.w3c.dom.Element;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.XmlQuerySender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLockRows(boolean) lockRows}</td><td>When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the SELECT statement (by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query)</td><td>false</td></tr>
+ * <tr><td>{@link #setLockWait(int) lockWait}</td><td>when set and >=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED'</td><td>-1</td></tr>
  * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(String) username}</td><td>username used to connect to datasource</td><td>&nbsp;</td></tr>
@@ -90,7 +92,7 @@ import org.w3c.dom.Element;
  * 
  * @author  Peter Leeuwenburgh
  */
-public class XmlQuerySender extends DirectQuerySender {
+public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	public static final String TYPE_STRING = "string";
 	public static final String TYPE_NUMBER = "number";
@@ -101,6 +103,9 @@ public class XmlQuerySender extends DirectQuerySender {
 	public static final String TYPE_DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static final String TYPE_XMLDATETIME = "xmldatetime";
 
+	private boolean lockRows=false;
+	private int lockWait=-1;
+	
 	public class Column {
 		private String name = null;
 		private String value = null;
@@ -237,6 +242,14 @@ public class XmlQuerySender extends DirectQuerySender {
 		public String getQueryValue() {
 			return queryValue;
 		}
+	}
+
+	protected PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws SQLException, JdbcException {
+		String qry = message;
+		if (lockRows) {
+			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry, lockWait);
+		}
+		return prepareQuery(con, qry, updateable);
 	}
 
 	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
@@ -561,4 +574,19 @@ public class XmlQuerySender extends DirectQuerySender {
 		cw.add("The XmlSender is not released for production. The configuration options for this pipe will change in a non-backward compatible way");
 	}
 
+	public void setLockRows(boolean b) {
+		lockRows = b;
+	}
+
+	public boolean isLockRows() {
+		return lockRows;
+	}
+
+	public void setLockWait(int i) {
+		lockWait = i;
+	}
+
+	public int getLockWait() {
+		return lockWait;
+	}
 }
