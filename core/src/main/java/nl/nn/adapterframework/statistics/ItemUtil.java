@@ -50,6 +50,10 @@ public class ItemUtil {
 	}
 
 	public static XmlBuilder toXml(ItemList il, String elementName, String name, DecimalFormat timeFormat, DecimalFormat percentageFormat) {
+		return toXml(il, elementName, name, timeFormat, percentageFormat, null);
+	}
+
+	public static XmlBuilder toXml(ItemList il, String elementName, String name, DecimalFormat timeFormat, DecimalFormat percentageFormat, DecimalFormat countFormat) {
 		XmlBuilder container = new XmlBuilder(elementName);
 		XmlBuilder stats = getSummaryContainer(container, name);
 	
@@ -58,17 +62,23 @@ public class ItemUtil {
 			if (item==null) {
 				addItem(stats, il.getItemName(i), ItemList.ITEM_VALUE_NAN);
 			} else {
+				String value = "";
 				switch (il.getItemType(i)) {
 					case ItemList.ITEM_TYPE_INTEGER: 
-						addItem(stats, il.getItemName(i), ""+ (Long)item);
+						if (countFormat==null) {
+							value = ""+ (Long)item;
+						} else {
+							value = countFormat.format((Long)item);
+						}
 						break;
 					case ItemList.ITEM_TYPE_TIME: 
-						addItem(stats, il.getItemName(i), timeFormat.format(item));
+						value = timeFormat.format(item);
 						break;
 					case ItemList.ITEM_TYPE_FRACTION:
-						addItem(stats, il.getItemName(i), percentageFormat.format(((Double)item).doubleValue()*100)+ "%");
+						value = percentageFormat.format(((Double)item).doubleValue()*100)+ "%";
 						break;
 				}
+				addItem(stats, il.getItemName(i), value);
 			}
 		}
 		return container;
@@ -94,5 +104,27 @@ public class ItemUtil {
 		}
 	}
     
-
+	private static String formatSize(long value) {
+		long divider = 1024*1024*1024;
+		String suffix = null;
+		if (value>=divider) {
+			suffix = "G";
+		} else {
+			divider = 1024*1024;
+			if (value>=divider) {
+				suffix = "M";
+			} else {
+				divider = 1024;
+				if (value>=divider) {
+					suffix = "k";
+				}
+			}
+		}
+		if (suffix==null) {
+			return Long.toString(value);
+		} else {
+			float f = (float)value / divider;
+			return Math.round(f) + suffix;
+		}
+	}
 }

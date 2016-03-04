@@ -293,10 +293,14 @@ public class StatisticsKeeper implements ItemList {
  
 
 	public XmlBuilder toXml(String elementName, boolean deep, DecimalFormat timeFormat, DecimalFormat percentageFormat) {
+		return toXml(elementName, deep, timeFormat, percentageFormat, null);
+	}
+
+	public XmlBuilder toXml(String elementName, boolean deep, DecimalFormat timeFormat, DecimalFormat percentageFormat, DecimalFormat countFormat) {
 		if (deep) {
 			 return dumpToXml();
 		}
-		return ItemUtil.toXml(this, elementName, getName(), timeFormat, percentageFormat);
+		return ItemUtil.toXml(this, elementName, getName(), timeFormat, percentageFormat, countFormat);
 	}
 
    

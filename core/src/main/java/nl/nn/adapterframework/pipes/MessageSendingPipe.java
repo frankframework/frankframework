@@ -1052,9 +1052,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		this.retryNamespaceDefs = retryNamespaceDefs;
 	}
 
-	public boolean hasSizeStatistics() {
-		return getSender().isSynchronous();
-	}
+//	public boolean hasSizeStatistics() {
+//		return getSender().isSynchronous();
+//	}
 
 	public void setAuditTrailSessionKey(String string) {
 		auditTrailSessionKey = string;

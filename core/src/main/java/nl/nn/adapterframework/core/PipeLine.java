@@ -27,6 +27,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.processors.PipeLineProcessor;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -370,7 +371,17 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 					epipe.registerEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
 				}
 				if (epipe.hasSizeStatistics()) {
-					pipeSizeStats.put(pipe.getName(), new SizeStatisticsKeeper(pipe.getName()));
+					if (pipe instanceof AbstractPipe) {
+						AbstractPipe aPipe = (AbstractPipe) pipe;
+						if (aPipe.getInSizeStatDummyObject() != null) {
+							pipeSizeStats.put(aPipe.getInSizeStatDummyObject().getName(), new SizeStatisticsKeeper(aPipe.getInSizeStatDummyObject().getName()));
+						}
+						if (aPipe.getOutSizeStatDummyObject() != null) {
+							pipeSizeStats.put(aPipe.getOutSizeStatDummyObject().getName(), new SizeStatisticsKeeper(aPipe.getOutSizeStatDummyObject().getName()));
+						}
+					} else {
+						pipeSizeStats.put(pipe.getName(), new SizeStatisticsKeeper(pipe.getName()));
+					}
 				}
 			} else {
 				pipe.configure();
@@ -460,7 +471,17 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		Object sizeStatsData = hski.openGroup(data, null,"sizeStats");
 		hski.handleStatisticsKeeper(sizeStatsData,getRequestSizeStats());
 		for (IPipe pipe : adapter.getPipeLine().getPipes()) {
-			handlePipeStat(pipe, pipeSizeStats, sizeStatsData, hski, false, action);
+			if (pipe instanceof AbstractPipe) {
+				AbstractPipe aPipe = (AbstractPipe) pipe;
+				if (aPipe.getInSizeStatDummyObject() != null) {
+					handlePipeStat(aPipe.getInSizeStatDummyObject(), pipeSizeStats, sizeStatsData, hski, false, action);
+				}
+				if (aPipe.getOutSizeStatDummyObject() != null) {
+					handlePipeStat(aPipe.getOutSizeStatDummyObject(), pipeSizeStats, sizeStatsData, hski, false, action);
+				}
+			} else {
+				handlePipeStat(pipe, pipeSizeStats, sizeStatsData, hski, false, action);
+			}
 		}
 		hski.closeGroup(sizeStatsData);
 	}
@@ -484,6 +505,9 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	}
 	public StatisticsKeeper getPipeSizeStatistics(IPipe pipe){
 		return pipeSizeStats.get(pipe.getName());
+	}
+	public StatisticsKeeper getPipeSizeStatistics(DummyNamedObject dno){
+		return pipeSizeStats.get(dno.getName());
 	}
 
 

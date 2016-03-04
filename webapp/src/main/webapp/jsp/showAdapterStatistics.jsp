@@ -12,7 +12,7 @@
 
 		<br/>
 		<contentTable>
-			<caption>Adapter Statistics</caption>
+			<caption>Adapter statistics</caption>
 			<tbody>
 			<tr><th>Name</th>
 				<th>up since</th>
@@ -34,12 +34,12 @@
 
 		<br/><br/><br/>
 		<contentTable>
-			<caption>Total message processing duration<img src="images/pixel.gif" width="300px" height="1px"/></caption>
+			<caption>Total message processing duration (in ms)</caption>
 			<tbody>
 					<xtags:forEach select="messageProcessingDuration/summary/item">
 						<tr alternatingRows="true">
-							<td colspan="2"><xtags:valueOf select="@name"/></td>
-							<td align="right" colspan="2"><xtags:valueOf select="@value"/></td>
+							<td><xtags:valueOf select="@name"/></td>
+							<td align="right"><xtags:valueOf select="@value"/></td>
 						</tr>
 					</xtags:forEach>
 			</tbody>
@@ -66,7 +66,7 @@
 
 		<br/><br/><br/>
 		<contentTable>
-			<caption>counts for receivers</caption>
+			<caption>Counts for receivers</caption>
 			<tbody>
 				<tr>
 					<th>name</th>
@@ -81,18 +81,18 @@
 			</tbody>
 		</contentTable>
 
-		<xtags:forEach select="receivers/receiver/procStats">
-			<contentTable>
-				<caption>process statistics for receivers</caption>
-				<tbody>
+		<br/><br/><br/>
+		<contentTable>
+			<caption>Process statistics for receivers (in ms)</caption>
+			<tbody>
 				<tr>
 					<th>receiver</th>
 					<th>threads processing</th>
-					<xtags:forEach select="stat[1]/summary/item">
+					<xtags:forEach select="(receivers/receiver/procStats/stat)[1]/summary/item">
 						<th><xtags:valueOf select="@name"/></th>
 					</xtags:forEach>
 				</tr>
-				<xtags:forEach select="stat">
+				<xtags:forEach select="receivers/receiver/procStats/stat">
 					<tr alternatingRows="true">
 						<td><xtags:valueOf select="../../@name"/></td>
 						<td><xtags:valueOf select="@name"/></td>
@@ -101,49 +101,43 @@
 						</xtags:forEach>
 					</tr>
 				</xtags:forEach> <!-- pipeStats -->
-				</tbody>
-			</contentTable>
-		</xtags:forEach><!-- procStats -->
-
-		<br/><br/>
-		<xtags:forEach select="receivers/receiver/idleStats">
-			<contentTable>
-				<caption>idle statistics for receivers</caption>
-				<tbody>
-				<tr>
-					<th>receiver</th>
-					<th>threads processing</th>
-					<xtags:forEach select="stat[1]/summary/item">
-						<th><xtags:valueOf select="@name"/></th>
-					</xtags:forEach>
-				</tr>
-				<xtags:forEach select="stat">
-					
-					<tr alternatingRows="true">
-						<td><xtags:valueOf select="../../@name"/></td>
-						<td><xtags:valueOf select="@name"/></td>
-						<xtags:forEach select="summary/item">
-							<td align="right"><xtags:valueOf select="@value"/></td>
-						</xtags:forEach>
-					</tr>
-				</xtags:forEach> <!-- pipeStats -->
-				</tbody>
-			</contentTable>
-			<p>idle between messages</p>
-		</xtags:forEach><!-- procStats -->
+			</tbody>
+		</contentTable>
 
 		<br/><br/><br/>
-		<xtags:forEach select="pipeline/pipeStats">
-			<contentTable>
-				<caption>Duration statistics per Pipe</caption>
-				<tbody>
+		<contentTable>
+			<caption>Idle statistics for receivers (between messages)</caption>
+			<tbody>
 				<tr>
-					<th>name</th>
-					<xtags:forEach select="stat[1]/summary/item">
+					<th>receiver</th>
+					<th>threads processing</th>
+					<xtags:forEach select="(receivers/receiver/idleStat)[1]/stat/summary/item">
 						<th><xtags:valueOf select="@name"/></th>
 					</xtags:forEach>
 				</tr>
-				<xtags:forEach select="stat">
+				<xtags:forEach select="receivers/receiver/idleStats/stat">
+					<tr alternatingRows="true">
+						<td><xtags:valueOf select="../../@name"/></td>
+						<td><xtags:valueOf select="@name"/></td>
+						<xtags:forEach select="summary/item">
+							<td align="right"><xtags:valueOf select="@value"/></td>
+						</xtags:forEach>
+					</tr>
+				</xtags:forEach> <!-- pipeStats -->
+			</tbody>
+		</contentTable>
+
+		<br/><br/><br/>
+		<contentTable>
+			<caption>Duration statistics per pipe (in ms)</caption>
+			<tbody>
+				<tr>
+					<th>name</th>
+					<xtags:forEach select="(pipeline/pipeStats/stat)[1]/summary/item">
+						<th><xtags:valueOf select="@name"/></th>
+					</xtags:forEach>
+				</tr>
+				<xtags:forEach select="pipeline/pipeStats/stat">
 					<tr alternatingRows="true">
 						<td><xtags:valueOf select="@name"/></td>
 						<xtags:forEach select="summary/item">
@@ -151,23 +145,20 @@
 						</xtags:forEach>
 					</tr>
 				</xtags:forEach> <!-- pipeStats -->
-				</tbody>
-			</contentTable>
-		</xtags:forEach><!-- pipeline -->
+			</tbody>
+		</contentTable>
 
-		<br/><br/>
-		<!-- display waiting statistics -->
-		<xtags:forEach select="pipeline/waitStats">
-			<contentTable>
-				<caption>Waiting statistics per Pipe</caption>
-				<tbody>
+		<br/><br/><br/>
+		<contentTable>
+			<caption>Waiting statistics per pipe (for availability, in ms)</caption>
+			<tbody>
 				<tr>
 					<th>name</th>
-					<xtags:forEach select="stat[1]/summary/item">
+					<xtags:forEach select="(pipeline/waitStats/stat)[1]/summary/item">
 						<th><xtags:valueOf select="@name"/></th>
 					</xtags:forEach>
 				</tr>
-				<xtags:forEach select="stat">				
+				<xtags:forEach select="pipeline/waitStats/stat">
 					<tr alternatingRows="true">
 						<td><xtags:valueOf select="@name"/></td>
 						<xtags:forEach select="summary/item">
@@ -175,24 +166,20 @@
 						</xtags:forEach>
 					</tr>
 				</xtags:forEach> <!-- pipeStats -->
-				</tbody>
-			</contentTable>
-			<p>waiting time for availability of a pipe</p>
-		</xtags:forEach><!-- pipeline -->
+			</tbody>
+		</contentTable>
 
-		<br/><br/>
-		<p>Duration statistics are in milliseconds</p>
-		<xtags:forEach select="pipeline/sizeStats">
-			<contentTable>
-				<caption>Size statistics per Pipe</caption>
-				<tbody>
+		<br/><br/><br/>
+		<contentTable>
+			<caption>Size statistics per pipe (in bytes)</caption>
+			<tbody>
 				<tr>
 					<th>name</th>
-					<xtags:forEach select="stat[1]/summary/item">
+					<xtags:forEach select="(pipeline/sizeStats/stat)[1]/summary/item">
 						<th><xtags:valueOf select="@name"/></th>
 					</xtags:forEach>
 				</tr>
-				<xtags:forEach select="stat">				
+				<xtags:forEach select="pipeline/sizeStats/stat">
 					<tr alternatingRows="true">
 						<td><xtags:valueOf select="@name"/></td>
 						<xtags:forEach select="summary/item">
@@ -200,13 +187,7 @@
 						</xtags:forEach>
 					</tr>
 				</xtags:forEach> <!-- pipeStats -->
-				</tbody>
-			</contentTable>
-		</xtags:forEach><!-- pipeline -->
-		<br/>
-		<br/>
-		<p>Size statistics are in bytes</p>
-
+			</tbody>
+		</contentTable>
 	</xtags:forEach>
-
 </page>

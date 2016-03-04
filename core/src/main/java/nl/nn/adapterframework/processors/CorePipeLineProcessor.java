@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -134,10 +135,12 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, object, pipeLineSession);
 				object=pipeRunResult.getResult();
 
-				if (object!=null && object instanceof String) {
-					StatisticsKeeper sizeStat = pipeLine.getPipeSizeStatistics(pipeToRun);
-					if (sizeStat!=null) {
-						sizeStat.addValue(((String)object).length());
+				if (!(pipeToRun instanceof AbstractPipe)) {
+					if (object!=null && object instanceof String) {
+						StatisticsKeeper sizeStat = pipeLine.getPipeSizeStatistics(pipeToRun);
+						if (sizeStat!=null) {
+							sizeStat.addValue(((String)object).length());
+						}
 					}
 				}
 

@@ -21,6 +21,8 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.pipes.AbstractPipe;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -39,12 +41,28 @@ public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 	}
 
 	private void checkMessageSize(Object message, PipeLine pipeLine, IPipe pipe, boolean input) {
-		String logMessage = null;
-		if (pipeLine.getMessageSizeWarnNum()>=0) {
-			if (message instanceof String) {
-				int messageLength = message.toString().length();
+		if (message!=null && message instanceof String) {
+			int messageLength = message.toString().length();
+			if (pipe instanceof AbstractPipe) {
+				AbstractPipe aPipe = (AbstractPipe) pipe;
+				StatisticsKeeper sizeStat = null;
+				if (input) {
+					if (aPipe.getInSizeStatDummyObject() != null) {
+						sizeStat = pipeLine.getPipeSizeStatistics(aPipe.getInSizeStatDummyObject());
+					}
+				} else {
+					if (aPipe.getOutSizeStatDummyObject() != null) {
+						sizeStat = pipeLine.getPipeSizeStatistics(aPipe.getOutSizeStatDummyObject());
+					}
+				}
+				if (sizeStat!=null) {
+					sizeStat.addValue(messageLength);
+				}
+			}
+
+			if (pipeLine.getMessageSizeWarnNum()>=0) {
 				if (messageLength>=pipeLine.getMessageSizeWarnNum()) {
-					logMessage = "pipe [" + pipe.getName() + "] of adapter [" + pipeLine.getOwner().getName() + "], " + (input ? "input" : "result") + " message size [" + Misc.toFileSize(messageLength) + "] exceeds [" + Misc.toFileSize(pipeLine.getMessageSizeWarnNum()) + "]";
+					String logMessage = "pipe [" + pipe.getName() + "] of adapter [" + pipeLine.getOwner().getName() + "], " + (input ? "input" : "result") + " message size [" + Misc.toFileSize(messageLength) + "] exceeds [" + Misc.toFileSize(pipeLine.getMessageSizeWarnNum()) + "]";
 					log.warn(logMessage);
 					if (pipe instanceof IExtendedPipe) {
 						IExtendedPipe pe = (IExtendedPipe)pipe;
@@ -54,5 +72,4 @@ public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 			}
 		}
 	}
-
 }

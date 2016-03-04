@@ -49,6 +49,7 @@ import org.apache.struts.action.ActionMapping;
  */
 public class ShowAdapterStatistics extends ActionBase {
 
+    private DecimalFormat pc=new DecimalFormat(ItemList.ITEM_FORMAT_COUNT);
     private DecimalFormat df=new DecimalFormat(ItemList.ITEM_FORMAT_TIME);
     private DecimalFormat pf=new DecimalFormat(ItemList.ITEM_FORMAT_PERC);
     
@@ -241,6 +242,6 @@ public class ShowAdapterStatistics extends ActionBase {
 		if (sk==null) {
 			return null;
 		}
-		return sk.toXml(elementName, deep, df, pf);
+		return sk.toXml(elementName, deep, df, pf, pc);
 	}
 }

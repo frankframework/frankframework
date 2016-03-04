@@ -22,6 +22,7 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.DummyNamedObject;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
@@ -133,7 +134,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
-	private boolean sizeStatistics=false;
+	private boolean sizeStatistics=true;
 	private Locker locker;
 	private String emptyInputReplacement=null;
 
@@ -143,6 +144,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	private PipeLine pipeline;
 
+	private DummyNamedObject inSizeStatDummyObject=null;
+	private DummyNamedObject outSizeStatDummyObject=null;
 
 	/**
 	 * <code>configure()</code> is called after the {@link nl.nn.adapterframework.core.PipeLine Pipeline} is registered
@@ -390,6 +393,10 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 */
 	public void setName(String name) {
 		this.name=name;
+		inSizeStatDummyObject = new DummyNamedObject();
+		inSizeStatDummyObject.setName(getName() + " (in)");
+		outSizeStatDummyObject = new DummyNamedObject();
+		outSizeStatDummyObject.setName(getName() + " (out)");
 	}
 	public String getName() {
 	  return this.name;
@@ -503,5 +510,13 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	public String getEmptyInputReplacement() {
 		return emptyInputReplacement;
+	}
+
+	public DummyNamedObject getInSizeStatDummyObject() {
+		return inSizeStatDummyObject;
+	}
+
+	public DummyNamedObject getOutSizeStatDummyObject() {
+		return outSizeStatDummyObject;
 	}
 }

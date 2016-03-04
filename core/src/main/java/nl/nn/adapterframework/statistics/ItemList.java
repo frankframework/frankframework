@@ -25,7 +25,8 @@ import nl.nn.adapterframework.util.DateUtils;
  */
 public interface ItemList {
 
-	final String ITEM_FORMAT_TIME=DateUtils.FORMAT_MILLISECONDS;
+	final String ITEM_FORMAT_COUNT="#,##0";
+	final String ITEM_FORMAT_TIME="#,##0";
 	final String ITEM_FORMAT_PERC="##0.0";
 
 	final int ITEM_TYPE_INTEGER=1;
