@@ -67,6 +67,8 @@ Eclipse
 In some cases you might want/need to:
 
 - Rightclick iaf, Maven, Update Project..., OK.
+- Enable Project, Build Automatically
+- Right click Tomcat v7.0 Server at localhost, Clean...
 - Change newlines in .classpath and org.eclipse.wst.common.component files
   back to Unix newlines.
 - Rightclick pom.xml (in iaf), Run As, Maven build..., JRE, make sure a JDK
