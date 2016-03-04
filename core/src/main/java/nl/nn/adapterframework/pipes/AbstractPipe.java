@@ -147,6 +147,11 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private DummyNamedObject inSizeStatDummyObject=null;
 	private DummyNamedObject outSizeStatDummyObject=null;
 
+	AbstractPipe() {
+		inSizeStatDummyObject = new DummyNamedObject();
+		outSizeStatDummyObject = new DummyNamedObject();
+	}
+	
 	/**
 	 * <code>configure()</code> is called after the {@link nl.nn.adapterframework.core.PipeLine Pipeline} is registered
 	 * at the {@link nl.nn.adapterframework.core.Adapter Adapter}. Purpose of this method is to reduce
@@ -393,9 +398,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 */
 	public void setName(String name) {
 		this.name=name;
-		inSizeStatDummyObject = new DummyNamedObject();
 		inSizeStatDummyObject.setName(getName() + " (in)");
-		outSizeStatDummyObject = new DummyNamedObject();
 		outSizeStatDummyObject.setName(getName() + " (out)");
 	}
 	public String getName() {
