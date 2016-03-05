@@ -147,7 +147,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private DummyNamedObject inSizeStatDummyObject=null;
 	private DummyNamedObject outSizeStatDummyObject=null;
 
-	AbstractPipe() {
+	public AbstractPipe() {
 		inSizeStatDummyObject = new DummyNamedObject();
 		outSizeStatDummyObject = new DummyNamedObject();
 	}
