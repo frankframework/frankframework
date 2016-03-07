@@ -156,6 +156,12 @@ import org.apache.log4j.Logger;
  * <td>if set, the mail is streamed to a file (eml)</td>
  * <td>&nbsp;</td>
  * </tr>
+ * <tr>
+ * <td>{@link #setSimple(boolean) simple}</td>
+ * <td>when set to <code>true</code>, the xml string passed to the pipeline
+ * contains minimum information about the mail (to save memory)</td>
+ * <td>false</td>
+ * </tr>
  * </table>
  * </p>
  * 
@@ -175,6 +181,7 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 	private String filter;
 	private String url;
 	private String storeEmailAsStreamInSessionKey;
+	private boolean simple = false;
 
 	private ExchangeService exchangeService;
 	private Folder folderIn;
@@ -292,14 +299,23 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 			throws ListenerException {
 		Item item = (Item) rawMessage;
 		try {
-			PropertySet ps = new PropertySet(
-					EmailMessageSchema.DateTimeReceived,
-					EmailMessageSchema.From, EmailMessageSchema.Subject,
-					EmailMessageSchema.Body, EmailMessageSchema.DateTimeSent);
-			EmailMessage emailMessage = EmailMessage.bind(exchangeService,
-					item.getId(), ps);
 			XmlBuilder emailXml = new XmlBuilder("email");
-			addEmailInfo(emailMessage, emailXml);
+			EmailMessage emailMessage;
+			PropertySet ps;
+			if (isSimple()) {
+				ps = new PropertySet(EmailMessageSchema.Subject);
+				emailMessage = EmailMessage.bind(exchangeService, item.getId(),
+						ps);
+				addEmailInfoSimple(emailMessage, emailXml);
+			} else {
+				ps = new PropertySet(EmailMessageSchema.DateTimeReceived,
+						EmailMessageSchema.From, EmailMessageSchema.Subject,
+						EmailMessageSchema.Body,
+						EmailMessageSchema.DateTimeSent);
+				emailMessage = EmailMessage.bind(exchangeService, item.getId(),
+						ps);
+				addEmailInfo(emailMessage, emailXml);
+			}
 
 			if (StringUtils.isNotEmpty(getStoreEmailAsStreamInSessionKey())) {
 				emailMessage.load(new PropertySet(ItemSchema.MimeContent));
@@ -313,6 +329,13 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
+	}
+
+	private void addEmailInfoSimple(EmailMessage emailMessage,
+			XmlBuilder emailXml) throws Exception {
+		XmlBuilder subjectXml = new XmlBuilder("subject");
+		subjectXml.setCdataValue(emailMessage.getSubject());
+		emailXml.addSubElement(subjectXml);
 	}
 
 	private void addEmailInfo(EmailMessage emailMessage, XmlBuilder emailXml)
@@ -532,5 +555,13 @@ public class ExchangeMailListener implements IPullingListener, INamedObject,
 
 	public String getStoreEmailAsStreamInSessionKey() {
 		return storeEmailAsStreamInSessionKey;
+	}
+
+	public void setSimple(boolean b) {
+		simple = b;
+	}
+
+	public boolean isSimple() {
+		return simple;
 	}
 }
