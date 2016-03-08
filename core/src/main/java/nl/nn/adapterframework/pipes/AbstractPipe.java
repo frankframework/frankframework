@@ -38,6 +38,7 @@ import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
@@ -134,7 +135,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
-	private boolean sizeStatistics=true;
+	private boolean sizeStatistics = AppConstants.getInstance().getBoolean("statistics.size", false);
 	private Locker locker;
 	private String emptyInputReplacement=null;
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,9 +49,9 @@ import org.apache.struts.action.ActionMapping;
  */
 public class ShowAdapterStatistics extends ActionBase {
 
-    private DecimalFormat pc=new DecimalFormat(ItemList.ITEM_FORMAT_COUNT);
-    private DecimalFormat df=new DecimalFormat(ItemList.ITEM_FORMAT_TIME);
-    private DecimalFormat pf=new DecimalFormat(ItemList.ITEM_FORMAT_PERC);
+    private DecimalFormat cf=new DecimalFormat(ItemList.PRINT_FORMAT_COUNT);
+    private DecimalFormat df=new DecimalFormat(ItemList.PRINT_FORMAT_TIME);
+    private DecimalFormat pf=new DecimalFormat(ItemList.PRINT_FORMAT_PERC);
     
    
 	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -242,6 +242,6 @@ public class ShowAdapterStatistics extends ActionBase {
 		if (sk==null) {
 			return null;
 		}
-		return sk.toXml(elementName, deep, df, pf, pc);
+		return sk.toXml(elementName, deep, df, pf, cf);
 	}
 }

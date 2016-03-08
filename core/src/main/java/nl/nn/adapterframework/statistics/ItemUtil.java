@@ -104,27 +104,5 @@ public class ItemUtil {
 		}
 	}
     
-	private static String formatSize(long value) {
-		long divider = 1024*1024*1024;
-		String suffix = null;
-		if (value>=divider) {
-			suffix = "G";
-		} else {
-			divider = 1024*1024;
-			if (value>=divider) {
-				suffix = "M";
-			} else {
-				divider = 1024;
-				if (value>=divider) {
-					suffix = "k";
-				}
-			}
-		}
-		if (suffix==null) {
-			return Long.toString(value);
-		} else {
-			float f = (float)value / divider;
-			return Math.round(f) + suffix;
-		}
-	}
+
 }

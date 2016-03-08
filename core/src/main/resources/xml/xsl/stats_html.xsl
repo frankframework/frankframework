@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
+	<xsl:decimal-format name="nl" decimal-separator="," grouping-separator="."/>
 	<xsl:param name="timestamp"/>
 	<xsl:param name="adapterName"/>
 	<xsl:param name="servletPath"/>
-
 	<xsl:template match="/">
 		<html>
-			<xsl:call-template name="htmlheading" />
+			<xsl:call-template name="htmlheading"/>
 			<body>
 				<table class="page" width="100%">
 					<tr>
@@ -30,13 +30,12 @@
 			</body>
 		</html>
 	</xsl:template>
-
-	<xsl:template name="htmlheading" >
-			<head>
-				<link rel="stylesheet" type="text/css" href="ie4.css"/>
-				<title>Show Adapter Statistics</title>
-				<script type="text/javascript">
-					<xsl:text disable-output-escaping="yes">
+	<xsl:template name="htmlheading">
+		<head>
+			<link rel="stylesheet" type="text/css" href="ie4.css"/>
+			<title>Show Adapter Statistics</title>
+			<script type="text/javascript">
+				<xsl:text disable-output-escaping="yes">
 						//&lt;![CDATA[
 
 						function changeBg(obj,isOver) {
@@ -78,15 +77,14 @@
 
 						//]]&gt;
 						</xsl:text>
-				</script>
-			</head>
+			</script>
+		</head>
 	</xsl:template>
-
-	<xsl:template name="bodyheading" >
-		<xsl:param name="timestamps" />
-		<xsl:param name="adapters" />
+	<xsl:template name="bodyheading">
+		<xsl:param name="timestamps"/>
+		<xsl:param name="adapters"/>
 		<xsl:param name="targetTimestamp" select="$timestamp"/>
-		<xsl:param name="targetAdapter"  select="$adapterName"/>
+		<xsl:param name="targetAdapter" select="$adapterName"/>
 		<tr>
 			<td width="50px"/>
 			<td class="pagePanel">
@@ -142,14 +140,12 @@
 			<td colspan="3"/>
 		</tr>
 	</xsl:template>
-
-	<xsl:key name="statgroups-by-adapter" match="/statisticsCollections/statisticsCollection/statgroup/statgroup" use="@name" />
-	
+	<xsl:key name="statgroups-by-adapter" match="/statisticsCollections/statisticsCollection/statgroup/statgroup" use="@name"/>
 	<xsl:template match="statisticsCollections">
-		<xsl:variable name="adapters" select="statisticsCollection/statgroup/statgroup[count(. | key('statgroups-by-adapter',@name)[1])=1]/@name" />
+		<xsl:variable name="adapters" select="statisticsCollection/statgroup/statgroup[count(. | key('statgroups-by-adapter',@name)[1])=1]/@name"/>
 		<xsl:call-template name="bodyheading">
-			<xsl:with-param name="timestamps" select="statisticsCollection/@timestamp" />
-			<xsl:with-param name="adapters" select="$adapters" />
+			<xsl:with-param name="timestamps" select="statisticsCollection/@timestamp"/>
+			<xsl:with-param name="adapters" select="$adapters"/>
 		</xsl:call-template>
 		<tr>
 			<td width="50px"/>
@@ -158,7 +154,6 @@
 			</td>
 		</tr>
 	</xsl:template>
-	
 	<xsl:template match="statgroup">
 		<table>
 			<caption class="caption">Adapter Statistics</caption>
@@ -172,7 +167,7 @@
 			</tr>
 			<tr>
 				<td class="filterRow">
-					<xsl:value-of select="item[@name='name']/@value"/>
+					<xsl:value-of select="@name"/>
 				</td>
 				<td class="filterRow">
 					<xsl:value-of select="item[@name='upSince']/@value"/>
@@ -195,8 +190,7 @@
 		<br/>
 		<br/>
 		<table>
-			<caption class="caption">Total message processing duration<img src="images/pixel.gif" width="300px" height="1px"/>
-			</caption>
+			<caption class="caption">Total message processing duration (in ms)</caption>
 			<xsl:for-each select="stat/cumulative/item">
 				<tr>
 					<xsl:attribute name="class"><xsl:choose><xsl:when test="(position() mod 2) = 0">rowEven</xsl:when><xsl:otherwise>filterRow</xsl:otherwise></xsl:choose></xsl:attribute>
@@ -204,7 +198,9 @@
 						<xsl:value-of select="@name"/>
 					</td>
 					<td align="right" colspan="2" class="filterRow">
-						<xsl:value-of select="@value"/>
+						<xsl:call-template name="formatValue">
+							<xsl:with-param name="value" select="@value"/>
+						</xsl:call-template>
 					</td>
 				</tr>
 			</xsl:for-each>
@@ -235,7 +231,7 @@
 		<br/>
 		<br/>
 		<table>
-			<caption class="caption">counts for receivers</caption>
+			<caption class="caption">Counts for receivers</caption>
 			<tr>
 				<th class="colHeader">name</th>
 				<th class="colHeader">messages received/retried</th>
@@ -252,181 +248,103 @@
 				</tr>
 			</xsl:for-each>
 		</table>
-		<xsl:for-each select="statgroup[@type='receivers']/statgroup[@type='receiver']">
-			<table>
-				<caption class="caption">process statistics for receivers</caption>
-				<tr>
-					<th class="colHeader">receiver</th>
-					<th class="colHeader">threads processing</th>
-					<th class="colHeader">count</th>
-					<th class="colHeader">min</th>
-					<th class="colHeader">max</th>
-					<th class="colHeader">avg</th>
-					<th class="colHeader">stdDev</th>
-					<th class="colHeader">first</th>
-					<th class="colHeader">last</th>
-					<th class="colHeader">sum</th>
-					<th class="colHeader">&lt; 100ms</th>
-					<th class="colHeader">&lt; 1000ms</th>
-					<th class="colHeader">&lt; 2000ms</th>
-					<th class="colHeader">&lt; 10000ms</th>
-					<th class="colHeader">p50</th>
-					<th class="colHeader">p90</th>
-					<th class="colHeader">p95</th>
-					<th class="colHeader">p98</th>
-				</tr>
-				<xsl:for-each select="statgroup[@type='procStats']/stat">
-					<tr>
-						<xsl:attribute name="class"><xsl:choose><xsl:when test="(position() mod 2) = 0">rowEven</xsl:when><xsl:otherwise>filterRow</xsl:otherwise></xsl:choose></xsl:attribute>
-						<td class="filterRow">
-							<xsl:value-of select="../../@name"/>
-						</td>
-						<td class="filterRow">
-							<xsl:value-of select="@name"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='count']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='min']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='max']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='avg']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='stdDev']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='first']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='last']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='sum']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='&lt; 100ms']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='&lt; 1000ms']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='&lt; 2000ms']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='&lt; 10000ms']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='p50']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='p90']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='p95']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='p98']/@value"/>
-						</td>
-					</tr>
+		<br/>
+		<br/>
+		<br/>
+		<table>
+			<caption class="caption">Process statistics for receivers (in ms)</caption>
+			<tr>
+				<th class="colHeader">receiver</th>
+				<th class="colHeader">threads processing</th>
+				<xsl:for-each select="(statgroup[@type='receivers']/statgroup[@type='receiver']/statgroup[@type='procStats']/stat)[1]/cumulative/item">
+					<th class="colHeader">
+						<xsl:value-of select="@name"/>
+					</th>
 				</xsl:for-each>
-			</table>
-		</xsl:for-each>
-		<br/>
-		<br/>
-		<br/>
-		<xsl:for-each select="statgroup[@type='pipeline']">
-			<table>
-				<caption class="caption">Duration statistics per Pipe</caption>
+			</tr>
+			<xsl:for-each select="statgroup[@type='receivers']/statgroup[@type='receiver']/statgroup[@type='procStats']/stat">
 				<tr>
-					<th class="colHeader">name</th>
-					<th class="colHeader">count</th>
-					<th class="colHeader">min</th>
-					<th class="colHeader">max</th>
-					<th class="colHeader">avg</th>
-					<th class="colHeader">stdDev</th>
-					<th class="colHeader">first</th>
-					<th class="colHeader">last</th>
-					<th class="colHeader">sum</th>
-					<th class="colHeader">&lt; 100ms</th>
-					<th class="colHeader">&lt; 1000ms</th>
-					<th class="colHeader">&lt; 2000ms</th>
-					<th class="colHeader">&lt; 10000ms</th>
-					<th class="colHeader">p50</th>
-					<th class="colHeader">p90</th>
-					<th class="colHeader">p95</th>
-					<th class="colHeader">p98</th>
+					<xsl:attribute name="class"><xsl:choose><xsl:when test="(position() mod 2) = 0">rowEven</xsl:when><xsl:otherwise>filterRow</xsl:otherwise></xsl:choose></xsl:attribute>
+					<td class="filterRow">
+						<xsl:value-of select="../../@name"/>
+					</td>
+					<td class="filterRow">
+						<xsl:value-of select="@name"/>
+					</td>
+					<xsl:for-each select="cumulative/item">
+						<td align="right" class="filterRow">
+							<xsl:call-template name="formatValue">
+								<xsl:with-param name="value" select="@value"/>
+							</xsl:call-template>
+						</td>
+					</xsl:for-each>
 				</tr>
-				<xsl:for-each select="statgroup[@type='pipeStats']/stat">
-					<tr>
-						<xsl:attribute name="class"><xsl:choose><xsl:when test="(position() mod 2) = 0">rowEven</xsl:when><xsl:otherwise>filterRow</xsl:otherwise></xsl:choose></xsl:attribute>
-						<td class="filterRow">
-							<xsl:value-of select="@name"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='count']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='min']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='max']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='avg']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='stdDev']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='first']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='last']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='sum']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='&lt; 100ms']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='&lt; 1000ms']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='&lt; 2000ms']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='&lt; 10000ms']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='p50']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='p90']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='p95']/@value"/>
-						</td>
-						<td align="right" class="filterRow">
-							<xsl:value-of select="cumulative/item[@name='p98']/@value"/>
-						</td>
-					</tr>
+			</xsl:for-each>
+		</table>
+		<br/>
+		<br/>
+		<br/>
+		<table>
+			<caption class="caption">Duration statistics per pipe (in ms)</caption>
+			<tr>
+				<th class="colHeader">name</th>
+				<xsl:for-each select="(statgroup[@type='pipeline']/statgroup[@type='pipeStats']/stat)[1]/cumulative/item">
+					<th class="colHeader">
+						<xsl:value-of select="@name"/>
+					</th>
 				</xsl:for-each>
-			</table>
-		</xsl:for-each>
+			</tr>
+			<xsl:for-each select="statgroup[@type='pipeline']/statgroup[@type='pipeStats']/stat">
+				<tr>
+					<xsl:attribute name="class"><xsl:choose><xsl:when test="(position() mod 2) = 0">rowEven</xsl:when><xsl:otherwise>filterRow</xsl:otherwise></xsl:choose></xsl:attribute>
+					<td class="filterRow">
+						<xsl:value-of select="@name"/>
+					</td>
+					<xsl:for-each select="cumulative/item">
+						<td align="right" class="filterRow">
+							<xsl:call-template name="formatValue">
+								<xsl:with-param name="value" select="@value"/>
+							</xsl:call-template>
+						</td>
+					</xsl:for-each>
+				</tr>
+			</xsl:for-each>
+		</table>
+		<br/>
+		<br/>
+		<br/>
+		<table>
+			<caption class="caption">Size statistics per pipe (in bytes)</caption>
+			<tr>
+				<th class="colHeader">name</th>
+				<xsl:for-each select="(statgroup[@type='pipeline']/statgroup[@type='sizeStats']/stat)[1]/cumulative/item">
+					<th class="colHeader">
+						<xsl:value-of select="@name"/>
+					</th>
+				</xsl:for-each>
+			</tr>
+			<xsl:for-each select="statgroup[@type='pipeline']/statgroup[@type='sizeStats']/stat">
+				<tr>
+					<xsl:attribute name="class"><xsl:choose><xsl:when test="(position() mod 2) = 0">rowEven</xsl:when><xsl:otherwise>filterRow</xsl:otherwise></xsl:choose></xsl:attribute>
+					<td class="filterRow">
+						<xsl:value-of select="@name"/>
+					</td>
+					<xsl:for-each select="cumulative/item">
+						<td align="right" class="filterRow">
+							<xsl:call-template name="formatValue">
+								<xsl:with-param name="value" select="@value"/>
+							</xsl:call-template>
+						</td>
+					</xsl:for-each>
+				</tr>
+			</xsl:for-each>
+		</table>
 	</xsl:template>
-	
-	<xsl:key name="item-by-name" match="/overview/data/stat/summary/item" use="@name" />
-
+	<xsl:key name="item-by-name" match="/overview/data/stat/summary/item" use="@name"/>
 	<xsl:template match="overview">
-		<xsl:variable name="targetTimestamp" select="timestamps/@targetTimestamp" />
-		<xsl:variable name="targetAdapter"   select="adapters/@targetAdapter" />
-<!-- 		<xsl:variable name="pipeSplit"   select="adapters/@pipeSplit" /> -->
+		<xsl:variable name="targetTimestamp" select="timestamps/@targetTimestamp"/>
+		<xsl:variable name="targetAdapter" select="adapters/@targetAdapter"/>
+		<!-- 		<xsl:variable name="pipeSplit"   select="adapters/@pipeSplit" /> -->
 		<xsl:variable name="firstCol">
 			<xsl:choose>
 				<xsl:when test="$targetAdapter">timestamp</xsl:when>
@@ -434,30 +352,36 @@
 			</xsl:choose>
 		</xsl:variable>
 		<xsl:call-template name="bodyheading">
-			<xsl:with-param name="timestamps" select="timestamps/timestamp/@value" />
-			<xsl:with-param name="adapters" select="adapters/adapter/@name" />
-			<xsl:with-param name="targetTimestamp" select="$targetTimestamp" />
-			<xsl:with-param name="targetAdapter" select="$targetAdapter" />
+			<xsl:with-param name="timestamps" select="timestamps/timestamp/@value"/>
+			<xsl:with-param name="adapters" select="adapters/adapter/@name"/>
+			<xsl:with-param name="targetTimestamp" select="$targetTimestamp"/>
+			<xsl:with-param name="targetAdapter" select="$targetAdapter"/>
 		</xsl:call-template>
-		<xsl:variable name="itemnames" select="data/stat/summary/item[count(. | key('item-by-name',@name)[1])=1]/@name" />
+		<xsl:variable name="itemnames" select="data/stat/summary/item[count(. | key('item-by-name',@name)[1])=1]/@name"/>
 		<tr>
 			<td width="50px"/>
 			<td class="pagePanel">
 				<table>
 					<caption class="caption">Adapter Statistics</caption>
-					<th class="colHeader"><xsl:value-of select="$firstCol"/></th>
+					<th class="colHeader">
+						<xsl:value-of select="$firstCol"/>
+					</th>
 					<xsl:for-each select="$itemnames">
-						<th class="colHeader"><xsl:value-of select="."/></th>
+						<th class="colHeader">
+							<xsl:value-of select="."/>
+						</th>
 					</xsl:for-each>
 					<xsl:for-each select="data/stat">
-						<xsl:variable name="summary" select="summary" />
+						<xsl:variable name="summary" select="summary"/>
 						<tr>
 							<td class="filterRow">
 								<xsl:variable name="href">
 									<xsl:value-of select="$servletPath"/>
 									<xsl:choose>
-										<xsl:when test="$firstCol!='adapter'">adapterName=<xsl:value-of select="$targetAdapter"/>&amp;timestamp=<xsl:value-of select="@name"/></xsl:when>
-										<xsl:otherwise>adapterName=<xsl:value-of select="@name"/>&amp;timestamp=<xsl:value-of select="$targetTimestamp"/></xsl:otherwise>
+										<xsl:when test="$firstCol!='adapter'">adapterName=<xsl:value-of select="$targetAdapter"/>&amp;timestamp=<xsl:value-of select="@name"/>
+										</xsl:when>
+										<xsl:otherwise>adapterName=<xsl:value-of select="@name"/>&amp;timestamp=<xsl:value-of select="$targetTimestamp"/>
+										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:variable>
 								<!-- 
@@ -467,14 +391,16 @@
 								</xsl:element>)
 								 -->
 								<xsl:element name="a">
-									<xsl:attribute name="href" ><xsl:value-of select="$href"/></xsl:attribute>
+									<xsl:attribute name="href"><xsl:value-of select="$href"/></xsl:attribute>
 									<xsl:value-of select="@name"/>
 								</xsl:element>
 							</td>
 							<xsl:for-each select="$itemnames">
 								<xsl:variable name="itemname" select="."/>
 								<td align="right" class="filterRow">
-									<xsl:value-of select="$summary/item[@name=$itemname]/@value"/>
+									<xsl:call-template name="formatValue">
+										<xsl:with-param name="value" select="$summary/item[@name=$itemname]/@value"/>
+									</xsl:call-template>
 								</td>
 							</xsl:for-each>
 						</tr>
@@ -483,5 +409,16 @@
 			</td>
 		</tr>
 	</xsl:template>
-
+	<xsl:template name="formatValue">
+		<xsl:param name="value"/>
+		<xsl:variable name="val" select="translate($value,',','.')"/>
+		<xsl:choose>
+			<xsl:when test="string(number($val))='NaN'">
+				<xsl:value-of select="$value"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="format-number(number($val),'#.##0','nl')"/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
 </xsl:stylesheet>

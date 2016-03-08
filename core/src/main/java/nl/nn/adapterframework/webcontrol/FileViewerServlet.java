@@ -125,10 +125,10 @@ public class FileViewerServlet extends HttpServlet  {
 		}
 	}
 
-	public static void transformSource(Source source, String filename, Map parameters, HttpServletResponse response, String stylesheetUrl, String title) throws DomBuilderException, TransformerException, IOException { 
+	public static void transformSource(Source source, String filename, Map parameters, HttpServletResponse response, String stylesheetUrl, String title, boolean xslt2) throws DomBuilderException, TransformerException, IOException { 
 		PrintWriter out = response.getWriter();
 		URL xsltSource = ClassUtils.getResourceURL( FileViewerServlet.class, stylesheetUrl);
-		Transformer transformer = XmlUtils.createTransformer(xsltSource);
+		Transformer transformer = XmlUtils.createTransformer(xsltSource, xslt2);
 		if (parameters!=null) {
 			XmlUtils.setTransformerParameters(transformer, parameters);
 		}
@@ -298,7 +298,7 @@ public class FileViewerServlet extends HttpServlet  {
 						response.setContentType("text/html");
 						Source s= XmlUtils.stringToSourceForSingleUse(extract);
 						String stylesheetUrl=stats_html_xslt;
-						transformSource(s,fileName,parameters,response,stylesheetUrl,fileName);
+						transformSource(s,fileName,parameters,response,stylesheetUrl,fileName, true);
 					}
 
 				} else {

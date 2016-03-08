@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,10 +25,13 @@ import nl.nn.adapterframework.util.DateUtils;
  */
 public interface ItemList {
 
-	final String ITEM_FORMAT_COUNT="#,##0";
-	final String ITEM_FORMAT_TIME="#,##0";
+	final String ITEM_FORMAT_TIME=DateUtils.FORMAT_MILLISECONDS;
 	final String ITEM_FORMAT_PERC="##0.0";
 
+	final String PRINT_FORMAT_COUNT="#,##0";
+	final String PRINT_FORMAT_TIME="#,##0";
+	final String PRINT_FORMAT_PERC="##0.0";
+	
 	final int ITEM_TYPE_INTEGER=1;
 	final int ITEM_TYPE_TIME=2;
 	final int ITEM_TYPE_FRACTION=3;
