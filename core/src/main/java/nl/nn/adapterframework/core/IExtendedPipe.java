@@ -82,6 +82,21 @@ public interface IExtendedPipe extends IPipe {
 	public void setPreserveInput(boolean preserveInput);
 	public boolean isPreserveInput();
 
+	public void setChompCharSize(String string);
+	public String getChompCharSize();
+
+	public void setElementToMove(String string);
+	public String getElementToMove();
+
+	public void setElementToMoveSessionKey(String string);
+	public String getElementToMoveSessionKey();
+
+	public void setElementToMoveChain(String string);
+	public String getElementToMoveChain();
+
+	public void setRemoveCompactMsgNamespaces(boolean b);
+	public boolean isRemoveCompactMsgNamespaces();
+	
 	public void setRestoreMovedElements(boolean restoreMovedElements);
 	public boolean isRestoreMovedElements();
 

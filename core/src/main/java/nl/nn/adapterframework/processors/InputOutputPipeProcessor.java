@@ -15,6 +15,11 @@
 */
 package nl.nn.adapterframework.processors;
 
+import java.io.InputStream;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
@@ -23,7 +28,10 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.util.CompactSaxHandler;
+import nl.nn.adapterframework.util.XmlUtils;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -81,6 +89,38 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 					pipeRunResult.setResult(restoreMovedElements(resultString, pipeLineSession));
 				}
 			}
+			
+			if (pe.getChompCharSize() != null || pe.getElementToMove() != null || pe.getElementToMoveChain() != null) {
+				log.debug("Pipeline of adapter ["+owner.getName()+"] compact received message");
+				Object result = pipeRunResult.getResult();
+				if (result!=null) {
+					String resultString = (String)result;
+					try {
+						InputStream xmlInput = IOUtils.toInputStream(resultString, "UTF-8");
+						CompactSaxHandler handler = new CompactSaxHandler();
+						handler.setChompCharSize(pe.getChompCharSize());
+						handler.setElementToMove(pe.getElementToMove());
+						handler.setElementToMoveChain(pe.getElementToMoveChain());
+						handler.setElementToMoveSessionKey(pe.getElementToMoveSessionKey());
+						handler.setRemoveCompactMsgNamespaces(pe.isRemoveCompactMsgNamespaces());
+						handler.setContext(pipeLineSession);
+						SAXParserFactory parserFactory = XmlUtils.getSAXParserFactory();
+						parserFactory.setNamespaceAware(true);
+						SAXParser saxParser = parserFactory.newSAXParser();
+						try {
+							saxParser.parse(xmlInput, handler);
+							resultString = handler.getXmlString();
+						} catch (Exception e) {
+							log.warn("Pipeline of adapter ["+owner.getName()+"] could not compact received message: " + e.getMessage());
+						}
+						handler = null;
+					} catch (Exception e) {
+						throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] got error during compacting received message to more compact format: " + e.getMessage());
+					}
+					pipeRunResult.setResult(resultString);
+				}
+			}
+			
 			if (StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
 				Object result = pipeRunResult.getResult();

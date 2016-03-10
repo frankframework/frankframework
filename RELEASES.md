@@ -42,8 +42,9 @@ Upcoming
 - `(end of v6.1-RC1)`
 - Improve IBIS console function "Show Adapter Statistics"
 - Add attribute simple to ExchangeMailListener to save memory
+- Copy functionality to temporarily move and/or chomp received messages for memory purposes to pipes (next to receivers)
 
- 
+
 
 ### Non backwards compatible changes
 

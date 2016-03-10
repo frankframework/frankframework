@@ -131,6 +131,11 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private String getInputFromFixedValue=null;
 	private String storeResultInSessionKey=null;
 	private boolean preserveInput=false;
+	private String chompCharSize = null;
+	private String elementToMove = null;
+	private String elementToMoveSessionKey = null;
+	private String elementToMoveChain = null;
+	private boolean removeCompactMsgNamespaces = true;
 	private boolean restoreMovedElements=false;
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
@@ -170,6 +175,10 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 			}
 		}
 
+		if (!StringUtils.isEmpty(getElementToMove()) && !StringUtils.isEmpty(getElementToMoveChain())) {
+			throw new ConfigurationException(getLogPrefix(null)+"cannot have both an elementToMove and an elementToMoveChain specified");
+		}
+		
 		if (pipeForwards.isEmpty()) {
 			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 			String msg = getLogPrefix(null)+"has no forwards defined.";
@@ -449,6 +458,46 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return preserveInput;
 	}
 
+	public void setChompCharSize(String string) {
+		chompCharSize = string;
+	}
+
+	public String getChompCharSize() {
+		return chompCharSize;
+	}
+
+	public void setElementToMove(String string) {
+		elementToMove = string;
+	}
+
+	public String getElementToMove() {
+		return elementToMove;
+	}
+
+	public void setElementToMoveSessionKey(String string) {
+		elementToMoveSessionKey = string;
+	}
+
+	public String getElementToMoveSessionKey() {
+		return elementToMoveSessionKey;
+	}
+
+	public void setElementToMoveChain(String string) {
+		elementToMoveChain = string;
+	}
+
+	public String getElementToMoveChain() {
+		return elementToMoveChain;
+	}
+
+	public void setRemoveCompactMsgNamespaces(boolean b) {
+		removeCompactMsgNamespaces = b;
+	}
+
+	public boolean isRemoveCompactMsgNamespaces() {
+		return removeCompactMsgNamespaces;
+	}
+	
 	public void setRestoreMovedElements(boolean restoreMovedElements) {
 		this.restoreMovedElements = restoreMovedElements;
 	}
