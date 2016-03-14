@@ -14,7 +14,7 @@
 		- add the attribute useFixedValues with value true to all pipe, inputWrapper and outputWrapper elements SoapWrapperPipe
 		- stub the pipe element GetPrincipalPipe by a pipe element FixedResult with attribute returnString set to tst9
 		- stub the pipe element IsUserInRolePipe by a pipe element EchoPipe
-		- stub the pipe element FtpFileRetrieverPipe by a pipe element GenericMessageSendingPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
+		- stub the pipe element FtpFileRetrieverPipe, LdapFindMemberPipe and SendTibcoMessage by a pipe element GenericMessageSendingPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
 		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements GenericMessageSendingPipe and ForEachChildElementPipe
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Request/Action' to all pipe and inputWrapper elements SoapWrapperPipe with attribute direction=wrap 
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Response' to all outputWrapper elements SoapWrapperPipe with attribute direction=wrap 
@@ -251,7 +251,7 @@
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 				</xsl:element>
 			</xsl:when>
-			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe'">
+			<xsl:when test="name()='pipe' and (@className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe' or @className='nl.nn.adapterframework.extensions.tibco.SendTibcoMessage' or @className='nl.nn.adapterframework.ldap.LdapFindMemberPipe')">
 				<xsl:element name="pipe">
 					<xsl:attribute name="name">
 						<xsl:value-of select="@name"/>
