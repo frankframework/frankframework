@@ -79,6 +79,9 @@ public class ParamWrapperFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response,
 			FilterChain chain) throws IOException, ServletException {
 
+		// to prevent NPE (????)
+		request.getParameterMap();
+
 		ParamFilteredRequest wrapper = null;
 		if (request instanceof HttpServletRequest)
 			wrapper = new ParamFilteredRequest(request, pattern);

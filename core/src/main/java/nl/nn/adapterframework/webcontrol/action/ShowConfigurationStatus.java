@@ -265,7 +265,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 						if (isRestListener) {
 							RestListener rl = (RestListener) listener;
 							receiverXML.addAttribute("restUriPattern", rl.getRestUriPattern());
-							receiverXML.addAttribute("isView", rl.isView());
+							receiverXML.addAttribute("isView", (rl.isView()==null?false:rl.isView()));
 						}
 						if (count) {
 							if (listener instanceof JmsListenerBase) {
