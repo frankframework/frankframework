@@ -79,12 +79,18 @@ public class DirectQuerySender extends JdbcQuerySenderBase {
 	private int lockWait=-1;
 	
 	public void configure() throws ConfigurationException {
-		super.configure();
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = "The class ["+getClass().getName()+"] is used one or more times. Please change to ["+FixedQuerySender.class.getName()+"] for better security";
-		configWarnings.add(log, msg, true);
+		configure(false);
 	}
-	
+
+	public void configure(boolean trust) throws ConfigurationException {
+		super.configure();
+		if (!trust) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			String msg = "The class ["+getClass().getName()+"] is used one or more times. Please change to ["+FixedQuerySender.class.getName()+"] for better security";
+			configWarnings.add(log, msg, true);
+		}
+	}
+
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws SQLException, JdbcException {
 		String qry = message;
 		if (lockRows) {

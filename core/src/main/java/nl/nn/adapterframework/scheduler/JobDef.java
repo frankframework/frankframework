@@ -753,7 +753,7 @@ public class JobDef {
 			qs.setName("QuerySender");
 			qs.setJmsRealm(getJmsRealm());
 			qs.setQueryType("other");
-			qs.configure();
+			qs.configure(true);
 			qs.open();
 			String result = qs.sendMessage("dummy", getQuery());
 			log.info("result [" + result + "]");

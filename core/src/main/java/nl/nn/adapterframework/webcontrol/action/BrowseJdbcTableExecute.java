@@ -123,7 +123,7 @@ public class BrowseJdbcTableExecute extends ActionBase {
 						qs.setQueryType("select");
 						qs.setBlobSmartGet(true);
 						qs.setIncludeFieldDefinition(true);
-						qs.configure();
+						qs.configure(true);
 						qs.open();
 
 						ResultSet rs = qs.getConnection().getMetaData().getColumns(null, null, form_tableName, null);

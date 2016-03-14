@@ -263,7 +263,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 					qs.setJmsRealm(jmsRealm);
 					qs.setQueryType("select");
 					qs.setBlobSmartGet(true);
-					qs.configure();
+					qs.configure(true);
 					qs.open();
 					result = qs.sendMessage("dummy", formQuery);
 				} catch (Throwable t) {
