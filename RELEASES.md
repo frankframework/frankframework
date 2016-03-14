@@ -44,6 +44,7 @@ Upcoming
 - Add attribute simple to ExchangeMailListener to save memory
 - Copy functionality to temporarily move and/or chomp received messages for memory purposes to pipes (next to receivers)
 - Add age of EMS server in GetTibcoQueues files (currently used in IJA_TiBeT2)
+- Introduction of LdapFindMemberPipe
 
 
 

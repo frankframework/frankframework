@@ -1,0 +1,272 @@
+/*
+   Copyright 2016 Nationale-Nederlanden
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
+package nl.nn.adapterframework.ldap;
+
+import java.util.Hashtable;
+
+import javax.naming.CommunicationException;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+import javax.naming.ldap.InitialLdapContext;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.webcontrol.DummySSLSocketFactory;
+
+import org.apache.commons.lang.StringUtils;
+
+/**
+ * Pipe that checks if a specified dn exists as 'member' in another specified dn
+ * in LDAP.
+ * 
+ * @author Peter Leeuwenburgh
+ */
+public class LdapFindMemberPipe extends FixedForwardPipe {
+	private String authAlias;
+	private String userName;
+	private String password;
+	private String host;
+	private int port = -1;
+	private boolean useSsl = false;
+	private String dnSearchIn;
+	private String dnFind;
+	private boolean recursiveSearch = true;
+	private String notFoundForwardName = "notFound";
+
+	private CredentialFactory cf;
+	protected PipeForward notFoundForward;
+
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (getHost() == null) {
+			throw new ConfigurationException(getLogPrefix(null)
+					+ "host must be set");
+		}
+		cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+		if (StringUtils.isNotEmpty(getNotFoundForwardName())) {
+			notFoundForward = findForward(getNotFoundForwardName());
+		}
+	}
+
+	public PipeRunResult doPipe(Object input, IPipeLineSession session)
+			throws PipeRunException {
+		String dnSearchIn_work;
+		String dnFind_work;
+		ParameterValueList pvl = null;
+		if (getParameterList() != null) {
+			ParameterResolutionContext prc = new ParameterResolutionContext(
+					(String) input, session);
+			try {
+				pvl = prc.getValues(getParameterList());
+			} catch (ParameterException e) {
+				throw new PipeRunException(this, getLogPrefix(session)
+						+ "exception on extracting parameters", e);
+			}
+		}
+		dnSearchIn_work = getParameterValue(pvl, "dnSearchIn");
+		if (dnSearchIn_work == null) {
+			dnSearchIn_work = getDnSearchIn();
+		}
+		dnFind_work = getParameterValue(pvl, "dnFind");
+		if (dnFind_work == null) {
+			dnFind_work = getDnFind();
+		}
+
+		boolean found = false;
+		if (StringUtils.isNotEmpty(dnSearchIn_work)
+				&& StringUtils.isNotEmpty(dnFind_work)) {
+			try {
+				found = findMember(getHost(), getPort(), dnSearchIn_work,
+						isUseSsl(), dnFind_work, isRecursiveSearch());
+			} catch (NamingException e) {
+				throw new PipeRunException(this, getLogPrefix(session)
+						+ "exception on ldap lookup", e);
+			}
+		}
+
+		if (!found) {
+			String msg = getLogPrefix(session)
+					+ "dn ["
+					+ dnFind_work
+					+ "] not found as member in url ["
+					+ retrieveUrl(getHost(), getPort(), dnSearchIn_work,
+							isUseSsl()) + "]";
+			if (notFoundForward == null) {
+				throw new PipeRunException(this, msg);
+			} else {
+				log.info(msg);
+				return new PipeRunResult(notFoundForward, input);
+			}
+		}
+		return new PipeRunResult(getForward(), input);
+	}
+
+	private boolean findMember(String host, int port, String dnSearchIn,
+			boolean useSsl, String dnFind, boolean recursiveSearch)
+			throws NamingException {
+		Hashtable env = new Hashtable();
+		env.put(Context.INITIAL_CONTEXT_FACTORY,
+				"com.sun.jndi.ldap.LdapCtxFactory");
+		String provUrl = retrieveUrl(host, port, dnSearchIn, useSsl);
+		env.put(Context.PROVIDER_URL, provUrl);
+		if (StringUtils.isNotEmpty(cf.getUsername())) {
+			env.put(Context.SECURITY_AUTHENTICATION, "simple");
+			env.put(Context.SECURITY_PRINCIPAL, cf.getUsername());
+			env.put(Context.SECURITY_CREDENTIALS, cf.getPassword());
+		} else {
+			env.put(Context.SECURITY_AUTHENTICATION, "none");
+		}
+		DirContext ctx = null;
+		try {
+			try {
+				ctx = new InitialDirContext(env);
+			} catch (CommunicationException e) {
+				log.info("Cannot create constructor for DirContext ("
+						+ e.getMessage()
+						+ "], will try again with dummy SocketFactory");
+				env.put("java.naming.ldap.factory.socket",
+						DummySSLSocketFactory.class.getName());
+				ctx = new InitialLdapContext(env, null);
+			}
+			Attribute attrs = ctx.getAttributes("").get("member");
+			if (attrs != null) {
+				boolean found = false;
+				for (int i = 0; i < attrs.size() && !found; i++) {
+					String dnFound = (String) attrs.get(i);
+					if (dnFound.equalsIgnoreCase(dnFind)) {
+						found = true;
+					} else {
+						if (recursiveSearch) {
+							found = findMember(host, port, dnFound, useSsl,
+									dnFind, recursiveSearch);
+						}
+					}
+				}
+				return found;
+			}
+		} finally {
+			if (ctx != null) {
+				try {
+					ctx.close();
+				} catch (NamingException e) {
+					log.warn("Exception closing DirContext", e);
+				}
+			}
+		}
+		return false;
+	}
+
+	private String retrieveUrl(String host, int port, String dnSearchIn,
+			boolean useSsl) {
+		String s = useSsl ? "ldaps://" : "ldap://";
+		String h = (host != null) ? host : "";
+		String p = (port != -1) ? (":" + port) : "";
+		String d = (dnSearchIn != null) ? ("/" + dnSearchIn.replaceAll("\\s",
+				"%20")) : "";
+		return s + h + p + d;
+	}
+
+	public String getAuthAlias() {
+		return authAlias;
+	}
+
+	public void setAuthAlias(String string) {
+		authAlias = string;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String string) {
+		userName = string;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String string) {
+		password = string;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String string) {
+		host = string;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int i) {
+		port = i;
+	}
+
+	public boolean isUseSsl() {
+		return useSsl;
+	}
+
+	public void setUseSsl(boolean b) {
+		useSsl = b;
+	}
+
+	public String getDnSearchIn() {
+		return dnSearchIn;
+	}
+
+	public void setDnSearchIn(String string) {
+		dnSearchIn = string;
+	}
+
+	public String getDnFind() {
+		return dnFind;
+	}
+
+	public void setDnFind(String string) {
+		dnFind = string;
+	}
+
+	public boolean isRecursiveSearch() {
+		return recursiveSearch;
+	}
+
+	public void setRecursiveSearch(boolean b) {
+		recursiveSearch = b;
+	}
+
+	public String getNotFoundForwardName() {
+		return notFoundForwardName;
+	}
+
+	public void setNotFoundForwardName(String string) {
+		notFoundForwardName = string;
+	}
+}
