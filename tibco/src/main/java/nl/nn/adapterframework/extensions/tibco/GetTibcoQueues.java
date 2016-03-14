@@ -411,9 +411,11 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		long currentTime = (new Date()).getTime();
 		qInfosXml.addAttribute("timestamp",
 				DateUtils.format(currentTime, DateUtils.fullIsoFormat));
+		long startTime = serverInfo.getStartTime();
 		qInfosXml.addAttribute("startTime",
-				DateUtils.format(serverInfo.getStartTime(), DateUtils.fullIsoFormat));
-
+				DateUtils.format(startTime, DateUtils.fullIsoFormat));
+		qInfosXml.addAttribute("age", Misc.getAge(startTime));
+		
 		Map aclMap = getAclMap(admin, ldapSender);
 		Map consumersMap = getConnectedConsumersMap(admin);
 		QueueInfo[] qInfos = admin.getQueues();
