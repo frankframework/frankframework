@@ -24,6 +24,11 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * SAX2 event handler to compact XML messages.
+ * 
+ * @author  Peter Leeuwenburgh
+ */
 public class CompactSaxHandler extends DefaultHandler {
 	private String chompCharSize = null;
 	private int chompLength = -1;
