@@ -12,6 +12,7 @@
 
 	<properties>
 		<spring.version>3.2.16.RELEASE</spring.version>
+		<opencmis.version>0.12.0</opencmis.version>
 	</properties>
 
   <dependencies>
@@ -361,6 +362,37 @@
 		<groupId>org.apache.commons</groupId>
 		<artifactId>commons-lang3</artifactId>
 		<version>3.4</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.chemistry.opencmis</groupId>
+		<artifactId>chemistry-opencmis-commons-api</artifactId>
+		<version>${opencmis.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.chemistry.opencmis</groupId>
+		<artifactId>chemistry-opencmis-commons-impl</artifactId>
+		<version>${opencmis.version}</version>
+		<exclusions>
+			<exclusion><!-- Exclude 1.0-2 as 1.0.1 is already included by xmlbeans. -->
+				<groupId>javax.xml.stream</groupId>
+				<artifactId>stax-api</artifactId>
+			</exclusion>
+		</exclusions>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.chemistry.opencmis</groupId>
+		<artifactId>chemistry-opencmis-client-api</artifactId>
+		<version>${opencmis.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.chemistry.opencmis</groupId>
+		<artifactId>chemistry-opencmis-client-impl</artifactId>
+		<version>${opencmis.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.chemistry.opencmis</groupId>
+		<artifactId>chemistry-opencmis-client-bindings</artifactId>
+		<version>${opencmis.version}</version>
 	</dependency>
   </dependencies>
 </project>

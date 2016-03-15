@@ -46,6 +46,7 @@ Upcoming
 - Add age of EMS server in GetTibcoQueues files (currently used in IJA_TiBeT2)
 - Introduction of LdapFindMemberPipe
 - Suppress DirectQuerySender configuration warning when called from IAF sources
+- Introduction of CmisSender
 
 
 
