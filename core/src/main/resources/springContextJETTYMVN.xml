@@ -7,5 +7,6 @@
 	<import resource="springUnmanagedDeployment.xml"/>
 	<import resource="springCommon.xml"/>
 	<import resource="springJETTYMVN.xml"/>
+	<import resource="springIbisTestTool${ibistesttool.custom}.xml"/>
 	<import resource="springCustom.xml"/>
 </beans>

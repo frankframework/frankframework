@@ -7,5 +7,6 @@
 	<import resource="springUnmanagedDeployment.xml" />
 	<import resource="springCommon.xml" />
 	<import resource="springTIBCOAMX.xml" />
+	<import resource="springIbisTestTool${ibistesttool.custom}.xml"/>
 	<import resource="springCustom.xml" />
 </beans>

@@ -10,8 +10,6 @@
 		"
 	>
 
-	<import resource="springIbisTestTool.xml"/>
-
 	<!--
 	<bean id="txManagerReal" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource">

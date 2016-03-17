@@ -47,6 +47,7 @@ Upcoming
 - Introduction of LdapFindMemberPipe
 - Suppress DirectQuerySender configuration warning when called from IAF sources
 - Introduction of CmisSender
+- Make springCustom.xml obsolete to load springIbisTestTool[name].xml
 
 
 
@@ -54,6 +55,7 @@ Upcoming
 
 - Don't add namespace to schema by default when targetNamespace present and default namespace is not. This is probably rarely the case. It doesn't make sense to change the default value in this case (only). Explicitly set addNamespaceToSchema to true when needed
 	- ``src-resolve.4.1: Error resolving component '...'. It was detected that '...' has no namespace, but components with no target namespace are not referenceable from schema document 'null'. If '...' is intended to have a namespace, perhaps a prefix needs to be provided. If it is intended that '...' has no namespace, then an 'import' without a "namespace" attribute should be added to 'null'.``  
+- When present remove springIbisTestTool[name].xml and add property ibistesttool.custom=[name] to DeploymentSpecifics.properties. The springIbisTestTool[name].xml should now be present in IAF jars, mail springIbisTestTool[name].xml to Jaco or Peter to double check
 
 
 

@@ -24,6 +24,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.JdkVersion;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.PropertiesPropertySource;
+import org.springframework.core.env.StandardEnvironment;
 
 /**
  * Main entry point for creating and starting Ibis instances from
@@ -114,9 +117,13 @@ public class IbisContext {
 		    springContext = getSpringContextFileName();
 		}
 		log.info("* IBIS Startup: Creating Spring ApplicationContext from file [" + springContext + "]");
-//		Resource rs = new ClassPathResource(springContext);
-//		XmlBeanFactory bf = new XmlBeanFactory(rs);
-		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(springContext);
+		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext();
+		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
+		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
+		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
+		propertySources.addFirst(new PropertiesPropertySource("ibis", AppConstants.getInstance()));
+		applicationContext.setConfigLocation(springContext);
+		applicationContext.refresh();
 		return applicationContext;
 	}
 
