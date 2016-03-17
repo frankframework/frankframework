@@ -1,6 +1,11 @@
 Release on Windows 7 behind a proxy
 ===================================
 
+- In Eclipse: change property application.version in file AppConstants.properties to X.Y (commit with "Prepare release X.Y" and push)
+- In case a candidate release needs to be used:
+    - In Eclipse:
+        - Change versions in pom.xml files from X.Y-SNAPSHOT to X.Y-RC1-SNAPSHOT
+        - Commit ("Prepare release X.Y") and Push
 - Download and install http://git-scm.com/download/win (1.8.3 used at time of
   writing) in e.g. D:\Software\Installed\Git
 - Download and install http://maven.apache.org/download.cgi (3.0.5 used at time
@@ -25,14 +30,14 @@ Release on Windows 7 behind a proxy
 - git clone https://github.com/ibissource/mvn-repo.git
 - git clone https://[user]@bitbucket.org/ibissource/mvn-repo-proprietary.git
 - cd iaf
-- In case a branch needs te be created on a release X.Y:
+- In case a branch needs to be created on a release X.Y:
     - git checkout -b bX.Y vX.Y
     - git push -u origin bX.Y
     - In Eclipse:
         - Team, Switch To, Other..., Remote Tracking, origin/bX.Y, Checkout...,
           Checkout as New Local Branch
-        - Change versions in pom.xml's from X.Y to X.Y.1-SNAPSHOT
-        - Commit and Push
+        - Change versions in pom.xml files from X.Y-SNAPSHOT to X.Y.1-SNAPSHOT
+        - Commit ("Prepare release X.Y.1") and Push
     - git pull
 - mvn release:prepare -DpushChanges=false
 - git push
@@ -54,4 +59,4 @@ Release on Windows 7 behind a proxy
 - In Eclipse:
   - Team, Pull
   - Wait for Building workspace to finish
-  - Commit and Push the two changed org.eclipse.wst.common.component files
+  - Commit ("Finalise release X.Y") and Push the two changed org.eclipse.wst.common.component files
