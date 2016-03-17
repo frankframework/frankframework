@@ -1,0 +1,12 @@
+<manageDatabaseRLY>
+<completionInformation>
+<returnCode>OK</returnCode>
+</completionInformation>
+<results count="1">
+<result item="1">
+<result>
+<rowsupdated>1</rowsupdated>
+</result>
+</result>
+</results>
+</manageDatabaseRLY>

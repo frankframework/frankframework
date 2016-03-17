@@ -1,0 +1,19 @@
+<manageDatabaseRLY>
+  <completionInformation>
+    <returnCode>OK</returnCode>
+  </completionInformation>
+  <results count="1">
+    <result item="1">
+      <result>
+        <fielddefinition>
+          <field columnClassName="java.lang.Integer" columnDisplaySize="11" columnTypeName="INTEGER" isCurrency="false" name="MYCOLUMN" precision="32" scale="0" type="INTEGER"/>
+        </fielddefinition>
+        <rowset>
+          <row number="0">
+            <field name="MYCOLUMN">1</field>
+          </row>
+        </rowset>
+      </result>
+    </result>
+  </results>
+</manageDatabaseRLY>

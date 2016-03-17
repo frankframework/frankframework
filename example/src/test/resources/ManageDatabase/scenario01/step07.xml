@@ -1,0 +1,10 @@
+<manageDatabaseREQ>
+	<select>
+		<tableName>mytable</tableName>
+		<columns>
+			<column>
+				<name>mycolumn</name>
+			</column>
+		</columns>
+	</select>
+</manageDatabaseREQ>

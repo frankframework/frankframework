@@ -1,0 +1,10 @@
+<manageDatabaseRLY>
+<completionInformation>
+<returnCode>NOT_OK</returnCode>
+</completionInformation>
+<results count="1">
+<result item="1">
+<exception>[nl.nn.adapterframework.jdbc.XmlQuerySender] [Query-sender] got exception executing a SQL command: (SQLSyntaxErrorException) SQLState [42501], errorCode [-5501]: user lacks privilege or object not found: MYTABLE in statement [drop table mytable]: (HsqlException) user lacks privilege or object not found: MYTABLE</exception>
+</result>
+</results>
+</manageDatabaseRLY>

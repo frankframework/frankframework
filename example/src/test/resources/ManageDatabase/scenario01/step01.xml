@@ -1,0 +1,6 @@
+<manageDatabaseREQ>
+	<sql>
+		<type>query</type>
+		<query>drop table mytable</query>
+	</sql>
+</manageDatabaseREQ>

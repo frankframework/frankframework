@@ -48,7 +48,7 @@ Upcoming
 - Suppress DirectQuerySender configuration warning when called from IAF sources
 - Introduction of CmisSender
 - Make springCustom.xml obsolete to load springIbisTestTool[name].xml
-
+- Remove username and password from springCustom.xml example
 
 
 ### Non backwards compatible changes
