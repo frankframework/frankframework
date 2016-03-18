@@ -52,10 +52,10 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 		CredentialFactory cf=new CredentialFactory(getAuthAlias(),getDefaultUserid(),getDefaultPassword());
 		String result="";
 		if (!getTargetUserid().equals(cf.getUsername())) {
-			result+="username ["+cf.getUsername()+"] does not match target ["+getTargetUserid()+"]";
+			result+="username does not match target";
 		}
 		if (!getTargetPassword().equals(cf.getPassword())) {
-			result+="password ["+cf.getPassword()+"] does not match target ["+getTargetPassword()+"]";
+			result+="password does not match target";
 		}
  		if (StringUtils.isEmpty(result)) {
  			result="OK";

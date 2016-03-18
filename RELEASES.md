@@ -49,6 +49,7 @@ Upcoming
 - Introduction of CmisSender
 - Make springCustom.xml obsolete to load springIbisTestTool[name].xml
 - Remove username and password from springCustom.xml example
+- Remove credentials from CredentialCheckingPipe output
 
 
 ### Non backwards compatible changes
