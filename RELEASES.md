@@ -50,6 +50,7 @@ Upcoming
 - Make springCustom.xml obsolete to load springIbisTestTool[name].xml
 - Remove username and password from springCustom.xml example
 - Remove credentials from CredentialCheckingPipe output
+- Remove obsolete files in WEB-INF
 
 
 ### Non backwards compatible changes
