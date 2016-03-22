@@ -51,6 +51,7 @@ Upcoming
 - Remove username and password from springCustom.xml example
 - Remove credentials from CredentialCheckingPipe output
 - Remove obsolete files in WEB-INF
+- Move REST services from default security role IbisWebService to IbisObserver
 
 
 ### Non backwards compatible changes

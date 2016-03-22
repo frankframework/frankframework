@@ -292,6 +292,7 @@
             <url-pattern>/showIbisstoreSummary.do</url-pattern>
             <url-pattern>/Download</url-pattern>
             <url-pattern>/testtool</url-pattern>
+            <url-pattern>/rest/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <description></description>
@@ -377,7 +378,6 @@
              <url-pattern>/servlet/rpcrouter/*</url-pattern>
              <url-pattern>/servlet/messagerouter</url-pattern>
              <url-pattern>/HttpListener</url-pattern>
-             <url-pattern>/rest/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <description></description>
