@@ -3,25 +3,25 @@
         <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
-        <dependent-module archiveName="ibis-adapterframework-core-6.1-RC2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-core/iaf-core">
+        <dependent-module archiveName="ibis-adapterframework-core-6.1-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-core/iaf-core">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-larva-6.1-RC2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-larva/iaf-larva">
+        <dependent-module archiveName="ibis-adapterframework-larva-6.1-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-larva/iaf-larva">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-ifsa-6.1-RC2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ifsa/iaf-ifsa">
+        <dependent-module archiveName="ibis-adapterframework-ifsa-6.1-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ifsa/iaf-ifsa">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-tibco-6.1-RC2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-tibco/iaf-tibco">
+        <dependent-module archiveName="ibis-adapterframework-tibco-6.1-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-tibco/iaf-tibco">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-sap-6.1-RC2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-sap/iaf-sap">
+        <dependent-module archiveName="ibis-adapterframework-sap-6.1-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-sap/iaf-sap">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-coolgen-6.1-RC2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-coolgen/iaf-coolgen">
+        <dependent-module archiveName="ibis-adapterframework-coolgen-6.1-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-coolgen/iaf-coolgen">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-ibm-6.1-RC2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ibm/iaf-ibm">
+        <dependent-module archiveName="ibis-adapterframework-ibm-6.1-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ibm/iaf-ibm">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <property name="java-output-path" value="/iaf-webapp/target/classes"/>
