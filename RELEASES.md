@@ -59,6 +59,7 @@ Upcoming
     - Merge springIbisTestTool.xml and springIbisTestToolTibet2.xml from IJA_Tibet2 (solve different rerunRoles on echo2Application in springIbisTestTool.xml in a different way)
     - Disable "Rerun didn't trigger any checkpoint" check when report generator is not enabled
     - Fix scope for instances of Views and View which implements BeanParent and should be prototype. Because View was singleton the isChangeReportGeneratorEnabledAllowed() call in TibetView was called on the wrong Echo2Application instance
+- Add possibility to write a record with specified sessionKeys to security log file after a successful pipe run 
 
 
 

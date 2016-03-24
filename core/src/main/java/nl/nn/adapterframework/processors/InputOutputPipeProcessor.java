@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.processors;
 
 import java.io.InputStream;
+import java.util.StringTokenizer;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -131,6 +132,28 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			}
 		}
 
+		if (pe != null) {
+			if (secLogEnabled && pe.isWriteToSecLog()) {
+				String secLogMsg = "adapter [" + owner.getName() + "] pipe ["
+						+ pe.getName() + "]";
+				if (pe.getSecLogSessionKeys() != null) {
+					String sk = "";
+					StringTokenizer st = new StringTokenizer(
+							pe.getSecLogSessionKeys(), " ,;");
+					while (st.hasMoreTokens()) {
+						if (sk.length() > 0) {
+							sk = sk + ",";
+						}
+						String key = st.nextToken();
+						Object value = pipeLineSession.get(key);
+						sk = sk + key + "=" + value;
+					}
+					secLogMsg = secLogMsg + " sessionKeys [" + sk + "]";
+				}
+				secLog.info(secLogMsg);
+			}
+		}
+		
 		return pipeRunResult;
 	}
 

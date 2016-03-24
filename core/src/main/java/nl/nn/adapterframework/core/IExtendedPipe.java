@@ -35,7 +35,9 @@ import nl.nn.adapterframework.util.Locker;
  * <tr><td>{@link #setElementToMove(String) elementToMove}</td><td>if set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: "{sessionKey:" + <code>elementToMoveSessionKey</code> + "}"</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setElementToMoveSessionKey(String) elementToMoveSessionKey}</td><td>(only used when <code>elementToMove</code> is set) name of the session key under which the character data is stored</td><td>"ref_" + the name of the element</td></tr>
  * <tr><td>{@link #setElementToMoveChain(String) elementToMoveChain}</td><td>like <code>elementToMove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. "adapter;pipeline;pipe")</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRemoveCompactMsgNamespaces (boolean) removeCompactMsgNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the compacted message are removed</td><td>true</td></tr>
+ * <tr><td>{@link #setRemoveCompactMsgNamespaces (boolean) removeCompactMsgNamespaces}</td><td>when set <code>true</code>, namespaces (and prefixes) in the compacted message are removed</td><td>true</td></tr>
+ * <tr><td>{@link #setWriteToSecLog (boolean) writeToSecLog}</td><td>when set <code>true</code> and property <code>sec.log.enabled=true</code>, a record is written to the security log when the pipe has finished successfully</td><td>false</td></tr>
+ * <tr><td>{@link #setSecLogSessionKeys(String) secLogSessionKeys}</td><td>(only used when <code>writeToSecLog=true</code> and property <code>sec.log.enabled=true</code>) comma separated list of keys of session variables that is appended to the security log record</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -110,6 +112,12 @@ public interface IExtendedPipe extends IPipe {
 
 	public void setEmptyInputReplacement(String string);
 	public String getEmptyInputReplacement();
+
+	public void setWriteToSecLog(boolean b);
+	public boolean isWriteToSecLog();
+
+	public void setSecLogSessionKeys(String string);
+	public String getSecLogSessionKeys();
 
 	/**
 	 * Register an event for flexible monitoring.

@@ -109,6 +109,8 @@ import org.springframework.transaction.TransactionDefinition;
  * 											      <tr><td>T1</td>  <td>error</td></tr>
  *  </table></td><td>Supports</td></tr>
  * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to process a message.</td><td><code>0</code> (use system default)</code></td></tr>
+ * <tr><td>{@link #setWriteToSecLog (boolean) writeToSecLog}</td><td>when set <code>true</code> and property <code>sec.log.enabled=true</code>, a record is written to the security log when the pipe has finished successfully</td><td>false</td></tr>
+ * <tr><td>{@link #setSecLogSessionKeys(String) secLogSessionKeys}</td><td>(only used when <code>writeToSecLog=true</code> and property <code>sec.log.enabled=true</code>) comma separated list of keys of session variables that is appended to the security log record</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -148,6 +150,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private boolean sizeStatistics = AppConstants.getInstance().getBoolean("statistics.size", false);
 	private Locker locker;
 	private String emptyInputReplacement=null;
+	private boolean writeToSecLog = false;
+	private String secLogSessionKeys = null;
 
 	private boolean active=true;
 
@@ -576,5 +580,19 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	public DummyNamedObject getOutSizeStatDummyObject() {
 		return outSizeStatDummyObject;
+	}
+
+	public void setWriteToSecLog(boolean b) {
+		writeToSecLog = b;
+	}
+	public boolean isWriteToSecLog() {
+		return writeToSecLog;
+	}
+
+	public void setSecLogSessionKeys(String string) {
+		secLogSessionKeys = string;
+	}
+	public String getSecLogSessionKeys() {
+		return secLogSessionKeys;
 	}
 }
