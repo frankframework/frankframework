@@ -52,6 +52,14 @@ Upcoming
 - Remove credentials from CredentialCheckingPipe output
 - Remove obsolete files in WEB-INF
 - Move REST services from default security role IbisWebService to IbisObserver
+- Update to latest Ladybug Test Tool version
+    - Make use of AppConstants properties which are now provided by IAF
+    - Support new IAF feature to make springCustom.xml obsolete to load springIbisTestTool[name].xml
+    - Add springIbisTestToolApi.xml
+    - Merge springIbisTestTool.xml and springIbisTestToolTibet2.xml from IJA_Tibet2 (solve different rerunRoles on echo2Application in springIbisTestTool.xml in a different way)
+    - Disable "Rerun didn't trigger any checkpoint" check when report generator is not enabled
+    - Fix scope for instances of Views and View which implements BeanParent and should be prototype. Because View was singleton the isChangeReportGeneratorEnabledAllowed() call in TibetView was called on the wrong Echo2Application instance
+
 
 
 ### Non backwards compatible changes
