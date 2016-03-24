@@ -56,9 +56,11 @@ public class LdapFindMemberPipe extends FixedForwardPipe {
 	private String dnFind;
 	private boolean recursiveSearch = true;
 	private String notFoundForwardName = "notFound";
+	private String exceptionForwardName = null;
 
 	private CredentialFactory cf;
 	protected PipeForward notFoundForward;
+	protected PipeForward exceptionForward;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -70,10 +72,31 @@ public class LdapFindMemberPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getNotFoundForwardName())) {
 			notFoundForward = findForward(getNotFoundForwardName());
 		}
+		if (StringUtils.isNotEmpty(getExceptionForwardName())) {
+			exceptionForward = findForward(getExceptionForwardName());
+		}
 	}
 
 	public PipeRunResult doPipe(Object input, IPipeLineSession session)
 			throws PipeRunException {
+		if (exceptionForward != null) {
+			try {
+				return doPipeWithException(input, session);
+			} catch (Throwable t) {
+				log.warn(
+						getLogPrefix(session)
+								+ "exception occured, forwarding to exception-forward ["
+								+ exceptionForward.getPath()
+								+ "], exception:\n", t);
+				return new PipeRunResult(exceptionForward, input);
+			}
+		} else {
+			return doPipeWithException(input, session);
+		}
+	}
+
+	public PipeRunResult doPipeWithException(Object input,
+			IPipeLineSession session) throws PipeRunException {
 		String dnSearchIn_work;
 		String dnFind_work;
 		ParameterValueList pvl = null;
@@ -268,5 +291,13 @@ public class LdapFindMemberPipe extends FixedForwardPipe {
 
 	public void setNotFoundForwardName(String string) {
 		notFoundForwardName = string;
+	}
+
+	public String getExceptionForwardName() {
+		return exceptionForwardName;
+	}
+
+	public void setExceptionForwardName(String string) {
+		exceptionForwardName = string;
 	}
 }
