@@ -68,9 +68,13 @@ public class TimeoutGuardSenderWithParametersBase extends
 
 		public String call() throws Exception {
 			String ctName = Thread.currentThread().getName();
-			Thread.currentThread().setName(threadName + "[" + ctName + "]");
-			NDC.push(threadNDC);
-			return sendMessageWithTimeoutGuarded(correlationID, message, prc);
+			try {
+				Thread.currentThread().setName(threadName + "[" + ctName + "]");
+				NDC.push(threadNDC);
+				return sendMessageWithTimeoutGuarded(correlationID, message, prc);
+			} finally {
+				Thread.currentThread().setName(ctName);
+			}
 		}
 	}
 

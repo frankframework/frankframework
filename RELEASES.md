@@ -61,6 +61,7 @@ Upcoming
     - Fix scope for instances of Views and View which implements BeanParent and should be prototype. Because View was singleton the isChangeReportGeneratorEnabledAllowed() call in TibetView was called on the wrong Echo2Application instance
 - Add possibility to write a record with specified sessionKeys to security log file after a successful pipe run 
 - `(end of v6.1-RC2)`
+- Bugfix growing thread names (in logging)
 
 
 

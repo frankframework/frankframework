@@ -75,9 +75,13 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 
 		public String call() throws Exception {
 			String ctName = Thread.currentThread().getName();
-			Thread.currentThread().setName(threadName+"["+ctName+"]");
-			NDC.push(threadNDC);
-			return doPipeWithTimeoutGuarded(input, session);
+			try {
+				Thread.currentThread().setName(threadName+"["+ctName+"]");
+				NDC.push(threadNDC);
+				return doPipeWithTimeoutGuarded(input, session);
+			} finally {
+				Thread.currentThread().setName(ctName);
+			}
 		}
 	}
 
