@@ -5,8 +5,8 @@
 	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation=
 		"
-			http://www.springframework.org/schema/beans xml/xsd/spring-beans-3.2.xsd
-			http://www.springframework.org/schema/util xml/xsd/spring-util-3.2.xsd
+			http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd
+			http://www.springframework.org/schema/util classpath:xml/xsd/spring-util-3.2.xsd
 		"
 	>
 
