@@ -8,7 +8,6 @@
 <%@ taglib uri="/WEB-INF/xtags.tld" prefix="xtags" %>
 <%@ page import="org.apache.struts.Globals"%>
 
-
 <%@ page language="java" %>
  
 <%

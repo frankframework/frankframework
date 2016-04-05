@@ -45,7 +45,7 @@
 				alt="Test a ServiceListener">
 			</imagelink>
 			<imagelink
-				href="servlet/rpcrouter"
+				href="rest/webservices"
 				type="wsdl"
 				alt="Webservices">
 			</imagelink>

@@ -2,6 +2,8 @@
 	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
 	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
 	<!ENTITY ManageDatabase SYSTEM "ConfigurationManageDatabase.xml">
+	<!ENTITY WebControlWebservices SYSTEM "WebControlWebservicesConfiguration.xml">
+	
 ]>
 <IOS-Adaptering configurationName="IBIS AdapterFramework (IAF) configuration for example">
    <jmsRealms>
@@ -11,4 +13,5 @@
   &HelloWorld;
   &HelloWorlds;
   &ManageDatabase;
+  &WebControlWebservices;
 </IOS-Adaptering>

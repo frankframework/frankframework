@@ -1,0 +1,35 @@
+<module>
+	<adapter name="WebControlWebservices">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="WebControlWebservices">
+			<listener className="nl.nn.adapterframework.http.RestListener"
+				name="WebControlWebservices" uriPattern="webservices" view="false" />
+		</receiver>
+		<pipeline firstPipe="switchMethod">
+			<exits>
+				<exit state="success" path="EXIT" />
+			</exits>
+
+			<pipe name="switchMethod" className="nl.nn.adapterframework.pipes.XmlSwitch"
+				sessionKey="method">
+				<forward name="GET" path="doWebservices" />
+			</pipe>
+
+			<!-- GET -->
+
+			<pipe name="doWebservices" className="nl.nn.adapterframework.webcontrol.pipes.Webservices"
+				throwException="false">
+				<param name="uri" sessionKey="uri" />
+				<param name="indent" sessionKey="indent" />
+				<param name="useIncludes" sessionKey="useIncludes" />
+				<forward name="success" path="webservices" />
+			</pipe>
+
+			<pipe name="webservices" className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
+				styleSheetName="WebControl/Webservices/xsl/Webservices.xsl" xslt2="true"
+				skipOnEmptyInput="true">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

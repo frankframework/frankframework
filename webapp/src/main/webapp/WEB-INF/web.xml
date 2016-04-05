@@ -24,7 +24,7 @@
 		</init-param>
 		<init-param>
 			<param-name>allowedObserverPaths</param-name>
-			<param-value>/index.jsp /showConfigurationStatus.do /showConfiguration.do /configHandler.do /showAdapterStatistics.do /showLogging.do /browseQueue.do /browseQueueExecute.do /browseJdbcTable.do /showSchedulerStatus.do /FileViewerServlet /DumpIbisConsole /showEnvironmentVariables.do /browser.do /showSecurityItems.do /showMonitors.do /showEvents.do /editMonitor.do /editTrigger.do /showIbisstoreSummary.do /Download /testtool /jsp/view.jsp /servlet/rpcrouter</param-value>
+			<param-value>/index.jsp /showConfigurationStatus.do /showConfiguration.do /configHandler.do /showAdapterStatistics.do /showLogging.do /browseQueue.do /browseQueueExecute.do /browseJdbcTable.do /showSchedulerStatus.do /FileViewerServlet /DumpIbisConsole /showEnvironmentVariables.do /browser.do /showSecurityItems.do /showMonitors.do /showEvents.do /editMonitor.do /editTrigger.do /showIbisstoreSummary.do /Download /testtool /jsp/view.jsp /rest/webservices</param-value>
 		</init-param>
 		<init-param>
 			<param-name>allowedDataAdminPaths</param-name>
@@ -85,7 +85,7 @@
     <servlet>
         <servlet-name>rpcrouter</servlet-name>
         <display-name>Apache-SOAP RPC Router (modified: invalidates sessions)</display-name>
-        <servlet-class>nl.nn.adapterframework.soap.SoapRouterServlet</servlet-class>
+        <servlet-class>org.apache.soap.server.http.RPCRouterServlet</servlet-class>
         <init-param>
             <param-name>faultListener</param-name>
             <param-value>org.apache.soap.server.DOMFaultListener</param-value>

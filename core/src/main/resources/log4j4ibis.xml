@@ -13,6 +13,10 @@
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
 			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %x %c{2} - %m%n"/>
 		</layout>
+		<filter class="nl.nn.adapterframework.extensions.log4j.IbisThreadFilter">
+			<param name="AcceptOnMatch" value="false"/>
+			<param name="Regex" value="(WebControl.*)"/>
+		</filter>
 	</appender>
 	<appender name="XML" class="org.apache.log4j.RollingFileAppender">
 		<param name="File" value="${log.dir}/${instance.name.lc}_xml.log"/>
@@ -20,6 +24,10 @@
 		<param name="MaxFileSize" value="${log.xml.maxFileSize}"/>
 		<param name="Append" value="true"/>
 		<layout class="org.apache.log4j.xml.XMLLayout"/>
+		<filter class="nl.nn.adapterframework.extensions.log4j.IbisThreadFilter">
+			<param name="AcceptOnMatch" value="false"/>
+			<param name="Regex" value="(WebControl.*)"/>
+		</filter>
 	</appender>
 	<appender name="galm" class="org.apache.log4j.RollingFileAppender">
 		<param name="File" value="${log.dir}/${instance.name.lc}-galm.log"/>

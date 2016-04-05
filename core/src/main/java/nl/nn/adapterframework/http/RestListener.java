@@ -17,6 +17,8 @@ package nl.nn.adapterframework.http;
 
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -62,7 +64,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (isView()==null) {
-			if (getMethod().equalsIgnoreCase("GET")) {
+			if (StringUtils.isEmpty(getMethod()) || getMethod().equalsIgnoreCase("GET")) {
 				setView(true);
 			} else {
 				setView(false);

@@ -63,6 +63,7 @@ Upcoming
 - `(end of v6.1-RC2)`
 - Bugfix growing thread names (in logging)
 - Change xsd schemaLocations in spring files to classpath protocol to prevent 'failed to read schema document'
+- Replace "/servlet/rcprouter" by "/rest/webservices"
 
 
 
