@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -246,7 +246,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"testService.do", "service", "Test a ServiceListener"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"servlet/rpcrouter", "wsdl", "Webservices"));
+				"rest/webservices", "wsdl", "Webservices"));
 		imagelinkMenu
 				.addSubElement(createImagelinkElement(srcPrefix,
 						"showSchedulerStatus.do", "scheduler",

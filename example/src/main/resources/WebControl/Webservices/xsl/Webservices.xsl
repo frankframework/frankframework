@@ -14,70 +14,88 @@
 				<xsl:otherwise>
 					<table>
 						<caption class="caption">Available REST services</caption>
-						<xsl:for-each select="webservices/rests/rest">
-							<tr>
-								<td class="filterRow">
-									<xsl:value-of select="position()" />
-								</td>
-								<td class="filterRow">
-									<a>
-										<xsl:attribute name="href">
-									<xsl:value-of select="concat($srcPrefix,'rest/',@uriPattern)" />
-								</xsl:attribute>
-										<xsl:value-of select="@name" />
-									</a>
-								</td>
-							</tr>
-						</xsl:for-each>
+						<xsl:choose>
+							<xsl:when test="count(webservices/rests/rest)=0">
+								<tr>
+									<td class="filterRow">No rest listeners found</td>
+								</tr>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:for-each select="webservices/rests/rest">
+									<tr>
+										<td class="filterRow">
+											<xsl:value-of select="position()" />
+										</td>
+										<td class="filterRow">
+											<a>
+												<xsl:attribute name="href">
+											<xsl:value-of select="concat($srcPrefix,'rest/',@uriPattern)" />
+										</xsl:attribute>
+												<xsl:value-of select="@name" />
+											</a>
+										</td>
+									</tr>
+								</xsl:for-each>
+							</xsl:otherwise>
+						</xsl:choose>
 					</table>
 					<br />
 					<br />
 					<table>
 						<caption class="caption">Available WSDL's</caption>
-						<xsl:for-each select="webservices/wsdls/wsdl">
-							<tr>
-								<td class="filterRow">
-									<xsl:value-of select="position()" />
-								</td>
-								<xsl:choose>
-									<xsl:when test="error">
+						<xsl:choose>
+							<xsl:when test="count(webservices/wsdls/wsdl)=0">
+								<tr>
+									<td class="filterRow">No registered listeners found</td>
+								</tr>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:for-each select="webservices/wsdls/wsdl">
+									<tr>
 										<td class="filterRow">
-											<xsl:value-of select="@name" />
+											<xsl:value-of select="position()" />
 										</td>
-										<td class="filterRow">
-											<xsl:value-of select="error" />
-										</td>
-									</xsl:when>
-									<xsl:otherwise>
-										<td class="filterRow">
-											<a>
-												<xsl:attribute name="href">
+										<xsl:choose>
+											<xsl:when test="error">
+												<td class="filterRow">
+													<xsl:value-of select="@name" />
+												</td>
+												<td class="filterRow">
+													<xsl:value-of select="error" />
+												</td>
+											</xsl:when>
+											<xsl:otherwise>
+												<td class="filterRow">
+													<a>
+														<xsl:attribute name="href">
 											<xsl:value-of
-													select="concat($srcPrefix,'rest/webservices/',@name,@extention)" />
+															select="concat($srcPrefix,'rest/webservices/',@name,@extention)" />
 										</xsl:attribute>
-												<xsl:value-of select="@name" />
-											</a>
-										</td>
-										<td class="filterRow">
-											<a>
-												<xsl:attribute name="href">
+														<xsl:value-of select="@name" />
+													</a>
+												</td>
+												<td class="filterRow">
+													<a>
+														<xsl:attribute name="href">
 											<xsl:value-of
-													select="concat($srcPrefix,'rest/webservices/',@name,@extention,'?useIncludes=true')" />
+															select="concat($srcPrefix,'rest/webservices/',@name,@extention,'?useIncludes=true')" />
 										</xsl:attribute>
-												<xsl:text>using includes</xsl:text>
-											</a>
-											<a>
-												<xsl:attribute name="href">
+														<xsl:text>using includes</xsl:text>
+													</a>
+													<a>
+														<xsl:attribute name="href">
 											<xsl:value-of
-													select="concat($srcPrefix,'rest/webservices/',@name,'.zip')" />
+															select="concat($srcPrefix,'rest/webservices/',@name,'.zip')" />
 										</xsl:attribute>
-												<xsl:text>zip</xsl:text>
-											</a>
-										</td>
-									</xsl:otherwise>
-								</xsl:choose>
-							</tr>
-						</xsl:for-each>
+														<xsl:text>zip</xsl:text>
+													</a>
+												</td>
+											</xsl:otherwise>
+										</xsl:choose>
+									</tr>
+								</xsl:for-each>
+							</xsl:otherwise>
+						</xsl:choose>
 					</table>
 				</xsl:otherwise>
 			</xsl:choose>
