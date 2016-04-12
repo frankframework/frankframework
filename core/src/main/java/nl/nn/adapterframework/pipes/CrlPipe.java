@@ -107,7 +107,7 @@ public class CrlPipe extends FixedForwardPipe {
 			while (it.hasNext()) {
 				X509CRLEntry e = (X509CRLEntry) it.next();
 				XmlBuilder serialNumber = new XmlBuilder("SerialNumber");
-				serialNumber.setValue(e.getSerialNumber().toString());
+				serialNumber.setValue(e.getSerialNumber().toString(16));
 				root.addSubElement(serialNumber);
 			}
 			result = root.toXML();
