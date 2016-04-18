@@ -109,48 +109,54 @@ public class RestServiceDispatcher  {
 		String etagKey=(String)methodConfig.get(KEY_ETAG_KEY);
 		String contentTypeKey=(String)methodConfig.get(KEY_CONTENT_TYPE_KEY);
 
-		boolean writeToSecLog = false;
-		if (listener instanceof RestListener) {
-			RestListener restListener = (RestListener) listener;
-			writeToSecLog = restListener.isWriteToSecLog();
-			boolean authorized = false;
-			if (httpServletRequest.getUserPrincipal() == null) {
-				authorized = true;
-			} else {
-				String authRoles = restListener.getAuthRoles();
-				if (StringUtils.isNotEmpty(authRoles)) {
-					StringTokenizer st = new StringTokenizer(authRoles, ",;");
-					while (st.hasMoreTokens()) {
-						String authRole = st.nextToken();
-						if (httpServletRequest.isUserInRole(authRole)) {
-							authorized = true;
+		String ctName = Thread.currentThread().getName();
+		try {
+			boolean writeToSecLog = false;
+			if (listener instanceof RestListener) {
+				RestListener restListener = (RestListener) listener;
+				writeToSecLog = restListener.isWriteToSecLog();
+				boolean authorized = false;
+				if (httpServletRequest.getUserPrincipal() == null) {
+					authorized = true;
+				} else {
+					String authRoles = restListener.getAuthRoles();
+					if (StringUtils.isNotEmpty(authRoles)) {
+						StringTokenizer st = new StringTokenizer(authRoles, ",;");
+						while (st.hasMoreTokens()) {
+							String authRole = st.nextToken();
+							if (httpServletRequest.isUserInRole(authRole)) {
+								authorized = true;
+							}
 						}
 					}
 				}
+				if (!authorized) {
+					throw new ListenerException("Not allowed for uri [" + uri + "]");
+				}
+				Thread.currentThread().setName(restListener.getName() + "["+ctName+"]");
 			}
-			if (!authorized) {
-				throw new ListenerException("Not allowed for uri [" + uri + "]");
+	
+			if (etagKey!=null) context.put(etagKey,etag);
+			if (contentTypeKey!=null) context.put(contentTypeKey,contentType);
+			if (log.isDebugEnabled()) log.debug("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
+			if (httpServletRequest!=null) context.put("restListenerServletRequest", httpServletRequest);
+			if (httpServletResponse!=null) context.put("restListenerServletResponse", httpServletResponse);
+			if (servletContext!=null) context.put("restListenerServletContext", servletContext);
+	
+			if (secLogEnabled && writeToSecLog) {
+				secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
 			}
-			String ctName = Thread.currentThread().getName();
-			Thread.currentThread().setName(restListener.getName() + "["+ctName+"]");
+			
+			String result=listener.processRequest(null, request, context);
+			if (result==null) {
+				log.warn("result is null!");
+			}			
+			return result;
+		} finally {
+			if (listener instanceof RestListener) {
+				Thread.currentThread().setName(ctName);
+			}
 		}
-
-		if (etagKey!=null) context.put(etagKey,etag);
-		if (contentTypeKey!=null) context.put(contentTypeKey,contentType);
-		if (log.isDebugEnabled()) log.debug("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
-		if (httpServletRequest!=null) context.put("restListenerServletRequest", httpServletRequest);
-		if (httpServletResponse!=null) context.put("restListenerServletResponse", httpServletResponse);
-		if (servletContext!=null) context.put("restListenerServletContext", servletContext);
-
-		if (secLogEnabled && writeToSecLog) {
-			secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
-		}
-		
-		String result=listener.processRequest(null, request, context);
-		if (result==null) {
-			log.warn("result is null!");
-		}			
-		return result;
 	}
 	
 	public  void registerServiceClient(ServiceClient listener,
