@@ -43,6 +43,11 @@ public class HttpUtils {
 
 	public static String getExtendedCommandIssuedBy(HttpServletRequest request,
 			List<String> secLogParamNames) {
+		return getExtendedCommandIssuedBy(request, secLogParamNames, null);
+	}
+
+	public static String getExtendedCommandIssuedBy(HttpServletRequest request,
+			List<String> secLogParamNames, String message) {
 		String contextPath = request.getContextPath();
 		String requestUri = request.getRequestURI();
 		String reqUri = StringUtils.substringAfter(requestUri, contextPath);
@@ -51,7 +56,9 @@ public class HttpUtils {
 		}
 		return ("requestUri [" + reqUri + "] params ["
 				+ getParametersAsString(request, secLogParamNames)
-				+ "] method [" + request.getMethod() + "]" + getCommandIssuedBy(request));
+				+ "] method [" + request.getMethod() + "]" + getCommandIssuedBy(request))
+				+ (message == null ? "" : System.getProperty("line.separator")
+						+ message);
 	}
 
 	private static String getParametersAsString(HttpServletRequest request,

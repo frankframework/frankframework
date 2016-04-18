@@ -65,6 +65,7 @@ Upcoming
 - Change xsd schemaLocations in spring files to classpath protocol to prevent 'failed to read schema document'
 - Replace "/servlet/rcprouter" by "/rest/webservices"
 - Add masking for ErrorStore and MessageLog
+- Add message to security log for 'Test a PipeLine'
 
 
 

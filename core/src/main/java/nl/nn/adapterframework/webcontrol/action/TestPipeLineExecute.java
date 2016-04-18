@@ -65,6 +65,7 @@ public final class TestPipeLineExecute extends ActionBase {
 	public TestPipeLineExecute() {
 		setWriteToSecLog(true);
 		addSecLogParamName("adapterName");
+		setWriteSecLogMessage(true);
 	}
 
 	public ActionForward executeSub(

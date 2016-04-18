@@ -66,8 +66,10 @@ public abstract class ActionBase extends Action {
 	protected HttpSession session;
 	
 	private boolean secLogEnabled = AppConstants.getInstance().getBoolean("sec.log.enabled", false);
+	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 	private boolean writeToSecLog = false;
 	private List<String> secLogParamNames = new ArrayList<String>();
+	private boolean writeSecLogMessage = false;
 
     /**
      *the <code>Configuration</code> object
@@ -87,8 +89,15 @@ public abstract class ActionBase extends Action {
      */
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
-    	if (secLogEnabled && getWriteToSecLog()) {
-			secLog.info(HttpUtils.getExtendedCommandIssuedBy(request, secLogParamNames));
+    	if (secLogEnabled && isWriteToSecLog()) {
+        	if (secLogMessage && isWriteSecLogMessage()) {
+        		DynaActionForm dynaActionForm = (DynaActionForm) form;
+        		String form_message = (String) dynaActionForm.get("message");
+        		secLog.info(HttpUtils.getExtendedCommandIssuedBy(request, secLogParamNames, form_message));
+    		}
+        	else {
+        		secLog.info(HttpUtils.getExtendedCommandIssuedBy(request, secLogParamNames));
+        	}
 		}
 		return executeSub(mapping, form, request, response);
     }
@@ -273,11 +282,19 @@ public abstract class ActionBase extends Action {
 		writeToSecLog = b;
 	}
 	
-	public boolean getWriteToSecLog() {
+	public boolean isWriteToSecLog() {
 		return writeToSecLog;
 	}
 
 	public void addSecLogParamName(String paramName) {
 		secLogParamNames.add(paramName);
+	}
+
+	public void setWriteSecLogMessage(boolean b) {
+		writeSecLogMessage = b;
+	}
+	
+	public boolean isWriteSecLogMessage() {
+		return writeSecLogMessage;
 	}
 }
