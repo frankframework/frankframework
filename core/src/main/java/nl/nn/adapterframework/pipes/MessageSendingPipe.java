@@ -107,6 +107,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setCorrelationIDNamespaceDefs(String) correlationIDNamespaceDefs}</td><td>namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDStyleSheet(String) correlationIDStyleSheet}</td><td>stylesheet to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDSessionKey(String) correlationIDSessionKey}</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or StyleSheet, instead of the current input message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #sethideRegex(String) hideRegex}</td><td>Regular expression to mask strings in the error/logstore. Everything character between to strings in this expression will be replaced by a '*'that fits the expression is replaced. For Example, the regular expression (?&lt;=&lt;Party&gt;).*?(?=&lt;/Party&gt;) will replace every character between keys<party> and </party> </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelNamespaceDefs(String) labelNamespaceDefs}</td><td>namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelStyleSheet(String) labelStyleSheet}</td><td>stylesheet to extract label from message</td><td>&nbsp;</td></tr>
@@ -223,6 +224,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private PipeProcessor pipeProcessor;
 	private ListenerProcessor listenerProcessor;
 
+	private String hideRegex = null;
 
 	protected void propagateName() {
 		ISender sender=getSender();
@@ -562,9 +564,16 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					}
 					if (sender instanceof MailSender) {
 						String messageInMailSafeForm = (String)session.get("messageInMailSafeForm");
+						if (hideRegex != null){
+							messageInMailSafeForm = Misc.hideAll(messageInMailSafeForm, hideRegex);
+						}
 						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,messageInMailSafeForm);
 					} else {
-						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,(String)input);
+						String message = (String)input;
+						if (hideRegex != null){
+							message = Misc.hideAll(message, hideRegex);
+						}
+						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,message);
 					}
 					long messageLogEndTime = System.currentTimeMillis();
 					long messageLogDuration = messageLogEndTime - messageLogStartTime;
@@ -1073,5 +1082,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 	public boolean isUseInputForExtract() {
 		return useInputForExtract;
+	}
+	
+	public void setHideRegex(String hideRegex) {
+		this.hideRegex = hideRegex;
+	}
+
+	public String getHideRegex() {
+		return hideRegex;
 	}
 }
