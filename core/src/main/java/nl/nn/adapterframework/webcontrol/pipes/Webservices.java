@@ -21,8 +21,6 @@ import java.util.Iterator;
 import javax.naming.NamingException;
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
@@ -30,17 +28,16 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.RestListenerUtils;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.soap.Wsdl;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Webservices.
@@ -53,40 +50,37 @@ public class Webservices extends TimeoutGuardPipe {
 
 	public String doPipeWithTimeoutGuarded(Object input,
 			IPipeLineSession session) throws PipeRunException {
+		String method = (String) session.get("method");
+		if (method.equalsIgnoreCase("GET")) {
+			return doGet(session);
+		} else {
+			throw new PipeRunException(this, getLogPrefix(session)
+					+ "illegal value for method [" + method
+					+ "], must be 'GET'");
+		}
+	}
+
+	private String doGet(IPipeLineSession session) throws PipeRunException {
 		Configuration config = RestListenerUtils.retrieveConfiguration(session);
 
-		ParameterValueList pvl = null;
-		if (getParameterList() != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					(String) input, session);
-			try {
-				pvl = prc.getValues(getParameterList());
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "exception on extracting parameters", e);
-			}
-		}
+		String uri = (String) session.get("uri");
+		String indent = (String) session.get("indent");
+		String useIncludes = (String) session.get("useIncludes");
 
-		String uri_work = getParameterValue(pvl, "uri");
-		String indent_work = getParameterValue(pvl, "indent");
-		String useIncludes_work = getParameterValue(pvl, "useIncludes");
-
-		if (StringUtils.isNotEmpty(uri_work)
-				&& (uri_work.endsWith(getWsdlExtention()) || uri_work
-						.endsWith(".zip"))) {
+		if (StringUtils.isNotEmpty(uri)
+				&& (uri.endsWith(getWsdlExtention()) || uri.endsWith(".zip"))) {
 			String adapterName = StringUtils.substringBeforeLast(
-					StringUtils.substringAfterLast(uri_work, "/"), ".");
+					StringUtils.substringAfterLast(uri, "/"), ".");
 			IAdapter adapter = config.getRegisteredAdapter(adapterName);
 			if (adapter == null) {
 				throw new PipeRunException(this, getLogPrefix(session)
 						+ "adapter [" + adapterName + "] doesn't exist");
 			}
 			try {
-				if (uri_work.endsWith(getWsdlExtention())) {
+				if (uri.endsWith(getWsdlExtention())) {
 					RestListenerUtils.setResponseContentType(session,
 							"application/xml");
-					wsdl((Adapter) adapter, session, indent_work,
-							useIncludes_work);
+					wsdl((Adapter) adapter, session, indent, useIncludes);
 				} else {
 					RestListenerUtils.setResponseContentType(session,
 							"application/octet-stream");
