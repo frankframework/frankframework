@@ -3,7 +3,7 @@
 
   <groupId>org.ibissource</groupId>
   <artifactId>ibis-adapterframework-parent</artifactId>
-  <version>6.1-RC3-SNAPSHOT</version>
+  <version>6.1-RC3</version>
   <name>Ibis AdapterFramework parent</name>
   <packaging>pom</packaging>
 
@@ -21,42 +21,42 @@
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-core</artifactId>
-        <version>6.1-RC3-SNAPSHOT</version>
+        <version>6.1-RC3</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-ifsa</artifactId>
-        <version>6.1-RC3-SNAPSHOT</version>
+        <version>6.1-RC3</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-tibco</artifactId>
-        <version>6.1-RC3-SNAPSHOT</version>
+        <version>6.1-RC3</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-sap</artifactId>
-        <version>6.1-RC3-SNAPSHOT</version>
+        <version>6.1-RC3</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-coolgen</artifactId>
-        <version>6.1-RC3-SNAPSHOT</version>
+        <version>6.1-RC3</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-ibm</artifactId>
-        <version>6.1-RC3-SNAPSHOT</version>
+        <version>6.1-RC3</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-larva</artifactId>
-        <version>6.1-RC3-SNAPSHOT</version>
+        <version>6.1-RC3</version>
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-webapp</artifactId>
-        <version>6.1-RC3-SNAPSHOT</version>
+        <version>6.1-RC3</version>
         <type>war</type>
       </dependency>
       <dependency>
@@ -210,7 +210,7 @@
     <connection>scm:git:https://github.com/ibissource/iaf.git</connection>
     <developerConnection>scm:git:https://github.com/ibissource/iaf.git</developerConnection>
     <url>https://github.com/ibissource/iaf</url>
-    <tag>HEAD</tag>
+    <tag>v6.1-RC3</tag>
   </scm>
 
   <distributionManagement>
