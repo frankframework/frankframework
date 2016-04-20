@@ -66,6 +66,7 @@ Upcoming
 - Replace "/servlet/rcprouter" by "/rest/webservices"
 - Add masking for ErrorStore and MessageLog
 - Add message to security log for 'Test a PipeLine'
+- Upgrade from Java 5 to Java 6
 
 
 
