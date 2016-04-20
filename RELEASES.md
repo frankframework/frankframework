@@ -67,6 +67,7 @@ Upcoming
 - Add masking for ErrorStore and MessageLog
 - Add message to security log for 'Test a PipeLine'
 - Upgrade from Java 5 to Java 6
+- `(end of v6.1-RC3)`
 
 
 

@@ -15,7 +15,7 @@ Release on Windows 7 behind a proxy
 - Start cmd.exe
 - Adjust Screen Buffer Size (Width: 140, Height: 9999) and Window Size
   (Width: 140, Height: 75)
-- set JAVA_HOME=D:\Software\Installed\Java\jdk1.6.0_22
+- set JAVA_HOME=D:\Software\Installed\Java\jdk1.6.0_22 (from IAF v6.1-RC2, before JDK 1.5 was used)
 - set PATH=D:\Software\Installed\Git\bin\;D:\Software\Installed\Maven\apache-maven-3.0.5\bin
 - set MAVEN_OPTS=-Xmx512m -XX:MaxPermSize=128m
 - git config --list
