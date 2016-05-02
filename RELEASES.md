@@ -9,8 +9,16 @@ Upcoming
 --------
 
 [JavaDocs](http://www.ibissource.org/iaf/maven/apidocs/index.html)
-[Commits](https://github.com/ibissource/iaf/compare/v6.0...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v6.1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+
+
+6.1
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v6.0...v6.1)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v6.1)](https://travis-ci.org/ibissource/iaf)
 
 - Equalize/refactor file name determination for FilePipe/Sender (for action "read" also consider attribute fileName and for action "info" also consider attributes fileName and classpath)
 - Add CrlPipe
