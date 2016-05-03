@@ -3,7 +3,7 @@
 	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
 	<!ENTITY ManageDatabase SYSTEM "ConfigurationManageDatabase.xml">
 	<!ENTITY WebControlWebservices SYSTEM "WebControlWebservicesConfiguration.xml">
-	
+	<!ENTITY WebControlTestPipeLine SYSTEM "./WebControlTestPipeLineConfiguration.xml">
 ]>
 <IOS-Adaptering configurationName="IBIS AdapterFramework (IAF) configuration for example">
    <jmsRealms>
@@ -14,4 +14,5 @@
   &HelloWorlds;
   &ManageDatabase;
   &WebControlWebservices;
+  &WebControlTestPipeLine;
 </IOS-Adaptering>

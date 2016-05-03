@@ -1,0 +1,32 @@
+<module>
+	<adapter name="WebControlTestPipeLine">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="WebControlTestPipeLine">
+			<listener className="nl.nn.adapterframework.http.RestListener"
+				name="WebControlTestPipeLine" uriPattern="testPipeLine" view="false"
+				authRoles="IbisAdmin,IbisTester" />
+		</receiver>
+		<pipeline firstPipe="doTestPipeLine">
+			<exits>
+				<exit state="success" path="EXIT" />
+			</exits>
+
+			<pipe name="doTestPipeLine"
+				className="nl.nn.adapterframework.webcontrol.pipes.TestPipeLine"
+				throwException="false">
+				<forward name="success" path="testPipeLine" />
+			</pipe>
+
+			<pipe name="testPipeLine" className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
+				styleSheetName="WebControl/TestPipeLine/xsl/TestPipeLine.xsl" xslt2="true">
+				<param name="adapterList" sessionKey="adapterList" />
+				<param name="adapterName" sessionKey="adapterName" />
+				<param name="message" sessionKey="message" />
+				<param name="fileEncoding" sessionKey="fileEncoding" />
+				<param name="result" sessionKey="result" />
+				<param name="state" sessionKey="state" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

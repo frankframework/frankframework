@@ -86,7 +86,7 @@ public class RestListenerServlet extends HttpServlet {
 				ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
 				List<FileItem> items = servletFileUpload.parseRequest(request);
 		        for (FileItem item : items) {
-		            if (item.isFormField()) {
+		        	if (item.isFormField()) {
 		                // Process regular form field (input type="text|radio|checkbox|etc", select, etc).
 		                String fieldName = item.getFieldName();
 		                String fieldValue = item.getString();
@@ -100,8 +100,13 @@ public class RestListenerServlet extends HttpServlet {
 		    			if (log.isDebugEnabled()) log.debug("setting parameter ["+fieldNameName+"] to ["+fileName+"]");
 		    			messageContext.put(fieldNameName, fileName);
 		                InputStream inputStream = item.getInputStream();
-		    			if (log.isDebugEnabled()) log.debug("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
-		    			messageContext.put(fieldName, inputStream);
+		                if (inputStream.available() > 0) {
+			    			if (log.isDebugEnabled()) log.debug("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
+			    			messageContext.put(fieldName, inputStream);
+		                } else {
+			    			if (log.isDebugEnabled()) log.debug("setting parameter ["+fieldName+"] to ["+null+"]");
+			    			messageContext.put(fieldName, null);
+		                }
 		            }
 		        }
 			} catch (FileUploadException e) {

@@ -131,10 +131,6 @@
 			<jsp:include page="/jsp/testIfsaService.jsp" flush="true"/> 
 		<%} else if (view.equals("/jsp/showAdapterStatistics.jsp")) {%>
 			<jsp:include page="/jsp/showAdapterStatistics.jsp" flush="true"/>
-		<%} else if (view.equals("/jsp/testService.jsp")) {%> 
-			<jsp:include page="/jsp/testService.jsp" flush="true"/>
-		<%} else if (view.equals("/jsp/testPipeLine.jsp")) {%>
-			<jsp:include page="/jsp/testPipeLine.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/showLogging.jsp")) {%>
 			<jsp:include page="/jsp/showLogging.jsp" flush="true"/> 
 		<%} else if (view.equals("/jsp/showConfiguration.jsp")) {%>

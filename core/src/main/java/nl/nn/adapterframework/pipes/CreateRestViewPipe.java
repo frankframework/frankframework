@@ -241,7 +241,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"browseQueue.do", "browsejms", "Browse a queue with JMS"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"testPipeLine.do", "testPipeLine",
+				"rest/testPipeLine", "testPipeLine",
 				"Test a PipeLine of an Adapter"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"testService.do", "service", "Test a ServiceListener"));

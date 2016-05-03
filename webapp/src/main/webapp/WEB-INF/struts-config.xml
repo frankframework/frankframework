@@ -294,22 +294,6 @@
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/testIfsaService.jsp"/>
         </action>
-        <action path="/testPipeLine" 
-                type="nl.nn.adapterframework.webcontrol.action.TestPipeLine"
-                scope="session" 
-                name="PipeLineTestForm"
-                input="/jsp/view.jsp?view=/jsp/testPipeLine.jsp"
-                validate="false">
-            <forward name="success" path="/jsp/view.jsp?view=/jsp/testPipeLine.jsp" redirect="false" contextRelative="false"/>
-        </action>
-        <action path="/testPipeLineExecute" 
-                type="nl.nn.adapterframework.webcontrol.action.TestPipeLineExecute"
-                scope="session" 
-                name="PipeLineTestForm"
-                input="/jsp/view.jsp?view=/jsp/testPipeLine.jsp"
-                validate="false">
-            <forward name="success" path="/jsp/view.jsp?view=/jsp/testPipeLine.jsp" redirect="false" contextRelative="false"/>
-        </action>
         <action path="/testService" 
                 type="nl.nn.adapterframework.webcontrol.action.TestService"
                 scope="session" 
