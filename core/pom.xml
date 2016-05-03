@@ -40,6 +40,11 @@
       <artifactId>mail</artifactId>
     </dependency>
     <!-- commons -->
+	<dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+      <version>3.2.2</version>
+    </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
@@ -215,6 +220,10 @@
         <exclusion>
           <groupId>net.sf.jsr107cache</groupId>
           <artifactId>jsr107cache</artifactId>
+        </exclusion>
+		<exclusion><!-- Exclude 3.2 because we need 3.2.2 -->
+          <groupId>commons-collections</groupId>
+          <artifactId>commons-collections</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

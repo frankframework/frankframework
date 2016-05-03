@@ -12,6 +12,8 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v6.1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
+- Replace Apache Commons Collections library v3.2 by v3.2.2
+
 
 
 6.1
