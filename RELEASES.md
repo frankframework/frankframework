@@ -14,6 +14,7 @@ Upcoming
 
 - Replace Apache Commons Collections library v3.2 by v3.2.2
 - Don't temporarily move already temporarily moved messages
+- Replace struts form "Test a PipeLine" by rest service
 
 
 

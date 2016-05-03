@@ -35,7 +35,7 @@
 				alt="Browse a queue with JMS">
 			</imagelink>
 			<imagelink
-				href="testPipeLine.do"
+				href="rest/testPipeLine"
 				type="testPipeLine"
 				alt="Test a PipeLine of an Adapter">
 			</imagelink>
