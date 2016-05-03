@@ -13,6 +13,7 @@ Upcoming
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 - Replace Apache Commons Collections library v3.2 by v3.2.2
+- Don't temporarily move already temporarily moved messages
 
 
 

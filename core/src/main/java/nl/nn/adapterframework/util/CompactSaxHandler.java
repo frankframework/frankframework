@@ -30,6 +30,9 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author  Peter Leeuwenburgh
  */
 public class CompactSaxHandler extends DefaultHandler {
+	private final static String VALUE_MOVE_START = "{sessionKey:";
+	private final static String VALUE_MOVE_END = "}";
+
 	private String chompCharSize = null;
 	private int chompLength = -1;
 	private String elementToMove = null;
@@ -121,7 +124,9 @@ public class CompactSaxHandler extends DefaultHandler {
 			if (context != null
 					&& ((getElementToMove() != null
 							&& lastElement.equals(getElementToMove()) || (getElementToMoveChain() != null && elementsToString()
-							.equals(getElementToMoveChain()))))) {
+							.equals(getElementToMoveChain()))))
+					&& !(charBuffer.toString().startsWith(VALUE_MOVE_START) && charBuffer
+							.toString().endsWith(VALUE_MOVE_END))) {
 				String elementToMoveSK;
 				if (getElementToMoveSessionKey() == null) {
 					elementToMoveSK = "ref_" + lastElement;
@@ -138,7 +143,8 @@ public class CompactSaxHandler extends DefaultHandler {
 				}
 				context.put(elementToMoveSK, before + charBuffer.toString()
 						+ after);
-				messageBuffer.append("{sessionKey:" + elementToMoveSK + "}");
+				messageBuffer.append(VALUE_MOVE_START + elementToMoveSK
+						+ VALUE_MOVE_END);
 			} else {
 				messageBuffer.append(before
 						+ XmlUtils.encodeChars(charBuffer.toString()) + after);
