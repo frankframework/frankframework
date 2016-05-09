@@ -79,7 +79,7 @@ import org.apache.commons.lang.StringUtils;
  * <li><code>challenge</code>: check username and password against LDAP specifying principal and credential using parameters</li>
  * <li><code>changeUnicodePwd</code>: typical user change-password operation (one of the two methods to modify the unicodePwd attribute in AD (http://support.microsoft.com/kb/263991))</li>
  * </ul></td><td>read</td></tr>
- * <tr><td>{@link #setManipulationSubject(String) manipulationSubject}</td><td>specifies subject to perform operation on. Must be one of 'enrty' or 'attribute'</td><td>attribute</td></tr>
+ * <tr><td>{@link #setManipulationSubject(String) manipulationSubject}</td><td>specifies subject to perform operation on. Must be one of 'entry' or 'attribute'</td><td>attribute</td></tr>
  * <tr><td>{@link #setErrorSessionKey(String) errorSessionKey}</td><td>key of session variable used to store cause of errors</td><td>errorReason</td></tr>
  * <tr><td>{@link #setSearchTimeout(int) searchTimeout}</td><td>specifies the time (in ms) that is spent searching for results for operation Search</td><td>20000 ms</td></tr>
  * <tr><td>{@link #setUsePooling(boolean) usePooling}</td><td>specifies whether connection pooling is used or not</td><td>true when principal not set as parameter, false otherwise</td></tr>
@@ -116,6 +116,13 @@ import org.apache.commons.lang.StringUtils;
  * <ul>
  * 	  <li>parameter 'entryName', resolving to RDN of entry to create</li>
  * 	  <li>xml-inputmessage containing attributes to create</li>
+ * </ul>
+ * </td></tr>
+ * <tr><td>update</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to update</li>
+ * 	  <li>xml-inputmessage containing attributes to update</li>
+ * 	  <li>optional parameter 'newEntryName', new RDN of entry</li>
  * </ul>
  * </td></tr>
  * <tr><td>delete</td><td>
@@ -543,6 +550,35 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 
 	private String performOperationUpdate(String entryName, ParameterResolutionContext prc, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
+		String entryNameAfter = entryName;
+		if (paramValueMap != null){
+			String newEntryName = (String)paramValueMap.get("newEntryName");
+			if (newEntryName != null && StringUtils.isNotEmpty(newEntryName)) {
+				if (log.isDebugEnabled()) log.debug("newEntryName=["+newEntryName+"]");
+				DirContext dirContext = null;
+				try{
+					dirContext = getDirContext(paramValueMap);
+					dirContext.rename(entryName, newEntryName);
+					entryNameAfter = newEntryName;
+				} catch(NamingException e) {
+					String msg;
+					// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
+					//   32 LDAP_NO_SUCH_OBJECT Indicates the target object cannot be found. This code is not returned on following operations: Search operations that find the search base but cannot find any entries that match the search filter. Bind operations. 
+					// Sun:
+					//   [LDAP: error code 32 - No Such Object...
+					if (e.getMessage().startsWith("[LDAP: error code 32 - ")) {
+						msg="Operation [" + getOperation()+ "] failed - wrong entryName ["+ entryName+"]";	
+					} else {
+						msg="Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]";									
+					}
+					storeLdapException(e, prc);
+					throw new SenderException(msg,e);
+				} finally {
+					closeDirContext(dirContext);
+				}
+			}
+		}
+		
 		if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
 			NamingEnumeration na = attrs.getAll();
 			while(na.hasMoreElements()) {
@@ -576,7 +612,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 					DirContext dirContext = null;
 					try {
 						dirContext = getDirContext(paramValueMap);
-						dirContext.modifyAttributes(entryName,	DirContext.REPLACE_ATTRIBUTE, partialAttrs);
+						dirContext.modifyAttributes(entryNameAfter,	DirContext.REPLACE_ATTRIBUTE, partialAttrs);
 					} catch(NamingException e) {
 						String msg;
 						// https://wiki.servicenow.com/index.php?title=LDAP_Error_Codes:
@@ -584,9 +620,9 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 						// Sun:
 						//   [LDAP: error code 32 - No Such Object...
 						if (e.getMessage().startsWith("[LDAP: error code 32 - ")) {
-							msg="Operation [" + getOperation()+ "] failed - wrong entryName ["+ entryName+"]";	
+							msg="Operation [" + getOperation()+ "] failed - wrong entryName ["+ entryNameAfter+"]";	
 						} else {
-							msg="Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]";									
+							msg="Exception in operation [" + getOperation()+ "] entryName ["+entryNameAfter+"]";									
 						}
 						//result = DEFAULT_RESULT_UPDATE_NOK;
 						storeLdapException(e, prc);
