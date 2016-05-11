@@ -81,7 +81,7 @@ public class MessageStoreListener extends JdbcQueryListener {
 				// optional delay attribute but this functionality wasn't used
 				// anymore and the condition is Oracle specific.
 				// + "AND SYSTIMESTAMP >= MESSAGEDATE + INTERVAL '" + delay + "' SECOND");
-		String query = "UPDATE IBISSTORE SET TYPE = '" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "', COMMENTS = '" + ReceiverBase.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = {fn now() + 30} WHERE MESSAGEKEY = ?";
+		String query = "UPDATE IBISSTORE SET TYPE = '" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "', COMMENTS = '" + ReceiverBase.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = ({fn now()} + 30) WHERE MESSAGEKEY = ?";
 		
 //		Date date = new Date();
 //		Calendar cal = Calendar.getInstance();

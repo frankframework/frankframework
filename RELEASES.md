@@ -16,6 +16,7 @@ Upcoming
 - Don't temporarily move already temporarily moved messages
 - Replace struts form "Test a PipeLine" by rest service
 - Add update entryName facility to LdapSender
+- Bugfix in MessageStoreListener "(SQLServerException) SQLState [S0001], errorCode [102]: Incorrect syntax near '+'"
 
 
 
