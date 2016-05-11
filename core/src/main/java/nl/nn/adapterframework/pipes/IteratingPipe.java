@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -187,7 +187,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
+		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), classLoader, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
 		try {
 			if (StringUtils.isNotEmpty(getStopConditionXPathExpression())) {
 				stopConditionTp=new TransformerPool(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),"xml",false));

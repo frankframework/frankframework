@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -260,7 +260,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		if (StringUtils.isNotEmpty(getStubFileName())) {
 			URL stubUrl;
 			try {
-				stubUrl = ClassUtils.getResourceURL(this,getStubFileName());
+				stubUrl = ClassUtils.getResourceURL(classLoader, getStubFileName());
 			} catch (Throwable e) {
 				throw new ConfigurationException(getLogPrefix(null)+"got exception finding resource for stubfile ["+getStubFileName()+"]", e);
 			}
@@ -358,17 +358,17 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					getAdapter().getMessageKeeper().add(msg);
 			}
 			if (StringUtils.isNotEmpty(getAuditTrailXPath())) {
-				auditTrailTp = TransformerPool.configureTransformer(getLogPrefix(null),getAuditTrailNamespaceDefs(), getAuditTrailXPath(), null,"text",false,null);
+				auditTrailTp = TransformerPool.configureTransformer(getLogPrefix(null), classLoader, getAuditTrailNamespaceDefs(), getAuditTrailXPath(), null,"text",false,null);
 			}
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(null),getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null);
+				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(null), classLoader, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null);
 			}
 			if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-				labelTp=TransformerPool.configureTransformer(getLogPrefix(null),getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null);
+				labelTp=TransformerPool.configureTransformer(getLogPrefix(null), classLoader, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null);
 			}
 		}
 		if (StringUtils.isNotEmpty(getRetryXPath())) {
-			retryTp = TransformerPool.configureTransformer(getLogPrefix(null),getRetryNamespaceDefs(), getRetryXPath(), null,"text",false,null);
+			retryTp = TransformerPool.configureTransformer(getLogPrefix(null), classLoader, getRetryNamespaceDefs(), getRetryXPath(), null,"text",false,null);
 		}
 		if (getInputValidator()!=null) {
 			PipeForward pf = new PipeForward();
@@ -443,7 +443,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				}
 				if (sfn != null) {
 					try {
-						result = Misc.resourceToString(ClassUtils.getResourceURL(this,sfn), SystemUtils.LINE_SEPARATOR);
+						result = Misc.resourceToString(ClassUtils.getResourceURL(classLoader, sfn), SystemUtils.LINE_SEPARATOR);
 						log.info(getLogPrefix(session)+"returning result from dynamic stub ["+sfn+"]");
 					} catch (Throwable e) {
 						throw new PipeRunException(this,getLogPrefix(session)+"got exception loading result from stub [" + sfn + "]",e);

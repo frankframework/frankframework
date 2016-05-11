@@ -37,7 +37,7 @@ import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
  */
 public class RestListenerUtils {
 
-	public static Configuration retrieveConfiguration(IPipeLineSession session) {
+	public static IbisManager retrieveIbisManager(IPipeLineSession session) {
 		ServletContext servletContext = (ServletContext) session
 				.get("restListenerServletContext");
 		if (servletContext != null) {
@@ -46,10 +46,7 @@ public class RestListenerUtils {
 			IbisContext ibisContext = (IbisContext) servletContext
 					.getAttribute(attributeKey);
 			if (ibisContext != null) {
-				IbisManager ibisManager = ibisContext.getIbisManager();
-				if (ibisManager != null) {
-					return ibisManager.getConfiguration();
-				}
+				return ibisContext.getIbisManager();
 			}
 		}
 		return null;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ import org.apache.commons.lang.StringUtils;
  * @author  John Dekker / Gerrit van Brakel
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String rootTag="record";
 	private String xpathExpression=null;
@@ -86,7 +87,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 			}
 		}
 		if (StringUtils.isNotEmpty(getStyleSheetName())||StringUtils.isNotEmpty(getXpathExpression())) {
-			transformerPool = TransformerPool.configureTransformer(ClassUtils.nameOf(this)+" ["+getName()+"] ", getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
+			transformerPool = TransformerPool.configureTransformer(ClassUtils.nameOf(this)+" ["+getName()+"] ", classLoader, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
 		}
 	}
 

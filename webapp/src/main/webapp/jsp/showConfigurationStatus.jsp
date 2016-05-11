@@ -5,7 +5,24 @@
 <%@ page import="nl.nn.adapterframework.util.FileUtils" %>
 <%@ page import="nl.nn.adapterframework.util.XmlUtils" %>
 
-<page title="Show configuration status" refresh="showConfigurationStatus.do">
+<page title="Show configuration status: <% out.write(XmlUtils.replaceNonValidXmlCharacters((String)request.getAttribute("configurationName"))); %>" refresh="showConfigurationStatus.do">
+
+	<xtags:parse>
+		<% out.write(XmlUtils.replaceNonValidXmlCharacters(request.getAttribute("configurations").toString())); %>
+	</xtags:parse>
+	<xtags:if test="count(//configuration) > 1">
+		<xtags:forEach select="//configuration">
+			<xtags:variable id="configuration" select="."/>
+			<imagelink
+				href="showConfigurationStatus.do"
+				type="showastext"
+				alt="<%=configuration%>"
+				text="<%=configuration%>"
+				>
+				<parameter name="configuration"><xtags:valueOf select="." /></parameter>
+			</imagelink>
+		</xtags:forEach>
+	</xtags:if>
 
 	<xtags:parse>
 		<% out.write(XmlUtils.replaceNonValidXmlCharacters(request.getAttribute("adapters").toString())); %>
@@ -46,7 +63,7 @@
 						>
 						<parameter name="action">stopadapter</parameter>
 						<parameter name="adapterName">**ALL**</parameter>
-					 </imagelink>
+					</imagelink>
 					<imagelink
 						href="adapterHandler.do"
 						type="start"
@@ -54,12 +71,14 @@
 						>
 						<parameter name="action">startadapter</parameter>
 						<parameter name="adapterName">**ALL**</parameter>
-					 </imagelink>
+					</imagelink>
 					<imagelink
 						href="ConfigurationServlet"
 						type="reload"
 						alt="reload configuration"
-						/>
+						>
+						<parameter name="configurationName"><% out.write(XmlUtils.replaceNonValidXmlCharacters((String)request.getAttribute("configurationName"))); %></parameter>
+					</imagelink>
 					<imagelink
 						href="images/flow/IBIS.svg"
 						type="flow"

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ public class WsdlXmlValidator extends SoapValidator {
 
 	public void setWsdl(String wsdl) throws ConfigurationException {
 		this.wsdl = wsdl;
-		URL url = ClassUtils.getResourceURL(wsdl);
+		URL url = ClassUtils.getResourceURL(classLoader, wsdl);
 		if (url == null) {
 			throw new ConfigurationException("Could not find WSDL: " + wsdl);
 		}

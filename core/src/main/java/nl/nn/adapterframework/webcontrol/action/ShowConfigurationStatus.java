@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,15 +18,18 @@ package nl.nn.adapterframework.webcontrol.action;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
@@ -34,7 +37,6 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.extensions.esb.EsbConnectionFactoryInfo;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.http.RestListener;
@@ -72,43 +74,58 @@ public final class ShowConfigurationStatus extends ActionBase {
 		// Initialize action
 		initAction(request);
 
-		if (null==config) {
-			return (mapping.findForward("noconfig"));
-		}
-
 		String countStr = request.getParameter("count");
 		boolean count = Boolean.valueOf(countStr);
 		
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
+		XmlBuilder configurationsXml = new XmlBuilder("configurations");
+		List<Configuration> configurations = ibisManager.getConfigurations();
+		for (Configuration configuration : configurations) {
+			XmlBuilder configurationXml = new XmlBuilder("configuration");
+			configurationXml.setValue(configuration.getConfigurationName());
+			configurationsXml.addSubElement(configurationXml);
+		}
+		request.setAttribute("configurations", configurationsXml.toXML());
+
+		Configuration configuration;
+		List<IAdapter> registeredAdapters;
+
+		String configurationName = request.getParameter("configuration");
+		if (configurationName != null) {
+			configuration = ibisManager.getConfiguration(configurationName);
+		} else {
+			configuration = ibisManager.getConfiguration();
+		}
+		registeredAdapters = configuration.getRegisteredAdapters();
+		request.setAttribute("configurationName", configuration.getConfigurationName());
+
 		long esr = 0;
-		if (null!=config) {
-			if (showCountErrorStore) {
-				for(Iterator adapterIt=config.getRegisteredAdapters().iterator(); adapterIt.hasNext();) {
-					Adapter adapter = (Adapter)adapterIt.next();
-					for(Iterator receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
-						ReceiverBase receiver=(ReceiverBase)receiverIt.next();
-						ITransactionalStorage errorStorage=receiver.getErrorStorage();
-						if (errorStorage!=null) {
-							try {
-								esr += errorStorage.getMessageCount();
-							} catch (Exception e) {
-								error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
-								log.warn("assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
-							}
+		if (showCountErrorStore) {
+			for(Iterator adapterIt=registeredAdapters.iterator(); adapterIt.hasNext();) {
+				Adapter adapter = (Adapter)adapterIt.next();
+				for(Iterator receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
+					ReceiverBase receiver=(ReceiverBase)receiverIt.next();
+					ITransactionalStorage errorStorage=receiver.getErrorStorage();
+					if (errorStorage!=null) {
+						try {
+							esr += errorStorage.getMessageCount();
+						} catch (Exception e) {
+							error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
+							log.warn("assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
 						}
 					}
 				}
-			} else {
-				esr = -1;
 			}
+		} else {
+			esr = -1;
 		}
-		
+
 		XmlBuilder adapters=new XmlBuilder("registeredAdapters");
-		if (config.getConfigurationException()!=null) {
+		if (configuration.getConfigurationException()!=null) {
 			XmlBuilder exceptionsXML=new XmlBuilder("exceptions");
 			XmlBuilder exceptionXML=new XmlBuilder("exception");
-			exceptionXML.setValue(config.getConfigurationException().getMessage());
+			exceptionXML.setValue(configuration.getConfigurationException().getMessage());
 			exceptionsXML.addSubElement(exceptionXML);
 			adapters.addSubElement(exceptionsXML);
 		}
@@ -148,8 +165,8 @@ public final class ShowConfigurationStatus extends ActionBase {
 		int countMessagesInfo=0;
 		int countMessagesWarn=0;
 		int countMessagesError=0;
-		for(int j=0; j<config.getRegisteredAdapters().size(); j++) {
-			Adapter adapter = (Adapter)config.getRegisteredAdapter(j);
+		for(IAdapter iAdapter : registeredAdapters) {
+			Adapter adapter = (Adapter)iAdapter;
 
 			XmlBuilder adapterXML=new XmlBuilder("adapter");
 			adapters.addSubElement(adapterXML);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -209,6 +209,7 @@ import org.w3c.dom.Element;
  * @since 4.2c
  */
 public class HttpSender extends TimeoutGuardSenderWithParametersBase implements HasPhysicalDestination {
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String url;
 	private String urlParam="url";
@@ -352,14 +353,14 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 			URL truststoreUrl=null;
 	
 			if (!StringUtils.isEmpty(getCertificate())) {
-				certificateUrl = ClassUtils.getResourceURL(this, getCertificate());
+				certificateUrl = ClassUtils.getResourceURL(classLoader, getCertificate());
 				if (certificateUrl==null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for certificate resource ["+getCertificate()+"]");
 				}
 				log.info(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
 			}
 			if (!StringUtils.isEmpty(getTruststore())) {
-				truststoreUrl = ClassUtils.getResourceURL(this, getTruststore());
+				truststoreUrl = ClassUtils.getResourceURL(classLoader, getTruststore());
 				if (truststoreUrl==null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for truststore resource ["+getTruststore()+"]");
 				}
@@ -421,7 +422,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
 			try {
-				URL stylesheetURL = ClassUtils.getResourceURL(this, getStyleSheetName());
+				URL stylesheetURL = ClassUtils.getResourceURL(classLoader, getStyleSheetName());
 				if (stylesheetURL==null) {
 					throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet ["+getStyleSheetName()+"]");
 				}

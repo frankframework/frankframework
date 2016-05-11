@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ import org.apache.log4j.Logger;
  */
 public class JNDIBase {
 	protected Logger log = LogUtil.getLogger(this);
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     // JNDI
     private String providerURL = null;
@@ -84,7 +85,7 @@ public class JNDIBase {
 		Properties jndiEnv = new Properties();
 
 		if (StringUtils.isNotEmpty(getJndiProperties())) {
-			URL url = ClassUtils.getResourceURL(this, getJndiProperties());
+			URL url = ClassUtils.getResourceURL(classLoader, getJndiProperties());
 			if (url==null) {
 				throw new NamingException("cannot find jndiProperties from ["+getJndiProperties()+"]");
 			}

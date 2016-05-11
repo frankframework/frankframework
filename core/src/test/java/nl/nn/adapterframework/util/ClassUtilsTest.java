@@ -19,7 +19,7 @@ public class ClassUtilsTest {
     @Ignore("Only runs  @michiel")
     // TODO may actual tests...
 	public void classUtilsTest() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL("jar:file:///Users/michiel/ibis/workspace/rsa-8/Ibis4WUBWEB/WebContent/WEB-INF/lib/AdapterFramework 5.0-a14.jarx!/xml/xsd/soap/envelope.xsd");
+		URL url = ClassUtils.getResourceURL(this, "jar:file:///Users/michiel/ibis/workspace/rsa-8/Ibis4WUBWEB/WebContent/WEB-INF/lib/AdapterFramework 5.0-a14.jarx!/xml/xsd/soap/envelope.xsd");
 		System.out.println(url);
 		URI uri = url.toURI();
 		InputStream inputStream = uri.toURL().openStream();

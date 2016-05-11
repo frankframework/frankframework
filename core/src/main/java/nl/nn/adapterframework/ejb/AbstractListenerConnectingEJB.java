@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ abstract public class AbstractListenerConnectingEJB extends AbstractEJBBase {
 	}
 
 	protected IListener retrieveListener(String receiverName, String adapterName) {
-		IAdapter adapter = config.getRegisteredAdapter(adapterName);
+		IAdapter adapter = ibisManager.getRegisteredAdapter(adapterName);
 		GenericReceiver receiver = (GenericReceiver) adapter.getReceiverByName(receiverName);
 		return receiver.getListener();
 	}

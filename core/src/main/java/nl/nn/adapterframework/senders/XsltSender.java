@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since   4.9
  */
 public class XsltSender extends SenderWithParametersBase {
+	protected ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String xpathExpression=null;
 	private String namespaceDefs = null; 
@@ -72,7 +73,7 @@ public class XsltSender extends SenderWithParametersBase {
 	public void configure() throws ConfigurationException {
 		super.configure();
 	
-		transformerPool = TransformerPool.configureTransformer(getLogPrefix(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), paramList);
+		transformerPool = TransformerPool.configureTransformer(getLogPrefix(), classLoader, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), paramList);
 		if (isSkipEmptyTags()) {
 			String skipEmptyTags_xslt = XmlUtils.makeSkipEmptyTagsXslt(isOmitXmlDeclaration(),isIndentXml());
 			log.debug("test [" + skipEmptyTags_xslt + "]");

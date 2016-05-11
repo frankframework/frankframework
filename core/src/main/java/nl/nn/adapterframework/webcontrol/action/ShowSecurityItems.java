@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,9 +33,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasSender;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
@@ -79,10 +81,6 @@ public final class ShowSecurityItems extends ActionBase {
 		// Initialize action
 		initAction(request);
 
-		if (null == config) {
-			return (mapping.findForward("noconfig"));
-		}
-
 		XmlBuilder securityItems = new XmlBuilder("securityItems");
 		addRegisteredAdapters(securityItems);
 		addApplicationDeploymentDescriptor(securityItems);
@@ -102,8 +100,8 @@ public final class ShowSecurityItems extends ActionBase {
 	private void addRegisteredAdapters(XmlBuilder securityItems) {
 		XmlBuilder registeredAdapters = new XmlBuilder("registeredAdapters");
 		securityItems.addSubElement(registeredAdapters);
-		for (int j = 0; j < config.getRegisteredAdapters().size(); j++) {
-			Adapter adapter = (Adapter) config.getRegisteredAdapter(j);
+		for (IAdapter iAdapter : ibisManager.getRegisteredAdapters()) {
+			Adapter adapter = (Adapter)iAdapter;
 
 			XmlBuilder adapterXML = new XmlBuilder("adapter");
 			registeredAdapters.addSubElement(adapterXML);
@@ -439,13 +437,19 @@ public final class ShowSecurityItems extends ActionBase {
 		try {
 			URL url = ClassUtils.getResourceURL(this, AUTHALIAS_XSLT);
 			if (url != null) {
-				Transformer t = XmlUtils.createTransformer(url, true);
-				String configString = ConfigurationUtils.getOriginalConfiguration(config.getConfigurationURL());
-				configString = StringResolver.substVars(configString, AppConstants.getInstance());
-				configString = ConfigurationUtils.getActivatedConfiguration(configString);
-				String authEntries = XmlUtils.transformXml(t, configString);
-				Element authEntriesElement = XmlUtils.buildElement(authEntries);
-				entries = XmlUtils.getChildTags(authEntriesElement, "entry");
+				for (Configuration configuration : ibisManager.getConfigurations()) {
+					Transformer t = XmlUtils.createTransformer(url, true);
+					String configString = ConfigurationUtils.getOriginalConfiguration(configuration.getConfigurationURL());
+					configString = StringResolver.substVars(configString, AppConstants.getInstance());
+					configString = ConfigurationUtils.getActivatedConfiguration(configString);
+					String authEntries = XmlUtils.transformXml(t, configString);
+					Element authEntriesElement = XmlUtils.buildElement(authEntries);
+					if (entries == null) {
+						entries = XmlUtils.getChildTags(authEntriesElement, "entry");
+					} else {
+						entries.addAll(XmlUtils.getChildTags(authEntriesElement, "entry"));
+					}
+				}
 			}
 		} catch (Exception e) {
 			XmlBuilder ae = new XmlBuilder("entry");
@@ -453,26 +457,28 @@ public final class ShowSecurityItems extends ActionBase {
 			ae.addAttribute("alias", "*** ERROR ***");
 		}
 
-		Iterator iter = entries.iterator();
-		while (iter.hasNext()) {
-			Element itemElement = (Element) iter.next();
-			String alias = itemElement.getAttribute("alias");
-			CredentialFactory cf = new CredentialFactory(alias, null, null);
-			XmlBuilder ae = new XmlBuilder("entry");
-			aes.addSubElement(ae);
-			ae.addAttribute("alias", alias);
-			String userName;
-			String passWord;
-			try {
-				userName = cf.getUsername();
-				passWord = StringUtils.repeat("*", cf.getPassword().length());
-
-			} catch (Exception e) {
-				userName = "*** ERROR ***";
-				passWord = "*** ERROR ***";
+		if (entries != null) {
+			Iterator iter = entries.iterator();
+			while (iter.hasNext()) {
+				Element itemElement = (Element) iter.next();
+				String alias = itemElement.getAttribute("alias");
+				CredentialFactory cf = new CredentialFactory(alias, null, null);
+				XmlBuilder ae = new XmlBuilder("entry");
+				aes.addSubElement(ae);
+				ae.addAttribute("alias", alias);
+				String userName;
+				String passWord;
+				try {
+					userName = cf.getUsername();
+					passWord = StringUtils.repeat("*", cf.getPassword().length());
+	
+				} catch (Exception e) {
+					userName = "*** ERROR ***";
+					passWord = "*** ERROR ***";
+				}
+				ae.addAttribute("userName", userName);
+				ae.addAttribute("passWord", passWord);
 			}
-			ae.addAttribute("userName", userName);
-			ae.addAttribute("passWord", passWord);
 		}
 	}
 

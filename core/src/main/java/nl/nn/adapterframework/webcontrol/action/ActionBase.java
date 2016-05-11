@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.http.HttpUtils;
@@ -71,11 +70,6 @@ public abstract class ActionBase extends Action {
 	private List<String> secLogParamNames = new ArrayList<String>();
 	private boolean writeSecLogMessage = false;
 
-    /**
-     *the <code>Configuration</code> object
-     * @see nl.nn.adapterframework.configuration.Configuration
-     */
-	protected Configuration config;
     /**
      * the <code>IbisManager</code> object through which 
      * adapters can be controlled.
@@ -181,7 +175,6 @@ public abstract class ActionBase extends Action {
  	 * @see nl.nn.adapterframework.configuration.Configuration
  	 */ 
 	public void initAction(HttpServletRequest request) {
-
         locale = getLocale(request);
         messageResources = getResources(request);
         errors = new ActionErrors();
@@ -197,12 +190,6 @@ public abstract class ActionBase extends Action {
 			log.warn("Could not retrieve ibisManager from context");
 		} else {
 			log.debug("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context attribute ["+attributeKey+"]");
-			// TODO: explain why this shouldn't happen too early
-			config = ibisManager.getConfiguration(); // NB: Hopefully this doesn't happen too early on in the game
- 
-			if (null == config) {
-				log.info("initAction(): configuration not present in context. Configuration probably has errors. see log");
-			}
 		}
     }
 

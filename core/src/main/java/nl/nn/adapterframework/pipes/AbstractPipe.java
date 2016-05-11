@@ -127,6 +127,7 @@ import org.springframework.transaction.TransactionDefinition;
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, EventThrowing {
 	protected Logger log = LogUtil.getLogger(this);
+	protected ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 

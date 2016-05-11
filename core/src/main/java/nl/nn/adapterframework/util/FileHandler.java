@@ -114,6 +114,7 @@ import org.apache.log4j.Logger;
  */
 public class FileHandler {
 	protected Logger log = LogUtil.getLogger(this);
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
 	
@@ -303,7 +304,7 @@ public class FileHandler {
 		File file;
 		String name = getEffectiveFileName(in, session);
 		if (allowClasspath && fileSource.equals("classpath")) {
-			URL resource = ClassUtils.getResourceURL(this, name);
+			URL resource = ClassUtils.getResourceURL(classLoader, name);
 			file = new File(resource.getFile());
 		} else {
 			if (StringUtils.isNotEmpty(getDirectory())) {

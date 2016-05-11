@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -69,10 +69,10 @@ public final class ShowSchedulerStatus extends ActionBase {
 
 		if (log.isDebugEnabled()) {
 			log.debug("set metadata ["+sa.getSchedulerMetaDataToXml(scheduler).toXML()+"]");
-			log.debug("set jobdata ["+sa.getJobGroupNamesWithJobsToXml(scheduler, config).toXML()+"]");
+			log.debug("set jobdata ["+sa.getJobGroupNamesWithJobsToXml(scheduler, ibisManager).toXML()+"]");
 		}
 	    request.setAttribute("metadata", sa.getSchedulerMetaDataToXml(scheduler).toXML());
-        request.setAttribute("jobdata", sa.getJobGroupNamesWithJobsToXml(scheduler, config).toXML());
+        request.setAttribute("jobdata", sa.getJobGroupNamesWithJobsToXml(scheduler, ibisManager).toXML());
 
 
         // Forward control to the specified success URI

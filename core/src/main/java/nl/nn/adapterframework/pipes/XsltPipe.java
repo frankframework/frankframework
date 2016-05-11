@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ public class XsltPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 	    super.configure();
 	
-		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), isXslt2());
+		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), classLoader, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), isXslt2());
 		if (isSkipEmptyTags()) {
 			String skipEmptyTags_xslt = XmlUtils.makeSkipEmptyTagsXslt(isOmitXmlDeclaration(),isIndentXml());
 			log.debug("test [" + skipEmptyTags_xslt + "]");

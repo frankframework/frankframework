@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -621,10 +621,10 @@ public class JobDef {
 		String function = getFunction();
 
 		if (function.equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS)) {
-			ibisManager.getConfiguration().dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_MAIN);
+			ibisManager.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_MAIN);
 		} else 
 		if (function.equalsIgnoreCase(JOB_FUNCTION_DUMPSTATSFULL)) {
-			ibisManager.getConfiguration().dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
+			ibisManager.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
 		} else 
 		if (function.equalsIgnoreCase(JOB_FUNCTION_CLEANUPDB)) {
 			cleanupDatabase(ibisManager);
@@ -650,20 +650,21 @@ public class JobDef {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String formattedDate = formatter.format(date);
 
-		Configuration config = ibisManager.getConfiguration();
-
 		List<String> jmsRealmNames = new ArrayList<String>();
-		List<JobDef> scheduledJobs = config.getScheduledJobs();
-		for (JobDef jobdef : config.getScheduledJobs()) {
-			if (jobdef.getLocker()!=null) {
-				String jmsRealmName = jobdef.getLocker().getJmsRealName();
-				if (!jmsRealmNames.contains(jmsRealmName)) {
-					jmsRealmNames.add(jmsRealmName);
+
+		for (Configuration configuration : ibisManager.getConfigurations()) {
+			List<JobDef> scheduledJobs = configuration.getScheduledJobs();
+			for (JobDef jobdef : configuration.getScheduledJobs()) {
+				if (jobdef.getLocker()!=null) {
+					String jmsRealmName = jobdef.getLocker().getJmsRealName();
+					if (!jmsRealmNames.contains(jmsRealmName)) {
+						jmsRealmNames.add(jmsRealmName);
+					}
 				}
 			}
 		}
 
-		for (IAdapter adapter : config.getRegisteredAdapters()) {
+		for (IAdapter adapter : ibisManager.getRegisteredAdapters()) {
 			if (adapter instanceof Adapter) {
 				PipeLine pipeLine = ((Adapter)adapter).getPipeLine();
 				if (pipeLine != null) {
@@ -699,8 +700,8 @@ public class JobDef {
 		}
 
 		List messageLogs = new ArrayList();
-		for(int j=0; j<config.getRegisteredAdapters().size(); j++) {
-			Adapter adapter = (Adapter)config.getRegisteredAdapter(j);
+		for(IAdapter iadapter : ibisManager.getRegisteredAdapters()) {
+			Adapter adapter = (Adapter)iadapter;
 			PipeLine pipeline = adapter.getPipeLine();
 			for (int i=0; i<pipeline.getPipes().size(); i++) {
 				IPipe pipe = pipeline.getPipe(i);
@@ -801,8 +802,7 @@ public class JobDef {
 		int countAdapterStateStarted=0;
 		int countReceiver=0;
 		int countReceiverStateStarted=0;
-		Configuration config = ibisManager.getConfiguration();
-		for (IAdapter adapter : config.getRegisteredAdapters()) {
+		for (IAdapter adapter : ibisManager.getRegisteredAdapters()) {
 			countAdapter++;
 			if (adapter instanceof Adapter) {
 				Adapter at = null;

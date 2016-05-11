@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class CacheAdapterBase implements ICacheAdapter {
 	protected Logger log = LogUtil.getLogger(this);
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 
@@ -84,10 +85,10 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 			throw new ConfigurationException(getLogPrefix()+"valueXPathOutputType ["+getValueXPathOutputType()+"] must be either 'xml' or 'text'");
 		}
 		if (StringUtils.isNotEmpty(getKeyXPath()) || StringUtils.isNotEmpty(getKeyStyleSheet())) {
-			keyTp=TransformerPool.configureTransformer(getLogPrefix(),getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(),getKeyXPathOutputType(),false,null);
+			keyTp=TransformerPool.configureTransformer(getLogPrefix(), classLoader, getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(),getKeyXPathOutputType(),false,null);
 		}
 		if (StringUtils.isNotEmpty(getValueXPath()) || StringUtils.isNotEmpty(getValueStyleSheet())) {
-			valueTp=TransformerPool.configureTransformer(getLogPrefix(),getValueNamespaceDefs(), getValueXPath(), getValueStyleSheet(),getValueXPathOutputType(),false,null);
+			valueTp=TransformerPool.configureTransformer(getLogPrefix(), classLoader, getValueNamespaceDefs(), getValueXPath(), getValueStyleSheet(),getValueXPathOutputType(),false,null);
 		}
 	}
 	

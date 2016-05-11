@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ import org.xml.sax.InputSource;
  */
 public class XSD implements Schema, Comparable<XSD> {
 	private static final Logger LOG = LogUtil.getLogger(XSD.class);
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private nl.nn.javax.wsdl.Definition wsdlDefinition;
 	private nl.nn.javax.wsdl.extensions.schema.Schema wsdlSchema;
@@ -173,7 +174,7 @@ public class XSD implements Schema, Comparable<XSD> {
 
 	public void init() throws ConfigurationException {
 		if (noNamespaceSchemaLocation != null) {
-			url = ClassUtils.getResourceURL(noNamespaceSchemaLocation);
+			url = ClassUtils.getResourceURL(classLoader, noNamespaceSchemaLocation);
 			if (url == null) {
 				throw new ConfigurationException("Cannot find [" + noNamespaceSchemaLocation + "]");
 			}
@@ -181,7 +182,7 @@ public class XSD implements Schema, Comparable<XSD> {
 			toString = noNamespaceSchemaLocation;
 		} else {
 			if (resource != null) {
-				url = ClassUtils.getResourceURL(resource);
+				url = ClassUtils.getResourceURL(classLoader, resource);
 				if (url == null) {
 					throw new ConfigurationException("Cannot find [" + resource + "]");
 				}

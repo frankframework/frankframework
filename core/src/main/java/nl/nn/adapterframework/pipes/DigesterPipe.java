@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public class DigesterPipe extends FixedForwardPipe {
 		super.configure();
 
 		try {
-     		 rulesURL = ClassUtils.getResourceURL(this, digesterRulesFile);
+     		 rulesURL = ClassUtils.getResourceURL(classLoader, digesterRulesFile);
  			 DigesterLoader.createDigester(rulesURL); // load rules to check if they can be loaded when needed
 		} catch (Exception e) {
 			throw new ConfigurationException(getLogPrefix(null)+"Digester rules file ["+digesterRulesFile+"] not found", e);

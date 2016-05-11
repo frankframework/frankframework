@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -70,6 +70,7 @@ import org.apache.commons.lang.SystemUtils;
  * @since   4.9
  */
 public class FixedResultSender extends SenderWithParametersBase {
+	protected ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String fileName;
 	private String returnString;
@@ -91,7 +92,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 	    
 		if (StringUtils.isNotEmpty(fileName)) {
 			try {
-				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this,fileName), SystemUtils.LINE_SEPARATOR);
+				returnString = Misc.resourceToString(ClassUtils.getResourceURL(classLoader, fileName), SystemUtils.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+fileName+"]", e);
 			}
@@ -126,7 +127,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 		}
 
 		if (StringUtils.isNotEmpty(styleSheetName)) {
-			URL xsltSource = ClassUtils.getResourceURL(this, styleSheetName);
+			URL xsltSource = ClassUtils.getResourceURL(classLoader, styleSheetName);
 			if (xsltSource!=null) {
 				try{
 					String xsltResult = null;

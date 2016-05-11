@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ abstract public class AbstractEJBBase {
     
     protected static IbisContext ibisContext;
     protected static IbisManager ibisManager;
-    protected static Configuration config;
     
     private Context context;
     
@@ -56,7 +55,6 @@ abstract public class AbstractEJBBase {
         // most importantly the right Spring Context!
 		ibisContext.initConfig();
 		ibisManager = ibisContext.getIbisManager();
-        config = ibisManager.getConfiguration();
 		ibisManager.startIbis();
     }
     

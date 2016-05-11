@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -135,7 +135,7 @@ public class IbisSoapServlet extends HttpServlet {
          if (pathInfo.startsWith("/")) pathInfo = pathInfo.substring(1);
          int dot = pathInfo.lastIndexOf('.');
          pathInfo = pathInfo.substring(0, dot);
-         return (Adapter) ibisManager.getConfiguration().getRegisteredAdapter(pathInfo);
+         return (Adapter) ibisManager.getRegisteredAdapter(pathInfo);
      }
 
 	protected static void setDocumentation(Wsdl wsdl, HttpServletRequest req) {
@@ -184,7 +184,7 @@ public class IbisSoapServlet extends HttpServlet {
     	w.write("<ol>");
 
         int count = 0;
-        for (IAdapter a : ibisManager.getConfiguration().getRegisteredAdapters()) {
+        for (IAdapter a : ibisManager.getRegisteredAdapters()) {
             count++;
             w.write("<li>");
             try {
@@ -233,7 +233,7 @@ public class IbisSoapServlet extends HttpServlet {
         w.write("<ol>");
 
         int count = 0;
-        for (IAdapter a : ibisManager.getConfiguration().getRegisteredAdapters()) {
+        for (IAdapter a : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter) a;
 			Iterator recIt=adapter.getReceiverIterator();
 			while (recIt.hasNext()){

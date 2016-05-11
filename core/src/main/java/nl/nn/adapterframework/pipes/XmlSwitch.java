@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -109,12 +109,12 @@ public class XmlSwitch extends AbstractPipe {
 			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
 				throw new ConfigurationException(getLogPrefix(null) + "cannot have both an xpathExpression and a serviceSelectionStylesheetFilename specified");
 			}
-			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), null, getXpathExpression(), null, "text", false, getParameterList(), isXslt2());
+			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), classLoader, null, getXpathExpression(), null, "text", false, getParameterList(), isXslt2());
 		} 
 		else {
 			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
 				try {
-					URL stylesheetURL = ClassUtils.getResourceURL(this, getServiceSelectionStylesheetFilename());
+					URL stylesheetURL = ClassUtils.getResourceURL(classLoader, getServiceSelectionStylesheetFilename());
 					if (stylesheetURL==null) {
 						throw new ConfigurationException(getLogPrefix(null) + "cannot find stylesheet ["+getServiceSelectionStylesheetFilename()+"]");
 					}

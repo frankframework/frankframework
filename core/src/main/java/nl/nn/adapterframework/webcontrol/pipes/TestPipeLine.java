@@ -78,7 +78,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "No adapter selected");
 		}
-		IAdapter adapter = RestListenerUtils.retrieveConfiguration(session)
+		IAdapter adapter = RestListenerUtils.retrieveIbisManager(session)
 				.getRegisteredAdapter(form_adapterName);
 		if (adapter == null) {
 			throw new PipeRunException(this, getLogPrefix(session)
@@ -208,7 +208,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 	private String retrieveFormInput(IPipeLineSession session) {
 		List<String> adapterNames = new ArrayList<String>();
 		adapterNames.add("-- select an adapter --");
-		adapterNames.addAll(RestListenerUtils.retrieveConfiguration(session)
+		adapterNames.addAll(RestListenerUtils.retrieveIbisManager(session)
 				.getSortedStartedAdapterNames());
 		XmlBuilder adaptersXML = new XmlBuilder("adapters");
 		for (int i = 0; i < adapterNames.size(); i++) {

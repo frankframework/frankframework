@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -625,7 +625,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		List<Schema> xsds = new ArrayList<Schema>();
 		String schemaLocation = getSchemasId(session);
 		if (schemaSessionKey != null) {
-			final URL url = ClassUtils.getResourceURL(schemaLocation);
+			final URL url = ClassUtils.getResourceURL(classLoader, schemaLocation);
 			if (url == null) {
 				throw new PipeRunException(this, getLogPrefix(session) + "could not find schema at [" + schemaLocation + "]");
 			}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.util.List;
+
 import nl.nn.adapterframework.core.IAdapter;
+
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -33,13 +36,22 @@ public interface IbisManager {
     public static final int DEPLOYMENT_MODE_EJB = 1;
     public static final String DEPLOYMENT_MODE_UNMANAGED_STRING = "Unmanaged (Legacy)";
     public static final String DEPLOYMENT_MODE_EJB_STRING = "EJB";
-    
+
+    void setConfiguration(Configuration configuration);
+
+    void addConfiguration(Configuration configuration);
+
     /**
      * Get the Configuration, for querying and display of it's contents.
      * 
      * @return IBIS Configuration
      */
     Configuration getConfiguration();
+
+    List<Configuration> getConfigurations();
+
+    Configuration getConfiguration(String configurationName);
+
     /**
      * Issue a command/action on the named adapter/receiver.
      * @param action
@@ -62,11 +74,11 @@ public interface IbisManager {
     /**
      * Start all adapters of the IBIS instance.
      */
-    void startAdapters();
+    void startAdapters(Configuration configuration);
     /**
      * Stop all adapters of the IBIS instance.
      */
-    void stopAdapters();
+    void stopAdapters(Configuration configuration);
     /**
      * Start the given adapter.
      * 
@@ -80,6 +92,12 @@ public interface IbisManager {
      */
     void stopAdapter(IAdapter adapter);
 
+    public IAdapter getRegisteredAdapter(String name);
+
+    public List<String> getSortedStartedAdapterNames();
+
+    public List<IAdapter> getRegisteredAdapters();
+
     /**
      * Load the configuration file, thus initializing the IBIS instance.
      * Afterwards, the IBIS is ready to be started.
@@ -87,6 +105,8 @@ public interface IbisManager {
      * @param configurationFile
      */
     void loadConfigurationFile(String configurationFile);
+
+    void loadConfigurationFile(ClassLoader classLoader, String configurationFile);
     
     /**
      * Get string representing the deployment mode: "Unmanaged" or "EJB".
@@ -108,4 +128,7 @@ public interface IbisManager {
      * @return Instance of the Platform Transaction Manager.
      */
     PlatformTransactionManager getTransactionManager();
+
+    public void dumpStatistics(int action);
+
 }

@@ -59,15 +59,11 @@ public class ShowAdapterStatistics extends ActionBase {
 	    // Initialize action
 	    initAction(request);
 	
-	    if (null == config) {
-	        return (mapping.findForward("noconfig"));
-	    }
-	
 	    String adapterName = request.getParameter("adapterName");
 	    String deepString =  request.getParameter("deep");
 	    boolean deep = "true".equals(deepString);
 	
-	    Adapter adapter = (Adapter) config.getRegisteredAdapter(adapterName);
+	    Adapter adapter = (Adapter)ibisManager.getRegisteredAdapter(adapterName);
 	    XmlBuilder adapterXML = new XmlBuilder("adapterStatistics");
 	
 	    adapterXML.addAttribute("name", adapter.getName());

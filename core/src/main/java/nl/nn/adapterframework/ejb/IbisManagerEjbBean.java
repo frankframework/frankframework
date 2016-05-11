@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,15 +16,19 @@
 package nl.nn.adapterframework.ejb;
 
 import java.rmi.RemoteException;
+import java.util.List;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.LogUtil;
+
 import org.apache.log4j.Logger;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -73,6 +77,10 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
         return ibisManager.getConfiguration();
     }
 
+    public List<Configuration> getConfigurations() {
+        return ibisManager.getConfigurations();
+    }
+
     public void handleAdapter(String action, String adapterName, String receiverName, String commandIssuedBy) {
 		ibisManager.handleAdapter(action, adapterName, receiverName, commandIssuedBy);
     }
@@ -86,12 +94,12 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
 		ibisContext.destroyConfig();
     }
     
-    public void startAdapters() {
-		ibisManager.startAdapters();
+    public void startAdapters(Configuration configuration) {
+		ibisManager.startAdapters(configuration);
     }
 
-    public void stopAdapters() {
-		ibisManager.stopAdapters();
+    public void stopAdapters(Configuration configuration) {
+		ibisManager.stopAdapters(configuration);
     }
 
     public void startAdapter(IAdapter adapter) {
@@ -104,6 +112,10 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
 
     public void loadConfigurationFile(String configurationFile) {
 		ibisManager.loadConfigurationFile(configurationFile);
+    }
+
+    public void loadConfigurationFile(ClassLoader classLoader, String configurationFile) {
+		ibisManager.loadConfigurationFile(classLoader, configurationFile);
     }
 
     public String getDeploymentModeString() {
@@ -124,5 +136,33 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
     protected EJBContext getEJBContext() {
         return this.sessionContext;
     }
+
+	public void setConfiguration(Configuration configuration) {
+		ibisManager.setConfiguration(configuration);
+	}
+
+	public void addConfiguration(Configuration configuration) {
+		ibisManager.addConfiguration(configuration);
+	}
+
+	public Configuration getConfiguration(String configurationName) {
+		return ibisManager.getConfiguration(configurationName);
+	}
+
+	public IAdapter getRegisteredAdapter(String name) {
+		return ibisManager.getRegisteredAdapter(name);
+	}
+
+	public List<IAdapter> getRegisteredAdapters() {
+		return ibisManager.getRegisteredAdapters();
+	}
+
+	public void dumpStatistics(int action) {
+		ibisManager.dumpStatistics(action);
+	}
+
+	public List<String> getSortedStartedAdapterNames() {
+		return ibisManager.getSortedStartedAdapterNames();
+	}
 
 }

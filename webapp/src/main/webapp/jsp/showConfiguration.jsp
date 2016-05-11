@@ -4,9 +4,10 @@
 <%@ page import="org.apache.log4j.Logger"%>
 <%@ page import="org.apache.log4j.Level"%>
 <%@ page import="nl.nn.adapterframework.util.AppConstants"%>
+<%@ page import="nl.nn.adapterframework.util.XmlUtils" %>
  
   <html:xhtml/>
-<page title="Show configuration">
+<page title="Show configuration: <% out.write(XmlUtils.replaceNonValidXmlCharacters((String)request.getAttribute("configurationName"))); %>">
 
 	<% if (AppConstants.getInstance().getBoolean("showConfiguration.original", false)) { %>
 		<imagelink
@@ -27,7 +28,24 @@
 				<parameter name="action">showoriginalconfig</parameter>
 		 </imagelink>
 	<% } %>
-	
+
+	<xtags:parse>
+		<% out.write(XmlUtils.replaceNonValidXmlCharacters(request.getAttribute("configurations").toString())); %>
+	</xtags:parse>
+	<xtags:if test="count(//configuration) > 1">
+		<xtags:forEach select="//configuration">
+			<xtags:variable id="configuration" select="."/>
+			<imagelink
+				href="showConfiguration.do"
+				type="showastext"
+				alt="<%=configuration%>"
+				text="<%=configuration%>"
+				>
+				<parameter name="configuration"><xtags:valueOf select="." /></parameter>
+			</imagelink>
+		</xtags:forEach>
+	</xtags:if>
+
  	<pre>
 			<bean:write name="configXML" scope="request" filter="true"/>
 	</pre>

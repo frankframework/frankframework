@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.ejb;
+
+import java.util.List;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -50,21 +52,23 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
         return this.ibisManager;
     }
     
-    public Configuration getConfiguration() {
+    public List<Configuration> getConfigurations() {
         IbisManager mngr = getIbisManager();
         if (mngr == null) {
             log.error("Cannot look up the configuration when the IbisManager is not set");
             return null;
         } else {
-            Configuration cfg = mngr.getConfiguration();
-            if (cfg == null) {
+        	List<Configuration> configurations = mngr.getConfigurations();
+            if (configurations == null) {
                 log.error("Retrieved null configuration object from real IbisManager");
             } else {
-                log.info("Configuration retrieved from real IbisManager: configuration-name '"
-                        + cfg.getConfigurationName() + "', nr of adapters: "
-                        + cfg.getRegisteredAdapters().size());
+                for (Configuration configuration : configurations) {
+                    log.info("Configuration retrieved from real IbisManager: configuration-name '"
+                            + configuration.getConfigurationName() + "', nr of adapters: "
+                            + configuration.getRegisteredAdapters().size());
+                }
             }
-            return cfg;
+            return configurations;
         }
     }
 
@@ -80,12 +84,12 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
         getIbisManager().shutdownIbis();
     }
     
-    public void startAdapters() {
-        getIbisManager().startAdapters();
+    public void startAdapters(Configuration configuration) {
+        getIbisManager().startAdapters(configuration);
     }
 
-    public void stopAdapters() {
-        getIbisManager().stopAdapters();
+    public void stopAdapters(Configuration configuration) {
+        getIbisManager().stopAdapters(configuration);
     }
 
     public void startAdapter(IAdapter adapter) {
@@ -97,6 +101,10 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
     }
 
     public void loadConfigurationFile(String configurationFile) {
+    	// Do not delegate to EJB; EJB initializes itself.
+    }
+
+    public void loadConfigurationFile(ClassLoader classLoader, String configurationFile) {
     	// Do not delegate to EJB; EJB initializes itself.
     }
 
@@ -123,4 +131,37 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
     public void setTransactionManager(PlatformTransactionManager transactionManager) {
         this.transactionManager = transactionManager;
     }
+
+    public Configuration getConfiguration() {
+        return ibisManager.getConfiguration();
+    }
+
+	public void setConfiguration(Configuration configuration) {
+		ibisManager.setConfiguration(configuration);
+	}
+
+	public void addConfiguration(Configuration configuration) {
+		ibisManager.setConfiguration(configuration);
+	}
+
+	public Configuration getConfiguration(String configurationName) {
+		return ibisManager.getConfiguration(configurationName);
+	}
+
+	public IAdapter getRegisteredAdapter(String name) {
+		return ibisManager.getRegisteredAdapter(name);
+	}
+
+	public List<IAdapter> getRegisteredAdapters() {
+		return ibisManager.getRegisteredAdapters();
+	}
+
+	public void dumpStatistics(int action) {
+		ibisManager.dumpStatistics(action);
+	}
+
+	public List<String> getSortedStartedAdapterNames() {
+		return ibisManager.getSortedStartedAdapterNames();
+	}
+
 }

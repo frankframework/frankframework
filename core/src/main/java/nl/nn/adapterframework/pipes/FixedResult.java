@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -84,6 +84,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 public class FixedResult extends FixedForwardPipe {
 	
+	AppConstants appConstants;
     private String fileName;
     private String returnString;
     private boolean substituteVars=false;
@@ -101,12 +102,12 @@ public class FixedResult extends FixedForwardPipe {
      * @throws ConfigurationException
      */
     public void configure() throws ConfigurationException {
-	    super.configure();
-	    
+		super.configure();
+		appConstants = AppConstants.getInstance(classLoader);
 		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(this,getFileName());
+				resource = ClassUtils.getResourceURL(classLoader, getFileName());
 			} catch (Throwable e) {
 				throw new ConfigurationException(getLogPrefix(null)+"got exception searching for ["+getFileName()+"]", e);
 			}
@@ -132,7 +133,7 @@ public class FixedResult extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(this,getFileName());
+				resource = ClassUtils.getResourceURL(classLoader, getFileName());
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+getFileName()+"]", e);
 			}
@@ -161,11 +162,11 @@ public class FixedResult extends FixedForwardPipe {
 		}
 
 		if (getSubstituteVars()){
-			result=StringResolver.substVars(returnString, session, AppConstants.getInstance());
+			result=StringResolver.substVars(returnString, session, appConstants);
 		}
 
 		if (StringUtils.isNotEmpty(styleSheetName)) {
-			URL xsltSource = ClassUtils.getResourceURL(this, styleSheetName);
+			URL xsltSource = ClassUtils.getResourceURL(classLoader, styleSheetName);
 			if (xsltSource!=null) {
 				try{
 					String xsltResult = null;

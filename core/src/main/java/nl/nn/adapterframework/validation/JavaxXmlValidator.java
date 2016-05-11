@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -57,12 +57,12 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 
 	// TODO I think many (if not all) schemas can simply be registered globally, because xmlns should be uniquely defined.
 	// missing a generic generic mechanism for now
-	private static final Map<String, URL> globalRegistry = new HashMap<String, URL>();
-
-	static {
-		globalRegistry.put("http://schemas.xmlsoap.org/soap/envelope/", ClassUtils.getResourceURL("/Tibco/xsd/soap/envelope.xsd"));
-		//globalRegistry.put("http://ing.nn.afd/AFDTypes",                ClassUtils.getResourceURL("/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/AFDTypes.xsd"));
-	}
+//	private static final Map<String, URL> globalRegistry = new HashMap<String, URL>();
+//
+//	static {
+//		globalRegistry.put("http://schemas.xmlsoap.org/soap/envelope/", ClassUtils.getResourceURL("/Tibco/xsd/soap/envelope.xsd"));
+//		//globalRegistry.put("http://ing.nn.afd/AFDTypes",                ClassUtils.getResourceURL("/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/AFDTypes.xsd"));
+//	}
 
 	private Map<String, Schema> javaxSchemas = new HashMap<String, Schema>();
 

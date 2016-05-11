@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.scheduler;
 import java.util.Date;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -45,7 +46,7 @@ public class SchedulerAdapter {
      * Get all jobgroups, jobs within this group, the jobdetail and the
      * associated triggers in XML format.
      */
-    public XmlBuilder getJobGroupNamesWithJobsToXml(Scheduler theScheduler, Configuration config) {
+    public XmlBuilder getJobGroupNamesWithJobsToXml(Scheduler theScheduler, IbisManager ibisManager) {
         XmlBuilder xbRoot = new XmlBuilder("jobGroups");
 
         try {
@@ -76,7 +77,14 @@ public class SchedulerAdapter {
                     jn.addSubElement(datamap);
                     jb.addSubElement(jn);
 
-					XmlBuilder ms= getJobMessages(config.getScheduledJob(jobNames[j]));
+                    JobDef jobDef = null;
+                    for (Configuration configuration : ibisManager.getConfigurations()) {
+                        jobDef = configuration.getScheduledJob(jobNames[j]);
+                        if (jobDef != null) {
+                            break;
+                        }
+                    }
+					XmlBuilder ms= getJobMessages(jobDef);
 					jn.addSubElement(ms);
                 }
                 el.addSubElement(jb);

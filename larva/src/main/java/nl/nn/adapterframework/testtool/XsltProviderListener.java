@@ -30,7 +30,7 @@ public class XsltProviderListener {
 	public void init() throws ListenerException {
 		try {
 			if (fromClasspath) {
-				transformerPool = new TransformerPool(ClassUtils.getResourceURL(filename), xslt2);
+				transformerPool = new TransformerPool(ClassUtils.getResourceURL(this, filename), xslt2);
 			} else {
 				File file = new File(filename);
 				StreamSource streamSource = new StreamSource(file);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -233,7 +233,7 @@ abstract public class ConfigurationDigester {
 			if (null == lineSeparator) lineSeparator = "\n";
 			String configString = Misc.resourceToString(configurationFileURL, lineSeparator, false);
 			configString = XmlUtils.identityTransform(configString);
-			configString = StringResolver.substVars(configString, AppConstants.getInstance());
+			configString = StringResolver.substVars(configString, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()));
 
 			configString = ConfigurationUtils.getActivatedConfiguration(configString);
 
@@ -316,14 +316,6 @@ abstract public class ConfigurationDigester {
 
 		digestConfiguration(includedConfigUrl);
 	}
-
-	private Configuration unmarshalConfiguration() throws ConfigurationException, SAXNotSupportedException, SAXNotRecognizedException {
-		return unmarshalConfiguration(getDigesterRules(), getConfigurationFile());
-	}
-
-    private  Configuration unmarshalConfiguration(String digesterRulesFile, String configurationFile) throws ConfigurationException, SAXNotSupportedException, SAXNotRecognizedException {
-		return unmarshalConfiguration(ClassUtils.getResourceURL(this, digesterRulesFile), ClassUtils.getResourceURL(this, configurationFile));
-    }
 
     public Configuration unmarshalConfiguration(URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException, SAXNotSupportedException, SAXNotRecognizedException {
         configuration.setDigesterRulesURL(digesterRulesURL);

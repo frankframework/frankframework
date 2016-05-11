@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class TransformerPool {
 
 	private Templates templates;
 	private URL reloadURL=null;
-	
+
 	private ObjectPool pool = new SoftReferenceObjectPool(new BasePoolableObjectFactory() {
 		public Object makeObject() throws Exception {
 			return createTransformer();			
@@ -130,18 +130,18 @@ public class TransformerPool {
 		}
 	}
 
-	public static TransformerPool configureTransformer(String logPrefix, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
+	public static TransformerPool configureTransformer(String logPrefix, ClassLoader classLoader, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
 		if (mandatory || StringUtils.isNotEmpty(xPathExpression) || StringUtils.isNotEmpty(styleSheetName)) {
-			return configureTransformer(logPrefix,namespaceDefs,xPathExpression,styleSheetName, outputType, includeXmlDeclaration, params);
+			return configureTransformer(logPrefix,classLoader,namespaceDefs,xPathExpression,styleSheetName, outputType, includeXmlDeclaration, params);
 		} 
 		return null;
 	}
 	
-	public static TransformerPool configureTransformer(String logPrefix, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
-		return configureTransformer0(logPrefix,namespaceDefs,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,false);
+	public static TransformerPool configureTransformer(String logPrefix, ClassLoader classLoader, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
+		return configureTransformer0(logPrefix,classLoader,namespaceDefs,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,false);
 	}
 
-	public static TransformerPool configureTransformer0(String logPrefix, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean xslt2) throws ConfigurationException {
+	public static TransformerPool configureTransformer0(String logPrefix, ClassLoader classLoader, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean xslt2) throws ConfigurationException {
 		TransformerPool result;
 		if (logPrefix==null) {
 			logPrefix="";
@@ -170,7 +170,7 @@ public class TransformerPool {
 				throw new ConfigurationException(logPrefix+" cannot have namespaceDefs specified for a styleSheetName");
 			}
 			if (!StringUtils.isEmpty(styleSheetName)) {
-				URL resource = ClassUtils.getResourceURL(TransformerPool.class, styleSheetName);
+				URL resource = ClassUtils.getResourceURL(classLoader, styleSheetName);
 				if (resource==null) {
 					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "]"); 
 				}

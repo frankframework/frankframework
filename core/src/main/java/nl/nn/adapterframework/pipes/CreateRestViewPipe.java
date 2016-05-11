@@ -145,6 +145,8 @@ public class CreateRestViewPipe extends XsltPipe {
 
 	private String contentType = "text/html";
 
+	AppConstants appConstants;
+
 	public void configure() throws ConfigurationException {
 		ParameterList parameterList = getParameterList();
 		if (parameterList.findParameter(SRCPREFIX) == null) {
@@ -153,7 +155,7 @@ public class CreateRestViewPipe extends XsltPipe {
 			p.setSessionKey(SRCPREFIX);
 			addParameter(p);
 		}
-
+		appConstants = AppConstants.getInstance(classLoader);
 		super.configure();
 	}
 
@@ -212,7 +214,7 @@ public class CreateRestViewPipe extends XsltPipe {
 				+ "<freeSpace>" + Misc.getFileSystemFreeSpace()
 				+ "</freeSpace>" + "</fileSystem>";
 		parameters.put("fileSystem", XmlUtils.buildNode(fileSystemXml));
-		String applicationConstantsXml = AppConstants.getInstance().toXml(true);
+		String applicationConstantsXml = appConstants.toXml(true);
 		parameters.put("applicationConstants",
 				XmlUtils.buildNode(applicationConstantsXml));
 		String processMetricsXml = ProcessMetrics.toXml();

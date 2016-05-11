@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -117,11 +117,11 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 				throw new ConfigurationException("fxf.dir '" + fxfDir + "' doesn't exist or is not a directory");
 			}
 			transferFlowIdTp = TransformerPool.configureTransformer0(
-					getLogPrefix(null), null,
+					getLogPrefix(null), classLoader, null,
 					"/OnCompletedTransferNotify_Action/TransferFlowId", null,
 					"text", false, getParameterList(), true);
 			clientFilenameTp = TransformerPool.configureTransformer0(
-					getLogPrefix(null), null,
+					getLogPrefix(null), classLoader, null,
 					"/OnCompletedTransferNotify_Action/ClientFilename", null,
 					"text", false, getParameterList(), true);
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
@@ -97,52 +98,50 @@ public class ShowIbisstoreSummary extends ActionBase {
 			}
 		}
 
-		if (null!=config) {
-			for(Iterator adapterIt=config.getRegisteredAdapters().iterator(); adapterIt.hasNext();) {
-				Adapter adapter = (Adapter)adapterIt.next();
-				for(Iterator receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
-					ReceiverBase receiver=(ReceiverBase)receiverIt.next();
-					ITransactionalStorage errorStorage=receiver.getErrorStorage();
-					if (errorStorage!=null) {
-						String slotId=errorStorage.getSlotId();
-						if (StringUtils.isNotEmpty(slotId)) {
-							SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
-							String type = errorStorage.getType();
-							slotmap.put(type+"/"+slotId,sir);
-						}
-					}
-					ITransactionalStorage messageLog=receiver.getMessageLog();
-					if (messageLog!=null) {
-						String slotId=messageLog.getSlotId();
-						if (StringUtils.isNotEmpty(slotId)) {
-							SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
-							String type = messageLog.getType();
-							slotmap.put(type+"/"+slotId,sir);
-						}
+		for(IAdapter iAdapter : ibisManager.getRegisteredAdapters()) {
+			Adapter adapter = (Adapter)iAdapter;
+			for(Iterator receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
+				ReceiverBase receiver=(ReceiverBase)receiverIt.next();
+				ITransactionalStorage errorStorage=receiver.getErrorStorage();
+				if (errorStorage!=null) {
+					String slotId=errorStorage.getSlotId();
+					if (StringUtils.isNotEmpty(slotId)) {
+						SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
+						String type = errorStorage.getType();
+						slotmap.put(type+"/"+slotId,sir);
 					}
 				}
-				PipeLine pipeline=adapter.getPipeLine();
-				if (pipeline!=null) {
-					for (int i=0; i<pipeline.getPipeLineSize(); i++) {
-						IPipe pipe=pipeline.getPipe(i);
-						if (pipe instanceof MessageSendingPipe) {
-							MessageSendingPipe msp=(MessageSendingPipe)pipe;
-							ITransactionalStorage messageLog = msp.getMessageLog();
-							if (messageLog!=null) {
-								String slotId=messageLog.getSlotId();
-								if (StringUtils.isNotEmpty(slotId)) {
-									SlotIdRecord sir=new SlotIdRecord(adapter.getName(),null,msp.getName());
-									String type = messageLog.getType();
-									slotmap.put(type+"/"+slotId,sir);
-									slotmap.put(slotId,sir);
-								}
+				ITransactionalStorage messageLog=receiver.getMessageLog();
+				if (messageLog!=null) {
+					String slotId=messageLog.getSlotId();
+					if (StringUtils.isNotEmpty(slotId)) {
+						SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
+						String type = messageLog.getType();
+						slotmap.put(type+"/"+slotId,sir);
+					}
+				}
+			}
+			PipeLine pipeline=adapter.getPipeLine();
+			if (pipeline!=null) {
+				for (int i=0; i<pipeline.getPipeLineSize(); i++) {
+					IPipe pipe=pipeline.getPipe(i);
+					if (pipe instanceof MessageSendingPipe) {
+						MessageSendingPipe msp=(MessageSendingPipe)pipe;
+						ITransactionalStorage messageLog = msp.getMessageLog();
+						if (messageLog!=null) {
+							String slotId=messageLog.getSlotId();
+							if (StringUtils.isNotEmpty(slotId)) {
+								SlotIdRecord sir=new SlotIdRecord(adapter.getName(),null,msp.getName());
+								String type = messageLog.getType();
+								slotmap.put(type+"/"+slotId,sir);
+								slotmap.put(slotId,sir);
 							}
 						}
 					}
 				}
 			}
 		}
-		
+
 		List jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		if (jmsRealms.size() == 0) {
 			jmsRealms.add("no realms defined");

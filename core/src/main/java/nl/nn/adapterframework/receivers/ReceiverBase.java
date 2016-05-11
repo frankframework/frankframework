@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -207,6 +207,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
 	protected Logger log = LogUtil.getLogger(this);
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	public TransactionDefinition TXNEW_PROC;
@@ -643,7 +644,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					info(getLogPrefix()+"has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName());
 				}
 				if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-					labelTp=TransformerPool.configureTransformer0(getLogPrefix(),getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,isXslt2());
+					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), classLoader, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,isXslt2());
 				}
 			}
 			if (isTransacted()) {
@@ -678,7 +679,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			} 
 
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null,isXslt2());
+				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), classLoader, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null,isXslt2());
 			}
 
 			if (adapter != null) {

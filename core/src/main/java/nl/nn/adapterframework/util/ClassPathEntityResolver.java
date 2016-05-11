@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,8 +32,7 @@ import org.xml.sax.SAXException;
 
 public class ClassPathEntityResolver implements EntityResolver {
 	protected Logger log = LogUtil.getLogger(this);
-
-
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	/**
 	 * @see org.xml.sax.EntityResolver#resolveEntity(String, String)
@@ -52,7 +51,7 @@ public class ClassPathEntityResolver implements EntityResolver {
 		classPathEntityUrl = "/" + classPathEntityUrl;
 		try {
 			log.debug("Resolving [" + systemId + "] to [" + classPathEntityUrl+"]");
-			URL url = ClassUtils.getResourceURL(this,classPathEntityUrl);
+			URL url = ClassUtils.getResourceURL(classLoader, classPathEntityUrl);
 			if (url==null) {
 				log.error("cannot find resource for ClassPathEntity [" + systemId + "] from Url [" + classPathEntityUrl+"]");
 				return null;

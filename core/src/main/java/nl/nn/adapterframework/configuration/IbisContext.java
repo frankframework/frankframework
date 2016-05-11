@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -60,30 +61,58 @@ public class IbisContext {
 	    return initConfig(getSpringContextFileName(), IbisManager.DFLT_CONFIGURATION, IbisContext.DFLT_AUTOSTART);
 	}
 
-    /**
-     * Initalize Ibis with the given parameters, substituting default
-     * values when <code>null</code> is passed in.
-     *
-     * This method creates the Spring context, and loads the configuration
-     * file. After executing this method, the BeanFactory, IbisManager and Configuration
-     * properties are available and the Ibis instance can be started and
-     * stopped.
-     *
-     * @param springContext
-     * @param configurationFile
-     * @param autoStart
-     */
-    public boolean initConfig(String springContext, String configurationFile, String autoStart) {
+	/**
+	 * Initalize Ibis with the given parameters, substituting default
+	 * values when <code>null</code> is passed in.
+	 *
+	 * This method creates the Spring context, and loads the configuration
+	 * file. After executing this method, the BeanFactory, IbisManager and Configuration
+	 * properties are available and the Ibis instance can be started and
+	 * stopped.
+	 *
+	 * @param springContext
+	 * @param configurationFile
+	 * @param autoStart
+	 */
+	public boolean initConfig(String springContext, String configurationFile, String autoStart) {
 		initContext(springContext);
-        ibisManager.loadConfigurationFile(configurationFile);
+		ibisManager.loadConfigurationFile(configurationFile);
+		if ("TRUE".equalsIgnoreCase(autoStart)) {
+			log.info("* IBIS Startup: Starting adapters");
+			ibisManager.startIbis();
+		}
+		log.info("* IBIS Startup: Startup complete");
+		return true;
+	}
 
-        if ("TRUE".equalsIgnoreCase(autoStart)) {
-            log.info("* IBIS Startup: Starting adapters");
-            ibisManager.startIbis();
-        }
-        log.info("* IBIS Startup: Startup complete");
-        return true;
-    }
+	/**
+	 * Load configuration with a specific ClassLoader which might for example
+	 * override the getResource method to load configuration and related
+	 * resources from a different location then the standard classpath.
+	 * 
+	 * @see ClassUtils#getResourceURL(ClassLoader, String)
+	 * @see AppConstants#getInstance(ClassLoader)
+	 */
+	public boolean addConfig(ClassLoader classLoader, String configurationFile) {
+		ClassLoader originalClassLoader = null;
+		try {
+			if (classLoader != null) {
+				originalClassLoader = Thread.currentThread().getContextClassLoader();
+				Thread.currentThread().setContextClassLoader(classLoader);
+			}
+			ConfigurationDigester configurationDigester = (ConfigurationDigester)getBean("configurationDigester");
+			Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
+			configurationDigester.setConfiguration(configuration);
+			ibisManager.loadConfigurationFile(classLoader, configurationFile);
+			ibisManager.startAdapters(configuration);
+			ibisManager.addConfiguration(configuration);
+		} finally {
+			if (originalClassLoader != null) {
+				Thread.currentThread().setContextClassLoader(originalClassLoader);
+			}
+		}
+		return true;
+	}
 
 	public void initContext(String springContext) {
 		log.info("* IBIS Startup: Running on JDK version [" + System.getProperty("java.version")

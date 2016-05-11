@@ -21,8 +21,8 @@ import java.util.Iterator;
 import javax.naming.NamingException;
 import javax.xml.stream.XMLStreamException;
 
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
@@ -61,7 +61,7 @@ public class Webservices extends TimeoutGuardPipe {
 	}
 
 	private String doGet(IPipeLineSession session) throws PipeRunException {
-		Configuration config = RestListenerUtils.retrieveConfiguration(session);
+		IbisManager ibisManager = RestListenerUtils.retrieveIbisManager(session);
 
 		String uri = (String) session.get("uri");
 		String indent = (String) session.get("indent");
@@ -71,7 +71,7 @@ public class Webservices extends TimeoutGuardPipe {
 				&& (uri.endsWith(getWsdlExtention()) || uri.endsWith(".zip"))) {
 			String adapterName = StringUtils.substringBeforeLast(
 					StringUtils.substringAfterLast(uri, "/"), ".");
-			IAdapter adapter = config.getRegisteredAdapter(adapterName);
+			IAdapter adapter = ibisManager.getRegisteredAdapter(adapterName);
 			if (adapter == null) {
 				throw new PipeRunException(this, getLogPrefix(session)
 						+ "adapter [" + adapterName + "] doesn't exist");
@@ -86,21 +86,22 @@ public class Webservices extends TimeoutGuardPipe {
 							"application/octet-stream");
 					zip((Adapter) adapter, session);
 				}
+
 			} catch (Exception e) {
 				throw new PipeRunException(this, getLogPrefix(session)
 						+ "exception on retrieving wsdl", e);
 			}
 			return "";
 		} else {
-			return list(config);
+			return list(ibisManager);
 		}
 	}
 
-	private String list(Configuration config) {
+	private String list(IbisManager ibisManager) {
 		XmlBuilder webservicesXML = new XmlBuilder("webservices");
 
 		XmlBuilder restsXML = new XmlBuilder("rests");
-		for (IAdapter a : config.getRegisteredAdapters()) {
+		for (IAdapter a : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter) a;
 			Iterator recIt = adapter.getReceiverIterator();
 			while (recIt.hasNext()) {
@@ -124,7 +125,7 @@ public class Webservices extends TimeoutGuardPipe {
 		webservicesXML.addSubElement(restsXML);
 
 		XmlBuilder wsdlsXML = new XmlBuilder("wsdls");
-		for (IAdapter a : config.getRegisteredAdapters()) {
+		for (IAdapter a : ibisManager.getRegisteredAdapters()) {
 			XmlBuilder wsdlXML = new XmlBuilder("wsdl");
 			try {
 				Adapter adapter = (Adapter) a;

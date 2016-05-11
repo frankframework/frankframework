@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,99 +51,100 @@ public class EsbJmsListenerChecker {
 			PlatformTransactionManager txManager, String logPrefix) {
 		long idleTimeout = AppConstants.getInstance().getInt(
 				"check.esbJmsListeners.idleTimeout", 300) * 1000;
-		Configuration config = ibisManager.getConfiguration();
-		String msg;
-		List<String> jmsRealmNames = new ArrayList<String>();
-		for (IAdapter adapter : config.getRegisteredAdapters()) {
-			if (adapter instanceof Adapter) {
-				for (Iterator receiverIt = adapter.getReceiverIterator(); receiverIt
-						.hasNext();) {
-					IReceiver receiver = (IReceiver) receiverIt.next();
-					if (receiver instanceof ReceiverBase) {
-						ReceiverBase rb = (ReceiverBase) receiver;
-						if (rb.getRunState().equals(RunStateEnum.STARTED)) {
-							// if (true) {
-							long lastMessageDate = rb.getLastMessageDate();
-							if (lastMessageDate == 0
-									|| System.currentTimeMillis()
-											- lastMessageDate > idleTimeout) {
-								IListener listener = rb.getListener();
-								if (listener instanceof EsbJmsListener) {
-									EsbJmsListener esbJmsListener = (EsbJmsListener) listener;
-									if (esbJmsListener.getMessageProtocol()
-											.equals("FF")) {
-										Object managedConnectionFactory = null;
-										try {
-											managedConnectionFactory = esbJmsListener
-													.getManagedConnectionFactory();
-											if (managedConnectionFactory == null) {
-												msg = logPrefix
-														+ "could not get managed connection factory";
-												warn(adapter, msg);
-											} else {
-												String contextFactoryClassname = getContextFactoryClassname(managedConnectionFactory);
-												String providerURL = getProviderURL(managedConnectionFactory);
-												String authDataAlias = getAuthDataAlias(managedConnectionFactory);
-												String username = null;
-												String password = null;
-												msg = logPrefix
-														+ "found esbJmsListener ["
-														+ esbJmsListener
-																.getName()
-														+ "] with managedConnectionFactoryClassname ["
-														+ managedConnectionFactory
-																.getClass()
-																.getName()
-														+ "] having contextFactoryClassname ["
-														+ contextFactoryClassname
-														+ "] providerURL ["
-														+ providerURL
-														+ "] authDataAlias ["
-														+ authDataAlias + "]";
-												if (authDataAlias != null) {
-													CredentialFactory cf = new CredentialFactory(
-															authDataAlias,
-															null, null);
-													username = cf.getUsername();
-													password = cf.getPassword();
-												}
-												if (contextFactoryClassname != null
-														&& contextFactoryClassname
-																.equals("com.tibco.tibjms.naming.TibjmsInitialContextFactory")) {
-													log.debug(msg
-															+ ", checking...");
-													long age = getTibcoQueueFirstMessageAge(
-															providerURL,
-															authDataAlias,
-															username,
-															password,
-															esbJmsListener
-																	.getPhysicalDestinationShortName(),
-															esbJmsListener
-																	.getMessageSelector());
-													if (age > idleTimeout) {
-														msg = logPrefix
-																+ "most probably esbJmsListener ["
-																+ esbJmsListener
-																		.getName()
-																+ "] has lost connection with queue ["
-																+ esbJmsListener
-																		.getPhysicalDestinationShortName()
-																+ "]";
-														warn(adapter, msg);
-													}
+		for (Configuration configuration : ibisManager.getConfigurations()) {
+			String msg;
+			List<String> jmsRealmNames = new ArrayList<String>();
+			for (IAdapter adapter : configuration.getRegisteredAdapters()) {
+				if (adapter instanceof Adapter) {
+					for (Iterator receiverIt = adapter.getReceiverIterator(); receiverIt
+							.hasNext();) {
+						IReceiver receiver = (IReceiver) receiverIt.next();
+						if (receiver instanceof ReceiverBase) {
+							ReceiverBase rb = (ReceiverBase) receiver;
+							if (rb.getRunState().equals(RunStateEnum.STARTED)) {
+								// if (true) {
+								long lastMessageDate = rb.getLastMessageDate();
+								if (lastMessageDate == 0
+										|| System.currentTimeMillis()
+												- lastMessageDate > idleTimeout) {
+									IListener listener = rb.getListener();
+									if (listener instanceof EsbJmsListener) {
+										EsbJmsListener esbJmsListener = (EsbJmsListener) listener;
+										if (esbJmsListener.getMessageProtocol()
+												.equals("FF")) {
+											Object managedConnectionFactory = null;
+											try {
+												managedConnectionFactory = esbJmsListener
+														.getManagedConnectionFactory();
+												if (managedConnectionFactory == null) {
+													msg = logPrefix
+															+ "could not get managed connection factory";
+													warn(adapter, msg);
 												} else {
-													log.debug(msg
-															+ ", ignoring...");
+													String contextFactoryClassname = getContextFactoryClassname(managedConnectionFactory);
+													String providerURL = getProviderURL(managedConnectionFactory);
+													String authDataAlias = getAuthDataAlias(managedConnectionFactory);
+													String username = null;
+													String password = null;
+													msg = logPrefix
+															+ "found esbJmsListener ["
+															+ esbJmsListener
+																	.getName()
+															+ "] with managedConnectionFactoryClassname ["
+															+ managedConnectionFactory
+																	.getClass()
+																	.getName()
+															+ "] having contextFactoryClassname ["
+															+ contextFactoryClassname
+															+ "] providerURL ["
+															+ providerURL
+															+ "] authDataAlias ["
+															+ authDataAlias + "]";
+													if (authDataAlias != null) {
+														CredentialFactory cf = new CredentialFactory(
+																authDataAlias,
+																null, null);
+														username = cf.getUsername();
+														password = cf.getPassword();
+													}
+													if (contextFactoryClassname != null
+															&& contextFactoryClassname
+																	.equals("com.tibco.tibjms.naming.TibjmsInitialContextFactory")) {
+														log.debug(msg
+																+ ", checking...");
+														long age = getTibcoQueueFirstMessageAge(
+																providerURL,
+																authDataAlias,
+																username,
+																password,
+																esbJmsListener
+																		.getPhysicalDestinationShortName(),
+																esbJmsListener
+																		.getMessageSelector());
+														if (age > idleTimeout) {
+															msg = logPrefix
+																	+ "most probably esbJmsListener ["
+																	+ esbJmsListener
+																			.getName()
+																	+ "] has lost connection with queue ["
+																	+ esbJmsListener
+																			.getPhysicalDestinationShortName()
+																	+ "]";
+															warn(adapter, msg);
+														}
+													} else {
+														log.debug(msg
+																+ ", ignoring...");
+													}
 												}
+											} catch (Throwable t) {
+												msg = logPrefix
+														+ "exception on checking queue ["
+														+ esbJmsListener
+																.getPhysicalDestinationShortName()
+														+ "]";
+												warn(adapter, msg, t);
 											}
-										} catch (Throwable t) {
-											msg = logPrefix
-													+ "exception on checking queue ["
-													+ esbJmsListener
-															.getPhysicalDestinationShortName()
-													+ "]";
-											warn(adapter, msg, t);
 										}
 									}
 								}

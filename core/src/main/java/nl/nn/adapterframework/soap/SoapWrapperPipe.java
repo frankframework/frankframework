@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -111,10 +111,10 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 			}
 		}
 		if (StringUtils.isNotEmpty(getSoapHeaderStyleSheet())) {
-			soapHeaderTp = TransformerPool.configureTransformer0(getLogPrefix(null), null, null, getSoapHeaderStyleSheet(), "xml", false, getParameterList(), true);
+			soapHeaderTp = TransformerPool.configureTransformer0(getLogPrefix(null), classLoader, null, null, getSoapHeaderStyleSheet(), "xml", false, getParameterList(), true);
 		}
 		if (StringUtils.isNotEmpty(getSoapBodyStyleSheet())) {
-			soapBodyTp = TransformerPool.configureTransformer0(getLogPrefix(null), null, null, getSoapBodyStyleSheet(), "xml", false, getParameterList(), true);
+			soapBodyTp = TransformerPool.configureTransformer0(getLogPrefix(null), classLoader, null, null, getSoapBodyStyleSheet(), "xml", false, getParameterList(), true);
 		}
 		try {
 			if (isRemoveOutputNamespaces()) {

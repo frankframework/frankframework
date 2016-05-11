@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import nl.nn.adapterframework.configuration.IbisContext;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.log4j.Logger;
@@ -83,53 +85,63 @@ public class ClassUtils {
 
     }
 
-	static public URL getResourceURL(String resource) {
-		return getResourceURL(null,resource);
+	/**
+	 * Get a resource-URL from a specific ClassLoader. This should be used by
+	 * classes which are part of the Ibis configuration (like pipes and senders)
+	 * because the configuration might be loaded from outside the webapp
+	 * classpath. Hence the Thread.currentThread().getContextClassLoader() at
+	 * the time the class was instantiated should be used.
+	 * 
+	 * @see IbisContext#addConfig(ClassLoader, String)
+	 */
+	static public URL getResourceURL(ClassLoader classLoader, String resource) {
+		return getResourceURL(classLoader, null, resource);
 	}
 
-  /**
-     * Get a resource-URL, first from Class then from ClassLoader
-     * if not found with class.
+	/**
+	 * Get a resource-URL, first from Class then from it's ClassLoader
+	 * if not found with Class.
 	 *
-     * @deprecated Use getResourceURL(Object, resource) instead.
-     *
-     */
-    static public URL getResourceURL(Class klass, String resource)
-    {
-    	resource = Misc.replace(resource,"%20"," ");
-        URL url = null;
+	 */
+	static public URL getResourceURL(Object obj, String resource) {
+		return getResourceURL(null, obj.getClass(), resource);
+	}
 
-		if (klass == null) {
-			klass = ClassUtils.class;
-		}
+	/**
+	 * Get a resource-URL, first from Class then from it's ClassLoader
+	 * if not found with Class.
+	 */
+	static public URL getResourceURL(Class klass, String resource) {
+		return getResourceURL(null, klass, resource);
+	}
 
-        // first try to get the resource as a resource
-        url = klass.getResource(resource);
-		if (url == null) {
-			url = klass.getClassLoader().getResource(resource);
+	static private URL getResourceURL(ClassLoader classLoader, Class klass, String resource) {
+		resource = Misc.replace(resource,"%20"," ");
+		URL url = null;
+		if (classLoader == null) {
+			if (klass == null) {
+				klass = ClassUtils.class;
+			}
+			classLoader = klass.getClassLoader();
 		}
+		// Remove slash like Class.getResource(String name) is doing before
+		// delegation to ClassLoader
+		if (resource.startsWith("/")) {
+			resource = resource.substring(1);
+		}
+		// first try to get the resource as a resource
+		url = classLoader.getResource(resource);
 		// then try to get it as a URL
 		if (url == null) {
 			try {
 				url = new URL(Misc.replace(resource," ","%20"));
-            } catch(MalformedURLException e) {
+			} catch(MalformedURLException e) {
 				log.debug("Could not find resource as URL [" + resource + "]: "+e.getMessage());
 			}
-        }
-		// then try to get it in java:comp/env
-		if (url == null && resource!=null && !resource.startsWith("java:comp/env/")) {
-			log.debug("cannot find URL for resource ["+resource+"], now trying [java:comp/env/"+resource+"] (e.g. for TomCat)");
-			String altResource = "java:comp/env/"+resource;
-			url = klass.getResource(altResource); // to make things work under tomcat
-			if (url == null) {
-				url = klass.getClassLoader().getResource(altResource);
-			}
 		}
-
-        if (url==null)
-          log.warn("cannot find URL for resource ["+resource+"]");
-        else {
-
+		if (url==null) {
+			log.warn("cannot find URL for resource ["+resource+"]");
+		} else {
 			// Spaces must be escaped to %20. But ClassLoader.getResource(String)
 			// has a bug in Java 1.3 and 1.4 and doesn't do this escaping.
 			// See also:
@@ -151,18 +163,10 @@ public class ClassUtils {
 					log.warn("Could not find URL from space-escaped url ["+urlString+"], will use unescaped original version ["+url.toString()+"] ");
 				}
 			}
-        }
-        return url;
-    }
-  /**
-     * Get a resource-URL, first from Class then from ClassLoader
-     * if not found with class.
-     *
-     */
-    static public URL getResourceURL(Object obj, String resource)
-    {
-        return getResourceURL(obj.getClass(), resource);
-    }
+		}
+		return url;
+	}
+
     /**
      * Tests if a class implements a given interface
      *

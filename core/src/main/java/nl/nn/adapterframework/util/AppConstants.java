@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import nl.nn.adapterframework.configuration.IbisContext;
+
 import org.apache.commons.digester.substitution.VariableExpander;
 import org.apache.log4j.Logger;
 /**
@@ -48,12 +50,17 @@ public final class AppConstants extends Properties implements Serializable{
 
 	private AppConstants() {
 		super();
-		load(propertiesFileName);
+		load(null, null, propertiesFileName);
+	}
+
+	private AppConstants(ClassLoader classLoader) {
+		super();
+		load(classLoader, null, propertiesFileName);
 	}
 
 	private AppConstants(String directory) {
 		super();
-		load(directory, propertiesFileName);
+		load(null, directory, propertiesFileName);
 	}
 
 	/**
@@ -65,6 +72,20 @@ public final class AppConstants extends Properties implements Serializable{
 			self=new AppConstants();
 		}
 		return self;
+	}
+
+	/**
+	 * Retrieve an instance based on a ClassLoader. This should be used by
+	 * classes which are part of the Ibis configuration (like pipes and senders)
+	 * because the configuration might be loaded from outside the webapp
+	 * classpath. Hence the Thread.currentThread().getContextClassLoader() at
+	 * the time the class was instantiated should be used.
+	 * 
+	 * @see IbisContext#addConfig(ClassLoader, String)
+	 * @return AppConstants instance
+	 */
+	public static synchronized AppConstants getInstance(ClassLoader classLoader) {
+		return new AppConstants(classLoader);
 	}
 
 	/**
@@ -143,10 +164,6 @@ public final class AppConstants extends Properties implements Serializable{
 	    return new StringTokenizer(list, ",");
 	}
 
-	private synchronized void load(String filename) {
-		load(null, filename);
-	}
-
 	/**
 	 * Load the contents of a propertiesfile.
 	 * <p>Optionally, this may be a comma-seperated list of files to load, e.g.
@@ -155,7 +172,7 @@ public final class AppConstants extends Properties implements Serializable{
 	 * so you may also specify <code><pre>log4j.properties, deploymentspecifics.properties</pre></code>
 	 * </p>
 	 */
-	private synchronized void load(String directory, String filename) {
+	private synchronized void load(ClassLoader classLoader, String directory, String filename) {
 		StringTokenizer tokenizer = new StringTokenizer(filename, ",");
 		while (tokenizer.hasMoreTokens()) {
 			String theFilename= tokenizer.nextToken().trim();
@@ -176,7 +193,7 @@ public final class AppConstants extends Properties implements Serializable{
 				}
 				URL url = null;
 				if (is == null) {
-					url = ClassUtils.getResourceURL(this, theFilename);
+					url = ClassUtils.getResourceURL(classLoader, theFilename);
 					if (url == null) {
 						log.debug("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
 					} else {
@@ -194,7 +211,7 @@ public final class AppConstants extends Properties implements Serializable{
 						// prevent reloading of the same file over and over again
 						String loadFile = getProperty(additionalPropertiesFileKey);
 						this.remove(additionalPropertiesFileKey);
-						load(directory, loadFile);
+						load(classLoader, directory, loadFile);
 					}
 				}
 			} catch (IOException e) {

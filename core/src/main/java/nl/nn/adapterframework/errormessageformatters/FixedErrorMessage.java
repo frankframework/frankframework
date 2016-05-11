@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.apache.commons.lang.SystemUtils;
  * @since   4.3
  */
 public class FixedErrorMessage extends ErrorMessageFormatter {
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	private String fileName = null;
 	private String returnString = null;
 	private String replaceFrom = null;
@@ -64,7 +65,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 		}
 		if (StringUtils.isNotEmpty(getFileName())) {
 			try {
-				stringToReturn += Misc.resourceToString(ClassUtils.getResourceURL(this,getFileName()), SystemUtils.LINE_SEPARATOR);
+				stringToReturn += Misc.resourceToString(ClassUtils.getResourceURL(classLoader, getFileName()), SystemUtils.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				log.error("got exception loading error message file [" + getFileName() + "]", e);
 			}
@@ -78,7 +79,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 		}
 
 		if (StringUtils.isNotEmpty(styleSheetName)) {
-			URL xsltSource = ClassUtils.getResourceURL(this, styleSheetName);
+			URL xsltSource = ClassUtils.getResourceURL(classLoader, styleSheetName);
 			if (xsltSource!=null) {
 				try{
 					String xsltResult = null;

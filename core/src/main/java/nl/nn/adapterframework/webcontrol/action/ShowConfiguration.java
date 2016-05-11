@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.log4j.Appender;
@@ -98,28 +100,50 @@ public final class ShowConfiguration extends ActionBase {
         } else {
     		configurationPropertiesForm.set("lengthLogRecords", -1);
         }
-	     
-	    URL configURL = config.getConfigurationURL();
-	    String result = "";
-	    try {
-			result=ConfigurationUtils.getOriginalConfiguration(configURL);
-			if (!AppConstants.getInstance().getBoolean("showConfiguration.original", false)) {
-				List<String> propsToHide = new ArrayList<String>();
-				String propertiesHideString = AppConstants.getInstance().getString("properties.hide", null);
-				if (propertiesHideString!=null) {
-					propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
-				}
-				result=StringResolver.substVars(result, AppConstants.getInstance(), null, propsToHide);
-				result = ConfigurationUtils.getActivatedConfiguration(result);
-				if (ConfigurationUtils.stubConfiguration()) {
-					result = ConfigurationUtils.getStubbedConfiguration(result);
+        
+        
+		XmlBuilder configurationsXml = new XmlBuilder("configurations");
+		List<Configuration> configurations = ibisManager.getConfigurations();
+		for (Configuration configuration : configurations) {
+			XmlBuilder configurationXml = new XmlBuilder("configuration");
+			configurationXml.setValue(configuration.getConfigurationName());
+			configurationsXml.addSubElement(configurationXml);
+		}
+		request.setAttribute("configurations", configurationsXml.toXML());
+
+		Configuration configuration;
+		String configurationName = request.getParameter("configuration");
+		if (configurationName != null) {
+			configuration = ibisManager.getConfiguration(configurationName);
+		} else {
+			configuration = ibisManager.getConfiguration();
+		}
+		request.setAttribute("configurationName", configuration.getConfigurationName());
+
+		URL configURL = configuration.getConfigurationURL();
+		String result = "";
+		if (configURL == null) {
+			return (mapping.findForward("noconfig"));
+		} else {
+			try {
+				result=ConfigurationUtils.getOriginalConfiguration(configURL);
+				if (!AppConstants.getInstance().getBoolean("showConfiguration.original", false)) {
+					List<String> propsToHide = new ArrayList<String>();
+					String propertiesHideString = AppConstants.getInstance().getString("properties.hide", null);
+					if (propertiesHideString!=null) {
+						propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
+					}
+					result=StringResolver.substVars(result, AppConstants.getInstance(), null, propsToHide);
+					result = ConfigurationUtils.getActivatedConfiguration(result);
+					if (ConfigurationUtils.stubConfiguration()) {
+						result = ConfigurationUtils.getStubbedConfiguration(result);
+					}			
 				}			
-			}			
-		} catch (ConfigurationException e) {
-			result =
-				"<b>error occured retrieving configurationfile:" + XmlUtils.encodeChars(e.getMessage()) + "</b>";
-	    }
-			
+			} catch (ConfigurationException e) {
+				result =
+					"<b>error occured retrieving configurationfile:" + XmlUtils.encodeChars(e.getMessage()) + "</b>";
+			}
+		}
 	    request.setAttribute("configXML", result);
 	
 	    // Forward control to the specified success URI

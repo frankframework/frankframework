@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
         if (preProcStylesheetName != null) {
             try {
 
-                URL preprocUrl = ClassUtils.getResourceURL(this, preProcStylesheetName);
+                URL preprocUrl = ClassUtils.getResourceURL(classLoader, preProcStylesheetName);
 
                 if (preprocUrl == null)
                     throw new ConfigurationException(
@@ -160,7 +160,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
         if (postProcStylesheetName != null) {
             try {
 
-                URL postprocUrl = ClassUtils.getResourceURL(this, postProcStylesheetName);
+                URL postprocUrl = ClassUtils.getResourceURL(classLoader, postProcStylesheetName);
                 if (postprocUrl == null)
                     throw new ConfigurationException(
                             getLogPrefix(null)+"cannot find resource for postProcTransformer, URL-String ["
@@ -187,7 +187,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 
         if (proxyInputSchema != null) {
             String stylesheet;
-            URL schemaUrl = ClassUtils.getResourceURL(this, proxyInputSchema);
+            URL schemaUrl = ClassUtils.getResourceURL(classLoader, proxyInputSchema);
 
             if (schemaUrl == null)
                 throw new ConfigurationException(

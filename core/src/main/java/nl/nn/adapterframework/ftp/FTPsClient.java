@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,7 +51,8 @@ import org.apache.log4j.Logger;
  */
 public class FTPsClient extends FTPClient {
 	protected Logger log = LogUtil.getLogger(this);
-	
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
 	private FtpSession session;
 	private AuthSSLProtocolSocketFactoryBase socketFactory;
 	private Socket orgSocket = null;
@@ -203,14 +204,14 @@ public class FTPsClient extends FTPClient {
 		URL truststoreUrl = null;
 
 		if (!StringUtils.isEmpty(session.getCertificate())) {
-			certificateUrl = ClassUtils.getResourceURL(this, session.getCertificate());
+			certificateUrl = ClassUtils.getResourceURL(classLoader, session.getCertificate());
 			if (certificateUrl == null) {
 				throw new IOException("Cannot find URL for certificate resource [" + session.getCertificate() + "]");
 			}
 			log.debug("resolved certificate-URL to [" + certificateUrl.toString() + "]");
 		}
 		if (!StringUtils.isEmpty(session.getTruststore())) {
-			truststoreUrl = ClassUtils.getResourceURL(this, session.getTruststore());
+			truststoreUrl = ClassUtils.getResourceURL(classLoader, session.getTruststore());
 			if (truststoreUrl == null) {
 				throw new IOException("cannot find URL for truststore resource [" + session.getTruststore() + "]");
 			}

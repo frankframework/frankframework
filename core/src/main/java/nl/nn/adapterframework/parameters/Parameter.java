@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -126,6 +126,7 @@ import org.w3c.dom.Node;
  */
 public class Parameter implements INamedObject, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	public final static String TYPE_XML="xml";
 	public final static String TYPE_NODE="node";
@@ -194,7 +195,7 @@ public class Parameter implements INamedObject, IWithParameters {
 							  TYPE_DOMDOC.equalsIgnoreCase(getType())?"xml":"text";
 			boolean includeXmlDeclaration=false;
 			
-			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,isXslt2());
+			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",classLoader,getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,isXslt2());
 	    } else {
 			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
 				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");

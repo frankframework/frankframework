@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -67,6 +67,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @author Peter Leeuwenburgh
  */
 public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	private TransformerPool exceptionLogTp = null;
 	private TransformerPool auditLogTp = null;
 
@@ -75,7 +76,7 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 		String exceptionLogString = "/xml/xsl/esb/exceptionLog.xsl";
 		String auditLogString = "/xml/xsl/esb/auditLog.xsl";
 		try {
-			URL exceptionLogURL = ClassUtils.getResourceURL(this,
+			URL exceptionLogURL = ClassUtils.getResourceURL(classLoader,
 					exceptionLogString);
 			if (exceptionLogURL == null) {
 				throw new ConfigurationException(getLogPrefix()
@@ -91,7 +92,8 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 					+ exceptionLogString + "]", te);
 		}
 		try {
-			URL auditLogURL = ClassUtils.getResourceURL(this, auditLogString);
+			URL auditLogURL = ClassUtils.getResourceURL(classLoader,
+					auditLogString);
 			if (auditLogURL == null) {
 				throw new ConfigurationException(getLogPrefix()
 						+ "cannot find stylesheet [" + auditLogString + "]");

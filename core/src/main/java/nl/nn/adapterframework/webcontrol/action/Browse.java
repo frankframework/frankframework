@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -69,9 +69,6 @@ public class Browse extends ActionBase {
 
 		// Initialize action
 		initAction(request);
-		if (null == config) {
-			return (mapping.findForward("noconfig"));
-		}
 
 		DynaActionForm browseForm = getPersistentForm(mapping, form, request);
 
@@ -160,7 +157,7 @@ public class Browse extends ActionBase {
 		log.debug("storageType ["+storageType+"] action ["+action+"] submit ["+submit+"] adapterName ["+adapterName+"] receiverName ["+receiverName+"] pipeName ["+pipeName+"] issued by ["+commandIssuedBy+"]");
 
 		
-		Adapter adapter = (Adapter) config.getRegisteredAdapter(adapterName);
+		Adapter adapter = (Adapter)ibisManager.getRegisteredAdapter(adapterName);
 
 		IMessageBrowser mb;
 		IListener listener=null;

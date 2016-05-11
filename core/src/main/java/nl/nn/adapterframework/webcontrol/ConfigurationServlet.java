@@ -61,13 +61,13 @@ public class ConfigurationServlet extends HttpServlet {
 
     //static final String DFLT_SPRING_CONTEXT = "springContext.xml";
     //static final String EJB_SPRING_CONTEXT = "springContextEjbWeb.xml";
-    static final String DFLT_CONFIGURATION = "Configuration.xml";
-    static final String DFLT_AUTOSTART = "TRUE";
+    //static final String DFLT_CONFIGURATION = "Configuration.xml";
+    //static final String DFLT_AUTOSTART = "TRUE";
 
     public String lastErrorMessage=null;
 
-    public boolean areAdaptersStopped() {
-        Configuration config = getConfiguration();
+    public boolean areAdaptersStopped(String configurationName) {
+        Configuration config = getConfiguration(configurationName);
 
         if (null != config) {
 
@@ -131,7 +131,7 @@ public class ConfigurationServlet extends HttpServlet {
 		super.init();
 		setApplicationServerType();
 		setUploadPathInServletContext();
-		loadConfig();
+		loadConfig(null);
 		log.debug("Servlet init finished");
 	}
 
@@ -217,7 +217,7 @@ public class ConfigurationServlet extends HttpServlet {
         out.println("<html>");
         out.println("<body>");
 
-		if (loadConfig(true)) {
+		if (loadConfig(request.getParameter("configurationName"), true)) {
 			out.println("<p> Configuration successfully completed</p></body>");
 		} else {
 			out.println("<p> Errors occured during configuration. Please, examine logfiles</p>");
@@ -231,12 +231,12 @@ public class ConfigurationServlet extends HttpServlet {
 
     }
 
-	private boolean loadConfig() {
-		return loadConfig(false);
+	private boolean loadConfig(String configurationName) {
+		return loadConfig(configurationName, false);
 	}
 
-	private boolean loadConfig(boolean reload) {
-		if (areAdaptersStopped()) {
+	private boolean loadConfig(String configurationName, boolean reload) {
+		if (areAdaptersStopped(configurationName)) {
 			if (reload) {
 				unloadConfig();
 			}
@@ -266,10 +266,10 @@ public class ConfigurationServlet extends HttpServlet {
 		RestServiceDispatcher.getInstance().unregisterAllServiceClients();
 	}
 
-    public Configuration getConfiguration() {
+    public Configuration getConfiguration(String configurationName) {
         IbisManager ibisManager = getIbisManager();
         if (ibisManager != null) {
-            return ibisManager.getConfiguration();
+            return ibisManager.getConfiguration(configurationName);
         }
         return null;
     }

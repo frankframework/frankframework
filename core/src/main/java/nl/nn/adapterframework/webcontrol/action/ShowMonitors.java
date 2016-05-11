@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -82,10 +82,6 @@ public class ShowMonitors extends ActionBase {
 
 		// Initialize action
 		initAction(request);
-
-		if (null == config) {
-			return (mapping.findForward("noconfig"));
-		}
 
 		String forward=null;
 		DynaActionForm monitorForm = getPersistentForm(mapping, form, request);
