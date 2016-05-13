@@ -1,5 +1,5 @@
 <module>
-	<adapter name="WebControlTestIfsaService">
+	<adapter name="WebControlTestIfsaService" active="${active.ifsa}">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebControlTestIfsaService">
 			<listener className="nl.nn.adapterframework.http.RestListener"
