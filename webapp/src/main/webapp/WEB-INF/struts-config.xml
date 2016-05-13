@@ -35,31 +35,6 @@
                         <form-property name="file"    			type="org.apache.struts.upload.FormFile"/>
         </form-bean>
 
-       <form-bean      name="testIfsaServiceForm"
-                        type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
-                        <form-property name="action"           	type="java.lang.String"/>
-                        <form-property name="applicationId"    	type="java.lang.String"/>
-                        <form-property name="serviceId"        	type="java.lang.String"/>
-                        <form-property name="messageProtocol"  	type="java.lang.String"/>
-                        <form-property name="messageProtocols"  type="java.util.ArrayList"/>
-                        <form-property name="message"       	type="java.lang.String"/>
-                        <form-property name="result"     		type="java.lang.String"/>
-                        <form-property name="state"     		type="java.lang.String"/>
-                        <form-property name="file"    			type="org.apache.struts.upload.FormFile"/>
-        </form-bean>
-
-        <form-bean      name="PipeLineTestForm"
-                        type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
-                        <form-property name="action" 			type="java.lang.String"/>
-                        <form-property name="adapters"			type="java.util.ArrayList"/>                                       
-                        <form-property name="adapterName"		type="java.lang.String"/>
-                        <form-property name="message"       	type="java.lang.String"/>
-                        <form-property name="result"     		type="java.lang.String"/>
-                        <form-property name="state"     		type="java.lang.String"/>
-                        <form-property name="file"    			type="org.apache.struts.upload.FormFile"/>
-                        <form-property name="fileEncoding"		type="java.lang.String"/>
-        </form-bean>
-
         <form-bean      name="ServiceTestForm"
                         type="nl.nn.adapterframework.webcontrol.IniDynaActionForm">
                         <form-property name="action" 			type="java.lang.String"/>
@@ -277,22 +252,6 @@
                 input="/jsp/view.jsp?view=/jsp/sendJmsMessage.jsp"
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/sendJmsMessage.jsp"/>
-        </action>
-        <action path="/testIfsaService" 
-                type="nl.nn.adapterframework.webcontrol.action.TestIfsaService"
-                scope="session" 
-                name="testIfsaServiceForm"
-                input="/jsp/view.jsp?view=/jsp/testIfsaService.jsp"
-                validate="false">
-            <forward name="success" path="/jsp/view.jsp?view=/jsp/testIfsaService.jsp"/>
-        </action>
-        <action path="/testIfsaServiceExecute" 
-                type="nl.nn.adapterframework.webcontrol.action.TestIfsaServiceExecute"
-                scope="session" 
-                name="testIfsaServiceForm"
-                input="/jsp/view.jsp?view=/jsp/testIfsaService.jsp"
-                validate="false">
-            <forward name="success" path="/jsp/view.jsp?view=/jsp/testIfsaService.jsp"/>
         </action>
         <action path="/testService" 
                 type="nl.nn.adapterframework.webcontrol.action.TestService"

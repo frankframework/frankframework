@@ -351,8 +351,6 @@
             <description>collection of url's for tester access</description>
             <url-pattern>/sendJmsMessage.do</url-pattern>
             <url-pattern>/sendJmsMessageExecute.do</url-pattern>
-            <url-pattern>/testIfsaService.do</url-pattern>
-            <url-pattern>/testIfsaServiceExecute.do</url-pattern>
             <url-pattern>/testService.do</url-pattern>
             <url-pattern>/testServiceExecute.do</url-pattern>
             <url-pattern>/executeJdbcQuery.do</url-pattern>

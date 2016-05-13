@@ -2,6 +2,7 @@
 	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
 	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
 	<!ENTITY ManageDatabase SYSTEM "ConfigurationManageDatabase.xml">
+	<!ENTITY WebControlTestIfsaService SYSTEM "./WebControlTestIfsaServiceConfiguration.xml">
 	<!ENTITY WebControlWebservices SYSTEM "WebControlWebservicesConfiguration.xml">
 	<!ENTITY WebControlTestPipeLine SYSTEM "./WebControlTestPipeLineConfiguration.xml">
 ]>
@@ -13,6 +14,7 @@
   &HelloWorld;
   &HelloWorlds;
   &ManageDatabase;
+  &WebControlTestIfsaService;
   &WebControlWebservices;
   &WebControlTestPipeLine;
 </IOS-Adaptering>

@@ -127,8 +127,6 @@
 			<jsp:include page="/jsp/browse.jsp" flush="true"/>	
 		<%} else if (view.equals("/jsp/sendJmsMessage.jsp")) {%>
 			<jsp:include page="/jsp/sendJmsMessage.jsp" flush="true"/> 
-		<%} else if (view.equals("/jsp/testIfsaService.jsp")) {%>
-			<jsp:include page="/jsp/testIfsaService.jsp" flush="true"/> 
 		<%} else if (view.equals("/jsp/showAdapterStatistics.jsp")) {%>
 			<jsp:include page="/jsp/showAdapterStatistics.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/testService.jsp")) {%> 

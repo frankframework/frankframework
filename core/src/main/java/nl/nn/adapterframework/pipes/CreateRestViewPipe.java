@@ -239,7 +239,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"sendJmsMessage.do", "jms-message", "Send a message with JMS"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"testIfsaService.do", "ifsa-message", "Call an IFSA Service"));
+				"rest/testIfsaService", "ifsa-message", "Call an IFSA Service"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"browseQueue.do", "browsejms", "Browse a queue with JMS"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
