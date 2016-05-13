@@ -18,6 +18,7 @@ Upcoming
 - Add update entryName facility to LdapSender
 - Bugfix in MessageStoreListener "(SQLServerException) SQLState [S0001], errorCode [102]: Incorrect syntax near '+'"
 - Support multiple configurations and reading it with other classloader
+- Add possibility to use a wildcard in sessionkeys parameters 
 
 
 

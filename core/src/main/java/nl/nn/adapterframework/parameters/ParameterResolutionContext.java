@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.ParameterException;
@@ -31,6 +32,7 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
  
@@ -97,9 +99,30 @@ public class ParameterResolutionContext {
 		if (parameters == null)
 			return null;
 		
-		ParameterValueList result = new ParameterValueList(parameters.size());
+		ParameterValueList result = new ParameterValueList();
 		for (Iterator it= parameters.iterator(); it.hasNext(); ) {
-			result.add(getValue(result, (Parameter)it.next()));
+			Parameter parm = (Parameter)it.next();
+			String parmSessionKey = parm.getSessionKey();
+			if (StringUtils.isNotEmpty(parmSessionKey) && parmSessionKey.equals("*")) {
+				String sessionKeyName = parm.getName();
+				for (Iterator it2 = session.keySet().iterator(); it2.hasNext();) {
+					String key = (String) it2.next();
+					if (key.startsWith(sessionKeyName)) {
+						Object value = session.get(key);
+						Parameter newParm = new Parameter();
+						newParm.setName(key);
+						newParm.setSessionKey(key);
+						try {
+							newParm.configure();
+						} catch (ConfigurationException e) {
+							throw new ParameterException(e);
+						}
+						result.add(getValue(result, newParm));
+					}
+				}
+			} else {
+				result.add(getValue(result, parm));
+			}
 		}
 		return result;
 	}
