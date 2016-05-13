@@ -1,4 +1,5 @@
 <%@ page import="nl.nn.adapterframework.util.AppConstants"%>
+<%@ page import="nl.nn.adapterframework.util.XmlUtils"%>
 
 <%@ taglib uri="/WEB-INF/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/struts-html.tld" prefix="html" %>
@@ -24,11 +25,15 @@
 				type="jms-message"
 				alt="Send a message with JMS">
 			</imagelink>
-			<imagelink 
-				href="rest/testIfsaService"
-				type="ifsa-message"
-				alt="Call an IFSA Service">
-			</imagelink>
+
+			<% if (AppConstants.getInstance().getBoolean("active.ifsa", false)) { %>
+				<imagelink 
+					href="rest/testIfsaService"
+					type="ifsa-message"
+					alt="Call an IFSA Service">
+				</imagelink>
+			<% } %>
+
 			<imagelink 
 				href="browseQueue.do"
 				type="browsejms"
