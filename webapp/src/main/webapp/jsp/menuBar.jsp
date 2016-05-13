@@ -25,7 +25,7 @@
 				alt="Send a message with JMS">
 			</imagelink>
 			<imagelink 
-				href="testIfsaService.do"
+				href="rest/testIfsaService"
 				type="ifsa-message"
 				alt="Call an IFSA Service">
 			</imagelink>
