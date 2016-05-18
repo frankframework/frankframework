@@ -318,6 +318,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		return txManager;
 	}
 
+	public DefaultMessageListenerContainer getJmsContainer() {
+		return jmsContainer;
+	}
 
 	public void setMessageListenerClassName(String messageListenerClassName) {
 		this.messageListenerClassName = messageListenerClassName;

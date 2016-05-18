@@ -20,6 +20,7 @@ Upcoming
 - Support multiple configurations and reading it with other classloader
 - Add possibility to use a wildcard in sessionkeys parameters 
 - Replace struts form "Call an IFSA Service" by rest service (and default deactivate it)
+- Bugfix "reload configuration" doesn't work for RR JmsListener 
 
 
 

@@ -15,16 +15,11 @@
 */
 package nl.nn.adapterframework.webcontrol;
 
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.http.RestServiceDispatcher;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunStateEnum;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Date;
+import java.util.Iterator;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -32,10 +27,20 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Date;
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.http.RestServiceDispatcher;
+import nl.nn.adapterframework.jms.PushingJmsListener;
+import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.RunStateEnum;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -238,7 +243,7 @@ public class ConfigurationServlet extends HttpServlet {
 	private boolean loadConfig(String configurationName, boolean reload) {
 		if (areAdaptersStopped(configurationName)) {
 			if (reload) {
-				unloadConfig();
+				unloadConfig(configurationName);
 			}
 			IbisContext ibisContext = new IbisContext();
 			String configurationFile = getInitParameter("configuration");
@@ -262,8 +267,30 @@ public class ConfigurationServlet extends HttpServlet {
 		}
     }
 
-	private void unloadConfig() {
+	private void unloadConfig(String configurationName) {
 		RestServiceDispatcher.getInstance().unregisterAllServiceClients();
+
+		//destroy all jmsContainers
+		Configuration config = getConfiguration(configurationName);
+		if (null != config) {
+			for (int i = 0; i < config.getRegisteredAdapters().size(); i++) {
+				IAdapter adapter = config.getRegisteredAdapter(i);
+				Iterator recIt = adapter.getReceiverIterator();
+				if (recIt.hasNext()) {
+					while (recIt.hasNext()) {
+						IReceiver receiver = (IReceiver) recIt.next();
+						if (receiver instanceof ReceiverBase) {
+							ReceiverBase rb = (ReceiverBase) receiver;
+							IListener listener = rb.getListener();
+							if (listener instanceof PushingJmsListener) {
+								PushingJmsListener pjl = (PushingJmsListener) listener;
+								pjl.destroy();
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
     public Configuration getConfiguration(String configurationName) {

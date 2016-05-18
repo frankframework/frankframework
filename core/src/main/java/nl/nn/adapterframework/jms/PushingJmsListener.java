@@ -35,8 +35,10 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.unmanaged.SpringJmsConnector;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.jms.listener.DefaultMessageListenerContainer;
 
 /**
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
@@ -163,6 +165,25 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
         }
     }
 
+    public void destroy() {
+    	if (jmsConnector!=null) {
+    		if (jmsConnector instanceof SpringJmsConnector) {
+    			SpringJmsConnector springJmsConnector = (SpringJmsConnector) jmsConnector;
+    			DefaultMessageListenerContainer jmsContainer = springJmsConnector.getJmsContainer();
+    	    	if (jmsContainer!=null) {
+        			jmsContainer.destroy();
+    	    		log.debug(getLogPrefix()+"jmsContainer is destroyed");
+    	    	} else {
+    	    		log.error(getLogPrefix()+"could not destroy, jmsContainer is null");
+    	    	}
+        	} else {
+        		log.error(getLogPrefix()+"could not destroy, jmsConnector is not instance of SpringJmsConnector but ["+jmsConnector.getClass().getName()+"]");
+    		}
+    	} else {
+    		log.error(getLogPrefix()+"could not destroy, jmsConnector is null");
+    	}
+    }
+    
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {
 		String cid     = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
 		Session session= (Session) threadContext.get(jmsConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
