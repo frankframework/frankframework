@@ -4,15 +4,12 @@
          Objects created using an object-create-rule are created directly by the Apache Digester,
          and do not pass by the Spring Beans Factory. -->
 
-  <pattern value="IOS-Adaptering">
+  <pattern value="IOS-Adaptering"><!-- deprecated, use configuration instead -->
     <set-properties-rule/>
   </pattern>
 
-
-  <pattern value="adapter">
-    <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/>
+  <pattern value="configuration">
     <set-properties-rule/>
-    <set-next-rule methodname="registerAdapter"/>
   </pattern>
 
   <pattern value="*/include">

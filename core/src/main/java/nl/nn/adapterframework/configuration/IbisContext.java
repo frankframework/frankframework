@@ -15,8 +15,9 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.util.StringTokenizer;
+
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -44,8 +45,6 @@ import org.springframework.core.env.StandardEnvironment;
 public class IbisContext {
     private final static Logger log = LogUtil.getLogger(IbisContext.class);
 
-    public static final String DFLT_AUTOSTART = "TRUE";
-	//public static final String DFLT_SPRING_CONTEXT = "/springContext.xml";
 	public static final String APPLICATION_SERVER_TYPE = "application.server.type";
 
     private ApplicationContext applicationContext;
@@ -54,63 +53,28 @@ public class IbisContext {
     private static String applicationServerType = null;
 
 	/**
-	 * Initialize Ibis with all default parameters.
-	 *
-	 */
-	public boolean initConfig() {
-	    return initConfig(getSpringContextFileName(), IbisManager.DFLT_CONFIGURATION, IbisContext.DFLT_AUTOSTART);
-	}
-
-	/**
-	 * Initalize Ibis with the given parameters, substituting default
-	 * values when <code>null</code> is passed in.
+	 * Initalize Ibis.
 	 *
 	 * This method creates the Spring context, and loads the configuration
 	 * file. After executing this method, the BeanFactory, IbisManager and Configuration
 	 * properties are available and the Ibis instance can be started and
 	 * stopped.
 	 *
-	 * @param springContext
-	 * @param configurationFile
-	 * @param autoStart
 	 */
-	public boolean initConfig(String springContext, String configurationFile, String autoStart) {
-		initContext(springContext);
-		ibisManager.loadConfigurationFile(configurationFile);
-		if ("TRUE".equalsIgnoreCase(autoStart)) {
-			log.info("* IBIS Startup: Starting adapters");
-			ibisManager.startIbis();
+	public boolean init() throws ConfigurationException {
+		initContext(getSpringContextFileName());
+		String configurations = AppConstants.getInstance().getResolvedProperty("configurations.files");
+		StringTokenizer tokenizer = new StringTokenizer(configurations, ",");
+		while (tokenizer.hasMoreTokens()) {
+			String configurationFile = tokenizer.nextToken();
+			String basePath = null;
+			int i = configurationFile.lastIndexOf('/');
+			if (i != -1) {
+				basePath = configurationFile.substring(0, i + 1);
+			}
+			ibisManager.loadConfigurationFile(null, basePath, configurationFile);
 		}
 		log.info("* IBIS Startup: Startup complete");
-		return true;
-	}
-
-	/**
-	 * Load configuration with a specific ClassLoader which might for example
-	 * override the getResource method to load configuration and related
-	 * resources from a different location then the standard classpath.
-	 * 
-	 * @see ClassUtils#getResourceURL(ClassLoader, String)
-	 * @see AppConstants#getInstance(ClassLoader)
-	 */
-	public boolean addConfig(ClassLoader classLoader, String configurationFile) {
-		ClassLoader originalClassLoader = null;
-		try {
-			if (classLoader != null) {
-				originalClassLoader = Thread.currentThread().getContextClassLoader();
-				Thread.currentThread().setContextClassLoader(classLoader);
-			}
-			ConfigurationDigester configurationDigester = (ConfigurationDigester)getBean("configurationDigester");
-			Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
-			configurationDigester.setConfiguration(configuration);
-			ibisManager.loadConfigurationFile(classLoader, configurationFile);
-			ibisManager.startAdapters(configuration);
-			ibisManager.addConfiguration(configuration);
-		} finally {
-			if (originalClassLoader != null) {
-				Thread.currentThread().setContextClassLoader(originalClassLoader);
-			}
-		}
 		return true;
 	}
 
@@ -267,8 +231,13 @@ public class IbisContext {
 	}
 
 	public static void main(String[] args) {
-		IbisContext im = new IbisContext();
-		im.initConfig(getSpringContextFileName(), IbisManager.DFLT_CONFIGURATION, IbisContext.DFLT_AUTOSTART);
+		IbisContext ibisContext = new IbisContext();
+		try {
+			ibisContext.init();
+		} catch (ConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public Object getBean(String beanName) {

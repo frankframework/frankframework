@@ -100,11 +100,7 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
         getIbisManager().stopAdapter(adapter);
     }
 
-    public void loadConfigurationFile(String configurationFile) {
-    	// Do not delegate to EJB; EJB initializes itself.
-    }
-
-    public void loadConfigurationFile(ClassLoader classLoader, String configurationFile) {
+    public void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile) {
     	// Do not delegate to EJB; EJB initializes itself.
     }
 
@@ -114,14 +110,6 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
 
     public void setBeanFactory(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
-    }
-
-    public String getDeploymentModeString() {
-        return IbisManager.DEPLOYMENT_MODE_EJB_STRING;
-    }
-
-    public int getDeploymentMode() {
-        return IbisManager.DEPLOYMENT_MODE_EJB;
     }
 
     public PlatformTransactionManager getTransactionManager() {
@@ -136,12 +124,9 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
         return ibisManager.getConfiguration();
     }
 
-	public void setConfiguration(Configuration configuration) {
-		ibisManager.setConfiguration(configuration);
-	}
-
-	public void addConfiguration(Configuration configuration) {
-		ibisManager.setConfiguration(configuration);
+	public void startConfiguration(Configuration configuration) {
+		ibisManager.startConfiguration(configuration);
+		
 	}
 
 	public Configuration getConfiguration(String configurationName) {

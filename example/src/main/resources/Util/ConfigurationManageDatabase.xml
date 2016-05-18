@@ -1,4 +1,4 @@
-<module>
+<configuration name="ManageDatabase">
 	<adapter name="ManageDatabase" description="Manage the database">
 		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.FixedErrorMessage" fileName="/ManageDatabase/xml/ErrorMessage.xml" replaceFrom="%reasonCode" replaceTo="INTERNAL_ERROR" />
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ManageDatabase">
@@ -49,4 +49,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</module>
+</configuration>

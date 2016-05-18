@@ -18,9 +18,10 @@ Upcoming
 - Add update entryName facility to LdapSender
 - Bugfix in MessageStoreListener "(SQLServerException) SQLState [S0001], errorCode [102]: Incorrect syntax near '+'"
 - Support multiple configurations and reading it with other classloader
-- Add possibility to use a wildcard in sessionkeys parameters 
+- Add possibility to use a wildcard in sessionkeys parameters
 - Replace struts form "Call an IFSA Service" by rest service (and default deactivate it)
-- Bugfix "reload configuration" doesn't work for RR JmsListener 
+- Bugfix "reload configuration" doesn't work for RR JmsListener
+- Add configurations.files property and support configuration file in subfolder
 
 
 

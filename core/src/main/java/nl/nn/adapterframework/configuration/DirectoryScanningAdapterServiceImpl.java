@@ -1,9 +1,5 @@
 package nl.nn.adapterframework.configuration;
 
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunStateEnum;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -16,6 +12,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.RunStateEnum;
 
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
@@ -185,10 +185,10 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
             wait();
         }
         try {
-            ConfigurationDigester configurationDigester = (ConfigurationDigester) applicationContext.getBean("configurationDigester"); // somewhy proper dependency injection gives circular dependency problems
-
-            Digester digester = configurationDigester.getDigester();
             AdapterService catcher = new AdapterServiceImpl();
+            Configuration configuration = new Configuration(catcher);
+            ConfigurationDigester configurationDigester = (ConfigurationDigester) applicationContext.getBean("configurationDigester"); // somewhy proper dependency injection gives circular dependency problems
+            Digester digester = configurationDigester.getDigester(configuration);
             digester.push(catcher);
             digester.parse(url.openStream());
             // Does'nt work. I probably don't know how it is supposed to work.

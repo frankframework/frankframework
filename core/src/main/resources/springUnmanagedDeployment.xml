@@ -30,9 +30,6 @@
 		class="nl.nn.adapterframework.unmanaged.DefaultIbisManager"
 		autowire="byName"
 		>
-		<property name="deploymentMode">
-			<util:constant static-field="nl.nn.adapterframework.configuration.IbisManager.DEPLOYMENT_MODE_UNMANAGED"/>
-		</property>
 		<property name="transactionManager" ref="txManager"/>
 	</bean>
 

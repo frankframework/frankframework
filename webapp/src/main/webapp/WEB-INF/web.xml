@@ -61,21 +61,6 @@
         <display-name>Configuration Servlet</display-name>
         <description>Initializes the configuration</description>
         <servlet-class>nl.nn.adapterframework.webcontrol.ConfigurationServlet</servlet-class>
-        <init-param>
-            <param-name>autoStart</param-name>
-            <param-value>true</param-value>
-            <description>Indicates whether the adapters should automatically started</description>
-        </init-param>
-        <init-param>
-            <param-name>configuration</param-name>
-            <param-value>Configuration.xml</param-value>            
-            <description>Filename of the xml-file containing the configuration</description>
-        </init-param>
-        <init-param>
-            <param-name>digester-rules</param-name>
-            <param-value>digester-rules.xml</param-value>
-            <description>Filename of the xml-file containing the digesting information for the digester</description>
-        </init-param>
         <load-on-startup>0</load-on-startup>
     </servlet>
 

@@ -134,9 +134,9 @@ public final class ShowConfiguration extends ActionBase {
 						propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
 					}
 					result=StringResolver.substVars(result, AppConstants.getInstance(), null, propsToHide);
-					result = ConfigurationUtils.getActivatedConfiguration(result);
+					result = ConfigurationUtils.getActivatedConfiguration(configuration, result);
 					if (ConfigurationUtils.stubConfiguration()) {
-						result = ConfigurationUtils.getStubbedConfiguration(result);
+						result = ConfigurationUtils.getStubbedConfiguration(configuration, result);
 					}			
 				}			
 			} catch (ConfigurationException e) {

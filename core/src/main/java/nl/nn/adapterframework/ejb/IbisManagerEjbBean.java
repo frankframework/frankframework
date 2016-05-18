@@ -25,6 +25,7 @@ import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.LogUtil;
@@ -85,10 +86,6 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
 		ibisManager.handleAdapter(action, adapterName, receiverName, commandIssuedBy);
     }
 
-    public void startIbis() {
-		ibisManager.startIbis();
-    }
-
     public void shutdownIbis() {
 		ibisManager.shutdownIbis();
 		ibisContext.destroyConfig();
@@ -110,20 +107,8 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
 		ibisManager.stopAdapter(adapter);
     }
 
-    public void loadConfigurationFile(String configurationFile) {
-		ibisManager.loadConfigurationFile(configurationFile);
-    }
-
-    public void loadConfigurationFile(ClassLoader classLoader, String configurationFile) {
-		ibisManager.loadConfigurationFile(classLoader, configurationFile);
-    }
-
-    public String getDeploymentModeString() {
-        return ibisManager.getDeploymentModeString();
-    }
-
-    public int getDeploymentMode() {
-        return ibisManager.getDeploymentMode();
+    public void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile) throws ConfigurationException {
+		ibisManager.loadConfigurationFile(classLoader, basePath, configurationFile);
     }
 
     public PlatformTransactionManager getTransactionManager() {
@@ -137,12 +122,9 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
         return this.sessionContext;
     }
 
-	public void setConfiguration(Configuration configuration) {
-		ibisManager.setConfiguration(configuration);
-	}
-
-	public void addConfiguration(Configuration configuration) {
-		ibisManager.addConfiguration(configuration);
+	public void startConfiguration(Configuration configuration) {
+		ibisManager.startConfiguration(configuration);
+		
 	}
 
 	public Configuration getConfiguration(String configurationName) {

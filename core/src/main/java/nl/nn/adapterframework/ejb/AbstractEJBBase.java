@@ -20,14 +20,13 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.jndi.JndiLookupFailureException;
 
 /**
@@ -53,9 +52,13 @@ abstract public class AbstractEJBBase {
         
         // TODO: Get the right parameters for initialization from somewhere,
         // most importantly the right Spring Context!
-		ibisContext.initConfig();
+		try {
+			ibisContext.init();
+		} catch (ConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		ibisManager = ibisContext.getIbisManager();
-		ibisManager.startIbis();
     }
     
     abstract protected EJBContext getEJBContext();

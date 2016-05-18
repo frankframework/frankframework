@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -246,10 +247,11 @@ public class ConfigurationServlet extends HttpServlet {
 				unloadConfig(configurationName);
 			}
 			IbisContext ibisContext = new IbisContext();
-			String configurationFile = getInitParameter("configuration");
-			String autoStart = getInitParameter("autoStart");
-			String springContext = getInitParameter("springContext");
-			boolean success = ibisContext.initConfig(springContext, configurationFile, autoStart);
+			boolean success = false;
+			try {
+				success = ibisContext.init();
+			} catch (ConfigurationException e) {
+			}
 			if (success) {
 				log.info("Configuration succeeded");
 			} else {

@@ -45,6 +45,9 @@ import org.apache.log4j.Logger;
  */
 public class Configuration {
     protected Logger log = LogUtil.getLogger(this);
+    private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+	private boolean autoStart = AppConstants.getInstance().getBoolean("configurations.autoStart", true);
 
     private final AdapterService adapterService;
 
@@ -53,7 +56,7 @@ public class Configuration {
 
     private URL configurationURL;
     private URL digesterRulesURL;
-    private String configurationName = "";
+    private String name;
     private StatisticsKeeperIterationHandler statisticsHandler=null;
 
     private AppConstants appConstants;
@@ -133,6 +136,18 @@ public class Configuration {
     protected void init() {
 		log.info(VersionInfo());
     }
+
+	public ClassLoader getClassLoader() {
+		return classLoader;
+	}
+
+	public void setAutoStart(boolean autoStart) {
+		this.autoStart = autoStart;
+	}
+
+	public boolean isAutoStart() {
+		return autoStart;
+	}
 
     /**
      * get a registered adapter by its name
@@ -242,57 +257,72 @@ public class Configuration {
     	sb.append(getInstanceInfo()+SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.util.XmlUtils.getVersionInfo());
     	return sb.toString();
-
     }
 
-	public void setConfigurationName(String name) {
-		configurationName = name;
-		log.debug("configuration name set to [" + name + "]");
-	}
-	public String getConfigurationName() {
-		return configurationName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @deprecated replaced by setName(String)
+	 * @param name
+	 */
+	public void setConfigurationName(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * @deprecated replaced by getName()
+	 * @param name
+	 */
+	public String getConfigurationName() {
+		return name;
+	}
 
 	public void setConfigurationURL(URL url) {
 		configurationURL = url;
 	}
+
 	public URL getConfigurationURL() {
 		return configurationURL;
 	}
 
-
 	public void setDigesterRulesURL(URL url) {
 		digesterRulesURL = url;
 	}
+
 	public String getDigesterRulesFileName() {
 		return digesterRulesURL.getFile();
 	}
 
-
 	public JobDef getScheduledJob(String name) {
 		return (JobDef) jobTable.get(name);
 	}
+
 	public JobDef getScheduledJob(int index) {
 		return scheduledJobs.get(index);
 	}
-
 
 	public List<JobDef> getScheduledJobs() {
 		return scheduledJobs;
 	}
 
-    public void setAppConstants(AppConstants constants) {
-        appConstants = constants;
-    }
+	public void setAppConstants(AppConstants constants) {
+		appConstants = constants;
+	}
+
 	public AppConstants getAppConstants() {
 		return appConstants;
 	}
 
-
 	public void setConfigurationException(ConfigurationException exception) {
 		configurationException = exception;
 	}
+
 	public ConfigurationException getConfigurationException() {
 		return configurationException;
 	}

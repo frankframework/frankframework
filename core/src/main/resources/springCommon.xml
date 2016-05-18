@@ -35,23 +35,6 @@
 		autowire="byName"
 	/>
 
-	<bean id="adapterService" class="nl.nn.adapterframework.configuration.BasicAdapterServiceImpl"/>
-	<!--
-	<bean id="adapterService" class="nl.nn.adapterframework.configuration.DirectoryScanningAdapterServiceImpl">
-		<constructor-arg value="${adapterServiceWatchedDirectory}" />
-		<property name="rateInSeconds" value="${adapterServiceCheckRateInSeconds}" />
-	</bean>
-	-->
-
-	<bean
-		name="configuration"
-		class="nl.nn.adapterframework.configuration.Configuration"
-		autowire="byName"
-		init-method="init"
-		>
-		<constructor-arg ref="adapterService"/>
-	</bean>
-
 	<bean
 		name="configurationDigester"
 		class="nl.nn.adapterframework.configuration.ConfigurationDigester"
@@ -72,9 +55,6 @@
 			</bean>
 		</property>
 		<property name="useContextClassLoader" value="true"/>
-		<property name="entityResolver">
-			<bean class="nl.nn.adapterframework.util.ClassPathEntityResolver"/>
-		</property>
 	</bean>
 
 	<bean

@@ -31,15 +31,15 @@ import org.springframework.transaction.PlatformTransactionManager;
  * @since   4.8
  */
 public interface IbisManager {
-    public static final String DFLT_CONFIGURATION = "Configuration.xml";
-    public static final int DEPLOYMENT_MODE_UNMANAGED = 0;
-    public static final int DEPLOYMENT_MODE_EJB = 1;
-    public static final String DEPLOYMENT_MODE_UNMANAGED_STRING = "Unmanaged (Legacy)";
-    public static final String DEPLOYMENT_MODE_EJB_STRING = "EJB";
+//    public static final String DFLT_CONFIGURATION = "Configuration.xml";
+//    public static final int DEPLOYMENT_MODE_UNMANAGED = 0;
+//    public static final int DEPLOYMENT_MODE_EJB = 1;
+//    public static final String DEPLOYMENT_MODE_UNMANAGED_STRING = "Unmanaged (Legacy)";
+//    public static final String DEPLOYMENT_MODE_EJB_STRING = "EJB";
 
-    void setConfiguration(Configuration configuration);
+//    void setConfiguration(Configuration configuration);
 
-    void addConfiguration(Configuration configuration);
+//    void addConfiguration(Configuration configuration);
 
     /**
      * Get the Configuration, for querying and display of it's contents.
@@ -61,11 +61,11 @@ public interface IbisManager {
      */
     void handleAdapter(String action, String adapterName, String receiverName, String commandIssuedBy);
     /**
-     * Start an already configured IBIS instance.
+     * Start an already configured Configuration
      * 
      * Use {@link #loadConfigurationFile(String)} to configure the instance.
      */
-    void startIbis();
+    void startConfiguration(Configuration configuration);
     /**
      * Shut down the IBIS instance. After execution of this method, the IBIS
      * instance is not useable anymore: it will need to be recreated.
@@ -98,29 +98,8 @@ public interface IbisManager {
 
     public List<IAdapter> getRegisteredAdapters();
 
-    /**
-     * Load the configuration file, thus initializing the IBIS instance.
-     * Afterwards, the IBIS is ready to be started.
-     * 
-     * @param configurationFile
-     */
-    void loadConfigurationFile(String configurationFile);
+    void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile) throws ConfigurationException;
 
-    void loadConfigurationFile(ClassLoader classLoader, String configurationFile);
-    
-    /**
-     * Get string representing the deployment mode: "Unmanaged" or "EJB".
-     * 
-     */
-    String getDeploymentModeString();
-    /**
-     * Get integer value for the Deployment Mode:
-     * <dl>
-     * <dt>0</dt><dd>Unmanaged (legacy) deployment mode, also known as Web Deployment mode.</dd>
-     * <dt>1</dt><dd>EJB deployment mode</dd>
-     * </dl>
-     */
-    int getDeploymentMode();
     /**
      * Get the Spring Platform Transaction Manager, for use by
      * the Web Front End.

@@ -21,8 +21,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
+import nl.nn.adapterframework.configuration.BasePathClassLoader;
+import nl.nn.adapterframework.configuration.BasicAdapterServiceImpl;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
@@ -39,6 +42,7 @@ import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -57,54 +61,77 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class DefaultIbisManager implements IbisManager {
     protected Logger log = LogUtil.getLogger(this);
 
-    public static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
-
     private List<Configuration> configurations = new ArrayList<Configuration>();
     private ConfigurationDigester configurationDigester;
     private SchedulerHelper schedulerHelper;
-    private int deploymentMode;
     private PlatformTransactionManager transactionManager;
     private ListenerPortPoller listenerPortPoller;
 
-    protected final String[] deploymentModes = new String[] {DEPLOYMENT_MODE_UNMANAGED_STRING, DEPLOYMENT_MODE_EJB_STRING};
+	/**
+	 * Load configuration with a specific ClassLoader which might for example
+	 * override the getResource method to load configuration and related
+	 * resources from a different location from the standard classpath. In case
+	 * basePath is not null the ClassLoader is wrapped in
+	 * {@link BasePathClassLoader} to make it possible to reference resources
+	 * in the configuration relative to the configuration file and have an
+	 * extra resource override (resource is first resolved relative to the
+	 * configuration, when not found it is resolved by the original ClassLoader. 
+	 * 
+	 * @see ClassUtils#getResourceURL(ClassLoader, String)
+	 * @see AppConstants#getInstance(ClassLoader)
+	 */
+	public void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile) throws ConfigurationException {
+		ClassLoader originalClassLoader = null;
+		try {
+			if (classLoader == null) {
+				classLoader = new BasePathClassLoader(Thread.currentThread().getContextClassLoader(), basePath);
+			} else {
+				originalClassLoader = Thread.currentThread().getContextClassLoader();
+				classLoader = new BasePathClassLoader(classLoader, basePath);
+			}
+			Thread.currentThread().setContextClassLoader(classLoader);
+			Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
+			configurationDigester.digestConfiguration(classLoader, configuration, configurationFile);
+			configurations.add(configuration);
+			if (configuration.isAutoStart()) {
+				startConfiguration(configuration);
+			}
+		} finally {
+			if (originalClassLoader != null) {
+				Thread.currentThread().setContextClassLoader(originalClassLoader);
+			}
+		}
+	}
 
-    public void loadConfigurationFile(String configurationFile) {
-        loadConfigurationFile(null, configurationDigester, configurationFile);
-    }
+  public Configuration getConfiguration() {
+      if (configurations.size() > 0) {
+          return configurations.get(0);
+      } else {
+          return null;
+      }
+  }
 
-    public void loadConfigurationFile(ClassLoader classLoader, String configurationFile) {
-        loadConfigurationFile(classLoader, configurationDigester, configurationFile);
-    }
+  public List<Configuration> getConfigurations() {
+      return configurations;
+  }
 
-    public void loadConfigurationFile(ClassLoader classLoader, ConfigurationDigester configurationDigester, String configurationFile) {
-        String digesterRulesFile = DFLT_DIGESTER_RULES;
-        // Reading in Apache Digester configuration file
-        if (null == configurationFile) {
-            configurationFile = DFLT_CONFIGURATION;
-        }
-
-        log.info("* IBIS Startup: Reading IBIS configuration from file [" + configurationFile + "]" + (DFLT_CONFIGURATION.equals(configurationFile) ?
-            " (default configuration file)" : ""));
-        try {
-            configurationDigester.unmarshalConfiguration(
-                ClassUtils.getResourceURL(configurationDigester, digesterRulesFile),
-                ClassUtils.getResourceURL(classLoader, configurationFile));
-        } catch (Throwable e) {
-            log.error("Error occured unmarshalling configuration:", e);
-        }
-    }
-
+  public Configuration getConfiguration(String configurationName) {
+      for (Configuration configuration : configurations) {
+          if (configurationName.equals(configuration.getConfigurationName())) {
+              return configuration;
+          }
+      }
+      return null;
+  }
 
     /**
-     * Start the already configured IBIS instance
+     * Start the already configured Configuration
      */
-    public void startIbis() {
-        for (Configuration configuration : configurations) {
-            log.info("* IBIS Startup: Initiating startup of configuration [" + configuration.getConfigurationName() + "]");
-            startAdapters(configuration);
-            startScheduledJobs(configuration);
-            log.info("* IBIS Startup: Startup complete for configuration [" + configuration.getConfigurationName() + "]");
-        }
+    public void startConfiguration(Configuration configuration) {
+        log.info("* IBIS Startup: Initiating startup of configuration [" + configuration.getConfigurationName() + "]");
+        startAdapters(configuration);
+        startScheduledJobs(configuration);
+        log.info("* IBIS Startup: Startup complete for configuration [" + configuration.getConfigurationName() + "]");
     }
 
     /**
@@ -385,35 +412,6 @@ public class DefaultIbisManager implements IbisManager {
         */
     }
 
-    public void setConfiguration(Configuration configuration) {
-        configurations.add(configuration);
-    }
-
-    public void addConfiguration(Configuration configuration) {
-        configurations.add(configuration);
-    }
-
-    public Configuration getConfiguration() {
-        if (configurations.size() > 0) {
-            return configurations.get(0);
-        } else {
-            return null;
-        }
-    }
-
-    public List<Configuration> getConfigurations() {
-        return configurations;
-    }
-
-    public Configuration getConfiguration(String configurationName) {
-        for (Configuration configuration : configurations) {
-            if (configurationName.equals(configuration.getConfigurationName())) {
-                return configuration;
-            }
-        }
-        return null;
-    }
-
     public IAdapter getRegisteredAdapter(String name) {
         List<IAdapter> adapters = getRegisteredAdapters();
         for (IAdapter adapter : adapters) {
@@ -466,22 +464,6 @@ public class DefaultIbisManager implements IbisManager {
 
     public ConfigurationDigester getConfigurationDigester() {
         return configurationDigester;
-    }
-
-    public void setDeploymentMode(int deploymentMode) {
-        if (deploymentMode < 0 || deploymentMode >= deploymentModes.length) {
-            throw new IllegalArgumentException("DeploymentMode should be a value between 0 and "
-                    + (deploymentModes.length-1) + " inclusive.");
-        }
-		log.debug("setting deploymentMode to ["+deploymentMode+"]");
-        this.deploymentMode = deploymentMode;
-    }
-    public int getDeploymentMode() {
-        return deploymentMode;
-    }
-
-    public String getDeploymentModeString() {
-        return deploymentModes[this.deploymentMode];
     }
 
     public PlatformTransactionManager getTransactionManager() {

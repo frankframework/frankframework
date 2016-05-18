@@ -441,7 +441,7 @@ public final class ShowSecurityItems extends ActionBase {
 					Transformer t = XmlUtils.createTransformer(url, true);
 					String configString = ConfigurationUtils.getOriginalConfiguration(configuration.getConfigurationURL());
 					configString = StringResolver.substVars(configString, AppConstants.getInstance());
-					configString = ConfigurationUtils.getActivatedConfiguration(configString);
+					configString = ConfigurationUtils.getActivatedConfiguration(configuration, configString);
 					String authEntries = XmlUtils.transformXml(t, configString);
 					Element authEntriesElement = XmlUtils.buildElement(authEntries);
 					if (entries == null) {

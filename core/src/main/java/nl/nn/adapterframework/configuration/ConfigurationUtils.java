@@ -41,8 +41,8 @@ public class ConfigurationUtils {
 	private static String stub4testtool_xslt = "/xml/xsl/stub4testtool.xsl";
 	private static String active_xslt = "/xml/xsl/active.xsl";
 
-	public static String getActivatedConfiguration(String originalConfig) throws ConfigurationException {
-		URL active_xsltSource = ClassUtils.getResourceURL(ConfigurationUtils.class, active_xslt);
+	public static String getActivatedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
+		URL active_xsltSource = ClassUtils.getResourceURL(configuration.getClassLoader(), active_xslt);
 		if (active_xsltSource == null) {
 			throw new ConfigurationException("cannot find resource [" + active_xslt + "]");
 		}
@@ -64,8 +64,8 @@ public class ConfigurationUtils {
 		}
 	}
 
-	public static String getStubbedConfiguration(String originalConfig) throws ConfigurationException {
-		URL stub4testtool_xsltSource = ClassUtils.getResourceURL(ConfigurationUtils.class, stub4testtool_xslt);
+	public static String getStubbedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
+		URL stub4testtool_xsltSource = ClassUtils.getResourceURL(configuration.getClassLoader(), stub4testtool_xslt);
 		if (stub4testtool_xsltSource == null) {
 			throw new ConfigurationException("cannot find resource [" + stub4testtool_xslt + "]");
 		}

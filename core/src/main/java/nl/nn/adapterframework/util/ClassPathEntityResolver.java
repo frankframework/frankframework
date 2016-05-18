@@ -48,7 +48,6 @@ public class ClassPathEntityResolver implements EntityResolver {
 		if (idx >= 0) {
 			classPathEntityUrl = classPathEntityUrl.substring(idx + 1);
 		}
-		classPathEntityUrl = "/" + classPathEntityUrl;
 		try {
 			log.debug("Resolving [" + systemId + "] to [" + classPathEntityUrl+"]");
 			URL url = ClassUtils.getResourceURL(classLoader, classPathEntityUrl);

@@ -16,7 +16,7 @@
 			</pipe>
 
 			<pipe name="webservices" className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
-				styleSheetName="WebControl/Webservices/xsl/Webservices.xsl" xslt2="true"
+				styleSheetName="Webservices/xsl/Webservices.xsl" xslt2="true"
 				skipOnEmptyInput="true">
 				<forward name="success" path="EXIT" />
 			</pipe>

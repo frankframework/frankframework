@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.cmdline;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.IbisManager;
 
 /**
  * Starts up a configuration in a plain JVM.
@@ -28,11 +28,12 @@ import nl.nn.adapterframework.configuration.IbisManager;
 public class StartIbis {
 
 	public static void main(String[] args) {
-        String configFile = IbisManager.DFLT_CONFIGURATION;
-        if (args.length > 0) {
-            configFile = args[0];
-        }
-        IbisContext im=new IbisContext();
-        im.initConfig(null, configFile, IbisContext.DFLT_AUTOSTART);
+		IbisContext ibisContext = new IbisContext();
+		try {
+			ibisContext.init();
+		} catch (ConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

@@ -1,0 +1,12 @@
+<!DOCTYPE configuration [
+	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
+	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
+]>
+<configuration name="HelloWorld">
+   <jmsRealms>
+      <jmsRealm realmName="jdbc" datasourceName="jdbc/ibis4example"/>
+      <!-- jmsRealm realmName="qcf" queueConnectionFactoryName="jms/qcf"/ -->
+  </jmsRealms>
+  &HelloWorld;
+  &HelloWorlds;
+</configuration>
