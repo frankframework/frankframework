@@ -86,6 +86,15 @@ public class IbisCacheManager {
 		cacheManager.removeCache(cacheName);
 	}
 
+	public void removeCacheKey(String cacheName, String cacheKey) {
+		if (cacheManager.getCache(cacheName).remove("r"+cacheKey)
+				&& cacheManager.getCache(cacheName).remove("s"+cacheKey)) {
+			log.debug("removed cache key [" + cacheKey + "] from cache ["+cacheName+"]");
+		} else {
+			log.warn("could not find cache key [" + cacheKey + "] to remove from cache ["+cacheName+"]");
+		}
+	}
+
 	public static void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		if (self==null) {
 			return;

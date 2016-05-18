@@ -22,6 +22,7 @@ Upcoming
 - Replace struts form "Call an IFSA Service" by rest service (and default deactivate it)
 - Bugfix "reload configuration" doesn't work for RR JmsListener
 - Add configurations.files property and support configuration file in subfolder
+- Add RemoveCacheKeyPipe
 
 
 
