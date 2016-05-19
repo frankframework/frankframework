@@ -91,7 +91,7 @@ public class TestTool {
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
 	// dirty solution by Marco de Reus:
 	private static String zeefVijlNeem = "";
-	private static String windiffCommand = "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WindDiff.Exe";
+	private static String windiffCommand = "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
 
 	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
 		String logLevel = "wrong pipeline messages";
