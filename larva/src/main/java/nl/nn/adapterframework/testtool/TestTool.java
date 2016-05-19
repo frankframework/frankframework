@@ -91,7 +91,7 @@ public class TestTool {
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
 	// dirty solution by Marco de Reus:
 	private static String zeefVijlNeem = "";
-	private static String windiffCommand = "D:\\Tools\\windiff\\WINDIFF.EXE";
+	private static String windiffCommand = "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WindDiff.Exe";
 
 	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
 		String logLevel = "wrong pipeline messages";
@@ -758,19 +758,19 @@ public class TestTool {
 			AppConstants appConstants,
 			ServletContext application, HttpServletRequest request,
 			List scenariosRootDirectories, List scenariosRootDescriptions,
-			 Map writers) {
+			Map writers) {
 		String currentScenariosRootDirectory = null;
 		String servletPath = request.getServletPath();
 		if (servletPath == null) {
-			errorMessage("Could not read servlet path", writers);
+			if (writers != null) errorMessage("Could not read servlet path", writers);
 		} else {
 			int i = servletPath.lastIndexOf('/');
 			if (i == -1) {
-				errorMessage("Could not find '/' in servlet path", writers);
+				if (writers != null) errorMessage("Could not find '/' in servlet path", writers);
 			} else {
 				String realPath = application.getRealPath(servletPath.substring(0, i));
 				if (realPath == null) {
-					errorMessage("Could not read webapp real path", writers);
+					if (writers != null) errorMessage("Could not read webapp real path", writers);
 				} else {
 					if (!realPath.endsWith(File.separator)) {
 						realPath = realPath + File.separator;
@@ -782,19 +782,21 @@ public class TestTool {
 					String description = appConstants.getResolvedProperty("scenariosroot" + j + ".description");
 					while (directory != null) {
 						if (description == null) {
-							errorMessage("Could not find description for root directory '" + directory + "'", writers);
+							if (writers != null) errorMessage("Could not find description for root directory '" + directory + "'", writers);
 						} else if (scenariosRoots.get(description) != null) {
-							errorMessage("A root directory named '" + description + "' already exist", writers);
+							if (writers != null) errorMessage("A root directory named '" + description + "' already exist", writers);
 						} else {
 							String parent = realPath;
 							String m2eFileName = appConstants.getResolvedProperty("scenariosroot" + j + ".m2e.pom.properties");
 							if (m2eFileName != null) {
 								File m2eFile = new File(realPath, m2eFileName);
 								if (m2eFile.exists()) {
-									debugMessage("Read m2e pom.properties: " + m2eFileName, writers);
-									Properties m2eProperties = readProperties(null, m2eFile, false, writers);
-									parent = m2eProperties.getProperty("m2e.projectLocation");
-									debugMessage("Use m2e parent: " + parent, writers);
+									if (writers != null) {
+										debugMessage("Read m2e pom.properties: " + m2eFileName, writers);
+										Properties m2eProperties = readProperties(null, m2eFile, false, writers);
+										parent = m2eProperties.getProperty("m2e.projectLocation");
+										debugMessage("Use m2e parent: " + parent, writers);
+									}
 								}
 							}
 							directory = getAbsolutePath(parent, directory, true);
@@ -824,10 +826,10 @@ public class TestTool {
 						scenariosRootDescriptions.add("X " + description);
 						scenariosRootDirectories.add(scenariosRootsBroken.get(description));
 					}
-					debugMessage("Read scenariosrootdirectory parameter", writers);
+					if (writers != null) debugMessage("Read scenariosrootdirectory parameter", writers);
 					String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
 					String paramScenariosDeploymentSpecs = request.getParameter("scenariosdeploymentspecs");
-					debugMessage("Get current scenarios root directory", writers);
+					if (writers != null) debugMessage("Get current scenarios root directory", writers);
 					if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.equals("")) {
 						String scenariosRootDefault = appConstants.getResolvedProperty("scenariosroot.default");
 						if (scenariosRootDefault != null) {
@@ -2765,10 +2767,14 @@ public class TestTool {
 	}
 
 	// Used by saveResultToFile.jsp
-	public static void windiff(String expectedFileName, String result, String expected) throws IOException, DocumentException, SenderException {
+	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, DocumentException, SenderException {
+		AppConstants appConstants = AppConstants.getInstance();
+		List scenariosRootDirectories = new ArrayList();
+		List scenariosRootDescriptions = new ArrayList();
+		String currentScenariosRootDirectory = initScenariosRootDirectories(appConstants, application, request, scenariosRootDirectories, scenariosRootDescriptions, null);
 		File tempFileResult = writeTempFile(expectedFileName, result);
 		File tempFileExpected = writeTempFile(expectedFileName, expected);
-		String command = windiffCommand + " " + tempFileResult + " " + tempFileExpected;
+		String command = currentScenariosRootDirectory + windiffCommand + " " + tempFileResult + " " + tempFileExpected;
 		System.out.println(command);
 		ProcessUtil.executeCommand(command);
 	}

@@ -23,6 +23,7 @@ Upcoming
 - Bugfix "reload configuration" doesn't work for RR JmsListener
 - Add configurations.files property and support configuration file in subfolder
 - Add RemoveCacheKeyPipe
+- Change Larva windiffCommand (make it relative to scenariosRootDirectories)
 
 
 
