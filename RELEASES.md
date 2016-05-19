@@ -26,6 +26,7 @@ Upcoming
 - Change Larva windiffCommand (make it relative to scenariosRootDirectories)
 - Bugfix "reload configuration" loads all scheduled jobs again (next to the existing ones)
 - Sort jobs in "Show Scheduler Status"
+- Change Larva default timeout from 30 seconds to 5 seconds
 
 
 

@@ -84,7 +84,7 @@ public class TestTool {
 	private static Logger logger = LogUtil.getLogger(TestTool.class);
 	private static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [totals], [error]";
 	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
-	private static final int JMS_TESTTOOL_LISTENER_TIMEOUT = 30000;
+	protected static final int DEFAULT_TIMEOUT = 30000;
 	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
 	protected static final String TESTTOOL_DUMMY_MESSAGE = "<TestTool>Dummy message</TestTool>";
@@ -1148,10 +1148,10 @@ public class TestTool {
 			String queue = (String)properties.get(queueName + ".queue");
 			String timeout = (String)properties.get(queueName + ".timeout");
 
-			int nTimeout = JMS_TESTTOOL_LISTENER_TIMEOUT;
+			int nTimeout = DEFAULT_TIMEOUT;
 			if (timeout != null && timeout.length() > 0) {
 				nTimeout = Integer.parseInt(timeout);
-				debugMessage("Overriding default timeout setting of "+JMS_TESTTOOL_LISTENER_TIMEOUT+" with "+ nTimeout, writers);
+				debugMessage("Overriding default timeout setting of "+DEFAULT_TIMEOUT+" with "+ nTimeout, writers);
 			}
 
 			if (queue == null) {

@@ -21,8 +21,8 @@ public class ListenerMessageHandler implements IMessageHandler {
 	private static Logger log = LogUtil.getLogger(ListenerMessageHandler.class);
 	private List requestMessages = new ArrayList();
 	private List responseMessages = new ArrayList();
-	private long requestTimeOut = 30000;
-	private long responseTimeOut = 30000;
+	private long requestTimeOut = TestTool.DEFAULT_TIMEOUT;
+	private long responseTimeOut = TestTool.DEFAULT_TIMEOUT;
 
 	public String processRequest(IListener origin, String correlationId, String message, Map context) throws ListenerException {
 		ListenerMessage listenerMessage = new ListenerMessage(correlationId, message, context);
