@@ -24,6 +24,7 @@ Upcoming
 - Add configurations.files property and support configuration file in subfolder
 - Add RemoveCacheKeyPipe
 - Change Larva windiffCommand (make it relative to scenariosRootDirectories)
+- Bugfix "reload configuration" loads all scheduled jobs again (next to the existing ones)
 
 
 

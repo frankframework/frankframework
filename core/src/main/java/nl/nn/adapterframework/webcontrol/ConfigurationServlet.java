@@ -272,6 +272,9 @@ public class ConfigurationServlet extends HttpServlet {
 	private void unloadConfig(String configurationName) {
 		RestServiceDispatcher.getInstance().unregisterAllServiceClients();
 
+		//destroy jobs too
+		destroy();
+
 		//destroy all jmsContainers
 		Configuration config = getConfiguration(configurationName);
 		if (null != config) {
