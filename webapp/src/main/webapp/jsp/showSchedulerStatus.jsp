@@ -78,7 +78,7 @@
 				<caption>Jobs in jobgroup <xtags:valueOf select="../@name"/></caption>
 				<tbody>
 
-				<xtags:forEach select="job/jobDetail">
+				<xtags:forEach select="job/jobDetail" sort="@jobName">
 					<tr><th>Name</th>
 						<th>description</th>
 						<th>jobClass</th>

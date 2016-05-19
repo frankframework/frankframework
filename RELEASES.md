@@ -25,6 +25,7 @@ Upcoming
 - Add RemoveCacheKeyPipe
 - Change Larva windiffCommand (make it relative to scenariosRootDirectories)
 - Bugfix "reload configuration" loads all scheduled jobs again (next to the existing ones)
+- Sort jobs in "Show Scheduler Status"
 
 
 
