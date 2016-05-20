@@ -2,7 +2,7 @@
 	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
 	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
 ]>
-<configuration name="HelloWorld">
+<configuration name="Example">
    <jmsRealms>
       <jmsRealm realmName="jdbc" datasourceName="jdbc/ibis4example"/>
       <!-- jmsRealm realmName="qcf" queueConnectionFactoryName="jms/qcf"/ -->

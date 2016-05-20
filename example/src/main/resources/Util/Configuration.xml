@@ -1,0 +1,6 @@
+<!DOCTYPE configuration [
+	<!ENTITY ManageDatabase SYSTEM "ConfigurationManageDatabase.xml">
+]>
+<configuration name="Util">
+  &ManageDatabase;
+</configuration>
