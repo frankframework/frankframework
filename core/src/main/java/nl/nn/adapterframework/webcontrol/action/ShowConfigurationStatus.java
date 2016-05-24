@@ -318,7 +318,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 						boolean isEsbJmsFFListener = false;
 						if (listener instanceof EsbJmsListener) {
 							EsbJmsListener ejl = (EsbJmsListener) listener;
-							if (ejl.getMessageProtocol().equalsIgnoreCase("FF")) {
+							if ("FF".equalsIgnoreCase(ejl.getMessageProtocol())) {
 								isEsbJmsFFListener = true;
 							}
 							if (count) {
