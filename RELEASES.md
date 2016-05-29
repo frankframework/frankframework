@@ -27,6 +27,9 @@ Upcoming
 - Bugfix "reload configuration" loads all scheduled jobs again (next to the existing ones)
 - Sort jobs in "Show Scheduler Status"
 - Change Larva default timeout from 30 seconds to 5 seconds
+- Update to latest Ladybug Test Tool version
+    - Fix ibistesttool.defaultView
+    - Support IAF change to support multiple configurations
 
 
 
