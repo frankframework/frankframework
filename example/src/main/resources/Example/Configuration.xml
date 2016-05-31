@@ -3,10 +3,10 @@
 	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
 ]>
 <configuration name="Example">
-   <jmsRealms>
-      <jmsRealm realmName="jdbc" datasourceName="jdbc/ibis4example"/>
-      <!-- jmsRealm realmName="qcf" queueConnectionFactoryName="jms/qcf"/ -->
-  </jmsRealms>
-  &HelloWorld;
-  &HelloWorlds;
+	<jmsRealms>
+		<jmsRealm realmName="jdbc" datasourceName="jdbc/ibis4example"/>
+		<!-- jmsRealm realmName="qcf" queueConnectionFactoryName="jms/qcf"/ -->
+	</jmsRealms>
+	&HelloWorld;
+	&HelloWorlds;
 </configuration>

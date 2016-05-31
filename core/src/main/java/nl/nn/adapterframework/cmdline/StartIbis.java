@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,11 +29,6 @@ public class StartIbis {
 
 	public static void main(String[] args) {
 		IbisContext ibisContext = new IbisContext();
-		try {
-			ibisContext.init();
-		} catch (ConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		ibisContext.init();
 	}
 }

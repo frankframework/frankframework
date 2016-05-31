@@ -32,8 +32,11 @@ import org.xml.sax.SAXException;
 
 public class ClassPathEntityResolver implements EntityResolver {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private ClassLoader classLoader;
 
+	ClassPathEntityResolver(ClassLoader classLoader) {
+		this.classLoader = classLoader;
+	}
 	/**
 	 * @see org.xml.sax.EntityResolver#resolveEntity(String, String)
 	 */

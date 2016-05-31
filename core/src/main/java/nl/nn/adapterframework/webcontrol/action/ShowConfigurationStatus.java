@@ -97,6 +97,9 @@ public final class ShowConfigurationStatus extends ActionBase {
 		} else {
 			configuration = ibisManager.getConfiguration();
 		}
+		if (configuration == null) {
+			return (mapping.findForward("noconfig"));
+		}
 		registeredAdapters = configuration.getRegisteredAdapters();
 		request.setAttribute("configurationName", configuration.getConfigurationName());
 

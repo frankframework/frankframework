@@ -1,8 +1,10 @@
 <!DOCTYPE configuration [
 	<!ENTITY Webservices SYSTEM "ConfigurationWebservices.xml">
 	<!ENTITY TestPipeLine SYSTEM "ConfigurationTestPipeLine.xml">
+	<!ENTITY TestIfsaService SYSTEM "ConfigurationTestIfsaService.xml">
 ]>
 <configuration name="WebControl">
-  &Webservices;
-  &TestPipeLine;
+	&Webservices;
+	&TestPipeLine;
+	&TestIfsaService;
 </configuration>

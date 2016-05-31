@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.util.Iterator;
+
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.MessageKeeper;
-
-import java.util.Iterator;
 
 /**
  * The Adapter is the central manager in the framework. It has knowledge of both
@@ -49,9 +50,10 @@ public interface IAdapter extends IManagable {
 	PipeLineResult processMessage(String messageId, String message, IPipeLineSession pipeLineSession);
 	PipeLineResult processMessageWithExceptions(String messageId, String message, IPipeLineSession pipeLineSession) throws ListenerException;
 
-  	void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
-  	void setName(String name);
-  	boolean isAutoStart();
+	void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
+	void setName(String name);
+	void setConfiguration(Configuration configuration);
+	boolean isAutoStart();
 	String toString();
 
 	String formatErrorMessage(String errorMessage, Throwable t, String originalMessage, String messageID, INamedObject objectInError, long receivedTime);

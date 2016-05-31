@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.configuration;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -27,6 +28,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.StringResolver;
 
 import java.net.URL;
 import java.util.*;
@@ -57,6 +59,9 @@ public class Configuration {
     private URL configurationURL;
     private URL digesterRulesURL;
     private String name;
+    private IbisManager ibisManager;
+    private String originalConfiguration;
+    private String loadedConfiguration;
     private StatisticsKeeperIterationHandler statisticsHandler=null;
 
     private AppConstants appConstants;
@@ -204,19 +209,22 @@ public class Configuration {
 		}
         return adapter.getReceiverByName(receiverName) != null;
     }
-    /**
-     * Register an adapter with the configuration.
-     * @param adapter
-     * @throws ConfigurationException
-     */
-    public void registerAdapter(IAdapter adapter) throws ConfigurationException {
-    	if (adapter instanceof Adapter && !((Adapter)adapter).isActive()) {
-    		log.debug("adapter [" + adapter.getName() + "] is not active, therefore not included in configuration");
-    		return;
-    	}
-        adapterService.registerAdapter(adapter);
 
-    }
+	/**
+	 * Register an adapter with the configuration.
+	 * @param adapter
+	 * @throws ConfigurationException
+	 */
+	public void registerAdapter(IAdapter adapter) throws ConfigurationException {
+		if (adapter instanceof Adapter && !((Adapter)adapter).isActive()) {
+			log.debug("adapter [" + adapter.getName() + "] is not active, therefore not included in configuration");
+			return;
+		}
+		adapter.setConfiguration(this);
+		adapterService.registerAdapter(adapter);
+		log.debug("Configuration [" + name + "] registered adapter [" + adapter.toString() + "]");
+	}
+
     /**
      * Register an {@link JobDef job} for scheduling at the configuration.
      * The configuration will create an {@link JobDef AdapterJob} instance and a JobDetail with the
@@ -283,6 +291,14 @@ public class Configuration {
 		return name;
 	}
 
+	public void setIbisManager(IbisManager ibisManager) {
+		this.ibisManager = ibisManager;
+	}
+
+	public IbisManager getIbisManager() {
+		return ibisManager;
+	}
+
 	public void setConfigurationURL(URL url) {
 		configurationURL = url;
 	}
@@ -297,6 +313,22 @@ public class Configuration {
 
 	public String getDigesterRulesFileName() {
 		return digesterRulesURL.getFile();
+	}
+
+	public void setOriginalConfiguration(String originalConfiguration) {
+		this.originalConfiguration = originalConfiguration;
+	}
+
+	public String getOriginalConfiguration() {
+		return originalConfiguration;
+	}
+
+	public void setLoadedConfiguration(String loadedConfiguration) {
+		this.loadedConfiguration = loadedConfiguration;
+	}
+
+	public String getLoadedConfiguration() {
+		return loadedConfiguration;
 	}
 
 	public JobDef getScheduledJob(String name) {

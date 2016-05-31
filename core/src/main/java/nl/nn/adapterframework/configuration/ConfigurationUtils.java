@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -82,19 +82,6 @@ public class ConfigurationUtils {
 			throw new ConfigurationException("got error creating transformer from file [" + stub4testtool_xslt + "]", tce);
 		} catch (TransformerException te) {
 			throw new ConfigurationException("got error transforming resource [" + stub4testtool_xsltSource.toString() + "] from [" + stub4testtool_xslt + "]", te);
-		} catch (DomBuilderException de) {
-			throw new ConfigurationException("caught DomBuilderException", de);
-		}
-	}
-
-	public static String getOriginalConfiguration(URL configURL) throws ConfigurationException {
-		String lineSeparator = SystemUtils.LINE_SEPARATOR;
-		if (null==lineSeparator) lineSeparator = "\n";
-		try {
-			String configString = Misc.resourceToString(configURL, lineSeparator, false);
-			return XmlUtils.identityTransform(configString);
-		} catch (IOException ie) {
-			throw new ConfigurationException("got exception loading [" + configURL.toString() + "]", ie);
 		} catch (DomBuilderException de) {
 			throw new ConfigurationException("caught DomBuilderException", de);
 		}

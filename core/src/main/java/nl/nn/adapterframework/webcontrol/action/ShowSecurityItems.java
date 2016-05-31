@@ -439,7 +439,7 @@ public final class ShowSecurityItems extends ActionBase {
 			if (url != null) {
 				for (Configuration configuration : ibisManager.getConfigurations()) {
 					Transformer t = XmlUtils.createTransformer(url, true);
-					String configString = ConfigurationUtils.getOriginalConfiguration(configuration.getConfigurationURL());
+					String configString = configuration.getOriginalConfiguration();
 					configString = StringResolver.substVars(configString, AppConstants.getInstance());
 					configString = ConfigurationUtils.getActivatedConfiguration(configuration, configString);
 					String authEntries = XmlUtils.transformXml(t, configString);

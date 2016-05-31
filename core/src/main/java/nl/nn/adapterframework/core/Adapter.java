@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
@@ -98,6 +99,7 @@ public class Adapter implements IAdapter, NamedBean {
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 
 	private String name;
+	private Configuration configuration;
 	private String targetDesignDocument;
 	private boolean active=true;
 
@@ -675,6 +677,15 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+	/**
+	 * the configuration this adapter belongs to
+	 */
+	public void setConfiguration(Configuration configuration) {
+		this.configuration = configuration;
+	}
+	public Configuration getConfiguration() {
+		return configuration;
 	}
 	/**
 	 * Start the adapter. The thread-name will be set to the adapter's name.

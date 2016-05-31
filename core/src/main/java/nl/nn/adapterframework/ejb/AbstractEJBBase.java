@@ -52,12 +52,7 @@ abstract public class AbstractEJBBase {
         
         // TODO: Get the right parameters for initialization from somewhere,
         // most importantly the right Spring Context!
-		try {
-			ibisContext.init();
-		} catch (ConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		ibisContext.init();
 		ibisManager = ibisContext.getIbisManager();
     }
     

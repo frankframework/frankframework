@@ -125,23 +125,9 @@ public final class ShowConfiguration extends ActionBase {
 		if (configURL == null) {
 			return (mapping.findForward("noconfig"));
 		} else {
-			try {
-				result=ConfigurationUtils.getOriginalConfiguration(configURL);
-				if (!AppConstants.getInstance().getBoolean("showConfiguration.original", false)) {
-					List<String> propsToHide = new ArrayList<String>();
-					String propertiesHideString = AppConstants.getInstance().getString("properties.hide", null);
-					if (propertiesHideString!=null) {
-						propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
-					}
-					result=StringResolver.substVars(result, AppConstants.getInstance(), null, propsToHide);
-					result = ConfigurationUtils.getActivatedConfiguration(configuration, result);
-					if (ConfigurationUtils.stubConfiguration()) {
-						result = ConfigurationUtils.getStubbedConfiguration(configuration, result);
-					}			
-				}			
-			} catch (ConfigurationException e) {
-				result =
-					"<b>error occured retrieving configurationfile:" + XmlUtils.encodeChars(e.getMessage()) + "</b>";
+			result = configuration.getOriginalConfiguration();
+			if (!AppConstants.getInstance().getBoolean("showConfiguration.original", false)) {
+				result = configuration.getLoadedConfiguration();
 			}
 		}
 	    request.setAttribute("configXML", result);

@@ -30,6 +30,13 @@ Upcoming
 - Update to latest Ladybug Test Tool version
     - Fix ibistesttool.defaultView
     - Support IAF change to support multiple configurations
+- Refactor in response to Ladybug multiple configurations support and testing
+    - Use properties.hide for configuration showed by Ladybug
+    - Improve example configuration
+    - Fix classloader related issue in loadConfigurationFile
+    - Cache original and loaded configuration
+    - Add getConfiguration to Adapter
+    - Add getIbisManager to Configuration
 
 
 

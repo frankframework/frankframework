@@ -36,41 +36,6 @@
 	/>
 
 	<bean
-		name="configurationDigester"
-		class="nl.nn.adapterframework.configuration.ConfigurationDigester"
-		autowire="byName"
-		>
-		<lookup-method name="createDigester" bean="digester"/>
-	</bean>
-
-	<bean
-		name="digester"
-		class="org.apache.commons.digester.Digester"
-		autowire="byName"
-		scope="prototype"
-		>
-		<property name="substitutor">
-			<bean class="org.apache.commons.digester.substitution.VariableSubstitutor">
-				<constructor-arg ref="variableExpander"/>
-			</bean>
-		</property>
-		<property name="useContextClassLoader" value="true"/>
-	</bean>
-
-	<bean
-		name="variableExpander"
-		class="nl.nn.adapterframework.configuration.IbisMultiSourceExpander"
-		>
-		<property name="environmentFallback" value="false"/>
-		<property name="sources">
-			<list>
-				<bean class="java.lang.System" factory-method="getProperties"/>
-				<ref bean="appConstants"/>
-			</list>
-		</property>
-	</bean>
-
-	<bean
 		name="appConstants"
 		class="nl.nn.adapterframework.util.AppConstants"
 		autowire="byName"

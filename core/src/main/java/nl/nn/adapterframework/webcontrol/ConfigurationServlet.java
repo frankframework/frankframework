@@ -248,10 +248,7 @@ public class ConfigurationServlet extends HttpServlet {
 			}
 			IbisContext ibisContext = new IbisContext();
 			boolean success = false;
-			try {
-				success = ibisContext.init();
-			} catch (ConfigurationException e) {
-			}
+			success = ibisContext.init();
 			if (success) {
 				log.info("Configuration succeeded");
 			} else {

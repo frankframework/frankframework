@@ -187,7 +187,7 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
         try {
             AdapterService catcher = new AdapterServiceImpl();
             Configuration configuration = new Configuration(catcher);
-            ConfigurationDigester configurationDigester = (ConfigurationDigester) applicationContext.getBean("configurationDigester"); // somewhy proper dependency injection gives circular dependency problems
+            ConfigurationDigester configurationDigester = new ConfigurationDigester();
             Digester digester = configurationDigester.getDigester(configuration);
             digester.push(catcher);
             digester.parse(url.openStream());

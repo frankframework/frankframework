@@ -20,8 +20,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.xml.transform.Transformer;
 
@@ -80,7 +83,7 @@ import org.xml.sax.SAXParseException;
  * @author Johan Verrips
  * @see Configuration
  */
-abstract public class ConfigurationDigester {
+public class ConfigurationDigester {
 	private static final Logger LOG = LogUtil.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
@@ -97,13 +100,6 @@ abstract public class ConfigurationDigester {
 
 	String lastResolvedEntity = null;
 
-	/**
-	 * This method is runtime implemented by Spring Framework to
-	 * return a Digester instance created from the Spring Context
-	 *
-	 */
-	abstract protected Digester createDigester();
-
 	private class XmlErrorHandler implements ErrorHandler  {
 		public void warning(SAXParseException exception) throws SAXParseException {
 			LOG.error(exception);
@@ -119,42 +115,16 @@ abstract public class ConfigurationDigester {
 		}
 	}
 
-	private class NameTrackingEntityResolver implements EntityResolver {
-
-		EntityResolver resolver;
-
-		NameTrackingEntityResolver(EntityResolver resolver) {
-			super();
-			this.resolver = resolver;
-		}
-
-		public InputSource resolveEntity(String publicID, String systemID) throws SAXException, IOException {
-			if (StringUtils.isNotEmpty(systemID)) {
-				lastResolvedEntity = systemID;
-			} else {
-				lastResolvedEntity = publicID;
-			}
-			return resolver.resolveEntity(publicID,systemID);
-		}
-	}
-
 	public Digester getDigester(Configuration configuration) throws SAXNotSupportedException, SAXNotRecognizedException {
-		Digester digester = createDigester();
-		//digester.setUseContextClassLoader(true);
-
-		digester.setEntityResolver(new NameTrackingEntityResolver(digester.getEntityResolver()));
-
-		// push config on the stack
+		Digester digester = new Digester();
+		digester.setUseContextClassLoader(true);
 		digester.push(configuration);
+
 		URL digesterRulesURL = ClassUtils.getResourceURL(this, getDigesterRules());
-		//digester.push("URL", configurationFileURL);
-
 		FromXmlRuleSet ruleSet = new FromXmlRuleSet(digesterRulesURL);
-
 		digester.addRuleSet(ruleSet);
 
 		Rule attributeChecker = new AttributeCheckingRule();
-
 		digester.addRule("*/jmsRealms", attributeChecker);
 		digester.addRule("*/jmsRealm", attributeChecker);
 		digester.addRule("*/sapSystem", attributeChecker);
@@ -220,16 +190,23 @@ abstract public class ConfigurationDigester {
 			}
 			configuration.setDigesterRulesURL(digesterRulesURL);
 			configuration.setConfigurationURL(configurationFileURL);
-			fillConfigWarnDefaultValueExceptions(configurationFileURL);
+			fillConfigWarnDefaultValueExceptions(configuration);
 			String lineSeparator = SystemUtils.LINE_SEPARATOR;
 			if (null == lineSeparator) lineSeparator = "\n";
 			String configString = Misc.resourceToString(configurationFileURL, lineSeparator, false);
-			configString = XmlUtils.identityTransform(configString);
-			configString = StringResolver.substVars(configString, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()));
+			configString = XmlUtils.identityTransform(classLoader, configString);
+			configuration.setOriginalConfiguration(configString);
+			List<String> propsToHide = new ArrayList<String>();
+			String propertiesHideString = AppConstants.getInstance().getString("properties.hide", null);
+			if (propertiesHideString != null) {
+				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
+			}
+			configString = StringResolver.substVars(configString, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()), null, propsToHide);
 			configString = ConfigurationUtils.getActivatedConfiguration(configuration, configString);
 			if (ConfigurationUtils.stubConfiguration()) {
 				configString = ConfigurationUtils.getStubbedConfiguration(configuration, configString);
 			}
+			configuration.setLoadedConfiguration(configString);
 			saveConfig(configString);
 			digester.parse(new StringReader(configString));
 		} catch (Throwable t) {
@@ -271,7 +248,7 @@ abstract public class ConfigurationDigester {
 		}
 	}
 	
-	private  void fillConfigWarnDefaultValueExceptions(URL configurationFileURL) throws Exception {
+	private  void fillConfigWarnDefaultValueExceptions(Configuration configuration) throws Exception {
 		URL xsltSource = ClassUtils.getResourceURL(this, attributesGetter_xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource ["+stub4testtool_xslt+"]");
@@ -279,8 +256,8 @@ abstract public class ConfigurationDigester {
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		String lineSeparator=SystemUtils.LINE_SEPARATOR;
 		if (null==lineSeparator) lineSeparator="\n";
-		String configString=Misc.resourceToString(configurationFileURL, lineSeparator, false);
-		configString=XmlUtils.identityTransform(configString);
+		String configString=Misc.resourceToString(configuration.getConfigurationURL(), lineSeparator, false);
+		configString=XmlUtils.identityTransform(configuration.getClassLoader(), configString);
 		String attributes = XmlUtils.transformXml(transformer, configString);
 		Element attributesElement = XmlUtils.buildElement(attributes);
 		Collection attributeElements =	XmlUtils.getChildTags(attributesElement, "attribute");

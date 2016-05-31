@@ -62,7 +62,6 @@ public class DefaultIbisManager implements IbisManager {
     protected Logger log = LogUtil.getLogger(this);
 
     private List<Configuration> configurations = new ArrayList<Configuration>();
-    private ConfigurationDigester configurationDigester;
     private SchedulerHelper schedulerHelper;
     private PlatformTransactionManager transactionManager;
     private ListenerPortPoller listenerPortPoller;
@@ -81,25 +80,28 @@ public class DefaultIbisManager implements IbisManager {
 	 * @see AppConstants#getInstance(ClassLoader)
 	 */
 	public void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile) throws ConfigurationException {
-		ClassLoader originalClassLoader = null;
+		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
-			if (classLoader == null) {
-				classLoader = new BasePathClassLoader(Thread.currentThread().getContextClassLoader(), basePath);
-			} else {
-				originalClassLoader = Thread.currentThread().getContextClassLoader();
-				classLoader = new BasePathClassLoader(classLoader, basePath);
+			if (basePath != null) {
+				if (classLoader != null) {
+					classLoader = new BasePathClassLoader(classLoader, basePath);
+				} else {
+					classLoader = new BasePathClassLoader(originalClassLoader, basePath);
+				}
 			}
-			Thread.currentThread().setContextClassLoader(classLoader);
+			if (classLoader != null) {
+				Thread.currentThread().setContextClassLoader(classLoader);
+			}
 			Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
+			configuration.setIbisManager(this);
+			ConfigurationDigester configurationDigester = new ConfigurationDigester();
 			configurationDigester.digestConfiguration(classLoader, configuration, configurationFile);
 			configurations.add(configuration);
 			if (configuration.isAutoStart()) {
 				startConfiguration(configuration);
 			}
 		} finally {
-			if (originalClassLoader != null) {
-				Thread.currentThread().setContextClassLoader(originalClassLoader);
-			}
+			Thread.currentThread().setContextClassLoader(originalClassLoader);
 		}
 	}
 
@@ -456,14 +458,6 @@ public class DefaultIbisManager implements IbisManager {
     }
     public SchedulerHelper getSchedulerHelper() {
         return schedulerHelper;
-    }
-
-    public void setConfigurationDigester(ConfigurationDigester configurationDigester) {
-        this.configurationDigester = configurationDigester;
-    }
-
-    public ConfigurationDigester getConfigurationDigester() {
-        return configurationDigester;
     }
 
     public PlatformTransactionManager getTransactionManager() {

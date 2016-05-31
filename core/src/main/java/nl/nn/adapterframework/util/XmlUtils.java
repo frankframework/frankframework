@@ -1361,14 +1361,14 @@ public class XmlUtils {
 	 * @return String (the complete and xml)
 	 * @throws DomBuilderException
 	 */
-	static public String identityTransform(String input)
+	static public String identityTransform(ClassLoader classLoader, String input)
 		throws DomBuilderException {
 		String result = "";
 		try {
 			DocumentBuilderFactory factory = getDocumentBuilderFactory();
 			Document document;
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			builder.setEntityResolver(new ClassPathEntityResolver());
+			builder.setEntityResolver(new ClassPathEntityResolver(classLoader));
 			StringReader sr = new StringReader(input);
 			InputSource src = new InputSource(sr);
 			document = builder.parse(src);

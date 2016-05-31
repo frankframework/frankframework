@@ -17,31 +17,8 @@
         autowire="byName" scope="prototype">
   </bean>
 
-
   <bean name="proto-pipeline" class="nl.nn.adapterframework.core.PipeLine"
         autowire="byName" scope="prototype">
-  </bean>
-
-
-  <bean name="variableExpander" class="org.apache.commons.digester.substitution.MultiVariableExpander">
-  </bean>
-
-  <bean name="digester" class="org.apache.commons.digester.Digester"
-        autowire="byName" scope="prototype">
-    <property name="substitutor">
-      <bean class="org.apache.commons.digester.substitution.VariableSubstitutor">
-        <constructor-arg ref="variableExpander"/>
-      </bean>
-    </property>
-    <property name="useContextClassLoader" value="true"/>
-    <property name="entityResolver">
-      <bean class="nl.nn.adapterframework.util.ClassPathEntityResolver"/>
-    </property>
-  </bean>
-
-  <bean name="configurationDigester" class="nl.nn.adapterframework.configuration.ConfigurationDigester"
-        autowire="byName">
-    <lookup-method name="createDigester" bean="digester"/>
   </bean>
 
   <bean  name="ibisManager" class="org.mockito.Mockito" factory-method="mock">
