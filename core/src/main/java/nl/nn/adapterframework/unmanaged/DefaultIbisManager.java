@@ -79,7 +79,8 @@ public class DefaultIbisManager implements IbisManager {
 	 * @see ClassUtils#getResourceURL(ClassLoader, String)
 	 * @see AppConstants#getInstance(ClassLoader)
 	 */
-	public void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile) throws ConfigurationException {
+	public void loadConfigurationFile(ClassLoader classLoader, String basePath,
+			String configurationFile, boolean configLogAppend) throws ConfigurationException {
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
 			if (basePath != null) {
@@ -95,7 +96,7 @@ public class DefaultIbisManager implements IbisManager {
 			Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
 			configuration.setIbisManager(this);
 			ConfigurationDigester configurationDigester = new ConfigurationDigester();
-			configurationDigester.digestConfiguration(classLoader, configuration, configurationFile);
+			configurationDigester.digestConfiguration(classLoader, configuration, configurationFile, configLogAppend);
 			configurations.add(configuration);
 			if (configuration.isAutoStart()) {
 				startConfiguration(configuration);

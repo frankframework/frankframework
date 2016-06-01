@@ -107,8 +107,8 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
 		ibisManager.stopAdapter(adapter);
     }
 
-    public void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile) throws ConfigurationException {
-		ibisManager.loadConfigurationFile(classLoader, basePath, configurationFile);
+    public void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile, boolean configLogAppend) throws ConfigurationException {
+		ibisManager.loadConfigurationFile(classLoader, basePath, configurationFile, configLogAppend);
     }
 
     public PlatformTransactionManager getTransactionManager() {

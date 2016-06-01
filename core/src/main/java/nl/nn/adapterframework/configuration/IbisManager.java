@@ -98,7 +98,7 @@ public interface IbisManager {
 
     public List<IAdapter> getRegisteredAdapters();
 
-    void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile) throws ConfigurationException;
+    void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile, boolean configLogAppend) throws ConfigurationException;
 
     /**
      * Get the Spring Platform Transaction Manager, for use by

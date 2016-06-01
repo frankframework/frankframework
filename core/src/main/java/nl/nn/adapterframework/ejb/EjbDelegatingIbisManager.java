@@ -100,7 +100,7 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
         getIbisManager().stopAdapter(adapter);
     }
 
-    public void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile) {
+    public void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile, boolean configLogAppend) {
     	// Do not delegate to EJB; EJB initializes itself.
     }
 

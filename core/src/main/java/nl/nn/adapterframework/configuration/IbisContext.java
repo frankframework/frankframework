@@ -65,6 +65,7 @@ public class IbisContext {
 		initContext(getSpringContextFileName());
 		String configurations = AppConstants.getInstance().getResolvedProperty("configurations.files");
 		StringTokenizer tokenizer = new StringTokenizer(configurations, ",");
+		boolean configLogAppend = false;
 		while (tokenizer.hasMoreTokens()) {
 			String configurationFile = tokenizer.nextToken();
 			String basePath = null;
@@ -73,10 +74,11 @@ public class IbisContext {
 				basePath = configurationFile.substring(0, i + 1);
 			}
 			try {
-				ibisManager.loadConfigurationFile(null, basePath, configurationFile);
+				ibisManager.loadConfigurationFile(null, basePath, configurationFile, configLogAppend);
 			} catch (ConfigurationException e) {
 				log.error("Configuration exception loading: " + configurationFile, e);
 			}
+			configLogAppend = true;
 		}
 		log.info("* IBIS Startup: Startup complete");
 		return true;

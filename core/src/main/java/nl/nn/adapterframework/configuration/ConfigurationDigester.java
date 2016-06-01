@@ -175,7 +175,7 @@ public class ConfigurationDigester {
 		return digester;
 	}
 
-	public void digestConfiguration(ClassLoader classLoader, Configuration configuration, String configurationFile) throws ConfigurationException {
+	public void digestConfiguration(ClassLoader classLoader, Configuration configuration, String configurationFile, boolean configLogAppend) throws ConfigurationException {
 		LOG.info("* IBIS Startup: Reading IBIS configuration from file [" + configurationFile + "]");
 		Digester digester = null;
 		try {
@@ -210,7 +210,7 @@ public class ConfigurationDigester {
 				loadedHide = ConfigurationUtils.getStubbedConfiguration(configuration, loadedHide);
 			}
 			configuration.setLoadedConfiguration(loadedHide);
-			saveConfig(loadedHide);
+			saveConfig(loadedHide, configLogAppend);
 			digester.parse(new StringReader(loaded));
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
@@ -230,13 +230,13 @@ public class ConfigurationDigester {
 		LOG.info("************** Configuration completed **************");
 	}
 
-	private void saveConfig(String config) {
+	private void saveConfig(String config, boolean append) {
 		String directoryName = AppConstants.getInstance().getResolvedProperty("log.dir");
 		String fileName = AppConstants.getInstance().getResolvedProperty("instance.name.lc")+"-config.xml";
-		File file = new File(directoryName, fileName);// append doen?
+		File file = new File(directoryName, fileName);
 		FileWriter fileWriter = null;
 		try {
-			fileWriter = new FileWriter(file,false);
+			fileWriter = new FileWriter(file, append);
 			fileWriter.write(config);
 		} catch (IOException e) {
 			LOG.warn("Could not write configuration to file ["+file.getPath()+"]",e);
