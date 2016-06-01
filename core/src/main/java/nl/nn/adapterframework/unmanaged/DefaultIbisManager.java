@@ -95,9 +95,9 @@ public class DefaultIbisManager implements IbisManager {
 			}
 			Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
 			configuration.setIbisManager(this);
+			configurations.add(configuration);
 			ConfigurationDigester configurationDigester = new ConfigurationDigester();
 			configurationDigester.digestConfiguration(classLoader, configuration, configurationFile, configLogAppend);
-			configurations.add(configuration);
 			if (configuration.isAutoStart()) {
 				startConfiguration(configuration);
 			}
