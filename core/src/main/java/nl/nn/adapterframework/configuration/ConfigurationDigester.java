@@ -193,22 +193,25 @@ public class ConfigurationDigester {
 			fillConfigWarnDefaultValueExceptions(configuration);
 			String lineSeparator = SystemUtils.LINE_SEPARATOR;
 			if (null == lineSeparator) lineSeparator = "\n";
-			String configString = Misc.resourceToString(configurationFileURL, lineSeparator, false);
-			configString = XmlUtils.identityTransform(classLoader, configString);
-			configuration.setOriginalConfiguration(configString);
+			String original = Misc.resourceToString(configurationFileURL, lineSeparator, false);
+			original = XmlUtils.identityTransform(classLoader, original);
+			configuration.setOriginalConfiguration(original);
 			List<String> propsToHide = new ArrayList<String>();
 			String propertiesHideString = AppConstants.getInstance().getString("properties.hide", null);
 			if (propertiesHideString != null) {
 				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
 			}
-			configString = StringResolver.substVars(configString, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()), null, propsToHide);
-			configString = ConfigurationUtils.getActivatedConfiguration(configuration, configString);
+			String loaded = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()));
+			String loadedHide = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()), null, propsToHide);
+			loaded = ConfigurationUtils.getActivatedConfiguration(configuration, loaded);
+			loadedHide = ConfigurationUtils.getActivatedConfiguration(configuration, loadedHide);
 			if (ConfigurationUtils.stubConfiguration()) {
-				configString = ConfigurationUtils.getStubbedConfiguration(configuration, configString);
+				loaded = ConfigurationUtils.getStubbedConfiguration(configuration, loaded);
+				loadedHide = ConfigurationUtils.getStubbedConfiguration(configuration, loadedHide);
 			}
-			configuration.setLoadedConfiguration(configString);
-			saveConfig(configString);
-			digester.parse(new StringReader(configString));
+			configuration.setLoadedConfiguration(loadedHide);
+			saveConfig(loadedHide);
+			digester.parse(new StringReader(loaded));
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
 			String currentElementName = null;
@@ -230,7 +233,7 @@ public class ConfigurationDigester {
 	private void saveConfig(String config) {
 		String directoryName = AppConstants.getInstance().getResolvedProperty("log.dir");
 		String fileName = AppConstants.getInstance().getResolvedProperty("instance.name.lc")+"-config.xml";
-		File file = new File(directoryName, fileName);
+		File file = new File(directoryName, fileName);// append doen?
 		FileWriter fileWriter = null;
 		try {
 			fileWriter = new FileWriter(file,false);
