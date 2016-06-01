@@ -73,6 +73,7 @@ import org.springframework.transaction.TransactionStatus;
  * <tr><td>{@link #setCronExpression(String) cronExpression}</td><td>cron expression that determines the frequency of execution (see below)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInterval(long) interval}</td><td>Repeat the job at the specified number of ms. Set to 0 to only run once just after all adapters have been started. Keep cronExpression empty to use interval.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFunction(String) function}</td><td>one of: StopAdapter, StartAdapter, StopReceiver, StartReceiver, SendMessage, ExecuteQuery</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setConfigurationName(String) configurationName}</td><td>Configuration on which job operates</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAdapterName(String) adapterName}</td><td>Adapter on which job operates</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReceiverName(String) receiverName}</td><td>Receiver on which job operates. If function is 'sendMessage' is used this name is also used as name of JavaListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be executed</td><td>&nbsp;</td></tr>
@@ -380,6 +381,7 @@ public class JobDef {
     private String cronExpression;
     private long interval = -1;
     private String function;
+    private String configurationName;
     private String adapterName;
     private String description;
     private String receiverName;
@@ -641,7 +643,7 @@ public class JobDef {
 		if (function.equalsIgnoreCase(JOB_FUNCTION_SEND_MESSAGE)) {
 			executeSendMessageJob();
 		} else{
-			ibisManager.handleAdapter(getFunction(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]");
+			ibisManager.handleAdapter(getFunction(), getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]");
 		}
 	}
 
@@ -968,6 +970,13 @@ public class JobDef {
 		return function;
 	}
 
+	public void setConfigurationName(String configurationName) {
+		this.configurationName = configurationName;
+	}
+	public String getConfigurationName() {
+		return configurationName;
+	}
+ 
 	public void setAdapterName(String adapterName) {
 		this.adapterName = adapterName;
 	}

@@ -72,8 +72,8 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
         }
     }
 
-    public void handleAdapter(String action, String adapterName, String receiverName, String commandIssuedBy) {
-        getIbisManager().handleAdapter(action, adapterName, receiverName, commandIssuedBy);
+    public void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy) {
+        getIbisManager().handleAdapter(action, configurationName, adapterName, receiverName, commandIssuedBy);
     }
 
     public void startIbis() {

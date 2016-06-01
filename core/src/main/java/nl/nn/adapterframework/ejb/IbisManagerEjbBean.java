@@ -82,8 +82,8 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
         return ibisManager.getConfigurations();
     }
 
-    public void handleAdapter(String action, String adapterName, String receiverName, String commandIssuedBy) {
-		ibisManager.handleAdapter(action, adapterName, receiverName, commandIssuedBy);
+    public void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy) {
+		ibisManager.handleAdapter(action, configurationName, adapterName, receiverName, commandIssuedBy);
     }
 
     public void shutdownIbis() {
