@@ -47,6 +47,7 @@ public ActionForward executeSub(
     HttpServletRequest request,
     HttpServletResponse response)
     throws IOException, ServletException {
+	String configurationName=null;
 	String adapterName=null;
 	String receiverName=null;
     // Initialize action
@@ -59,6 +60,7 @@ public ActionForward executeSub(
     if (null == action)
         action = mapping.getParameter();
         
+    configurationName = request.getParameter("configurationName");
     adapterName = request.getParameter("adapterName");
     receiverName = request.getParameter("receiverName");
     log.debug("action ["+action+"] adapterName ["+adapterName+"] receiverName ["+receiverName+"]");
@@ -68,7 +70,7 @@ public ActionForward executeSub(
     // command is sent from
 	String commandIssuedBy= HttpUtils.getCommandIssuedBy(request);
 	        
-    ibisManager.handleAdapter(action,adapterName,receiverName, commandIssuedBy);
+    ibisManager.handleAdapter(action,configurationName,adapterName,receiverName, commandIssuedBy);
     
     // Report any errors we have discovered back to the original form
     if (!errors.isEmpty()) {

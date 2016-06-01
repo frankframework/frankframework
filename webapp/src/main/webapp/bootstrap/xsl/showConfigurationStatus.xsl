@@ -66,11 +66,11 @@
 									</td>
 									<td>
 										<a title="Stop all adapters">
-											<xsl:attribute name="href"><xsl:value-of select="concat('adapterHandler.do?action', '=', 'stopadapter', '&amp;', 'adapterName', '=**ALL**')"/></xsl:attribute>
+											<xsl:attribute name="href"><xsl:value-of select="concat('adapterHandler.do?action', '=', 'stopadapter', '&amp;', 'adapterName', '=*ALL*')"/></xsl:attribute>
 											<img src="bootstrap/img/stop.gif" alt="Stop all adapters"/>
 										</a>
 										<a title="Start all adapters">
-											<xsl:attribute name="href"><xsl:value-of select="concat('adapterHandler.do?action', '=', 'startadapter', '&amp;', 'adapterName', '=**ALL**')"/></xsl:attribute>
+											<xsl:attribute name="href"><xsl:value-of select="concat('adapterHandler.do?action', '=', 'startadapter', '&amp;', 'adapterName', '=*ALL*')"/></xsl:attribute>
 											<img src="bootstrap/img/start.gif" alt="Start all adapters"/>
 										</a>
 										<a href="images/flow/IBIS.svg" rel="external" title="Show adapter references">

@@ -62,7 +62,8 @@
 						alt="stop all adapters"
 						>
 						<parameter name="action">stopadapter</parameter>
-						<parameter name="adapterName">**ALL**</parameter>
+						<parameter name="configurationName"><% out.write(XmlUtils.replaceNonValidXmlCharacters((String)request.getAttribute("configurationName"))); %></parameter>
+						<parameter name="adapterName">*ALL*</parameter>
 					</imagelink>
 					<imagelink
 						href="adapterHandler.do"
@@ -70,7 +71,8 @@
 						alt="start all adapters"
 						>
 						<parameter name="action">startadapter</parameter>
-						<parameter name="adapterName">**ALL**</parameter>
+						<parameter name="configurationName"><% out.write(XmlUtils.replaceNonValidXmlCharacters((String)request.getAttribute("configurationName"))); %></parameter>
+						<parameter name="adapterName">*ALL*</parameter>
 					</imagelink>
 					<imagelink
 						href="ConfigurationServlet"

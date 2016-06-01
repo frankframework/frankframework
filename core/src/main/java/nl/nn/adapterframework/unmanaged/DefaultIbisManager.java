@@ -163,12 +163,17 @@ public class DefaultIbisManager implements IbisManager {
      * Utility function to give commands to Adapters and Receivers
      *
      */
-    public void handleAdapter(String action, String adapterName, String receiverName, String commandIssuedBy) {
+    public void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy) {
         if (action.equalsIgnoreCase("STOPADAPTER")) {
-            if (adapterName.equals("**ALL**")) {
-                for (Configuration configuration : configurations) {
-                    log.info("Stopping all adapters on request of [" + commandIssuedBy+"]");
-                    stopAdapters(configuration);
+            if (adapterName.equals("*ALL*")) {
+                if (configurationName.equals("*ALL*")) {
+                    for (Configuration configuration : configurations) {
+                        log.info("Stopping all adapters on request of [" + commandIssuedBy+"]");
+                        stopAdapters(configuration);
+                   }
+                } else {
+                    log.info("Stopping all adapters for configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]");
+                    stopAdapters(getConfiguration(configurationName));
                 }
             } else {
                 for (Configuration configuration : configurations) {
@@ -180,10 +185,15 @@ public class DefaultIbisManager implements IbisManager {
             }
         }
         else if (action.equalsIgnoreCase("STARTADAPTER")) {
-            if (adapterName.equals("**ALL**")) {
-                for (Configuration configuration : configurations) {
-                    log.info("Starting all adapters on request of [" + commandIssuedBy+"]");
-                    startAdapters(configuration);
+            if (adapterName.equals("*ALL*")) {
+                if (configurationName.equals("*ALL*")) {
+                    for (Configuration configuration : configurations) {
+                        log.info("Starting all adapters on request of [" + commandIssuedBy+"]");
+                        startAdapters(configuration);
+                    }
+                } else {
+                    log.info("Starting all adapters for configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]");
+                    startAdapters(getConfiguration(configurationName));
                 }
             } else {
                 try {
