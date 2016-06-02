@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -50,6 +51,7 @@ import org.apache.struts.action.DynaActionForm;
  */
 
 public final class ShowConfiguration extends ActionBase {
+	private static final String CONFIG_ALL = "*ALL*";
 	private static final String KEYWORD_INCLUDE="<include";
 	private static final String KEYWORD_CONFIG="configuration=\"";
 	private static final String KEYWORD_QUOTE="\"";
@@ -104,6 +106,9 @@ public final class ShowConfiguration extends ActionBase {
         
 		XmlBuilder configurationsXml = new XmlBuilder("configurations");
 		List<Configuration> configurations = ibisManager.getConfigurations();
+		XmlBuilder configurationAllXml = new XmlBuilder("configuration");
+		configurationAllXml.setValue(CONFIG_ALL);
+		configurationsXml.addSubElement(configurationAllXml);
 		for (Configuration configuration : configurations) {
 			XmlBuilder configurationXml = new XmlBuilder("configuration");
 			configurationXml.setValue(configuration.getConfigurationName());
@@ -111,27 +116,38 @@ public final class ShowConfiguration extends ActionBase {
 		}
 		request.setAttribute("configurations", configurationsXml.toXML());
 
-		Configuration configuration;
-		String configurationName = request.getParameter("configuration");
-		if (configurationName != null) {
-			configuration = ibisManager.getConfiguration(configurationName);
-		} else {
-			configuration = ibisManager.getConfiguration();
-		}
-		request.setAttribute("configurationName", configuration.getConfigurationName());
-
-		URL configURL = configuration.getConfigurationURL();
 		String result = "";
-		if (configURL == null) {
-			return (mapping.findForward("noconfig"));
+		String configurationName = request.getParameter("configuration");
+		if (configurationName == null) {
+			configurationName = (String)request.getSession().getAttribute("configurationName");
+		}
+		if (configurationName == null || configurationName.equalsIgnoreCase(CONFIG_ALL)) {
+			for (Configuration configuration : ibisManager.getConfigurations()) {
+				if (AppConstants.getInstance().getBoolean("showConfiguration.original", false)) {
+					result = result + configuration.getOriginalConfiguration();
+				} else {
+					result = result + configuration.getLoadedConfiguration();
+				}
+			}
+			request.getSession().setAttribute("configurationName", CONFIG_ALL);
 		} else {
-			result = configuration.getOriginalConfiguration();
-			if (!AppConstants.getInstance().getBoolean("showConfiguration.original", false)) {
+			Configuration configuration = ibisManager.getConfiguration(configurationName);
+			if (configuration == null) {
+				configuration = ibisManager.getConfiguration();
+			}
+			if (configuration == null) {
+				return (mapping.findForward("noconfig"));
+			}
+			if (AppConstants.getInstance().getBoolean("showConfiguration.original", false)) {
+				result = configuration.getOriginalConfiguration();
+			} else {
 				result = configuration.getLoadedConfiguration();
 			}
+			request.getSession().setAttribute("configurationName", configuration.getConfigurationName());
 		}
+
 	    request.setAttribute("configXML", result);
-	
+
 	    // Forward control to the specified success URI
 	    log.debug("forward to success");
 	    return (mapping.findForward("success"));

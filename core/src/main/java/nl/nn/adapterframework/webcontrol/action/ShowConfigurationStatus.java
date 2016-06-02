@@ -98,16 +98,22 @@ public final class ShowConfigurationStatus extends ActionBase {
 		List<IAdapter> registeredAdapters;
 
 		String configurationName = request.getParameter("configuration");
+		if (configurationName == null) {
+			configurationName = (String)request.getSession().getAttribute("configurationName");
+		}
 		if (configurationName == null || configurationName.equalsIgnoreCase(CONFIG_ALL)) {
 			registeredAdapters = ibisManager.getRegisteredAdapters();
-			request.setAttribute("configurationName", CONFIG_ALL);
+			request.getSession().setAttribute("configurationName", CONFIG_ALL);
 		} else {
 			configurationSelected = ibisManager.getConfiguration(configurationName);
+			if (configurationSelected == null) {
+				configurationSelected = ibisManager.getConfiguration();
+			}
 			if (configurationSelected == null) {
 				return (mapping.findForward("noconfig"));
 			}
 			registeredAdapters = configurationSelected.getRegisteredAdapters();
-			request.setAttribute("configurationName", configurationSelected.getConfigurationName());
+			request.getSession().setAttribute("configurationName", configurationSelected.getConfigurationName());
 		}
 		
 		long esr = 0;

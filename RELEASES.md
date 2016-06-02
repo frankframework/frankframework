@@ -45,6 +45,8 @@ Upcoming
 - Introduction of RhinoPipe (for running javascript)
 - Introduction of WsdlGeneratorPipe (IJA_API specific)
 - Show configuration warnings only at relevant configuration
+- Visualize and remember selected configuration
+- Add "*ALL*" link in "Show configuration"
 
 
 
