@@ -65,6 +65,7 @@ import org.w3c.dom.Element;
  *	    &lt;/recipients&gt;
  *	    &lt;from&gt;***@nn.nl&lt;/from&gt;
  *	    &lt;subject&gt;this is the subject&lt;/subject&gt;
+ *	    &lt;threadTopic&gt;subject&lt;/threadTopic&gt;
  *	    &lt;message&gt;dit is de message&lt;/message&gt;
  *	    &lt;messageType&gt;text/plain&lt;/messageType&gt;&lt;!-- Optional --&gt;
  *	    &lt;messageBase64&gt;false&lt;/messageBase64&gt;&lt;!-- Optional --&gt;
@@ -99,6 +100,7 @@ import org.w3c.dom.Element;
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>from</td><td>string</td><td>email address of the sender</td></tr>
  * <tr><td>subject</td><td>string</td><td>subject field of the message</td></tr>
+ * <tr><td>threadTopic</td><td>string</td><td>(optional) conversation field of the message, used to correlate mails in mail viewer (header field "Thread-Topic"). Note: subject must end with value of threadTopic, but cann't be exactly the same</td></tr>
  * <tr><td>message</td><td>string</td><td>message itself. If absent, the complete input message is assumed to be the message</td></tr>
  * <tr><td>messageType</td><td>string</td><td>message MIME type (at this moment only available are text/plain and text/html - default: text/plain)</td></tr>
  * <tr><td>messageBase64</td><td>boolean</td><td>indicates whether the message content is base64 encoded (default: false)</td></tr>
@@ -205,6 +207,7 @@ public class MailSender extends SenderWithParametersBase {
 	public String sendMessage(String correlationID,	String message,	ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String from=null;
 		String subject=null;
+		String threadTopic=null;
 		String messageType=null;
 		String messageBase64=null;
 		String charset=null;
@@ -228,6 +231,11 @@ public class MailSender extends SenderWithParametersBase {
 				if (pv != null) {
 					subject = pv.asStringValue(null);  
 					log.debug("MailSender ["+getName()+"] retrieved subject-parameter ["+subject+"]");
+				}
+				pv = pvl.getParameterValue("threadTopic");
+				if (pv != null) {
+					threadTopic = pv.asStringValue(null);  
+					log.debug("MailSender ["+getName()+"] retrieved threadTopic-parameter ["+threadTopic+"]");
 				}
 				pv = pvl.getParameterValue("message");
 				if (pv != null) {
@@ -260,7 +268,7 @@ public class MailSender extends SenderWithParametersBase {
 			} catch (ParameterException e) {
 				throw new SenderException("MailSender ["+getName()+"] got exception determining parametervalues",e);
 			}
-			messageInMailSafeForm = sendEmail(from, subject, message, messageType, messageBase64, charset, recipients, attachments);
+			messageInMailSafeForm = sendEmail(from, subject, threadTopic, message, messageType, messageBase64, charset, recipients, attachments);
 		}
 		prc.getSession().put("messageInMailSafeForm", messageInMailSafeForm);
 		return correlationID;
@@ -279,6 +287,7 @@ public class MailSender extends SenderWithParametersBase {
 		// initialize this request
 		String from;
 		String subject;
+		String threadTopic;
 		String message;
 		String messageType;
 		String messageBase64;
@@ -292,6 +301,7 @@ public class MailSender extends SenderWithParametersBase {
 
 			from = XmlUtils.getChildTagAsString(emailElement, "from");
 			subject = XmlUtils.getChildTagAsString(emailElement, "subject");
+			threadTopic = XmlUtils.getChildTagAsString(emailElement, "threadTopic");
 			message = XmlUtils.getChildTagAsString(emailElement, "message");
 			messageType = XmlUtils.getChildTagAsString(emailElement, "messageType");
 			messageBase64 = XmlUtils.getChildTagAsString(emailElement, "messageBase64");
@@ -307,10 +317,10 @@ public class MailSender extends SenderWithParametersBase {
 			throw new SenderException("exception parsing [" + input + "]", e);
 		}
 
-		return sendEmail(from, subject, message, messageType, messageBase64, charset, recipients, attachments);
+		return sendEmail(from, subject, threadTopic, message, messageType, messageBase64, charset, recipients, attachments);
 	}
 
-	protected String sendEmail(String from, String subject, String message,
+	protected String sendEmail(String from, String subject, String threadTopic, String message,
 			String messageType, String messageBase64, String charset,
 			Collection recipients, Collection attachments) throws SenderException {
 
@@ -341,6 +351,7 @@ public class MailSender extends SenderWithParametersBase {
 				sb.append("[smtpHost=" + smtpHost);
 				sb.append("[from=" + from + "]");
 				sb.append("[subject=" + subject + "]");
+				sb.append("[threadTopic=" + threadTopic + "]");
 				sb.append("[text=" + message + "]");
 				sb.append("[type=" + messageType + "]");
 				sb.append("[base64=" + messageBase64 + "]");
@@ -354,6 +365,9 @@ public class MailSender extends SenderWithParametersBase {
 			MimeMessage msg = new MimeMessage(session);
 			msg.setFrom(new InternetAddress(from));
 			msg.setSubject(subject, charset);
+			if (StringUtils.isNotEmpty(threadTopic)) {
+				msg.setHeader("Thread-Topic", threadTopic);
+			}
 			Iterator iter = recipients.iterator();
 			boolean recipientsFound=false;
 			while (iter.hasNext()) {

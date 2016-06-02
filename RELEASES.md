@@ -41,6 +41,7 @@ Upcoming
 - Add "*ALL*" link in "Show configuration status"
 - Add attribute transformNullMessage to PipeLine
 - Add logging about message to send in JMSFacade
+- Add threadTopic attribute to MailSender for correlating mails in mail viewer
 
 
 
