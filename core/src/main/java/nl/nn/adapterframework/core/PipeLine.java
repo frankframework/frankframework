@@ -81,6 +81,7 @@ import org.springframework.transaction.TransactionDefinition;
  * <tr><td>{@link #setStoreOriginalMessageWithoutNamespaces(boolean) storeOriginalMessageWithoutNamespaces}</td><td>when set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalMessageWithoutNamespaces</td><td>false</td></tr>
  * <tr><td>{@link #setMessageSizeWarn(String) messageSizeWarn}</td><td>if messageSizeWarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged</td><td>application default (3MB)</td></tr>
  * <tr><td>{@link #setForceFixedForwarding(boolean) forceFixedForwarding}</td><td>forces that each pipe in the pipeline is not automatically added to the globalForwards table</td><td>application default</td></tr>
+ * <tr><td>{@link #setTransformNullMessage(String) transformNullMessage}</td><td>when specified and <code>null</code> is received as a message the message is changed to the specified value</td><td></td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -162,6 +163,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	private boolean storeOriginalMessageWithoutNamespaces = false;
 	private long messageSizeWarn  = Misc.getMessageSizeWarnByDefault();
 	private boolean forceFixedForwarding = Misc.isForceFixedForwardingByDefault();
+	private String transformNullMessage = null;
 
 	private List<IPipeLineExitHandler> exitHandlers = new ArrayList<IPipeLineExitHandler>();
 	//private CongestionSensorList congestionSensors = new CongestionSensorList();
@@ -531,6 +533,9 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
 	public PipeLineResult process(String messageId, String message, IPipeLineSession pipeLineSession) throws PipeRunException {
+		if (transformNullMessage != null && message == null) {
+			message = transformNullMessage;
+		}
 		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession, firstPipe);
 	}
 
@@ -800,6 +805,13 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	}
 	public boolean isForceFixedForwarding() {
 		return forceFixedForwarding;
+	}
+
+	public void setTransformNullMessage(String s) {
+		transformNullMessage = s;
+	}
+	public String getTransformNullMessage() {
+		return transformNullMessage;
 	}
 
 	public StatisticsKeeper getRequestSizeStats() {
