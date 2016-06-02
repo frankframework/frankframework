@@ -43,6 +43,7 @@ Upcoming
 - Add logging about message to send in JMSFacade
 - Add threadTopic attribute to MailSender for correlating mails in mail viewer
 - Introduction of RhinoPipe (for running javascript)
+- Introduction of WsdlGeneratorPipe (IJA_API specific)
 
 
 
