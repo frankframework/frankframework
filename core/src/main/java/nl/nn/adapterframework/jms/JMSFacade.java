@@ -49,6 +49,7 @@ import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 
 import org.apache.commons.lang.StringUtils;
@@ -609,6 +610,17 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 	public String send(MessageProducer messageProducer, Message message, boolean ignoreInvalidDestinationException)
 			throws NamingException, JMSException {
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix()+"sender on ["+ getDestinationName() 
+				+ "] will send message with JMSDeliveryMode=[" + message.getJMSDeliveryMode()
+				+ "] \n  JMSMessageID=[" + message.getJMSMessageID()
+				+ "] \n  JMSCorrelationID=[" + message.getJMSCorrelationID()
+				+ "] \n  JMSTimestamp=[" + DateUtils.format(message.getJMSTimestamp()) 
+				+ "] \n  JMSExpiration=[" + message.getJMSExpiration()
+				+ "] \n  JMSPriority=[" + message.getJMSPriority()
+				+ "] \n Message=[" + message.toString()
+				+ "]");
+		}
 		try {
 			if (useJms102()) {
 				if (messageProducer instanceof TopicPublisher) {

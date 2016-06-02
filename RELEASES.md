@@ -40,6 +40,7 @@ Upcoming
 - Make it possible to stop and start all adapters per configuration
 - Add "*ALL*" link in "Show configuration status"
 - Add attribute transformNullMessage to PipeLine
+- Add logging about message to send in JMSFacade
 
 
 
