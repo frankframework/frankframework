@@ -26,6 +26,7 @@ import nl.nn.adapterframework.configuration.BasicAdapterServiceImpl;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
@@ -96,6 +97,7 @@ public class DefaultIbisManager implements IbisManager {
 			Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
 			configuration.setIbisManager(this);
 			configurations.add(configuration);
+			ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 			ConfigurationDigester configurationDigester = new ConfigurationDigester();
 			configurationDigester.digestConfiguration(classLoader, configuration, configurationFile, configLogAppend);
 			if (configuration.isAutoStart()) {
@@ -103,6 +105,7 @@ public class DefaultIbisManager implements IbisManager {
 			}
 		} finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);
+			ConfigurationWarnings.getInstance().setActiveConfiguration(null);
 		}
 	}
 

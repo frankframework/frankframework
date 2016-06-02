@@ -44,6 +44,7 @@ Upcoming
 - Add threadTopic attribute to MailSender for correlating mails in mail viewer
 - Introduction of RhinoPipe (for running javascript)
 - Introduction of WsdlGeneratorPipe (IJA_API specific)
+- Show configuration warnings only at relevant configuration
 
 
 

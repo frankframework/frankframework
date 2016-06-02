@@ -15,9 +15,6 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import java.util.LinkedList;
-import java.util.Vector;
-
 import org.apache.log4j.Logger;
 
 /**
@@ -25,10 +22,10 @@ import org.apache.log4j.Logger;
  * 
  * @author Peter Leeuwenburgh
  */
-public final class ConfigurationWarnings extends LinkedList {
+public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	private static ConfigurationWarnings self = null;
-	private Vector defaultValueExceptions = new Vector();
-
+	private Configuration activeConfiguration = null;
+	
 	public static synchronized ConfigurationWarnings getInstance() {
 		if (self == null) {
 			self = new ConfigurationWarnings();
@@ -36,28 +33,31 @@ public final class ConfigurationWarnings extends LinkedList {
 		return self;
 	}
 
-	public boolean add(Logger log, String msg) {
-		return add(log, msg, false);
-	}
-
 	public boolean add(Logger log, String msg, boolean onlyOnce) {
-		log.warn(msg);
-		if (!onlyOnce || !super.contains(msg)) {
-			return super.add(msg);
+		if (activeConfiguration!=null) {
+			return activeConfiguration.getConfigurationWarnings().add(log, msg, onlyOnce);
 		} else {
-			return false;
+			return super.add(log, msg, onlyOnce);
 		}
 	}
 
 	public boolean containsDefaultValueExceptions(String key) {
-		return defaultValueExceptions.contains(key);
+		if (activeConfiguration!=null) {
+			return activeConfiguration.getConfigurationWarnings().containsDefaultValueExceptions(key);
+		} else {
+			return super.containsDefaultValueExceptions(key);
+		}
 	}
 
 	public boolean addDefaultValueExceptions(String key) {
-		if (containsDefaultValueExceptions(key)) {
-			return true;
+		if (activeConfiguration!=null) {
+			return activeConfiguration.getConfigurationWarnings().addDefaultValueExceptions(key);
 		} else {
-			return defaultValueExceptions.add(key);
+			return super.addDefaultValueExceptions(key);
 		}
+	}
+	
+	public void setActiveConfiguration (Configuration configuration) {
+		activeConfiguration = configuration;
 	}
 }

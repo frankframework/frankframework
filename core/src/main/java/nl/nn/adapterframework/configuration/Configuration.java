@@ -67,6 +67,7 @@ public class Configuration {
     private AppConstants appConstants;
 
     private ConfigurationException configurationException=null;
+    private BaseConfigurationWarnings configurationWarnings = new BaseConfigurationWarnings();
 
     private static Date statisticsMarkDateMain=new Date();
 	private static Date statisticsMarkDateDetails=statisticsMarkDateMain;
@@ -359,4 +360,7 @@ public class Configuration {
 		return configurationException;
 	}
 
+	public BaseConfigurationWarnings getConfigurationWarnings() {
+		return configurationWarnings;
+	}
 }

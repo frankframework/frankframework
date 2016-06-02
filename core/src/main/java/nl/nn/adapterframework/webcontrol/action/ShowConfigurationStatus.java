@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +25,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
@@ -143,7 +145,23 @@ public final class ShowConfigurationStatus extends ActionBase {
 				}
 			}
 		}
-		if (configWarnings.size()>0 || esr!=0) {
+		List<String> cw = new ArrayList<String>();
+		if (configurationSelected != null) {
+			BaseConfigurationWarnings configWarns = configurationSelected
+					.getConfigurationWarnings();
+			for (int j = 0; j < configWarns.size(); j++) {
+				cw.add((String) configWarns.get(j));
+			}
+		} else {
+			for (Configuration configuration : configurations) {
+				BaseConfigurationWarnings configWarns = configuration
+						.getConfigurationWarnings();
+				for (int j = 0; j < configWarns.size(); j++) {
+					cw.add((String) configWarns.get(j));
+				}
+			}
+		}
+		if (configWarnings.size()>0 || esr!=0 || cw.size()>0) {
 			XmlBuilder warningsXML=new XmlBuilder("warnings");
 			if (esr!=0) {
 				XmlBuilder warningXML=new XmlBuilder("warnings");
@@ -162,6 +180,12 @@ public final class ShowConfigurationStatus extends ActionBase {
 				XmlBuilder warningXML=new XmlBuilder("warnings");
 				warningXML=new XmlBuilder("warning");
 				warningXML.setValue((String)configWarnings.get(j));
+				warningsXML.addSubElement(warningXML);
+			}
+			for (int j=0; j<cw.size(); j++) {
+				XmlBuilder warningXML=new XmlBuilder("warnings");
+				warningXML=new XmlBuilder("warning");
+				warningXML.setValue((String)cw.get(j));
 				warningsXML.addSubElement(warningXML);
 			}
 			adapters.addSubElement(warningsXML);
