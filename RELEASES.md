@@ -38,6 +38,7 @@ Upcoming
     - Add getConfiguration to Adapter
     - Add getIbisManager to Configuration
 - Make it possible to stop and start all adapters per configuration
+- Add "*ALL*" link in "Show configuration status"
 
 
 

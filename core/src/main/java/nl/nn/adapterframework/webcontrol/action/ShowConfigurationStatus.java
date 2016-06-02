@@ -64,6 +64,7 @@ import org.apache.struts.action.ActionMapping;
  * @author	Johan Verrips
  */
 public final class ShowConfigurationStatus extends ActionBase {
+	private static final String CONFIG_ALL = "*ALL*";
 
 	private int maxMessageSize = AppConstants.getInstance().getInt("adapter.message.max.size",0); 
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
@@ -81,6 +82,9 @@ public final class ShowConfigurationStatus extends ActionBase {
 
 		XmlBuilder configurationsXml = new XmlBuilder("configurations");
 		List<Configuration> configurations = ibisManager.getConfigurations();
+		XmlBuilder configurationAllXml = new XmlBuilder("configuration");
+		configurationAllXml.setValue(CONFIG_ALL);
+		configurationsXml.addSubElement(configurationAllXml);
 		for (Configuration configuration : configurations) {
 			XmlBuilder configurationXml = new XmlBuilder("configuration");
 			configurationXml.setValue(configuration.getConfigurationName());
@@ -88,21 +92,22 @@ public final class ShowConfigurationStatus extends ActionBase {
 		}
 		request.setAttribute("configurations", configurationsXml.toXML());
 
-		Configuration configuration;
+		Configuration configurationSelected = null;
 		List<IAdapter> registeredAdapters;
 
 		String configurationName = request.getParameter("configuration");
-		if (configurationName != null) {
-			configuration = ibisManager.getConfiguration(configurationName);
+		if (configurationName == null || configurationName.equalsIgnoreCase(CONFIG_ALL)) {
+			registeredAdapters = ibisManager.getRegisteredAdapters();
+			request.setAttribute("configurationName", CONFIG_ALL);
 		} else {
-			configuration = ibisManager.getConfiguration();
+			configurationSelected = ibisManager.getConfiguration(configurationName);
+			if (configurationSelected == null) {
+				return (mapping.findForward("noconfig"));
+			}
+			registeredAdapters = configurationSelected.getRegisteredAdapters();
+			request.setAttribute("configurationName", configurationSelected.getConfigurationName());
 		}
-		if (configuration == null) {
-			return (mapping.findForward("noconfig"));
-		}
-		registeredAdapters = configuration.getRegisteredAdapters();
-		request.setAttribute("configurationName", configuration.getConfigurationName());
-
+		
 		long esr = 0;
 		if (showCountErrorStore) {
 			for(Iterator adapterIt=registeredAdapters.iterator(); adapterIt.hasNext();) {
@@ -125,12 +130,18 @@ public final class ShowConfigurationStatus extends ActionBase {
 		}
 
 		XmlBuilder adapters=new XmlBuilder("registeredAdapters");
-		if (configuration.getConfigurationException()!=null) {
-			XmlBuilder exceptionsXML=new XmlBuilder("exceptions");
-			XmlBuilder exceptionXML=new XmlBuilder("exception");
-			exceptionXML.setValue(configuration.getConfigurationException().getMessage());
-			exceptionsXML.addSubElement(exceptionXML);
-			adapters.addSubElement(exceptionsXML);
+		if (configurationSelected!=null) {
+			XmlBuilder exceptionsXML=getConfigurationExceptionsAsXml(configurationSelected);
+			if (exceptionsXML!=null) {
+				adapters.addSubElement(exceptionsXML);
+			}
+		} else {
+			for (Configuration configuration : configurations) {
+				XmlBuilder exceptionsXML=getConfigurationExceptionsAsXml(configuration);
+				if (exceptionsXML!=null) {
+					adapters.addSubElement(exceptionsXML);
+				}
+			}
 		}
 		if (configWarnings.size()>0 || esr!=0) {
 			XmlBuilder warningsXML=new XmlBuilder("warnings");
@@ -471,5 +482,16 @@ public final class ShowConfigurationStatus extends ActionBase {
 		// Forward control to the specified success URI
 		log.debug("forward to success");
 		return (mapping.findForward("success"));
+	}
+
+	
+	private XmlBuilder getConfigurationExceptionsAsXml(Configuration configuration) {
+		if (configuration.getConfigurationException()!=null) {
+			XmlBuilder exceptionsXML=new XmlBuilder("exceptions");
+			XmlBuilder exceptionXML=new XmlBuilder("exception");
+			exceptionXML.setValue(configuration.getConfigurationException().getMessage());
+			exceptionsXML.addSubElement(exceptionXML);
+		}
+		return null;
 	}
 }
