@@ -42,6 +42,7 @@ Upcoming
 - Add attribute transformNullMessage to PipeLine
 - Add logging about message to send in JMSFacade
 - Add threadTopic attribute to MailSender for correlating mails in mail viewer
+- Introduction of RhinoPipe (for running javascript)
 
 
 
