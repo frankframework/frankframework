@@ -132,3 +132,5 @@ blank line. See:
 - http://chris.beams.io/posts/git-commit/#seven-rules
 - http://stackoverflow.com/questions/2290016/git-commit-messages-50-72-formatting
 - http://git-scm.com/book/ch5-2.html
+
+Use Unix style newlines.
