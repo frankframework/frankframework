@@ -6,10 +6,9 @@ Build adapters using XML configuration. Build applications using adapters.
 ![Ibis AdapterFramework](IAF.png)
 
 Some example XML configurations:
-
-- [HelloWorld](example/src/main/resources/ConfigurationHelloWorld.xml)
-- [HelloWorlds](example/src/main/resources/ConfigurationHelloWorlds.xml)
-- [ManageDatabase](example/src/main/resources/ConfigurationManageDatabase.xml)
+- [HelloWorld](example/src/main/resources/Example/ConfigurationHelloWorld.xml)
+- [HelloWorlds](example/src/main/resources/Example/ConfigurationHelloWorlds.xml)
+- [ManageDatabase](example/src/main/resources/Example/ConfigurationManageDatabase.xml)
 
 See them in action: http://ibis4example.ibissource.org/
 
