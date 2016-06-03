@@ -47,6 +47,7 @@ Upcoming
 - Show configuration warnings only at relevant configuration
 - Visualize and remember selected configuration
 - Add "*ALL*" link in "Show configuration"
+- Bugfix "attribute [cacheMode] already has a default value [CACHE_CONSUMER]"
 
 
 

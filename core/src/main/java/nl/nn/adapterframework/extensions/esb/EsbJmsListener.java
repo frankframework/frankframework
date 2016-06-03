@@ -71,7 +71,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 				boolean recovered = false;
 				ReceiverBase receiverBase = getReceiverBase();
 				if (receiverBase != null) {
-					recovered = receiverBase.isRecover();
+					recovered = (receiverBase.isRecover() || receiverBase.isRecoverAdapter());
 				}
 				if (!recovered) {
 					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();

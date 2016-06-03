@@ -2061,7 +2061,16 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public boolean isRecover() {
 		return recover;
 	}
-	
+
+	public boolean isRecoverAdapter() {
+		IAdapter adapter = getAdapter();
+		if (adapter instanceof Adapter) {
+			Adapter at = (Adapter) adapter;
+			return at.isRecover();
+		}
+		return false;
+	}
+
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}
