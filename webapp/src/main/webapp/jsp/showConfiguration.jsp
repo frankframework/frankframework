@@ -12,43 +12,10 @@
 
 	<% String showAs = null; %>
 	<% if (AppConstants.getInstance().getBoolean("showConfiguration.original", false)) { %>
-		<imagelink
-				href="configHandler.do"
-				type="showashtml"
-				alt="showloadedconfig"
-				text="Show loaded configuration"
-				>
-				<parameter name="action">showloadedconfig</parameter>
-		</imagelink>
+		<% showAs = "showastext"; %>
 	<% } else { %>
 		<% showAs = "showashtml"; %>
-		<image
-			type="showashtml"
-			alt="Show loaded configuration"
-			text="Show loaded configuration"
-		/>
 	<% } %>
-	<% if (AppConstants.getInstance().getBoolean("showConfiguration.original", false)) { %>
-		<% showAs = "showastext"; %>
-		<image
-			type="showastext"
-			alt="Show original configuration"
-			text="Show original configuration"
-		/>
-	<% } else { %>
-		<imagelink
-				href="configHandler.do"
-				type="showastext"
-				alt="showoriginalconfig"
-				text="Show original configuration"
-				>
-				<parameter name="action">showoriginalconfig</parameter>
-		</imagelink>
-	<% } %>
-
-	<br/>
-	<br/>
-
 	<xtags:parse>
 		<% out.write(XmlUtils.replaceNonValidXmlCharacters(request.getAttribute("configurations").toString())); %>
 	</xtags:parse>
@@ -73,6 +40,42 @@
 			<% } %>
 		</xtags:forEach>
 	</xtags:if>
+
+	<br/>
+	<br/>
+
+	<% if (AppConstants.getInstance().getBoolean("showConfiguration.original", false)) { %>
+		<imagelink
+				href="configHandler.do"
+				type="showashtml"
+				alt="showloadedconfig"
+				text="Show loaded configuration"
+				>
+				<parameter name="action">showloadedconfig</parameter>
+		</imagelink>
+	<% } else { %>
+		<image
+			type="showashtml"
+			alt="Show loaded configuration"
+			text="Show loaded configuration"
+		/>
+	<% } %>
+	<% if (AppConstants.getInstance().getBoolean("showConfiguration.original", false)) { %>
+		<image
+			type="showastext"
+			alt="Show original configuration"
+			text="Show original configuration"
+		/>
+	<% } else { %>
+		<imagelink
+				href="configHandler.do"
+				type="showastext"
+				alt="showoriginalconfig"
+				text="Show original configuration"
+				>
+				<parameter name="action">showoriginalconfig</parameter>
+		</imagelink>
+	<% } %>
 
 	<pre><bean:write name="configXML" scope="request" filter="true"/></pre>
 
