@@ -8,7 +8,7 @@ Build adapters using XML configuration. Build applications using adapters.
 Some example XML configurations:
 - [HelloWorld](example/src/main/resources/Example/ConfigurationHelloWorld.xml)
 - [HelloWorlds](example/src/main/resources/Example/ConfigurationHelloWorlds.xml)
-- [ManageDatabase](example/src/main/resources/Example/ConfigurationManageDatabase.xml)
+- [ManageDatabase](example/src/main/resources/Util/ConfigurationManageDatabase.xml)
 
 See them in action: http://ibis4example.ibissource.org/
 
