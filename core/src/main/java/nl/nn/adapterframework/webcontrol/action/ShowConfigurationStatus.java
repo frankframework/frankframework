@@ -521,6 +521,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 			XmlBuilder exceptionXML=new XmlBuilder("exception");
 			exceptionXML.setValue(configuration.getConfigurationException().getMessage());
 			exceptionsXML.addSubElement(exceptionXML);
+			return exceptionsXML;
 		}
 		return null;
 	}
