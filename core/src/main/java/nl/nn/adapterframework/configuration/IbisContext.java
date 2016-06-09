@@ -17,6 +17,9 @@ package nl.nn.adapterframework.configuration;
 
 import java.util.StringTokenizer;
 
+import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.JarClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.ServiceClassLoader;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -63,18 +66,40 @@ public class IbisContext {
 	 */
 	public boolean init() {
 		initContext(getSpringContextFileName());
-		String configurations = AppConstants.getInstance().getResolvedProperty("configurations.files");
+		AppConstants appConstants = AppConstants.getInstance();
+		String configurations = appConstants.getResolvedProperty("configurations.names");
 		StringTokenizer tokenizer = new StringTokenizer(configurations, ",");
 		boolean configLogAppend = false;
 		while (tokenizer.hasMoreTokens()) {
-			String configurationFile = tokenizer.nextToken();
+			String configurationName = tokenizer.nextToken();
+			String configurationFile = appConstants.getResolvedProperty(
+					"configurations." + configurationName + ".configurationFile");
+			if (configurationFile == null) {
+				configurationFile = configurationName + "/Configuration.xml";
+			}
+			String classLoaderType = appConstants.getResolvedProperty(
+					"configurations." + configurationName + ".classLoaderType");
+			ClassLoader classLoader = null;
+			if ("DirClassLoader".equals(classLoaderType)) {
+				String directory = appConstants.getResolvedProperty(
+						"configurations." + configurationName + ".directory");
+				classLoader = new DirectoryClassLoader(directory);
+			} else if ("JarClassLoader".equals(classLoaderType)) {
+				String jar = appConstants.getResolvedProperty(
+						"configurations." + configurationName + ".jar");
+				classLoader = new JarClassLoader(jar, configurationName);
+			} else if ("ServiceClassLoader".equals(classLoaderType)) {
+				String adapterName = appConstants.getResolvedProperty(
+						"configurations." + configurationName + ".adapterName");
+				classLoader = new ServiceClassLoader(ibisManager, adapterName, configurationName);
+			}
 			String basePath = null;
 			int i = configurationFile.lastIndexOf('/');
 			if (i != -1) {
 				basePath = configurationFile.substring(0, i + 1);
 			}
 			try {
-				ibisManager.loadConfigurationFile(null, basePath, configurationFile, configLogAppend);
+				ibisManager.loadConfigurationFile(classLoader, basePath, configurationFile, configLogAppend);
 			} catch (ConfigurationException e) {
 				log.error("Configuration exception loading: " + configurationFile, e);
 			}

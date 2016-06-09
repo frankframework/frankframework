@@ -21,13 +21,13 @@ import java.util.Iterator;
 import java.util.List;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
-import nl.nn.adapterframework.configuration.BasePathClassLoader;
 import nl.nn.adapterframework.configuration.BasicAdapterServiceImpl;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
@@ -95,6 +95,9 @@ public class DefaultIbisManager implements IbisManager {
 				Thread.currentThread().setContextClassLoader(classLoader);
 			}
 			Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
+			// Name will be replaced during digest unless not specified in the
+			// configuration file.
+			configuration.setName(configurationFile);
 			configuration.setIbisManager(this);
 			configurations.add(configuration);
 			ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
