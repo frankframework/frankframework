@@ -45,8 +45,8 @@ public final class AppConstants extends Properties implements Serializable{
 	public final static String propertiesFileName="AppConstants.properties";
 	private static AppConstants self=null;
 	private String additionalPropertiesFileKey="ADDITIONAL.PROPERTIES.FILE";
-
-    private VariableExpander variableExpander;
+	private VariableExpander variableExpander;
+	private static Properties propertyPlaceholderConfigurerProperties = new Properties();
 
 	private AppConstants() {
 		super();
@@ -56,11 +56,13 @@ public final class AppConstants extends Properties implements Serializable{
 	private AppConstants(ClassLoader classLoader) {
 		super();
 		load(classLoader, null, propertiesFileName);
+		putAll(propertyPlaceholderConfigurerProperties);
 	}
 
 	private AppConstants(String directory) {
 		super();
 		load(null, directory, propertiesFileName);
+		putAll(propertyPlaceholderConfigurerProperties);
 	}
 
 	/**
@@ -218,6 +220,11 @@ public final class AppConstants extends Properties implements Serializable{
 				log.error("error reading [" + propertiesFileName + "]", e);
 			}
 		}
+	}
+
+	public void setPropertyPlaceholderConfigurerProperty(String name, String value) {
+		self.put(name, value);
+		propertyPlaceholderConfigurerProperties.put(name, value);
 	}
 
 	public String toXml() {

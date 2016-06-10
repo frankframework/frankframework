@@ -26,13 +26,13 @@ import java.util.Properties;
 public class LowerCasePropertyPlaceholderConfigurer extends AppConstantsPropertyPlaceholderConfigurer {
 
 	@Override
-    protected void convertProperties(Properties props) {
-        String instanceName = appConstants.getProperty("instance.name");
-        if (instanceName != null) {
-            String lowerCase = instanceName.toLowerCase();
-            appConstants.put("instance.name.lc", lowerCase);
-            props.put("instance.name.lc", lowerCase);
-        }
-    }
+	protected void convertProperties(Properties props) {
+		String instanceName = appConstants.getProperty("instance.name");
+		if (instanceName != null) {
+			String lowerCase = instanceName.toLowerCase();
+			appConstants.setPropertyPlaceholderConfigurerProperty("instance.name.lc", lowerCase);
+			props.put("instance.name.lc", lowerCase);
+		}
+	}
 
 }

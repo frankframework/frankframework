@@ -35,7 +35,7 @@ public class AppConstantsPropertyPlaceholderConfigurer
 	}
 
 	@Override
-    protected void convertProperties(Properties props) {
+	protected void convertProperties(Properties props) {
 		props.putAll(appConstants);
 	}
 
