@@ -1,0 +1,9 @@
+<!DOCTYPE configuration [
+	<!ENTITY ManageDatabase SYSTEM "ConfigurationManageDatabase.xml">
+]>
+<configuration name="IAF_Util">
+	<jmsRealms>
+		<jmsRealm realmName="jdbc" datasourceName="jdbc/${instance.name.lc}"/>
+	</jmsRealms>
+	&ManageDatabase;
+</configuration>

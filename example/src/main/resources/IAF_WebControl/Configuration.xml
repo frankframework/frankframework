@@ -3,7 +3,7 @@
 	<!ENTITY TestPipeLine SYSTEM "ConfigurationTestPipeLine.xml">
 	<!ENTITY TestIfsaService SYSTEM "ConfigurationTestIfsaService.xml">
 ]>
-<configuration name="WebControl">
+<configuration name="IAF_WebControl">
 	&Webservices;
 	&TestPipeLine;
 	&TestIfsaService;
