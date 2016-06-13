@@ -99,4 +99,7 @@ public interface IDbmsSupport {
 	
 	String getRowNumber(String order, String sort);
 	String getRowNumberShortName();
+
+	String getLength(String column);
+
 }

@@ -1,0 +1,52 @@
+<module>
+	<adapter name="ShowConfig" active="${active.config.database}">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="ShowConfig">
+			<listener className="nl.nn.adapterframework.http.RestListener"
+				name="ShowConfig" uriPattern="showConfig" />
+		</receiver>
+		<pipeline firstPipe="doShowConfig">
+			<exits>
+				<exit state="success" path="EXIT" />
+			</exits>
+
+			<pipe name="doShowConfig" className="nl.nn.adapterframework.webcontrol.pipes.ShowConfig"
+				throwException="false">
+				<forward name="success" path="showConfig" />
+			</pipe>
+
+			<pipe name="showConfig" className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
+				styleSheetName="ShowConfig/xsl/ShowConfig.xsl" xslt2="true"
+				skipOnEmptyInput="true">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<!--adapter name="TestShowConfig">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="TestShowConfig">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4testiaf-TestShowConfig" />
+		</receiver>
+		<pipeline firstPipe="callRest">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+
+			<pipe name="callRest"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender className="nl.nn.adapterframework.http.HttpSender"
+					urlParam="url_param" storeResultAsByteArrayInSessionKey="configJar">
+					<param name="url_param"
+						value="http://localhost/ija_api/rest/showConfig?name=test" />
+				</sender>
+				<forward name="success" path="echo" />
+			</pipe>
+
+			<pipe name="echo" className="nl.nn.adapterframework.pipes.GetFromSession"
+				sessionKey="configJar">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter-->
+</module>

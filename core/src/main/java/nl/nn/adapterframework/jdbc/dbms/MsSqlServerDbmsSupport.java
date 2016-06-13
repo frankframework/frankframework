@@ -126,4 +126,8 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public String getRowNumberShortName() {
 		return "rn";
 	}
+
+	public String getLength(String column) {
+		return "LEN("+column+")";
+	}
 }

@@ -393,4 +393,8 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public String getRowNumberShortName() {
 		return "";
 	}
+
+	public String getLength(String column) {
+		return "LENGTH("+column+")";
+	}
 }

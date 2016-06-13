@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
@@ -333,6 +334,10 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 						log.warn(getLogPrefix()+"could not determine file size", e);
 					}
 					statement.setBinaryStream(i+1, fis, (int) len);
+				} else if (value instanceof ByteArrayInputStream) {
+					ByteArrayInputStream bais = (ByteArrayInputStream) value;
+					long len= bais.available();
+					statement.setBinaryStream(i+1, bais, (int) len);
 				} else {
 					throw new SenderException(getLogPrefix()+"unknown inputstream ["+value.getClass()+"] for parameter ["+pv.getDefinition().getName()+"]");
 				}
