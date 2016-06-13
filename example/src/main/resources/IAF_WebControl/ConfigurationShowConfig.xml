@@ -1,0 +1,25 @@
+<module>
+	<adapter name="WebControlShowConfig" active="${active.config.database}">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="WebControlShowConfig">
+			<listener className="nl.nn.adapterframework.http.RestListener"
+				name="WebControlShowConfig" uriPattern="showConfig" />
+		</receiver>
+		<pipeline firstPipe="doShowConfig">
+			<exits>
+				<exit state="success" path="EXIT" />
+			</exits>
+
+			<pipe name="doShowConfig" className="nl.nn.adapterframework.webcontrol.pipes.ShowConfig"
+				throwException="false">
+				<forward name="success" path="showConfig" />
+			</pipe>
+
+			<pipe name="showConfig" className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
+				styleSheetName="ShowConfig/xsl/ShowConfig.xsl" xslt2="true"
+				skipOnEmptyInput="true">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

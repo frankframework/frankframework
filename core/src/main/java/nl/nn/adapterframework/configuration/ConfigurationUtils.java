@@ -17,18 +17,27 @@ package nl.nn.adapterframework.configuration;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.SystemUtils;
-
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Functions to manipulate the configuration. 
@@ -36,6 +45,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Peter Leeuwenburgh
  */
 public class ConfigurationUtils {
+	protected static Logger log = LogUtil.getLogger(ConfigurationUtils.class);
+
 	private static final String CONFIGURATION_STUB4TESTTOOL_KEY = "stub4testtool.configuration";
 
 	private static String stub4testtool_xslt = "/xml/xsl/stub4testtool.xsl";
@@ -89,5 +100,62 @@ public class ConfigurationUtils {
 
 	public static boolean stubConfiguration() {
 		return AppConstants.getInstance().getBoolean(CONFIGURATION_STUB4TESTTOOL_KEY, false);
+	}
+
+	public static byte[] getConfigFromDatabase(String name) throws ConfigurationException {
+		return getConfigFromDatabase(name, null);
+	}
+
+	public static byte[] getConfigFromDatabase(String name, String jmsRealm)
+			throws ConfigurationException {
+		if (StringUtils.isEmpty(jmsRealm)) {
+			jmsRealm = JmsRealmFactory.getInstance()
+					.getFirstDatasourceJmsRealm();
+			if (StringUtils.isEmpty(jmsRealm)) {
+				return null;
+			}
+		}
+
+		Connection conn = null;
+		FixedQuerySender qs = new FixedQuerySender();
+		qs.setJmsRealm(jmsRealm);
+		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.configure();
+		try {
+			qs.open();
+			conn = qs.getConnection();
+		} catch (SenderException e) {
+			throw new ConfigurationException(e);
+		} catch (JdbcException e) {
+			throw new ConfigurationException(e);
+		} finally {
+			try {
+				qs.close();
+			} catch (SenderException e) {
+				log.warn("Could not close query sender", e);
+			}
+		}
+
+		ResultSet rs = null;
+		String query = "SELECT CONFIG FROM IBISCONFIG WHERE NAME=?";
+		try {
+			PreparedStatement stmt = conn.prepareStatement(query);
+			stmt.setString(1, name);
+			rs = stmt.executeQuery();
+			if (rs.next()) {
+				return rs.getBytes(1);
+			}
+		} catch (SQLException e) {
+			throw new ConfigurationException(e);
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					log.warn("Could not close resultset", e);
+				}
+			}
+		}
+		return null;
 	}
 }

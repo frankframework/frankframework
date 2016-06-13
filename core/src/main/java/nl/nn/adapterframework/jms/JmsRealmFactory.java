@@ -24,6 +24,7 @@ import java.util.TreeSet;
 
 import nl.nn.adapterframework.util.LogUtil;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
@@ -100,5 +101,28 @@ public class JmsRealmFactory {
     }
     public String toString(){
         return ToStringBuilder.reflectionToString(this);
+    }
+
+	public String getFirstDatasourceJmsRealm() {
+		Iterator it = getRegisteredRealmNames();
+		while (it.hasNext()) {
+			String jr = (String) it.next();
+			if (StringUtils.isNotEmpty(getJmsRealm(jr).getDatasourceName())) {
+				return jr;
+			}
+		}
+		return null;
+	}
+
+    public List getRegisteredDatasourceRealmNamesAsList() {
+        Iterator it = getRegisteredRealmNames();
+        List result = new ArrayList();
+        while (it.hasNext()) {
+			String jr = (String) it.next();
+			if (StringUtils.isNotEmpty(getJmsRealm(jr).getDatasourceName())) {
+	        	result.add(jr);
+			}
+        }
+        return result;
     }
 }

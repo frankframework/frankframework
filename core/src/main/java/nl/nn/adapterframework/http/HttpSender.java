@@ -77,6 +77,7 @@ import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.PartSource;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.jackrabbit.webdav.DavException;
 import org.apache.jackrabbit.webdav.client.methods.ReportMethod;
@@ -263,6 +264,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	private boolean base64=false;
 	private String protocol=null;
 	private String storeResultAsStreamInSessionKey;
+	private String storeResultAsByteArrayInSessionKey;
 	
 	private TransformerPool transformerPool=null;
 
@@ -713,6 +715,10 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 					return getResponseBodyAsBase64(httpmethod);
 				} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
 					prc.getSession().put(getStoreResultAsStreamInSessionKey(), new ReleaseConnectionAfterReadInputStream(httpmethod));
+					return "";
+				} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
+					InputStream is = httpmethod.getResponseBodyAsStream();
+					prc.getSession().put(getStoreResultAsByteArrayInSessionKey(), IOUtils.toByteArray(is));
 					return "";
 				} else {
 					//return httpmethod.getResponseBodyAsString();
@@ -1270,6 +1276,13 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	}
 	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
 		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
+	}
+
+	public String getStoreResultAsByteArrayInSessionKey() {
+		return storeResultAsByteArrayInSessionKey;
+	}
+	public void setStoreResultAsByteArrayInSessionKey(String storeResultAsByteArrayInSessionKey) {
+		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
 	}
 
 	private class ReleaseConnectionAfterReadInputStream extends InputStream {

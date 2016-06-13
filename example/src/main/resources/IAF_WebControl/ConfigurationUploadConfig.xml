@@ -1,0 +1,30 @@
+<module>
+	<adapter name="WebControlUploadConfig" active="${active.config.database}">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="WebControlUploadConfig">
+			<listener className="nl.nn.adapterframework.http.RestListener"
+				name="WebControlUploadConfig" uriPattern="uploadConfig" authRoles="IbisAdmin,IbisTester" />
+		</receiver>
+		<pipeline firstPipe="doUploadConfig">
+			<exits>
+				<exit state="success" path="EXIT" />
+			</exits>
+
+			<pipe name="doUploadConfig"
+				className="nl.nn.adapterframework.webcontrol.pipes.UploadConfig"
+				throwException="false">
+				<forward name="success" path="uploadConfig" />
+			</pipe>
+
+			<pipe name="uploadConfig" className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
+				styleSheetName="UploadConfig/xsl/UploadConfig.xsl" xslt2="true">
+				<param name="jmsRealmList" sessionKey="jmsRealmList" />
+				<param name="jmsRealm" sessionKey="jmsRealm" />
+				<param name="name" sessionKey="name" />
+				<param name="fileEncoding" sessionKey="fileEncoding" />
+				<param name="result" sessionKey="result" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

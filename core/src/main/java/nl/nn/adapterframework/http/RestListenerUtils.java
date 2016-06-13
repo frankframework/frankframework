@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
+import java.security.Principal;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
@@ -36,10 +37,13 @@ import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
  * @author Peter Leeuwenburgh
  */
 public class RestListenerUtils {
+	public static final String REST_LISTENER_SERVLET_REQUEST = "restListenerServletRequest";
+	public static final String REST_LISTENER_SERVLET_RESPONSE = "restListenerServletResponse";
+	public static final String REST_LISTENER_SERVLET_CONTEXT = "restListenerServletContext";
 
 	public static IbisManager retrieveIbisManager(IPipeLineSession session) {
 		ServletContext servletContext = (ServletContext) session
-				.get("restListenerServletContext");
+				.get(REST_LISTENER_SERVLET_CONTEXT);
 		if (servletContext != null) {
 			String attributeKey = AppConstants.getInstance().getProperty(
 					ConfigurationServlet.KEY_CONTEXT);
@@ -55,7 +59,7 @@ public class RestListenerUtils {
 	public static ServletOutputStream retrieveServletOutputStream(
 			IPipeLineSession session) throws IOException {
 		HttpServletResponse response = (HttpServletResponse) session
-				.get("restListenerServletResponse");
+				.get(REST_LISTENER_SERVLET_RESPONSE);
 		if (response != null) {
 			return response.getOutputStream();
 		}
@@ -65,7 +69,7 @@ public class RestListenerUtils {
 	public static String retrieveRequestURL(IPipeLineSession session)
 			throws IOException {
 		HttpServletRequest request = (HttpServletRequest) session
-				.get("restListenerServletRequest");
+				.get(REST_LISTENER_SERVLET_REQUEST);
 		if (request != null) {
 			return request.getRequestURL().toString();
 		}
@@ -75,9 +79,22 @@ public class RestListenerUtils {
 	public static void setResponseContentType(IPipeLineSession session,
 			String contentType) throws IOException {
 		HttpServletResponse response = (HttpServletResponse) session
-				.get("restListenerServletResponse");
+				.get(REST_LISTENER_SERVLET_RESPONSE);
 		if (response != null) {
 			response.setContentType(contentType);
 		}
+	}
+
+	public static String retrieveRequestRemoteUser(IPipeLineSession session)
+			throws IOException {
+		HttpServletRequest request = (HttpServletRequest) session
+				.get(REST_LISTENER_SERVLET_REQUEST);
+		if (request != null) {
+			Principal principal = request.getUserPrincipal();
+			if (principal != null) {
+				return principal.getName();
+			}
+		}
+		return null;
 	}
 }

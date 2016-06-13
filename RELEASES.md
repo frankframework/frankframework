@@ -48,6 +48,7 @@ Upcoming
 - Visualize and remember selected configuration
 - Add "*ALL*" link in "Show configuration"
 - Bugfix "attribute [cacheMode] already has a default value [CACHE_CONSUMER]"
+- Add facility to upload and show configurations in database (default disabled)
 
 
 
