@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.http;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -109,6 +110,14 @@ public class RestServiceDispatcher  {
 		String etagKey=(String)methodConfig.get(KEY_ETAG_KEY);
 		String contentTypeKey=(String)methodConfig.get(KEY_CONTENT_TYPE_KEY);
 
+		Principal principal = null;
+		if (httpServletRequest != null) {
+			principal = httpServletRequest.getUserPrincipal();
+			if (principal != null) {
+				context.put("principal", principal.getName());
+			}
+		}
+		
 		String ctName = Thread.currentThread().getName();
 		try {
 			boolean writeToSecLog = false;
@@ -116,7 +125,7 @@ public class RestServiceDispatcher  {
 				RestListener restListener = (RestListener) listener;
 				writeToSecLog = restListener.isWriteToSecLog();
 				boolean authorized = false;
-				if (httpServletRequest.getUserPrincipal() == null) {
+				if (principal == null) {
 					authorized = true;
 				} else {
 					String authRoles = restListener.getAuthRoles();

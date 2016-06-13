@@ -15,13 +15,11 @@
  */
 package nl.nn.adapterframework.webcontrol.pipes;
 
-import java.io.IOException;
 import java.util.List;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -106,13 +104,15 @@ public class UploadConfig extends TimeoutGuardPipe {
 					+ "] already exists");
 		}
 
-		String remoteUser;
-		try {
-			remoteUser = RestListenerUtils.retrieveRequestRemoteUser(session);
-		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Error occured on retrieving remote user", e);
-		}
+		/*
+		 * Why is the following not working (remoteUser is always empty)? String
+		 * remoteUser; try { remoteUser =
+		 * RestListenerUtils.retrieveRequestRemoteUser(session); } catch
+		 * (IOException e) { throw new PipeRunException(this,
+		 * getLogPrefix(session) + "Error occured on retrieving remote user",
+		 * e); }
+		 */
+		String remoteUser = (String) session.get("principal");
 
 		qs = new FixedQuerySender();
 		try {
