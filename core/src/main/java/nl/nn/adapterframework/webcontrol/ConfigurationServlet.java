@@ -247,6 +247,10 @@ public class ConfigurationServlet extends HttpServlet {
 				unloadConfig(configurationName);
 			}
 			IbisContext ibisContext = new IbisContext();
+			ServletContext ctx = getServletContext();
+			String attributeKey = AppConstants.getInstance().getResolvedProperty(KEY_CONTEXT);
+			ctx.setAttribute(attributeKey, ibisContext);
+			log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey	+ "]");
 			boolean success = false;
 			success = ibisContext.init();
 			if (success) {
@@ -254,10 +258,6 @@ public class ConfigurationServlet extends HttpServlet {
 			} else {
 				log.warn("Configuration did not succeed, please examine log");
 			}
-			ServletContext ctx = getServletContext();
-			String attributeKey = AppConstants.getInstance().getResolvedProperty(KEY_CONTEXT);
-			ctx.setAttribute(attributeKey, ibisContext);
-			log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey	+ "]");
 			return success;
 		} else {
 			log.warn("Not all adapters are stopped, cancelling ConfigurationServlet");
