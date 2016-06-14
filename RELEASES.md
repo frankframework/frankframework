@@ -50,6 +50,7 @@ Upcoming
 - Bugfix "attribute [cacheMode] already has a default value [CACHE_CONSUMER]"
 - Add facility to upload and show configurations in database (default disabled)
 - Prevent NPE in console in case of configuration errors
+- Allow /larva/* by TesterAccess only
 
 
 

@@ -341,6 +341,7 @@
             <url-pattern>/executeJdbcQuery.do</url-pattern>
             <url-pattern>/executeJdbcQueryExecute.do</url-pattern>
             <url-pattern>/testtool</url-pattern>
+            <url-pattern>/larva/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <description></description>
