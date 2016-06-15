@@ -21,7 +21,7 @@
 					<xsl:variable name="applicationFunction" select="substring-before($toLoc4,$dot)"/>
 					<xsl:value-of select="$applicationFunction"/>
 				</xsl:when>
-				<xsl:when test="count(tokenize($toLoc,$escDot))&gt;7">
+				<xsl:when test="count(tokenize($toLoc,$escDot))&gt;8">
 					<!-- $messagingLayer.$businessDomain.$serviceLayer.$serviceName.$serviceContext.$serviceContextVersion.$operationName.$operationVersion.$paradigm -->
 					<xsl:variable name="toLoc2" select="substring-after($toLoc,$dot)"/>
 					<xsl:variable name="toLoc3" select="substring-after($toLoc2,$dot)"/>
