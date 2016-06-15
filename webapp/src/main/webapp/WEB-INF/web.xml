@@ -248,8 +248,25 @@
         <taglib-uri>http://jakarta.apache.org/taglibs/xtags-1.0</taglib-uri>
         <taglib-location>/WEB-INF/xtags.tld</taglib-location>
     </taglib>
- 
+
+    <!--
+    When a security-constraint element is present Tomcat will autenticate the
+    user for all url's whereas WebSphere does this only for the url's mentioned
+    in the security constraint(s). The PublicAccess security constraint will
+    make Tomcat behave the same as WebSphere.
+    -->
     <!-- security-constraint>
+        <display-name>PublicAccess</display-name>
+        <web-resource-collection>
+            <web-resource-name>PublicAccessResourceCollection</web-resource-name>
+            <description>collection of url's for public access (overruled by other collections for specific url's)</description>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+        <user-data-constraint>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+    <security-constraint>
         <display-name>ObserverAccess</display-name>
         <web-resource-collection>
             <web-resource-name>ObserverAccessResourceCollection</web-resource-name>
@@ -287,7 +304,7 @@
             <role-name>IbisTester</role-name>
         </auth-constraint>
         <user-data-constraint>
-        	<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
         </user-data-constraint>
     </security-constraint>
     <security-constraint>
@@ -298,12 +315,12 @@
             <url-pattern>/ConfigurationServlet</url-pattern>
         </web-resource-collection>
         <auth-constraint>
-        	<description></description>
-        	<role-name>IbisAdmin</role-name>
-        	<role-name>IbisTester</role-name>
+            <description></description>
+            <role-name>IbisAdmin</role-name>
+            <role-name>IbisTester</role-name>
         </auth-constraint>
         <user-data-constraint>
-        	<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
         </user-data-constraint>
     </security-constraint>
     <security-constraint>
@@ -348,7 +365,7 @@
             <role-name>IbisTester</role-name>
         </auth-constraint>
         <user-data-constraint>
-        	<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
         </user-data-constraint>
     </security-constraint>
 

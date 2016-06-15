@@ -52,6 +52,7 @@ Upcoming
 - Prevent NPE in console in case of configuration errors
 - Allow /larva/* by TesterAccess only
 - Add otap.stage=LOC to README (make Larva work)
+- Add PublicAccess security-constraint (make Tomcat behave like WebSphere)
 
 
 
