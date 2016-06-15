@@ -153,6 +153,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private String emptyInputReplacement=null;
 	private boolean writeToSecLog = false;
 	private String secLogSessionKeys = null;
+	private boolean recoverAdapter = false;
 
 	private boolean active=true;
 
@@ -312,10 +313,12 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	protected boolean isRecoverAdapter() {
 		boolean recover = false;
-		PipeLine pipeLine = getPipeLine();
-		if (pipeLine != null) {
-			Adapter adapter = pipeLine.getAdapter();
-			if (adapter != null) {
+		IAdapter iAdapter = getAdapter();
+		if (iAdapter == null) {
+			recover = recoverAdapter;
+		} else {
+			if (iAdapter instanceof Adapter) {
+				Adapter adapter = (Adapter) iAdapter;
 				recover = adapter.isRecover();
 			}
 		}
@@ -595,5 +598,9 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 	public String getSecLogSessionKeys() {
 		return secLogSessionKeys;
+	}
+
+	public void setRecoverAdapter(boolean b) {
+		recoverAdapter = b;
 	}
 }

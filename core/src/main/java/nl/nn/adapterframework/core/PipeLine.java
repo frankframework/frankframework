@@ -26,6 +26,7 @@ import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
+import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
@@ -318,6 +319,11 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 			log.debug("Pipeline of [" + owner.getName() + "] configuring OutputWrapper");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
+			if (getOutputWrapper() instanceof AbstractPipe
+					&& adapter instanceof Adapter) {
+				((AbstractPipe) getOutputWrapper())
+						.setRecoverAdapter(((Adapter) adapter).isRecover());
+			}
 			getOutputWrapper().registerForward(pf);
 			getOutputWrapper().setName(OUTPUT_WRAPPER_NAME);
 			if (getOutputWrapper() instanceof EsbSoapWrapperPipe) {
@@ -330,8 +336,12 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 						if (receiver instanceof ReceiverBase ) {
 							ReceiverBase rb = (ReceiverBase) receiver;
 							IListener listener = rb.getListener();
-							if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {
-								stop = true;
+							try {
+								if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {
+									stop = true;
+								}
+							} catch (JmsException e) {
+							    throw new ConfigurationException(e);
 							}
 						}
 					}

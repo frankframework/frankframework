@@ -446,6 +446,15 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
 	public String getPhysicalDestinationShortName() {
+		try {
+			return getPhysicalDestinationShortName(false);
+		} catch (JmsException e) {
+			log.warn("[" + name + "] got exception in getPhysicalDestinationShortName", e);
+			return null;
+		}
+	}
+
+	public String getPhysicalDestinationShortName(boolean throwException) throws JmsException {
 		String result = null;
 		try {
 			Destination d = getDestination();
@@ -456,7 +465,11 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 					result = ((Queue) d).getQueueName();
 			}
 		} catch (Exception e) {
-			log.warn("[" + name + "] got exception in getPhysicalDestinationShortName", e);
+			if (throwException) {
+				throw new JmsException(e);
+			} else {
+				log.warn("[" + name + "] got exception in getPhysicalDestinationShortName", e);
+			}
 		}
 		return result;
 	}

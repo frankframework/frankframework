@@ -22,6 +22,7 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
@@ -704,13 +705,16 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return false;
 	}
 	
-	public boolean retrievePhysicalDestinationFromListener (IListener listener) {
+	public boolean retrievePhysicalDestinationFromListener (IListener listener) throws JmsException {
 		if (listener != null && listener instanceof EsbJmsListener) {
 			EsbJmsListener ejListener = (EsbJmsListener) listener; 
 			if (!ejListener.isSynchronous()) {
 				return false;
 			}
-			String physicalDestination = ejListener.getPhysicalDestinationShortName();
+			String physicalDestination = ejListener.getPhysicalDestinationShortName(true);
+			// force an exception when physical destination cannot be retrieved
+			// so adapter will not start and destination parameter is not set
+			// incorrectly
 			if (physicalDestination==null) {
 				physicalDestination="?";
 			} else {
