@@ -55,6 +55,7 @@ Upcoming
 - Add PublicAccess security-constraint (make Tomcat behave like WebSphere)
 - Bugfix deriving soapAction for new ESB standard (without ServiceContext)
 - Bugfix retrieving physical TIBCO queue when recovering
+- Use log.trace instead of log.debug for REST services
 
 
 

@@ -75,12 +75,12 @@ public class RestServiceDispatcher  {
      */
 	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String etag, String contentType, String request, Map context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
 		String method = httpServletRequest.getMethod();
-		if (log.isDebugEnabled()) log.debug("searching listener for uri ["+uri+"] method ["+method+"]");
+		if (log.isTraceEnabled()) log.trace("searching listener for uri ["+uri+"] method ["+method+"]");
 		
 		String matchingPattern=null;
 		for (Iterator it=patternClients.keySet().iterator();it.hasNext();) {
 			String uriPattern=(String)it.next();
-			if (log.isDebugEnabled()) log.debug("comparing uri to pattern ["+uriPattern+"] ");
+			if (log.isTraceEnabled()) log.trace("comparing uri to pattern ["+uriPattern+"] ");
 			if (uri.startsWith(uriPattern)) {
 				matchingPattern=uriPattern;
 				break;
@@ -147,7 +147,7 @@ public class RestServiceDispatcher  {
 	
 			if (etagKey!=null) context.put(etagKey,etag);
 			if (contentTypeKey!=null) context.put(contentTypeKey,contentType);
-			if (log.isDebugEnabled()) log.debug("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
+			if (log.isTraceEnabled()) log.trace("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
 			if (httpServletRequest!=null) context.put("restListenerServletRequest", httpServletRequest);
 			if (httpServletResponse!=null) context.put("restListenerServletResponse", httpServletResponse);
 			if (servletContext!=null) context.put("restListenerServletContext", servletContext);

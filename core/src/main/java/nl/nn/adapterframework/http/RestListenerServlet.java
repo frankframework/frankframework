@@ -67,7 +67,7 @@ public class RestListenerServlet extends HttpServlet {
 		String etag=request.getHeader("etag");
 		String contentType=request.getHeader("accept");
 
-		if (log.isDebugEnabled()) log.debug("path ["+path+"] etag ["+etag+"] contentType ["+contentType+"]");
+		if (log.isTraceEnabled()) log.trace("path ["+path+"] etag ["+etag+"] contentType ["+contentType+"]");
 		
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		Map messageContext= new HashMap();
@@ -77,7 +77,7 @@ public class RestListenerServlet extends HttpServlet {
 		while (paramnames.hasMoreElements()) {
 			String paramname = (String)paramnames.nextElement();
 			String paramvalue = request.getParameter(paramname);
-			if (log.isDebugEnabled()) log.debug("setting parameter ["+paramname+"] to ["+paramvalue+"]");
+			if (log.isTraceEnabled()) log.trace("setting parameter ["+paramname+"] to ["+paramvalue+"]");
 			messageContext.put(paramname, paramvalue);
 		}
 		if (ServletFileUpload.isMultipartContent(request)) {
@@ -90,21 +90,21 @@ public class RestListenerServlet extends HttpServlet {
 		                // Process regular form field (input type="text|radio|checkbox|etc", select, etc).
 		                String fieldName = item.getFieldName();
 		                String fieldValue = item.getString();
-		    			if (log.isDebugEnabled()) log.debug("setting parameter ["+fieldName+"] to ["+fieldValue+"]");
+		    			if (log.isTraceEnabled()) log.trace("setting parameter ["+fieldName+"] to ["+fieldValue+"]");
 		    			messageContext.put(fieldName, fieldValue);
 		            } else {
 		                // Process form file field (input type="file").
 		                String fieldName = item.getFieldName();
 		                String fieldNameName = fieldName + "Name";
 		                String fileName = FilenameUtils.getName(item.getName());
-		    			if (log.isDebugEnabled()) log.debug("setting parameter ["+fieldNameName+"] to ["+fileName+"]");
+		    			if (log.isTraceEnabled()) log.trace("setting parameter ["+fieldNameName+"] to ["+fileName+"]");
 		    			messageContext.put(fieldNameName, fileName);
 		                InputStream inputStream = item.getInputStream();
 		                if (inputStream.available() > 0) {
-			    			if (log.isDebugEnabled()) log.debug("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
+			    			if (log.isTraceEnabled()) log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
 			    			messageContext.put(fieldName, inputStream);
 		                } else {
-			    			if (log.isDebugEnabled()) log.debug("setting parameter ["+fieldName+"] to ["+null+"]");
+			    			if (log.isTraceEnabled()) log.trace("setting parameter ["+fieldName+"] to ["+null+"]");
 			    			messageContext.put(fieldName, null);
 		                }
 		            }
@@ -117,10 +117,10 @@ public class RestListenerServlet extends HttpServlet {
 			body=Misc.streamToString(request.getInputStream(),"\n",false);
 		}
 		try {
-			log.debug("RestListenerServlet calling service ["+path+"]");
+			log.trace("RestListenerServlet calling service ["+path+"]");
 			String result=sd.dispatchRequest(restPath, path, request, etag, contentType, body, messageContext, response, getServletContext());
 			if (StringUtils.isEmpty(result)) {
-				log.debug("RestListenerServlet finished with result set in pipeline");
+				log.trace("RestListenerServlet finished with result set in pipeline");
 			} else {
 				etag=(String)messageContext.get("etag");
 				contentType=(String)messageContext.get("contentType");
@@ -135,7 +135,7 @@ public class RestListenerServlet extends HttpServlet {
 					response.setHeader("etag", etag); 
 				}
 				response.getWriter().print(result);
-				log.debug("RestListenerServlet finished with result ["+result+"] etag ["+etag+"] contentType ["+contentType+"] contentDisposition ["+contentDisposition+"]");
+				log.trace("RestListenerServlet finished with result ["+result+"] etag ["+etag+"] contentType ["+contentType+"] contentDisposition ["+contentDisposition+"]");
 			}
 		} catch (ListenerException e) {
 			log.warn("RestListenerServlet caught exception, will rethrow as ServletException",e);
