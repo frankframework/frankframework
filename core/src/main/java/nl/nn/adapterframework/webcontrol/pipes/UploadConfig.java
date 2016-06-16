@@ -17,6 +17,9 @@ package nl.nn.adapterframework.webcontrol.pipes;
 
 import java.util.List;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.SenderException;
@@ -36,6 +39,13 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class UploadConfig extends TimeoutGuardPipe {
+	IbisContext ibisContext;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		ibisContext = ((Adapter)getAdapter()).getConfiguration().getIbisManager().getIbisContext();
+	}
 
 	public String doPipeWithTimeoutGuarded(Object input,
 			IPipeLineSession session) throws PipeRunException {
@@ -71,7 +81,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		String form_jmsRealm = (String) session.get("jmsRealm");
 
 		String result = "";
-		FixedQuerySender qs = new FixedQuerySender();
+		FixedQuerySender qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		try {
 			qs.setName("QuerySender");
 			qs.setJmsRealm(form_jmsRealm);
@@ -114,7 +124,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		 */
 		String remoteUser = (String) session.get("principal");
 
-		qs = new FixedQuerySender();
+		qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		try {
 			qs.setName("QuerySender");
 			qs.setJmsRealm(form_jmsRealm);

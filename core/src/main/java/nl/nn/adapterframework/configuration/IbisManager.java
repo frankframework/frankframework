@@ -31,15 +31,12 @@ import org.springframework.transaction.PlatformTransactionManager;
  * @since   4.8
  */
 public interface IbisManager {
-//    public static final String DFLT_CONFIGURATION = "Configuration.xml";
-//    public static final int DEPLOYMENT_MODE_UNMANAGED = 0;
-//    public static final int DEPLOYMENT_MODE_EJB = 1;
-//    public static final String DEPLOYMENT_MODE_UNMANAGED_STRING = "Unmanaged (Legacy)";
-//    public static final String DEPLOYMENT_MODE_EJB_STRING = "EJB";
 
-//    void setConfiguration(Configuration configuration);
+    void setIbisContext(IbisContext ibisContext);
 
-//    void addConfiguration(Configuration configuration);
+    IbisContext getIbisContext();
+
+    void addConfiguration(Configuration configuration);
 
     /**
      * Get the Configuration, for querying and display of it's contents.
@@ -62,8 +59,6 @@ public interface IbisManager {
     void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy);
     /**
      * Start an already configured Configuration
-     * 
-     * Use {@link #loadConfigurationFile(String)} to configure the instance.
      */
     void startConfiguration(Configuration configuration);
     /**
@@ -97,8 +92,6 @@ public interface IbisManager {
     public List<String> getSortedStartedAdapterNames();
 
     public List<IAdapter> getRegisteredAdapters();
-
-    void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile, boolean configLogAppend) throws ConfigurationException;
 
     /**
      * Get the Spring Platform Transaction Manager, for use by

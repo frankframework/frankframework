@@ -25,7 +25,7 @@ import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.LogUtil;
@@ -74,6 +74,18 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public void setIbisContext(IbisContext ibisContext) {
+        ibisManager.setIbisContext(ibisContext);
+    }
+
+    public IbisContext getIbisContext() {
+        return ibisManager.getIbisContext();
+    }
+
+    public void addConfiguration(Configuration configuration) {
+        ibisManager.addConfiguration(configuration);
+    }
+
     public Configuration getConfiguration() {
         return ibisManager.getConfiguration();
     }
@@ -105,10 +117,6 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
 
     public void stopAdapter(IAdapter adapter) {
 		ibisManager.stopAdapter(adapter);
-    }
-
-    public void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile, boolean configLogAppend) throws ConfigurationException {
-		ibisManager.loadConfigurationFile(classLoader, basePath, configurationFile, configLogAppend);
     }
 
     public PlatformTransactionManager getTransactionManager() {

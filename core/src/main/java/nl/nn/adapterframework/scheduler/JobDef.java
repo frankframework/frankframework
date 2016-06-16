@@ -638,7 +638,7 @@ public class JobDef {
 			recoverAdapters(ibisManager);
 		} else
 		if (function.equalsIgnoreCase(JOB_FUNCTION_QUERY)) {
-			executeQueryJob();
+			executeQueryJob(ibisManager);
 		} else
 		if (function.equalsIgnoreCase(JOB_FUNCTION_SEND_MESSAGE)) {
 			executeSendMessageJob();
@@ -688,7 +688,8 @@ public class JobDef {
 		for (Iterator iter = jmsRealmNames.iterator(); iter.hasNext();) {
 			String jmsRealmName = (String) iter.next();
 			setJmsRealm(jmsRealmName);
-			DirectQuerySender qs = new DirectQuerySender();
+			DirectQuerySender qs;
+			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 			qs.setJmsRealm(jmsRealmName);
 			String deleteQuery;
 			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
@@ -698,7 +699,7 @@ public class JobDef {
 			}
 			setQuery(deleteQuery);
 			qs = null;
-			executeQueryJob();
+			executeQueryJob(ibisManager);
 		}
 
 		List messageLogs = new ArrayList();
@@ -729,7 +730,8 @@ public class JobDef {
 		for (Iterator iter = messageLogs.iterator(); iter.hasNext();) {
 			MessageLogObject mlo = (MessageLogObject) iter.next();
 			setJmsRealm(mlo.getJmsRealmName());
-			DirectQuerySender qs = new DirectQuerySender();
+			DirectQuerySender qs;
+			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 			qs.setJmsRealm(mlo.getJmsRealmName());
 			String deleteQuery;
 			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
@@ -739,7 +741,7 @@ public class JobDef {
 			}
 			setQuery(deleteQuery);
 			qs = null;
-			executeQueryJob();
+			executeQueryJob(ibisManager);
 		}
 	}
 
@@ -750,8 +752,9 @@ public class JobDef {
 		}
 	}
 
-	private void executeQueryJob() {
-		DirectQuerySender qs = new DirectQuerySender();
+	private void executeQueryJob(IbisManager ibisManager) {
+		DirectQuerySender qs;
+		qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 		try {
 			qs.setName("QuerySender");
 			qs.setJmsRealm(getJmsRealm());

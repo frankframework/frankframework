@@ -20,29 +20,31 @@ import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.Misc;
 
-public class JarClassLoader extends BytesClassLoader {
+public class JarFileClassLoader extends BytesClassLoader {
 
-	public JarClassLoader(String jar, String configurationName) {
-		super(JarClassLoader.class.getClassLoader());
+	public JarFileClassLoader(String jarFileName, String configurationName) throws ConfigurationException {
+		super(JarFileClassLoader.class.getClassLoader());
 		JarFile jarFile = null;
 		try {
-			jarFile = new JarFile(jar);
+			jarFile = new JarFile(jarFileName);
 			Enumeration<JarEntry> enumeration = jarFile.entries();
 			while (enumeration.hasMoreElements()) {
 				JarEntry jarEntry = enumeration.nextElement();
 				resources.put(jarEntry.getName(), Misc.streamToBytes(jarFile.getInputStream(jarEntry)));
 			}
 		} catch (IOException e) {
-			log.error("Could not read resources from jar '" + jar
+			throw new ConfigurationException(
+					"Could not read resources from jar '" + jarFileName
 					+ "' for configuration '" + configurationName + "'");
 		} finally {
 			if (jarFile != null) {
 				try {
 					jarFile.close();
 				} catch (IOException e) {
-					log.warn("Could not close jar '" + jar
+					log.warn("Could not close jar '" + jarFileName
 							+ "' for configuration '" + configurationName + "'", e);
 				}
 			}

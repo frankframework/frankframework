@@ -21,13 +21,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
-import nl.nn.adapterframework.configuration.BasicAdapterServiceImpl;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationDigester;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
@@ -43,8 +39,6 @@ import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 
@@ -62,76 +56,44 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class DefaultIbisManager implements IbisManager {
     protected Logger log = LogUtil.getLogger(this);
 
+    private IbisContext ibisContext;
     private List<Configuration> configurations = new ArrayList<Configuration>();
     private SchedulerHelper schedulerHelper;
     private PlatformTransactionManager transactionManager;
     private ListenerPortPoller listenerPortPoller;
 
-	/**
-	 * Load configuration with a specific ClassLoader which might for example
-	 * override the getResource method to load configuration and related
-	 * resources from a different location from the standard classpath. In case
-	 * basePath is not null the ClassLoader is wrapped in
-	 * {@link BasePathClassLoader} to make it possible to reference resources
-	 * in the configuration relative to the configuration file and have an
-	 * extra resource override (resource is first resolved relative to the
-	 * configuration, when not found it is resolved by the original ClassLoader. 
-	 * 
-	 * @see ClassUtils#getResourceURL(ClassLoader, String)
-	 * @see AppConstants#getInstance(ClassLoader)
-	 */
-	public void loadConfigurationFile(ClassLoader classLoader, String basePath,
-			String configurationFile, boolean configLogAppend) throws ConfigurationException {
-		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-		try {
-			if (basePath != null) {
-				if (classLoader != null) {
-					classLoader = new BasePathClassLoader(classLoader, basePath);
-				} else {
-					classLoader = new BasePathClassLoader(originalClassLoader, basePath);
-				}
-			}
-			if (classLoader != null) {
-				Thread.currentThread().setContextClassLoader(classLoader);
-			}
-			Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
-			// Name will be replaced during digest unless not specified in the
-			// configuration file.
-			configuration.setName(configurationFile);
-			configuration.setIbisManager(this);
-			configurations.add(configuration);
-			ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
-			ConfigurationDigester configurationDigester = new ConfigurationDigester();
-			configurationDigester.digestConfiguration(classLoader, configuration, configurationFile, configLogAppend);
-			if (configuration.isAutoStart()) {
-				startConfiguration(configuration);
-			}
-		} finally {
-			Thread.currentThread().setContextClassLoader(originalClassLoader);
-			ConfigurationWarnings.getInstance().setActiveConfiguration(null);
-		}
-	}
+    public void setIbisContext(IbisContext ibisContext) {
+        this.ibisContext = ibisContext;
+    }
 
-  public Configuration getConfiguration() {
-      if (configurations.size() > 0) {
-          return configurations.get(0);
-      } else {
-          return null;
-      }
-  }
+    public IbisContext getIbisContext() {
+        return ibisContext;
+    }
 
-  public List<Configuration> getConfigurations() {
-      return configurations;
-  }
+    public void addConfiguration(Configuration configuration) {
+        configurations.add(configuration);
+    }
 
-  public Configuration getConfiguration(String configurationName) {
-      for (Configuration configuration : configurations) {
-          if (configurationName.equals(configuration.getConfigurationName())) {
-              return configuration;
-          }
-      }
-      return null;
-  }
+    public Configuration getConfiguration() {
+        if (configurations.size() > 0) {
+            return configurations.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public List<Configuration> getConfigurations() {
+        return configurations;
+    }
+
+    public Configuration getConfiguration(String configurationName) {
+        for (Configuration configuration : configurations) {
+            if (configurationName.equals(configuration.getConfigurationName())) {
+                return configuration;
+            }
+        }
+        return null;
+    }
 
     /**
      * Start the already configured Configuration

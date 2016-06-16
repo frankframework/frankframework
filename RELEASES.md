@@ -56,6 +56,9 @@ Upcoming
 - Bugfix deriving soapAction for new ESB standard (without ServiceContext)
 - Bugfix retrieving physical TIBCO queue when recovering
 - Use log.trace instead of log.debug for REST services
+- Add DatabaseClassLoader
+- Improve special class loaders error handling
+- Instantiate all query senders with Spring (make Spring aware of all database actions) (make defaultDataSource of example webapp work for all database actions)
 
 
 

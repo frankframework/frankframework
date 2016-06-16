@@ -297,6 +297,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * @throws Exception
 	 */
 	public void registerResultHandler(IResultHandler handler) throws Exception {
+		handler.setPipe(this);
 		registeredResultHandlers.put(handler.getName(), handler);
 		if (handler.isDefault()) {
 			defaultHandler = handler;

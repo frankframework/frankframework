@@ -83,7 +83,7 @@ public final class AppConstants extends Properties implements Serializable{
 	 * classpath. Hence the Thread.currentThread().getContextClassLoader() at
 	 * the time the class was instantiated should be used.
 	 * 
-	 * @see DefaultIbisManager#loadConfigurationFile(ClassLoader, String)
+	 * @see IbisContext#init()
 	 * @return AppConstants instance
 	 */
 	public static synchronized AppConstants getInstance(ClassLoader classLoader) {

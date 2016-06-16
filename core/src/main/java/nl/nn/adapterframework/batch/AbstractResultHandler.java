@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -57,6 +58,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	private String suffix;
 	private boolean defaultResultHandler;
 	private boolean blockByRecordType=true;
+	private AbstractPipe pipe;
 	
 	protected ParameterList paramList = null;
 
@@ -123,5 +125,12 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	}
 	public boolean isBlockByRecordType() {
 		return blockByRecordType;
+	}
+
+	public void setPipe(AbstractPipe pipe) {
+		this.pipe = pipe;
+	}
+	public AbstractPipe getPipe() {
+		return pipe;
 	}
 }

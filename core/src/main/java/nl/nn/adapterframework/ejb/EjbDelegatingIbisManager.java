@@ -18,6 +18,7 @@ package nl.nn.adapterframework.ejb;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.LogUtil;
@@ -100,10 +101,6 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
         getIbisManager().stopAdapter(adapter);
     }
 
-    public void loadConfigurationFile(ClassLoader classLoader, String basePath, String configurationFile, boolean configLogAppend) {
-    	// Do not delegate to EJB; EJB initializes itself.
-    }
-
     public BeanFactory getBeanFactory() {
         return beanFactory;
     }
@@ -127,6 +124,18 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
 	public void startConfiguration(Configuration configuration) {
 		ibisManager.startConfiguration(configuration);
 		
+	}
+
+	public void setIbisContext(IbisContext ibisContext) {
+		ibisManager.setIbisContext(ibisContext);
+	}
+
+	public IbisContext getIbisContext() {
+		return ibisManager.getIbisContext();
+	}
+
+	public void addConfiguration(Configuration configuration) {
+		ibisManager.addConfiguration(configuration);
 	}
 
 	public Configuration getConfiguration(String configurationName) {

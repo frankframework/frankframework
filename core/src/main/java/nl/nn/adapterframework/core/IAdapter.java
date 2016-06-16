@@ -53,6 +53,7 @@ public interface IAdapter extends IManagable {
 	void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
 	void setName(String name);
 	void setConfiguration(Configuration configuration);
+	Configuration getConfiguration();
 	boolean isAutoStart();
 	String toString();
 

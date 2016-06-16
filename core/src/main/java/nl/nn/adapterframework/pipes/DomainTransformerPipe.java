@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -73,11 +74,14 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	private String valueInField = "valueIn";
 	private String valueOutField = "valueOut";
 
-	private FixedQuerySender qs = new FixedQuerySender();
+	private FixedQuerySender qs;
 	private String query;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+
+		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
+		qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 
 		//dummy query required
 		qs.setQuery("SELECT count(*) FROM ALL_TABLES");

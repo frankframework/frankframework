@@ -22,6 +22,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.pipes.AbstractPipe;
 
 /**
  * Interface for handling a transformed record.
@@ -30,6 +31,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  */
 public interface IResultHandler extends INamedObject {
 
+	public void setPipe(AbstractPipe pipe);
 	public void configure() throws ConfigurationException;
 	public void open() throws SenderException;
 	public void close() throws SenderException;

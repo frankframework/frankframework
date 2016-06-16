@@ -17,14 +17,19 @@ package nl.nn.adapterframework.configuration;
 
 import java.util.StringTokenizer;
 
+import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.JarClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.ServiceClassLoader;
+import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -42,8 +47,9 @@ import org.springframework.core.env.StandardEnvironment;
  *
  *
  *
- * @author  Tim van der Leeuw
- * @since   4.8
+ * @author Tim van der Leeuw
+ * @author Jaco de Groot
+ * @since 4.8
  */
 public class IbisContext {
     private final static Logger log = LogUtil.getLogger(IbisContext.class);
@@ -56,13 +62,18 @@ public class IbisContext {
     private static String applicationServerType = null;
 
 	/**
-	 * Initalize Ibis.
-	 *
-	 * This method creates the Spring context, and loads the configuration
-	 * file. After executing this method, the BeanFactory, IbisManager and Configuration
-	 * properties are available and the Ibis instance can be started and
-	 * stopped.
-	 *
+	 * Creates the Spring context, and load the configuration. Optionally  with
+	 * a specific ClassLoader which might for example override the getResource
+	 * method to load configuration and related resources from a different
+	 * location from the standard classpath. In case basePath is not null the
+	 * ClassLoader is wrapped in {@link BasePathClassLoader} to make it possible
+	 * to reference resources in the configuration relative to the configuration
+	 * file and have an extra resource override (resource is first resolved
+	 * relative to the configuration, when not found it is resolved by the
+	 * original ClassLoader.
+	 * 
+	 * @see ClassUtils#getResourceURL(ClassLoader, String)
+	 * @see AppConstants#getInstance(ClassLoader)
 	 */
 	public boolean init() {
 		initContext(getSpringContextFileName());
@@ -79,31 +90,66 @@ public class IbisContext {
 			}
 			String classLoaderType = appConstants.getResolvedProperty(
 					"configurations." + configurationName + ".classLoaderType");
+			ConfigurationException customClassLoaderConfigurationException = null;
 			ClassLoader classLoader = null;
-			if ("DirClassLoader".equals(classLoaderType)) {
-				String directory = appConstants.getResolvedProperty(
-						"configurations." + configurationName + ".directory");
-				classLoader = new DirectoryClassLoader(directory);
-			} else if ("JarClassLoader".equals(classLoaderType)) {
-				String jar = appConstants.getResolvedProperty(
-						"configurations." + configurationName + ".jar");
-				classLoader = new JarClassLoader(jar, configurationName);
-			} else if ("ServiceClassLoader".equals(classLoaderType)) {
-				String adapterName = appConstants.getResolvedProperty(
-						"configurations." + configurationName + ".adapterName");
-				classLoader = new ServiceClassLoader(ibisManager, adapterName, configurationName);
+			try {
+				if ("DirClassLoader".equals(classLoaderType)) {
+					String directory = appConstants.getResolvedProperty(
+							"configurations." + configurationName + ".directory");
+					classLoader = new DirectoryClassLoader(directory);
+				} else if ("JarFileClassLoader".equals(classLoaderType)) {
+					String jar = appConstants.getResolvedProperty(
+							"configurations." + configurationName + ".jar");
+					classLoader = new JarFileClassLoader(jar, configurationName);
+				} else if ("ServiceClassLoader".equals(classLoaderType)) {
+					String adapterName = appConstants.getResolvedProperty(
+							"configurations." + configurationName + ".adapterName");
+					classLoader = new ServiceClassLoader(ibisManager, adapterName, configurationName);
+				} else if ("DatabaseClassLoader".equals(classLoaderType)) {
+					classLoader = new DatabaseClassLoader(this, configurationName);
+				}
+			} catch (ConfigurationException e) {
+				customClassLoaderConfigurationException = e;
 			}
 			String basePath = null;
 			int i = configurationFile.lastIndexOf('/');
 			if (i != -1) {
 				basePath = configurationFile.substring(0, i + 1);
 			}
-			try {
-				ibisManager.loadConfigurationFile(classLoader, basePath, configurationFile, configLogAppend);
-			} catch (ConfigurationException e) {
-				log.error("Configuration exception loading: " + configurationFile, e);
+			ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+			if (basePath != null) {
+				if (classLoader != null) {
+					classLoader = new BasePathClassLoader(classLoader, basePath);
+				} else {
+					classLoader = new BasePathClassLoader(originalClassLoader, basePath);
+				}
 			}
-			configLogAppend = true;
+			if (classLoader != null) {
+				Thread.currentThread().setContextClassLoader(classLoader);
+			}
+			Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
+			configuration.setName(configurationName);
+			configuration.setIbisManager(ibisManager);
+			((DefaultIbisManager)ibisManager).addConfiguration(configuration);
+			ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
+			try {
+				if (customClassLoaderConfigurationException == null) {
+					ConfigurationDigester configurationDigester = new ConfigurationDigester();
+					configurationDigester.digestConfiguration(classLoader, configuration, configurationFile, configLogAppend);
+					configLogAppend = true;
+					if (configuration.isAutoStart()) {
+						ibisManager.startConfiguration(configuration);
+					}
+				} else {
+					throw customClassLoaderConfigurationException;
+				}
+			} catch (ConfigurationException e) {
+				configuration.setConfigurationException(e);
+				log.error("Configuration exception loading: " + configurationFile, e);
+			} finally {
+				Thread.currentThread().setContextClassLoader(originalClassLoader);
+				ConfigurationWarnings.getInstance().setActiveConfiguration(null);
+			}
 		}
 		log.info("* IBIS Startup: Startup complete");
 		return true;
@@ -117,6 +163,7 @@ public class IbisContext {
 
 		applicationContext = createApplicationContext(springContext);
 		ibisManager = (IbisManager) applicationContext.getBean("ibisManager");
+		ibisManager.setIbisContext(this);
 		AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 	}
 
@@ -274,8 +321,9 @@ public class IbisContext {
 		return applicationContext.getBean(beanName, beanClass);
 	}
 
-	public Object createBean(Class beanClass, int autowireMode, boolean dependencyCheck) {
-		return applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, autowireMode, false);
+	public Object createBeanAutowireByName(Class beanClass) {
+		return applicationContext.getAutowireCapableBeanFactory().createBean(
+				beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 	}
 
 	public void autowireBeanProperties(Object existingBean, int autowireMode, boolean dependencyCheck) {

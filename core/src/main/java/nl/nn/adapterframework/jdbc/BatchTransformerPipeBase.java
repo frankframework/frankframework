@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 
 import nl.nn.adapterframework.batch.StreamTransformerPipe;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -41,10 +42,12 @@ import nl.nn.adapterframework.util.JdbcUtil;
  */
 public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	
-	protected FixedQuerySender querySender = new FixedQuerySender();
+	protected FixedQuerySender querySender;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
+		querySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		querySender.setName("source of "+getName());
 		querySender.configure();
 	}

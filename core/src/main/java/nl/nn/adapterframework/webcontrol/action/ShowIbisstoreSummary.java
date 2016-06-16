@@ -59,20 +59,6 @@ public class ShowIbisstoreSummary extends ActionBase {
 	public static final String SHOWIBISSTORECOOKIE="ShowIbisstoreSummaryCookieName";
 	public static final String SHOWIBISSTOREQUERYKEY="ibisstore.summary.query";
 
-	private class SlotIdRecord {
-		
-		String adapterName;
-		String receiverName;
-		String pipeName;
-		
-		SlotIdRecord(String adapterName, String receiverName, String pipeName) {
-			super();
-			this.adapterName=adapterName;
-			this.receiverName=receiverName;
-			this.pipeName=pipeName;
-		}
-		
-	}
 	private Map slotmap = new HashMap();
 
 	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -156,107 +142,12 @@ public class ShowIbisstoreSummary extends ActionBase {
 
 			String formQuery=AppConstants.getInstance().getProperty(SHOWIBISSTOREQUERYKEY);
 
-			DirectQuerySender qs;
 			String result = "<none/>";
 
 			try {
-				qs = new DirectQuerySender() {
-					protected String getResult(ResultSet resultset) throws JdbcException, SQLException, IOException {
-						return getResult(resultset,null,null);
-					}
-					protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
-						XmlBuilder result = new XmlBuilder("result");
-						String previousType=null;
-						XmlBuilder typeXml=null;
-						String previousSlot=null;
-						XmlBuilder slotXml=null;
-						int typeslotcount=0;
-						int typedatecount=0;
-						int typemsgcount=0;
-						int slotdatecount=0;
-						int slotmsgcount=0;
-						while (resultset.next()) {
-							String type = resultset.getString("type");
-							String slotid = resultset.getString("slotid");
-							String date =  resultset.getString("msgdate");
-							int count =    resultset.getInt("msgcount");
-							
-							if (type==null) {
-								type="";
-							}
-							if (slotid==null) {
-								slotid="";
-							}
-						
-							if (!type.equals(previousType)) {
-								if (typeXml!=null) {
-									typeXml.addAttribute("slotcount",typeslotcount);
-									typeXml.addAttribute("datecount",typedatecount);
-									typeXml.addAttribute("msgcount",typemsgcount);
-									typeslotcount=0;
-									typedatecount=0;
-									typemsgcount=0;
-									previousSlot=null;
-								}
-								typeXml=new XmlBuilder("type");
-								typeXml.addAttribute("id",type);
-								if (type.equalsIgnoreCase("E")) {
-									typeXml.addAttribute("name","errorlog");
-								} else {
-									typeXml.addAttribute("name","messagelog");
-								}
-								result.addSubElement(typeXml);
-								previousType=type;
-							}
-							if (!slotid.equals(previousSlot)) {
-								if (slotXml!=null) {
-									slotXml.addAttribute("datecount",slotdatecount);
-									slotXml.addAttribute("msgcount",slotmsgcount);
-									slotdatecount=0;
-									slotmsgcount=0;
-								}
-								slotXml=new XmlBuilder("slot");
-								slotXml.addAttribute("id",slotid);
-								if (StringUtils.isNotEmpty(slotid)) {
-									SlotIdRecord sir=(SlotIdRecord)slotmap.get(type+"/"+slotid);
-									if (sir!=null) {
-										slotXml.addAttribute("adapter",sir.adapterName);
-										if (StringUtils.isNotEmpty(sir.receiverName) ) {
-											slotXml.addAttribute("receiver",sir.receiverName);
-										}
-										if (StringUtils.isNotEmpty(sir.pipeName) ) {
-											slotXml.addAttribute("pipe",sir.pipeName);
-										}
-									}
-								}
-								typeXml.addSubElement(slotXml);
-								previousSlot=slotid;
-								typeslotcount++;
-							}
-							typemsgcount+=count;
-							typedatecount++;
-							slotmsgcount+=count;
-							slotdatecount++;
-							
-							XmlBuilder dateXml=new XmlBuilder("date");
-							dateXml.addAttribute("id",date);
-							dateXml.addAttribute("count",count);
-							slotXml.addSubElement(dateXml);
-						}
-						if (typeXml!=null) {
-							typeXml.addAttribute("slotcount",typeslotcount);
-							typeXml.addAttribute("datecount",typedatecount);
-							typeXml.addAttribute("msgcount",typemsgcount);
-						}
-						if (slotXml!=null) {
-							slotXml.addAttribute("datecount",slotdatecount);
-							slotXml.addAttribute("msgcount",slotmsgcount);
-							slotdatecount=0;
-							slotmsgcount=0;
-						}
-						return result.toXML();
-					}
-				};
+				IbisstoreSummaryQuerySender qs;
+				qs = (IbisstoreSummaryQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(IbisstoreSummaryQuerySender.class);
+				qs.setSlotmap(slotmap);
 				try {
 					qs.setName("QuerySender");
 					qs.setJmsRealm(jmsRealm);
@@ -301,5 +192,120 @@ public class ShowIbisstoreSummary extends ActionBase {
 		log.debug("forward to success");
 		return (mapping.findForward("success"));
 
+	}
+}
+
+class IbisstoreSummaryQuerySender extends DirectQuerySender {
+	private Map slotmap = new HashMap();
+	
+	public void setSlotmap(Map slotmap) {
+		this.slotmap = slotmap;
+	}
+
+	@Override
+	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
+		XmlBuilder result = new XmlBuilder("result");
+		String previousType=null;
+		XmlBuilder typeXml=null;
+		String previousSlot=null;
+		XmlBuilder slotXml=null;
+		int typeslotcount=0;
+		int typedatecount=0;
+		int typemsgcount=0;
+		int slotdatecount=0;
+		int slotmsgcount=0;
+		while (resultset.next()) {
+			String type = resultset.getString("type");
+			String slotid = resultset.getString("slotid");
+			String date =  resultset.getString("msgdate");
+			int count =    resultset.getInt("msgcount");
+			
+			if (type==null) {
+				type="";
+			}
+			if (slotid==null) {
+				slotid="";
+			}
+		
+			if (!type.equals(previousType)) {
+				if (typeXml!=null) {
+					typeXml.addAttribute("slotcount",typeslotcount);
+					typeXml.addAttribute("datecount",typedatecount);
+					typeXml.addAttribute("msgcount",typemsgcount);
+					typeslotcount=0;
+					typedatecount=0;
+					typemsgcount=0;
+					previousSlot=null;
+				}
+				typeXml=new XmlBuilder("type");
+				typeXml.addAttribute("id",type);
+				if (type.equalsIgnoreCase("E")) {
+					typeXml.addAttribute("name","errorlog");
+				} else {
+					typeXml.addAttribute("name","messagelog");
+				}
+				result.addSubElement(typeXml);
+				previousType=type;
+			}
+			if (!slotid.equals(previousSlot)) {
+				if (slotXml!=null) {
+					slotXml.addAttribute("datecount",slotdatecount);
+					slotXml.addAttribute("msgcount",slotmsgcount);
+					slotdatecount=0;
+					slotmsgcount=0;
+				}
+				slotXml=new XmlBuilder("slot");
+				slotXml.addAttribute("id",slotid);
+				if (StringUtils.isNotEmpty(slotid)) {
+					SlotIdRecord sir=(SlotIdRecord)slotmap.get(type+"/"+slotid);
+					if (sir!=null) {
+						slotXml.addAttribute("adapter",sir.adapterName);
+						if (StringUtils.isNotEmpty(sir.receiverName) ) {
+							slotXml.addAttribute("receiver",sir.receiverName);
+						}
+						if (StringUtils.isNotEmpty(sir.pipeName) ) {
+							slotXml.addAttribute("pipe",sir.pipeName);
+						}
+					}
+				}
+				typeXml.addSubElement(slotXml);
+				previousSlot=slotid;
+				typeslotcount++;
+			}
+			typemsgcount+=count;
+			typedatecount++;
+			slotmsgcount+=count;
+			slotdatecount++;
+			
+			XmlBuilder dateXml=new XmlBuilder("date");
+			dateXml.addAttribute("id",date);
+			dateXml.addAttribute("count",count);
+			slotXml.addSubElement(dateXml);
+		}
+		if (typeXml!=null) {
+			typeXml.addAttribute("slotcount",typeslotcount);
+			typeXml.addAttribute("datecount",typedatecount);
+			typeXml.addAttribute("msgcount",typemsgcount);
+		}
+		if (slotXml!=null) {
+			slotXml.addAttribute("datecount",slotdatecount);
+			slotXml.addAttribute("msgcount",slotmsgcount);
+			slotdatecount=0;
+			slotmsgcount=0;
+		}
+		return result.toXML();
+	}
+}
+
+class SlotIdRecord {
+	String adapterName;
+	String receiverName;
+	String pipeName;
+	
+	SlotIdRecord(String adapterName, String receiverName, String pipeName) {
+		super();
+		this.adapterName=adapterName;
+		this.receiverName=receiverName;
+		this.pipeName=pipeName;
 	}
 }

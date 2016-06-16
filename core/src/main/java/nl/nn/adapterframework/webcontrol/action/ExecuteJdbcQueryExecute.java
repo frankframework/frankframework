@@ -71,7 +71,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		String result = "";
 
 		try {
-			qs = new DirectQuerySender();
+			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 			try {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(form_jmsRealm);

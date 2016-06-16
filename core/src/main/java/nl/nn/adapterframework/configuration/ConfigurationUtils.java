@@ -102,11 +102,11 @@ public class ConfigurationUtils {
 		return AppConstants.getInstance().getBoolean(CONFIGURATION_STUB4TESTTOOL_KEY, false);
 	}
 
-	public static byte[] getConfigFromDatabase(String name) throws ConfigurationException {
-		return getConfigFromDatabase(name, null);
+	public static byte[] getConfigFromDatabase(IbisContext ibisContext, String name) throws ConfigurationException {
+		return getConfigFromDatabase(ibisContext, name, null);
 	}
 
-	public static byte[] getConfigFromDatabase(String name, String jmsRealm)
+	public static byte[] getConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm)
 			throws ConfigurationException {
 		if (StringUtils.isEmpty(jmsRealm)) {
 			jmsRealm = JmsRealmFactory.getInstance()
@@ -117,7 +117,7 @@ public class ConfigurationUtils {
 		}
 
 		Connection conn = null;
-		FixedQuerySender qs = new FixedQuerySender();
+		FixedQuerySender qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		qs.setJmsRealm(jmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();

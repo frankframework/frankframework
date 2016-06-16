@@ -111,7 +111,7 @@ public class BrowseJdbcTableExecute extends ActionBase {
 			String result = "";
 			String query = null;
 			try {
-				qs = new DirectQuerySender();
+				qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 				try {
 					qs.setName("QuerySender");
 					qs.setJmsRealm(form_jmsRealm);

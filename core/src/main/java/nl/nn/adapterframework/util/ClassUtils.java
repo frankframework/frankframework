@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
+import nl.nn.adapterframework.configuration.IbisContext;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.log4j.Logger;
@@ -92,7 +92,7 @@ public class ClassUtils {
 	 * classpath. Hence the Thread.currentThread().getContextClassLoader() at
 	 * the time the class was instantiated should be used.
 	 * 
-	 * @see DefaultIbisManager#loadConfigurationFile(ClassLoader, String)
+	 * @see IbisContext#init()
 	 */
 	static public URL getResourceURL(ClassLoader classLoader, String resource) {
 		return getResourceURL(classLoader, null, resource);

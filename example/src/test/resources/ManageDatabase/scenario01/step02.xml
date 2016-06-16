@@ -4,7 +4,8 @@
 </completionInformation>
 <results count="1">
 <result item="1">
-<exception>[nl.nn.adapterframework.jdbc.XmlQuerySender] [Query-sender] got exception executing a SQL command: (SQLSyntaxErrorException) SQLState [42501], errorCode [-5501]: user lacks privilege or object not found: MYTABLE in statement [drop table mytable]: (HsqlException) user lacks privilege or object not found: MYTABLE</exception>
+<exception>[nl.nn.adapterframework.jdbc.XmlQuerySender] [Query-sender] got exception executing a SQL command: (JdbcSQLException) SQLState [42S02], errorCode [42102]: Table "MYTABLE" not found; SQL statement:
+drop table mytable [42102-162]</exception>
 </result>
 </results>
 </manageDatabaseRLY>

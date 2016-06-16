@@ -73,7 +73,6 @@ import org.apache.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.dom4j.DocumentException;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import com.sun.syndication.io.XmlReader;
 
@@ -1094,7 +1093,7 @@ public class TestTool {
 				queues = null;
 				errorMessage("Could not find property '" + queueName + ".queue'", writers);
 			} else {
-				JmsSender jmsSender = (JmsSender)ibisContext.createBean(JmsSender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+				JmsSender jmsSender = (JmsSender)ibisContext.createBeanAutowireByName(JmsSender.class);
 				jmsSender.setName("Test Tool JmsSender");
 				jmsSender.setDestinationName(queue);
 				jmsSender.setDestinationType("QUEUE");
@@ -1159,7 +1158,7 @@ public class TestTool {
 				queues = null;
 				errorMessage("Could not find property '" + queueName + ".queue'", writers);
 			} else {
-				PullingJmsListener pullingJmsListener = (PullingJmsListener)ibisContext.createBean(PullingJmsListener.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+				PullingJmsListener pullingJmsListener = (PullingJmsListener)ibisContext.createBeanAutowireByName(PullingJmsListener.class);
 				pullingJmsListener.setName("Test Tool JmsListener");
 				pullingJmsListener.setDestinationName(queue);
 				pullingJmsListener.setDestinationType("QUEUE");
@@ -1225,7 +1224,7 @@ public class TestTool {
 				while (!allFound && queues != null) {
 					preDelete = (String)properties.get(name + ".preDel" + preDeleteIndex);
 					if (preDelete != null) {
-						FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+						FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						deleteQuerySender.setName("Test Tool pre delete query sender");
 						deleteQuerySender.setDatasourceName(AppConstants.getInstance().getResolvedProperty("jndiContextPrefix") + datasourceName);
 						deleteQuerySender.setQueryType("delete");
@@ -1256,7 +1255,7 @@ public class TestTool {
 				if (queues != null) {
 					String prePostQuery = (String)properties.get(name + ".prePostQuery");
 					if (prePostQuery != null) {
-						FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)ibisContext.createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+						FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						prePostFixedQuerySender.setName("Test Tool query sender");
 						prePostFixedQuerySender.setDatasourceName(AppConstants.getInstance().getResolvedProperty("jndiContextPrefix") + datasourceName);
 						//prePostFixedQuerySender.setUsername(username);
@@ -1299,7 +1298,7 @@ public class TestTool {
 				if (queues != null) {
 					String readQuery = (String)properties.get(name + ".readQuery");
 					if (readQuery != null) {
-						FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)ibisContext.createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+						FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						readQueryFixedQuerySender.setName("Test Tool query sender");
 						readQueryFixedQuerySender.setDatasourceName(AppConstants.getInstance().getResolvedProperty("jndiContextPrefix") + datasourceName);
 						//readQueryFixedQuerySender.setUsername(username);

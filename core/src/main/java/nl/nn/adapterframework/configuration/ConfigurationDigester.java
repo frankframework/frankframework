@@ -220,10 +220,6 @@ public class ConfigurationDigester {
 			}
 			ConfigurationException e = new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile +
 				"] with digester-rules-file ["+getDigesterRules()+"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
-			if (configuration != null) {
-				configuration.setConfigurationException(e);
-			}
-			LOG.error("Could not digest configuration", e);
 			throw e;
 		}
 		MonitorManager.getInstance().configure(configuration);

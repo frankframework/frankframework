@@ -316,7 +316,7 @@ public final class ShowSecurityItems extends ActionBase {
 			String dsInfo = null;
 			String qcfInfo = null;
 
-			DirectQuerySender qs = new DirectQuerySender();
+			DirectQuerySender qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 			qs.setJmsRealm(jmsRealm);
 			try {
 				dsName = qs.getDataSourceNameToUse();

@@ -335,7 +335,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		if (log.isDebugEnabled()) {
 			log.debug("Bean class [" + beanClass.getName() + "], autowire bean name [" + getSuggestedBeanName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory for auto-wiring support.");
 		}
-		return ibisContext.createBean(beanClass,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,false);
+		return ibisContext.createBeanAutowireByName(beanClass);
 	}
 
 	protected Map<String, String> copyAttrsToMap(Attributes attrs) {

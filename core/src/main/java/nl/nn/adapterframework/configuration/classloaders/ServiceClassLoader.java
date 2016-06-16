@@ -15,22 +15,18 @@
 */
 package nl.nn.adapterframework.configuration.classloaders;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.rmi.server.UID;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.util.Misc;
 
-public class ServiceClassLoader extends BytesClassLoader {
+public class ServiceClassLoader extends JarBytesClassLoader {
 
-	public ServiceClassLoader(IbisManager ibisManager, String adapterName, String configurationName) {
+	public ServiceClassLoader(IbisManager ibisManager, String adapterName, String configurationName) throws ConfigurationException {
 		super(ServiceClassLoader.class.getClassLoader());
 		IAdapter adapter = ibisManager.getRegisteredAdapter(adapterName);
 		if (adapter != null) {
@@ -41,37 +37,14 @@ public class ServiceClassLoader extends BytesClassLoader {
 				if (object instanceof byte[]) {
 					readResources((byte[])object, configurationName);
 				} else {
-					log.error("SessionKey configurationJar not a byte array");
+					throw new ConfigurationException("SessionKey configurationJar not a byte array");
 				}
 			} else {
-				log.error("SessionKey configurationJar not found");
+				throw new ConfigurationException("SessionKey configurationJar not found");
 			}
 			
 		} else {
-			log.error("Could not find adapter: " + adapterName);
-		}
-	}
-
-	private void readResources(byte[] jar, String configurationName) {
-		JarInputStream jarInputStream = null;
-		try {
-			jarInputStream = new JarInputStream(new ByteArrayInputStream(jar));
-			JarEntry jarEntry;
-			while ((jarEntry = jarInputStream.getNextJarEntry()) != null) {
-				resources.put(jarEntry.getName(), Misc.streamToBytes(jarInputStream));
-			}
-		} catch (IOException e) {
-			log.error("Could not read resources from jar input stream for configuration '"
-					+ configurationName + "'", e);
-		} finally {
-			if (jarInputStream != null) {
-				try {
-					jarInputStream.close();
-				} catch (IOException e) {
-					log.warn("Could not close jar input stream for configuration '"
-							+ configurationName + "'", e);
-				}
-			}
+			throw new ConfigurationException("Could not find adapter: " + adapterName);
 		}
 	}
 

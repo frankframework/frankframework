@@ -25,6 +25,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.batch.ResultWriter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
@@ -68,10 +69,12 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	protected Map openResultSets = Collections.synchronizedMap(new HashMap());
 	protected Map openLobHandles = Collections.synchronizedMap(new HashMap());
 
-	protected FixedQuerySender querySender = new FixedQuerySender();
+	protected FixedQuerySender querySender;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+		IbisContext ibisContext = getPipe().getAdapter().getConfiguration().getIbisManager().getIbisContext();
+		querySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		querySender.setName("querySender of "+getName());
 		querySender.configure();
 	}
