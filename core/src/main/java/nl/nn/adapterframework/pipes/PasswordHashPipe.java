@@ -54,7 +54,9 @@ import org.apache.commons.lang.StringUtils;
 public class PasswordHashPipe extends FixedForwardPipe {
 	private static String FAILURE_FORWARD_NAME = "failure";
 	private String hashSessionKey;
-
+	private int rounds = 40000;
+	private String roundsSessionKey = null;
+	
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isNotEmpty(getHashSessionKey())) {
@@ -72,7 +74,11 @@ public class PasswordHashPipe extends FixedForwardPipe {
 		PipeForward pipeForward;
 		if (StringUtils.isEmpty(getHashSessionKey())) {
 			try {
-				result = PasswordHash.createHash(input.toString());
+				if (getRoundsSessionKey() == null) {
+					result = PasswordHash.createHash(input.toString().toCharArray(), getRounds());
+				} else {
+					result = PasswordHash.createHash(input.toString().toCharArray(), Integer.valueOf(session.get(getRoundsSessionKey()).toString()));
+				}
 				pipeForward = getForward();
 			} catch (Exception e) {
 				throw new PipeRunException(this, "Could not hash password", e);
@@ -98,6 +104,22 @@ public class PasswordHashPipe extends FixedForwardPipe {
 
 	public void setHashSessionKey(String hashSessionKey) {
 		this.hashSessionKey = hashSessionKey;
+	}
+
+	public int getRounds() {
+		return rounds;
+	}
+
+	public void setRounds(int rounds) {
+		this.rounds = rounds;
+	}
+
+	public String getRoundsSessionKey() {
+		return roundsSessionKey;
+	}
+
+	public void setRoundsSessionKey(String roundsSessionKey) {
+		this.roundsSessionKey = roundsSessionKey;
 	}
 
 }

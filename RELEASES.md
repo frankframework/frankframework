@@ -62,6 +62,7 @@ Upcoming
 - Add hideMethod attribute for masking strings in ErrorStore and MessageLog 
 - Add hostname property to AppConstants properties
 - Improve PassordHash with PBKDF2WithHmacSHA1 after consulting security (SHA1 is not a problem in the context of PBKDF2, see OWASP.org)
+- Add roundsSessionKey attribute PasswordHashPipe and set to default value for Rounds to 40.000
 
 
 
