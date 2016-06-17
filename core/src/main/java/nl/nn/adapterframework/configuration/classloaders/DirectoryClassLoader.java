@@ -19,24 +19,29 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 
 public class DirectoryClassLoader extends ClassLoader {
 	private Logger log = LogUtil.getLogger(this);
-	private String directory;
+	private File directory;
 
-	public DirectoryClassLoader(String directory) {  
+	public DirectoryClassLoader(String directory) throws ConfigurationException {  
 		super(DirectoryClassLoader.class.getClassLoader());
-		this.directory = directory;
+		this.directory = new File(directory);
+		if (!this.directory.isDirectory()) {
+			throw new ConfigurationException("Could not find directory: " + directory);
+		}
 	}
 
 	@Override
 	public URL getResource(String name) {
-		if (new File(directory + name).exists()) {
+		File file = new File(directory, name);
+		if (file.exists()) {
 			try {
-				return new File(directory + name).toURI().toURL();
+				return file.toURI().toURL();
 			} catch (MalformedURLException e) {
 				log.error("Could not create url for '" + name + "'", e);
 			}

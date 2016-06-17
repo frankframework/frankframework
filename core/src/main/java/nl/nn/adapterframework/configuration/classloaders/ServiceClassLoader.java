@@ -28,6 +28,9 @@ public class ServiceClassLoader extends JarBytesClassLoader {
 
 	public ServiceClassLoader(IbisManager ibisManager, String adapterName, String configurationName) throws ConfigurationException {
 		super(ServiceClassLoader.class.getClassLoader());
+		if (adapterName == null) {
+			throw new ConfigurationException("Name of adapter to provide configuration jar not specified");
+		}
 		IAdapter adapter = ibisManager.getRegisteredAdapter(adapterName);
 		if (adapter != null) {
 			IPipeLineSession pipeLineSession = new PipeLineSessionBase();

@@ -88,12 +88,12 @@ public class IbisContext {
 			if (configurationFile == null) {
 				configurationFile = configurationName + "/Configuration.xml";
 			}
+			ClassLoader classLoader = null;
+			ConfigurationException customClassLoaderConfigurationException = null;
 			String classLoaderType = appConstants.getResolvedProperty(
 					"configurations." + configurationName + ".classLoaderType");
-			ConfigurationException customClassLoaderConfigurationException = null;
-			ClassLoader classLoader = null;
 			try {
-				if ("DirClassLoader".equals(classLoaderType)) {
+				if ("DirectoryClassLoader".equals(classLoaderType)) {
 					String directory = appConstants.getResolvedProperty(
 							"configurations." + configurationName + ".directory");
 					classLoader = new DirectoryClassLoader(directory);
@@ -107,6 +107,8 @@ public class IbisContext {
 					classLoader = new ServiceClassLoader(ibisManager, adapterName, configurationName);
 				} else if ("DatabaseClassLoader".equals(classLoaderType)) {
 					classLoader = new DatabaseClassLoader(this, configurationName);
+				} else if (classLoaderType != null) {
+					throw new ConfigurationException("Invalid classLoaderType: " + classLoaderType);
 				}
 			} catch (ConfigurationException e) {
 				customClassLoaderConfigurationException = e;
