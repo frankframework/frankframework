@@ -849,15 +849,30 @@ public class Misc {
 		return defaultValue;
 	}
 	
+	public static String hideFirstHalf(String inputString, String regex) {
+		return hideAll(inputString, regex, 1);
+	}
+	
 	public static String hideAll(String inputString, String regex) {
+		return hideAll(inputString, regex, 0);
+	}
+	
+	public static String hideAll(String inputString, String regex, int mode) {
 		StringBuilder result = new StringBuilder();
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(inputString);
 		int previous = 0;
 		while (matcher.find()) {
 			result.append(inputString.substring(previous, matcher.start()));
-			result.append(StringUtils.repeat("*",
-					(matcher.end() - matcher.start())));
+			int len = matcher.end() - matcher.start();
+			if (mode == 1) {
+				int lenFirstHalf = (int) Math.ceil((double) len / 2);
+				result.append(StringUtils.repeat("*", lenFirstHalf));
+				result.append(inputString.substring(matcher.start()
+						+ lenFirstHalf, matcher.start() + len));
+			} else {
+				result.append(StringUtils.repeat("*", len));
+			}
 			previous = matcher.end();
 		}
 		result.append(inputString.substring(previous, inputString.length()));
