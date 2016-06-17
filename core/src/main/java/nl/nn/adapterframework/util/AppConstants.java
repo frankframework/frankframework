@@ -48,13 +48,20 @@ public final class AppConstants extends Properties implements Serializable{
 	private VariableExpander variableExpander;
 	private static Properties propertyPlaceholderConfigurerProperties = new Properties();
 
+	private final static Properties baseProperties = new Properties();
+	static {
+		baseProperties.put("hostname", Misc.getHostname());
+	}
+	
 	private AppConstants() {
 		super();
+		putAll(baseProperties);
 		load(null, null, propertiesFileName);
 	}
 
 	private AppConstants(ClassLoader classLoader) {
 		super();
+		putAll(baseProperties);
 		load(classLoader, null, propertiesFileName);
 		putAll(propertyPlaceholderConfigurerProperties);
 	}
@@ -91,7 +98,7 @@ public final class AppConstants extends Properties implements Serializable{
 	}
 
 	/**
-	 * Retrieve an instance based on a directory
+	 * Retrieve an instance based on a directory (not a singleton)
 	 * @return AppConstants instance
 	 */
 	public static synchronized AppConstants getInstance(String directory) {
