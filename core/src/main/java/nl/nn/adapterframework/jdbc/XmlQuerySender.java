@@ -28,6 +28,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -62,7 +63,7 @@ import org.w3c.dom.Element;
  *  alter - sequenceName
  *        - startWith
  * <br/>
- *  sql   - type [0..1] one of {select;other}, other by default
+ *  sql   - type [0..1] one of {select;ddl;other}, other by default
  *        - query
  * <br/>
  * </pre></code><br/>
@@ -413,8 +414,23 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 			setBlobSmartGet(true);
 			if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select")) {
 				return executeSelectQuery(statement,null,null);
-			} 
-			return executeOtherQuery(connection, correlationID, statement, query, null, null);
+			} else if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("ddl")) {
+				//TODO: alles tussen -- en newline nog weggooien
+				StringBuffer result = new StringBuffer();
+				StringTokenizer stringTokenizer = new StringTokenizer(query, ";");
+				while (stringTokenizer.hasMoreTokens()) {
+					String q = stringTokenizer.nextToken();
+					statement = getStatement(connection, correlationID, q, false);
+					if (q.trim().toLowerCase().startsWith("select")) {
+						result.append(executeSelectQuery(statement,null,null));
+					} else {
+						result.append(executeOtherQuery(connection, correlationID, statement, q, null, null));
+					}
+				}
+				return result.toString();
+			} else {
+				return executeOtherQuery(connection, correlationID, statement, query, null, null);
+			}
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
 		}

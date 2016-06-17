@@ -64,6 +64,7 @@ Upcoming
 - Improve PassordHash with PBKDF2WithHmacSHA1 after consulting security (SHA1 is not a problem in the context of PBKDF2, see OWASP.org)
 - Add roundsSessionKey attribute PasswordHashPipe and set to default value for Rounds to 40.000
 - Add replyNotFound attribute to LdapSender
+- Add sqlType 'ddl' to XmlQuerySender
 
 
 
