@@ -45,8 +45,8 @@ public class PasswordHash
     public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
 
     // The following constants may be changed without breaking existing hashes.
-    public static final int SALT_BYTE_SIZE = 24;
-    public static final int HASH_BYTE_SIZE = 24;
+    public static final int SALT_BYTE_SIZE = 32;
+    public static final int HASH_BYTE_SIZE = 32;
     public static final int PBKDF2_ITERATIONS = 1000;
 
     public static final int ITERATION_INDEX = 0;
@@ -74,17 +74,25 @@ public class PasswordHash
     public static String createHash(char[] password)
         throws NoSuchAlgorithmException, InvalidKeySpecException
     {
-        // Generate a random salt
-        SecureRandom random = new SecureRandom();
-        byte[] salt = new byte[SALT_BYTE_SIZE];
-        random.nextBytes(salt);
 
-        // Hash the password
-        byte[] hash = pbkdf2(password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
-        // format iterations:salt:hash
-        return PBKDF2_ITERATIONS + ":" + toHex(salt) + ":" +  toHex(hash);
+        return createHash(password, PBKDF2_ITERATIONS);
     }
 
+    
+    public static String createHash(char[] password, int iterations)
+            throws NoSuchAlgorithmException, InvalidKeySpecException
+    {
+            // Generate a random salt
+            SecureRandom random = new SecureRandom();
+            byte[] salt = new byte[SALT_BYTE_SIZE];
+            random.nextBytes(salt);
+
+            // Hash the password
+            byte[] hash = pbkdf2(password, salt, iterations, HASH_BYTE_SIZE);
+            // format iterations:salt:hash
+            return iterations + ":" + toHex(salt) + ":" +  toHex(hash);
+    }
+    
     /**
      * Validates a password using a hash.
      *

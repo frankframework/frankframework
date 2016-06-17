@@ -61,6 +61,7 @@ Upcoming
 - Instantiate all query senders with Spring (make Spring aware of all database actions) (make defaultDataSource of example webapp work for all database actions)
 - Add hideMethod attribute for masking strings in ErrorStore and MessageLog 
 - Add hostname property to AppConstants properties
+- Improve PassordHash with PBKDF2WithHmacSHA1 after consulting security (SHA1 is not a problem in the context of PBKDF2, see OWASP.org)
 
 
 
