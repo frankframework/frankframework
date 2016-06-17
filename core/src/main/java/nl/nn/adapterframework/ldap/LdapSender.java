@@ -88,6 +88,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setMaxEntriesReturned(int) maxEntriesReturned}</td>  <td>The maximum number of entries to be returned by a search query, or 0 for unlimited</td><td><i>0 (unlimited)</i></td></tr>
  * <tr><td>{@link #setUnicodePwd(boolean) unicodePwd}</td>  <td>When true the attributes passed by the input xml are scanned for an attribute with id unicodePwd, when found the value of this attribute will be encoded as required by Active Directory (a UTF-16 encoded Unicode string containing the password surrounded by quotation marks) before sending it to the LDAP server</td><td>false</td></tr>
  * <tr><td>{@link #setJndiAuthAlias(String) jndiAuthAlias}</td><td>Authentication alias, may be used to override principal and credential-settings</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setReplyNotFound(boolean) replyNotFound}</td><td>(only used when <code>operation=search/deepSearch</code>) when <code>true</code> the xml '&lt;LdapResult&gt;Object not found&lt;/LdapResult&gt;' is returned instead of the PartialResultException 'Unprocessed Continuation Reference(s)'</td><td>false</td></tr>
  * </table>
  * </p>
  * 
@@ -297,6 +298,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	//The results to return if the modifying operation succeeds (an XML, to make it "next pipe ready")  
 	private static final String DEFAULT_RESULT = "<LdapResult>Success</LdapResult>";
 	private static final String DEFAULT_RESULT_READ = "<LdapResult>No such object</LdapResult>";
+	private static final String DEFAULT_RESULT_SEARCH = "<LdapResult>Object not found</LdapResult>";
 			
 	private static final String DEFAULT_RESULT_DELETE = "<LdapResult>Delete Success - Never Existed</LdapResult>";
 	private static final String DEFAULT_RESULT_CREATE_OK = "<LdapResult>Create Success - Already There</LdapResult>";
@@ -317,6 +319,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	private String errorSessionKey="errorReason";
 	private int maxEntriesReturned=0;
 	private boolean unicodePwd = false;
+	private boolean replyNotFound = false;
 
 	protected ParameterList paramList = null;
 	private boolean principalParameterFound = false;
@@ -858,8 +861,13 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			dirContext = getDirContext(paramValueMap);
 			return searchResultsToXml( dirContext.search(entryName, filterExpression, controls) ).toXML();
 		} catch (NamingException e) {
+			if (isReplyNotFound() && e.getMessage().equals("Unprocessed Continuation Reference(s)")) {
+				if (log.isDebugEnabled()) log.debug("Searching object not found using filter[" + filterExpression + "]");
+				return DEFAULT_RESULT_SEARCH;
+			} else {
 			storeLdapException(e, prc);
-			throw new SenderException("exception searching using filter ["+filterExpression+"]", e);
+				throw new SenderException("Exception searching using filter ["+filterExpression+"]", e);
+			}
 		} finally {
 			closeDirContext(dirContext);
 		}
@@ -1382,4 +1390,10 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		return unicodePwd;
 	}
 
+	public void setReplyNotFound(boolean b) {
+		replyNotFound = b;
+	}
+	public boolean isReplyNotFound() {
+		return replyNotFound;
+	}
 }
