@@ -30,6 +30,12 @@
 	</bean>
 
 	<bean
+		name="hostnamePropertyPlaceholderConfigurer"
+		class="nl.nn.adapterframework.configuration.HostnamePropertyPlaceholderConfigurer"
+		autowire="byName"
+	/>
+
+	<bean
 		name="fxfPropertyPlaceholderConfigurer"
 		class="nl.nn.adapterframework.extensions.fxf.FxfPropertyPlaceholderConfigurer"
 		autowire="byName"

@@ -47,21 +47,14 @@ public final class AppConstants extends Properties implements Serializable{
 	private String additionalPropertiesFileKey="ADDITIONAL.PROPERTIES.FILE";
 	private VariableExpander variableExpander;
 	private static Properties propertyPlaceholderConfigurerProperties = new Properties();
-
-//	private final static Properties baseProperties = new Properties();
-//	static {
-//		baseProperties.put("hostname", Misc.getHostname());
-//	}
 	
 	private AppConstants() {
 		super();
-//		putAll(baseProperties);
 		load(null, null, propertiesFileName);
 	}
 
 	private AppConstants(ClassLoader classLoader) {
 		super();
-//		putAll(baseProperties);
 		load(classLoader, null, propertiesFileName);
 		putAll(propertyPlaceholderConfigurerProperties);
 	}
