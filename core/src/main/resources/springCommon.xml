@@ -6,14 +6,6 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd"
 	>
 
-	<!--
-	AppConstants are now added as PropertySources to the Spring configuration in createApplicationContext method of IbisContext
-	<bean
-		name="appConstantsPropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.configuration.AppConstantsPropertyPlaceholderConfigurer"
-		autowire="byName"
-	/-->
-
 	<bean
 		name="lowerCasePropertyPlaceholderConfigurer"
 		class="nl.nn.adapterframework.configuration.LowerCasePropertyPlaceholderConfigurer"
@@ -39,13 +31,6 @@
 		name="fxfPropertyPlaceholderConfigurer"
 		class="nl.nn.adapterframework.extensions.fxf.FxfPropertyPlaceholderConfigurer"
 		autowire="byName"
-	/>
-
-	<bean
-		name="appConstants"
-		class="nl.nn.adapterframework.util.AppConstants"
-		autowire="byName"
-		factory-method="getInstance"
 	/>
 
 	<bean

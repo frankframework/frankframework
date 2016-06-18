@@ -17,16 +17,26 @@ package nl.nn.adapterframework.configuration;
 
 import java.util.Properties;
 
+import nl.nn.adapterframework.util.AppConstants;
+
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+
  /**
  * Make a lower case variant of the instance.name property (instance.name.lc)
  * available to the Ibis configuration and the Spring configuration.
  *
  * @author Jaco de Groot
  */
-public class LowerCasePropertyPlaceholderConfigurer extends AppConstantsPropertyPlaceholderConfigurer {
+public class LowerCasePropertyPlaceholderConfigurer
+		extends PropertyPlaceholderConfigurer {
+
+	public LowerCasePropertyPlaceholderConfigurer() {
+		setIgnoreUnresolvablePlaceholders(true);
+	}
 
 	@Override
 	protected void convertProperties(Properties props) {
+		AppConstants appConstants = AppConstants.getInstance();
 		String instanceName = appConstants.getProperty("instance.name");
 		if (instanceName != null) {
 			String lowerCase = instanceName.toLowerCase();

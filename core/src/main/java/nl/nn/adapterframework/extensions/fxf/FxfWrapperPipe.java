@@ -56,7 +56,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author Jaco de Groot
  */
 public class FxfWrapperPipe extends EsbSoapWrapperPipe {
-	private AppConstants appConstants;
 	private String instanceName;
 	private String instanceNameLowerCase;
 	private String fxfDir;
@@ -87,6 +86,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			}
 		}
 		super.configure();
+		AppConstants appConstants = AppConstants.getInstance();
 		if ("wrap".equalsIgnoreCase(getDirection())) {
 			instanceName = appConstants.getResolvedProperty("instance.name");
 			if (StringUtils.isEmpty(instanceName)) {
@@ -223,14 +223,6 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			return 2;
 		}
 		return 0;
-	}
-	
-	public AppConstants getAppConstants() {
-		return appConstants;
-	}
-
-	public void setAppConstants(AppConstants appConstants) {
-		this.appConstants = appConstants;
 	}
 
 	public String getFlowId() {

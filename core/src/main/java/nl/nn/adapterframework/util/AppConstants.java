@@ -222,6 +222,12 @@ public final class AppConstants extends Properties implements Serializable{
 		}
 	}
 
+	/**
+	 * Add additional property to AppConstants which is also added to Spring
+	 * by a PropertyPlaceholderConfigurer. AppConstants are initially added to
+	 * Spring as PropertiesPropertySource in the createApplicationContext method
+	 * of IbisContext.
+	 */
 	public void setPropertyPlaceholderConfigurerProperty(String name, String value) {
 		self.put(name, value);
 		propertyPlaceholderConfigurerProperties.put(name, value);

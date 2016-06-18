@@ -15,13 +15,14 @@
 */
 package nl.nn.adapterframework.extensions.fxf;
 
-import nl.nn.adapterframework.configuration.AppConstantsPropertyPlaceholderConfigurer;
-import nl.nn.adapterframework.util.LogUtil;
-
 import java.io.File;
 import java.util.Properties;
 
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
 /**
  * Initialise the fxf.dir property when possible and not already available from
@@ -31,11 +32,16 @@ import org.apache.log4j.Logger;
  * @author Jaco de Groot
  */
 public class FxfPropertyPlaceholderConfigurer
-		extends AppConstantsPropertyPlaceholderConfigurer {
+		extends PropertyPlaceholderConfigurer {
 	protected Logger log = LogUtil.getLogger(this);
+
+	public FxfPropertyPlaceholderConfigurer() {
+		setIgnoreUnresolvablePlaceholders(true);
+	}
 
 	@Override
 	protected void convertProperties(Properties props) {
+		AppConstants appConstants = AppConstants.getInstance();
 		String fxfDir = appConstants.getResolvedProperty("fxf.dir");
 		if (fxfDir == null) {
 			// Use default location, see was.policy too

@@ -17,7 +17,10 @@ package nl.nn.adapterframework.configuration;
 
 import java.util.Properties;
 
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
+
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
  /**
  * Make the hostname property available to the Ibis configuration and the Spring
@@ -25,10 +28,16 @@ import nl.nn.adapterframework.util.Misc;
  *
  * @author Jaco de Groot
  */
-public class HostnamePropertyPlaceholderConfigurer extends AppConstantsPropertyPlaceholderConfigurer {
+public class HostnamePropertyPlaceholderConfigurer
+		extends PropertyPlaceholderConfigurer {
+
+	public HostnamePropertyPlaceholderConfigurer() {
+		setIgnoreUnresolvablePlaceholders(true);
+	}
 
 	@Override
 	protected void convertProperties(Properties props) {
+		AppConstants appConstants = AppConstants.getInstance();
 		String hostname = Misc.getHostname();
 		appConstants.setPropertyPlaceholderConfigurerProperty("hostname", hostname);
 		props.put("hostname", hostname);

@@ -17,6 +17,10 @@ package nl.nn.adapterframework.configuration;
 
 import java.util.Properties;
 
+import nl.nn.adapterframework.util.AppConstants;
+
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+
  /**
  * Overwrite a property available to the Ibis configuration and the Spring
  * configuration. When the property isn't present it will be added.
@@ -24,12 +28,17 @@ import java.util.Properties;
  * @author Jaco de Groot
  */
 public class OverwritePropertyPlaceholderConfigurer
-		extends AppConstantsPropertyPlaceholderConfigurer {
+		extends PropertyPlaceholderConfigurer {
 	private String propertyName;
 	private String propertyValue;
 
+	public OverwritePropertyPlaceholderConfigurer() {
+		setIgnoreUnresolvablePlaceholders(true);
+	}
+
 	@Override
 	protected void convertProperties(Properties props) {
+		AppConstants appConstants = AppConstants.getInstance();
 		appConstants.setPropertyPlaceholderConfigurerProperty(propertyName, propertyValue);
 		props.put(propertyName, propertyValue);
 	}
