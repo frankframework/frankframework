@@ -65,6 +65,7 @@ Upcoming
 - Add roundsSessionKey attribute PasswordHashPipe and set to default value for Rounds to 40.000
 - Add replyNotFound attribute to LdapSender
 - Add sqlType 'ddl' to XmlQuerySender
+- Change defaults for configurations.names, move IAF config to core jar
 
 
 

@@ -78,7 +78,8 @@ public class IbisContext {
 	public boolean init() {
 		initContext(getSpringContextFileName());
 		AppConstants appConstants = AppConstants.getInstance();
-		String configurations = appConstants.getResolvedProperty("configurations.names");
+		String instanceName = appConstants.getResolvedProperty("instance.name");
+		String configurations = appConstants.getResolvedProperty("configurations.names.application");
 		StringTokenizer tokenizer = new StringTokenizer(configurations, ",");
 		boolean configLogAppend = false;
 		while (tokenizer.hasMoreTokens()) {
@@ -86,7 +87,10 @@ public class IbisContext {
 			String configurationFile = appConstants.getResolvedProperty(
 					"configurations." + configurationName + ".configurationFile");
 			if (configurationFile == null) {
-				configurationFile = configurationName + "/Configuration.xml";
+				configurationFile = "Configuration.xml";
+				if (!configurationName.equals(instanceName)) {
+					configurationFile = configurationName + "/" + configurationFile;
+				}
 			}
 			ClassLoader classLoader = null;
 			ConfigurationException customClassLoaderConfigurationException = null;
