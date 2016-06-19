@@ -1,0 +1,10 @@
+<module>
+	<scheduler>
+		<job
+			name="recover Adapters"
+			interval="${recover.adapters.interval}"
+			description="Recover adapters (and receivers) and log status to heartbeat log"
+			function="recoverAdapters"
+		/>
+	</scheduler>
+</module>

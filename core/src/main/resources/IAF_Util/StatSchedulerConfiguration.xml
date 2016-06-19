@@ -1,0 +1,10 @@
+<module>
+	<scheduler>
+		<job
+			name="dump Statistics"
+			cronExpression="${statistics.cron}"
+			description="Run every hour to dump statistics"
+			function="dumpStatistics"
+		/>
+	</scheduler>
+</module>

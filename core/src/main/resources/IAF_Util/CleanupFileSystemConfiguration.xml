@@ -1,0 +1,20 @@
+<module>
+	<scheduler>
+		<job
+			name="cleanup File System"
+			cronExpression="${cleanup.filesystem.cron}"
+			description="Run every day at a certain time (01:35) to cleanup the file system"
+			function="cleanupFileSystem"
+		>
+			<directoryCleaner
+				directory="${fxf.dir}"
+				subdirectories="true"
+				notExistWarn="false"
+			/>
+			<directoryCleaner
+				directory="${log.dir}"
+				retention="${cleanup.log.dir.retention}"
+			/>
+		</job>
+	</scheduler>
+</module>

@@ -1,9 +1,21 @@
 <!DOCTYPE configuration [
 	<!ENTITY ManageDatabase SYSTEM "ConfigurationManageDatabase.xml">
+	<!ENTITY StatScheduler SYSTEM "./StatSchedulerConfiguration.xml">
+	<!ENTITY Monitors SYSTEM "./MonitorConfiguration.xml">
+	<!ENTITY CleanupDatabase SYSTEM "./CleanupDatabaseConfiguration.xml">
+	<!ENTITY CleanupFileSystem SYSTEM "./CleanupFileSystemConfiguration.xml">
+	<!ENTITY RecoverAdapters SYSTEM "./RecoverAdaptersConfiguration.xml">
 ]>
 <configuration name="IAF_Util">
 	<jmsRealms>
 		<jmsRealm realmName="jdbc" datasourceName="jdbc/${instance.name.lc}"/>
 	</jmsRealms>
+	<!-- include configuration for managing the database -->
 	&ManageDatabase;
+	<!-- include configuration for collection of statistics, flexible monitoring, cleaning up the database and fxf files, and recover adapters -->
+	&StatScheduler;
+	&Monitors;
+	&CleanupDatabase;
+	&CleanupFileSystem;
+	&RecoverAdapters;
 </configuration>

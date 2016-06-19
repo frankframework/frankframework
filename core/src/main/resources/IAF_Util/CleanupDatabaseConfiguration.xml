@@ -1,0 +1,10 @@
+<module>
+	<scheduler>
+		<job
+			name="cleanup Database"
+			cronExpression="${cleanup.database.cron}"
+			description="Run every day at a certain time (01:45) to cleanup the database"
+			function="cleanupDatabase"
+		/>
+	</scheduler>
+</module>
