@@ -20,6 +20,7 @@ import java.util.Properties;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
  /**
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
  */
 public class HostnamePropertyPlaceholderConfigurer
 		extends PropertyPlaceholderConfigurer {
+	private static String HOSTNAME_PROPERTY = "hostname";
 
 	public HostnamePropertyPlaceholderConfigurer() {
 		setIgnoreUnresolvablePlaceholders(true);
@@ -38,9 +40,12 @@ public class HostnamePropertyPlaceholderConfigurer
 	@Override
 	protected void convertProperties(Properties props) {
 		AppConstants appConstants = AppConstants.getInstance();
-		String hostname = Misc.getHostname();
-		appConstants.setPropertyPlaceholderConfigurerProperty("hostname", hostname);
-		props.put("hostname", hostname);
+		String hostname = appConstants.getResolvedProperty(HOSTNAME_PROPERTY);
+		if (StringUtils.isEmpty(hostname)) {
+			hostname = Misc.getHostname();
+			appConstants.setPropertyPlaceholderConfigurerProperty(HOSTNAME_PROPERTY, hostname);
+			props.put(HOSTNAME_PROPERTY, hostname);
+		}
 	}
 
 }
