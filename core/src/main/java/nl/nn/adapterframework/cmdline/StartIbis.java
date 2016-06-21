@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.cmdline;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 
 /**

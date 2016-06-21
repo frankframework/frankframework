@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -28,11 +29,20 @@ public class DirectoryClassLoader extends ClassLoader {
 	private Logger log = LogUtil.getLogger(this);
 	private File directory;
 
-	public DirectoryClassLoader(String directory) throws ConfigurationException {  
+	public DirectoryClassLoader(String directory) throws ConfigurationException {
 		super(DirectoryClassLoader.class.getClassLoader());
-		this.directory = new File(directory);
+		if (directory == null) {
+			AppConstants appConstants = AppConstants.getInstance();
+			String configurationsDirectory = appConstants.getResolvedProperty("configurations.directory");
+			if (configurationsDirectory == null) {
+				throw new ConfigurationException("Could not find property configurations.directory");
+			}
+			this.directory = new File(configurationsDirectory);
+		} else {
+			this.directory = new File(directory);
+		}
 		if (!this.directory.isDirectory()) {
-			throw new ConfigurationException("Could not find directory: " + directory);
+			throw new ConfigurationException("Could not find directory to load configuration from: " + this.directory);
 		}
 	}
 

@@ -66,6 +66,7 @@ Upcoming
 - Add replyNotFound attribute to LdapSender
 - Add sqlType 'ddl' to XmlQuerySender
 - Change defaults for configurations.names, move IAF config to core jar
+- Add default directory for DirectoryClassLoader, add webapp.realpath property
 
 
 

@@ -20,7 +20,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.LogUtil;
