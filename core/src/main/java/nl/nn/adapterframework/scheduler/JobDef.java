@@ -643,7 +643,7 @@ public class JobDef {
 		if (function.equalsIgnoreCase(JOB_FUNCTION_SEND_MESSAGE)) {
 			executeSendMessageJob();
 		} else{
-			ibisManager.handleAdapter(getFunction(), getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]");
+			ibisManager.handleAdapter(getFunction(), getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
 		}
 	}
 

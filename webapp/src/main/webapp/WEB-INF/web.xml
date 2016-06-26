@@ -312,7 +312,7 @@
         <web-resource-collection>
             <web-resource-name>AdminAccessResourceCollection</web-resource-name>
             <description>collection of url's for administrator access</description>
-            <url-pattern>/ConfigurationServlet</url-pattern>
+            <url-pattern>/adapterHandlerAsAdmin.do</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <description></description>

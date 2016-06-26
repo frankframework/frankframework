@@ -150,90 +150,90 @@ public class DefaultIbisManager implements IbisManager {
 		stopAdapters(configuration);
 	}
 
-    /**
-     * Utility function to give commands to Adapters and Receivers
-     *
-     */
-    public void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy) {
-        if (action.equalsIgnoreCase("STOPADAPTER")) {
-            if (adapterName.equals("*ALL*")) {
-                if (configurationName.equals("*ALL*")) {
-                    for (Configuration configuration : configurations) {
-                        log.info("Stopping all adapters on request of [" + commandIssuedBy+"]");
-                        stopAdapters(configuration);
-                   }
-                } else {
-                    log.info("Stopping all adapters for configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]");
-                    stopAdapters(getConfiguration(configurationName));
-                }
-            } else {
-                for (Configuration configuration : configurations) {
-                    if (configuration.getRegisteredAdapter(adapterName) != null) {
-                        log.info("Stopping adapter [" + adapterName + "], on request of [" + commandIssuedBy+"]");
-                        stopAdapter(configuration.getRegisteredAdapter(adapterName));
-                    }
-                }
-            }
-        }
-        else if (action.equalsIgnoreCase("STARTADAPTER")) {
-            if (adapterName.equals("*ALL*")) {
-                if (configurationName.equals("*ALL*")) {
-                    for (Configuration configuration : configurations) {
-                        log.info("Starting all adapters on request of [" + commandIssuedBy+"]");
-                        startAdapters(configuration);
-                    }
-                } else {
-                    log.info("Starting all adapters for configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]");
-                    startAdapters(getConfiguration(configurationName));
-                }
-            } else {
-                try {
-                    for (Configuration configuration : configurations) {
-                        if (configuration.getRegisteredAdapter(adapterName) != null) {
-                            log.info("Starting adapter [" + adapterName + "] on request of [" + commandIssuedBy+"]");
-                            startAdapter(configuration.getRegisteredAdapter(adapterName));
-                        }
-                    }
-                } catch (Exception e) {
-                    log.error("error in execution of command [" + action + "] for adapter [" + adapterName + "]",   e);
-                    //errors.add("", new ActionError("errors.generic", e.toString()));
-                }
-            }
-        }
-        else if (action.equalsIgnoreCase("STOPRECEIVER")) {
-            for (Configuration configuration : configurations) {
-                if (configuration.getRegisteredAdapter(adapterName) != null) {
-                    IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
-                    IReceiver receiver = adapter.getReceiverByName(receiverName);
-                    receiver.stopRunning();
-                    log.info("receiver [" + receiverName + "] stopped by webcontrol on request of " + commandIssuedBy);
-                }
-            }
-        }
-        else if (action.equalsIgnoreCase("STARTRECEIVER")) {
-            for (Configuration configuration : configurations) {
-                if (configuration.getRegisteredAdapter(adapterName) != null) {
-                    IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
-                    IReceiver receiver = adapter.getReceiverByName(receiverName);
-                    receiver.startRunning();
-                    log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
-                }
-            }
-        }
-        else if (action.equalsIgnoreCase("RELOAD")) {
-            if (configurationName.equals("*ALL*")) {
-                log.info("Reload all configurations on request of [" + commandIssuedBy+"]");
-                ibisContext.reload(null);
-            } else {
-                log.info("Reload configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]");
-                ibisContext.reload(configurationName);
-            }
-        }
-        else if (action.equalsIgnoreCase("FULLRELOAD")) {
-            log.info("Full reload on request of [" + commandIssuedBy+"]");
-            ibisContext.fullReload();
-        }
-		else if (action.equalsIgnoreCase("INCTHREADS")) {
+	/**
+	 * Utility function to give commands to Adapters and Receivers
+	 *
+	 */
+	public void handleAdapter(String action, String configurationName,
+			String adapterName, String receiverName, String commandIssuedBy,
+			boolean isAdmin) {
+		if (action.equalsIgnoreCase("STOPADAPTER")) {
+			if (adapterName.equals("*ALL*")) {
+				if (configurationName.equals("*ALL*")) {
+					for (Configuration configuration : configurations) {
+						log.info("Stopping all adapters on request of [" + commandIssuedBy+"]");
+						stopAdapters(configuration);
+				   }
+				} else {
+					log.info("Stopping all adapters for configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]");
+					stopAdapters(getConfiguration(configurationName));
+				}
+			} else {
+				for (Configuration configuration : configurations) {
+					if (configuration.getRegisteredAdapter(adapterName) != null) {
+						log.info("Stopping adapter [" + adapterName + "], on request of [" + commandIssuedBy+"]");
+						stopAdapter(configuration.getRegisteredAdapter(adapterName));
+					}
+				}
+			}
+		} else if (action.equalsIgnoreCase("STARTADAPTER")) {
+			if (adapterName.equals("*ALL*")) {
+				if (configurationName.equals("*ALL*")) {
+					for (Configuration configuration : configurations) {
+						log.info("Starting all adapters on request of [" + commandIssuedBy+"]");
+						startAdapters(configuration);
+					}
+				} else {
+					log.info("Starting all adapters for configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]");
+					startAdapters(getConfiguration(configurationName));
+				}
+			} else {
+				try {
+					for (Configuration configuration : configurations) {
+						if (configuration.getRegisteredAdapter(adapterName) != null) {
+							log.info("Starting adapter [" + adapterName + "] on request of [" + commandIssuedBy+"]");
+							startAdapter(configuration.getRegisteredAdapter(adapterName));
+						}
+					}
+				} catch (Exception e) {
+					log.error("error in execution of command [" + action + "] for adapter [" + adapterName + "]",   e);
+					//errors.add("", new ActionError("errors.generic", e.toString()));
+				}
+			}
+		} else if (action.equalsIgnoreCase("STOPRECEIVER")) {
+			for (Configuration configuration : configurations) {
+				if (configuration.getRegisteredAdapter(adapterName) != null) {
+					IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
+					IReceiver receiver = adapter.getReceiverByName(receiverName);
+					receiver.stopRunning();
+					log.info("receiver [" + receiverName + "] stopped by webcontrol on request of " + commandIssuedBy);
+				}
+			}
+		} else if (action.equalsIgnoreCase("STARTRECEIVER")) {
+			for (Configuration configuration : configurations) {
+				if (configuration.getRegisteredAdapter(adapterName) != null) {
+					IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
+					IReceiver receiver = adapter.getReceiverByName(receiverName);
+					receiver.startRunning();
+					log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
+				}
+			}
+		} else if (action.equalsIgnoreCase("RELOAD")) {
+			if (configurationName.equals("*ALL*")) {
+				log.info("Reload all configurations on request of [" + commandIssuedBy+"]");
+				ibisContext.reload(null);
+			} else {
+				log.info("Reload configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]");
+				ibisContext.reload(configurationName);
+			}
+		} else if (action.equalsIgnoreCase("FULLRELOAD")) {
+			log.info("Full reload on request of [" + commandIssuedBy+"]");
+			if (isAdmin) {
+				ibisContext.fullReload();
+			} else {
+				log.warn("Full reload not allowed for [" + commandIssuedBy+"]");
+			}
+		} else if (action.equalsIgnoreCase("INCTHREADS")) {
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
@@ -247,8 +247,7 @@ public class DefaultIbisManager implements IbisManager {
 					log.info("receiver [" + receiverName + "] increased threadcount on request of " + commandIssuedBy);
 				}
 			}
-		}
-		else if (action.equalsIgnoreCase("DECTHREADS")) {
+		} else if (action.equalsIgnoreCase("DECTHREADS")) {
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
@@ -262,30 +261,24 @@ public class DefaultIbisManager implements IbisManager {
 					log.info("receiver [" + receiverName + "] decreased threadcount on request of " + commandIssuedBy);
 				}
 			}
-		}
-        else if (action.equalsIgnoreCase("SENDMESSAGE")) {
-            try {
-                // send job
-                IbisLocalSender localSender = new IbisLocalSender();
-                localSender.setJavaListener(receiverName);
-                localSender.setIsolated(false);
-                localSender.setName("AdapterJob");
-                localSender.configure();
-
-                localSender.open();
-                try {
-                    localSender.sendMessage(null, "");
-                }
-                finally {
-                    localSender.close();
-                }
-            }
-            catch(Exception e) {
-                log.error("Error while sending message (as part of scheduled job execution)", e);
-            }
-//          ServiceDispatcher.getInstance().dispatchRequest(receiverName, "");
-        }
-        else if (action.equalsIgnoreCase("MOVEMESSAGE")) {
+		} else if (action.equalsIgnoreCase("SENDMESSAGE")) {
+			try {
+				// send job
+				IbisLocalSender localSender = new IbisLocalSender();
+				localSender.setJavaListener(receiverName);
+				localSender.setIsolated(false);
+				localSender.setName("AdapterJob");
+				localSender.configure();
+				localSender.open();
+				try {
+					localSender.sendMessage(null, "");
+				} finally {
+					localSender.close();
+				}
+			} catch(Exception e) {
+				log.error("Error while sending message (as part of scheduled job execution)", e);
+			}
+		} else if (action.equalsIgnoreCase("MOVEMESSAGE")) {
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
@@ -322,8 +315,8 @@ public class DefaultIbisManager implements IbisManager {
 					}
 				}
 			}
-    	}
-    }
+		}
+	}
 
     public void shutdownScheduler() {
         try {

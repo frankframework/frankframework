@@ -158,6 +158,11 @@
                 validate="false">
             <forward name="success" path="/showConfigurationStatus.do" redirect="true" contextRelative="true"/>
         </action>
+        <action path="/adapterHandlerAsAdmin" 
+                type="nl.nn.adapterframework.webcontrol.action.AdapterHandlerAsAdmin"
+                validate="false">
+            <forward name="success" path="/showConfigurationStatus.do" redirect="true" contextRelative="true"/>
+        </action>
         <action path="/showConfiguration" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowConfiguration"
                 scope="session" 

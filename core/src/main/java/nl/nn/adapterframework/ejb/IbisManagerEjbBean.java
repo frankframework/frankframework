@@ -90,8 +90,8 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
         return ibisManager.getConfigurations();
     }
 
-    public void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy) {
-		ibisManager.handleAdapter(action, configurationName, adapterName, receiverName, commandIssuedBy);
+    public void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin) {
+		ibisManager.handleAdapter(action, configurationName, adapterName, receiverName, commandIssuedBy, isAdmin);
     }
 
     public void shutdown() {

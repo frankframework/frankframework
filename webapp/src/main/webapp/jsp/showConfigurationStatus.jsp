@@ -136,7 +136,7 @@
 					</imagelink>
 					<% if ("*ALL*".equals(session.getAttribute("configurationName"))) { %>
 						<imagelink
-							href="adapterHandler.do"
+							href="adapterHandlerAsAdmin.do"
 							type="reload"
 							alt="full reload"
 							>

@@ -49,7 +49,7 @@ public interface IbisManager {
      * @param receiverName
      * @param commandIssuedBy
      */
-    void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy);
+    void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin);
     /**
      * Start an already configured Configuration
      */
