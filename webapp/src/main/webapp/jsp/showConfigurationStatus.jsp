@@ -36,6 +36,50 @@
 		<% out.write(XmlUtils.replaceNonValidXmlCharacters(request.getAttribute("adapters").toString())); %>
 	</xtags:parse>
 
+	<xtags:forEach select="//registeredAdapters">
+		<xtags:forEach select="exceptions">
+			<br/>
+			<contentTable width="100%">
+				<tbody>
+					<tr>
+						<subHeader><h1 style="color:red">Exceptions</h1></subHeader>
+					</tr>
+					<xtags:forEach select="exception">
+						<tr>
+							<td><xtags:valueOf select="."/></td>
+						</tr>
+					</xtags:forEach>
+				</tbody>
+			</contentTable>
+		</xtags:forEach>
+		<xtags:forEach select="warnings">
+			<br/>
+			<contentTable width="100%">
+				<tbody>
+					<tr>
+						<subHeader align="center"><h7>Warnings</h7></subHeader>
+					</tr>
+					<xtags:forEach select="warning">
+						<tr>
+							<td>
+								<xtags:choose>
+									<xtags:when test="@severe='true'">
+										<font color="red">
+											<xtags:valueOf select="."/>
+										</font>
+									</xtags:when>
+									<xtags:otherwise>
+										<xtags:valueOf select="."/>
+									</xtags:otherwise>
+								</xtags:choose>
+							</td>
+						</tr>
+					</xtags:forEach>
+				</tbody>
+			</contentTable>
+		</xtags:forEach>
+	</xtags:forEach>
+
 	<contentTable width="100%">
 		<tbody>
 			<tr>
@@ -83,12 +127,22 @@
 						<parameter name="adapterName">*ALL*</parameter>
 					</imagelink>
 					<imagelink
-						href="ConfigurationServlet"
+						href="adapterHandler.do"
 						type="reload"
 						alt="reload configuration"
 						>
+						<parameter name="action">reload</parameter>
 						<parameter name="configurationName"><% out.write(XmlUtils.replaceNonValidXmlCharacters((String)session.getAttribute("configurationName"))); %></parameter>
 					</imagelink>
+					<% if ("*ALL*".equals(session.getAttribute("configurationName"))) { %>
+						<imagelink
+							href="adapterHandler.do"
+							type="reload"
+							alt="full reload"
+							>
+							<parameter name="action">fullreload</parameter>
+						</imagelink>
+					<% } %>
 					<imagelink
 						href="images/flow/IBIS.svg"
 						type="flow"
@@ -105,53 +159,62 @@
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/receiverState/@stopping"/></td>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/receiverState/@error"/></td>
 			</tr>
+			<xtags:forEach select="//registeredAdapters/configurationMessages">
+				<tr>
+					<subHeader colspan="9">Messages</subHeader>
+					<subHeader>Flow</subHeader>
+				</tr>
+				<% boolean first = true; %>
+				<% int nrOfConfigurationMessages = 0; %>
+				<xtags:forEach select="configurationMessage">
+					<% nrOfConfigurationMessages++; %>
+				</xtags:forEach>
+				<xtags:forEach select="configurationMessage">
+					<tr>
+						<td colspan="9" class="messagesRow">
+							<xtags:choose>
+								<xtags:when test="@level='ERROR'">
+									<font color="red">
+										<xtags:valueOf select="@date"/> : <xtags:valueOf select="."/>
+									</font>
+								</xtags:when>
+								<xtags:when test="@level='WARN'">
+									<font color="orange">
+										<xtags:valueOf select="@date"/> : <xtags:valueOf select="."/>
+									</font>
+								</xtags:when>
+								<xtags:otherwise>
+									<xtags:valueOf select="@date"/> : <xtags:valueOf select="."/>
+								</xtags:otherwise>
+							</xtags:choose>
+						</td>
+						<% if (first) {
+							boolean active = true;
+							// https://code.google.com/p/chromium/issues/detail?id=423749
+							if (request.getHeader("User-Agent").contains("Chrome")
+									|| request.getHeader("User-Agent").contains("MSIE 8.0")
+									|| request.getHeader("User-Agent").contains("MSIE 9.0")
+									|| request.getHeader("User-Agent").contains("MSIE 10.")) {
+								active = false;
+							}
+						
+						%>
+							<td rowspan="<%= nrOfConfigurationMessages %>" width="200"<% if (active) { %> bgcolor="white"<% } %>>
+								<% if (active) { %>
+									<a href="images/flow/IBIS.svg" newwindow="true">
+										<img src="images/flow/IBIS.svg" title="IBIS adapter references" width="200" height="200"/>
+									</a>
+								<% } %>
+							</td>
+						<% } %>
+					</tr>
+					<% first = false; %>
+				</xtags:forEach>
+			</xtags:forEach>
 		</tbody>
 	</contentTable>
 
 	<xtags:forEach select="//registeredAdapters">
-
-		<xtags:forEach select="exceptions">
-			<br/>
-			<contentTable width="100%">
-				<tbody>
-					<tr>
-						<subHeader><h1 style="color:red">Exceptions</h1></subHeader>
-					</tr>
-					<xtags:forEach select="exception">
-						<tr>
-							<td><xtags:valueOf select="."/></td>
-						</tr>
-					</xtags:forEach>
-				</tbody>
-			</contentTable>
-		</xtags:forEach>
-
-		<xtags:forEach select="warnings">
-			<br/>
-			<contentTable width="100%">
-				<tbody>
-					<tr>
-						<subHeader align="center"><h7>Warnings</h7></subHeader>
-					</tr>
-					<xtags:forEach select="warning">
-						<tr>
-							<td>
-								<xtags:choose>
-									<xtags:when test="@severe='true'">
-										<font color="red">
-											<xtags:valueOf select="."/>
-										</font>
-									</xtags:when>
-									<xtags:otherwise>
-										<xtags:valueOf select="."/>
-									</xtags:otherwise>
-								</xtags:choose>
-							</td>
-						</tr>
-					</xtags:forEach>
-				</tbody>
-			</contentTable>
-		</xtags:forEach>
 
 		<xtags:forEach select="adapter" sort="@nameUC">
 			<br/>
@@ -480,23 +543,5 @@
 		</xtags:forEach> <!-- adapter -->
 
 	</xtags:forEach>
-
-	<% if (!request.getHeader("User-Agent").contains("MSIE 8.0")) { %>
-		<br/>
-		<contentTable width="100%">
-			<tbody>
-				<tr>
-					<subHeader colspan="12" align="center"><h7>Adapter references</h7></subHeader>
-				</tr>
-				<tr>
-					<td colspan="12">
-						<a href="images/flow/IBIS.svg" newwindow="true">
-							<img src="images/flow/IBIS.svg" title="adapter references" width="100%"/>
-						</a>
-					</td>
-				</tr>
-			</tbody>
-		</contentTable>
-	<% } %>
 	
 </page>

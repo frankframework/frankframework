@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
-import java.util.Iterator;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -27,121 +26,52 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.http.RestServiceDispatcher;
-import nl.nn.adapterframework.jms.PushingJmsListener;
-import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunStateEnum;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 
 /**
- * Servlet that attempts to load the <code>Configuration</code>from
- * the configuration file specified in web.xml (default: Configuration.xml).
- *
- * Parameters in the application descriptor 'web.xml':<br/>
- * <ul>
- *   <li>configuration - the name of the configuration file</li>
- *   <li>digester-rules - the name of the digester-rules file</li>
- *   <li>autoStart - when TRUE : automatically start the adapters</li>
- * </ul>
- *
+ * Start IAF with a servlet.
+ * 
  * @author  Johan Verrips
+ * @author  Jaco de Groot
  */
 public class ConfigurationServlet extends HttpServlet {
-    protected Logger log = LogUtil.getLogger(this);
-
+	private static final long serialVersionUID = 1L;
+	private Logger log = LogUtil.getLogger(this);
 	public static final String KEY_CONTEXT = "KEY_CONTEXT";
 
-    //static final String DFLT_SPRING_CONTEXT = "springContext.xml";
-    //static final String EJB_SPRING_CONTEXT = "springContextEjbWeb.xml";
-    //static final String DFLT_CONFIGURATION = "Configuration.xml";
-    //static final String DFLT_AUTOSTART = "TRUE";
-
-    public String lastErrorMessage=null;
-
-    public boolean areAdaptersStopped(String configurationName) {
-        Configuration config = getConfiguration(configurationName);
-
-        if (null != config) {
-
-			//check for adapters that are started
-            boolean startedAdaptersPresent = false;
-			for(int i=0; i<config.getRegisteredAdapters().size(); i++) {
-				IAdapter adapter = config.getRegisteredAdapter(i);
-
-				RunStateEnum currentRunState = adapter.getRunState();
-				if (currentRunState.equals(RunStateEnum.STARTED)) {
-					log.warn("Adapter [" + adapter.getName() + "] is running");
-					startedAdaptersPresent = true;
-				}
-			}
-            if (startedAdaptersPresent) {
-                log.warn(
-                        "Reload of configuration aborted because there are started adapters present");
-                return false;
-            }
-            return true;
-
-        }
-        return true;
-    }
-
-    /**
-     * Shuts down the configuration, meaning that all adapters are stopped.
-     * @since 4.0
-     */
-    @Override
-    public void destroy() {
-        log.info("************** Configuration shutting down **************");
-        try {
-            IbisManager ibisManager = getIbisManager();
-            if (ibisManager != null) {
-				ibisManager.shutdownIbis();
-            } else {
-            	log.error("Cannot find manager to shutdown");
-            }
-			IbisContext ibisContext = getIbisContext();
-			if (ibisContext != null) {
-				ibisContext.destroyConfig();
-			} else {
-				log.error("Cannot find configuration to destroy");
-			}
-         } catch (Exception e) {
-            log("Error stopping adapters on closing", e);
-        }
-        log.info("************** Configuration shut down successfully **************");
-    }
-
-    public static void noCache(HttpServletResponse response) {
-		response.setDateHeader("Expires",1);
-		response.setDateHeader("Last-Modified",new Date().getTime());
-		response.setHeader("Cache-Control","no-store, no-cache, must-revalidate");
-		response.setHeader("Pragma","no-cache");
-    }
-
 	@Override
-    public void init() throws ServletException {
+	public void init() throws ServletException {
 		super.init();
-		setApplicationServerType();
 		setUploadPathInServletContext();
-		loadConfig(null);
+		IbisContext ibisContext = new IbisContext();
+		setApplicationServerType(ibisContext);
+		ServletContext servletContext = getServletContext();
+		AppConstants appConstants = AppConstants.getInstance();
+		String attributeKey = appConstants.getResolvedProperty(KEY_CONTEXT);
+		servletContext.setAttribute(attributeKey, ibisContext);
+		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey	+ "]");
+		appConstants.put("webapp.realpath", getServletContext().getRealPath(""));
+		ibisContext.init();
 		log.debug("Servlet init finished");
 	}
 
-	private void setApplicationServerType() {
+	@Override
+	public void destroy() {
+		ServletContext servletContext = getServletContext();
+		IbisContext ibisContext = (IbisContext)servletContext.getAttribute(AppConstants.getInstance().getResolvedProperty(KEY_CONTEXT));
+		ibisContext.destroy();
+		super.destroy();
+	}
+
+	private void setApplicationServerType(IbisContext ibisContext) {
 		ServletContext context = getServletContext();
 		String serverInfo = context.getServerInfo();
 		String applicationServerType;
@@ -163,7 +93,6 @@ public class ConfigurationServlet extends HttpServlet {
 			log.warn("Unknown server info [" + serverInfo + "]");
 			applicationServerType = "UNKNOWN";
 		}
-
 		String applicationServerTypeDefault = IbisContext
 				.getApplicationServerType();
 		if (applicationServerTypeDefault != null) {
@@ -177,145 +106,43 @@ public class ConfigurationServlet extends HttpServlet {
 				configWarnings.add(log, msg);
 			}
 		} else {
-			IbisContext.setApplicationServerType(applicationServerType);
+			ibisContext.setApplicationServerType(applicationServerType);
 		}
 	}
 
-    private void setUploadPathInServletContext() {
+	private void setUploadPathInServletContext() {
 		try {
 			// set the directory for struts upload, that is used for instance in 'test a pipeline'
-	        ServletContext context = getServletContext();
-	        String path=AppConstants.getInstance().getResolvedProperty("upload.dir");
-
-	        // if the path is not found
-	        if (StringUtils.isEmpty(path)) {
-	        	path="/tmp";
-	        }
-	        log.debug("setting path for Struts file-upload to ["+path+"]");
-	        File tempDirFile = new File(path);
-	        context.setAttribute("javax.servlet.context.tempdir",tempDirFile);
+			ServletContext context = getServletContext();
+			String path=AppConstants.getInstance().getResolvedProperty("upload.dir");
+			// if the path is not found
+			if (StringUtils.isEmpty(path)) {
+				path="/tmp";
+			}
+			log.debug("setting path for Struts file-upload to ["+path+"]");
+			File tempDirFile = new File(path);
+			context.setAttribute("javax.servlet.context.tempdir",tempDirFile);
 		} catch (Exception e) {
 			log.error("Could not set servlet context attribute 'javax.servlet.context.tempdir' to value of ${upload.dir}",e);
 		}
-    }
+	}
 
-    /**
-     * Initializes the configuration. Request parameters are used.
-     * Request parameters:
-     * <ul>
-     * <li>configurationFile: the name of the configuration file</li>
-     * <li>digesterRulesFile: the name of the digester rules file</li>
-     * <li>autoStart: true or false, indicating to start the adapters on startup.</li>
-     * </ul>
-     * @since 4.0
-     * @param  request  the request
-     * @param  response  the response
-     */
-    @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response)  throws IOException, ServletException {
-        String commandIssuedBy = " remoteHost [" + request.getRemoteHost() + "]";
-        commandIssuedBy += " remoteAddress [" + request.getRemoteAddr() + "]";
-        commandIssuedBy += " remoteUser [" + request.getRemoteUser() + "]";
-
-        log.warn("ConfigurationServlet initiated by " + commandIssuedBy);
+	@Override
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		noCache(response);
-        PrintWriter out = response.getWriter();
-        out.println("<html>");
-        out.println("<body>");
-
-		if (loadConfig(request.getParameter("configurationName"), true)) {
-			out.println("<p> Configuration successfully completed</p></body>");
-		} else {
-			out.println("<p> Errors occured during configuration. Please, examine logfiles</p>");
-			if (StringUtils.isNotEmpty(lastErrorMessage)) {
-				out.println("<p>"+lastErrorMessage+"</p>");
-			}
-		}
-        out.println("Click <a href=\"" + request.getContextPath() + "\">" + "here</a> to return");
-        out.println("</body>");
-        out.println("</html>");
-
-    }
-
-	private boolean loadConfig(String configurationName) {
-		return loadConfig(configurationName, false);
+		PrintWriter out = response.getWriter();
+		out.println("<html>");
+		out.println("<body>");
+		out.println("Reload function moved to <a href=\"" + request.getContextPath() + "\">console</a>");
+		out.println("</body>");
+		out.println("</html>");
 	}
 
-	private boolean loadConfig(String configurationName, boolean reload) {
-		if (areAdaptersStopped(configurationName)) {
-			if (reload) {
-				unloadConfig(configurationName);
-			}
-			IbisContext ibisContext = new IbisContext();
-			ServletContext ctx = getServletContext();
-			AppConstants appConstants = AppConstants.getInstance();
-			String attributeKey = appConstants.getResolvedProperty(KEY_CONTEXT);
-			ctx.setAttribute(attributeKey, ibisContext);
-			log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey	+ "]");
-			boolean success = false;
-			appConstants.put("webapp.realpath", getServletContext().getRealPath(""));
-			success = ibisContext.init();
-			if (success) {
-				log.info("Configuration succeeded");
-			} else {
-				log.warn("Configuration did not succeed, please examine log");
-			}
-			return success;
-		} else {
-			log.warn("Not all adapters are stopped, cancelling ConfigurationServlet");
-			lastErrorMessage= "Action cancelled: some adapters are still running.";
-			return false;
-		}
-    }
-
-	private void unloadConfig(String configurationName) {
-		RestServiceDispatcher.getInstance().unregisterAllServiceClients();
-
-		//destroy jobs too
-		destroy();
-
-		//destroy all jmsContainers
-		Configuration config = getConfiguration(configurationName);
-		if (null != config) {
-			for (int i = 0; i < config.getRegisteredAdapters().size(); i++) {
-				IAdapter adapter = config.getRegisteredAdapter(i);
-				Iterator recIt = adapter.getReceiverIterator();
-				if (recIt.hasNext()) {
-					while (recIt.hasNext()) {
-						IReceiver receiver = (IReceiver) recIt.next();
-						if (receiver instanceof ReceiverBase) {
-							ReceiverBase rb = (ReceiverBase) receiver;
-							IListener listener = rb.getListener();
-							if (listener instanceof PushingJmsListener) {
-								PushingJmsListener pjl = (PushingJmsListener) listener;
-								pjl.destroy();
-							}
-						}
-					}
-				}
-			}
-		}
+	public static void noCache(HttpServletResponse response) {
+		response.setDateHeader("Expires",1);
+		response.setDateHeader("Last-Modified",new Date().getTime());
+		response.setHeader("Cache-Control","no-store, no-cache, must-revalidate");
+		response.setHeader("Pragma","no-cache");
 	}
-
-    public Configuration getConfiguration(String configurationName) {
-        IbisManager ibisManager = getIbisManager();
-        if (ibisManager != null) {
-            return ibisManager.getConfiguration(configurationName);
-        }
-        return null;
-    }
-
-	public IbisContext getIbisContext() {
-		ServletContext ctx = getServletContext();
-        return (IbisContext) ctx.getAttribute(AppConstants.getInstance().getResolvedProperty(KEY_CONTEXT));
-	}
-
-    public IbisManager getIbisManager() {
-        IbisContext ibisContext = getIbisContext();
-        if (ibisContext != null) {
-			return ibisContext.getIbisManager();
-        }
-        return null;
-    }
 
 }

@@ -67,6 +67,10 @@ Upcoming
 - Add sqlType 'ddl' to XmlQuerySender
 - Change defaults for configurations.names, move IAF config to core jar
 - Add default directory for DirectoryClassLoader, add webapp.realpath property
+- Move configuration reload function from configuration servlet to IBIS console
+- Split configuration reload in configuration reload and full reload
+- Add messages about (configuration) startup and shutdown to IBIS console below summary
+- Fix shutdown
 
 
 

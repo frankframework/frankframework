@@ -122,7 +122,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 			if (sleepWhenEqualToPrevious > -1) {
 				// Synchronize on a static value to generate unique value's for the
 				// whole virtual machine.
-				synchronized (OBJECT) {
+				synchronized(OBJECT) {
 					formattedDate = formatter.format(new Date());
 					while (formattedDate.equals(previousFormattedDate)) {
 						try {

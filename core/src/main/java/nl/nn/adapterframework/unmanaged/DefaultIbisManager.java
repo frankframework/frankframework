@@ -33,7 +33,9 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.ejb.ListenerPortPoller;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
+import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
+import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
@@ -74,14 +76,6 @@ public class DefaultIbisManager implements IbisManager {
         configurations.add(configuration);
     }
 
-    public Configuration getConfiguration() {
-        if (configurations.size() > 0) {
-            return configurations.get(0);
-        } else {
-            return null;
-        }
-    }
-
     public List<Configuration> getConfigurations() {
         return configurations;
     }
@@ -99,10 +93,8 @@ public class DefaultIbisManager implements IbisManager {
      * Start the already configured Configuration
      */
     public void startConfiguration(Configuration configuration) {
-        log.info("* IBIS Startup: Initiating startup of configuration [" + configuration.getConfigurationName() + "]");
         startAdapters(configuration);
         startScheduledJobs(configuration);
-        log.info("* IBIS Startup: Startup complete for configuration [" + configuration.getConfigurationName() + "]");
     }
 
     /**
@@ -113,19 +105,50 @@ public class DefaultIbisManager implements IbisManager {
      *
      * TODO: Add shutdown-methods to Adapter, Receiver, Listener to make shutdown more complete.
      */
-    public void shutdownIbis() {
-        for (Configuration configuration : configurations) {
-            log.info("* IBIS Shutdown: Initiating shutdown of IBIS instance [" + configuration.getConfigurationName() + "]");
-            // Stop Adapters and the Scheduler
-            shutdownScheduler();
-            stopAdapters(configuration);
-            if (listenerPortPoller != null) {
-                listenerPortPoller.clear();
-            }
-            IbisCacheManager.shutdown();
-            log.info("* IBIS Shutdown: Shutdown complete for instance [" + configuration.getConfigurationName() + "]");
+    public void shutdown() {
+        shutdownScheduler();
+        if (listenerPortPoller != null) {
+            listenerPortPoller.clear();
         }
+        RestServiceDispatcher.getInstance().unregisterAllServiceClients();
+        unload((String)null);
+        IbisCacheManager.shutdown();
     }
+
+	public void unload(String configurationName) {
+		if (configurationName == null) {
+			while (configurations.size() > 0) {
+				unload(configurations.get(0));
+			}
+		} else {
+			unload(getConfiguration(configurationName));
+		}
+	}
+
+	private void unload(Configuration configuration) {
+		configurations.remove(configuration);
+		//destroy all jmsContainers
+		if (null != configuration) {
+			for (int i = 0; i < configuration.getRegisteredAdapters().size(); i++) {
+				IAdapter adapter = configuration.getRegisteredAdapter(i);
+				Iterator recIt = adapter.getReceiverIterator();
+				if (recIt.hasNext()) {
+					while (recIt.hasNext()) {
+						IReceiver receiver = (IReceiver) recIt.next();
+						if (receiver instanceof ReceiverBase) {
+							ReceiverBase rb = (ReceiverBase) receiver;
+							IListener listener = rb.getListener();
+							if (listener instanceof PushingJmsListener) {
+								PushingJmsListener pjl = (PushingJmsListener) listener;
+								pjl.destroy();
+							}
+						}
+					}
+				}
+			}
+		}
+		stopAdapters(configuration);
+	}
 
     /**
      * Utility function to give commands to Adapters and Receivers
@@ -196,6 +219,19 @@ public class DefaultIbisManager implements IbisManager {
                     log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
                 }
             }
+        }
+        else if (action.equalsIgnoreCase("RELOAD")) {
+            if (configurationName.equals("*ALL*")) {
+                log.info("Reload all configurations on request of [" + commandIssuedBy+"]");
+                ibisContext.reload(null);
+            } else {
+                log.info("Reload configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]");
+                ibisContext.reload(configurationName);
+            }
+        }
+        else if (action.equalsIgnoreCase("FULLRELOAD")) {
+            log.info("Full reload on request of [" + commandIssuedBy+"]");
+            ibisContext.fullReload();
         }
 		else if (action.equalsIgnoreCase("INCTHREADS")) {
 			for (Configuration configuration : configurations) {
@@ -330,13 +366,17 @@ public class DefaultIbisManager implements IbisManager {
         }
     }
 
+    public void stopAdapters() {
+        for (Configuration configuration : configurations) {
+            stopAdapters(configuration);
+       }
+    }
 
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.configuration.IbisManager#stopAdapters()
      */
     public void stopAdapters(Configuration configuration) {
         configuration.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
-
         log.info("Stopping all adapters for configuation " + configuration.getConfigurationName());
         List<IAdapter> adapters = new ArrayList<IAdapter>(configuration.getAdapterService().getAdapters().values());
         Collections.reverse(adapters);

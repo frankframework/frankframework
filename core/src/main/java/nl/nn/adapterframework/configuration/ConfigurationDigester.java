@@ -43,10 +43,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
@@ -176,7 +173,6 @@ public class ConfigurationDigester {
 	}
 
 	public void digestConfiguration(ClassLoader classLoader, Configuration configuration, String configurationFile, boolean configLogAppend) throws ConfigurationException {
-		LOG.info("* IBIS Startup: Reading IBIS configuration from file [" + configurationFile + "]");
 		Digester digester = null;
 		try {
 			digester = getDigester(configuration);
@@ -223,7 +219,6 @@ public class ConfigurationDigester {
 			throw e;
 		}
 		MonitorManager.getInstance().configure(configuration);
-		LOG.info("************** Configuration completed **************");
 	}
 
 	private void saveConfig(String config, boolean append) {

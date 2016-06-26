@@ -77,16 +77,20 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
         getIbisManager().handleAdapter(action, configurationName, adapterName, receiverName, commandIssuedBy);
     }
 
-    public void startIbis() {
-        // Not implemented for this case, since the Ibis will be auto-started from EJB container
+    public void unload(String configurationName) {
+        getIbisManager().unload(configurationName);
     }
 
-    public void shutdownIbis() {
-        getIbisManager().shutdownIbis();
+    public void shutdown() {
+        getIbisManager().shutdown();
     }
     
     public void startAdapters(Configuration configuration) {
         getIbisManager().startAdapters(configuration);
+    }
+
+    public void stopAdapters() {
+        getIbisManager().stopAdapters();
     }
 
     public void stopAdapters(Configuration configuration) {
@@ -115,10 +119,6 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
 
     public void setTransactionManager(PlatformTransactionManager transactionManager) {
         this.transactionManager = transactionManager;
-    }
-
-    public Configuration getConfiguration() {
-        return ibisManager.getConfiguration();
     }
 
 	public void startConfiguration(Configuration configuration) {

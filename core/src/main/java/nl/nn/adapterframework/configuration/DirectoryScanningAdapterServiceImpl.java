@@ -19,9 +19,6 @@ import nl.nn.adapterframework.util.RunStateEnum;
 
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.SAXException;
 
 /**
@@ -29,7 +26,7 @@ import org.xml.sax.SAXException;
  * @author Michiel Meeuwissen
  * @since 5.4
  */
-public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl implements ApplicationContextAware {
+public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl {
 
     private static final Logger LOG = LogUtil.getLogger(DirectoryScanningAdapterServiceImpl.class);
     private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(2);
@@ -44,8 +41,6 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
     private final Map<File, Collection<IAdapter>> watched = new HashMap<File, Collection<IAdapter>>();
 
     private final File directory;
-
-    private ApplicationContext applicationContext;
 
     private ScheduledFuture<?> future;
 
@@ -181,9 +176,6 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
     }
 
     synchronized Map<String, IAdapter> read(URL url) throws IOException, SAXException, InterruptedException {
-        if (applicationContext == null) {
-            wait();
-        }
         try {
             AdapterService catcher = new AdapterServiceImpl();
             Configuration configuration = new Configuration(catcher);
@@ -197,16 +189,6 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
             LOG.error("For " + url + ": " + t.getMessage(), t);
             return null;
         }
-    }
-
-  /*  public void setConfigurationDigester(ConfigurationDigester configurationDigester) {
-        this.configurationDigester = configurationDigester;
-    }*/
-
-    public synchronized void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-        notify();
-
     }
 
 }

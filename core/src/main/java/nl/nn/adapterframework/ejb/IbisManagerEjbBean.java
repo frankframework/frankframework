@@ -86,10 +86,6 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
         ibisManager.addConfiguration(configuration);
     }
 
-    public Configuration getConfiguration() {
-        return ibisManager.getConfiguration();
-    }
-
     public List<Configuration> getConfigurations() {
         return ibisManager.getConfigurations();
     }
@@ -98,13 +94,20 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
 		ibisManager.handleAdapter(action, configurationName, adapterName, receiverName, commandIssuedBy);
     }
 
-    public void shutdownIbis() {
-		ibisManager.shutdownIbis();
-		ibisContext.destroyConfig();
+    public void shutdown() {
+		ibisManager.shutdown();
     }
-    
+
+    public void unload(String configurationName) {
+		ibisManager.unload(configurationName);
+    }
+
     public void startAdapters(Configuration configuration) {
 		ibisManager.startAdapters(configuration);
+    }
+
+    public void stopAdapters() {
+		ibisManager.stopAdapters();
     }
 
     public void stopAdapters(Configuration configuration) {

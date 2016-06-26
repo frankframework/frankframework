@@ -121,7 +121,9 @@ public final class ShowConfiguration extends ActionBase {
 		if (configurationName == null) {
 			configurationName = (String)request.getSession().getAttribute("configurationName");
 		}
-		if (configurationName == null || configurationName.equalsIgnoreCase(CONFIG_ALL)) {
+		if (configurationName == null
+				|| configurationName.equalsIgnoreCase(CONFIG_ALL)
+				|| ibisManager.getConfiguration(configurationName) == null) {
 			for (Configuration configuration : ibisManager.getConfigurations()) {
 				if (AppConstants.getInstance().getBoolean("showConfiguration.original", false)) {
 					result = result + configuration.getOriginalConfiguration();
@@ -132,12 +134,6 @@ public final class ShowConfiguration extends ActionBase {
 			request.getSession().setAttribute("configurationName", CONFIG_ALL);
 		} else {
 			Configuration configuration = ibisManager.getConfiguration(configurationName);
-			if (configuration == null) {
-				configuration = ibisManager.getConfiguration();
-			}
-			if (configuration == null) {
-				return (mapping.findForward("noconfig"));
-			}
 			if (AppConstants.getInstance().getBoolean("showConfiguration.original", false)) {
 				result = configuration.getOriginalConfiguration();
 			} else {

@@ -734,7 +734,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			}
 		}
 		try {
-			String msg=(getLogPrefix()+"starts listening.");
+			String msg=(getLogPrefix()+"starts listening");
 			log.info(msg);
 			if (adapter != null) { 
 				adapter.getMessageKeeper().add(msg);
@@ -742,12 +742,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			runState.setRunState(RunStateEnum.STARTING);
 			openAllResources();
 			runState.setRunState(RunStateEnum.STARTED);
-            
 		} catch (ListenerException e) {
 			error(getLogPrefix()+"error occured while starting", e);
-			runState.setRunState(RunStateEnum.ERROR);            
-        
-		}    
+			runState.setRunState(RunStateEnum.ERROR);
+		}
 	}
 	
 	public void stopRunning() {

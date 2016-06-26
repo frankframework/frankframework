@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.configuration;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 /**
  * @author Michiel Meeuwissen
@@ -10,22 +10,17 @@ import static org.junit.Assert.assertEquals;
  */
 public class DirectoryScanningAdapterServiceImplTest {
 
-
     @SuppressWarnings("ConstantConditions")
     @Test
     public void test() {
         IbisContext ibisContext = new IbisContext();
-        ibisContext.initContext("/springContextTEST.xml");
-
+        ibisContext.setApplicationServerType("TEST");
+        ibisContext.init();
         String directory = getClass().getClassLoader().getResource("watcheddirectory").getFile();
         System.out.println("Watching " + directory);
         DirectoryScanningAdapterServiceImpl adapterService = new DirectoryScanningAdapterServiceImpl(directory);
-        adapterService.setApplicationContext(ibisContext.getApplicationContext());
-
         assertEquals(1, adapterService.getAdapters().size());
-
         assertEquals("HelloWorld", adapterService.getAdapter("HelloWorld").getName());
     }
-
 
 }

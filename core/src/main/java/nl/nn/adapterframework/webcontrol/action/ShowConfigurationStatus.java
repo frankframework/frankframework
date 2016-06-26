@@ -50,6 +50,7 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -101,21 +102,53 @@ public final class ShowConfigurationStatus extends ActionBase {
 		if (configurationName == null) {
 			configurationName = (String)request.getSession().getAttribute("configurationName");
 		}
-		if (configurationName == null || configurationName.equalsIgnoreCase(CONFIG_ALL)) {
+		if (configurationName == null
+				|| configurationName.equalsIgnoreCase(CONFIG_ALL)
+				|| ibisManager.getConfiguration(configurationName) == null) {
 			registeredAdapters = ibisManager.getRegisteredAdapters();
 			request.getSession().setAttribute("configurationName", CONFIG_ALL);
 		} else {
 			configurationSelected = ibisManager.getConfiguration(configurationName);
-			if (configurationSelected == null) {
-				configurationSelected = ibisManager.getConfiguration();
-			}
-			if (configurationSelected == null) {
-				return (mapping.findForward("noconfig"));
-			}
 			registeredAdapters = configurationSelected.getRegisteredAdapters();
 			request.getSession().setAttribute("configurationName", configurationSelected.getConfigurationName());
 		}
-		
+
+		XmlBuilder adapters=new XmlBuilder("registeredAdapters");
+
+		XmlBuilder configurationMessages=new XmlBuilder("configurationMessages");
+		int countConfigurationMessagesInfo=0;
+		int countConfigurationMessagesWarn=0;
+		int countConfigurationMessagesError=0;
+		MessageKeeper messageKeeper;
+		if (configurationSelected != null) {
+			messageKeeper = ibisManager.getIbisContext().getMessageKeeper(configurationSelected.getName());
+		} else {
+			messageKeeper = ibisManager.getIbisContext().getMessageKeeper("*ALL*");
+		}
+
+		for (int t=0; t<messageKeeper.size(); t++) {
+			XmlBuilder configurationMessage=new XmlBuilder("configurationMessage");
+			String msg = messageKeeper.getMessage(t).getMessageText();
+			if (maxMessageSize>0 && msg.length()>maxMessageSize) {
+				msg = msg.substring(0, maxMessageSize) + "...(" + (msg.length()-maxMessageSize) + " characters more)";
+			}
+			configurationMessage.setValue(msg,true);
+			configurationMessage.addAttribute("date", DateUtils.format(messageKeeper.getMessage(t).getMessageDate(), DateUtils.FORMAT_FULL_GENERIC));
+			String level = messageKeeper.getMessage(t).getMessageLevel();
+			configurationMessage.addAttribute("level", level);
+			configurationMessages.addSubElement(configurationMessage);
+			if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
+				countConfigurationMessagesError++;
+			} else {
+				if (level.equals(MessageKeeperMessage.WARN_LEVEL)) {
+					countConfigurationMessagesWarn++;
+				} else {
+					countConfigurationMessagesInfo++;
+				}
+			}
+		}
+		adapters.addSubElement(configurationMessages);
+
 		long esr = 0;
 		if (showCountErrorStore) {
 			for(Iterator adapterIt=registeredAdapters.iterator(); adapterIt.hasNext();) {
@@ -137,7 +170,6 @@ public final class ShowConfigurationStatus extends ActionBase {
 			esr = -1;
 		}
 
-		XmlBuilder adapters=new XmlBuilder("registeredAdapters");
 		if (configurationSelected!=null) {
 			XmlBuilder exceptionsXML=getConfigurationExceptionsAsXml(configurationSelected);
 			if (exceptionsXML!=null) {

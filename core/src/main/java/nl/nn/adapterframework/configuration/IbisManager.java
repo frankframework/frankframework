@@ -38,13 +38,6 @@ public interface IbisManager {
 
     void addConfiguration(Configuration configuration);
 
-    /**
-     * Get the Configuration, for querying and display of it's contents.
-     * 
-     * @return IBIS Configuration
-     */
-    Configuration getConfiguration();
-
     List<Configuration> getConfigurations();
 
     Configuration getConfiguration(String configurationName);
@@ -62,16 +55,24 @@ public interface IbisManager {
      */
     void startConfiguration(Configuration configuration);
     /**
+     * Unload specified configuration.
+     */
+    void unload(String configurationName);
+    /**
      * Shut down the IBIS instance. After execution of this method, the IBIS
      * instance is not useable anymore: it will need to be recreated.
      */
-    void shutdownIbis();
+    void shutdown();
     /**
-     * Start all adapters of the IBIS instance.
+     * Start all adapters of configuration.
      */
     void startAdapters(Configuration configuration);
     /**
      * Stop all adapters of the IBIS instance.
+     */
+    void stopAdapters();
+    /**
+     * Stop all adapters of configuration.
      */
     void stopAdapters(Configuration configuration);
     /**

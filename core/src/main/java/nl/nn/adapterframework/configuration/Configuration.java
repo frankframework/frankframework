@@ -15,10 +15,18 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -28,13 +36,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.StringResolver;
 
-import java.net.URL;
-import java.util.*;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -64,8 +66,6 @@ public class Configuration {
     private String loadedConfiguration;
     private StatisticsKeeperIterationHandler statisticsHandler=null;
 
-    private AppConstants appConstants;
-
     private ConfigurationException configurationException=null;
     private BaseConfigurationWarnings configurationWarnings = new BaseConfigurationWarnings();
 
@@ -75,7 +75,7 @@ public class Configuration {
 	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
 		Object root = hski.start(now,mainMark,detailMark);
 		try {
-			Object groupData=hski.openGroup(root,appConstants.getString("instance.name",""),"instance");
+			Object groupData=hski.openGroup(root,AppConstants.getInstance().getString("instance.name",""),"instance");
 			for (Map.Entry<String, IAdapter> entry : adapterService.getAdapters().entrySet()) {
 				IAdapter adapter = entry.getValue();
 				adapter.forEachStatisticsKeeperBody(hski,groupData,action);
@@ -137,10 +137,6 @@ public class Configuration {
         this(new BasicAdapterServiceImpl());
         this.configurationURL = configurationURL;
         this.digesterRulesURL = digesterRulesURL;
-
-    }
-    protected void init() {
-		log.info(VersionInfo());
     }
 
 	public ClassLoader getClassLoader() {
@@ -249,25 +245,6 @@ public class Configuration {
 		handler.configure();
 	}
 
-    public String getInstanceInfo() {
-		String instanceInfo=appConstants.getProperty("application.name")+" "+
-							appConstants.getProperty("application.version")+" "+
-							appConstants.getProperty("instance.name")+" "+
-							appConstants.getProperty("instance.version")+" ";
-		String buildId=	appConstants.getProperty("instance.build_id");
-		if (StringUtils.isNotEmpty(buildId)) {
-			instanceInfo+=" build "+buildId;
-		}
-		return instanceInfo;
-    }
-
-    public String VersionInfo() {
-    	StringBuilder sb = new StringBuilder();
-    	sb.append(getInstanceInfo()+SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.util.XmlUtils.getVersionInfo());
-    	return sb.toString();
-    }
-
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -342,14 +319,6 @@ public class Configuration {
 
 	public List<JobDef> getScheduledJobs() {
 		return scheduledJobs;
-	}
-
-	public void setAppConstants(AppConstants constants) {
-		appConstants = constants;
-	}
-
-	public AppConstants getAppConstants() {
-		return appConstants;
 	}
 
 	public void setConfigurationException(ConfigurationException exception) {

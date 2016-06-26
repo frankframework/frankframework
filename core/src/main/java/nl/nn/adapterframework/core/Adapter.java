@@ -161,12 +161,10 @@ public class Adapter implements IAdapter, NamedBean {
 			messageKeeper.add(msg, MessageKeeperMessage.ERROR_LEVEL);
 			throw new ConfigurationException(msg);
 		}
-
 		try {
 			pipeline.setAdapter(this);
 			pipeline.configure();
-
-			messageKeeper.add("pipeline successfully configured");
+			messageKeeper.add("Adapter [" + name + "] pipeline successfully configured");
 			Iterator it = receivers.iterator();
 			while (it.hasNext()) {
 				IReceiver receiver = (IReceiver) it.next();
@@ -184,7 +182,7 @@ public class Adapter implements IAdapter, NamedBean {
 		receiver.setAdapter(this);
 		try {
 			receiver.configure();
-			messageKeeper.add("receiver [" + receiver.getName() + "] successfully configured");
+			messageKeeper.add("Receiver [" + receiver.getName() + "] successfully configured");
 		} catch (ConfigurationException e) {
 			error(true, "error initializing receiver [" + receiver.getName() + "]",e);
 		}
@@ -307,7 +305,7 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * the MessageKeeper is for keeping the last <code>messageKeeperSize</code>
 	 * messages available, for instance for displaying it in the webcontrol
-	* @see nl.nn.adapterframework.util.MessageKeeper
+	 * @see nl.nn.adapterframework.util.MessageKeeper
 	 */
 	public synchronized MessageKeeper getMessageKeeper() {
 		if (messageKeeper == null)
@@ -736,7 +734,7 @@ public class Adapter implements IAdapter, NamedBean {
                     // regardless of receivers are correctly started.
                     runState.setRunState(RunStateEnum.STARTED);
 
-                    getMessageKeeper().add("Adapter up and running");
+                    getMessageKeeper().add("Adapter [" + getName() + "] up and running");
                     log.info("Adapter [" + getName() + "] up and running");
 
                     // starting receivers
