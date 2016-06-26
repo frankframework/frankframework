@@ -14,7 +14,6 @@ public class DirectoryScanningAdapterServiceImplTest {
     @Test
     public void test() {
         IbisContext ibisContext = new IbisContext();
-        ibisContext.setApplicationServerType("TEST");
         ibisContext.init();
         String directory = getClass().getClassLoader().getResource("watcheddirectory").getFile();
         System.out.println("Watching " + directory);

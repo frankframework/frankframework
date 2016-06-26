@@ -55,18 +55,40 @@ import org.springframework.core.env.StandardEnvironment;
  * @since 4.8
  */
 public class IbisContext {
-	private final static Logger log = LogUtil.getLogger(IbisContext.class);
-
-	public static final String APPLICATION_SERVER_TYPE = "application.server.type";
-
-	private AppConstants appConstants = AppConstants.getInstance();
-	private String instanceName = appConstants.getResolvedProperty("instance.name");
-	private String configurations = appConstants.getResolvedProperty("configurations.names.application");
-	private static String applicationServerType = null;
-	private String springContextFileName = null;
+	private final static Logger LOG = LogUtil.getLogger(IbisContext.class);
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private static final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
+	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
+	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
+	private static final String APPLICATION_SERVER_TYPE;
+	static {
+		String applicationServerType = APP_CONSTANTS.getString(
+				APPLICATION_SERVER_TYPE_PROPERTY, null);
+		if (applicationServerType != null) {
+			if (applicationServerType.equalsIgnoreCase("WAS5")
+					|| applicationServerType.equalsIgnoreCase("WAS6")) {
+				ConfigurationWarnings configWarnings = ConfigurationWarnings
+						.getInstance();
+				String msg = "implementing value [" + applicationServerType
+						+ "] of property [" + APPLICATION_SERVER_TYPE_PROPERTY
+						+ "] as [WAS]";
+				configWarnings.add(LOG, msg);
+				applicationServerType = "WAS";
+			} else if (applicationServerType.equalsIgnoreCase("TOMCAT6")) {
+				ConfigurationWarnings configWarnings = ConfigurationWarnings
+						.getInstance();
+				String msg = "implementing value [" + applicationServerType
+						+ "] of property [" + APPLICATION_SERVER_TYPE_PROPERTY
+						+ "] as [TOMCAT]";
+				configWarnings.add(LOG, msg);
+				applicationServerType = "TOMCAT";
+			}
+		}
+		APPLICATION_SERVER_TYPE = applicationServerType;
+	}
+	private static String applicationServerType = APPLICATION_SERVER_TYPE;
 	private ApplicationContext applicationContext;
 	private IbisManager ibisManager;
-
 	private Map<String, MessageKeeper> messageKeepers = new HashMap<String, MessageKeeper>();
 	private int messageKeeperSize = 10;
 
@@ -137,7 +159,7 @@ public class IbisContext {
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
-		propertySources.addFirst(new PropertiesPropertySource("ibis", AppConstants.getInstance()));
+		propertySources.addFirst(new PropertiesPropertySource("ibis", APP_CONSTANTS));
 		applicationContext.setConfigLocation(springContext);
 		applicationContext.refresh();
 		log("create Spring ApplicationContext complete");
@@ -151,35 +173,35 @@ public class IbisContext {
 	private void load(String configurationName) {
 		boolean configFound = false;
 		boolean configLogAppend = false;
-		StringTokenizer tokenizer = new StringTokenizer(configurations, ",");
+		StringTokenizer tokenizer = new StringTokenizer(CONFIGURATIONS, ",");
 		while (tokenizer.hasMoreTokens()) {
 			String currentConfigurationName = tokenizer.nextToken();
 			if (configurationName == null
 					|| configurationName.equals(currentConfigurationName)) {
 				configFound = true;
-				String configurationFile = appConstants.getResolvedProperty(
+				String configurationFile = APP_CONSTANTS.getResolvedProperty(
 						"configurations." + currentConfigurationName + ".configurationFile");
 				if (configurationFile == null) {
 					configurationFile = "Configuration.xml";
-					if (!currentConfigurationName.equals(instanceName)) {
+					if (!currentConfigurationName.equals(INSTANCE_NAME)) {
 						configurationFile = currentConfigurationName + "/" + configurationFile;
 					}
 				}
 				ClassLoader classLoader = null;
 				ConfigurationException customClassLoaderConfigurationException = null;
-				String classLoaderType = appConstants.getResolvedProperty(
+				String classLoaderType = APP_CONSTANTS.getResolvedProperty(
 						"configurations." + currentConfigurationName + ".classLoaderType");
 				try {
 					if ("DirectoryClassLoader".equals(classLoaderType)) {
-						String directory = appConstants.getResolvedProperty(
+						String directory = APP_CONSTANTS.getResolvedProperty(
 								"configurations." + currentConfigurationName + ".directory");
 						classLoader = new DirectoryClassLoader(directory);
 					} else if ("JarFileClassLoader".equals(classLoaderType)) {
-						String jar = appConstants.getResolvedProperty(
+						String jar = APP_CONSTANTS.getResolvedProperty(
 								"configurations." + currentConfigurationName + ".jar");
 						classLoader = new JarFileClassLoader(jar, currentConfigurationName);
 					} else if ("ServiceClassLoader".equals(classLoaderType)) {
-						String adapterName = appConstants.getResolvedProperty(
+						String adapterName = APP_CONSTANTS.getResolvedProperty(
 								"configurations." + currentConfigurationName + ".adapterName");
 						classLoader = new ServiceClassLoader(ibisManager, adapterName, currentConfigurationName);
 					} else if ("DatabaseClassLoader".equals(classLoaderType)) {
@@ -244,7 +266,7 @@ public class IbisContext {
 		}
 		if (!configFound) {
 			log(configurationName, configurationName + " not found in '"
-					+ configurations + "'", MessageKeeperMessage.ERROR_LEVEL);
+					+ CONFIGURATIONS + "'", MessageKeeperMessage.ERROR_LEVEL);
 		}
 	}
 
@@ -284,14 +306,14 @@ public class IbisContext {
 		if (configurationName != null) {
 			m = "Configuration [" + configurationName + "] " + message;
 		} else {
-			m = "IAF [" + instanceName + "] " + message;
+			m = "IAF [" + INSTANCE_NAME + "] " + message;
 		}
 		if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
-			log.info(m, e);
+			LOG.info(m, e);
 		} else if (level.equals(MessageKeeperMessage.WARN_LEVEL)) {
-			log.warn(m, e);
+			LOG.warn(m, e);
 		} else {
-			log.info(m, e);
+			LOG.info(m, e);
 		}
 		if (e != null) {
 			m = m + ": " + e.getMessage();
@@ -316,11 +338,11 @@ public class IbisContext {
 	}
 
 	public String getVersionInfo() {
-		String versionInfo = appConstants.getProperty("application.name") + " "
-				+ appConstants.getProperty("application.version") + " "
-				+ appConstants.getProperty("instance.name") + " "
-				+ appConstants.getProperty("instance.version");
-		String buildId = appConstants.getProperty("instance.build_id");
+		String versionInfo = APP_CONSTANTS.getProperty("application.name") + " "
+				+ APP_CONSTANTS.getProperty("application.version") + " "
+				+ APP_CONSTANTS.getProperty("instance.name") + " "
+				+ APP_CONSTANTS.getProperty("instance.version");
+		String buildId = APP_CONSTANTS.getProperty("instance.build_id");
 		if (StringUtils.isNotEmpty(buildId)) {
 			versionInfo += " " + buildId;
 		}
@@ -332,46 +354,25 @@ public class IbisContext {
 		ibisContext.init();
 	}
 
-	public void setSpringContextFileName(String springContextFileName) {
-		this.springContextFileName = springContextFileName;
-	}
-
 	public String getSpringContextFileName() {
-		if (springContextFileName == null) {
-			springContextFileName = "/springContext" + getApplicationServerType() + ".xml";
-		}
-		return springContextFileName;
+		return "/springContext" + getApplicationServerType() + ".xml";
 	}
 
-	public void setApplicationServerType(String string) {
-		applicationServerType = string;
+	@SuppressWarnings("static-access")
+	public void setApplicationServerType(String applicationServerType) {
+		if (applicationServerType.equals(APPLICATION_SERVER_TYPE)) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings
+					.getInstance();
+			String msg = "value [" + applicationServerType
+					+ "] of property ["
+					+ APPLICATION_SERVER_TYPE_PROPERTY
+					+ "] is already the retrieved value";
+			configWarnings.add(LOG, msg);
+		}
+		this.applicationServerType = applicationServerType;
 	}
 
 	public static String getApplicationServerType() {
-		if (applicationServerType == null) {
-			applicationServerType = AppConstants.getInstance().getString(
-					APPLICATION_SERVER_TYPE, null);
-			if (applicationServerType != null) {
-				if (applicationServerType.equalsIgnoreCase("WAS5")
-						|| applicationServerType.equalsIgnoreCase("WAS6")) {
-					ConfigurationWarnings configWarnings = ConfigurationWarnings
-							.getInstance();
-					String msg = "implementing value [" + applicationServerType
-							+ "] of property [" + APPLICATION_SERVER_TYPE
-							+ "] as [WAS]";
-					configWarnings.add(log, msg);
-					applicationServerType = "WAS";
-				} else if (applicationServerType.equalsIgnoreCase("TOMCAT6")) {
-					ConfigurationWarnings configWarnings = ConfigurationWarnings
-							.getInstance();
-					String msg = "implementing value [" + applicationServerType
-							+ "] of property [" + APPLICATION_SERVER_TYPE
-							+ "] as [TOMCAT]";
-					configWarnings.add(log, msg);
-					applicationServerType = "TOMCAT";
-				}
-			}
-		}
 		return applicationServerType;
 	}
 

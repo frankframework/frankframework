@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -34,7 +33,6 @@ import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 
 /**
  * Start IAF with a servlet.
@@ -46,12 +44,13 @@ public class ConfigurationServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private Logger log = LogUtil.getLogger(this);
 	public static final String KEY_CONTEXT = "KEY_CONTEXT";
+	IbisContext ibisContext;
 
 	@Override
 	public void init() throws ServletException {
 		super.init();
 		setUploadPathInServletContext();
-		IbisContext ibisContext = new IbisContext();
+		ibisContext = new IbisContext();
 		setApplicationServerType(ibisContext);
 		ServletContext servletContext = getServletContext();
 		AppConstants appConstants = AppConstants.getInstance();
@@ -65,10 +64,25 @@ public class ConfigurationServlet extends HttpServlet {
 
 	@Override
 	public void destroy() {
-		ServletContext servletContext = getServletContext();
-		IbisContext ibisContext = (IbisContext)servletContext.getAttribute(AppConstants.getInstance().getResolvedProperty(KEY_CONTEXT));
 		ibisContext.destroy();
 		super.destroy();
+	}
+
+	private void setUploadPathInServletContext() {
+		try {
+			// set the directory for struts upload, that is used for instance in 'test a pipeline'
+			ServletContext context = getServletContext();
+			String path=AppConstants.getInstance().getResolvedProperty("upload.dir");
+			// if the path is not found
+			if (StringUtils.isEmpty(path)) {
+				path="/tmp";
+			}
+			log.debug("setting path for Struts file-upload to ["+path+"]");
+			File tempDirFile = new File(path);
+			context.setAttribute("javax.servlet.context.tempdir",tempDirFile);
+		} catch (Exception e) {
+			log.error("Could not set servlet context attribute 'javax.servlet.context.tempdir' to value of ${upload.dir}",e);
+		}
 	}
 
 	private void setApplicationServerType(IbisContext ibisContext) {
@@ -93,38 +107,7 @@ public class ConfigurationServlet extends HttpServlet {
 			log.warn("Unknown server info [" + serverInfo + "]");
 			applicationServerType = "UNKNOWN";
 		}
-		String applicationServerTypeDefault = IbisContext
-				.getApplicationServerType();
-		if (applicationServerTypeDefault != null) {
-			if (applicationServerType.equals(applicationServerTypeDefault)) {
-				ConfigurationWarnings configWarnings = ConfigurationWarnings
-						.getInstance();
-				String msg = "value [" + applicationServerType
-						+ "] of property ["
-						+ IbisContext.APPLICATION_SERVER_TYPE
-						+ "] is already the retrieved value";
-				configWarnings.add(log, msg);
-			}
-		} else {
-			ibisContext.setApplicationServerType(applicationServerType);
-		}
-	}
-
-	private void setUploadPathInServletContext() {
-		try {
-			// set the directory for struts upload, that is used for instance in 'test a pipeline'
-			ServletContext context = getServletContext();
-			String path=AppConstants.getInstance().getResolvedProperty("upload.dir");
-			// if the path is not found
-			if (StringUtils.isEmpty(path)) {
-				path="/tmp";
-			}
-			log.debug("setting path for Struts file-upload to ["+path+"]");
-			File tempDirFile = new File(path);
-			context.setAttribute("javax.servlet.context.tempdir",tempDirFile);
-		} catch (Exception e) {
-			log.error("Could not set servlet context attribute 'javax.servlet.context.tempdir' to value of ${upload.dir}",e);
-		}
+		ibisContext.setApplicationServerType(applicationServerType);
 	}
 
 	@Override
