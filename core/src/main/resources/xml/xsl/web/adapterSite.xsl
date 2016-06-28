@@ -472,6 +472,7 @@
 			<xsl:when test="@type='flow'"				>images/flow.gif</xsl:when>
 			<xsl:when test="@type='move'"				>images/move.gif</xsl:when>
 			<xsl:when test="@type='reload'"				>images/reload.gif</xsl:when>
+			<xsl:when test="@type='fullreload'"			>images/fullreload.gif</xsl:when>
 
 			<xsl:when test="@type='started'"			>images/connected.gif</xsl:when>
 			<xsl:when test="@type='starting'"			>images/connecting.gif</xsl:when>
