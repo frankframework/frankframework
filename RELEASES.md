@@ -72,6 +72,7 @@ Upcoming
 - Add messages about (configuration) startup and shutdown to IBIS console below summary
 - Fix shutdown
 - First steps towards generating flow images real time
+- Larva: Add .diffType
 
 
 

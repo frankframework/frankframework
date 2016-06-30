@@ -2353,7 +2353,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static boolean executeXsltProviderListenerWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileName, String fileContent, Properties properties) {
+	private static boolean executeXsltProviderListenerWrite(String step, String stepDisplayName, Map queues, Map writers, String queueName, String fileName, String fileContent, Properties properties) {
 		boolean result = false;
 		Map xsltProviderListenerInfo = (Map)queues.get(queueName);
 		XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
@@ -2365,14 +2365,14 @@ public class TestTool {
 				errorMessage("Could not read result (null returned)", writers);
 			}
 		} else {
-			if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+			if (compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
 				result = true;
 			}
 		}
 		return result;
 	}
 	
-	private static boolean executeJmsListenerRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+	private static boolean executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
 		boolean result = false;
 
 		Map jmsListenerInfo = (Map)queues.get(queueName);
@@ -2408,7 +2408,7 @@ public class TestTool {
 				errorMessage("Could not read jms message (null returned)", writers);
 			}
 		} else {
-			if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+			if (compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
 				result = true;
 			}
 		}
@@ -2416,7 +2416,7 @@ public class TestTool {
 		return result;	
 	}
 
-	private static boolean executeSenderRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String senderType, String fileName, String fileContent) {
+	private static boolean executeSenderRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String senderType, String fileName, String fileContent) {
 		boolean result = false;
 	
 		Map senderInfo = (Map)queues.get(queueName);
@@ -2439,7 +2439,7 @@ public class TestTool {
 						if ("".equals(fileName)) {
 							debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
 						} else {
-							if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+							if (compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
 								result = true;
 							}
 						}
@@ -2455,7 +2455,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static boolean executeJavaListenerOrWebServiceListenerRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+	private static boolean executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
 		boolean result = false;
 
 		Map listenerInfo = (Map)queues.get(queueName);
@@ -2479,7 +2479,7 @@ public class TestTool {
 				if ("".equals(fileName)) {
 					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
 				} else {
-					if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+					if (compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
 						result = true;
 					} else {
 						// Send a clean up reply because there is probably a
@@ -2496,7 +2496,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static boolean executeFixedQuerySenderRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+	private static boolean executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
 		boolean result = false;
 		
 		Map querySendersInfo = (Map)queues.get(queueName);
@@ -2550,7 +2550,7 @@ public class TestTool {
 			if ("".equals(fileName)) {
 				debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
 			} else {
-				if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+				if (compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
 					result = true;
 				}
 			}
@@ -2559,7 +2559,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static boolean executeFileListenerRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+	private static boolean executeFileListenerRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
 		boolean result = false;
 		Map fileListenerInfo = (Map)queues.get(queueName);
 		FileListener fileListener = (FileListener)fileListenerInfo.get("fileListener");
@@ -2578,14 +2578,14 @@ public class TestTool {
 				errorMessage("Could not read file (null returned)", writers);
 			}
 		} else {
-			if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+			if (compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
 				result = true;
 			}
 		}
 		return result;	
 	}
 
-	private static boolean executeFileSenderRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+	private static boolean executeFileSenderRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
 		boolean result = false;
 		Map fileSenderInfo = (Map)queues.get(queueName);
 		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
@@ -2604,7 +2604,7 @@ public class TestTool {
 				errorMessage("Could not read file (null returned)", writers);
 			}
 		} else {
-			if (compareResult(stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
+			if (compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
 				result = true;
 			}
 		}
@@ -2656,25 +2656,25 @@ public class TestTool {
 					queueName = step.substring(i + 1, step.length() - 5);
 
 					if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJmsListenerRead(stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);	
+						stepPassed = executeJmsListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);	
 					} else 	if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeFixedQuerySenderRead(stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+						stepPassed = executeFixedQuerySenderRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.http.IbisWebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderRead(stepDisplayName, properties, queues, writers, queueName, "ibisWebService", fileName, fileContent);
+						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "ibisWebService", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderRead(stepDisplayName, properties, queues, writers, queueName, "webService", fileName, fileContent);
+						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "webService", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJavaListenerOrWebServiceListenerRead(stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderRead(stepDisplayName, properties, queues, writers, queueName, "http", fileName, fileContent);
+						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "http", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeSenderRead(stepDisplayName, properties, queues, writers, queueName, "ibisJava", fileName, fileContent);
+						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "ibisJava", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJavaListenerOrWebServiceListenerRead(stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeFileListenerRead(stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+						stepPassed = executeFileListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeFileSenderRead(stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+						stepPassed = executeFileSenderRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeXsltProviderListenerRead(stepDisplayName, properties, queues, writers, queueName, fileContent, createParametersMapFromParamProperties(properties, step, writers, false, null));
 					} else {
@@ -2700,7 +2700,7 @@ public class TestTool {
 					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeFileSenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeXsltProviderListenerWrite(stepDisplayName, queues, writers, queueName, fileName, fileContent, properties);
+						stepPassed = executeXsltProviderListenerWrite(step, stepDisplayName, queues, writers, queueName, fileName, fileContent, properties);
 					} else if ("nl.nn.adapterframework.senders.DelaySender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeDelaySenderWrite(stepDisplayName, queues, writers, queueName, fileContent);
 					} else {
@@ -2844,7 +2844,7 @@ public class TestTool {
 		return encoding;
 	}
 
-	public static boolean compareResult(String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, Map writers, String queueName) {
+	public static boolean compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, Map writers, String queueName) {
 		boolean ok = false;
 		String printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
 		String printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
@@ -3073,7 +3073,9 @@ public class TestTool {
 			}
 		}
 		debugMessage("Check ignoreContentAfterKey properties", writers);
-		if (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")) {
+		String diffType = properties.getProperty(step + ".diffType");
+		if ((diffType != null && (diffType.equals(".xml") || diffType.equals(".wsdl")))
+				|| (diffType == null && (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")))) {
 			// xml diff
 			Diff diff = null;
 			boolean identical = false;
