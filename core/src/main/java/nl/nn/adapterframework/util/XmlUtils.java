@@ -263,6 +263,20 @@ public class XmlUtils {
 			+ "</xsl:stylesheet>";
 	}
 
+	public static String makeCopyOfSelectXslt(String xpath,
+			boolean omitXmlDeclaration, boolean indent) {
+		return "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
+				+ "<xsl:output method=\"xml\" indent=\""
+				+ (indent ? "yes" : "no")
+				+ "\" omit-xml-declaration=\""
+				+ (omitXmlDeclaration ? "yes" : "no")
+				+ "\"/>"
+				+ "<xsl:strip-space elements=\"*\"/>"
+				+ "<xsl:template match=\"/*\">"
+				+ "<xsl:copy-of select=\""
+				+ xpath + "\"/>" + "</xsl:template>" + "</xsl:stylesheet>";
+	}
+
 	public static synchronized boolean isNamespaceAwareByDefault() {
 		if (namespaceAwareByDefault==null) {
 			boolean aware=AppConstants.getInstance().getBoolean(NAMESPACE_AWARE_BY_DEFAULT_KEY, false);
@@ -1472,7 +1486,18 @@ public class XmlUtils {
 			return null;
 		}
 	}
-	
+
+	public static String copyOfSelect(String input, String xpath) {
+		String copyOfSelect_xslt = makeCopyOfSelectXslt(xpath, true, false);
+		try {
+			Transformer t = createTransformer(copyOfSelect_xslt, true);
+			String query = transformXml(t, input);
+			return query;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 	public static Map getIbisContext(String input) {
 		if (input.startsWith("<") && !input.startsWith("<?") && !input.startsWith("<!")) {
 			return null;

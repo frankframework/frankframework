@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,7 +27,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
-import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
@@ -41,8 +41,8 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
-import nl.nn.adapterframework.extensions.esb.EsbJmsSender;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
+import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -60,6 +60,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
@@ -120,6 +121,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setRetryXPath(String) retryXPath}</td><td>xpath expression evaluated on each technical successful reply. Retry is done if condition returns true</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRetryNamespaceDefs(String) retryNamespaceDefs}</td><td>namespace defintions for retryXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUseInputForExtract(boolean) useInputForExtract}</td><td>when set <code>true</code>, the input of a pipe is used to extract audit trail, correlationID and label (instead of the wrapped input)</td><td>true</td></tr>
+ * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is first base64 decoded and then streamed to the HttpServletResponse object which is stored in session key "restListenerServletResponse"</td><td>false</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
@@ -227,6 +229,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	private String hideRegex = null;
 	private String hideMethod = "all";
+
+	private boolean streamResultToServlet=false;
 
 	protected void propagateName() {
 		ISender sender=getSender();
@@ -688,7 +692,18 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			}
 			log.debug(getLogPrefix(session)+"response after wrapping [" + result + "]");
 		}
-		return new PipeRunResult(getForward(), result);
+
+		if (isStreamResultToServlet()) {
+			byte[] bytes = Base64.decodeBase64(new String(result));
+			try {
+				RestListenerUtils.retrieveServletOutputStream(session).write(bytes);
+			} catch (IOException e) {
+				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", e);
+			}
+			return new PipeRunResult(getForward(), "");
+		} else {
+			return new PipeRunResult(getForward(), result);
+		}
 	}
 
 	private boolean validResult(String result) {
@@ -1115,5 +1130,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	public String getHideMethod() {
 		return hideMethod;
+	}
+
+	public void setStreamResultToServlet(boolean b) {
+		streamResultToServlet = b;
+	}
+	public boolean isStreamResultToServlet() {
+		return streamResultToServlet;
 	}
 }

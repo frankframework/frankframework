@@ -96,7 +96,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setTestCanWrite(boolean) testCanWrite}</td><td>when set to <code>true</code>, a test is performed to find out if a temporary file can be created and deleted in the specified directory (only used if directory is set and combined with the action write, write_append or create)</td><td>true</td></tr>
  * <tr><td>{@link #setSkipBOM(boolean) skipBOM}</td><td>when set to <code>true</code>, a possible Bytes Order Mark (BOM) at the start of the file is skipped (only used for the action read and encoding UFT-8)</td><td>false</td></tr>
  * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>(only used when actions=delete) when set to <code>true</code>, the directory from which a file is deleted is also deleted when it contains no other files</td><td>false</td></tr>
- * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code>, <code>bytes</code> or <code>stream</code></td><td>"string"</td></tr>
+ * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code>, <code>bytes</code>, <code>stream</code> or <code>base64</code></td><td>"string"</td></tr>
  * <tr><td>{@link #setFileSource(String) fileSource}</td><td>either <code>filesystem</code> or <code>classpath</code> (only for actions "read" and "info")</td><td>"filesystem"</td></tr>
  * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>(only used when outputType=stream) if set, the result is streamed to the HttpServletResponse object which is stored in session key "restListenerServletResponse"</td><td>false</td></tr>
  * </table>
@@ -177,6 +177,7 @@ public class FileHandler {
 			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
 		if (!outputType.equalsIgnoreCase("string")
 				&& !outputType.equalsIgnoreCase("bytes")
+				&& !outputType.equalsIgnoreCase("base64")
 				&& !outputType.equalsIgnoreCase("stream")) {
 			throw new ConfigurationException(getLogPrefix(null)+"illegal value for outputType ["+outputType+"], must be 'string', 'bytes' or 'stream'");
 		}
@@ -221,7 +222,7 @@ public class FileHandler {
 				}
 			}
 		}
-		if (output == null || "bytes".equals(outputType) || "stream".equals(outputType)) {
+		if (output == null || "bytes".equals(outputType) || "base64".equals(outputType) || "stream".equals(outputType)) {
 			if ("stream".equals(outputType) && isStreamResultToServlet()) {
 				InputStream inputStream = (InputStream) output;
 				HttpServletResponse response = (HttpServletResponse) session.get("restListenerServletResponse");
@@ -238,7 +239,12 @@ public class FileHandler {
 				log.debug(getLogPrefix(session) + "copied response body input stream [" + inputStream + "] to output stream [" + outputStream + "]");
 				return "";
 			} else {
-				return output;
+				if ("base64".equals(outputType)) {
+					return new String(Base64.encodeBase64((byte[]) output),
+							charset);
+				} else {
+					return output;
+				}
 			}
 		} else {
 			return new String((byte[])output, charset);

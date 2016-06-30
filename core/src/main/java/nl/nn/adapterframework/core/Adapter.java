@@ -38,7 +38,9 @@ import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.MsgLogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
+import nl.nn.adapterframework.util.XmlUtils;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
@@ -855,6 +857,19 @@ public class Adapter implements IAdapter, NamedBean {
 
 		return sb.toString();
 	}
+
+	public String getAdapterConfigurationAsString()
+			throws ConfigurationException {
+		String loadedConfig = getConfiguration().getLoadedConfiguration();
+		String encodedName = StringUtils.replace(getName(), "'", "''");
+		String xpath = "//adapter[@name='" + encodedName + "']";
+		try {
+			return XmlUtils.copyOfSelect(loadedConfig, xpath);
+		} catch (Exception e) {
+			throw new ConfigurationException(e);
+		}
+	}
+	
 	public void waitForNoMessagesInProcess() throws InterruptedException {
 		synchronized (statsMessageProcessingDuration) {
 			while (getNumOfMessagesInProcess() > 0) {
