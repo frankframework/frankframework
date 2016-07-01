@@ -97,6 +97,7 @@
 				<subHeader align="center">ERROR messages</subHeader>
 				<subHeader>Actions</subHeader>
 			</tr>
+			<xtags:variable id="configFlowUrl" select="'images/flow/IBIS.svg'"/>
 			<tr>
 				<subHeader>Adapters</subHeader>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/adapterState/@started"/></td>
@@ -144,7 +145,7 @@
 						</imagelink>
 					<% } %>
 					<imagelink
-						href="images/flow/IBIS.svg"
+						href="<%=configFlowUrl %>"
 						type="flow"
 						alt="show adapter references"
 						newwindow="true"
@@ -201,8 +202,8 @@
 						%>
 							<td rowspan="<%= nrOfConfigurationMessages %>" width="200"<% if (active) { %> bgcolor="white"<% } %>>
 								<% if (active) { %>
-									<a href="images/flow/IBIS.svg" newwindow="true">
-										<img src="images/flow/IBIS.svg" title="IBIS adapter references" width="200" height="200"/>
+									<a href="<%=configFlowUrl %>" newwindow="true">
+										<img src="<%=configFlowUrl %>" title="IBIS adapter references" width="200" height="200"/>
 									</a>
 								<% } %>
 							</td>
@@ -217,6 +218,8 @@
 	<xtags:forEach select="//registeredAdapters">
 
 		<xtags:forEach select="adapter" sort="@nameUC">
+			<xtags:variable id="adapterName" select="@name"/>
+			<% String adapterFlowUrl = "images/flow/" + FileUtils.encodeFileName(adapterName) + ".svg"; %>
 			<br/>
 			<contentTable width="100%">
 				<tbody>
@@ -258,7 +261,6 @@
 						<td align="right"><xtags:valueOf select="@messagesInError"/></td>
 						<td align="right"><xtags:valueOf select="@messagesProcessed"/>/<xtags:valueOf select="@messagesInProcess"/></td>
 						<td>
-							<xtags:variable id="adapterName" select="@name"/>
 							<xtags:variable id="adapterIsStarted" select="@started"/>
 							<imagelinkMenu>
 								<% if (RunStateEnum.STOPPED.isState(adapterState)){ %>
@@ -288,7 +290,7 @@
 										<parameter name="adapterName"><%=java.net.URLEncoder.encode(adapterName)%></parameter>
 									 </imagelink>
 									<imagelink
-										href="images/flow/<%=FileUtils.encodeFileName(adapterName)%>.svg"
+										href="<%=adapterFlowUrl %>"
 										type="flow"
 										alt="show Adapter Flow"
 										newwindow="true"
@@ -527,8 +529,8 @@
 								%>
 									<td rowspan="<%= nrOfAdapterMessages %>" width="200"<% if (active) { %> bgcolor="white"<% } %>>
 										<% if (active) { %>
-											<a href="images/flow/<%=FileUtils.encodeFileName(adapterName)%>.svg" newwindow="true">
-												<img src="images/flow/<%=FileUtils.encodeFileName(adapterName)%>.svg" title="<%=adapterName%>" width="200" height="200"/>
+											<a href="<%=adapterFlowUrl %>" newwindow="true">
+												<img src="<%=adapterFlowUrl %>" title="<%=adapterName%>" width="200" height="200"/>
 											</a>
 										<% } %>
 									</td>

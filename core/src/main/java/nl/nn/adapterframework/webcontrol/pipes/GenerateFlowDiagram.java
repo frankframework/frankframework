@@ -62,9 +62,9 @@ public class GenerateFlowDiagram extends TimeoutGuardPipe {
 		String[] split = uri.split("/");
 		String adapterName = null;
 		if (split.length > 2) {
-			adapterName = StringUtils.substringBeforeLast(split[2], ".");
+			adapterName = split[2];
 		}
-		if (StringUtils.isNotEmpty(adapterName) && !adapterName.equals("*")) {
+		if (StringUtils.isNotEmpty(adapterName)) {
 			adapterName = java.net.URLDecoder.decode(adapterName);
 			IAdapter iAdapter = ibisManager.getRegisteredAdapter(adapterName);
 			if (iAdapter == null) {
@@ -83,6 +83,10 @@ public class GenerateFlowDiagram extends TimeoutGuardPipe {
 		} else {
 			String result;
 			String configurationName = (String) session.get("configuration");
+			if (StringUtils.isNotEmpty(configurationName)) {
+				configurationName = java.net.URLDecoder
+						.decode(configurationName);
+			}
 			if (StringUtils.isEmpty(configurationName)
 					|| configurationName.equalsIgnoreCase("*ALL*")) {
 				result = "<configs>";

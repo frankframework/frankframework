@@ -696,7 +696,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		if (isStreamResultToServlet()) {
 			byte[] bytes = Base64.decodeBase64(new String(result));
 			try {
-				RestListenerUtils.retrieveServletOutputStream(session).write(bytes);
+				String contentType = (String) session.get("contentType");
+				if (StringUtils.isNotEmpty(contentType)) {
+					RestListenerUtils.setResponseContentType(session, contentType);
+				}
+				RestListenerUtils.writeToResponseOutputStream(session, bytes);
 			} catch (IOException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", e);
 			}

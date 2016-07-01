@@ -23,7 +23,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -74,6 +73,11 @@ public class RestListenerUtils {
 			return request.getRequestURL().toString();
 		}
 		return null;
+	}
+
+	public static void writeToResponseOutputStream(IPipeLineSession session,
+			byte[] bytes) throws IOException {
+		retrieveServletOutputStream(session).write(bytes);
 	}
 
 	public static void setResponseContentType(IPipeLineSession session,

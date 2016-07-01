@@ -56,10 +56,15 @@
 				name="WebControlGenerateFlowDiagram" uriPattern="generateFlowDiagram"
 				view="false" />
 		</receiver>
-		<pipeline firstPipe="getCacheKey">
+		<pipeline firstPipe="setContentType">
 			<exits>
 				<exit state="success" path="EXIT" />
 			</exits>
+
+			<pipe name="setContentType" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="contentType" value="image/svg+xml">
+				<forward name="success" path="getCacheKey" />
+			</pipe>
 
 			<pipe name="getCacheKey" className="nl.nn.adapterframework.pipes.XsltPipe"
 				xpathExpression="concat($uri, '/', $config)" getInputFromFixedValue="&lt;dummy/&gt;"
