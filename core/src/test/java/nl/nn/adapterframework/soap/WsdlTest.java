@@ -1,11 +1,31 @@
 package nl.nn.adapterframework.soap;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+
+import javax.naming.NamingException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.http.WebServiceListener;
-import nl.nn.adapterframework.pipes.WsdlXmlValidator;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.pipes.XmlValidatorTest;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -13,6 +33,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.JavaxXmlValidator;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
+
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -22,22 +43,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-
-import javax.naming.NamingException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamException;
-import java.io.*;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 
 /**
@@ -187,6 +192,8 @@ public class WsdlTest {
         when(simple.getOutputValidator()).thenReturn(outputValidator);
         Adapter adp = mock(Adapter.class);
         when(simple.getAdapter()).thenReturn(adp);
+        Configuration cfg = mock(Configuration.class);
+        when(simple.getAdapter().getConfiguration()).thenReturn(cfg);
         final ReceiverBase receiverBase = mock(ReceiverBase.class);
         WebServiceListener listener = new WebServiceListener();
         listener.setServiceNamespaceURI(targetNamespace);
