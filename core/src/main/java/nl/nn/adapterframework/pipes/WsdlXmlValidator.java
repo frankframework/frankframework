@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,6 +41,7 @@ import nl.nn.javax.wsdl.WSDLException;
 import nl.nn.javax.wsdl.extensions.ExtensibilityElement;
 import nl.nn.javax.wsdl.extensions.schema.Schema;
 import nl.nn.javax.wsdl.factory.WSDLFactory;
+import nl.nn.javax.wsdl.xml.WSDLLocator;
 import nl.nn.javax.wsdl.xml.WSDLReader;
 import nl.nn.javax.xml.namespace.QName;
 
@@ -84,16 +86,22 @@ public class WsdlXmlValidator extends SoapValidator {
 
 	public void setWsdl(String wsdl) throws ConfigurationException {
 		this.wsdl = wsdl;
-		URL url = ClassUtils.getResourceURL(classLoader, wsdl);
-		if (url == null) {
+		WSDLReader reader  = FACTORY.newWSDLReader();
+		reader.setFeature("javax.wsdl.verbose", false);
+		reader.setFeature("javax.wsdl.importDocuments", true);
+		ClassLoaderWSDLLocator wsdlLocator = new ClassLoaderWSDLLocator(classLoader, wsdl);
+		URL url = wsdlLocator.getUrl();
+		if (wsdlLocator.getUrl() == null) {
 			throw new ConfigurationException("Could not find WSDL: " + wsdl);
 		}
 		try {
-			definition = getDefinition(url);
+			definition = reader.readWSDL(wsdlLocator);
 		} catch (WSDLException e) {
-			throw new ConfigurationException("WSDLException reading WSDL from '" + url + "'", e);
-		} catch (IOException e) {
-			throw new ConfigurationException("IOException reading WSDL from '" + url + "'", e);
+			throw new ConfigurationException("WSDLException reading WSDL or import from url: " + url, e);
+		}
+		if (wsdlLocator.getIOException() != null) {
+			throw new ConfigurationException("IOException reading WSDL or import from url: " + url,
+					wsdlLocator.getIOException());
 		}
 	}
 
@@ -122,15 +130,6 @@ public class WsdlXmlValidator extends SoapValidator {
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session), e);
 		}
-	}
-
-	protected static Definition getDefinition(URL url) throws WSDLException, IOException {
-		InputSource source = new InputSource(url.openStream());
-		source.setSystemId(url.toString());
-		WSDLReader reader  = FACTORY.newWSDLReader();
-		reader.setFeature("javax.wsdl.verbose",         false);
-		reader.setFeature("javax.wsdl.importDocuments", true);
-		return reader.readWSDL(url.toString(), source);
 	}
 
 	protected static void addNamespaces(Schema schema, Map<String, String> namespaces) {
@@ -218,6 +217,78 @@ public class WsdlXmlValidator extends SoapValidator {
 			xsds.add(xsd);
 		}
 		return xsds;
+	}
+
+}
+
+class ClassLoaderWSDLLocator implements WSDLLocator {
+	private ClassLoader classLoader;
+	private String wsdl;
+	private URL url;
+	private IOException ioException;
+	private String latestImportURI;
+
+	ClassLoaderWSDLLocator(ClassLoader classLoader, String wsdl) {
+		this.classLoader = classLoader;
+		this.wsdl = wsdl;
+		url = ClassUtils.getResourceURL(classLoader, wsdl);
+	}
+
+	public URL getUrl() {
+		return url;
+	}
+
+	public IOException getIOException() {
+		return ioException;
+	}
+
+	public InputSource getBaseInputSource() {
+		return getInputSource(url);
+	}
+
+	public String getBaseURI() {
+		return wsdl;
+	}
+
+	public InputSource getImportInputSource(String parentLocation, String importLocation) {
+		if (parentLocation == null) {
+			parentLocation = wsdl;
+		}
+		int i = parentLocation.lastIndexOf('/');
+		if (i == -1) {
+			latestImportURI = importLocation;
+		} else {
+			latestImportURI = parentLocation.substring(0, i + 1) + importLocation;
+		}
+		return getInputSource(latestImportURI);
+	}
+
+	public String getLatestImportURI() {
+		return latestImportURI;
+	}
+
+	public void close() {
+	}
+
+	private InputSource getInputSource(String resource) {
+		return getInputSource(ClassUtils.getResourceURL(classLoader, resource));
+	}
+
+	private InputSource getInputSource(URL url) {
+		InputStream inputStream = null;
+		if (url != null) {
+			try {
+				inputStream = url.openStream();
+			} catch (IOException e) {
+				ioException = e;
+			}
+		}
+		InputSource source = null;
+		if (inputStream != null) {
+			source = new InputSource(inputStream);
+			source.setSystemId(url.toString());
+		}
+		return source;
 	}
 
 }
