@@ -130,7 +130,7 @@ public class TimeoutGuardPipe extends FixedForwardPipe {
 				throw new PipeRunException(this, msg, e);
 			} else {
 				String msgString = msg + ": " + e.getMessage();
-				log.error(msgString);
+				log.error(msgString, e);
 				String msgCdataString = "<![CDATA[" + msgString + "]]>";
 				result = "<error>" + msgCdataString + "</error>";
 			}
