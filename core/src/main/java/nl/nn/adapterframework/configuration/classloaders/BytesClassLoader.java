@@ -39,7 +39,7 @@ public abstract class BytesClassLoader extends ClassLoader {
 		if (bytes != null) {
 			URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(bytes);
 			try {
-				return new URL(null, "dummy:dummy", urlStreamHandler);
+				return new URL(null, "bytesclassloader:" + name, urlStreamHandler);
 			} catch (MalformedURLException e) {
 				log.error("Could not create url", e);
 			}
