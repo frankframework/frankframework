@@ -402,11 +402,11 @@
         <role-name>IbisObserver</role-name>
     </security-role>
     <security-role>
-        <description>can browse the error queue and resend or delete the messages in it, has all IbisObserver permissions too</description>
+        <description>can browse the error queue and resend or delete the messages in it, reload configurations, has all IbisObserver permissions too</description>
         <role-name>IbisDataAdmin</role-name>
     </security-role>
     <security-role>
-        <description>can start and stop adapters and set schedules, has all IbisDataAdmin permissions too</description>
+        <description>can do a full reload, start and stop adapters and set schedules, has all IbisDataAdmin permissions too</description>
         <role-name>IbisAdmin</role-name>
     </security-role>
     <security-role>

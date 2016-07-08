@@ -3,7 +3,7 @@
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebControlUploadConfig">
 			<listener className="nl.nn.adapterframework.http.RestListener"
-				name="WebControlUploadConfig" uriPattern="uploadConfig" authRoles="IbisAdmin,IbisTester" />
+				name="WebControlUploadConfig" uriPattern="uploadConfig" authRoles="IbisDataAdmin,IbisAdmin,IbisTester" />
 		</receiver>
 		<pipeline firstPipe="doUploadConfig">
 			<exits>
