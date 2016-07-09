@@ -66,14 +66,32 @@ public class UploadConfig extends TimeoutGuardPipe {
 	}
 
 	private String doPost(IPipeLineSession session) throws PipeRunException {
-		String form_name = (String) session.get("name");
-		if (StringUtils.isEmpty(form_name)) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Name cannot be empty");
+		String fileName = (String)session.get("fileName");
+		String name = (String)session.get("name");
+		String version = null;
+		if (StringUtils.isEmpty(name) && StringUtils.isNotEmpty(fileName)) {
+			int i = fileName.lastIndexOf(".");
+			if (i != -1) {
+				name = fileName.substring(0, i);
+				int j = name.lastIndexOf("-");
+				if (j != -1) {
+					name = name.substring(0, j);
+					j = name.lastIndexOf("-");
+					if (j != -1) {
+						name = fileName.substring(0, j);
+						version = fileName.substring(j + 1, i);
+					}
+				}
+			}
 		}
 
-		Object form_file = session.get("file");
-		if (form_file == null) {
+		if (StringUtils.isEmpty(name)) {
+			throw new PipeRunException(this, getLogPrefix(session)
+					+ "Cannot determine configuration name");
+		}
+
+		Object file = session.get("file");
+		if (file == null) {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "Nothing to send or test");
 		}
@@ -89,7 +107,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 			qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG WHERE NAME=?");
 			Parameter param = new Parameter();
 			param.setName("name");
-			param.setSessionKey("name");
+			param.setValue(name);
 			qs.addParameter(param);
 			qs.setScalar(true);
 			qs.configure();
@@ -109,9 +127,31 @@ public class UploadConfig extends TimeoutGuardPipe {
 		}
 
 		if (Integer.parseInt(result) > 0) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Configuration with name[" + form_name
-					+ "] already exists");
+			qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+			try {
+				qs.setName("QuerySender");
+				qs.setJmsRealm(form_jmsRealm);
+				qs.setQuery("DELETE FROM IBISCONFIG WHERE NAME=?");
+				Parameter param = new Parameter();
+				param.setName("name");
+				param.setValue(name);
+				qs.addParameter(param);
+				qs.setScalar(true);
+				qs.configure();
+				qs.open();
+				ParameterResolutionContext prc = new ParameterResolutionContext(
+						"dummy", session);
+				result = qs.sendMessage("dummy", "dummy", prc);
+			} catch (Throwable t) {
+				throw new PipeRunException(this, getLogPrefix(session)
+						+ "Error occured on executing jdbc query", t);
+			} finally {
+				try {
+					qs.close();
+				} catch (SenderException e) {
+					log.warn("Could not close query sender", e);
+				}
+			}
 		}
 
 		/*
@@ -136,7 +176,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 			}
 			Parameter param = new Parameter();
 			param.setName("name");
-			param.setSessionKey("name");
+			param.setValue(name);
 			qs.addParameter(param);
 			param = new Parameter();
 			param.setName("config");

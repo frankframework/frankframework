@@ -73,6 +73,8 @@ Upcoming
 - Fix shutdown
 - First steps towards generating flow images real time
 - Larva: Add .diffType
+- Upgrade commons-fileupload (fix file name always in lower case)
+- Get configuration name from file name when configuration is uploaded
 
 
 
