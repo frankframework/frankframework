@@ -16,15 +16,15 @@
 			<% if (configuration.equals(session.getAttribute("configurationName"))) { %>
 				<image
 					type="showastext"
-					alt="<%=configuration%>"
-					text="<%=configuration%>"
+					alt="<% out.write(XmlUtils.encodeChars(configuration)); %>"
+					text="<% out.write(XmlUtils.encodeChars(configuration)); %>"
 				/>
 			<% } else { %>
 				<imagelink
 					href="showConfigurationStatus.do"
 					type="showastext"
-					alt="<%=configuration%>"
-					text="<%=configuration%>"
+					alt="<% out.write(XmlUtils.encodeChars(configuration)); %>"
+					text="<% out.write(XmlUtils.encodeChars(configuration)); %>"
 					>
 					<parameter name="configuration"><xtags:valueOf select="." /></parameter>
 				</imagelink>
