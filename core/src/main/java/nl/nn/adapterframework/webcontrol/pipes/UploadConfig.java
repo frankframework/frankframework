@@ -170,13 +170,21 @@ public class UploadConfig extends TimeoutGuardPipe {
 			qs.setJmsRealm(form_jmsRealm);
 			qs.setQueryType("insert");
 			if (StringUtils.isEmpty(remoteUser)) {
-				qs.setQuery("INSERT INTO IBISCONFIG (NAME, CONFIG, CRE_TYDST) VALUES (?, ?, CURRENT_TIMESTAMP)");
+				qs.setQuery("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)");
 			} else {
-				qs.setQuery("INSERT INTO IBISCONFIG (NAME, CONFIG, CRE_TYDST, RUSER) VALUES (?, ?, CURRENT_TIMESTAMP, ?)");
+				qs.setQuery("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?)");
 			}
 			Parameter param = new Parameter();
 			param.setName("name");
 			param.setValue(name);
+			qs.addParameter(param);
+			param = new Parameter();
+			param.setName("version");
+			param.setValue(version);
+			qs.addParameter(param);
+			param = new Parameter();
+			param.setName("fileName");
+			param.setValue(fileName);
 			qs.addParameter(param);
 			param = new Parameter();
 			param.setName("config");

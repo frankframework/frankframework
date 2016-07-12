@@ -75,6 +75,7 @@ Upcoming
 - Larva: Add .diffType
 - Upgrade commons-fileupload (fix file name always in lower case)
 - Get configuration name from file name when configuration is uploaded
+- Store configuration version and file name too when configuration is uploaded
 
 
 

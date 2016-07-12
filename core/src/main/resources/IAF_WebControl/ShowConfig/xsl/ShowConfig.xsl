@@ -43,6 +43,8 @@
 					<tr>
 						<th class="colHeader">Actions</th>
 						<th class="colHeader">Name</th>
+						<th class="colHeader">Version</th>
+						<th class="colHeader">Filename</th>
 						<th class="colHeader">Creation timestamp</th>
 						<th class="colHeader">User</th>
 						<th class="colHeader">Config length</th>
@@ -74,6 +76,12 @@
 							</td>
 							<td class="filterRow">
 								<xsl:value-of select="field[@name='NAME']" />
+							</td>
+							<td class="filterRow">
+								<xsl:value-of select="field[@name='VERSION']" />
+							</td>
+							<td class="filterRow">
+								<xsl:value-of select="field[@name='FILENAME']" />
 							</td>
 							<td class="filterRow">
 								<xsl:value-of select="field[@name='CRE_TYDST']" />
