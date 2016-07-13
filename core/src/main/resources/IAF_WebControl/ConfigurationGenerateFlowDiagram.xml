@@ -1,5 +1,5 @@
 <module>
-	<adapter name="WebControlGenerateFlowDiagram_Process">
+	<adapter name="WebControlGenerateFlowDiagram_Process" active="${active.generate.flow}">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebControlGenerateFlowDiagram_Process">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -49,7 +49,7 @@
 		</pipeline>
 	</adapter>
 
-	<adapter name="WebControlGenerateFlowDiagram">
+	<adapter name="WebControlGenerateFlowDiagram" active="${active.generate.flow}">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="WebControlGenerateFlowDiagram">
 			<listener className="nl.nn.adapterframework.http.RestListener"
