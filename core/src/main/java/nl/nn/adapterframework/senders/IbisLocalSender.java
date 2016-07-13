@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -31,6 +32,7 @@ import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
 /**
  * Posts a message to another IBIS-adapter in the same IBIS instance.
@@ -148,7 +150,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		}
 	}
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String result = null;
 		HashMap context = null;
 		if (paramList!=null) {
@@ -178,7 +180,11 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					result = ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), correlationID, message, context);
 				}
 			} catch (ListenerException e) {
-				throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);
+				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
+					throw new TimeOutException(getLogPrefix()+"timeout calling service ["+getServiceName()+"]",e);
+				} else {
+					throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);
+				}
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
@@ -207,7 +213,11 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					result = listener.processRequest(correlationID,message,context);
 				}
 			} catch (ListenerException e) {
-				throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+getJavaListener()+"]",e);
+				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
+					throw new TimeOutException(getLogPrefix()+"timeout calling JavaListener ["+getJavaListener()+"]",e);
+				} else {
+					throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+getJavaListener()+"]",e);
+				}
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
