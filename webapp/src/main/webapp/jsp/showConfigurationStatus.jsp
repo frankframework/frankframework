@@ -5,7 +5,8 @@
 <%@ page import="nl.nn.adapterframework.util.FileUtils" %>
 <%@ page import="nl.nn.adapterframework.util.XmlUtils" %>
 
-<page title="Show configuration status: <% out.write(XmlUtils.replaceNonValidXmlCharacters((String)session.getAttribute("configurationName"))); %>" refresh="showConfigurationStatus.do">
+<page title="Show configuration status: <% out.write(XmlUtils.encodeChars((String)session.getAttribute("configurationName"))); %>" 
+refresh="showConfigurationStatus.do">
 
 	<xtags:parse>
 		<% out.write(XmlUtils.replaceNonValidXmlCharacters(request.getAttribute("configurations").toString())); %>
@@ -26,7 +27,7 @@
 					alt="<% out.write(XmlUtils.encodeChars(configuration)); %>"
 					text="<% out.write(XmlUtils.encodeChars(configuration)); %>"
 					>
-					<parameter name="configuration"><xtags:valueOf select="." /></parameter>
+					<parameter name="configuration"><%=java.net.URLEncoder.encode(configuration)%></parameter>
 				</imagelink>
 			<% } %>
 		</xtags:forEach>
@@ -115,7 +116,7 @@
 						alt="stop all adapters"
 						>
 						<parameter name="action">stopadapter</parameter>
-						<parameter name="configurationName"><% out.write(XmlUtils.replaceNonValidXmlCharacters((String)session.getAttribute("configurationName"))); %></parameter>
+						<parameter name=""><% out.write(XmlUtils.encodeChars((String)session.getAttribute("configurationName"))); %></parameter>
 						<parameter name="adapterName">*ALL*</parameter>
 					</imagelink>
 					<imagelink
@@ -124,7 +125,7 @@
 						alt="start all adapters"
 						>
 						<parameter name="action">startadapter</parameter>
-						<parameter name="configurationName"><% out.write(XmlUtils.replaceNonValidXmlCharacters((String)session.getAttribute("configurationName"))); %></parameter>
+						<parameter name="configurationName"><% out.write(XmlUtils.encodeChars((String)session.getAttribute("configurationName"))); %></parameter>
 						<parameter name="adapterName">*ALL*</parameter>
 					</imagelink>
 					<imagelink
@@ -133,7 +134,7 @@
 						alt="reload configuration"
 						>
 						<parameter name="action">reload</parameter>
-						<parameter name="configurationName"><% out.write(XmlUtils.replaceNonValidXmlCharacters((String)session.getAttribute("configurationName"))); %></parameter>
+						<parameter name="configurationName"><% out.write(XmlUtils.encodeChars((String)session.getAttribute("configurationName"))); %></parameter>
 					</imagelink>
 					<% if ("*ALL*".equals(session.getAttribute("configurationName"))) { %>
 						<imagelink
@@ -145,7 +146,7 @@
 						</imagelink>
 					<% } %>
 					<imagelink
-						href="<%=configFlowUrl %>"
+						href="<%=XmlUtils.encodeChars(configFlowUrl)%>"
 						type="flow"
 						alt="show adapter references"
 						newwindow="true"
@@ -202,8 +203,8 @@
 						%>
 							<td rowspan="<%= nrOfConfigurationMessages %>" width="200"<% if (active) { %> bgcolor="white"<% } %>>
 								<% if (active) { %>
-									<a href="<%=configFlowUrl %>" newwindow="true">
-										<img src="<%=configFlowUrl %>" title="IBIS adapter references" width="200" height="200"/>
+									<a href="<%=XmlUtils.encodeChars(configFlowUrl)%>" newwindow="true">
+										<img src="<%=XmlUtils.encodeChars(configFlowUrl)%>" title="IBIS adapter references" width="200" height="200"/>
 									</a>
 								<% } %>
 							</td>

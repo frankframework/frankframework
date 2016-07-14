@@ -77,6 +77,7 @@ Upcoming
 - Get configuration name from file name when configuration is uploaded
 - Store configuration version and file name too when configuration is uploaded
 - Add TimeOutException to IbisLocalSender (next to regular SenderException)
+- Fix xml/url escaping of configuration name in showConfiguration(Status)
 
 
 

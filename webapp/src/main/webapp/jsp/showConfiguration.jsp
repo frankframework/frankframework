@@ -8,7 +8,7 @@
  
 <html:xhtml/>
 
-<page title="Show configuration: <% out.write(XmlUtils.replaceNonValidXmlCharacters((String)session.getAttribute("configurationName"))); %>">
+<page title="Show configuration: <% out.write(XmlUtils.encodeChars((String)session.getAttribute("configurationName"))); %>">
 
 	<% String showAs = null; %>
 	<% if (AppConstants.getInstance().getBoolean("showConfiguration.original", false)) { %>
@@ -35,7 +35,7 @@
 					alt="<% out.write(XmlUtils.encodeChars(configuration)); %>"
 					text="<% out.write(XmlUtils.encodeChars(configuration)); %>"
 					>
-					<parameter name="configuration"><xtags:valueOf select="." /></parameter>
+					<parameter name="configuration"><%=java.net.URLEncoder.encode(configuration)%></parameter>
 				</imagelink>
 			<% } %>
 		</xtags:forEach>
