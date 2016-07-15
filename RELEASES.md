@@ -78,6 +78,7 @@ Upcoming
 - Store configuration version and file name too when configuration is uploaded
 - Add TimeOutException to IbisLocalSender (next to regular SenderException)
 - Fix xml/url escaping of configuration name in showConfiguration(Status)
+- Check ResultSetHoldability because of WebSphere + DB2 default
 
 
 

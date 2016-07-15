@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -30,6 +31,7 @@ import java.util.Map;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
@@ -138,6 +140,21 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			String driverVersion=md.getDriverVersion();
 			String url=md.getURL();
 			String user=md.getUserName();
+			if (md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
+				// For (some?) combinations of WebShere and DB2 this seems to be
+				// the default and result in the following exception when (for
+				// example?) a ResultSetIteratingPipe is calling next() on the
+				// ResultSet after it's sender has called a pipeline which
+				// contains a GenericMessageSendingPipe using
+				// transactionAttribute="NotSupported":
+				//   com.ibm.websphere.ce.cm.ObjectClosedException: DSRA9110E: ResultSet is closed.
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				configWarnings.add(log,
+						"The database's default holdability for ResultSet objects is "
+						+ md.getResultSetHoldability()
+						+ " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT
+						+ " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
+			}
 			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] version ["+productVersion+"] driver ["+driver+"] version ["+driverVersion+"]";
 		} catch (SQLException e) {
 			log.warn("Exception determining databaseinfo",e);
