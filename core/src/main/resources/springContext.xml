@@ -5,9 +5,8 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd"
 	>
 	<import resource="springUnmanagedDeployment.xml"/>
-	<!-- <import resource="springEjbDeployment.xml"/> -->
 	<import resource="springCommon.xml"/>
-	<import resource="springWAS.xml"/>
+	<import resource="spring${application.server.type}${application.server.type.custom}.xml"/>
 	<import resource="springIbisTestTool${ibistesttool.custom}.xml"/>
 	<import resource="springCustom.xml"/>
 </beans>

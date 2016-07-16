@@ -80,7 +80,7 @@ Upcoming
 - Fix xml/url escaping of configuration name in showConfiguration(Status)
 - Check ResultSetHoldability because of WebSphere + DB2 default
 - Add proxiedDestinationNames
-
+- Improve flexibility of Spring context file selection (add application.server.type.custom)
 
 
 ### Non backwards compatible changes

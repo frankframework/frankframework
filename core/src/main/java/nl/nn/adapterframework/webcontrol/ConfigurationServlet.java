@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -51,7 +52,7 @@ public class ConfigurationServlet extends HttpServlet {
 		super.init();
 		setUploadPathInServletContext();
 		ibisContext = new IbisContext();
-		setApplicationServerType(ibisContext);
+		setDefaultApplicationServerType(ibisContext);
 		ServletContext servletContext = getServletContext();
 		AppConstants appConstants = AppConstants.getInstance();
 		String attributeKey = appConstants.getResolvedProperty(KEY_CONTEXT);
@@ -85,31 +86,32 @@ public class ConfigurationServlet extends HttpServlet {
 		}
 	}
 
-	private void setApplicationServerType(IbisContext ibisContext) {
+	private void setDefaultApplicationServerType(IbisContext ibisContext) {
 		ServletContext context = getServletContext();
 		String serverInfo = context.getServerInfo();
-		String applicationServerType;
+		String defaultApplicationServerType = null;
 		if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere")) {
-			applicationServerType = "WAS";
+			defaultApplicationServerType = "WAS";
 		} else if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
-			applicationServerType = "TOMCAT";
+			defaultApplicationServerType = "TOMCAT";
 		} else if (StringUtils.containsIgnoreCase(serverInfo, "JBoss")) {
-			applicationServerType = "JBOSS";
+			defaultApplicationServerType = "JBOSS";
 		} else if (StringUtils.containsIgnoreCase(serverInfo, "jetty")) {
 			String javaHome = AppConstants.getInstance().getString("java.home",
 					"");
 			if (StringUtils.containsIgnoreCase(javaHome, "tibco")) {
-				applicationServerType = "TIBCOAMX";
+				defaultApplicationServerType = "TIBCOAMX";
 			} else {
-				applicationServerType = "JETTYMVN";
+				defaultApplicationServerType = "JETTYMVN";
 			}
 		} else {
-			log.warn("Unknown server info [" + serverInfo + "]");
-			applicationServerType = "UNKNOWN";
+			ConfigurationWarnings configWarnings = ConfigurationWarnings
+					.getInstance();
+			configWarnings.add(log, "Unknown server info [" + serverInfo
+					+ "] default application server type could not be determined, TOMCAT will be used as default value");
+			defaultApplicationServerType = "TOMCAT";
 		}
-		if (IbisContext.getApplicationServerType() == null) {
-			ibisContext.setApplicationServerType(applicationServerType);
-		}
+		ibisContext.setDefaultApplicationServerType(defaultApplicationServerType);
 	}
 
 	@Override

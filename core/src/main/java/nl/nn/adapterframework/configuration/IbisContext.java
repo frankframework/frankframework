@@ -60,10 +60,9 @@ public class IbisContext {
 	private static final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
-	private static final String APPLICATION_SERVER_TYPE;
 	static {
-		String applicationServerType = APP_CONSTANTS.getString(
-				APPLICATION_SERVER_TYPE_PROPERTY, null);
+		String applicationServerType = System.getProperty(
+				APPLICATION_SERVER_TYPE_PROPERTY);
 		if (StringUtils.isNotEmpty(applicationServerType)) {
 			if (applicationServerType.equalsIgnoreCase("WAS5")
 					|| applicationServerType.equalsIgnoreCase("WAS6")) {
@@ -73,7 +72,7 @@ public class IbisContext {
 						+ "] of property [" + APPLICATION_SERVER_TYPE_PROPERTY
 						+ "] as [WAS]";
 				configWarnings.add(LOG, msg);
-				applicationServerType = "WAS";
+				System.setProperty(APPLICATION_SERVER_TYPE_PROPERTY, "WAS");
 			} else if (applicationServerType.equalsIgnoreCase("TOMCAT6")) {
 				ConfigurationWarnings configWarnings = ConfigurationWarnings
 						.getInstance();
@@ -81,18 +80,32 @@ public class IbisContext {
 						+ "] of property [" + APPLICATION_SERVER_TYPE_PROPERTY
 						+ "] as [TOMCAT]";
 				configWarnings.add(LOG, msg);
-				applicationServerType = "TOMCAT";
+				System.setProperty(APPLICATION_SERVER_TYPE_PROPERTY, "TOMCAT");
 			}
-			APPLICATION_SERVER_TYPE = applicationServerType;
-		} else {
-			APPLICATION_SERVER_TYPE = null;
 		}
 	}
-	private static String applicationServerType = APPLICATION_SERVER_TYPE;
 	private ApplicationContext applicationContext;
 	private IbisManager ibisManager;
 	private Map<String, MessageKeeper> messageKeepers = new HashMap<String, MessageKeeper>();
 	private int messageKeeperSize = 10;
+
+	public void setDefaultApplicationServerType(String defaultApplicationServerType) {
+		if (defaultApplicationServerType.equals(getApplicationServerType())) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings
+					.getInstance();
+			String msg = "property ["
+					+ APPLICATION_SERVER_TYPE_PROPERTY
+					+ "] already has a default value ["
+					+ defaultApplicationServerType + "]";
+			configWarnings.add(LOG, msg);
+		} else if (StringUtils.isEmpty(getApplicationServerType())) {
+			APP_CONSTANTS.setProperty(APPLICATION_SERVER_TYPE_PROPERTY, defaultApplicationServerType);
+		}
+	}
+
+	public static String getApplicationServerType() {
+		return APP_CONSTANTS.getResolvedProperty(APPLICATION_SERVER_TYPE_PROPERTY);
+	}
 
 	/**
 	 * Creates the Spring context, and load the configuration. Optionally  with
@@ -110,7 +123,7 @@ public class IbisContext {
 	 */
 	public synchronized void init() {
 		log("startup " + getVersionInfo());
-		applicationContext = createApplicationContext(getSpringContextFileName());
+		applicationContext = createApplicationContext();
 		ibisManager = (IbisManager)applicationContext.getBean("ibisManager");
 		ibisManager.setIbisContext(this);
 		AbstractSpringPoweredDigesterFactory.setIbisContext(this);
@@ -151,11 +164,9 @@ public class IbisContext {
 	 * @throws BeansException If the Factory can not be created.
 	 *
 	 */
-	private ApplicationContext createApplicationContext(String springContext) throws BeansException {
+	private ApplicationContext createApplicationContext() throws BeansException {
 		// Reading in Spring Context
-		if (springContext == null) {
-			springContext = getSpringContextFileName();
-		}
+		String springContext = "/springContext.xml";
 		log("create Spring ApplicationContext from file: " + springContext);
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext();
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
@@ -354,28 +365,6 @@ public class IbisContext {
 	public static void main(String[] args) {
 		IbisContext ibisContext = new IbisContext();
 		ibisContext.init();
-	}
-
-	public String getSpringContextFileName() {
-		return "/springContext" + getApplicationServerType() + ".xml";
-	}
-
-	@SuppressWarnings("static-access")
-	public void setApplicationServerType(String applicationServerType) {
-		if (applicationServerType.equals(APPLICATION_SERVER_TYPE)) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings
-					.getInstance();
-			String msg = "value [" + applicationServerType
-					+ "] of property ["
-					+ APPLICATION_SERVER_TYPE_PROPERTY
-					+ "] is already the retrieved value";
-			configWarnings.add(LOG, msg);
-		}
-		this.applicationServerType = applicationServerType;
-	}
-
-	public static String getApplicationServerType() {
-		return applicationServerType;
 	}
 
 	public Object getBean(String beanName) {

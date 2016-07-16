@@ -116,8 +116,18 @@ public final class AppConstants extends Properties implements Serializable{
 		}
 	}
 
+	@Override
+	public String get(Object key) {
+		return getResolvedProperty((String)key);
+	}
+
+	@Override
+	public String getProperty(String key) {
+		return getResolvedProperty(key);
+	}
+
 	/**
-	 * the method is like the <code>getProperty</code>, but provides functionality to resolve <code>${variable}</code>
+	 * the method is like the <code>Properties.getProperty</code>, but provides functionality to resolve <code>${variable}</code>
 	 * syntaxis. It uses the AppConstants values and systemvalues to resolve the variables, and does this recursively.
 	 * @see nl.nn.adapterframework.util.StringResolver
 	 */
@@ -125,7 +135,7 @@ public final class AppConstants extends Properties implements Serializable{
 		String value = null;
         value=getSystemProperty(key); // first try custom properties
         if (value==null) {
-			value = getProperty(key); // then try DeploymentSpecifics and appConstants
+			value = super.getProperty(key); // then try DeploymentSpecifics and appConstants
         }
 		if (value != null) {
 			try {
