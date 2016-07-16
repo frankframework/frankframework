@@ -107,7 +107,9 @@ public class ConfigurationServlet extends HttpServlet {
 			log.warn("Unknown server info [" + serverInfo + "]");
 			applicationServerType = "UNKNOWN";
 		}
-		ibisContext.setApplicationServerType(applicationServerType);
+		if (IbisContext.getApplicationServerType() == null) {
+			ibisContext.setApplicationServerType(applicationServerType);
+		}
 	}
 
 	@Override

@@ -64,7 +64,7 @@ public class IbisContext {
 	static {
 		String applicationServerType = APP_CONSTANTS.getString(
 				APPLICATION_SERVER_TYPE_PROPERTY, null);
-		if (applicationServerType != null) {
+		if (StringUtils.isNotEmpty(applicationServerType)) {
 			if (applicationServerType.equalsIgnoreCase("WAS5")
 					|| applicationServerType.equalsIgnoreCase("WAS6")) {
 				ConfigurationWarnings configWarnings = ConfigurationWarnings
@@ -83,8 +83,10 @@ public class IbisContext {
 				configWarnings.add(LOG, msg);
 				applicationServerType = "TOMCAT";
 			}
+			APPLICATION_SERVER_TYPE = applicationServerType;
+		} else {
+			APPLICATION_SERVER_TYPE = null;
 		}
-		APPLICATION_SERVER_TYPE = applicationServerType;
 	}
 	private static String applicationServerType = APPLICATION_SERVER_TYPE;
 	private ApplicationContext applicationContext;
