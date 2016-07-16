@@ -57,10 +57,15 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		return jmsMessagingSourceMap;
 	}
 
-	protected MessagingSource createMessagingSource(String jmsConnectionFactoryName, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
+	protected MessagingSource createMessagingSource(String jmsConnectionFactoryName,
+			String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
 		Context context = getContext();
-		ConnectionFactory connectionFactory = getConnectionFactory(context, jmsConnectionFactoryName, createDestination, useJms102); 
-		return new JmsMessagingSource(jmsConnectionFactoryName, jmsFacade.getJndiContextPrefix(), context, connectionFactory, getMessagingSourceMap(), authAlias, createDestination, useJms102);
+		ConnectionFactory connectionFactory =
+				getConnectionFactory(context, jmsConnectionFactoryName, createDestination, useJms102); 
+		return new JmsMessagingSource(jmsConnectionFactoryName,
+				jmsFacade.getJndiContextPrefix(), context, connectionFactory,
+				getMessagingSourceMap(), authAlias, createDestination,
+				jmsFacade.getProxiedDestinationNames(), useJms102);
 	}
 
 	protected Context createContext() throws NamingException {

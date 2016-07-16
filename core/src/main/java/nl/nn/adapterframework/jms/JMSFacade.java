@@ -114,6 +114,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
     private Destination destination;
 
     private Map<String, ConnectionFactory> proxiedConnectionFactories;
+    private Map<String, String> proxiedDestinationNames;
 
     //---------------------------------------------------------------------
     // Queue fields
@@ -169,6 +170,14 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	public Map<String, ConnectionFactory> getProxiedConnectionFactories() {
 		return proxiedConnectionFactories;
+	}
+
+	public void setProxiedDestinationNames(Map<String, String> proxiedDestinationNames) {
+		this.proxiedDestinationNames = proxiedDestinationNames;
+	}
+
+	public Map<String, String> getProxiedDestinationNames() {
+		return proxiedDestinationNames;
 	}
 
 	public String getConnectionFactoryName() throws JmsException {
@@ -335,7 +344,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
     public Destination getDestination() throws NamingException, JMSException, JmsException  {
-
 	    if (destination == null) {
 	    	String destinationName = getDestinationName();
 	    	if (StringUtils.isEmpty(destinationName)) {
@@ -358,16 +366,16 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	    }
 	    return destination;
 	}
-    /**
-     * Utilitiy function to retrieve a Destination from a jndi.
-     * @param destinationName
-     * @return javax.jms.Destination
-     * @throws javax.naming.NamingException
-     */
 
-    public Destination getDestination(String destinationName) throws JmsException, NamingException {
-    	return getJmsMessagingSource().lookupDestination(destinationName);
-    }
+	/**
+	 * Utilitiy function to retrieve a Destination from a jndi.
+	 * @param destinationName
+	 * @return javax.jms.Destination
+	 * @throws javax.naming.NamingException
+	 */
+	public Destination getDestination(String destinationName) throws JmsException, NamingException {
+		return getJmsMessagingSource().lookupDestination(destinationName);
+	}
 
 	/**
 	 * Gets a MessageConsumer object for either Topics or Queues.

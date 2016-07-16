@@ -44,8 +44,11 @@ public class TibcoMessagingSource extends JmsMessagingSource {
 	
 	private TibjmsConnectionFactory connectionFactory;
 	
-	public TibcoMessagingSource(String connectionFactoryName, Context context, ConnectionFactory connectionFactory, Map messagingSourceMap, String authAlias) {
-		super(connectionFactoryName, "", context, connectionFactory, messagingSourceMap, authAlias, false, true);
+	public TibcoMessagingSource(String connectionFactoryName, Context context,
+			ConnectionFactory connectionFactory, Map messagingSourceMap,
+			String authAlias) {
+		super(connectionFactoryName, "", context, connectionFactory,
+				messagingSourceMap, authAlias, false, null, true);
 		this.connectionFactory=(TibjmsConnectionFactory)connectionFactory;
 	}
 
