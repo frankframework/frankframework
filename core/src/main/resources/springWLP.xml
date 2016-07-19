@@ -20,7 +20,7 @@
 
 	<bean
 		name="wasTransactionManager"
-		class="com.ibm.ws.Transaction.TransactionManagerFactory"
+		class="com.ibm.tx.jta.TransactionManagerFactory"
 		factory-method="getTransactionManager"
 	/>
 

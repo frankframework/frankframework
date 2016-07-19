@@ -81,6 +81,8 @@ Upcoming
 - Check ResultSetHoldability because of WebSphere + DB2 default
 - Add proxiedDestinationNames
 - Improve flexibility of Spring context file selection (add application.server.type.custom)
+- Add support for WebSphere Liberty Profile
+
 
 
 ### Non backwards compatible changes

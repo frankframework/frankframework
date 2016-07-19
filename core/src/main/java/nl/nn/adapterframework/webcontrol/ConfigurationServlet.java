@@ -90,7 +90,9 @@ public class ConfigurationServlet extends HttpServlet {
 		ServletContext context = getServletContext();
 		String serverInfo = context.getServerInfo();
 		String defaultApplicationServerType = null;
-		if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere")) {
+		if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere Liberty")) {
+			defaultApplicationServerType = "WLP";
+		} else if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere")) {
 			defaultApplicationServerType = "WAS";
 		} else if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
 			defaultApplicationServerType = "TOMCAT";
