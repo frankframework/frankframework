@@ -116,7 +116,7 @@ refresh="showConfigurationStatus.do">
 						alt="stop all adapters"
 						>
 						<parameter name="action">stopadapter</parameter>
-						<parameter name=""><% out.write(XmlUtils.encodeChars((String)session.getAttribute("configurationName"))); %></parameter>
+						<parameter name="configurationName"><% out.write(java.net.URLEncoder.encode((String)session.getAttribute("configurationName"))); %></parameter>
 						<parameter name="adapterName">*ALL*</parameter>
 					</imagelink>
 					<imagelink
@@ -125,7 +125,7 @@ refresh="showConfigurationStatus.do">
 						alt="start all adapters"
 						>
 						<parameter name="action">startadapter</parameter>
-						<parameter name="configurationName"><% out.write(XmlUtils.encodeChars((String)session.getAttribute("configurationName"))); %></parameter>
+						<parameter name="configurationName"><% out.write(java.net.URLEncoder.encode((String)session.getAttribute("configurationName"))); %></parameter>
 						<parameter name="adapterName">*ALL*</parameter>
 					</imagelink>
 					<imagelink
@@ -134,7 +134,7 @@ refresh="showConfigurationStatus.do">
 						alt="reload configuration"
 						>
 						<parameter name="action">reload</parameter>
-						<parameter name="configurationName"><% out.write(XmlUtils.encodeChars((String)session.getAttribute("configurationName"))); %></parameter>
+						<parameter name="configurationName"><% out.write(java.net.URLEncoder.encode((String)session.getAttribute("configurationName"))); %></parameter>
 					</imagelink>
 					<% if ("*ALL*".equals(session.getAttribute("configurationName"))) { %>
 						<imagelink
