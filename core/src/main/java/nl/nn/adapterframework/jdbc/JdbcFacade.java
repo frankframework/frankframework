@@ -32,6 +32,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
@@ -140,7 +141,9 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			String driverVersion=md.getDriverVersion();
 			String url=md.getURL();
 			String user=md.getUserName();
-			if (md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
+			if (getDatabaseType() == DbmsSupportFactory.DBMS_DB2
+					&& "WAS".equals(IbisContext.getApplicationServerType())
+					&& md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
 				// For (some?) combinations of WebShere and DB2 this seems to be
 				// the default and result in the following exception when (for
 				// example?) a ResultSetIteratingPipe is calling next() on the
