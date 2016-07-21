@@ -107,10 +107,12 @@ public final class ShowConfigurationStatus extends ActionBase {
 				|| ibisManager.getConfiguration(configurationName) == null) {
 			registeredAdapters = ibisManager.getRegisteredAdapters();
 			request.getSession().setAttribute("configurationName", CONFIG_ALL);
+			request.getSession().setAttribute("classLoaderType", null);
 		} else {
 			configurationSelected = ibisManager.getConfiguration(configurationName);
 			registeredAdapters = configurationSelected.getRegisteredAdapters();
 			request.getSession().setAttribute("configurationName", configurationSelected.getConfigurationName());
+			request.getSession().setAttribute("classLoaderType", configurationSelected.getClassLoaderType());
 		}
 
 		XmlBuilder adapters=new XmlBuilder("registeredAdapters");

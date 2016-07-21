@@ -5,7 +5,9 @@
 <%@ page import="nl.nn.adapterframework.util.FileUtils" %>
 <%@ page import="nl.nn.adapterframework.util.XmlUtils" %>
 
-<page title="Show configuration status: <% out.write(XmlUtils.encodeChars((String)session.getAttribute("configurationName"))); %>" 
+<page title="Show configuration status: <% out.write(XmlUtils.encodeChars((String)session.getAttribute("configurationName")));
+	String classLoaderType = (String)session.getAttribute("classLoaderType");
+	if (classLoaderType!=null) out.write(" ("+classLoaderType+")"); %>"
 refresh="showConfigurationStatus.do">
 
 	<xtags:parse>

@@ -83,6 +83,7 @@ Upcoming
 - Improve flexibility of Spring context file selection (add application.server.type.custom)
 - Add support for WebSphere Liberty Profile
 - Larva: addAbsolutePathProperties after substVars
+- Show classloader type in "Show configuration status"
 
 
 

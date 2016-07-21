@@ -269,6 +269,10 @@ public class Configuration {
 		return name;
 	}
 
+	public String getClassLoaderType() {
+		return classLoader.getParent().getClass().getSimpleName();
+	}
+
 	public void setIbisManager(IbisManager ibisManager) {
 		this.ibisManager = ibisManager;
 	}
