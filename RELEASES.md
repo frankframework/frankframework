@@ -84,6 +84,7 @@ Upcoming
 - Add support for WebSphere Liberty Profile
 - Larva: addAbsolutePathProperties after substVars
 - Show classloader type in "Show configuration status"
+- Bugfix removing unused output namespaces in SoapWrapperPipe
 
 
 

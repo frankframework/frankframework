@@ -263,6 +263,43 @@ public class XmlUtils {
 			+ "</xsl:stylesheet>";
 	}
 
+	public static String makeRemoveUnusedNamespacesXslt2(boolean omitXmlDeclaration, boolean indent) {
+		return "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
+				+ "<xsl:output method=\"xml\" indent=\""
+				+ (indent ? "yes" : "no")
+				+ "\" omit-xml-declaration=\""
+				+ (omitXmlDeclaration ? "yes" : "no")
+				+ "\"/>"
+				+ "<xsl:variable name=\"colon\" select=\"':'\"/>"
+				+ "<xsl:template match=\"*\">"
+				+ "<xsl:element name=\"{local-name()}\" namespace=\"{namespace-uri()}\">"
+				+ "<xsl:apply-templates select=\"@* | node()\"/>"
+				+ "</xsl:element>"
+				+ "</xsl:template>"
+				+ "<xsl:template match=\"@*\">"
+				+ "<xsl:choose>"
+				+ "<xsl:when test=\"local-name()='type' and namespace-uri()='http://www.w3.org/2001/XMLSchema-instance' and contains(.,$colon)\">"
+				+ "<xsl:variable name=\"prefix\" select=\"substring-before(.,$colon)\"/>"
+				+ "<xsl:variable name=\"namespace\" select=\"namespace-uri-for-prefix($prefix, parent::*)\"/>"
+				+ "<xsl:variable name=\"parentNamespace\" select=\"namespace-uri(parent::*)\"/>"
+				+ "<xsl:choose>"
+				+ "<xsl:when test=\"$namespace=$parentNamespace\">"
+				+ "<xsl:attribute name=\"{name()}\" namespace=\"{namespace-uri()}\"><xsl:value-of select=\"substring-after(.,$colon)\"/></xsl:attribute>"
+				+ "</xsl:when>"
+				+ "<xsl:otherwise>"
+				+ "<xsl:copy/>"
+				+ "</xsl:otherwise>"
+				+ "</xsl:choose>"
+				+ "</xsl:when>"
+				+ "<xsl:otherwise>"
+				+ "<xsl:copy/>"
+				+ "</xsl:otherwise>"
+				+ "</xsl:choose>"
+				+ "</xsl:template>"
+				+ "<xsl:template match=\"comment() | processing-instruction() | text()\">"
+				+ "<xsl:copy/>" + "</xsl:template>" + "</xsl:stylesheet>";
+	}
+
 	public static String makeCopyOfSelectXslt(String xpath,
 			boolean omitXmlDeclaration, boolean indent) {
 		return "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"

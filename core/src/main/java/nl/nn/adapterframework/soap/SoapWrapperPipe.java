@@ -122,8 +122,8 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 				removeOutputNamespacesTp = new TransformerPool(removeOutputNamespaces_xslt);
 			}
 			if (isRemoveUnusedOutputNamespaces() && !isRemoveOutputNamespaces()) {
-				String removeUnusedOutputNamespaces_xslt = XmlUtils.makeRemoveUnusedNamespacesXslt(true, false);
-				removeUnusedOutputNamespacesTp = new TransformerPool(removeUnusedOutputNamespaces_xslt);
+				String removeUnusedOutputNamespaces_xslt = XmlUtils.makeRemoveUnusedNamespacesXslt2(true, false);
+				removeUnusedOutputNamespacesTp = new TransformerPool(removeUnusedOutputNamespaces_xslt, true);
 			}
 			if (StringUtils.isNotEmpty(getOutputNamespace())) {
 				String outputNamespace_xslt = XmlUtils.makeAddRootNamespaceXslt(getOutputNamespace(), true, false);
