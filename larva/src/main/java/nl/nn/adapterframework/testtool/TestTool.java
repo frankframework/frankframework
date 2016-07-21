@@ -889,7 +889,6 @@ public class TestTool {
 			properties.load(fileInputStreamPropertiesFile);
 			fileInputStreamPropertiesFile.close();
 			fileInputStreamPropertiesFile = null;
-			addAbsolutePathProperties(directory, properties);
 			Properties includedProperties = new Properties();
 			int i = 0;
 			String includeFilename = properties.getProperty("include");
@@ -911,6 +910,7 @@ public class TestTool {
 				for (Object key : properties.keySet()) {
 					properties.put(key, StringResolver.substVars((String)properties.get(key), properties));
 				}
+				addAbsolutePathProperties(directory, properties);
 			}
 			debugMessage(properties.size() + " properties found", writers);
 		} catch(Exception e) {
@@ -1705,7 +1705,7 @@ public class TestTool {
 				errorMessage("Could not find filename property for " + queueName, writers);
 			} else {
 				FileSender fileSender = new FileSender();
-				String filenameAbsolutePath = (String)properties.get(queueName + ".filename.absolutepath");;
+				String filenameAbsolutePath = (String)properties.get(queueName + ".filename.absolutepath");
 				fileSender.setFilename(filenameAbsolutePath);
 				String encoding = (String)properties.get(queueName + ".encoding");
 				if (encoding != null) {
@@ -1757,7 +1757,7 @@ public class TestTool {
 				try {
 					String overwriteString = (String)properties.get(queueName + ".overwrite");
 					if (overwriteString != null) {
-						debugMessage("OverwriteString = " + overwriteString, writers);					
+						debugMessage("OverwriteString = " + overwriteString, writers);
 						boolean overwrite = Boolean.valueOf(overwriteString).booleanValue();
 						fileSender.setOverwrite(overwrite);
 						debugMessage("Overwrite set to '" + overwrite + "'", writers);
