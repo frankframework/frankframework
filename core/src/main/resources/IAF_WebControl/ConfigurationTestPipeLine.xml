@@ -4,7 +4,8 @@
 			name="WebControlTestPipeLine">
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="WebControlTestPipeLine" uriPattern="testPipeLine" view="false"
-				authRoles="IbisAdmin,IbisTester" />
+				authRoles="IbisAdmin,IbisTester" writeToSecLog="true"
+				writeSecLogMessage="true" />
 		</receiver>
 		<pipeline firstPipe="doTestPipeLine">
 			<exits>
