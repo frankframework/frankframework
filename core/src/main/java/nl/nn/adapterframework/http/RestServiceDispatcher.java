@@ -124,6 +124,9 @@ public class RestServiceDispatcher  {
 			if (listener instanceof RestListener) {
 				RestListener restListener = (RestListener) listener;
 				writeToSecLog = restListener.isWriteToSecLog();
+				if (writeToSecLog) {
+					context.put("writeSecLogMessage", restListener.isWriteSecLogMessage());
+ 				}
 				boolean authorized = false;
 				if (principal == null) {
 					authorized = true;
@@ -151,10 +154,10 @@ public class RestServiceDispatcher  {
 			if (httpServletRequest!=null) context.put("restListenerServletRequest", httpServletRequest);
 			if (httpServletResponse!=null) context.put("restListenerServletResponse", httpServletResponse);
 			if (servletContext!=null) context.put("restListenerServletContext", servletContext);
-	
+
 			if (secLogEnabled && writeToSecLog) {
-				secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
-			}
+	        		secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
+	        	}
 			
 			String result=listener.processRequest(null, request, context);
 			if (result==null) {

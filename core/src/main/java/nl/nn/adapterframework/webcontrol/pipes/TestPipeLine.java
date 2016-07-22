@@ -32,11 +32,14 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Test a PipeLine.
@@ -45,6 +48,12 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class TestPipeLine extends TimeoutGuardPipe {
+	protected Logger secLog = LogUtil.getLogger("SEC");
+
+	private boolean secLogEnabled = AppConstants.getInstance().getBoolean(
+			"sec.log.enabled", false);
+	private boolean secLogMessage = AppConstants.getInstance().getBoolean(
+			"sec.log.includeMessage", false);
 
 	public String doPipeWithTimeoutGuarded(Object input,
 			IPipeLineSession session) throws PipeRunException {
@@ -86,6 +95,11 @@ public class TestPipeLine extends TimeoutGuardPipe {
 					+ "] could not be retrieved");
 		}
 
+		boolean writeSecLogMessage = false;
+		if (secLogEnabled && secLogMessage) {
+			writeSecLogMessage = (Boolean) session.get("writeSecLogMessage");
+		}
+
 		if (form_file != null) {
 			if (form_file instanceof InputStream) {
 				InputStream inputStream = (InputStream) form_file;
@@ -103,7 +117,8 @@ public class TestPipeLine extends TimeoutGuardPipe {
 								".zip")) {
 							try {
 								form_message = processZipFile(session,
-										inputStream, fileEncoding, adapter);
+										inputStream, fileEncoding, adapter,
+										writeSecLogMessage);
 							} catch (Exception e) {
 								throw new PipeRunException(
 										this,
@@ -127,7 +142,8 @@ public class TestPipeLine extends TimeoutGuardPipe {
 		}
 		if (StringUtils.isNotEmpty(form_message)) {
 			try {
-				PipeLineResult plr = processMessage(adapter, form_message);
+				PipeLineResult plr = processMessage(adapter, form_message,
+						writeSecLogMessage);
 				session.put("state", plr.getState());
 				session.put("result", plr.getResult());
 			} catch (Exception e) {
@@ -139,8 +155,8 @@ public class TestPipeLine extends TimeoutGuardPipe {
 	}
 
 	private String processZipFile(IPipeLineSession session,
-			InputStream inputStream, String fileEncoding, IAdapter adapter)
-			throws IOException {
+			InputStream inputStream, String fileEncoding, IAdapter adapter,
+			boolean writeSecLogMessage) throws IOException {
 		String result = "";
 		String lastState = null;
 		ZipInputStream archive = new ZipInputStream(inputStream);
@@ -164,7 +180,8 @@ public class TestPipeLine extends TimeoutGuardPipe {
 				if (StringUtils.isNotEmpty(result)) {
 					result += "\n";
 				}
-				lastState = processMessage(adapter, message).getState();
+				lastState = processMessage(adapter, message, writeSecLogMessage)
+						.getState();
 				result += name + ":" + lastState;
 			}
 			archive.closeEntry();
@@ -175,7 +192,8 @@ public class TestPipeLine extends TimeoutGuardPipe {
 		return "";
 	}
 
-	private PipeLineResult processMessage(IAdapter adapter, String message) {
+	private PipeLineResult processMessage(IAdapter adapter, String message,
+			boolean writeSecLogMessage) {
 		String messageId = "testmessage" + Misc.createSimpleUUID();
 		IPipeLineSession pls = new PipeLineSessionBase();
 		Map ibisContexts = XmlUtils.getIbisContext(message);
@@ -202,6 +220,9 @@ public class TestPipeLine extends TimeoutGuardPipe {
 		Date now = new Date();
 		PipeLineSessionBase.setListenerParameters(pls, messageId,
 				technicalCorrelationId, now, now);
+		if (writeSecLogMessage) {
+			secLog.info("message [" + message + "]");
+		}
 		return adapter.processMessage(messageId, message, pls);
 	}
 
