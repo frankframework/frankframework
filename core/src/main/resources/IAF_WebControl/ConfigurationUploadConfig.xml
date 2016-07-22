@@ -21,6 +21,7 @@
 				<param name="jmsRealmList" sessionKey="jmsRealmList" />
 				<param name="jmsRealm" sessionKey="jmsRealm" />
 				<param name="name" sessionKey="name" />
+				<param name="version" sessionKey="version" />
 				<param name="fileEncoding" sessionKey="fileEncoding" />
 				<param name="result" sessionKey="result" />
 				<forward name="success" path="EXIT" />

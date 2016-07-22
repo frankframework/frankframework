@@ -85,6 +85,7 @@ Upcoming
 - Larva: addAbsolutePathProperties after substVars
 - Show classloader type in "Show configuration status"
 - Bugfix removing unused output namespaces in SoapWrapperPipe
+- Add version to "Upload Configuration" and add derivative for name and version from file name
 
 
 

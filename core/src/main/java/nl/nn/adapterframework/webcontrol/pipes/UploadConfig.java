@@ -68,8 +68,8 @@ public class UploadConfig extends TimeoutGuardPipe {
 	private String doPost(IPipeLineSession session) throws PipeRunException {
 		String fileName = (String)session.get("fileName");
 		String name = (String)session.get("name");
-		String version = null;
-		if (StringUtils.isEmpty(name) && StringUtils.isNotEmpty(fileName)) {
+		String version = (String)session.get("version");
+		if (StringUtils.isEmpty(name) && StringUtils.isEmpty(version) && StringUtils.isNotEmpty(fileName)) {
 			int i = fileName.lastIndexOf(".");
 			if (i != -1) {
 				name = fileName.substring(0, i);
@@ -88,6 +88,11 @@ public class UploadConfig extends TimeoutGuardPipe {
 		if (StringUtils.isEmpty(name)) {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "Cannot determine configuration name");
+		}
+
+		if (StringUtils.isEmpty(version)) {
+			throw new PipeRunException(this, getLogPrefix(session)
+					+ "Cannot determine configuration version");
 		}
 
 		Object file = session.get("file");
