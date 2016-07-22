@@ -668,8 +668,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					return new PipeRunResult(exceptionForward,resultmsg);
 				}
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
-					}
 			}
+		}
 		if (!validResult(result)) {
 			PipeForward illegalResultForward = findForward(ILLEGALRESULTFORWARD);
 			return new PipeRunResult(illegalResultForward, result);
