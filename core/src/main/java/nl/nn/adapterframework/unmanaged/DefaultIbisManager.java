@@ -160,10 +160,10 @@ public class DefaultIbisManager implements IbisManager {
 		if (action.equalsIgnoreCase("STOPADAPTER")) {
 			if (adapterName.equals("*ALL*")) {
 				if (configurationName.equals("*ALL*")) {
+					log.info("Stopping all adapters on request of [" + commandIssuedBy+"]");
 					for (Configuration configuration : configurations) {
-						log.info("Stopping all adapters on request of [" + commandIssuedBy+"]");
 						stopAdapters(configuration);
-				   }
+					}
 				} else {
 					log.info("Stopping all adapters for configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]");
 					stopAdapters(getConfiguration(configurationName));
@@ -179,8 +179,8 @@ public class DefaultIbisManager implements IbisManager {
 		} else if (action.equalsIgnoreCase("STARTADAPTER")) {
 			if (adapterName.equals("*ALL*")) {
 				if (configurationName.equals("*ALL*")) {
+					log.info("Starting all adapters on request of [" + commandIssuedBy+"]");
 					for (Configuration configuration : configurations) {
-						log.info("Starting all adapters on request of [" + commandIssuedBy+"]");
 						startAdapters(configuration);
 					}
 				} else {
