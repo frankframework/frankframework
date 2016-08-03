@@ -58,7 +58,12 @@ public class ConfigurationServlet extends HttpServlet {
 		String attributeKey = appConstants.getResolvedProperty(KEY_CONTEXT);
 		servletContext.setAttribute(attributeKey, ibisContext);
 		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey	+ "]");
-		appConstants.put("webapp.realpath", getServletContext().getRealPath(""));
+		String realPath = servletContext.getRealPath("/");
+		if (realPath != null) {
+			appConstants.put("webapp.realpath", realPath);
+		} else {
+			log.warn("Could not determine webapp.realpath");
+		}
 		ibisContext.init();
 		log.debug("Servlet init finished");
 	}
