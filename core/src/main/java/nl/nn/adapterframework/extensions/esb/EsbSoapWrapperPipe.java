@@ -566,8 +566,8 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 				p.setPattern("{fixedhostname}_{fixeduid}");
 			} else {
 				p.setPattern("{hostname}_{uid}");
-				p.setDefaultValueMethods("pattern");
 			}
+			p.setDefaultValueMethods("pattern");
 			addParameter(p);
 		}
 		if (parameterList.findParameter(MESSAGEID)==null) {
