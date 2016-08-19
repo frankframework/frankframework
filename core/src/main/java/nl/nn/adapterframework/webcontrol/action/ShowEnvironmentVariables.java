@@ -30,6 +30,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.AppConstants;
@@ -43,6 +44,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 
 public class ShowEnvironmentVariables extends ActionBase {
+	private static final String CONFIG_ALL = "*ALL*";
 
 	public void addPropertiesToXmlBuilder(XmlBuilder container, Properties props, String setName, List<String> propsToHide) {
 		Enumeration enumeration = props.keys();
@@ -73,15 +75,38 @@ public class ShowEnvironmentVariables extends ActionBase {
 		initAction(request);
 		// Retrieve environment variables for browsing
 
+		XmlBuilder configurationsXml = new XmlBuilder("configurations");
+		List<Configuration> configurations = ibisManager.getConfigurations();
+		for (Configuration configuration : configurations) {
+			XmlBuilder configurationXml = new XmlBuilder("configuration");
+			configurationXml.setValue(configuration.getConfigurationName());
+			configurationsXml.addSubElement(configurationXml);
+		}
+		request.setAttribute("configurations", configurationsXml.toXML());
+		
 		List<String> propsToHide = new ArrayList<String>();
 		String propertiesHideString = AppConstants.getInstance().getString("properties.hide", null);
 		if (propertiesHideString!=null) {
 			propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
 		}
 		
+		Configuration configuration;
+		String configurationName = request.getParameter("configuration");
+		if (configurationName == null) {
+			configurationName = (String)request.getSession().getAttribute("configurationName");
+		}
+		if (configurationName == null
+				|| configurationName.equalsIgnoreCase(CONFIG_ALL)
+				|| ibisManager.getConfiguration(configurationName) == null) {
+			configuration = configurations.get(0);
+			request.getSession().setAttribute("configurationName", configuration.getName());
+		} else {
+			configuration = ibisManager.getConfiguration(configurationName);
+		}
+		
 		XmlBuilder envVars = new XmlBuilder("environmentVariables");
 
-		addPropertiesToXmlBuilder(envVars,AppConstants.getInstance(),"Application Constants",propsToHide);
+		addPropertiesToXmlBuilder(envVars,AppConstants.getInstance(configuration.getClassLoader()),"Application Constants",propsToHide);
 		addPropertiesToXmlBuilder(envVars,System.getProperties(),"System Properties",propsToHide);
 		
 		try {

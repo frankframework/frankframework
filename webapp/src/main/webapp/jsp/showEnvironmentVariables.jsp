@@ -1,9 +1,36 @@
 <%@ taglib uri="/WEB-INF/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/struts-html.tld" prefix="html" %>
 <%@ taglib uri="http://jakarta.apache.org/taglibs/xtags-1.0" prefix="xtags" %>
+<%@ page import="nl.nn.adapterframework.util.XmlUtils" %>
  
-<page title="Show Environment variables">
-	
+<page title="Show Environment variables: <% out.write(XmlUtils.encodeChars((String)session.getAttribute("configurationName"))); %>">
+
+	<xtags:parse>
+		<% out.write(XmlUtils.replaceNonValidXmlCharacters(request.getAttribute("configurations").toString())); %>
+	</xtags:parse>
+
+	<xtags:if test="count(//configuration) > 1">
+		<xtags:forEach select="//configuration">
+			<xtags:variable id="configuration" select="."/>
+			<% if (configuration.equals(session.getAttribute("configurationName"))) { %>
+				<image
+					type="showastext"
+					alt="<% out.write(XmlUtils.encodeChars(configuration)); %>"
+					text="<% out.write(XmlUtils.encodeChars(configuration)); %>"
+				/>
+			<% } else { %>
+				<imagelink
+					href="showEnvironmentVariables.do"
+					type="showastext"
+					alt="<% out.write(XmlUtils.encodeChars(configuration)); %>"
+					text="<% out.write(XmlUtils.encodeChars(configuration)); %>"
+					>
+					<parameter name="configuration"><%=java.net.URLEncoder.encode(configuration)%></parameter>
+				</imagelink>
+			<% } %>
+		</xtags:forEach>
+	</xtags:if>
+
 	<xtags:parse>
 			<bean:write name="envVars" scope="request" filter="false"/>
 	</xtags:parse>

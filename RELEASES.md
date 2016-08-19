@@ -87,6 +87,7 @@ Upcoming
 - Bugfix removing unused output namespaces in SoapWrapperPipe
 - Add version to "Upload Configuration" and add derivative for name and version from file name
 - Bugfix security log file for rest service "Test a PipeLine"
+- Use correct configuration in "Show Environment variables"
 
 
 
