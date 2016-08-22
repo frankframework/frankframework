@@ -102,8 +102,9 @@ public class ShowEnvironmentVariables extends ActionBase {
 			request.getSession().setAttribute("configurationName", configuration.getName());
 		} else {
 			configuration = ibisManager.getConfiguration(configurationName);
-			request.getSession().setAttribute("configurationName", configurationName);
+			request.getSession().setAttribute("configurationName", configuration.getName());
 		}
+		
 		
 		XmlBuilder envVars = new XmlBuilder("environmentVariables");
 
