@@ -46,7 +46,8 @@ import org.apache.commons.lang.exception.ExceptionUtils;
  * <tr><td>classname</td><td>nl.nn.adapterframework.senders.IbisLocalSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>Name of the {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} that should be called</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJavaListener(String) javaListener}</td><td>Name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setJavaListener(String) javaListener}</td><td>Name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called (will be ignored when javaListenerSessionKey is set)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setJavaListenerSessionKey(String) javaListenerSessionKey}</td><td>Name of the sessionKey which holds the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using separate transaction</td><td>false</td></tr>
  * <tr><td>{@link #setCheckDependency(boolean) checkDependency}</td><td>when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} is opened</td><td>true</td></tr>
  * <tr><td>{@link #setDependencyTimeOut(int) dependencyTimeOut}</td><td>maximum time (in seconds) the sender waits for the listener to start</td><td>60 s</td></tr>
@@ -98,6 +99,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	private String name;
 	private String serviceName;
 	private String javaListener;
+	private String javaListenerSessionKey;
 	private boolean isolated=false;
 	private boolean synchronous=true;
 	private boolean checkDependency=true;
@@ -110,10 +112,14 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		if (!isSynchronous()) {
 			setIsolated(true);
 		}
-		if (StringUtils.isEmpty(getServiceName()) && StringUtils.isEmpty(getJavaListener())) {
+		if (StringUtils.isEmpty(getServiceName())
+				&& StringUtils.isEmpty(getJavaListener())
+				&& StringUtils.isEmpty(getJavaListenerSessionKey())) {
 			throw new ConfigurationException(getLogPrefix()+"has no serviceName or javaListener specified");
 		}
-		if (StringUtils.isNotEmpty(getServiceName()) && StringUtils.isNotEmpty(getJavaListener())) {
+		if (StringUtils.isNotEmpty(getServiceName())
+				&& (StringUtils.isNotEmpty(getJavaListener())
+						|| StringUtils.isNotEmpty(getJavaListenerSessionKey()))) {
 			throw new ConfigurationException(getLogPrefix()+"serviceName and javaListener cannot be specified both");
 		}
 	}
@@ -145,6 +151,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	public String getPhysicalDestinationName() {
 		if (StringUtils.isNotEmpty(getServiceName())) {
 			return "WebServiceListener "+getServiceName();
+		} else if (StringUtils.isNotEmpty(getJavaListenerSessionKey())) {
+			return "JavaListenerSessionKey "+getJavaListenerSessionKey();
 		} else {
 			return "JavaListener "+getJavaListener();
 		}
@@ -193,30 +201,36 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
 				}
 			} 
-		}  else {
+		} else {
+			String javaListener;
+			if (StringUtils.isNotEmpty(getJavaListenerSessionKey())) {
+				javaListener = (String)prc.getSession().get(getJavaListenerSessionKey());
+			} else {
+				javaListener = getJavaListener();
+			}
 			try {
-				JavaListener listener= JavaListener.getListener(getJavaListener());
+				JavaListener listener= JavaListener.getListener(javaListener);
 				if (listener==null) {
-					throw new SenderException("could not find JavaListener ["+getJavaListener()+"]");
+					throw new SenderException("could not find JavaListener ["+javaListener+"]");
 				}
 				if (isIsolated()) {
 					if (isSynchronous()) {
-						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in separate Thread");
-						result = isolatedServiceCaller.callServiceIsolated(getJavaListener(), correlationID, message, context, true);
+						log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in separate Thread");
+						result = isolatedServiceCaller.callServiceIsolated(javaListener, correlationID, message, context, true);
 					} else {
-						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in asynchronously");
-						isolatedServiceCaller.callServiceAsynchronous(getJavaListener(), correlationID, message, context, true);
+						log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in asynchronously");
+						isolatedServiceCaller.callServiceAsynchronous(javaListener, correlationID, message, context, true);
 						result = message;
 					}
 				} else {
-					log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in same Thread");
+					log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in same Thread");
 					result = listener.processRequest(correlationID,message,context);
 				}
 			} catch (ListenerException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
-					throw new TimeOutException(getLogPrefix()+"timeout calling JavaListener ["+getJavaListener()+"]",e);
+					throw new TimeOutException(getLogPrefix()+"timeout calling JavaListener ["+javaListener+"]",e);
 				} else {
-					throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+getJavaListener()+"]",e);
+					throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+javaListener+"]",e);
 				}
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
@@ -257,6 +271,14 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 	public boolean isIsolated() {
 		return isolated;
+	}
+
+
+	public void setJavaListenerSessionKey(String string) {
+		javaListenerSessionKey = string;
+	}
+	public String getJavaListenerSessionKey() {
+		return javaListenerSessionKey;
 	}
 
 
