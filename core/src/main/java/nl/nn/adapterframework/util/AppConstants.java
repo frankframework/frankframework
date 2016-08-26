@@ -28,6 +28,8 @@ import java.util.StringTokenizer;
 import nl.nn.adapterframework.configuration.IbisContext;
 
 import org.apache.commons.digester.substitution.VariableExpander;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 /**
  * Singleton class that has the constant values for this application. <br/>
@@ -185,6 +187,9 @@ public final class AppConstants extends Properties implements Serializable{
 	 * </p>
 	 */
 	private synchronized void load(ClassLoader classLoader, String directory, String filename) {
+		load(classLoader, directory, filename, null);
+	}
+	private synchronized void load(ClassLoader classLoader, String directory, String filename, String suffix) {
 		StringTokenizer tokenizer = new StringTokenizer(filename, ",");
 		while (tokenizer.hasMoreTokens()) {
 			String theFilename= tokenizer.nextToken().trim();
@@ -223,8 +228,23 @@ public final class AppConstants extends Properties implements Serializable{
 						// prevent reloading of the same file over and over again
 						String loadFile = getProperty(additionalPropertiesFileKey);
 						this.remove(additionalPropertiesFileKey);
-						load(classLoader, directory, loadFile);
+						String loadFileSuffix = getProperty(additionalPropertiesFileKey + ".SUFFIX");
+						if (StringUtils.isNotEmpty(loadFileSuffix)){
+							load(classLoader, directory, loadFile, loadFileSuffix);
+						} else {
+							load(classLoader, directory, loadFile);
+						}
 					}
+				}
+				if (suffix != null) {
+					String baseName = FilenameUtils.getBaseName(theFilename);
+					String extension = FilenameUtils.getExtension(theFilename);
+					String suffixedFilename = baseName
+							+ "_"
+							+ suffix
+							+ (StringUtils.isEmpty(extension) ? "" : "."
+									+ extension);
+					load(classLoader, directory, suffixedFilename);
 				}
 			} catch (IOException e) {
 				log.error("error reading [" + propertiesFileName + "]", e);

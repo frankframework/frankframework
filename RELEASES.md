@@ -89,6 +89,7 @@ Upcoming
 - Bugfix security log file for rest service "Test a PipeLine"
 - Use correct configuration in "Show Environment variables"
 - Add javaListenerSessionKey to IbisLocalSender
+- Add facility to use separate DeploymentSpecifics.properties file for each splitted configuration 
 
 
 
