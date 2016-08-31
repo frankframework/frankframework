@@ -15,8 +15,11 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
@@ -122,25 +125,32 @@ public class IbisContext {
 	 * @see AppConstants#getInstance(ClassLoader)
 	 */
 	public synchronized void init() {
-		log("startup " + getVersionInfo());
+		long start = System.currentTimeMillis();
 		applicationContext = createApplicationContext();
 		ibisManager = (IbisManager)applicationContext.getBean("ibisManager");
 		ibisManager.setIbisContext(this);
 		AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 		load(null);
-		log("startup " + getVersionInfo() + " complete");
+		log("startup in " + (System.currentTimeMillis() - start) + " ms");
 	}
 
 	public synchronized void destroy() {
-		log("shutdown");
+		long start = System.currentTimeMillis();
 		ibisManager.shutdown();
 		destroyApplicationContext();
-		log("shutdown complete");
+		log("shutdown in " + (System.currentTimeMillis() - start) + " ms");
 	}
 
 	public synchronized void reload(String configurationName) {
+		long start = System.currentTimeMillis();
+		String configurationVersion = null;
+		Configuration configuration = ibisManager.getConfiguration(configurationName);
+		if (configuration != null) {
+			configurationVersion = configuration.getVersion();
+		}
 		ibisManager.unload(configurationName);
-		log(configurationName, "unload complete");
+		log(configurationName, configurationVersion, "unload in "
+				+ (System.currentTimeMillis() - start) + " ms");
 		load(configurationName);
 	}
 
@@ -166,8 +176,8 @@ public class IbisContext {
 	 */
 	private ApplicationContext createApplicationContext() throws BeansException {
 		// Reading in Spring Context
+		long start = System.currentTimeMillis();
 		String springContext = "/springContext.xml";
-		log("create Spring ApplicationContext from file: " + springContext);
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext();
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
@@ -175,7 +185,8 @@ public class IbisContext {
 		propertySources.addFirst(new PropertiesPropertySource("ibis", APP_CONSTANTS));
 		applicationContext.setConfigLocation(springContext);
 		applicationContext.refresh();
-		log("create Spring ApplicationContext complete");
+		log("startup " + springContext + " in "
+				+ (System.currentTimeMillis() - start) + " ms");
 		return applicationContext;
 	}
 
@@ -191,6 +202,7 @@ public class IbisContext {
 			String currentConfigurationName = tokenizer.nextToken();
 			if (configurationName == null
 					|| configurationName.equals(currentConfigurationName)) {
+				long start = System.currentTimeMillis();
 				configFound = true;
 				String configurationFile = APP_CONSTANTS.getResolvedProperty(
 						"configurations." + currentConfigurationName + ".configurationFile");
@@ -241,8 +253,20 @@ public class IbisContext {
 				if (classLoader != null) {
 					Thread.currentThread().setContextClassLoader(classLoader);
 				}
+				String currentConfigurationVersion = null;
+				URL buildInfoUrl = ClassUtils.getResourceURL(classLoader, "BuildInfo.properties");
+				if (buildInfoUrl != null) {
+					Properties buildInfoPproperties = new Properties();
+					try {
+						buildInfoPproperties.load(buildInfoUrl.openStream());
+						currentConfigurationVersion = getConfigurationVersion(buildInfoPproperties);
+					} catch (IOException e) {
+						log(currentConfigurationName, currentConfigurationVersion, "error reading [BuildInfo.properties]", MessageKeeperMessage.ERROR_LEVEL, e);
+					}
+				}
 				Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
 				configuration.setName(currentConfigurationName);
+				configuration.setVersion(currentConfigurationVersion);
 				configuration.setIbisManager(ibisManager);
 				ibisManager.addConfiguration(configuration);
 				ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
@@ -251,25 +275,36 @@ public class IbisContext {
 						ConfigurationDigester configurationDigester = new ConfigurationDigester();
 						configurationDigester.digestConfiguration(classLoader, configuration, configurationFile, configLogAppend);
 						configLogAppend = true;
-						log(currentConfigurationName, "successfully configured");
+						if (currentConfigurationVersion == null) {
+							currentConfigurationVersion = configuration.getVersion();
+						} else if (!currentConfigurationVersion.equals(configuration.getVersion())) {
+							log(currentConfigurationName, currentConfigurationVersion,
+									"configuration version doesn't match Configuration version attribute: "
+									+ configuration.getVersion(),
+									MessageKeeperMessage.WARN_LEVEL);
+						}
+						if (!currentConfigurationName.equals(configuration.getName())) {
+							log(currentConfigurationName, currentConfigurationVersion,
+									"configuration name doesn't match Configuration name attribute: "
+									+ configuration.getName(),
+									MessageKeeperMessage.WARN_LEVEL);
+							messageKeepers.put(configuration.getName(),
+									messageKeepers.remove(currentConfigurationName));
+						}
 						if (configuration.isAutoStart()) {
 							ibisManager.startConfiguration(configuration);
-							log(currentConfigurationName, "startup complete");
+							log(currentConfigurationName, currentConfigurationVersion,
+									"startup in " + (System.currentTimeMillis() - start) + " ms");
+						} else {
+							log(currentConfigurationName, currentConfigurationVersion,
+									"configured in " + (System.currentTimeMillis() - start) + " ms");
 						}
 					} else {
 						throw customClassLoaderConfigurationException;
 					}
-					if (!currentConfigurationName.equals(configuration.getName())) {
-						log(currentConfigurationName,
-								"configuration name doesn't match Configuration name attribute: "
-								+ configuration.getName(),
-								MessageKeeperMessage.WARN_LEVEL);
-						messageKeepers.put(configuration.getName(),
-								messageKeepers.remove(currentConfigurationName));
-					}
 				} catch (ConfigurationException e) {
 					configuration.setConfigurationException(e);
-					log(currentConfigurationName, " exception",
+					log(currentConfigurationName, currentConfigurationVersion, " exception",
 							MessageKeeperMessage.ERROR_LEVEL, e);
 				} finally {
 					Thread.currentThread().setContextClassLoader(originalClassLoader);
@@ -284,26 +319,26 @@ public class IbisContext {
 	}
 
 	private void log(String message) {
-		log(null, message, true);
+		log(null, null, message, true);
 	}
 
-	private void log(String configurationName, String message) {
-		log(configurationName, message, MessageKeeperMessage.INFO_LEVEL);
+	private void log(String configurationName, String configurationVersion, String message) {
+		log(configurationName, configurationVersion, message, MessageKeeperMessage.INFO_LEVEL);
 	}
 
-	private void log(String configurationName, String message, boolean allOnly) {
-		log(configurationName, message, MessageKeeperMessage.INFO_LEVEL, null, allOnly);
+	private void log(String configurationName, String configurationVersion, String message, boolean allOnly) {
+		log(configurationName, configurationVersion, message, MessageKeeperMessage.INFO_LEVEL, null, allOnly);
 	}
 
-	private void log(String configurationName, String message, String level) {
-		log(configurationName, message, level, null, false);
+	private void log(String configurationName, String configurationVersion, String message, String level) {
+		log(configurationName, configurationVersion, message, level, null, false);
 	}
 
-	private void log(String configurationName, String message, String level, Exception e) {
-		log(configurationName, message, level, e, false);
+	private void log(String configurationName, String configurationVersion, String message, String level, Exception e) {
+		log(configurationName, configurationVersion, message, level, e, false);
 	}
 
-	private void log(String configurationName, String message, String level, Exception e, boolean allOnly) {
+	private void log(String configurationName, String configurationVersion, String message, String level, Exception e, boolean allOnly) {
 		String key;
 		if (allOnly || configurationName == null) {
 			key = "*ALL*";
@@ -316,11 +351,18 @@ public class IbisContext {
 			messageKeepers.put(key, messageKeeper);
 		}
 		String m;
+		String version;
 		if (configurationName != null) {
-			m = "Configuration [" + configurationName + "] " + message;
+			m = "Configuration [" + configurationName + "] ";
+			version = configurationVersion;
 		} else {
-			m = "IAF [" + INSTANCE_NAME + "] " + message;
+			m = "Application [" + INSTANCE_NAME + "] ";
+			version = getApplicationVersion();
 		}
+		if (version != null) {
+			m = m + "[" + version + "] ";
+		}
+		m = m + message;
 		if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
 			LOG.info(m, e);
 		} else if (level.equals(MessageKeeperMessage.WARN_LEVEL)) {
@@ -333,7 +375,7 @@ public class IbisContext {
 		}
 		messageKeeper.add(m, level);
 		if (!allOnly) {
-			log(configurationName, message, level, e, true);
+			log(configurationName, configurationVersion, message, level, e, true);
 		}
 	}
 
@@ -350,16 +392,23 @@ public class IbisContext {
 		return ibisManager;
 	}
 
-	public String getVersionInfo() {
-		String versionInfo = APP_CONSTANTS.getProperty("application.name") + " "
-				+ APP_CONSTANTS.getProperty("application.version") + " "
-				+ APP_CONSTANTS.getProperty("instance.name") + " "
-				+ APP_CONSTANTS.getProperty("instance.version");
-		String buildId = APP_CONSTANTS.getProperty("instance.build_id");
-		if (StringUtils.isNotEmpty(buildId)) {
-			versionInfo += " " + buildId;
+	public String getApplicationVersion() {
+		return getVersion(APP_CONSTANTS, "instance.version", "instance.build_id");
+	}
+
+	public String getConfigurationVersion(Properties properties) {
+		return getVersion(properties, "configuration.version", "configuration.timestamp");
+	}
+
+	public String getVersion(Properties properties, String versionKey, String timestampKey) {
+		String version = null;
+		if (StringUtils.isNotEmpty(properties.getProperty(versionKey))) {
+			version = properties.getProperty(versionKey);
+			if (StringUtils.isNotEmpty(properties.getProperty(timestampKey))) {
+				version = version + "_" + properties.getProperty(timestampKey);
+			}
 		}
-		return versionInfo;
+		return version;
 	}
 
 	public static void main(String[] args) {

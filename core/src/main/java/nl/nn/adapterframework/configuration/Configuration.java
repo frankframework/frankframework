@@ -61,6 +61,7 @@ public class Configuration {
     private URL configurationURL;
     private URL digesterRulesURL;
     private String name;
+    private String version;
     private IbisManager ibisManager;
     private String originalConfiguration;
     private String loadedConfiguration;
@@ -251,6 +252,14 @@ public class Configuration {
 
 	public String getName() {
 		return name;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public String getVersion() {
+		return version;
 	}
 
 	/**
