@@ -22,6 +22,7 @@
 							</xsl:when>
 							<xsl:otherwise>
 								<xsl:for-each select="webservices/rests/rest">
+									<xsl:sort select="@name" />
 									<tr>
 										<td class="filterRow">
 											<xsl:value-of select="position()" />
@@ -51,6 +52,7 @@
 							</xsl:when>
 							<xsl:otherwise>
 								<xsl:for-each select="webservices/wsdls/wsdl">
+									<xsl:sort select="@name" />
 									<tr>
 										<td class="filterRow">
 											<xsl:value-of select="position()" />
