@@ -89,7 +89,7 @@ Upcoming
 - Bugfix security log file for rest service "Test a PipeLine"
 - Use correct configuration in "Show Environment variables"
 - Add javaListenerSessionKey to IbisLocalSender
-- Add facility to use separate DeploymentSpecifics.properties file for each splitted configuration
+- Add facility to use separate properties files for each splitted configuration
 - Add version and startup time to Application and Configuration logging in console
 - Sort both tables in "/rest/webservices" on name
 - Bugfix layout "Security Role Bindings" in console function "Show Security Items"

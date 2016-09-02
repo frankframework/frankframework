@@ -616,7 +616,7 @@ public class Wsdl {
     }
 
     protected String getSoapAction(IListener listener) {
-        AppConstants appConstants = AppConstants.getInstance();
+        AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfiguration().getClassLoader());
         String sa = appConstants.getResolvedProperty("wsdl." + getName() + "." + listener.getName() + ".soapAction");
         if (sa != null) return sa;
         sa = appConstants.getResolvedProperty("wsdl." + getName() + ".soapAction");
@@ -630,7 +630,7 @@ public class Wsdl {
     }
 
     protected String getLocation(String defaultLocation) {
-        AppConstants appConstants = AppConstants.getInstance();
+        AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfiguration().getClassLoader());
         String sa = appConstants.getResolvedProperty("wsdl." + getName() + ".location");
         if (sa != null) return sa;
         sa = appConstants.getResolvedProperty("wsdl.location");
