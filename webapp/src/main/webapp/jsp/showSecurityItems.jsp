@@ -27,9 +27,9 @@
 					<xtags:variable id="role" select="substring-after(role/@href,'#')"/>
 					<xtags:variable id="srole" select="ancestor::*/applicationDeploymentDescriptor/application/security-role[@id=$role]/role-name"/>
 					<tr ref="spannedRow">
-						<td rowspan="<%=count%>"><xtags:valueOf select="$srole"/></td>
-						<td rowspan="<%=count%>"><booleanImage value="<%=request.isUserInRole(srole)%>"/></td>
-						<td rowspan="<%=count%>"><xtags:valueOf select="specialSubjects/@name"/></td>
+						<td rowspan="<%=(count=="0"?"1":count)%>"><xtags:valueOf select="$srole"/></td>
+						<td rowspan="<%=(count=="0"?"1":count)%>"><booleanImage value="<%=request.isUserInRole(srole)%>"/></td>
+						<td rowspan="<%=(count=="0"?"1":count)%>"><xtags:valueOf select="specialSubjects/@name"/></td>
 						<td><xtags:valueOf select="groups[1]/@name"/></td>
 					</tr>
 					<xtags:remove select="groups[1]"/>

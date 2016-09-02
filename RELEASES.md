@@ -92,6 +92,7 @@ Upcoming
 - Add facility to use separate DeploymentSpecifics.properties file for each splitted configuration
 - Add version and startup time to Application and Configuration logging in console
 - Sort both tables in "/rest/webservices" on name
+- Bugfix layout "Security Role Bindings" in console function "Show Security Items"
 
 
 
