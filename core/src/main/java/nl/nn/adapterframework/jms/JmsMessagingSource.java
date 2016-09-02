@@ -52,7 +52,6 @@ public class JmsMessagingSource extends MessagingSource {
 	public Destination lookupDestination(String destinationName) throws JmsException, NamingException {
 		Destination dest=null;
 		if (createDestination()) {
-			Session session = null;
 			log.debug(getLogPrefix() + "looking up destination by creating it [" + destinationName + "]");
 			if (proxiedDestinationNames != null) {
 				String proxiedDestinationName = proxiedDestinationNames.get(destinationName);
@@ -61,14 +60,7 @@ public class JmsMessagingSource extends MessagingSource {
 					destinationName = proxiedDestinationName;
 				}
 			}
-			try {
-				session = createSession(false,Session.AUTO_ACKNOWLEDGE);
-				dest = session.createQueue(destinationName);
-			} catch (Exception e) {
-				throw new JmsException("cannot create destination", e);
-			} finally {
-				releaseSession(session);
-			}
+			dest = createDestination(destinationName);
 		} else {
 			String prefixedDestinationName = getJndiContextPrefix() + destinationName;
 			log.debug(getLogPrefix() + "looking up destination [" + prefixedDestinationName + "]");
@@ -80,6 +72,21 @@ public class JmsMessagingSource extends MessagingSource {
 		return dest;
 	}
 
+	public Destination createDestination(String destinationName)
+			throws JmsException {
+		Destination dest = null;
+		Session session = null;
+		try {
+			session = createSession(false, Session.AUTO_ACKNOWLEDGE);
+			dest = session.createQueue(destinationName);
+		} catch (Exception e) {
+			throw new JmsException("cannot create destination", e);
+		} finally {
+			releaseSession(session);
+		}
+		return dest;
+	}
+	
 	protected ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 		return (ConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(),"wrapped");
 	}

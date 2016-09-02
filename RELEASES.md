@@ -93,6 +93,7 @@ Upcoming
 - Add version and startup time to Application and Configuration logging in console
 - Sort both tables in "/rest/webservices" on name
 - Bugfix layout "Security Role Bindings" in console function "Show Security Items"
+- Add lookupDestination attribute to JMSFacade to have possibility to connect to queues directly instead of via JNDI
 
 
 

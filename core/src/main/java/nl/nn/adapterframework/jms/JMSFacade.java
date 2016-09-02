@@ -107,6 +107,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
     private String destinationName;
     private boolean useTopicFunctions = false;
     private String authAlias;
+    private boolean lookupDestination = true;
 
     private String destinationType="QUEUE"; // QUEUE or TOPIC
 
@@ -349,17 +350,21 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	    	if (StringUtils.isEmpty(destinationName)) {
 	    		throw new NamingException("no destinationName specified");
 	    	}
-		    if (!useTopicFunctions || getPersistent()) {
-		        destination = getDestination(destinationName);
-		    } else {
-				TopicSession session = null;
-		    	try {
-					session = (TopicSession)createSession();
-					destination = session.createTopic(destinationName);
-		    	} finally {
-					closeSession(session);
-		    	}
-		    }
+	    	if (isLookupDestination()) {
+			    if (!useTopicFunctions || getPersistent()) {
+			        destination = getDestination(destinationName);
+			    } else {
+					TopicSession session = null;
+			    	try {
+						session = (TopicSession)createSession();
+						destination = session.createTopic(destinationName);
+			    	} finally {
+						closeSession(session);
+			    	}
+			    }
+	    	} else {
+	    		destination = getJmsMessagingSource().createDestination(destinationName);
+	    	}
 		    if (destination==null) {
 		    	throw new NamingException("cannot get Destination from ["+destinationName+"]");
 		    }
@@ -1043,4 +1048,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return authAlias;
 	}
 
+	public void setLookupDestination(boolean b) {
+		lookupDestination = b;
+	}
+	public boolean isLookupDestination() {
+		return lookupDestination;
+	}
 }
