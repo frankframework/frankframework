@@ -95,6 +95,8 @@ Upcoming
 - Bugfix layout "Security Role Bindings" in console function "Show Security Items"
 - Add lookupDestination attribute to JMSFacade to have possibility to connect to queues directly instead of via JNDI
 - Add ability to log info from incoming messages on EsbJmsListener extracted by an xPath
+- Change defaults for msg.log.level.default to terse, msg.log.hidden.default to true
+- Add default logging conversationId from incoming messages on EsbJmsListener
 
 
 

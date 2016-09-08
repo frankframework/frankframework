@@ -87,7 +87,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 	private ISender sender;
 	
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private final String MSGLOG_KEYS = APP_CONSTANTS.getResolvedProperty("messages.log.keys");
+	private final String MSGLOG_KEYS = APP_CONSTANTS.getResolvedProperty("msg.log.keys");
 	private final Map<String, String> xPathLogMap = new HashMap<String, String>();
 	private String xPathLoggingKeys=null;
 	
@@ -131,7 +131,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 		StringTokenizer tokenizer = new StringTokenizer(logKeys, ",");
 		while (tokenizer.hasMoreTokens()) {
 			String name = tokenizer.nextToken();
-			String xPath = APP_CONSTANTS.getResolvedProperty("messages.log.xPath." + name);
+			String xPath = APP_CONSTANTS.getResolvedProperty("msg.log.xPath." + name);
 			if(xPath != null)
 				xPathLogMap.put(name, xPath);
 		}
