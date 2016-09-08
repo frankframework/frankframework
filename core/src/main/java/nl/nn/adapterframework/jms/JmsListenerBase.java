@@ -16,7 +16,9 @@
 package nl.nn.adapterframework.jms;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -31,7 +33,10 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -80,7 +85,12 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 	private int replyPriority=-1;
 	private String replyDeliveryMode=MODE_NON_PERSISTENT;
 	private ISender sender;
-		
+	
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private final String MSGLOG_KEYS = APP_CONSTANTS.getResolvedProperty("messages.log.keys");
+	private final Map<String, String> xPathLogMap = new HashMap<String, String>();
+	private String xPathLoggingKeys=null;
+	
 	private boolean forceMessageIdAsCorrelationId=false;
  
 	private String commitOnState="success";
@@ -105,6 +115,25 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 		ISender sender = getSender();
 		if (sender != null) {
 			sender.configure();
+		}
+		configurexPathLogging();
+	}
+	
+	protected Map<String, String> getxPathLogMap() {
+		return xPathLogMap;
+	}
+	
+	private void configurexPathLogging() {
+		String logKeys = MSGLOG_KEYS;
+		if(getxPathLoggingKeys() != null) //Override on listener level
+			logKeys = getxPathLoggingKeys();
+
+		StringTokenizer tokenizer = new StringTokenizer(logKeys, ",");
+		while (tokenizer.hasMoreTokens()) {
+			String name = tokenizer.nextToken();
+			String xPath = APP_CONSTANTS.getResolvedProperty("messages.log.xPath." + name);
+			if(xPath != null)
+				xPathLogMap.put(name, xPath);
 		}
 	}
 
@@ -154,7 +183,24 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 		}
 		return retrieveIdFromMessage(message, threadContext);
 	}
-
+	
+	protected String getResultFromxPath(String message, String xPathExpression) {
+		String found = "";
+		if(message != null && message.length() > 0) {
+			if(XmlUtils.isWellFormed(message)) {
+				try {
+					TransformerPool test = new TransformerPool(XmlUtils.createXPathEvaluatorSource("", xPathExpression, "text", false), true);
+					found = test.transform(message, null);
+					
+					//xPath not found and message length is 0 but not null nor ""
+					if(found.length() == 0) found = "";
+				} catch (Exception e) {
+				}
+			}
+		}
+		return found;
+	}
+	
 	protected String retrieveIdFromMessage(Message message, Map threadContext) throws ListenerException {
 		String cid = "unset";
 		String mode = "unknown";
@@ -386,4 +432,11 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 		return soapHeaderSessionKey;
 	}
 
+	public void setxPathLoggingKeys(String string) {
+		xPathLoggingKeys = string;
+	}
+	
+	public String getxPathLoggingKeys() {
+		return xPathLoggingKeys;
+	}
 }

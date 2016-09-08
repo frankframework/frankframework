@@ -18,6 +18,7 @@ package nl.nn.adapterframework.core;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
@@ -120,7 +121,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 	private long statsUpSince = System.currentTimeMillis();
 	private IErrorMessageFormatter errorMessageFormatter;
-
+	
 	private RunStateManager runState = new RunStateManager();
 	private boolean configurationSucceeded = false;
 	private String description;
@@ -133,9 +134,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 	// state to put in PipeLineResult when a PipeRunException occurs;
 	private String errorState = "ERROR";
-
-
-    
+	
     private TaskExecutor taskExecutor;
     
 	/**
@@ -263,10 +262,10 @@ public class Adapter implements IAdapter, NamedBean {
 				messageID,
 				receivedTime);
 			//if (isRequestReplyLogging()) {
-			String logMsg = "Adapter [" + getName() + "] messageId[" + messageID + "] formatted errormessage, result [" + formattedErrorMessage + "]";
+			String logMsg = "Adapter [" + getName() + "] messageId [" + messageID + "] formatted errormessage, result [" + formattedErrorMessage + "]";
 			if (isMsgLogTerseEnabled()) {
 				if (isMsgLogHidden()) {
-					msgLog.info("Adapter [" + getName() + "] messageId[" + messageID + "] formatted errormessage, result [LENGTH=" + formattedErrorMessage.length() + "]");
+					msgLog.info("Adapter [" + getName() + "] messageId [" + messageID + "] formatted errormessage, result [LENGTH=" + formattedErrorMessage.length() + "]");
 				} else {
 					msgLog.info(logMsg);
 				}
@@ -476,7 +475,6 @@ public class Adapter implements IAdapter, NamedBean {
 		return new Date(statsUpSince);
 	}
 
-
 	public PipeLineResult processMessage(String messageId, String message, IPipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
 		try {
@@ -538,10 +536,23 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		
 		//if (isRequestReplyLogging()) {
-		String logMsg = "Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]";
+		String additionalLogging = "";
+		
+		String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
+		if(xPathLogKeys != null && xPathLogKeys != "") {
+			StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
+			while (tokenizer.hasMoreTokens()) {
+				String logName = tokenizer.nextToken();
+				String xPathResult = (String) pipeLineSession.get(logName);
+				additionalLogging = additionalLogging + " and " + logName + " [" + xPathResult + "]";
+			}
+		}
+		
+		String logMsg = "Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]" + additionalLogging;
 		if (isMsgLogTerseEnabled()) {
 			if (isMsgLogHidden()) {
-				msgLog.info("Adapter [" + name + "] received message [LENGTH=" + message.length() + "] with messageId [" + messageId + "]");
+				String logMessage = "Adapter [" + name + "] received message [LENGTH=" + message.length() + "] with messageId [" + messageId + "]" + additionalLogging;
+				msgLog.info(logMessage);
 			} else {
 				msgLog.info(logMsg);
 			}
@@ -549,17 +560,18 @@ public class Adapter implements IAdapter, NamedBean {
 		if (log.isDebugEnabled()) { 
 			log.debug(logMsg);
 		} else {
-			log.info("Adapter [" + name + "] received message with messageId [" + messageId + "]");
+			logMsg = "Adapter [" + name + "] received message with messageId [" + messageId + "]" + additionalLogging;
+			log.info(logMsg);
 		}
 
 
 		try {
 			result = pipeline.process(messageId, message,pipeLineSession);
 			//if (isRequestReplyLogging()) {
-			logMsg = "Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine";
+			logMsg = "Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine";
 			if (isMsgLogTerseEnabled()) {
 				if (isMsgLogHidden()) {
-					msgLog.info("Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [LENGTH=" + result.toString().length() + "] from PipeLine");
+					msgLog.info("Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [LENGTH=" + result.toString().length() + ", DURATION=" + (System.currentTimeMillis() - startTime) + "ms] from PipeLine");
 				} else {
 					msgLog.info(logMsg);
 				}

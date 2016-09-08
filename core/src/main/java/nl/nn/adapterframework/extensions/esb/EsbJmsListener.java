@@ -19,10 +19,12 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -105,6 +107,28 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 					}
 				}
 			}
+		}
+
+		try {
+			TextMessage textMessage = (TextMessage) message;
+			String soapMessage = textMessage.getText();
+
+			if(getxPathLogMap().size() > 0) {
+				String xPathLogKeys = "";
+				Iterator<Entry<String, String>> it = getxPathLogMap().entrySet().iterator();
+			    while (it.hasNext()) {
+			    	Map.Entry<String, String> pair = (Entry<String, String>) it.next();
+			    	String sessionKey = pair.getKey();
+			        String xPath = pair.getValue();
+			        String result = getResultFromxPath(soapMessage, xPath);
+					if(result.length() > 0) {
+						threadContext.put(sessionKey, result);
+				        xPathLogKeys = xPathLogKeys + "," + sessionKey; //Only pass items that have been found, otherwise logs will clutter with NULL.
+					}
+			    }
+			    threadContext.put("xPathLogKeys", xPathLogKeys);
+			}
+		} catch (JMSException e) {
 		}
 		return id;
 	}
