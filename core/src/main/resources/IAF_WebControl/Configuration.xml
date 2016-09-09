@@ -4,7 +4,7 @@
 	<!ENTITY TestIfsaService SYSTEM "ConfigurationTestIfsaService.xml">
 	<!ENTITY UploadConfig SYSTEM "ConfigurationUploadConfig.xml">
 	<!ENTITY ShowConfig SYSTEM "ConfigurationShowConfig.xml">
-	<!ENTITY GenerateFlowDiagram SYSTEM "ConfigurationGenerateFlowDiagram.xml">
+	<!ENTITY ShowFlowDiagram SYSTEM "ConfigurationShowFlowDiagram.xml">
 ]>
 <configuration name="IAF_WebControl">
 	&Webservices;
@@ -12,5 +12,5 @@
 	&TestIfsaService;
 	&UploadConfig;
 	&ShowConfig;
-	&GenerateFlowDiagram;
+	&ShowFlowDiagram;
 </configuration>

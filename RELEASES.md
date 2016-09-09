@@ -97,6 +97,7 @@ Upcoming
 - Add ability to log info from incoming messages on EsbJmsListener extracted by an xPath
 - Change defaults for msg.log.level.default to terse, msg.log.hidden.default to true
 - Add default logging conversationId from incoming messages on EsbJmsListener
+- Add facility to generate flow images real time
 
 
 

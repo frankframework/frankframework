@@ -18,6 +18,8 @@ package nl.nn.adapterframework.configuration;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -27,8 +29,11 @@ import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.ServiceClassLoader;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.FlowDiagram;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
@@ -63,6 +68,7 @@ public class IbisContext {
 	private static final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
+	private static final String FLOW_CREATE_DIAGRAM_URL = APP_CONSTANTS.getResolvedProperty("flow.create.url");
 	static {
 		String applicationServerType = System.getProperty(
 				APPLICATION_SERVER_TYPE_PROPERTY);
@@ -91,6 +97,7 @@ public class IbisContext {
 	private IbisManager ibisManager;
 	private Map<String, MessageKeeper> messageKeepers = new HashMap<String, MessageKeeper>();
 	private int messageKeeperSize = 10;
+	private FlowDiagram flowDiagram;
 
 	public void setDefaultApplicationServerType(String defaultApplicationServerType) {
 		if (defaultApplicationServerType.equals(getApplicationServerType())) {
@@ -126,6 +133,9 @@ public class IbisContext {
 	 */
 	public synchronized void init() {
 		long start = System.currentTimeMillis();
+		if (StringUtils.isNotEmpty(FLOW_CREATE_DIAGRAM_URL)) {
+			flowDiagram = new FlowDiagram(FLOW_CREATE_DIAGRAM_URL);
+		}
 		applicationContext = createApplicationContext();
 		ibisManager = (IbisManager)applicationContext.getBean("ibisManager");
 		ibisManager.setIbisContext(this);
@@ -299,6 +309,7 @@ public class IbisContext {
 							log(currentConfigurationName, currentConfigurationVersion,
 									"configured in " + (System.currentTimeMillis() - start) + " ms");
 						}
+						generateFlows(configuration, currentConfigurationName, currentConfigurationVersion);
 					} else {
 						throw customClassLoaderConfigurationException;
 					}
@@ -312,9 +323,52 @@ public class IbisContext {
 				}
 			}
 		}
+		generateFlow();
 		if (!configFound) {
 			log(configurationName, configurationName + " not found in '"
 					+ CONFIGURATIONS + "'", MessageKeeperMessage.ERROR_LEVEL);
+		}
+	}
+
+	private void generateFlows(Configuration configuration,
+			String currentConfigurationName, String currentConfigurationVersion) {
+		if (flowDiagram != null) {
+			List<IAdapter> registeredAdapters = configuration
+					.getRegisteredAdapters();
+			for (Iterator adapterIt = registeredAdapters.iterator(); adapterIt
+					.hasNext();) {
+				Adapter adapter = (Adapter) adapterIt.next();
+				try {
+					flowDiagram.generate(adapter);
+				} catch (Exception e) {
+					log(currentConfigurationName, currentConfigurationVersion,
+							"error generating flowDiagram for adapter ["
+									+ adapter.getName() + "]",
+							MessageKeeperMessage.WARN_LEVEL, e);
+				}
+			}
+
+			try {
+				flowDiagram.generate(configuration);
+			} catch (Exception e) {
+				log(currentConfigurationName, currentConfigurationVersion,
+						"error generating flowDiagram for configuration ["
+								+ configuration.getName() + "]",
+						MessageKeeperMessage.WARN_LEVEL, e);
+			}
+		}
+	}
+
+	private void generateFlow() {
+		if (flowDiagram != null) {
+			List<Configuration> configurations = ibisManager
+					.getConfigurations();
+			try {
+				flowDiagram.generate(configurations);
+			} catch (Exception e) {
+				log("*ALL*", null, "error generating flowDiagram",
+						MessageKeeperMessage.WARN_LEVEL, e);
+			}
 		}
 	}
 

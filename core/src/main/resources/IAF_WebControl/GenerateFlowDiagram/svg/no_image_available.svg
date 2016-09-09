@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-300 -300 600 600" width="300px" height="300px" version="1.0" xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:space="preserve">
+<circle fill="#fff" stroke="#aaa" stroke-width="10" r="280" />
+<text style="text-align: center; line-height: 125%; font-family: Bitstream Vera Sans,Liberation Sans, Arial, sans-serif; font-size: 360px; -ms-writing-mode: lr-tb; fill: #444; stroke: #000; stroke-opacity: 0.5; stroke-width: 2; text-anchor: middle;" transform="scale(0.2)">
+<tspan x="8" y="-40">NO IMAGE</tspan>
+<tspan x="8" y="400">AVAILABLE</tspan>
+</text>
+</svg>

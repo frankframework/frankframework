@@ -100,7 +100,8 @@ refresh="showConfigurationStatus.do">
 				<subHeader align="center">ERROR messages</subHeader>
 				<subHeader>Actions</subHeader>
 			</tr>
-			<xtags:variable id="configFlowUrl" select="'images/flow/IBIS.svg'"/>
+			<% String configName = (String) session.getAttribute("configurationName");
+			   String configFlowUrl = "rest/showFlowDiagram?configuration=" + FileUtils.encodeFileName(configName); %>
 			<tr>
 				<subHeader>Adapters</subHeader>
 				<td class="receiverRow" align="right"><xtags:valueOf select="//registeredAdapters/summary/adapterState/@started"/></td>
@@ -222,7 +223,7 @@ refresh="showConfigurationStatus.do">
 
 		<xtags:forEach select="adapter" sort="@nameUC">
 			<xtags:variable id="adapterName" select="@name"/>
-			<% String adapterFlowUrl = "images/flow/" + FileUtils.encodeFileName(adapterName) + ".svg"; %>
+			<% String adapterFlowUrl = "rest/showFlowDiagram/" + FileUtils.encodeFileName(adapterName); %>
 			<br/>
 			<contentTable width="100%">
 				<tbody>
