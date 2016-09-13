@@ -118,11 +118,20 @@ public class XmlIf extends AbstractPipe {
 				throw new PipeRunException(this,getLogPrefix(session)+"cannot evaluate expression",e);
 			}
 		} else {
-			if (sInput.equals(expressionValue)) {
-				forward = thenForwardName;
-			}
-			else {
-				forward = elseForwardName;
+			if (StringUtils.isEmpty(expressionValue)) {
+				if (StringUtils.isEmpty(sInput)) {
+					forward = elseForwardName;
+				}
+				else {
+					forward = thenForwardName;
+				}
+			} else {
+				if (sInput.equals(expressionValue)) {
+					forward = thenForwardName;
+				}
+				else {
+					forward = elseForwardName;
+				}
 			}
 		}
 
