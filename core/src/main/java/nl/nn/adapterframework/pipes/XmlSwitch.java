@@ -53,6 +53,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of transformation</td><td>application default</td></tr>
  * <tr><td>{@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename}</td><td>stylesheet may return a String representing the forward to look up</td><td><i>a stylesheet that returns the name of the root-element</i></td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>XPath-expression that returns a String representing the forward to look up. It's possible to refer to a parameter (which e.g. contains a value from a sessionKey) by using the parameter name prefixed with $</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setNamespaceDefs(String) namespaceDefs}</td><td>namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the input message from. (N.B. same as <code>getInputFromSessionKey</code>)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setEmptyForwardName(String) emptyForwardName}</td><td>Forward returned when the content, on which the switch is performed, is empty. If <code>emptyForwardName</code> is not specified, <code>notFoundForwardName</code> is used.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNotFoundForwardName(String) notFoundForwardName}</td><td>Forward returned when the pipename derived from the stylesheet could not be found.</td><td>&nbsp;</td></tr>
@@ -76,6 +77,7 @@ public class XmlSwitch extends AbstractPipe {
     private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 	private TransformerPool transformerPool=null;
 	private String xpathExpression=null;
+	private String namespaceDefs = null; 
     private String serviceSelectionStylesheetFilename=null;
 	private String sessionKey=null;
     private String notFoundForwardName=null;
@@ -109,7 +111,7 @@ public class XmlSwitch extends AbstractPipe {
 			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
 				throw new ConfigurationException(getLogPrefix(null) + "cannot have both an xpathExpression and a serviceSelectionStylesheetFilename specified");
 			}
-			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), classLoader, null, getXpathExpression(), null, "text", false, getParameterList(), isXslt2());
+			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), classLoader, getNamespaceDefs(), getXpathExpression(), null, "text", false, getParameterList(), isXslt2());
 		} 
 		else {
 			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
@@ -251,6 +253,13 @@ public class XmlSwitch extends AbstractPipe {
 	 */
 	public void setXpathExpression(String xpathExpression) {
 		this.xpathExpression = xpathExpression;
+	}
+
+	public void setNamespaceDefs(String namespaceDefs) {
+		this.namespaceDefs = namespaceDefs;
+	}
+	public String getNamespaceDefs() {
+		return namespaceDefs;
 	}
 
 	public void setSessionKey(String sessionKey){

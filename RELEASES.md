@@ -99,6 +99,7 @@ Upcoming
 - Add default logging conversationId from incoming messages on EsbJmsListener
 - Add facility to generate flow images real time
 - Bugfix in XmlIf for testing empty input
+- Add namespaceDefs attribute to XmlSwitch
 
 
 
