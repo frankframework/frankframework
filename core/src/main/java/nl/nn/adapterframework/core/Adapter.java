@@ -568,10 +568,11 @@ public class Adapter implements IAdapter, NamedBean {
 		try {
 			result = pipeline.process(messageId, message,pipeLineSession);
 			//if (isRequestReplyLogging()) {
-			logMsg = "Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine";
+			long duration = System.currentTimeMillis() - startTime;
+			logMsg = "Adapter [" + getName() + "] messageId [" + messageId + "] duration [" + duration + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine";
 			if (isMsgLogTerseEnabled()) {
 				if (isMsgLogHidden()) {
-					msgLog.info("Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [LENGTH=" + result.toString().length() + ", DURATION=" + (System.currentTimeMillis() - startTime) + "ms] from PipeLine");
+					msgLog.info("Adapter [" + getName() + "] messageId [" + messageId + "] duration [" + duration + "] got exit-state [" + result.getState() + "] and result [LENGTH=" + result.toString().length() + "] from PipeLine");
 				} else {
 					msgLog.info(logMsg);
 				}
