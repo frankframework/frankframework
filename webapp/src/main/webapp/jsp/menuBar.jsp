@@ -1,3 +1,4 @@
+<%@ page import="nl.nn.adapterframework.monitoring.MonitorManager"%>
 <%@ page import="nl.nn.adapterframework.util.AppConstants"%>
 <%@ page import="nl.nn.adapterframework.util.XmlUtils"%>
 
@@ -84,11 +85,13 @@
 				type="security"
 				alt="Show Security Items">
 			</imagelink>
-			<imagelink 
-				href="showMonitors.do"
-				type="monitoring"
-				alt="Show Monitors">
-			</imagelink>
+			<% if (MonitorManager.getInstance().isEnabled()) { %>
+				<imagelink 
+					href="showMonitors.do"
+					type="monitoring"
+					alt="Show Monitors">
+				</imagelink>
+			<% } %>
 			<imagelink 
 				href="showIbisstoreSummary.do"
 				type="showsummary"

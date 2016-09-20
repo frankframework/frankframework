@@ -15,22 +15,35 @@
 */
 package nl.nn.adapterframework.monitoring;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import nl.nn.adapterframework.configuration.AttributeCheckingRule;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Lock;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
+
 import org.apache.commons.digester.AbstractObjectCreationFactory;
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.Rule;
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
-
-import java.util.*;
 
 /**
  * Manager for Monitoring.
@@ -62,7 +75,7 @@ public class MonitorManager implements EventHandler {
 
 
 
-	private boolean enabled;
+	private boolean enabled = AppConstants.getInstance().getBoolean("monitoring.enabled", false);
 	private Date lastStateChange=null;
 
 	private Lock structureLock = new Lock();
@@ -245,7 +258,11 @@ public class MonitorManager implements EventHandler {
 	}
 
 	public static EventHandler getEventHandler() {
-		return getInstance();
+		if (getInstance().isEnabled()) {
+			return getInstance();
+		} else {
+			return null;
+		}
 	}
 
 

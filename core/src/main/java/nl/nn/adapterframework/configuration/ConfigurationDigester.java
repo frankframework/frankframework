@@ -157,7 +157,9 @@ public class ConfigurationDigester {
 		digester.addRule("*/outputValidator", attributeChecker);
 		digester.addRule("*/inputWrapper", attributeChecker);
 		digester.addRule("*/outputWrapper", attributeChecker);
-		MonitorManager.getInstance().setDigesterRules(digester);
+		if (MonitorManager.getInstance().isEnabled()) {
+			MonitorManager.getInstance().setDigesterRules(digester);
+		}
 
 		boolean validation = AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY, false);
 		if (validation) {
@@ -218,7 +220,9 @@ public class ConfigurationDigester {
 				"] with digester-rules-file ["+getDigesterRules()+"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
 			throw e;
 		}
-		MonitorManager.getInstance().configure(configuration);
+		if (MonitorManager.getInstance().isEnabled()) {
+			MonitorManager.getInstance().configure(configuration);
+		}
 	}
 
 	private void saveConfig(String config, boolean append) {

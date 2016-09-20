@@ -25,6 +25,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.AppConstants;
@@ -266,8 +267,10 @@ public class CreateRestViewPipe extends XsltPipe {
 				"DumpIbisConsole", "dump", "Dump Ibis Console"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"showSecurityItems.do", "security", "Show Security Items"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"showMonitors.do", "monitoring", "Show Monitors"));
+		if (MonitorManager.getInstance().isEnabled()) {
+			imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
+					"showMonitors.do", "monitoring", "Show Monitors"));
+		}
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"showIbisstoreSummary.do", "showsummary",
 				"Show Ibisstore Summary"));
