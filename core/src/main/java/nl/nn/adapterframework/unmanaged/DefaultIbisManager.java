@@ -21,10 +21,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
+import nl.nn.adapterframework.configuration.AdapterService;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IReceiver;
@@ -33,7 +33,6 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.ejb.ListenerPortPoller;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
-import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -99,18 +98,12 @@ public class DefaultIbisManager implements IbisManager {
 
     /**
      * Shut down the IBIS instance and clean up.
-     *
-     * After execution of this method, the IBIS instance can not
-     * be used anymore.
-     *
-     * TODO: Add shutdown-methods to Adapter, Receiver, Listener to make shutdown more complete.
      */
     public void shutdown() {
         shutdownScheduler();
         if (listenerPortPoller != null) {
             listenerPortPoller.clear();
         }
-        RestServiceDispatcher.getInstance().unregisterAllServiceClients();
         unload((String)null);
         IbisCacheManager.shutdown();
     }
@@ -126,28 +119,48 @@ public class DefaultIbisManager implements IbisManager {
 	}
 
 	private void unload(Configuration configuration) {
-		configurations.remove(configuration);
+		configuration.setUnloadInProgressOrDone(true);
+		while (configuration.getStartAdapterThreads().size() > 0) {
+			log.debug("Waiting for start threads to end: " + configuration.getStartAdapterThreads());
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				log.warn("Interrupted waiting for start threads to end", e);
+			}
+		}
+		stopAdapters(configuration);
+		while (configuration.getStopAdapterThreads().size() > 0) {
+			log.debug("Waiting for stop threads to end: " + configuration.getStopAdapterThreads());
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				log.warn("Interrupted waiting for stop threads to end", e);
+			}
+		}
 		//destroy all jmsContainers
-		if (null != configuration) {
-			for (int i = 0; i < configuration.getRegisteredAdapters().size(); i++) {
-				IAdapter adapter = configuration.getRegisteredAdapter(i);
-				Iterator recIt = adapter.getReceiverIterator();
-				if (recIt.hasNext()) {
-					while (recIt.hasNext()) {
-						IReceiver receiver = (IReceiver) recIt.next();
-						if (receiver instanceof ReceiverBase) {
-							ReceiverBase rb = (ReceiverBase) receiver;
-							IListener listener = rb.getListener();
-							if (listener instanceof PushingJmsListener) {
-								PushingJmsListener pjl = (PushingJmsListener) listener;
-								pjl.destroy();
-							}
+		for (int i = 0; i < configuration.getRegisteredAdapters().size(); i++) {
+			IAdapter adapter = configuration.getRegisteredAdapter(i);
+			Iterator recIt = adapter.getReceiverIterator();
+			if (recIt.hasNext()) {
+				while (recIt.hasNext()) {
+					IReceiver receiver = (IReceiver) recIt.next();
+					if (receiver instanceof ReceiverBase) {
+						ReceiverBase rb = (ReceiverBase) receiver;
+						IListener listener = rb.getListener();
+						if (listener instanceof PushingJmsListener) {
+							PushingJmsListener pjl = (PushingJmsListener) listener;
+							pjl.destroy();
 						}
 					}
 				}
 			}
 		}
-		stopAdapters(configuration);
+		while (configuration.getRegisteredAdapters().size() > 0) {
+			IAdapter adapter = configuration.getRegisteredAdapter(0);
+			AdapterService adapterService = configuration.getAdapterService();
+			adapterService.unRegisterAdapter(adapter);
+		}
+		configurations.remove(configuration);
 	}
 
 	/**
@@ -172,7 +185,7 @@ public class DefaultIbisManager implements IbisManager {
 				for (Configuration configuration : configurations) {
 					if (configuration.getRegisteredAdapter(adapterName) != null) {
 						log.info("Stopping adapter [" + adapterName + "], on request of [" + commandIssuedBy+"]");
-						stopAdapter(configuration.getRegisteredAdapter(adapterName));
+						configuration.getRegisteredAdapter(adapterName).stopRunning();
 					}
 				}
 			}
@@ -192,7 +205,7 @@ public class DefaultIbisManager implements IbisManager {
 					for (Configuration configuration : configurations) {
 						if (configuration.getRegisteredAdapter(adapterName) != null) {
 							log.info("Starting adapter [" + adapterName + "] on request of [" + commandIssuedBy+"]");
-							startAdapter(configuration.getRegisteredAdapter(adapterName));
+							configuration.getRegisteredAdapter(adapterName).startRunning();
 						}
 					}
 				} catch (Exception e) {
@@ -346,84 +359,31 @@ public class DefaultIbisManager implements IbisManager {
         }
     }
 
-    /* (non-Javadoc)
-     * @see nl.nn.adapterframework.configuration.IbisManager#startAdapters()
-     */
-    public void startAdapters(Configuration configuration) {
+    private void startAdapters(Configuration configuration) {
         log.info("Starting all autostart-configured adapters for configuation " + configuration.getConfigurationName());
         for (IAdapter adapter : configuration.getAdapterService().getAdapters().values()) {
             if (adapter.isAutoStart()) {
                 log.info("Starting adapter [" + adapter.getName()+"]");
-                startAdapter(adapter);
+                adapter.startRunning();
             }
         }
     }
 
-    public void stopAdapters() {
+    private void stopAdapters() {
         for (Configuration configuration : configurations) {
             stopAdapters(configuration);
        }
     }
 
-    /* (non-Javadoc)
-     * @see nl.nn.adapterframework.configuration.IbisManager#stopAdapters()
-     */
-    public void stopAdapters(Configuration configuration) {
+    private void stopAdapters(Configuration configuration) {
         configuration.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
         log.info("Stopping all adapters for configuation " + configuration.getConfigurationName());
         List<IAdapter> adapters = new ArrayList<IAdapter>(configuration.getAdapterService().getAdapters().values());
         Collections.reverse(adapters);
         for (IAdapter adapter : adapters) {
             log.info("Stopping adapter [" + adapter.getName() + "]");
-			stopAdapter(adapter);
+            adapter.stopRunning();
         }
-    }
-
-    /**
-     * Start the adapter. The thread-name will be set tot the adapter's name.
-     * The run method, called by t.start(), will call the startRunning method
-     * of the IReceiver. The Adapter will be a new thread, as this interface
-     * extends the <code>Runnable</code> interface. The actual starting is done
-     * in the <code>run</code> method.
-     * @see IReceiver#startRunning()
-     * @see Adapter#run
-     */
-    public void startAdapter(final IAdapter adapter) {
-        adapter.startRunning();
-        /*
-        Object monitor;
-        synchronized (adapterThreads) {
-            monitor = adapterThreads.get(adapter.getName());
-            if (monitor == null) {
-                monitor = new Object();
-                adapterThreads.put(adapter.getName(), monitor);
-            }
-        }
-        final Object fMonitor = monitor;
-        final Thread t = new Thread(new Runnable() {
-            public void run() {
-                synchronized (fMonitor) {
-                    adapter.startRunning();
-                    try {
-                        fMonitor.wait();
-                    } catch (InterruptedException e) {
-                        // Ignore
-                    }
-                    adapter.stopRunning();
-                }
-            }
-        }, adapter.getName());
-        t.start();
-        */
-    }
-    public void stopAdapter(final IAdapter adapter) {
-        adapter.stopRunning();
-        /*
-        Object monitor = adapterThreads.get(adapter.getName());
-        synchronized (monitor) {
-            monitor.notify();
-        }
-        */
     }
 
     public IAdapter getRegisteredAdapter(String name) {

@@ -63,30 +63,6 @@ public interface IbisManager {
      * instance is not useable anymore: it will need to be recreated.
      */
     void shutdown();
-    /**
-     * Start all adapters of configuration.
-     */
-    void startAdapters(Configuration configuration);
-    /**
-     * Stop all adapters of the IBIS instance.
-     */
-    void stopAdapters();
-    /**
-     * Stop all adapters of configuration.
-     */
-    void stopAdapters(Configuration configuration);
-    /**
-     * Start the given adapter.
-     * 
-     * @param adapter Adapter to start.
-     */
-    void startAdapter(IAdapter adapter);
-    /**
-     * Stop the given Adapter.
-     * 
-     * @param adapter Adapter to stop.
-     */
-    void stopAdapter(IAdapter adapter);
 
     public IAdapter getRegisteredAdapter(String name);
 

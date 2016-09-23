@@ -286,6 +286,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			}
 	
 			try {
+				if (getSender() instanceof MessageSendingPipeAware) {
+					((MessageSendingPipeAware)getSender()).setMessageSendingPipe(this);
+				}
 				getSender().configure();
 			} catch (ConfigurationException e) {
 				throw new ConfigurationException(getLogPrefix(null)+"while configuring sender",e);
@@ -668,8 +671,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					return new PipeRunResult(exceptionForward,resultmsg);
 				}
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
+					}
 			}
-		}
 		if (!validResult(result)) {
 			PipeForward illegalResultForward = findForward(ILLEGALRESULTFORWARD);
 			return new PipeRunResult(illegalResultForward, result);

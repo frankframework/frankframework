@@ -41,39 +41,5 @@ public class RunStateManager implements RunStateEnquirer {
 			notifyAll();
 		}
 	}
-	/**
-	 * Performs a <code>wait()</code> until the object is in the requested state.
-	 * @param requestedRunState    the RunStateEnum requested
-	 * @throws InterruptedException when interruption occurs
-	 */
-	public synchronized void waitForRunState(RunStateEnum requestedRunState)
-		throws InterruptedException {
-		while (!runState.equals(requestedRunState)) {
-			wait();
-		}
-	}
-	
-	/**
-	 * Performs a <code>wait()</code> until the object is in the requested state, or maxWait ms elapsed.
-	 * @param requestedRunState    the RunStateEnum requested
-	 * @param maxWait              maximum amount of milliseconds to wait.
-	 * @throws InterruptedException when interruption occurs
-	 */
-	public boolean waitForRunState(RunStateEnum requestedRunState, long maxWait) throws InterruptedException {
-		long cts = System.currentTimeMillis();
-		RunStateEnum newState = null;
-		synchronized(this) {
-			while (! (newState = getRunState()).equals(requestedRunState)) {
-				long togo = maxWait - (System.currentTimeMillis() - cts);
-				if (togo > 0) {
-					wait(togo);
-				}
-				else {
-					break;
-				}
-			}
-		}
-		return newState.equals(requestedRunState);
-	}
-	
+
 }

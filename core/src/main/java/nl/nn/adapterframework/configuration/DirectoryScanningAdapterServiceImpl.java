@@ -161,7 +161,7 @@ public class DirectoryScanningAdapterServiceImpl extends BasicAdapterServiceImpl
         if (adapter.getRunState() != RunStateEnum.STARTED) {
             adapter.stopRunning();
         }
-        unRegisterAdapter(adapter.getName());
+        unRegisterAdapter(adapter);
     }
 
     protected void registerAndStart(final IAdapter adapter) throws ConfigurationException {

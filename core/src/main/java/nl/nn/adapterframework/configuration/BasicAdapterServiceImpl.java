@@ -33,16 +33,13 @@ public class BasicAdapterServiceImpl extends AdapterServiceImpl {
     }
 
     @Override
-    protected IAdapter unRegisterAdapter(String name) {
-        IAdapter removed = super.unRegisterAdapter(name);
-        if (removed != null) {
-            try {
-                JmxMbeanHelper.unhookAdapter(removed);
-            } catch (Throwable t) {
-                LOG.warn(t.getMessage());
-            }
+    public void unRegisterAdapter(IAdapter adapter) {
+        super.unRegisterAdapter(adapter);
+        try {
+            JmxMbeanHelper.unhookAdapter(adapter);
+        } catch (Throwable t) {
+            LOG.warn(t.getMessage());
         }
-        return removed;
     }
 
 }

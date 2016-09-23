@@ -74,6 +74,12 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), method, etagSessionKey, contentTypeSessionKey);
 	}
 
+	@Override
+	public void close() {
+		super.close();
+		RestServiceDispatcher.getInstance().unregisterServiceClient(getUriPattern());
+	}
+
 	public String processRequest(String correlationId, String message,
 			Map requestContext) throws ListenerException {
 		String requestRestPath = (String) requestContext.get("restPath");

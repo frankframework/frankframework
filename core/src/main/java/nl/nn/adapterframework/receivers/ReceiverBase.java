@@ -468,37 +468,54 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		}
 	}
 
-	protected void tellResourcesToStop() throws ListenerException {
-		 // must lead to a 'closeAllResources()'
-		 // runstate is 'STOPPING'
-		 // default just calls 'closeAllResources()'
-		 if (getListener() instanceof IPushingListener) {
+	protected void tellResourcesToStop() {
+		// must lead to a 'closeAllResources()'
+		// runstate is 'STOPPING'
+		// default just calls 'closeAllResources()'
+		if (getListener() instanceof IPushingListener) {
 			closeAllResources();
-		 }
-		 // IPullingListeners stop as their threads finish, as the runstate is set to stopping
+		}
+		// IPullingListeners stop as their threads finish, as the runstate is set to stopping
+		// See PullingListenerContainer that calls receiver.isInRunState(RunStateEnum.STARTED)
+		// and receiver.closeAllResources()
 	}
 	protected void closeAllResources() {
 		// on exit resouces must be in a state that runstate can be set to 'STOPPED'
+		log.debug(getLogPrefix()+"closing");
 		try {
-			log.debug(getLogPrefix()+"closing");
 			getListener().close();
-			if (getSender()!=null) {
-				getSender().close();
-			}
-			if (getErrorSender()!=null) {
-				getErrorSender().close();
-			}
-			if (getErrorStorage()!=null) {
-				getErrorStorage().close();
-			}
-			if (getMessageLog()!=null) {
-				getMessageLog().close();
-			}
-	
-			log.debug(getLogPrefix()+"closed");
-		} catch (Exception e) {
-			error(getLogPrefix()+"error closing connection", e);
+		} catch (Throwable t) {
+			error(getLogPrefix()+"error closing listener", t);
 		}
+		if (getSender()!=null) {
+			try {
+				getSender().close();
+			} catch (Throwable t) {
+				error(getLogPrefix()+"error closing sender", t);
+			}
+		}
+		if (getErrorSender()!=null) {
+			try {
+				getErrorSender().close();
+			} catch (Throwable t) {
+				error(getLogPrefix()+"error closing error sender", t);
+			}
+		}
+		if (getErrorStorage()!=null) {
+			try {
+				getErrorStorage().close();
+			} catch (Throwable t) {
+				error(getLogPrefix()+"error closing error storage", t);
+			}
+		}
+		if (getMessageLog()!=null) {
+			try {
+				getMessageLog().close();
+			} catch (Throwable t) {
+				error(getLogPrefix()+"error closing message log", t);
+			}
+		}
+		log.debug(getLogPrefix()+"closed");
 		runState.setRunState(RunStateEnum.STOPPED);
 		throwEvent(RCV_SHUTDOWN_MONITOR_EVENT);
 		resetRetryInterval();
@@ -711,61 +728,76 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 
 	public void startRunning() {
-        if (!configurationSucceeded) {
-            log.error(
-                "configuration of receiver ["
-                    + getName()
-                    + "] did not succeed, therefore starting the receiver is not possible");
-            warn("configuration did not succeed. Starting the receiver ["+getName()+"] is not possible");
-            runState.setRunState(RunStateEnum.ERROR);
-            return;
-        }
-		// if this receiver is on an adapter, the StartListening method
-		// may only be executed when the adapter is started.
-		if (adapter != null) {
-			RunStateEnum adapterRunState = adapter.getRunState();
-			if (!adapterRunState.equals(RunStateEnum.STARTED)) {
-				log.warn(getLogPrefix()+"on adapter ["
-						+ adapter.getName()
-						+ "] was tried to start, but the adapter is in state ["+adapterRunState+"]. Ignoring command.");
-				adapter.getMessageKeeper().add(
-					"ignored start command on [" + getName()  + "]; adapter is in state ["+adapterRunState+"]");
+		try {
+			// if this receiver is on an adapter, the StartListening method
+			// may only be executed when the adapter is started.
+			if (adapter != null) {
+				RunStateEnum adapterRunState = adapter.getRunState();
+				if (!adapterRunState.equals(RunStateEnum.STARTED)) {
+					log.warn(getLogPrefix()+"on adapter ["
+							+ adapter.getName()
+							+ "] was tried to start, but the adapter is in state ["+adapterRunState+"]. Ignoring command.");
+					adapter.getMessageKeeper().add(
+						"ignored start command on [" + getName()  + "]; adapter is in state ["+adapterRunState+"]");
+					return;
+				}
+			}
+			// See also Adapter.startRunning()
+			if (!configurationSucceeded) {
+				log.error(
+					"configuration of receiver ["
+						+ getName()
+						+ "] did not succeed, therefore starting the receiver is not possible");
+				warn("configuration did not succeed. Starting the receiver ["+getName()+"] is not possible");
+				runState.setRunState(RunStateEnum.ERROR);
 				return;
 			}
-		}
-		try {
+			if (adapter.getConfiguration().isUnloadInProgressOrDone()) {
+				log.error(
+					"configuration of receiver ["
+						+ getName()
+						+ "] unload in progress or done, therefore starting the receiver is not possible");
+				warn("configuration unload in progress or done. Starting the receiver ["+getName()+"] is not possible");
+				return;
+			}
+			synchronized (runState) {
+				RunStateEnum currentRunState = getRunState();
+				if (!currentRunState.equals(RunStateEnum.STOPPED)) {
+					String msg =
+					getLogPrefix()+"currently in state [" + currentRunState + "], ignoring start() command";
+					warn(msg);
+					return;
+				}
+				runState.setRunState(RunStateEnum.STARTING);
+			}
 			String msg=(getLogPrefix()+"starts listening");
 			log.info(msg);
 			if (adapter != null) { 
 				adapter.getMessageKeeper().add(msg);
 			}
-			runState.setRunState(RunStateEnum.STARTING);
 			openAllResources();
 			runState.setRunState(RunStateEnum.STARTED);
-		} catch (ListenerException e) {
-			error(getLogPrefix()+"error occured while starting", e);
+		} catch (Throwable t) {
+			error(getLogPrefix()+"error occured while starting", t);
 			runState.setRunState(RunStateEnum.ERROR);
 		}
 	}
 	
 	public void stopRunning() {
-
-		if (getRunState().equals(RunStateEnum.STOPPED)){
-			return;
-		}
-	
-		if (!getRunState().equals(RunStateEnum.ERROR)) { 
-			runState.setRunState(RunStateEnum.STOPPING);
-			try {
-				tellResourcesToStop();
-			} catch (ListenerException e) {
-				warn("exception stopping receiver: "+e.getMessage());
+		// See also Adapter.stopRunning()
+		synchronized (runState) {
+			RunStateEnum currentRunState = getRunState();
+			if (currentRunState.equals(RunStateEnum.STARTING)
+					|| currentRunState.equals(RunStateEnum.STOPPING)
+					|| currentRunState.equals(RunStateEnum.STOPPED)) {
+				String msg =
+					"receiver currently in state [" + currentRunState + "], ignoring stop() command";
+				warn(msg);
+				return;
 			}
+			runState.setRunState(RunStateEnum.STOPPING);
 		}
-		else {
-			closeAllResources();
-			runState.setRunState(RunStateEnum.STOPPED);
-		}
+		tellResourcesToStop();
 		NDC.remove();
 	}
 
@@ -1517,12 +1549,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		runState.setRunState(state);
 	}
 
-	public void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException {
-		runState.waitForRunState(requestedRunState);
-	}
-	public boolean waitForRunState(RunStateEnum requestedRunState, long timeout) throws InterruptedException {
-		return runState.waitForRunState(requestedRunState, timeout);
-	}
+//	public void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException {
+//		runState.waitForRunState(requestedRunState);
+//	}
+//	public boolean waitForRunState(RunStateEnum requestedRunState, long timeout) throws InterruptedException {
+//		return runState.waitForRunState(requestedRunState, timeout);
+//	}
 	
 		/**
 		 * Get the {@link RunStateEnum runstate} of this receiver.

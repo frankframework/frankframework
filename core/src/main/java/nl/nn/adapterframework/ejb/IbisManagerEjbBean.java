@@ -102,26 +102,6 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
 		ibisManager.unload(configurationName);
     }
 
-    public void startAdapters(Configuration configuration) {
-		ibisManager.startAdapters(configuration);
-    }
-
-    public void stopAdapters() {
-		ibisManager.stopAdapters();
-    }
-
-    public void stopAdapters(Configuration configuration) {
-		ibisManager.stopAdapters(configuration);
-    }
-
-    public void startAdapter(IAdapter adapter) {
-		ibisManager.startAdapter(adapter);
-    }
-
-    public void stopAdapter(IAdapter adapter) {
-		ibisManager.stopAdapter(adapter);
-    }
-
     public PlatformTransactionManager getTransactionManager() {
         return ibisManager.getTransactionManager();
     }

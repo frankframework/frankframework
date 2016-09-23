@@ -15,4 +15,6 @@ public interface AdapterService {
     Map<String, IAdapter> getAdapters();
 
     void registerAdapter(IAdapter adapter) throws ConfigurationException;
+
+    void unRegisterAdapter(IAdapter adapter);
 }

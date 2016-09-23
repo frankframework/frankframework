@@ -85,25 +85,6 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
         getIbisManager().shutdown();
     }
     
-    public void startAdapters(Configuration configuration) {
-        getIbisManager().startAdapters(configuration);
-    }
-
-    public void stopAdapters() {
-        getIbisManager().stopAdapters();
-    }
-
-    public void stopAdapters(Configuration configuration) {
-        getIbisManager().stopAdapters(configuration);
-    }
-
-    public void startAdapter(IAdapter adapter) {
-        getIbisManager().startAdapter(adapter);
-    }
-
-    public void stopAdapter(IAdapter adapter) {
-        getIbisManager().stopAdapter(adapter);
-    }
 
     public BeanFactory getBeanFactory() {
         return beanFactory;

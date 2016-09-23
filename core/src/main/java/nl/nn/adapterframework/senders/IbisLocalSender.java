@@ -17,6 +17,7 @@ package nl.nn.adapterframework.senders;
 
 import java.util.HashMap;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
@@ -26,9 +27,10 @@ import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
+import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.pipes.MessageSendingPipeAware;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
-import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
@@ -94,9 +96,11 @@ import org.apache.commons.lang.exception.ExceptionUtils;
  * @author Gerrit van Brakel
  * @since  4.2
  */
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
+public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, MessageSendingPipeAware {
 	
 	private String name;
+	private MessageSendingPipe messageSendingPipe;
+	private Configuration configuration;
 	private String serviceName;
 	private String javaListener;
 	private String javaListenerSessionKey;
@@ -122,6 +126,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 						|| StringUtils.isNotEmpty(getJavaListenerSessionKey()))) {
 			throw new ConfigurationException(getLogPrefix()+"serviceName and javaListener cannot be specified both");
 		}
+		configuration = messageSendingPipe.getPipeLine().getAdapter().getConfiguration(); 
 	}
 
 	public void open() throws SenderException {
@@ -129,12 +134,12 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		if (StringUtils.isNotEmpty(getJavaListener()) && isCheckDependency()) {
 			boolean listenerOpened=false;
 			int loops=getDependencyTimeOut();
-			while (!listenerOpened && loops>0) {
+			while (!listenerOpened && !configuration.isUnloadInProgressOrDone() && loops>0) {
 				JavaListener listener= JavaListener.getListener(getJavaListener());
 				if (listener!=null) {
 					listenerOpened=listener.isOpen();
 				}
-				if (!listenerOpened) {
+				if (!listenerOpened && !configuration.isUnloadInProgressOrDone()) {
 					loops--;
 					try {
 						log.debug("waiting for JavaListener ["+getJavaListener()+"] to open");
@@ -146,7 +151,6 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			}
 		}
 	}
-
 
 	public String getPhysicalDestinationName() {
 		if (StringUtils.isNotEmpty(getServiceName())) {
@@ -250,6 +254,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 	public String getName() {
 		return name;
+	}
+
+	public void setMessageSendingPipe(MessageSendingPipe messageSendingPipe) {
+		this.messageSendingPipe = messageSendingPipe;
 	}
 
 	/**

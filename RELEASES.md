@@ -101,6 +101,7 @@ Upcoming
 - Bugfix in XmlIf for testing empty input
 - Add namespaceDefs attribute to XmlSwitch
 - Disable monitoring by default. It's usage is mostly replaced by log management tools like Splunk and Logstash. When monitoring is enabled keep in mind that it will cause OutOfMemory exceptions after a number of configuration reloads
+- Prevent OutOfMemory exception after a number of configuration reloads
 
 
 

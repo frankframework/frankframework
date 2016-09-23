@@ -38,8 +38,8 @@ public class AdapterServiceImpl implements AdapterService {
         adapters.put(adapter.getName(), adapter);
     }
 
-    protected IAdapter unRegisterAdapter(String name) {
-        return adapters.remove(name);
+    public void unRegisterAdapter(IAdapter adapter) {
+        adapters.remove(adapter.getName());
     }
 
 }

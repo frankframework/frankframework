@@ -76,7 +76,5 @@ public interface IReceiver extends IManagable, HasStatistics {
      * @see nl.nn.adapterframework.core.IAdapter
      */
     public void setAdapter(IAdapter adapter);
-    
-	void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException;
-	boolean waitForRunState(RunStateEnum requestedRunState, long timeout) throws InterruptedException;
+
 }

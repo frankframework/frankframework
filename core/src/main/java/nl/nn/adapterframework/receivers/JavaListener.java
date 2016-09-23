@@ -18,6 +18,7 @@ package nl.nn.adapterframework.receivers;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -30,8 +31,6 @@ import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.dispatcher.DispatcherException;
-import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
@@ -109,7 +108,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 			// add myself to global list so that other applications in this JVM (like Everest Portal) can find me.
 			// (performed only if serviceName is not empty
 			if (StringUtils.isNotEmpty(getServiceName())) {
-				rebind(true);
+				DispatcherManagerFactory.getDispatcherManager().register(getServiceName(), this);
 			}
 			opened=true;
 		} catch (Exception e) {
@@ -120,28 +119,20 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	public synchronized void close() throws ListenerException {
 		opened=false;
 		try {
+			// unregister from local list
+			unregisterListener();
 			// unregister from global list
 			if (StringUtils.isNotEmpty(getServiceName())) {
-				rebind(false);
+				// Current DispatcherManager (version 1.3) doesn't have an
+				// unregister method, instead a call to register with a null
+				// value is done.
+				DispatcherManagerFactory.getDispatcherManager().register(getServiceName(), null);
 			}
-			// do not unregister from local list, leave it to handler to handle this
-			// unregisterJavaPusher(getName());
 		}
 		catch (Exception e) {
 			throw new ListenerException("error occured while stopping listener [" + getName() + "]", e);
 		}
 	}
-
-
-	protected void rebind(boolean add) throws DispatcherException {
-		if (StringUtils.isNotEmpty(getServiceName())) {
-			DispatcherManager dm = DispatcherManagerFactory.getDispatcherManager();
-			RequestProcessor processor = add ? this : null;
-			dm.register(getServiceName(), processor);
-		}
-	}
-
-
 
 	public String processRequest(String correlationId, String message, HashMap context) throws ListenerException {
 		if (!isOpen()) {
@@ -204,6 +195,9 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		getListeners().put(getName(), this);
 	}
 
+	private void unregisterListener() {
+		getListeners().remove(getName());
+	}
 
 	/**
 	 * @param name
@@ -221,6 +215,10 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 			registeredListeners = Collections.synchronizedMap(new HashMap());
 		}
 		return registeredListeners;
+	}
+
+	public static Set<String> getListenerNames() {
+		return getListeners().keySet();
 	}
 
 	public void setExceptionListener(IbisExceptionListener listener) {

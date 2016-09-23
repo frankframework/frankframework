@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
@@ -31,6 +32,8 @@ import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.ServiceClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.http.RestServiceDispatcher;
+import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FlowDiagram;
@@ -152,20 +155,45 @@ public class IbisContext {
 	}
 
 	public synchronized void reload(String configurationName) {
-		long start = System.currentTimeMillis();
-		String configurationVersion = null;
 		Configuration configuration = ibisManager.getConfiguration(configurationName);
 		if (configuration != null) {
-			configurationVersion = configuration.getVersion();
+			long start = System.currentTimeMillis();
+			ibisManager.unload(configurationName);
+			if (configuration.getAdapterService().getAdapters().size() > 0) {
+				log("Not all adapters are unregistered: "
+						+ configuration.getAdapterService().getAdapters(),
+						MessageKeeperMessage.ERROR_LEVEL);
+			}
+			// Improve configuration reload performance. Probably because
+			// garbage collection will be easier.
+			configuration.setAdapterService(null);
+			String configurationVersion = configuration.getVersion();
+			log(configurationName, configurationVersion, "unload in "
+					+ (System.currentTimeMillis() - start) + " ms");
+		} else {
+			log("Configuration [" + configurationName + "] to unload not found",
+					MessageKeeperMessage.WARN_LEVEL);
 		}
-		ibisManager.unload(configurationName);
-		log(configurationName, configurationVersion, "unload in "
-				+ (System.currentTimeMillis() - start) + " ms");
 		load(configurationName);
 	}
 
 	public synchronized void fullReload() {
 		destroy();
+		Set<String> javaListenerNames = JavaListener.getListenerNames();
+		if (javaListenerNames.size() > 0) {
+			log("Not all java listeners are unregistered: " + javaListenerNames,
+					MessageKeeperMessage.ERROR_LEVEL);
+		}
+		Set uriPatterns = RestServiceDispatcher.getInstance().getUriPatterns();
+		if (uriPatterns.size() > 0) {
+			log("Not all rest listeners are unregistered: " + uriPatterns,
+					MessageKeeperMessage.ERROR_LEVEL);
+		}
+		Set mbeans = JmxMbeanHelper.getMBeans();
+		if (mbeans != null && mbeans.size() > 0) {
+			log("Not all JMX MBeans are unregistered: " + mbeans,
+					MessageKeeperMessage.ERROR_LEVEL);
+		}
 		init();
 	}
 
@@ -373,15 +401,15 @@ public class IbisContext {
 	}
 
 	private void log(String message) {
-		log(null, null, message, true);
+		log(null, null, message, MessageKeeperMessage.INFO_LEVEL, null, true);
+	}
+
+	private void log(String message, String level) {
+		log(null, null, message, level, null, true);
 	}
 
 	private void log(String configurationName, String configurationVersion, String message) {
 		log(configurationName, configurationVersion, message, MessageKeeperMessage.INFO_LEVEL);
-	}
-
-	private void log(String configurationName, String configurationVersion, String message, boolean allOnly) {
-		log(configurationName, configurationVersion, message, MessageKeeperMessage.INFO_LEVEL, null, allOnly);
 	}
 
 	private void log(String configurationName, String configurationVersion, String message, String level) {

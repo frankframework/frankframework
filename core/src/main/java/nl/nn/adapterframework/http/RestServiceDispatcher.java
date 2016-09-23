@@ -19,6 +19,7 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -170,22 +171,13 @@ public class RestServiceDispatcher  {
 			}
 		}
 	}
-	
-	public  void registerServiceClient(ServiceClient listener,
-			String uriPattern, String method, 
-			String etagSessionKey, String contentTypeSessionKey) throws ConfigurationException {
-		
-		if (StringUtils.isEmpty(uriPattern)) {
-			uriPattern="/";
-		} else {
-			if (!uriPattern.startsWith("/")) {
-				uriPattern="/"+uriPattern;
-			}
-		}
+
+	public void registerServiceClient(ServiceClient listener, String uriPattern,
+			String method, String etagSessionKey, String contentTypeSessionKey) throws ConfigurationException {
+		uriPattern = unifyUriPattern(uriPattern);
 		if (StringUtils.isEmpty(method)) {
 			method=WILDCARD;
 		}
-		
 		Map patternEntry=(Map)patternClients.get(uriPattern);
 		if (patternEntry==null) {
 			patternEntry=new HashMap();
@@ -202,7 +194,23 @@ public class RestServiceDispatcher  {
 		if (StringUtils.isNotEmpty(contentTypeSessionKey)) listenerConfig.put(KEY_CONTENT_TYPE_KEY, contentTypeSessionKey);
 	}
 
-	public void unregisterAllServiceClients() {
-		patternClients.clear();
+	public void unregisterServiceClient(String uriPattern) {
+		uriPattern = unifyUriPattern(uriPattern);
+		patternClients.remove(uriPattern);
+	}
+
+	public Set getUriPatterns() {
+		return patternClients.keySet();
+	}
+
+	private String unifyUriPattern(String uriPattern) {
+		if (StringUtils.isEmpty(uriPattern)) {
+			uriPattern="/";
+		} else {
+			if (!uriPattern.startsWith("/")) {
+				uriPattern="/"+uriPattern;
+			}
+		}
+		return uriPattern;
 	}
 }

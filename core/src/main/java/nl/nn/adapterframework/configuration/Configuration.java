@@ -53,7 +53,11 @@ public class Configuration {
 
 	private boolean autoStart = AppConstants.getInstance().getBoolean("configurations.autoStart", true);
 
-    private final AdapterService adapterService;
+    private AdapterService adapterService;
+
+    private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
+    private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
+    private boolean unloadInProgressOrDone = false;
 
 	private final Map jobTable = new Hashtable(); // TODO useless synchronization ?
     private final List<JobDef> scheduledJobs = new ArrayList<JobDef>();
@@ -193,6 +197,42 @@ public class Configuration {
     
     public AdapterService getAdapterService() {
         return adapterService;
+    }
+
+    public void setAdapterService(AdapterService adapterService) {
+        this.adapterService = adapterService;
+    }
+
+    public void addStartAdapterThread(Runnable runnable) {
+        startAdapterThreads.add(runnable);
+    }
+
+    public void removeStartAdapterThread(Runnable runnable) {
+        startAdapterThreads.remove(runnable);
+    }
+
+    public List<Runnable> getStartAdapterThreads() {
+        return startAdapterThreads;
+    }
+
+    public void addStopAdapterThread(Runnable runnable) {
+        stopAdapterThreads.add(runnable);
+    }
+
+    public void removeStopAdapterThread(Runnable runnable) {
+        stopAdapterThreads.remove(runnable);
+    }
+
+    public List<Runnable> getStopAdapterThreads() {
+        return stopAdapterThreads;
+    }
+
+    public boolean isUnloadInProgressOrDone() {
+        return unloadInProgressOrDone;
+    }
+
+    public void setUnloadInProgressOrDone(boolean unloadInProgressOrDone) {
+        this.unloadInProgressOrDone = unloadInProgressOrDone;
     }
 
     /**

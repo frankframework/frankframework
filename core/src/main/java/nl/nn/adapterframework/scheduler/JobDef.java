@@ -889,7 +889,7 @@ public class JobDef {
 										try {
 											Thread.sleep(1000);
 										} catch (InterruptedException e) {
-											// do nothing
+											log.debug("Interrupted waiting for receiver to stop", e);
 										}
 									}
 								}

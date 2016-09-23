@@ -15,14 +15,26 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.util.List;
+import java.util.Set;
+
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.modelmbean.ModelMBeanAttributeInfo;
+import javax.management.modelmbean.ModelMBeanInfo;
+import javax.management.modelmbean.ModelMBeanInfoSupport;
+import javax.management.modelmbean.ModelMBeanOperationInfo;
+import javax.management.modelmbean.RequiredModelMBean;
+
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JmxUtils;
 import nl.nn.adapterframework.util.LogUtil;
-
-import javax.management.*;
-import javax.management.modelmbean.*;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -43,7 +55,6 @@ public class JmxMbeanHelper {
      * @throws ConfigurationException when something goes wrong
      */
     public static void hookupAdapter(IAdapter adapter) throws ConfigurationException {
-
         try {
             ObjectName objectName = getObjectName(adapter);
 
@@ -58,8 +69,6 @@ public class JmxMbeanHelper {
     }
 
     public static void unhookAdapter(IAdapter adapter) {
-
-
         MBeanServer server = getMBeanServer();
         if (server != null) {
             try {
@@ -72,13 +81,17 @@ public class JmxMbeanHelper {
             } catch (MalformedObjectNameException e) {
                 LOG.error(e.getMessage(), e);
             }
-
         }
-
     }
 
     protected static ObjectName getObjectName(IAdapter adapter) throws MalformedObjectNameException {
-        return new ObjectName("IBIS-" + AppConstants.getInstance().getResolvedProperty("instance.name") + "-" + "Adapters:name=" + adapter.getName());
+        String name = "IBIS-" + AppConstants.getInstance().getResolvedProperty("instance.name") + "-" + "Adapters:name=";
+        if (adapter == null) {
+            name = name + "*";
+        } else {
+            name = name + adapter.getName();
+        }
+        return new ObjectName(name);
     }
 
 
@@ -116,6 +129,17 @@ public class JmxMbeanHelper {
         return servers == null || servers.size() == 0 ? null : (MBeanServer) servers.get(0);
     }
 
+    public static Set getMBeans() {
+        MBeanServer server = getMBeanServer();
+        if (server != null) {
+            try {
+                return server.queryMBeans(getObjectName(null), null);
+            } catch (MalformedObjectNameException e) {
+                LOG.warn("Could not create object name", e);
+            }
+        }
+        return null;
+    }
 
     /**
      * Creates ModelMBeanInfo object of an {@link nl.nn.adapterframework.core.Adapter adapter}
