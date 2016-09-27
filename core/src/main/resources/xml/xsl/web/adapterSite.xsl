@@ -193,8 +193,8 @@
 					</div>
 					<xsl:if test="$fileSystem/totalSpace!='null'">
 						<div>
-							free space: <xsl:value-of select="$fileSystem/freeSpace"/>,
-							total space: <xsl:value-of select="$fileSystem/totalSpace"/>
+							free disk space: <xsl:value-of select="$fileSystem/freeSpace"/>,
+							total disk space: <xsl:value-of select="$fileSystem/totalSpace"/>
 						</div>
 					</xsl:if>
 					<div id="clock"/>
