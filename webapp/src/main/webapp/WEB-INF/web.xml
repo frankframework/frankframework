@@ -357,7 +357,6 @@
             <url-pattern>/testServiceExecute.do</url-pattern>
             <url-pattern>/executeJdbcQuery.do</url-pattern>
             <url-pattern>/executeJdbcQueryExecute.do</url-pattern>
-            <url-pattern>/testtool</url-pattern>
             <url-pattern>/larva/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
@@ -406,11 +405,11 @@
         <role-name>IbisDataAdmin</role-name>
     </security-role>
     <security-role>
-        <description>can do a full reload and set schedules, has all IbisDataAdmin permissions too</description>
+        <description>can do a full reload and test a pipeline, has all IbisDataAdmin permissions too</description>
         <role-name>IbisAdmin</role-name>
     </security-role>
     <security-role>
-        <description>can send test messages, has all IbisAdmin and IbisWebService permissions too</description>
+        <description>can execute jdbc query, send jms message and test a service, has all IbisAdmin and IbisWebService permissions too</description>
         <role-name>IbisTester</role-name>
     </security-role -->
 </web-app>
