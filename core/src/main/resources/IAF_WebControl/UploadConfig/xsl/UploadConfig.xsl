@@ -38,16 +38,17 @@
 							var version = document.getElementById("version").value;
 							var name_new = "";
 							var version_new = "";
-							var i = obj.value.lastIndexOf(".");
+							var filename = obj.value.replace(/^.*[\\\/]/, '');
+							var i = filename.lastIndexOf(".");
 							if (i != -1) {
-								name_new = obj.value.substring(0, i);
+								name_new = filename.substring(0, i);
 								var j = name_new.lastIndexOf("-");
 								if (j != -1) {
 									name_new = name_new.substring(0, j);
 									j = name_new.lastIndexOf("-");
 									if (j != -1) {
-										name_new = obj.value.substring(0, j);
-										version_new = obj.value.substring(j + 1, i);
+										name_new = filename.substring(0, j);
+										version_new = filename.substring(j + 1, i);
 									}
 								}
 							}
