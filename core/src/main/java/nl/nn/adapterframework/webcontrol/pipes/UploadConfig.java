@@ -15,7 +15,12 @@
  */
 package nl.nn.adapterframework.webcontrol.pipes;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -44,7 +49,8 @@ public class UploadConfig extends TimeoutGuardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		ibisContext = ((Adapter)getAdapter()).getConfiguration().getIbisManager().getIbisContext();
+		ibisContext = ((Adapter) getAdapter()).getConfiguration()
+				.getIbisManager().getIbisContext();
 	}
 
 	public String doPipeWithTimeoutGuarded(Object input,
@@ -66,10 +72,57 @@ public class UploadConfig extends TimeoutGuardPipe {
 	}
 
 	private String doPost(IPipeLineSession session) throws PipeRunException {
-		String fileName = (String)session.get("fileName");
-		String name = (String)session.get("name");
-		String version = (String)session.get("version");
-		if (StringUtils.isEmpty(name) && StringUtils.isEmpty(version) && StringUtils.isNotEmpty(fileName)) {
+		String fileName = (String) session.get("fileName");
+		String name = (String) session.get("name");
+		String version = (String) session.get("version");
+
+		if (!StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
+			if (StringUtils.isEmpty(name) && StringUtils.isEmpty(version)) {
+				String[] fnArray = splitFilename(fileName);
+				if (fnArray[0] != null) {
+					name = fnArray[0];
+				}
+				if (fnArray[1] != null) {
+					version = fnArray[1];
+				}
+			}
+
+			if (StringUtils.isEmpty(name)) {
+				throw new PipeRunException(this, getLogPrefix(session)
+						+ "Cannot determine configuration name");
+			}
+
+			if (StringUtils.isEmpty(version)) {
+				throw new PipeRunException(this, getLogPrefix(session)
+						+ "Cannot determine configuration version");
+			}
+		}
+
+		Object file = session.get("file");
+		if (file == null) {
+			throw new PipeRunException(this, getLogPrefix(session)
+					+ "Nothing to send or test");
+		}
+
+		String result = "";
+		if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
+			try {
+				result = processZipFile(session, fileName);
+			} catch (IOException e) {
+				throw new PipeRunException(this, getLogPrefix(session)
+						+ "Error while processing zip file", e);
+			}
+		} else {
+			result = processJarFile(session, name, version, fileName, "file");
+		}
+		session.put("result", result);
+		return "<dummy/>";
+	}
+
+	private String[] splitFilename(String fileName) {
+		String name = null;
+		String version = null;
+		if (StringUtils.isNotEmpty(fileName)) {
 			int i = fileName.lastIndexOf(".");
 			if (i != -1) {
 				name = fileName.substring(0, i);
@@ -84,27 +137,81 @@ public class UploadConfig extends TimeoutGuardPipe {
 				}
 			}
 		}
+		return new String[] { name, version };
+	}
 
-		if (StringUtils.isEmpty(name)) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Cannot determine configuration name");
+	private String processZipFile(IPipeLineSession session, String fileName)
+			throws PipeRunException, IOException {
+		String result = "";
+		Object form_file = session.get("file");
+		if (form_file != null) {
+			if (form_file instanceof InputStream) {
+				InputStream inputStream = (InputStream) form_file;
+				String form_fileEncoding = (String) session.get("fileEncoding");
+				if (inputStream.available() > 0) {
+					/*
+					 * String fileEncoding; if
+					 * (StringUtils.isNotEmpty(form_fileEncoding)) {
+					 * fileEncoding = form_fileEncoding; } else { fileEncoding =
+					 * Misc.DEFAULT_INPUT_STREAM_ENCODING; }
+					 */ZipInputStream archive = new ZipInputStream(inputStream);
+					int counter = 1;
+					for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive
+							.getNextEntry()) {
+						String entryName = entry.getName();
+						int size = (int) entry.getSize();
+						if (size > 0) {
+							byte[] b = new byte[size];
+							int rb = 0;
+							int chunk = 0;
+							while (((int) size - rb) > 0) {
+								chunk = archive.read(b, rb, (int) size - rb);
+								if (chunk == -1) {
+									break;
+								}
+								rb += chunk;
+							}
+							ByteArrayInputStream bais = new ByteArrayInputStream(
+									b, 0, rb);
+							String fileNameSessionKey = "file_zipentry"
+									+ counter;
+							session.put(fileNameSessionKey, bais);
+							if (StringUtils.isNotEmpty(result)) {
+								result += "\n";
+							}
+							String name = "";
+							String version = "";
+							String[] fnArray = splitFilename(entryName);
+							if (fnArray[0] != null) {
+								name = fnArray[0];
+							}
+							if (fnArray[1] != null) {
+								version = fnArray[1];
+							}
+							result += entryName
+									+ ":"
+									+ processJarFile(session, name, version,
+											entryName, fileNameSessionKey);
+							session.remove(fileNameSessionKey);
+						}
+						archive.closeEntry();
+						counter++;
+					}
+					archive.close();
+				}
+			}
 		}
+		return result;
+	}
 
-		if (StringUtils.isEmpty(version)) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Cannot determine configuration version");
-		}
-
-		Object file = session.get("file");
-		if (file == null) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Nothing to send or test");
-		}
-
+	private String processJarFile(IPipeLineSession session, String name,
+			String version, String fileName, String fileNameSessionKey)
+			throws PipeRunException {
 		String form_jmsRealm = (String) session.get("jmsRealm");
 
 		String result = "";
-		FixedQuerySender qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = (FixedQuerySender) ibisContext
+				.createBeanAutowireByName(FixedQuerySender.class);
 		try {
 			qs.setName("QuerySender");
 			qs.setJmsRealm(form_jmsRealm);
@@ -132,7 +239,8 @@ public class UploadConfig extends TimeoutGuardPipe {
 		}
 
 		if (Integer.parseInt(result) > 0) {
-			qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+			qs = (FixedQuerySender) ibisContext
+					.createBeanAutowireByName(FixedQuerySender.class);
 			try {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(form_jmsRealm);
@@ -169,7 +277,8 @@ public class UploadConfig extends TimeoutGuardPipe {
 		 */
 		String remoteUser = (String) session.get("principal");
 
-		qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		qs = (FixedQuerySender) ibisContext
+				.createBeanAutowireByName(FixedQuerySender.class);
 		try {
 			qs.setName("QuerySender");
 			qs.setJmsRealm(form_jmsRealm);
@@ -193,7 +302,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 			qs.addParameter(param);
 			param = new Parameter();
 			param.setName("config");
-			param.setSessionKey("file");
+			param.setSessionKey(fileNameSessionKey);
 			param.setType(Parameter.TYPE_INPUTSTREAM);
 			qs.addParameter(param);
 			if (StringUtils.isNotEmpty(remoteUser)) {
@@ -217,8 +326,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 				log.warn("Could not close query sender", e);
 			}
 		}
-		session.put("result", result);
-		return "<dummy/>";
+		return result;
 	}
 
 	private String retrieveFormInput(IPipeLineSession session) {
