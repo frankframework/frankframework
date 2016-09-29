@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -44,6 +45,7 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -78,6 +80,7 @@ import org.w3c.dom.Node;
  * 	<li><code>number</code>: converts the result to a Number, using decimalSeparator and groupingSeparator. When applied as a JDBC parameter, the method setDouble() is used</li>
  * 	<li><code>integer</code>: converts the result to an Integer</li>
  * 	<li><code>inputstream</code>: only applicable as a JDBC parameter, the method setBinaryStream() is used</li>
+ * 	<li><code>list</code>: converts a List&lt;String&gt; object to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/item2&gt;)</li>
  * </ul>
  * </td><td>string</td></tr>
  * <tr><td>{@link #setFormatString(String) formatString}</td><td>used in combination with types <code>date</code>, <code>time</code> and <code>datetime</code></td><td>depends on type</td></tr>
@@ -139,6 +142,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	public final static String TYPE_NUMBER="number";
 	public final static String TYPE_INTEGER="integer";
 	public final static String TYPE_INPUTSTREAM="inputstream";
+	public final static String TYPE_LIST="list";
 	
 	public final static String TYPE_DATE_PATTERN="yyyy-MM-dd";
 	public final static String TYPE_TIME_PATTERN="HH:mm:ss";
@@ -296,7 +300,22 @@ public class Parameter implements INamedObject, IWithParameters {
 				if (StringUtils.isNotEmpty(getValue())) {
 					source = XmlUtils.stringToSourceForSingleUse(getValue(), prc.isNamespaceAware());
 				} else if (StringUtils.isNotEmpty(getSessionKey())) {
-					String sourceString = (String)(prc.getSession().get(getSessionKey()));
+					String sourceString;
+					Object sourceObject = prc.getSession().get(getSessionKey());
+					if (TYPE_LIST.equals(getType())
+							&& sourceObject instanceof List) {
+						List<String> items = (List<String>) sourceObject;
+						XmlBuilder itemsXml = new XmlBuilder("items");
+						for (Iterator it = items.iterator(); it.hasNext();) {
+							String item = (String) it.next();
+							XmlBuilder itemXml = new XmlBuilder("item");
+							itemXml.setValue(item);
+							itemsXml.addSubElement(itemXml);
+						}
+						sourceString = itemsXml.toXML();
+					} else {
+						sourceString = (String) sourceObject;
+					}
 					if (StringUtils.isNotEmpty(sourceString)) {
 						log.debug("Parameter ["+getName()+"] using sessionvariable ["+getSessionKey()+"] as source for transformation");
 						source = XmlUtils.stringToSourceForSingleUse(sourceString, prc.isNamespaceAware());

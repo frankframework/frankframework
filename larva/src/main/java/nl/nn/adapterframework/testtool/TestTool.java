@@ -24,6 +24,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -3467,6 +3469,25 @@ public class TestTool {
 						} catch (DomBuilderException e) {
 							errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
 						}
+					} else if ("list".equals(properties.getProperty(property + ".param" + i + ".type"))) {
+						List<String> parts = new ArrayList<String>(Arrays.asList(((String)value).split("\\s*(,\\s*)+")));
+						List list = new LinkedList<String>();
+						for (String part : parts) {
+							list.add(part);
+						}
+						value = list;
+					} else if ("map".equals(properties.getProperty(property + ".param" + i + ".type"))) {
+						List<String> parts = new ArrayList<String>(Arrays.asList(((String)value).split("\\s*(,\\s*)+")));
+						Map map = new LinkedHashMap<String, String>();
+						for (String part : parts) {
+							String[] splitted = part.split("\\s*(=\\s*)+", 2);
+							if (splitted.length==2) {
+								map.put(splitted[0], splitted[1]);
+							} else {
+								map.put(splitted[0], "");
+							}
+						}
+						value = map;
 					}
 				}
 				if (createParameterObjects) {
