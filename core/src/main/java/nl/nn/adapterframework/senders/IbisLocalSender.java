@@ -126,7 +126,9 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 						|| StringUtils.isNotEmpty(getJavaListenerSessionKey()))) {
 			throw new ConfigurationException(getLogPrefix()+"serviceName and javaListener cannot be specified both");
 		}
-		configuration = messageSendingPipe.getPipeLine().getAdapter().getConfiguration(); 
+		if (configuration==null) {
+			configuration = messageSendingPipe.getPipeLine().getAdapter().getConfiguration(); 
+		}
 	}
 
 	public void open() throws SenderException {
@@ -260,6 +262,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		this.messageSendingPipe = messageSendingPipe;
 	}
 
+	public void setConfiguration(Configuration configuration) {
+		this.configuration = configuration;
+	}
+	
 	/**
 	 * serviceName under which the JavaListener or WebServiceListener is registered.
 	 */

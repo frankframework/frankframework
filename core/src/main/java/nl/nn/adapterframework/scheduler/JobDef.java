@@ -641,7 +641,7 @@ public class JobDef {
 			executeQueryJob(ibisManager);
 		} else
 		if (function.equalsIgnoreCase(JOB_FUNCTION_SEND_MESSAGE)) {
-			executeSendMessageJob();
+			executeSendMessageJob(ibisManager);
 		} else{
 			ibisManager.handleAdapter(getFunction(), getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
 		}
@@ -772,13 +772,18 @@ public class JobDef {
 		}
 	}
 
-	private void executeSendMessageJob() {
+	private void executeSendMessageJob(IbisManager ibisManager) {
 		try {
 			// send job
 			IbisLocalSender localSender = new IbisLocalSender();
 			localSender.setJavaListener(receiverName);
 			localSender.setIsolated(false);
 			localSender.setName("AdapterJob");
+			if (StringUtils.isNotEmpty(adapterName)) {
+				IAdapter iAdapter = ibisManager.getRegisteredAdapter(adapterName);
+				Configuration configuration = iAdapter.getConfiguration();
+				localSender.setConfiguration(configuration);
+			}
 			localSender.configure();
             
 			localSender.open();
