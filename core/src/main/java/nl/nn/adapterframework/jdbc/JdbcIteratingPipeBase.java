@@ -151,11 +151,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 
 	public void stop() {
 		super.stop();
-		try {
-			querySender.close();
-		} catch (SenderException e) {
-			log.warn("Exception closing sender",e);
-		}
+		querySender.close();
 	}
 
 	protected void iterateInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException {

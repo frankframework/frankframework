@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,8 +33,8 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 	 * Prepares the object for operation. After this
 	 * method is called the storeMessage() and retrieveMessage() methods may be called
 	 */ 
-	public void open() throws SenderException, ListenerException;
-	public void close() throws SenderException, ListenerException;
+	public void open() throws Exception;
+	public void close();
 	
 	public void configure() throws ConfigurationException;
 

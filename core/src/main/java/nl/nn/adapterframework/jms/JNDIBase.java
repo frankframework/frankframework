@@ -73,14 +73,19 @@ public class JNDIBase {
 
 	private Context context = null;
 
-    public void closeContext() throws javax.naming.NamingException {
-        if (null != context) {
-        	log.debug("closing JNDI-context");
-            context.close();
-            context = null;
-        }
-    }
-    
+	public void close() {
+		if (null != context) {
+			log.debug("closing JNDI-context");
+			try {
+				context.close();
+			} catch (NamingException e) {
+				log.warn("could not close JNDI-context", e);
+			} finally {
+				context = null;
+			}
+		}
+	}
+
 	protected Hashtable getJndiEnv() throws NamingException {
 		Properties jndiEnv = new Properties();
 

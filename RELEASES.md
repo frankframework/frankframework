@@ -105,6 +105,7 @@ Upcoming
 - Add parameter types "map" and "list" to Larva TestTool
 - Add possibility to use zip files with multiple jar files in Upload Configuration
 - Bugfix "fakepath" in Upload Configuration when using Chrome web browser
+- Call close on JNDI context (InitialContext)
 
 
 

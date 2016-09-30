@@ -768,13 +768,7 @@ public class JobDef {
 			getMessageKeeper().add(msg,MessageKeeperMessage.ERROR_LEVEL);
 			log.error(getLogPrefix()+msg);
 		} finally {
-			try {
-				qs.close();
-			} catch (SenderException e1) {
-				String msg = "Could not close query sender" + e1.getMessage();
-				getMessageKeeper().add(msg, MessageKeeperMessage.WARN_LEVEL);
-				log.warn(msg);
-			}
+			qs.close();
 		}
 	}
 

@@ -129,22 +129,10 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	 */
 	public void open() throws SenderException {
 		try {
-			openFacade();
+			super.open();
 		}
 		catch (Exception e) {
 			throw new SenderException(e);
-		}
-	}
-
-	/**
-	 * Stops the sender 
-	 */
-	public void close() throws SenderException {
-		try {
-			closeFacade();
-		}
-		catch (Throwable e) {
-			throw new SenderException("JmsMessageSender [" + getName() + "] " + "got error occured stopping sender", e);
 		}
 	}
 

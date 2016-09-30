@@ -457,7 +457,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (getMessageLog()!=null) {
 				getMessageLog().open();
 			}
-		} catch (SenderException e) {
+		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
 		getListener().open();

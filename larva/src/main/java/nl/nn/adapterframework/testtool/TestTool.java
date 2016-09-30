@@ -1897,12 +1897,8 @@ public class TestTool {
 			String queueName = (String)iterator.next();
 			if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
 				JmsSender jmsSender = (JmsSender)((Map)queues.get(queueName)).get("jmsSender");
-				try {
-					jmsSender.close();
-					debugMessage("Closed jms sender '" + queueName + "'", writers);
-				} catch(SenderException e) {
-					errorMessage("Could not close jms sender '" + queueName + "': " + e.getMessage(), e, writers);
-				}
+				jmsSender.close();
+				debugMessage("Closed jms sender '" + queueName + "'", writers);
 			}
 		}
 		debugMessage("Close jms listeners", writers);
@@ -1914,12 +1910,8 @@ public class TestTool {
 				if (jmsCleanUp(queueName, pullingJmsListener, writers)) {
 					remainingMessagesFound = true;
 				}
-				try {
-					pullingJmsListener.close();
-					debugMessage("Closed jms listener '" + queueName + "'", writers);
-				} catch(ListenerException e) {
-					errorMessage("Could not close jms listener '" + queueName + "': " + e.getMessage(), e, writers);
-				}
+				pullingJmsListener.close();
+				debugMessage("Closed jms listener '" + queueName + "'", writers);
 			}
 		}
 		debugMessage("Close jdbc connections", writers);
@@ -1964,11 +1956,7 @@ public class TestTool {
 					}
 				}
 				FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
-				try {
-					readQueryFixedQuerySender.close();
-				} catch(SenderException e) {
-					errorMessage("Could not close '" + name + "': " + e.getMessage(), e, writers);
-				}
+				readQueryFixedQuerySender.close();
 			}
 		}
 		debugMessage("Close ibis webservice senders", writers);

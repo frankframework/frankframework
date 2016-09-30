@@ -155,15 +155,16 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
         jmsConnector.start();
     }
 
-    @Override
-    public void close() throws ListenerException {
-        try {
-            jmsConnector.stop();
+	@Override
+	public void close() {
+		try {
+			jmsConnector.stop();
+		} catch (Exception e) {
+			log.warn(getLogPrefix() + "caught exception stopping listener", e);
+		} finally {
 			super.close();
-        } catch (Exception ex) {
-            throw new ListenerException(ex);
-        }
-    }
+		}
+	}
 
     public void destroy() {
     	if (jmsConnector!=null) {

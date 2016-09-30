@@ -63,11 +63,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 
 	public void stop() {
 		super.stop();
-		try {
-			querySender.close();
-		} catch (SenderException e) {
-			log.warn("Exception closing sender",e);
-		}
+		querySender.close();
 	}
 
 	public class ResultSetReader extends BufferedReader {

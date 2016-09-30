@@ -68,24 +68,6 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 
 	public void configure() throws ConfigurationException {
 	}
-	
-	public void open() throws ListenerException {
-		try {
-			super.openFacade();
-		} catch (Exception e) {
-			throw new ListenerException(e);
-		}
-	}
-	
-	public void close() throws ListenerException {
-		try {
-			closeFacade();
-		} catch (Exception e) {
-			throw new ListenerException(e);
-		}
-	}
-	
-	
 
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
 		Session session=null;

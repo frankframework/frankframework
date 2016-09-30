@@ -253,11 +253,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	}
 	public void stop() {
 		log.info(getLogPrefix(null) + "is closing");
-		try {
-			qs.close();
-		} catch (SenderException e) {
-			log.warn(getLogPrefix(null) + "exception closing sender", e);
-		}
+		qs.close();
 	}
 
 	public void setProxiedDataSources(Map proxiedDataSources) {

@@ -492,8 +492,6 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	public void open() throws SenderException {
 	}
 
-	public void close() throws SenderException {
-	}
 
 	public boolean isSynchronous() {
 		return true;

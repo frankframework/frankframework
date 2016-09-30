@@ -521,9 +521,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		} 
 	}
 
-	public void close() {
-	}
-
 	/**
 	 * change datatypes used for specific database vendor. 
 	 */

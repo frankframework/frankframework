@@ -110,7 +110,11 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 	}
 
 	public void open() throws ListenerException {
-		super.open();
+		try {
+			super.open();
+		} catch (Exception e) {
+			throw new ListenerException(e);
+		}
 		if (exceptionLogTp != null) {
 			try {
 				exceptionLogTp.open();
@@ -129,7 +133,7 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 		}
 	}
 
-	public void close() throws ListenerException {
+	public void close() {
 		super.close();
 		if (exceptionLogTp != null) {
 			exceptionLogTp.close();

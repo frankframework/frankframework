@@ -98,11 +98,7 @@ public class ShowConfig extends TimeoutGuardPipe {
 				throw new PipeRunException(this, getLogPrefix(session)
 						+ "Error occured on executing jdbc query", t);
 			} finally {
-				try {
-					qs.close();
-				} catch (SenderException e) {
-					log.warn("Could not close query sender", e);
-				}
+				qs.close();
 			}
 			if (queryResult.length() == 0) {
 				// means result is found and streamed
@@ -144,11 +140,7 @@ public class ShowConfig extends TimeoutGuardPipe {
 				throw new PipeRunException(this, getLogPrefix(session)
 						+ "Error occured on executing jdbc query", t);
 			} finally {
-				try {
-					qs.close();
-				} catch (SenderException e) {
-					log.warn("Could not close query sender", e);
-				}
+				qs.close();
 			}
 			configsXML.addSubElement(configXML);
 		}

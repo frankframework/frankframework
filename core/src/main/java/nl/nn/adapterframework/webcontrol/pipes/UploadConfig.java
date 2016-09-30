@@ -231,11 +231,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "Error occured on executing jdbc query", t);
 		} finally {
-			try {
-				qs.close();
-			} catch (SenderException e) {
-				log.warn("Could not close query sender", e);
-			}
+			qs.close();
 		}
 
 		if (Integer.parseInt(result) > 0) {
@@ -259,11 +255,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 				throw new PipeRunException(this, getLogPrefix(session)
 						+ "Error occured on executing jdbc query", t);
 			} finally {
-				try {
-					qs.close();
-				} catch (SenderException e) {
-					log.warn("Could not close query sender", e);
-				}
+				qs.close();
 			}
 		}
 
@@ -320,11 +312,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "Error occured on executing jdbc query", t);
 		} finally {
-			try {
-				qs.close();
-			} catch (SenderException e) {
-				log.warn("Could not close query sender", e);
-			}
+			qs.close();
 		}
 		return result;
 	}

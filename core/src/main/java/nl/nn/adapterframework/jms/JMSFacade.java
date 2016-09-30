@@ -266,41 +266,30 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		}
 	}
 
-	protected void cleanUpAfterException() {
-		try {
-			closeFacade();
-		} catch (JmsException e) {
-			log.warn("exception closing ifsaConnection after previous exception, current:",e);
-		}
-	}
-
 	/**
-	 * Prepares object for communication on the IFSA bus.
 	 * Obtains a connection and a serviceQueue.
 	 */
-	public void openFacade() throws JmsException {
+	public void open() throws Exception {
 		try {
 			getMessagingSource();   // obtain and cache connection, then start it.
 			destination = getDestination();
 		} catch (Exception e) {
-			cleanUpAfterException();
-			throw new JmsException(e);
+			close();
+			throw e;
 		}
 	}
+
 	/**
-	 * Stops communication on the IFSA bus.
 	 * Releases references to serviceQueue and connection.
 	 */
-	public void closeFacade() throws JmsException {
+	@Override
+	public void close() {
 		try {
 			if (messagingSource != null) {
 				try {
 					messagingSource.close();
 				} catch (IbisException e) {
-					if (e instanceof JmsException) {
-						throw (JmsException)e;
-					}
-					throw new JmsException(e);
+					log.warn(getLogPrefix() + "caught exception closing messaging source", e);
 				}
 				log.debug("closed connection");
 			}

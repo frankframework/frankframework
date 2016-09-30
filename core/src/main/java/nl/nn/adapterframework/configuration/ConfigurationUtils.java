@@ -129,11 +129,7 @@ public class ConfigurationUtils {
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			try {
-				qs.close();
-			} catch (SenderException e) {
-				log.warn("Could not close query sender", e);
-			}
+			qs.close();
 		}
 
 		ResultSet rs = null;

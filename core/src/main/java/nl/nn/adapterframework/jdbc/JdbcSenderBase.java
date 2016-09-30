@@ -97,17 +97,19 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 			}
 		}
 	}	
-	
-	public void close() throws SenderException {
-	    try {
-	        if (connection != null) {
+
+	@Override
+	public void close() {
+		try {
+			if (connection != null) {
 				connection.close();
-	        }
-	    } catch (SQLException e) {
-	        throw new SenderException(getLogPrefix() + "caught exception stopping sender", e);
-	    } finally {
+			}
+		} catch (SQLException e) {
+			log.warn(getLogPrefix() + "caught exception stopping sender", e);
+		} finally {
 			connection = null;
-	    }
+			super.close();
+		}
 	}
 	
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {

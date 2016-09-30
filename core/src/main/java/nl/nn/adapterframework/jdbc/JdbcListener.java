@@ -108,15 +108,17 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		}
 	}
 
-	public void close() throws ListenerException {
+	@Override
+	public void close() {
 		try {
 			if (connection != null) {
 				connection.close();
 			}
 		} catch (SQLException e) {
-			throw new ListenerException(getLogPrefix() + "caught exception stopping listener", e);
+			log.warn(getLogPrefix() + "caught exception stopping listener", e);
 		} finally {
 			connection = null;
+			super.close();
 		}
 	}
 	

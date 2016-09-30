@@ -139,11 +139,10 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 
 	public void open() throws ListenerException {
 		try {
-			openFacade();
+			super.open();
 		} catch (Exception e) {
 			throw new ListenerException("error opening listener [" + getName() + "]", e);
 		}
-	
 		try {
 			if (getSender() != null)
 				getSender().open();
@@ -151,20 +150,19 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 			throw new ListenerException("error opening sender [" + getSender().getName() + "]", e);
 		}
 	}
-	
-	public void close() throws ListenerException {
+
+	@Override
+	public void close() {
+		super.close();
 		try {
-			closeFacade();
-	
 			if (getSender() != null) {
 				getSender().close();
 			}
 		} catch (Exception e) {
-			throw new ListenerException(e);
+			log.warn(getLogPrefix() + "caught exception stopping listener", e);
 		}
 	}
-	
-   
+
 	/**
 	 * Fill in thread-context with things needed by the JMSListener code.
 	 * This includes a Session. The Session object can be passed in
