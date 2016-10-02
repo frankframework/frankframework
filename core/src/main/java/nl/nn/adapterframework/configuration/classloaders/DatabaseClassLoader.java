@@ -20,9 +20,19 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
 
 public class DatabaseClassLoader extends JarBytesClassLoader {
+	private IbisContext ibisContext;
+	private String configurationName;
 
 	public DatabaseClassLoader(IbisContext ibisContext, String configurationName) throws ConfigurationException {
 		super(DatabaseClassLoader.class.getClassLoader());
+		this.ibisContext = ibisContext;
+		this.configurationName = configurationName;
+		reload();
+	}
+
+	@Override
+	public void reload() throws ConfigurationException {
+		super.reload();
 		byte[] jarBytes = null;
 		jarBytes = ConfigurationUtils.getConfigFromDatabase(ibisContext, configurationName, null);
 		if (jarBytes == null) {

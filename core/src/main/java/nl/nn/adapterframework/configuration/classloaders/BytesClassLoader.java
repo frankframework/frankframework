@@ -21,11 +21,12 @@ import java.net.URLStreamHandler;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 
-public abstract class BytesClassLoader extends ClassLoader {
+public abstract class BytesClassLoader extends ClassLoader implements ReloadAware {
 	protected Logger log = LogUtil.getLogger(this);
 	protected Map<String, byte[]> resources = new HashMap<String, byte[]>();
 
@@ -45,5 +46,9 @@ public abstract class BytesClassLoader extends ClassLoader {
 			}
 		}
 		return super.getResource(name);
+	}
+
+	public void reload() throws ConfigurationException {
+		resources.clear();
 	}
 }

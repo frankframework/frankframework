@@ -25,9 +25,21 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 
 public class ServiceClassLoader extends JarBytesClassLoader {
+	private IbisManager ibisManager;
+	private String adapterName;
+	private String configurationName;
 
 	public ServiceClassLoader(IbisManager ibisManager, String adapterName, String configurationName) throws ConfigurationException {
 		super(ServiceClassLoader.class.getClassLoader());
+		this.ibisManager = ibisManager;
+		this.adapterName = adapterName;
+		this.configurationName = configurationName;
+		reload();
+	}
+
+	@Override
+	public void reload() throws ConfigurationException {
+		super.reload();
 		if (adapterName == null) {
 			throw new ConfigurationException("Name of adapter to provide configuration jar not specified");
 		}
@@ -51,7 +63,7 @@ public class ServiceClassLoader extends JarBytesClassLoader {
 		}
 	}
 
-	public String getCorrelationId() {
+	private String getCorrelationId() {
 		return getClass().getName() + "-" + new UID().toString();
 	}
 

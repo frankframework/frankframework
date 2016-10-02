@@ -17,7 +17,9 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 import java.net.URL;
 
-public class BasePathClassLoader extends ClassLoader {
+import nl.nn.adapterframework.configuration.ConfigurationException;
+
+public class BasePathClassLoader extends ClassLoader implements ReloadAware {
 	private String basePath;
 	
 	public BasePathClassLoader(ClassLoader parent, String basePath) {
@@ -35,4 +37,9 @@ public class BasePathClassLoader extends ClassLoader {
 		}
 	}
 
+	public void reload() throws ConfigurationException {
+		if (getParent() instanceof ReloadAware) {
+			((ReloadAware)getParent()).reload();
+		}
+	}
 }

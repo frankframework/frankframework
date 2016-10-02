@@ -29,6 +29,7 @@ import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
 import nl.nn.adapterframework.configuration.classloaders.ServiceClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
@@ -98,6 +99,7 @@ public class IbisContext {
 	}
 	private ApplicationContext applicationContext;
 	private IbisManager ibisManager;
+	private Map<String, ClassLoader> classLoaders = new HashMap<String, ClassLoader>();
 	private Map<String, MessageKeeper> messageKeepers = new HashMap<String, MessageKeeper>();
 	private int messageKeeperSize = 10;
 	private FlowDiagram flowDiagram;
@@ -250,46 +252,62 @@ public class IbisContext {
 						configurationFile = currentConfigurationName + "/" + configurationFile;
 					}
 				}
-				ClassLoader classLoader = null;
 				ConfigurationException customClassLoaderConfigurationException = null;
-				String classLoaderType = APP_CONSTANTS.getResolvedProperty(
-						"configurations." + currentConfigurationName + ".classLoaderType");
-				try {
-					if ("DirectoryClassLoader".equals(classLoaderType)) {
-						String directory = APP_CONSTANTS.getResolvedProperty(
-								"configurations." + currentConfigurationName + ".directory");
-						classLoader = new DirectoryClassLoader(directory);
-					} else if ("JarFileClassLoader".equals(classLoaderType)) {
-						String jar = APP_CONSTANTS.getResolvedProperty(
-								"configurations." + currentConfigurationName + ".jar");
-						classLoader = new JarFileClassLoader(jar, currentConfigurationName);
-					} else if ("ServiceClassLoader".equals(classLoaderType)) {
-						String adapterName = APP_CONSTANTS.getResolvedProperty(
-								"configurations." + currentConfigurationName + ".adapterName");
-						classLoader = new ServiceClassLoader(ibisManager, adapterName, currentConfigurationName);
-					} else if ("DatabaseClassLoader".equals(classLoaderType)) {
-						classLoader = new DatabaseClassLoader(this, currentConfigurationName);
-					} else if (classLoaderType != null) {
-						throw new ConfigurationException("Invalid classLoaderType: " + classLoaderType);
-					}
-				} catch (ConfigurationException e) {
-					customClassLoaderConfigurationException = e;
-				}
-				String basePath = null;
-				int i = configurationFile.lastIndexOf('/');
-				if (i != -1) {
-					basePath = configurationFile.substring(0, i + 1);
-				}
-				ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-				if (basePath != null) {
-					if (classLoader != null) {
-						classLoader = new BasePathClassLoader(classLoader, basePath);
-					} else {
-						classLoader = new BasePathClassLoader(originalClassLoader, basePath);
-					}
-				}
+				ClassLoader classLoader = classLoaders.get(currentConfigurationName);
 				if (classLoader != null) {
-					Thread.currentThread().setContextClassLoader(classLoader);
+					// Reuse class loader as it is difficult to have all
+					// references to the class loader removed (see also
+					// http://zeroturnaround.com/rebellabs/rjc201/).
+					// Create a heapdump after an unload and garbage collect and
+					// view the references to the instances of the root class
+					// loader class (BasePathClassLoader when a base path is
+					// used).
+					if (classLoader instanceof ReloadAware) {
+						try {
+							((ReloadAware)classLoader).reload();
+						} catch (ConfigurationException e) {
+							customClassLoaderConfigurationException = e;
+						}
+					}
+				} else {
+					String classLoaderType = APP_CONSTANTS.getResolvedProperty(
+							"configurations." + currentConfigurationName + ".classLoaderType");
+					try {
+						if ("DirectoryClassLoader".equals(classLoaderType)) {
+							String directory = APP_CONSTANTS.getResolvedProperty(
+									"configurations." + currentConfigurationName + ".directory");
+							classLoader = new DirectoryClassLoader(directory);
+						} else if ("JarFileClassLoader".equals(classLoaderType)) {
+							String jar = APP_CONSTANTS.getResolvedProperty(
+									"configurations." + currentConfigurationName + ".jar");
+							classLoader = new JarFileClassLoader(jar, currentConfigurationName);
+						} else if ("ServiceClassLoader".equals(classLoaderType)) {
+							String adapterName = APP_CONSTANTS.getResolvedProperty(
+									"configurations." + currentConfigurationName + ".adapterName");
+							classLoader = new ServiceClassLoader(ibisManager, adapterName, currentConfigurationName);
+						} else if ("DatabaseClassLoader".equals(classLoaderType)) {
+							classLoader = new DatabaseClassLoader(this, currentConfigurationName);
+						} else if (classLoaderType != null) {
+							throw new ConfigurationException("Invalid classLoaderType: " + classLoaderType);
+						}
+					} catch (ConfigurationException e) {
+						customClassLoaderConfigurationException = e;
+					}
+					String basePath = null;
+					int i = configurationFile.lastIndexOf('/');
+					if (i != -1) {
+						basePath = configurationFile.substring(0, i + 1);
+					}
+					if (basePath != null) {
+						if (classLoader != null) {
+							classLoader = new BasePathClassLoader(classLoader, basePath);
+						} else {
+							classLoader = new BasePathClassLoader(
+									Thread.currentThread().getContextClassLoader(),
+									basePath);
+						}
+					}
+					classLoaders.put(currentConfigurationName, classLoader);
 				}
 				String currentConfigurationVersion = null;
 				URL buildInfoUrl = ClassUtils.getResourceURL(classLoader, "BuildInfo.properties");
@@ -302,13 +320,18 @@ public class IbisContext {
 						log(currentConfigurationName, currentConfigurationVersion, "error reading [BuildInfo.properties]", MessageKeeperMessage.ERROR_LEVEL, e);
 					}
 				}
-				Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
-				configuration.setName(currentConfigurationName);
-				configuration.setVersion(currentConfigurationVersion);
-				configuration.setIbisManager(ibisManager);
-				ibisManager.addConfiguration(configuration);
-				ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
+				Configuration configuration = null;
+				ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+				if (classLoader != null) {
+					Thread.currentThread().setContextClassLoader(classLoader);
+				}
 				try {
+					configuration = new Configuration(new BasicAdapterServiceImpl());
+					configuration.setName(currentConfigurationName);
+					configuration.setVersion(currentConfigurationVersion);
+					configuration.setIbisManager(ibisManager);
+					ibisManager.addConfiguration(configuration);
+					ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 					if (customClassLoaderConfigurationException == null) {
 						ConfigurationDigester configurationDigester = new ConfigurationDigester();
 						configurationDigester.digestConfiguration(classLoader, configuration, configurationFile, configLogAppend);

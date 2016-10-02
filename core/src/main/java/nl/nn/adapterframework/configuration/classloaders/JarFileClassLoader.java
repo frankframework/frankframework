@@ -24,9 +24,19 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.Misc;
 
 public class JarFileClassLoader extends BytesClassLoader {
+	private String jarFileName;
+	private String configurationName;
 
 	public JarFileClassLoader(String jarFileName, String configurationName) throws ConfigurationException {
 		super(JarFileClassLoader.class.getClassLoader());
+		this.jarFileName = jarFileName;
+		this.configurationName = configurationName;
+		reload();
+	}
+
+	@Override
+	public void reload() throws ConfigurationException {
+		super.reload();
 		JarFile jarFile = null;
 		try {
 			jarFile = new JarFile(jarFileName);
