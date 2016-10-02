@@ -117,6 +117,7 @@ public class ConfigurationUtils {
 		}
 
 		Connection conn = null;
+		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		qs.setJmsRealm(jmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
@@ -124,31 +125,33 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			conn = qs.getConnection();
-		} catch (SenderException e) {
-			throw new ConfigurationException(e);
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		} finally {
-			qs.close();
-		}
-
-		ResultSet rs = null;
-		String query = "SELECT CONFIG FROM IBISCONFIG WHERE NAME=?";
-		try {
+			String query = "SELECT CONFIG FROM IBISCONFIG WHERE NAME=?";
 			PreparedStatement stmt = conn.prepareStatement(query);
 			stmt.setString(1, name);
 			rs = stmt.executeQuery();
 			if (rs.next()) {
 				return rs.getBytes(1);
 			}
+		} catch (SenderException e) {
+			throw new ConfigurationException(e);
+		} catch (JdbcException e) {
+			throw new ConfigurationException(e);
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
+			qs.close();
 			if (rs != null) {
 				try {
 					rs.close();
 				} catch (SQLException e) {
 					log.warn("Could not close resultset", e);
+				}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					log.warn("Could not close connection", e);
 				}
 			}
 		}
