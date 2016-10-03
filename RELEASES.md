@@ -106,6 +106,7 @@ Upcoming
 - Add possibility to use zip files with multiple jar files in Upload Configuration
 - Bugfix "fakepath" in Upload Configuration when using Chrome web browser
 - Call close on JNDI context (InitialContext)
+- Bugfix 'Browse a Jdbc table' for 'MS SQL for WebSphere'
 
 
 
