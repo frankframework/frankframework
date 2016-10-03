@@ -408,11 +408,15 @@ public class JobDef {
 		private String jmsRealmName;
 		private String tableName;
 		private String expiryDateField;
+		private String keyField;
+		private String keyFieldType;
 
-		public MessageLogObject(String jmsRealmName, String tableName, String expiryDateField) {
+		public MessageLogObject(String jmsRealmName, String tableName, String expiryDateField, String keyField, String keyFieldType) {
 			this.jmsRealmName = jmsRealmName;
 			this.tableName = tableName;
 			this.expiryDateField = expiryDateField;
+			this.keyField = keyField;
+			this.keyFieldType = keyFieldType;
 		}
 
 		public boolean equals(Object o) {
@@ -436,6 +440,14 @@ public class JobDef {
 
 		public String getExpiryDateField() {
 			return expiryDateField;
+		}
+
+		public String getKeyField() {
+			return keyField;
+		}
+
+		public String getKeyFieldType() {
+			return keyFieldType;
 		}
 	}
     
@@ -717,7 +729,9 @@ public class JobDef {
 							String jmsRealmName = messageLog.getJmsRealName();
 							String expiryDateField = messageLog.getExpiryDateField();
 							String tableName = messageLog.getTableName();
-							MessageLogObject mlo = new MessageLogObject(jmsRealmName, tableName, expiryDateField);
+							String keyField = messageLog.getKeyField();
+							String keyFieldType = messageLog.getKeyFieldType();
+							MessageLogObject mlo = new MessageLogObject(jmsRealmName, tableName, expiryDateField, keyField, keyFieldType);
 							if (!messageLogs.contains(mlo)) {
 								messageLogs.add(mlo);
 							}
@@ -735,7 +749,27 @@ public class JobDef {
 			qs.setJmsRealm(mlo.getJmsRealmName());
 			String deleteQuery;
 			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
-				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE TYPE IN ('" + JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "') AND " + mlo.getExpiryDateField() + " < CONVERT(datetime, '" + formattedDate + "', 120)";
+//				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE TYPE IN ('" + JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "') AND " + mlo.getExpiryDateField() + " < CONVERT(datetime, '" + formattedDate + "', 120)";
+				String whereClause = " WHERE TYPE IN ('"
+						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
+						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
+						+ "') AND " + mlo.getExpiryDateField()
+						+ " < CONVERT(datetime, '" + formattedDate + "', 120)";
+				String kft = mlo.getKeyFieldType().trim();
+				if (kft.contains(" ")) {
+					kft = StringUtils.substringBefore(kft, " ");
+				}
+				deleteQuery = "DECLARE @" + mlo.getKeyField() + " " + kft
+						+ "\n" + "WHILE (SELECT COUNT(*) FROM "
+						+ mlo.getTableName() + " WITH (updlock, readpast) "
+						+ whereClause + ") >= 1\n" + "BEGIN\n"
+						+ "BEGIN TRAN TRAN1\n" + "SELECT TOP 1 @"
+						+ mlo.getKeyField() + " = " + mlo.getKeyField()
+						+ " FROM " + mlo.getTableName()
+						+ " WITH (updlock, readpast) " + whereClause + "\n"
+						+ "DELETE FROM " + mlo.getTableName() + " WHERE "
+						+ mlo.getKeyField() + " = @" + mlo.getKeyField() + "\n"
+						+ "COMMIT\n" + "END";
 			} else {
 				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE TYPE IN ('" + JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "') AND " + mlo.getExpiryDateField() + " < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
 			}

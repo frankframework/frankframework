@@ -107,6 +107,7 @@ Upcoming
 - Bugfix "fakepath" in Upload Configuration when using Chrome web browser
 - Call close on JNDI context (InitialContext)
 - Bugfix 'Browse a Jdbc table' for 'MS SQL for WebSphere'
+- Use special row locking in JOB_FUNCTION_CLEANUPDB for MS SQL
 
 
 
