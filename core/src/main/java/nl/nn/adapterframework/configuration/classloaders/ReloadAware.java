@@ -17,6 +17,7 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
+
 public interface ReloadAware {
 
 	public void reload() throws ConfigurationException;
