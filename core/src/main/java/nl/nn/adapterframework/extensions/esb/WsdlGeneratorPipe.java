@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -94,6 +95,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		OutputStream fullWsdlOut = null;
 		try {
 			Adapter adapter = new Adapter();
+			adapter.setConfiguration(new Configuration(null));
 			String fileBaseName = FileUtils.getBaseName(fileName).replaceAll(
 					" ", "_");
 			adapter.setName(fileBaseName);
