@@ -33,6 +33,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.CommandSender;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -194,11 +195,38 @@ public class FlowDiagram {
 
 		public void run() {
 			log.debug("start generating flow diagram for " + name);
+			try {
+				File tempOutFile = FileUtils.createTempFile(null, "." + format);
+
+				if (StringUtils.startsWithIgnoreCase(url, "http://")
+						|| StringUtils.startsWithIgnoreCase(url, "https://")) {
+					runHttpSender(tempOutFile);
+				} else {
+					File tempdotFile = FileUtils.createTempFile(null, ".dot");
+					Misc.stringToFile(dot, tempdotFile.getPath());
+					runCommandSender(tempdotFile, tempOutFile);
+				}
+
+				if (FileUtils.moveFile(tempOutFile, destFile, true, 0) == null) {
+					log.warn("could not rename file [" + tempOutFile.getPath()
+							+ "] to [" + destFile.getPath() + "]");
+				} else {
+					log.debug("renamed file [" + tempOutFile.getPath()
+							+ "] to [" + destFile.getPath() + "]");
+				}
+				log.debug("ended generating flow diagram for " + name);
+
+			} catch (Exception e) {
+				log.warn("exception on generating flow diagram for " + name, e);
+			}
+		}
+
+		private void runHttpSender(File outFile) throws ConfigurationException,
+				SenderException, TimeOutException {
 			HttpSender httpSender = null;
 			try {
-				File tempFile = FileUtils.createTempFile(null, "." + format);
 				IPipeLineSession pls = new PipeLineSessionBase();
-				pls.put("tempOutputFileName", tempFile.getPath());
+				pls.put("tempOutputFileName", outFile.getPath());
 
 				httpSender = new HttpSender();
 				httpSender.setUrl(url);
@@ -229,21 +257,51 @@ public class FlowDiagram {
 				ParameterResolutionContext prc = new ParameterResolutionContext(
 						"dummy", pls);
 				String result = httpSender.sendMessage(null, "", prc);
-
-				if (FileUtils.moveFile(tempFile, destFile, true, 0) == null) {
-					log.warn("could not rename file [" + tempFile.getPath()
-							+ "] to [" + destFile.getPath() + "]");
-				} else {
-					log.debug("renamed file [" + tempFile.getPath() + "] to ["
-							+ destFile.getPath() + "]");
-				}
-				log.debug("ended generating flow diagram for " + name);
-			} catch (Exception e) {
-				log.warn("exception on generating flow diagram for " + name, e);
 			} finally {
 				if (httpSender != null) {
 					httpSender.close();
 				}
+			}
+		}
+	}
+
+	private void runCommandSender(File dotFile, File outFile)
+			throws SenderException, ConfigurationException, TimeOutException {
+		CommandSender commandSender = null;
+		try {
+			commandSender = new CommandSender();
+			commandSender.setCommand(url);
+			commandSender.setCommandWithArguments(true);
+			commandSender.setTimeOut(10);
+
+			Parameter p = new Parameter();
+			p.setName("arg1");
+			p.setValue("-T" + format);
+			commandSender.addParameter(p);
+
+			p = new Parameter();
+			p.setName("arg2");
+			p.setValue(dotFile.getPath());
+			commandSender.addParameter(p);
+
+			p = new Parameter();
+			p.setName("arg3");
+			p.setValue("-o");
+			commandSender.addParameter(p);
+
+			p = new Parameter();
+			p.setName("arg4");
+			p.setValue(outFile.getPath());
+			commandSender.addParameter(p);
+
+			commandSender.configure();
+			commandSender.open();
+			ParameterResolutionContext prc = new ParameterResolutionContext(
+					"dummy", new PipeLineSessionBase());
+			String result = commandSender.sendMessage(null, "", prc);
+		} finally {
+			if (commandSender != null) {
+				commandSender.close();
 			}
 		}
 	}
