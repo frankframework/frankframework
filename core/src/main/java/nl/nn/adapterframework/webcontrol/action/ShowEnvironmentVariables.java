@@ -84,12 +84,6 @@ public class ShowEnvironmentVariables extends ActionBase {
 		}
 		request.setAttribute("configurations", configurationsXml.toXML());
 		
-		List<String> propsToHide = new ArrayList<String>();
-		String propertiesHideString = AppConstants.getInstance().getString("properties.hide", null);
-		if (propertiesHideString!=null) {
-			propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
-		}
-		
 		Configuration configuration;
 		String configurationName = request.getParameter("configuration");
 		if (configurationName == null) {
@@ -104,7 +98,12 @@ public class ShowEnvironmentVariables extends ActionBase {
 			configuration = ibisManager.getConfiguration(configurationName);
 			request.getSession().setAttribute("configurationName", configuration.getName());
 		}
-		
+
+		List<String> propsToHide = new ArrayList<String>();
+		String propertiesHideString = AppConstants.getInstance(configuration.getClassLoader()).getString("properties.hide", null);
+		if (propertiesHideString!=null) {
+			propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
+		}
 		
 		XmlBuilder envVars = new XmlBuilder("environmentVariables");
 

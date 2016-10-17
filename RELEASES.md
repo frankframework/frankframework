@@ -108,6 +108,7 @@ Upcoming
 - Call close on JNDI context (InitialContext)
 - Bugfix 'Browse a Jdbc table' for 'MS SQL for WebSphere'
 - Add facility to generate flow images by CommandSender next to HttpSender
+- Bugfix "facility to hide properties" caused by splitting configuration
 
 
 

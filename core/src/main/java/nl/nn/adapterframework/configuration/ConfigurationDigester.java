@@ -195,7 +195,7 @@ public class ConfigurationDigester {
 			original = XmlUtils.identityTransform(classLoader, original);
 			configuration.setOriginalConfiguration(original);
 			List<String> propsToHide = new ArrayList<String>();
-			String propertiesHideString = AppConstants.getInstance().getString("properties.hide", null);
+			String propertiesHideString = AppConstants.getInstance(Thread.currentThread().getContextClassLoader()).getString("properties.hide", null);
 			if (propertiesHideString != null) {
 				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
 			}
