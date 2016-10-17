@@ -77,6 +77,7 @@ import org.springframework.transaction.TransactionStatus;
  * <tr><td>{@link #setAdapterName(String) adapterName}</td><td>Adapter on which job operates</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReceiverName(String) receiverName}</td><td>Receiver on which job operates. If function is 'sendMessage' is used this name is also used as name of JavaListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be executed</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setQueryTimeout(int) queryTimeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
  *   <table border="1">
@@ -386,6 +387,7 @@ public class JobDef {
     private String description;
     private String receiverName;
 	private String query;
+	private int queryTimeout = 0;
 	private String jmsRealm;
 	private Locker locker=null;
 	private int numThreads = 1;
@@ -408,11 +410,15 @@ public class JobDef {
 		private String jmsRealmName;
 		private String tableName;
 		private String expiryDateField;
+		private String keyField;
+		private String typeField;
 
-		public MessageLogObject(String jmsRealmName, String tableName, String expiryDateField) {
+		public MessageLogObject(String jmsRealmName, String tableName, String expiryDateField, String keyField, String typeField) {
 			this.jmsRealmName = jmsRealmName;
 			this.tableName = tableName;
 			this.expiryDateField = expiryDateField;
+			this.keyField = keyField;
+			this.typeField = typeField;
 		}
 
 		public boolean equals(Object o) {
@@ -436,6 +442,14 @@ public class JobDef {
 
 		public String getExpiryDateField() {
 			return expiryDateField;
+		}
+
+		public String getKeyField() {
+			return keyField;
+	}
+    
+		public String getTypeField() {
+			return typeField;
 		}
 	}
     
@@ -717,7 +731,9 @@ public class JobDef {
 							String jmsRealmName = messageLog.getJmsRealName();
 							String expiryDateField = messageLog.getExpiryDateField();
 							String tableName = messageLog.getTableName();
-							MessageLogObject mlo = new MessageLogObject(jmsRealmName, tableName, expiryDateField);
+							String keyField = messageLog.getKeyField();
+							String typeField = messageLog.getTypeField();
+							MessageLogObject mlo = new MessageLogObject(jmsRealmName, tableName, expiryDateField, keyField, typeField);
 							if (!messageLogs.contains(mlo)) {
 								messageLogs.add(mlo);
 							}
@@ -735,12 +751,27 @@ public class JobDef {
 			qs.setJmsRealm(mlo.getJmsRealmName());
 			String deleteQuery;
 			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
-				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE TYPE IN ('" + JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "') AND " + mlo.getExpiryDateField() + " < CONVERT(datetime, '" + formattedDate + "', 120)";
+				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
+					+ mlo.getKeyField() + " IN (SELECT "
+						+ mlo.getKeyField() + " FROM " + mlo.getTableName()
+						+ " WITH (updlock, readpast) WHERE "
+						+ mlo.getTypeField() + " IN ('"
+						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
+						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
+						+ "') AND " + mlo.getExpiryDateField()
+						+ " < CONVERT(datetime, '" + formattedDate + "', 120))";
 			} else {
-				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE TYPE IN ('" + JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "') AND " + mlo.getExpiryDateField() + " < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
+						+ mlo.getTypeField() + " IN ('"
+						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
+						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
+						+ "') AND " + mlo.getExpiryDateField()
+						+ " < TO_TIMESTAMP('" + formattedDate
+						+ "', 'YYYY-MM-DD HH24:MI:SS')";
 			}
-			setQuery(deleteQuery);
 			qs = null;
+			setQuery(deleteQuery);
+			setQueryTimeout(900);
 			executeQueryJob(ibisManager);
 		}
 	}
@@ -759,6 +790,7 @@ public class JobDef {
 			qs.setName("QuerySender");
 			qs.setJmsRealm(getJmsRealm());
 			qs.setQueryType("other");
+			qs.setTimeout(getQueryTimeout());
 			qs.configure(true);
 			qs.open();
 			String result = qs.sendMessage("dummy", getQuery());
@@ -1007,7 +1039,14 @@ public class JobDef {
 	public String getQuery() {
 		return query;
 	}
-	
+
+	public int getQueryTimeout() {
+		return queryTimeout;
+	}
+	public void setQueryTimeout(int i) {
+		queryTimeout = i;
+	}
+
 	public void setJmsRealm(String jmsRealm) {
 		this.jmsRealm = jmsRealm;
 	}
