@@ -282,15 +282,22 @@ public class Misc {
 		return sb.toString();
 	}
 
-	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding, boolean xmlEncode)
-		throws IOException {
-		return readerToString(new InputStreamReader(stream,streamEncoding), endOfLineString, xmlEncode);
+	public static String streamToString(InputStream stream) throws IOException {
+		return streamToString(stream, null, false);
 	}
 
+	public static String streamToString(InputStream stream, String streamEncoding) throws IOException {
+		return streamToString(stream, null, streamEncoding, false);
+	}
 
 	public static String streamToString(InputStream stream, String endOfLineString, boolean xmlEncode)
 		throws IOException {
 		return streamToString(stream,endOfLineString, DEFAULT_INPUT_STREAM_ENCODING, xmlEncode);
+	}
+
+	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding, boolean xmlEncode)
+		throws IOException {
+		return readerToString(new InputStreamReader(stream, streamEncoding), endOfLineString, xmlEncode);
 	}
 
 	public static String resourceToString(URL resource, String endOfLineString, boolean xmlEncode) throws IOException {

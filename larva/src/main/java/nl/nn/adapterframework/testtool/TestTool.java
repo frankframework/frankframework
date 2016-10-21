@@ -3428,18 +3428,27 @@ public class TestTool {
 		while (!processed) {
 			String name = properties.getProperty(property + ".param" + i + ".name");
 			if (name != null) {
-				Object value = properties.getProperty(property + ".param" + i + ".value");
-				if (value == null) {
-					String filename = properties.getProperty(property + ".param" + i + ".valuefile.absolutepath");
-					if (filename != null) {
-						value = readFile(filename, writers);
-					} else {
-						String inputStreamFilename = properties.getProperty(property + ".param" + i + ".valuefileinputstream.absolutepath");
-						if (inputStreamFilename != null) {
-							try {
-								value = new FileInputStream(inputStreamFilename);
-							} catch(FileNotFoundException e) {
-								errorMessage("Could not read file '" + inputStreamFilename + "': " + e.getMessage(), e, writers);
+				Object value;
+				String type = properties.getProperty(property + ".param" + i + ".type");
+				if ("httpResponse".equals(type)) {
+					String outputFile = properties.getProperty(property + ".param" + i + ".outputfile");
+					HttpServletResponseMock httpServletResponseMock = new HttpServletResponseMock();
+					httpServletResponseMock.setOutputFile(outputFile);
+					value = httpServletResponseMock;
+				} else {
+					value = properties.getProperty(property + ".param" + i + ".value");
+					if (value == null) {
+						String filename = properties.getProperty(property + ".param" + i + ".valuefile.absolutepath");
+						if (filename != null) {
+							value = readFile(filename, writers);
+						} else {
+							String inputStreamFilename = properties.getProperty(property + ".param" + i + ".valuefileinputstream.absolutepath");
+							if (inputStreamFilename != null) {
+								try {
+									value = new FileInputStream(inputStreamFilename);
+								} catch(FileNotFoundException e) {
+									errorMessage("Could not read file '" + inputStreamFilename + "': " + e.getMessage(), e, writers);
+								}
 							}
 						}
 					}

@@ -31,6 +31,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.mail.BodyPart;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerConfigurationException;
 
@@ -82,6 +85,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.jackrabbit.webdav.DavException;
 import org.apache.jackrabbit.webdav.client.methods.ReportMethod;
 import org.apache.jackrabbit.webdav.version.report.ReportInfo;
+import org.apache.log4j.Logger;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
@@ -135,7 +139,8 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setIgnoreCertificateExpiredException(boolean) ignoreCertificateExpiredException}</td><td>when true, the CertificateExpiredException is ignored</td><td>false</td></tr>
  * <tr><td>{@link #setXhtml(boolean) xhtml}</td><td>when true, the html response is transformed to xhtml</td><td>false</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>>(only used when <code>xhtml=true</code>) stylesheet to apply to the html response</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMultiPart(boolean) multipart}</td><td>when true and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body</td><td>false</td></tr>
+ * <tr><td>{@link #setMultipart(boolean) multipart}</td><td>when true and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body</td><td>false</td></tr>
+ * <tr><td>{@link #setMultipartResponse(boolean) multipartResponse}</td><td>when true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href="https://docs.oracle.com/javaee/7/api/javax/xml/soap/SOAPMessage.html">https://docs.oracle.com/javaee/7/api/javax/xml/soap/SOAPMessage.html</a>). The first part will be returned as result of this sender. Other parts are returned as streams in sessionKeys with names multipart1, multipart2, etc. The http connection is held open until the last stream is read.</td><td>false</td></tr>
  * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)</td><td>false</td></tr>
  * <tr><td>{@link #setBase64(boolean) base64}</td><td>when true, the result is base64 encoded</td><td>false</td></tr>
  * <tr><td>{@link #setProtocol(String) protocol}</td><td>Secure socket protocol (such as "SSL" and "TLS") to use when a SSLContext object is generated. If empty the protocol "SSL" is used</td><td>&nbsp;</td></tr>
@@ -259,6 +264,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	private boolean xhtml=false;
 	private String styleSheetName=null;
 	private boolean multipart=false;
+	private boolean multipartResponse=false;
 	private boolean streamResultToServlet=false;
 	private String streamResultToFileNameSessionKey=null;
 	private boolean base64=false;
@@ -714,12 +720,16 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 				if (isBase64()) {
 					return getResponseBodyAsBase64(httpmethod);
 				} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
-					prc.getSession().put(getStoreResultAsStreamInSessionKey(), new ReleaseConnectionAfterReadInputStream(httpmethod));
+					prc.getSession().put(getStoreResultAsStreamInSessionKey(), new ReleaseConnectionAfterReadInputStream(httpmethod, httpmethod.getResponseBodyAsStream()));
 					return "";
 				} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
 					InputStream is = httpmethod.getResponseBodyAsStream();
 					prc.getSession().put(getStoreResultAsByteArrayInSessionKey(), IOUtils.toByteArray(is));
 					return "";
+				} else if (isMultipartResponse()) {
+					return handleMultipartResponse(
+							httpmethod.getResponseHeader("Content-Type").getValue(),
+							httpmethod.getResponseBodyAsStream(), prc, httpmethod);
 				} else {
 					//return httpmethod.getResponseBodyAsString();
 					return getResponseBodyAsString(httpmethod);
@@ -771,20 +781,63 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"base64 encodes response body");
 		return Base64.encode(bytes);
 	}
-	
+
+	public static String handleMultipartResponse(String contentType,
+			InputStream inputStream, ParameterResolutionContext prc,
+			HttpMethod httpMethod) throws IOException, SenderException {
+		String result = null;
+		try {
+			InputStreamDataSource dataSource =
+					new InputStreamDataSource(contentType, inputStream);
+			MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
+			for (int i = 0; i < mimeMultipart.getCount(); i++) {
+				BodyPart bodyPart = mimeMultipart.getBodyPart(i);
+				boolean lastPart = mimeMultipart.getCount() == i + 1;
+				if (i == 0) {
+					String charset =
+							org.apache.http.entity.ContentType.parse(
+									bodyPart.getContentType()).getCharset().name();
+					InputStream bodyPartInputStream = bodyPart.getInputStream();
+					result = Misc.streamToString(bodyPartInputStream, charset);
+					if (lastPart) {
+						bodyPartInputStream.close();
+					}
+				} else {
+					// When the last stream is read the
+					// httpMethod.releaseConnection() can be called, hence pass
+					// httpMethod to ReleaseConnectionAfterReadInputStream.
+					prc.getSession().put("multipart" + i,
+							new ReleaseConnectionAfterReadInputStream(
+									lastPart ? httpMethod : null,
+									bodyPart.getInputStream()));
+				}
+			}
+		} catch(MessagingException e) {
+			throw new SenderException("Could not read mime multipart response", e);
+		}
+		return result;
+	}
+
 	public void streamResponseBody(HttpMethod httpmethod, HttpServletResponse response) throws IOException {
-		InputStream is = httpmethod.getResponseBodyAsStream();
-		String contentType = httpmethod.getResponseHeader("Content-Type").getValue();
+		streamResponseBody(httpmethod.getResponseBodyAsStream(),
+				httpmethod.getResponseHeader("Content-Type").getValue(),
+				httpmethod.getResponseHeader("Content-Disposition").getValue(),
+				response, log, getLogPrefix());
+	}
+
+	public static void streamResponseBody(InputStream is, String contentType,
+			String contentDisposition, HttpServletResponse response,
+			Logger log, String logPrefix) throws IOException {
 		if (StringUtils.isNotEmpty(contentType)) {
 			response.setHeader("Content-Type", contentType); 
 		}
-		String contentDisposition =  httpmethod.getResponseHeader("Content-Disposition").getValue();
 		if (StringUtils.isNotEmpty(contentDisposition)) {
 			response.setHeader("Content-Disposition", contentDisposition); 
 		}
 		OutputStream outputStream = response.getOutputStream();
 		Misc.streamToStream(is, outputStream);
-		log.debug(getLogPrefix() + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
+		outputStream.close();
+		log.debug(logPrefix + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
 	}
 
 	public String sendMessageWithTimeoutGuarded(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
@@ -1242,6 +1295,13 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		return multipart;
 	}
 
+	public void setMultipartResponse(boolean b) {
+		multipartResponse = b;
+	}
+	public boolean isMultipartResponse() {
+		return multipartResponse;
+	}
+
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
@@ -1285,42 +1345,4 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
 	}
 
-	private class ReleaseConnectionAfterReadInputStream extends InputStream {
-		InputStream inputStream;
-		HttpMethod httpMethod;
-
-		public ReleaseConnectionAfterReadInputStream(HttpMethod httpMethod) throws IOException {
-			this.httpMethod = httpMethod;
-			this.inputStream = httpMethod.getResponseBodyAsStream();
-		}
-
-		public int read() throws IOException {
-			int i = inputStream.read();
-			if (i == -1) {
-				httpMethod.releaseConnection();
-			}
-			return i;
-		}
-
-		public int read(byte[] b) throws IOException {
-			int i = inputStream.read(b);
-			if (i == -1) {
-				httpMethod.releaseConnection();
-			}
-			return i;
-		}
-
-		public int read(byte[] b, int off, int len) throws IOException {
-			int i = inputStream.read(b, off, len);
-			if (i == -1) {
-				httpMethod.releaseConnection();
-			}
-			return i;
-		}
-
-		public void close() throws IOException {
-			inputStream.close();
-			httpMethod.releaseConnection();
-		}
-	}
 }
