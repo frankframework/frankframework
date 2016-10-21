@@ -157,6 +157,11 @@
 									<xsl:attribute name="serviceName">
 										<xsl:value-of select="concat('testtool-',$pipeName)" />
 									</xsl:attribute>
+									<xsl:if test="string-length(@multipartResponse)&gt;0">
+										<xsl:attribute name="multipartResponse">
+											<xsl:value-of select="@multipartResponse" />
+										</xsl:attribute>
+									</xsl:if>
 								</xsl:element>
 								<xsl:call-template name="disable" />
 							</xsl:otherwise>
