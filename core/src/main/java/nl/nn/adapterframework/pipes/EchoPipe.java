@@ -41,7 +41,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  */
 public class EchoPipe extends FixedForwardPipe {
 	
-	public PipeRunResult doPipe (Object input, IPipeLineSession session) {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) {
 		return new PipeRunResult(getForward(),input);
 	}
 
