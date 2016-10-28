@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public class HttpServletResponseMock implements HttpServletResponse {
 	String outputFile;
+	ServletOutputStream outputStream;
 
 	public String getOutputFile() {
 		return outputFile;
@@ -48,7 +49,10 @@ public class HttpServletResponseMock implements HttpServletResponse {
 	}
 
 	public ServletOutputStream getOutputStream() throws IOException {
-		return new ServletOutputStreamMock(getOutputFile());
+		if (outputStream == null) {
+			outputStream = new ServletOutputStreamMock(getOutputFile());
+		}
+		return outputStream;
 	}
 
 	public PrintWriter getWriter() throws IOException {
@@ -181,9 +185,13 @@ public class HttpServletResponseMock implements HttpServletResponse {
 		
 	}
 
-	public void setHeader(String arg0, String arg1) {
-		// TODO Auto-generated method stub
-		
+	public void setHeader(String name, String value) {
+		String line = name + ": " + value + "\n";
+		try {
+			getOutputStream().write(line.getBytes());
+		} catch (IOException e) {
+			throw new RuntimeException("Could not write header to output stream", e);
+		}
 	}
 
 	public void setIntHeader(String arg0, int arg1) {
