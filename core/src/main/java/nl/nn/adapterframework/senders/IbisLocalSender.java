@@ -52,7 +52,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
  * <tr><td>{@link #setJavaListenerSessionKey(String) javaListenerSessionKey}</td><td>Name of the sessionKey which holds the name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using separate transaction</td><td>false</td></tr>
  * <tr><td>{@link #setCheckDependency(boolean) checkDependency}</td><td>when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} is opened</td><td>true</td></tr>
- * <tr><td>{@link #setDependencyTimeOut(int) dependencyTimeOut}</td><td>maximum time (in seconds) the sender waits for the listener to start</td><td>60 s</td></tr>
+ * <tr><td>{@link #setDependencyTimeOut(int) dependencyTimeOut}</td><td>maximum time (in seconds) the sender waits for the listener to start. A value of -1 indicates to wait indefinitely</td><td>60 s</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the call is made asynchronously. This implies <code>isolated=true</code></td><td>true</td></tr>
  * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, 
  *         for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)<br/>
@@ -135,14 +135,18 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		super.open();
 		if (StringUtils.isNotEmpty(getJavaListener()) && isCheckDependency()) {
 			boolean listenerOpened=false;
-			int loops=getDependencyTimeOut();
-			while (!listenerOpened && !configuration.isUnloadInProgressOrDone() && loops>0) {
+			int loops = getDependencyTimeOut();
+			while (!listenerOpened
+					&& !configuration.isUnloadInProgressOrDone()
+					&& (loops == -1 || loops > 0)) {
 				JavaListener listener= JavaListener.getListener(getJavaListener());
 				if (listener!=null) {
 					listenerOpened=listener.isOpen();
 				}
 				if (!listenerOpened && !configuration.isUnloadInProgressOrDone()) {
-					loops--;
+					if (loops != -1) {
+						loops--;
+					}
 					try {
 						log.debug("waiting for JavaListener ["+getJavaListener()+"] to open");
 						Thread.sleep(1000);

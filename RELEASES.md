@@ -111,6 +111,7 @@ Upcoming
 - Bugfix "facility to hide properties" caused by splitting configuration
 - Introduction of CounterSwitchPipe (for load balancing between pipes)
 - Add mime multipart response support to http sender
+- Wait indefinitely for adapter to start when job interval is 0
 
 
 

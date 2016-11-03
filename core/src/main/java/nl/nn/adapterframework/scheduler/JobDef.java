@@ -33,7 +33,6 @@ import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
@@ -71,7 +70,7 @@ import org.springframework.transaction.TransactionStatus;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Job</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDescription(String) description}</td><td>optional description of the job</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCronExpression(String) cronExpression}</td><td>cron expression that determines the frequency of execution (see below)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInterval(long) interval}</td><td>Repeat the job at the specified number of ms. Set to 0 to only run once just after all adapters have been started. Keep cronExpression empty to use interval.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInterval(long) interval}</td><td>Repeat the job at the specified number of ms. Keep cronExpression empty to use interval. Set to 0 to only run once at startup of the application. A value of 0 in combination with function 'sendMessage' will set dependencyTimeOut on the IbisLocalSender to -1 the keep waiting indefinitely instead of max 60 seconds for the adapter to start.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFunction(String) function}</td><td>one of: StopAdapter, StartAdapter, StopReceiver, StartReceiver, SendMessage, ExecuteQuery</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setConfigurationName(String) configurationName}</td><td>Configuration on which job operates</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAdapterName(String) adapterName}</td><td>Adapter on which job operates</td><td>&nbsp;</td></tr>
@@ -811,13 +810,15 @@ public class JobDef {
 			localSender.setJavaListener(receiverName);
 			localSender.setIsolated(false);
 			localSender.setName("AdapterJob");
+			if (getInterval() == 0) {
+				localSender.setDependencyTimeOut(-1);
+			}
 			if (StringUtils.isNotEmpty(adapterName)) {
 				IAdapter iAdapter = ibisManager.getRegisteredAdapter(adapterName);
 				Configuration configuration = iAdapter.getConfiguration();
 				localSender.setConfiguration(configuration);
 			}
 			localSender.configure();
-            
 			localSender.open();
 			try {
 				localSender.sendMessage(null, "");
@@ -829,7 +830,7 @@ public class JobDef {
 		catch(Exception e) {
 			String msg = "Error while sending message (as part of scheduled job execution): " + e.getMessage();
 			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
-			log.error(getLogPrefix()+msg);
+			log.error(getLogPrefix()+msg, e);
 		}
 	}
 
