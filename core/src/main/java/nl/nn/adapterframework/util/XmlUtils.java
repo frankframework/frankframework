@@ -79,6 +79,10 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultDocument;
+import org.htmlcleaner.CleanerProperties;
+import org.htmlcleaner.HtmlCleaner;
+import org.htmlcleaner.SimpleXmlSerializer;
+import org.htmlcleaner.TagNode;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -1797,5 +1801,21 @@ public class XmlUtils {
 			return c;
 		}
 		return null;
+	}
+
+	public static String toXhtml(String htmlString) {
+		String xhtmlString = null;
+		if (StringUtils.isNotEmpty(htmlString)) {
+			xhtmlString = XmlUtils.skipDocTypeDeclaration(htmlString.trim());
+			if (xhtmlString.startsWith("<html>")
+					|| xhtmlString.startsWith("<html ")) {
+				CleanerProperties props = new CleanerProperties();
+				HtmlCleaner cleaner = new HtmlCleaner(props);
+				TagNode tagNode = cleaner.clean(xhtmlString);
+				xhtmlString = new SimpleXmlSerializer(props)
+						.getXmlAsString(tagNode);
+			}
+		}
+		return xhtmlString;
 	}
 }
