@@ -15,6 +15,7 @@
 			<pipe name="doTestPipeLine"
 				className="nl.nn.adapterframework.webcontrol.pipes.TestPipeLine"
 				throwException="false">
+				<param name="timeout" sessionKey="timeout" />
 				<forward name="success" path="testPipeLine" />
 			</pipe>
 
@@ -22,6 +23,7 @@
 				styleSheetName="TestPipeLine/xsl/TestPipeLine.xsl" xslt2="true">
 				<param name="adapterList" sessionKey="adapterList" />
 				<param name="adapterName" sessionKey="adapterName" />
+				<param name="timeout" sessionKey="timeout" />
 				<param name="message" sessionKey="message" />
 				<param name="fileEncoding" sessionKey="fileEncoding" />
 				<param name="result" sessionKey="result" />

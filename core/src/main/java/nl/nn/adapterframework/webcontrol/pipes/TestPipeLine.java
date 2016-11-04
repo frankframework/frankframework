@@ -237,6 +237,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 			adapterXML.setValue(adapterNames.get(i));
 			adaptersXML.addSubElement(adapterXML);
 		}
+		adaptersXML.addAttribute("timeout", getTimeout());
 		return adaptersXML.toXML();
 	}
 }

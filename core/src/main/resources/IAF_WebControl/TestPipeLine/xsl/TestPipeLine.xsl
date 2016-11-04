@@ -5,6 +5,7 @@
 	<xsl:param name="srcPrefix" />
 	<xsl:param name="adapterList" />
 	<xsl:param name="adapterName" />
+	<xsl:param name="timeout" />
 	<xsl:param name="message" />
 	<xsl:param name="fileEncoding" />
 	<xsl:param name="result" />
@@ -70,6 +71,25 @@
 									</option>
 								</xsl:for-each>
 							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>Timeout (in sec)</td>
+						<td>
+							<xsl:variable name="to">
+								<xsl:choose>
+									<xsl:when test="string-length($timeout)=0">
+										<xsl:value-of select="adapters/@timeout" />
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:value-of select="$timeout" />
+									</xsl:otherwise>
+								</xsl:choose>
+							</xsl:variable>
+							<input class="text" type="text" name="timeout" maxlength="20"
+								size="10">
+								<xsl:attribute name="value" select="$to" />
+							</input>
 						</td>
 					</tr>
 					<tr>

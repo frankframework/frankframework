@@ -112,6 +112,7 @@ Upcoming
 - Introduction of CounterSwitchPipe (for load balancing between pipes)
 - Add mime multipart response support to http sender
 - Wait indefinitely for adapter to start when job interval is 0
+- Add timeout field to IBIS console function 'Test a PipeLine'
 
 
 
