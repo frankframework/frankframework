@@ -115,6 +115,7 @@ Upcoming
 - Add timeout field to IBIS console function 'Test a PipeLine'
 - Add 'multiple configs' checkbox field to Upload Configuration
 - Bugfix "Lock request time out period exceeded" for MS SQL
+- Introduction of IsXmlIfPipe
 
 
 
