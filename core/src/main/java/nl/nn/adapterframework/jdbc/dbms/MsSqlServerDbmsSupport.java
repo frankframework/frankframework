@@ -82,9 +82,9 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		String result=selectQuery.substring(0,KEYWORD_SELECT.length())+(batchSize>0?" TOP "+batchSize:"")+selectQuery.substring(KEYWORD_SELECT.length());
 		int wherePos=result.toLowerCase().indexOf("where");
 		if (wherePos<0) {
-			result+=" WITH (updlock,readpast)";
+			result+=" WITH (rowlock,updlock,readpast)";
 		} else {
-			result=result.substring(0,wherePos)+" WITH (updlock,readpast) "+result.substring(wherePos);
+			result=result.substring(0,wherePos)+" WITH (rowlock,updlock,readpast) "+result.substring(wherePos);
 		}
 		return result;
 	}

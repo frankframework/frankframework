@@ -753,7 +753,7 @@ public class JobDef {
 				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
 					+ mlo.getKeyField() + " IN (SELECT "
 						+ mlo.getKeyField() + " FROM " + mlo.getTableName()
-						+ " WITH (updlock, readpast) WHERE "
+						+ " WITH (rowlock,updlock,readpast) WHERE "
 						+ mlo.getTypeField() + " IN ('"
 						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
 						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
