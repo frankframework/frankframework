@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.xml.transform.Source;
@@ -80,7 +81,8 @@ import org.w3c.dom.Node;
  * 	<li><code>number</code>: converts the result to a Number, using decimalSeparator and groupingSeparator. When applied as a JDBC parameter, the method setDouble() is used</li>
  * 	<li><code>integer</code>: converts the result to an Integer</li>
  * 	<li><code>inputstream</code>: only applicable as a JDBC parameter, the method setBinaryStream() is used</li>
- * 	<li><code>list</code>: converts a List&lt;String&gt; object to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/item2&gt;)</li>
+ * 	<li><code>list</code>: converts a List&lt;String&gt; object to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;)</li>
+ * 	<li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;/items&gt;)</li>
  * </ul>
  * </td><td>string</td></tr>
  * <tr><td>{@link #setFormatString(String) formatString}</td><td>used in combination with types <code>date</code>, <code>time</code> and <code>datetime</code></td><td>depends on type</td></tr>
@@ -143,6 +145,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	public final static String TYPE_INTEGER="integer";
 	public final static String TYPE_INPUTSTREAM="inputstream";
 	public final static String TYPE_LIST="list";
+	public final static String TYPE_MAP="map";
 	
 	public final static String TYPE_DATE_PATTERN="yyyy-MM-dd";
 	public final static String TYPE_TIME_PATTERN="HH:mm:ss";
@@ -313,8 +316,20 @@ public class Parameter implements INamedObject, IWithParameters {
 							itemsXml.addSubElement(itemXml);
 						}
 						sourceString = itemsXml.toXML();
-					} else {
-						sourceString = (String) sourceObject;
+					} else if (TYPE_MAP.equals(getType())
+								&& sourceObject instanceof Map) {
+							Map<String, String> items = (Map<String, String>) sourceObject;
+							XmlBuilder itemsXml = new XmlBuilder("items");
+							for (Iterator it = items.keySet().iterator(); it.hasNext();) {
+								String item = (String) it.next();
+								XmlBuilder itemXml = new XmlBuilder("item");
+								itemXml.addAttribute("name", item);
+								itemXml.setValue(items.get(item));
+								itemsXml.addSubElement(itemXml);
+							}
+							sourceString = itemsXml.toXML();
+						} else {
+							sourceString = (String) sourceObject;
 					}
 					if (StringUtils.isNotEmpty(sourceString)) {
 						log.debug("Parameter ["+getName()+"] using sessionvariable ["+getSessionKey()+"] as source for transformation");
