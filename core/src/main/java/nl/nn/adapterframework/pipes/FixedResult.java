@@ -59,6 +59,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setReplaceTo(String) replaceTo}</td><td>string that will replace each of the strings found in the returned message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to the output message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLookupAtRuntime(boolean) lookupAtRuntime}</td><td>when set <code>true</code>, the lookup of the file will be done at runtime instead of at configuration time</td><td>false</td></tr>
+ * <tr><td>{@link #setReplaceFixedParams(boolean) replaceFixedParams}</td><td>when set <code>true</code>, any parameter is used for replacements but with <code>name-of-parameter</code> and not <code>${name-of-parameter}</code></td><td>false</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -92,6 +93,7 @@ public class FixedResult extends FixedForwardPipe {
 	private String replaceTo = null;
 	private String styleSheetName = null;
 	private boolean lookupAtRuntime=false;
+	private boolean replaceFixedParams=false;
 	
     /**
      * checks for correct configuration, and translates the fileName to
@@ -157,7 +159,13 @@ public class FixedResult extends FixedForwardPipe {
 			}
 			for (int i=0; i<pvl.size(); i++) {
 				ParameterValue pv = pvl.getParameterValue(i);
-				result=replace(result,"${"+pv.getDefinition().getName()+"}",pv.asStringValue(""));
+				String replaceFrom;
+				if (isReplaceFixedParams()) {
+					replaceFrom=pv.getDefinition().getName();
+				} else {
+					replaceFrom="${"+pv.getDefinition().getName()+"}";
+				}
+				result=replace(result,replaceFrom,pv.asStringValue(""));
 			}
 		}
 
@@ -263,5 +271,12 @@ public class FixedResult extends FixedForwardPipe {
 	}
 	public boolean isLookupAtRuntime(){
 		return lookupAtRuntime;
+	}
+
+	public void setReplaceFixedParams(boolean b){
+		replaceFixedParams=b;
+	}
+	public boolean isReplaceFixedParams(){
+		return replaceFixedParams;
 	}
 }

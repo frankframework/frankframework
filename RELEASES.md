@@ -116,6 +116,7 @@ Upcoming
 - Add 'multiple configs' checkbox field to Upload Configuration
 - Bugfix "Lock request time out period exceeded" for MS SQL
 - Introduction of IsXmlIfPipe
+- Add replaceFixedParams attribute to FixedResult (for easily replace multiple string in one pipe)
 
 
 
