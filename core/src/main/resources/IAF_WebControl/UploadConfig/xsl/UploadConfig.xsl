@@ -8,6 +8,7 @@
 	<xsl:param name="name" />
 	<xsl:param name="version" />
 	<xsl:param name="fileEncoding" />
+	<xsl:param name="multipleConfigs" />
 	<xsl:param name="result" />
 	<xsl:variable name="brvbar" select="'&#166;'" />
 	<xsl:template match="/">
@@ -132,6 +133,17 @@
 							<input class="text" maxlength="20" name="fileEncoding"
 								size="10" type="text">
 								<xsl:attribute name="value" select="$fileEncoding" />
+							</input>
+						</td>
+					</tr>
+					<tr>
+						<td>Multiple configs</td>
+						<td>
+							<input class="checkbox" type="checkbox" name="multipleConfigs"
+								value="on">
+								<xsl:if test="$multipleConfigs='on'">
+									<xsl:attribute name="checked">checked</xsl:attribute>
+								</xsl:if>
 							</input>
 						</td>
 					</tr>

@@ -75,8 +75,9 @@ public class UploadConfig extends TimeoutGuardPipe {
 		String fileName = (String) session.get("fileName");
 		String name = (String) session.get("name");
 		String version = (String) session.get("version");
+		String multipleConfigs = (String) session.get("multipleConfigs");
 
-		if (!StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
+		if (!"on".equals(multipleConfigs)) {
 			if (StringUtils.isEmpty(name) && StringUtils.isEmpty(version)) {
 				String[] fnArray = splitFilename(fileName);
 				if (fnArray[0] != null) {
@@ -105,7 +106,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		}
 
 		String result = "";
-		if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
+		if ("on".equals(multipleConfigs)) {
 			try {
 				result = processZipFile(session, fileName);
 			} catch (IOException e) {

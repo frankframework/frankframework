@@ -23,6 +23,7 @@
 				<param name="name" sessionKey="name" />
 				<param name="version" sessionKey="version" />
 				<param name="fileEncoding" sessionKey="fileEncoding" />
+				<param name="multipleConfigs" sessionKey="multipleConfigs" />
 				<param name="result" sessionKey="result" />
 				<forward name="success" path="EXIT" />
 			</pipe>
