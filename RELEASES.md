@@ -117,6 +117,7 @@ Upcoming
 - Bugfix "Lock request time out period exceeded" for MS SQL
 - Introduction of IsXmlIfPipe
 - Add replaceFixedParams attribute to FixedResult (for easily replace multiple string in one pipe)
+- Make Misc stream and reader related code continue when read returns 0
 
 
 

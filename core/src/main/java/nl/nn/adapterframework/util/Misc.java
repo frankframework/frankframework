@@ -173,9 +173,8 @@ public class Misc {
 	public static void streamToStream(InputStream input, OutputStream output, boolean closeInput) throws IOException {
 		if (input!=null) {
 			byte buffer[]=new byte[BUFFERSIZE];
-
 			int bytesRead;
-			while ((bytesRead=input.read(buffer,0,BUFFERSIZE))>0) {
+			while ((bytesRead=input.read(buffer,0,BUFFERSIZE))>-1) {
 				output.write(buffer,0,bytesRead);
 			}
 			if (closeInput) {
@@ -220,9 +219,8 @@ public class Misc {
 	public static void readerToWriter(Reader reader, Writer writer, boolean closeInput) throws IOException {
 		if (reader!=null) {
 			char buffer[]=new char[BUFFERSIZE];
-
 			int charsRead;
-			while ((charsRead=reader.read(buffer,0,BUFFERSIZE))>0) {
+			while ((charsRead=reader.read(buffer,0,BUFFERSIZE))>-1) {
 				writer.write(buffer,0,charsRead);
 			}
 			if (closeInput) {
