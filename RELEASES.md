@@ -118,6 +118,7 @@ Upcoming
 - Introduction of IsXmlIfPipe
 - Add replaceFixedParams attribute to FixedResult (for easily replace multiple string in one pipe)
 - Make Misc stream and reader related code continue when read returns 0
+- Add resultStatusCodeSessionKey attribute to HttpSender (to store http status code from result)
 
 
 

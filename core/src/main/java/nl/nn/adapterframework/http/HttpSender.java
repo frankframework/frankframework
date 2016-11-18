@@ -146,6 +146,7 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setProtocol(String) protocol}</td><td>Secure socket protocol (such as "SSL" and "TLS") to use when a SSLContext object is generated. If empty the protocol "SSL" is used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStreamResultToFileNameSessionKey(String) streamResultToFileNameSessionKey}</td><td>if set, the result is streamed to a file (instead of passed as a String)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultAsStreamInSessionKey(String) storeResultAsStreamInSessionKey}</td><td>if set, a pointer to an input stream of the result is put in the specified sessionKey (as the sender interface only allows a sender to return a string a sessionKey is used instead to return the stream)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setResultStatusCodeSessionKey(String) resultStatusCodeSessionKey}</td><td>if set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -271,6 +272,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	private String protocol=null;
 	private String storeResultAsStreamInSessionKey;
 	private String storeResultAsByteArrayInSessionKey;
+	private String resultStatusCodeSessionKey;
 	
 	private TransformerPool transformerPool=null;
 
@@ -701,12 +703,17 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	public String extractResult(HttpMethod httpmethod, ParameterResolutionContext prc, HttpServletResponse response, String fileName) throws SenderException, IOException {
 		int statusCode = httpmethod.getStatusCode();
 		boolean ok = false;
-		if (statusCode==HttpServletResponse.SC_OK) {
+		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
+			prc.getSession().put(getResultStatusCodeSessionKey(), statusCode);
 			ok = true;
-		} else { 
-			if (isIgnoreRedirects()) {
-				if (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT) {
-					ok = true;
+		} else {
+			if (statusCode==HttpServletResponse.SC_OK) {
+				ok = true;
+			} else { 
+				if (isIgnoreRedirects()) {
+					if (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT) {
+						ok = true;
+					}
 				}
 			}
 		}
@@ -1345,4 +1352,10 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
 	}
 
+	public String getResultStatusCodeSessionKey() {
+		return resultStatusCodeSessionKey;
+	}
+	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
+		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
+	}
 }
