@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.processors;
 import java.io.IOException;
+import java.util.Iterator;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -218,6 +219,18 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						}
 						ready=true;
 						if (log.isDebugEnabled()){  // for performance reasons
+							String skString = "";
+							for (Iterator it = pipeLineSession.keySet()
+									.iterator(); it.hasNext();) {
+								String key = (String) it.next();
+								Object value = pipeLineSession.get(key);
+								skString = skString + "\n " + key + "=["
+										+ value + "]";
+							}
+							log.debug("Available session keys at finishing pipeline of adapter ["
+									+ pipeLine.getOwner().getName()
+									+ "]:"
+									+ skString);
 							log.debug("Pipeline of adapter ["+ pipeLine.getOwner().getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object+ "] with exit-state ["+state+"]");
 						}
 					}
