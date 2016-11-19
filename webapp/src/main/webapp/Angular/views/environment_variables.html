@@ -1,0 +1,33 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content animated fadeInRight" ng-controller="environment_variables">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h4>Environment Variables</h4>
+                </div>
+                <div class="ibox-content">
+                    <div ng-repeat="(name, variable) in variables">
+                        <h2>{{name}}</h2>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <td><strong>Property</strong></td>
+                                    <td><strong>Value</strong></td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="(key, var) in variable">
+                                    <td class="col-lg-3">{{key}}</td>
+                                    <td class="col-lg-9">{{var}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

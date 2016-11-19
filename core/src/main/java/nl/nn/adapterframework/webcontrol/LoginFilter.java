@@ -177,9 +177,15 @@ public class LoginFilter implements Filter {
 			throws IOException, ServletException {
 		HttpServletRequest req = (HttpServletRequest) servletRequest;
 		HttpServletResponse res = (HttpServletResponse) servletResponse;
+		String path = req.getServletPath();
+		String fullPath = path + req.getPathInfo();
+
+		if (fullPath.startsWith("/api/") || path.startsWith("/Angular")) {
+			filterChain.doFilter(req, res); // Continue the chain.
+			return;
+		}
 
 		if (ldapAuthModeNum >= LDAP_AUTH_MODE_SIMPLE) {
-			String path = req.getServletPath();
 			if (hasAllowedExtension(path)) {
 				filterChain.doFilter(servletRequest, servletResponse);
 			} else {

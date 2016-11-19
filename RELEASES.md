@@ -119,8 +119,8 @@ Upcoming
 - Add replaceFixedParams attribute to FixedResult (for easily replace multiple string in one pipe)
 - Make Misc stream and reader related code continue when read returns 0
 - Add resultStatusCodeSessionKey attribute to HttpSender (to store http status code from result)
-
-
+- Introduction to new IBIS API + IBIS console
+- Replace Apache XMLbeans library v2.5.0 by v2.6.0
 
 ### Non backwards compatible changes
 

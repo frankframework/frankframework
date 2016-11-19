@@ -515,6 +515,18 @@ public class IbisContext {
 		}
 		return version;
 	}
+	
+	public String getVersionInfo() {
+		String versionInfo = APP_CONSTANTS.getProperty("application.name") + " "
+				+ APP_CONSTANTS.getProperty("application.version") + " "
+				+ APP_CONSTANTS.getProperty("instance.name") + " "
+				+ APP_CONSTANTS.getProperty("instance.version");
+		String buildId = APP_CONSTANTS.getProperty("instance.build_id");
+		if (StringUtils.isNotEmpty(buildId)) {
+			versionInfo += " " + buildId;
+		}
+		return versionInfo.trim();
+	}
 
 	public static void main(String[] args) {
 		IbisContext ibisContext = new IbisContext();

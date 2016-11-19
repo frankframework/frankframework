@@ -53,4 +53,11 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 		paramList.add(p);
 	}
 
+	/**
+	 * return the Parameters
+	 */
+	public ParameterList getParameterList() {
+		return paramList;
+	}
+
 }
