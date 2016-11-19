@@ -113,9 +113,9 @@
 				alt="Information">
 			</imagelink>
 			<imagelink
-				href="<%=XmlUtils.encodeChars(themeSwitchQueryString)%>"
+				href="Angular"
 				type="theme"
-				alt="Theme Bootstrap">
+				alt="GUI 3.0">
 			</imagelink>
 	</imagelinkMenu>
 </menuBar>
