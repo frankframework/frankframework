@@ -83,7 +83,7 @@ public class JmsRealmFactory {
      * Get the names as a list
      * @return List with the realm names
      */
-    public List getRegisteredRealmNamesAsList() {
+    public List<String> getRegisteredRealmNamesAsList() {
         Iterator it = getRegisteredRealmNames();
         List result = new ArrayList();
         while (it.hasNext()) {

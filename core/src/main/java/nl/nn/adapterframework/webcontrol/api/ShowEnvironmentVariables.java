@@ -1,5 +1,5 @@
 /*
-Copyright 2013 Nationale-Nederlanden
+Copyright 2016 Nationale-Nederlanden
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 
 /**
-* Shows the configuration (with resolved variables).
+* Shows the environment variables.
 * 
 * @author	Niels Meijer
 */

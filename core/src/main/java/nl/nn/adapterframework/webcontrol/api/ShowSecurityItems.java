@@ -1,5 +1,5 @@
 /*
-Copyright 2013 Nationale-Nederlanden
+Copyright 2016 Nationale-Nederlanden
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 
 /**
-* Shows the configuration (with resolved variables).
+* Shows the used certificate.
 * 
 * @author	Niels Meijer
 */

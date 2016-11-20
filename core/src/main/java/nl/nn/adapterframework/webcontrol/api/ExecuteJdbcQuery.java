@@ -1,5 +1,5 @@
 /*
-Copyright 2013 Nationale-Nederlanden
+Copyright 2016 Nationale-Nederlanden
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
-* Shows the configuration (with resolved variables).
+* Executes a query.
 * 
 * @author	Niels Meijer
 */
@@ -65,7 +65,7 @@ public final class ExecuteJdbcQuery extends Base {
 		
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+		List<String> jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		if (jmsRealms.size() == 0)
 			jmsRealms.add("no realms defined");
 		result.put("jmsRealms", jmsRealms);
