@@ -17,7 +17,9 @@ package nl.nn.adapterframework.pipes;
 
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -26,6 +28,7 @@ import nl.nn.adapterframework.core.DummyNamedObject;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
+import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
@@ -260,16 +263,29 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
      * </ul>
      * Therefore, you can directly jump to another pipe, although this is not recommended
      * as the pipe should not know the existence of other pipes. Nevertheless, this feature
-     * may come in handy for switcher-pipes.<br/.<br/>
+     * may come in handy for switcher-pipes.<br/><br/>
      * @param forward   Name of the forward
      * @return PipeForward
      */
+	//TODO: Create a 2nd findForwards method without all pipes in the hashtable and make the first one deprecated.
     public PipeForward findForward(String forward){
     	if (StringUtils.isEmpty(forward)) {
     		return null;
     	}
         return pipeForwards.get(forward);
     }
+
+    public Map<String, PipeForward> getForwards(){
+        Map<String, PipeForward> forwards = new Hashtable<String, PipeForward>(pipeForwards);
+        List<IPipe> pipes = getPipeLine().getPipes();
+        for (int i=0; i<pipes.size(); i++) {
+            String pipeName = pipes.get(i).getName();
+            if(forwards.containsKey(pipeName))
+                forwards.remove(pipeName);
+        }
+        return forwards;
+    }
+
 
 	/**
 	 * Convenience method for building up log statements.
@@ -404,6 +420,9 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return null;
 	}
 
+    public String getType(){
+        return this.getClass().getSimpleName();
+    }
 
 	/**
 	 * Indicates the maximum number of treads ;that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously in case
@@ -438,10 +457,6 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	public long getDurationThreshold() {
 		return durationThreshold;
 	}
-
-
-
-
 
 	public void setGetInputFromSessionKey(String string) {
 		getInputFromSessionKey = string;

@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.util.Map;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
 /**
@@ -45,6 +47,16 @@ PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunExce
  * called by one thread at a time, should make sure getMaxThreads always returns a value of 1.
  */
 int getMaxThreads();
+
+/**
+ * Get pipe forwards.
+ */
+Map<String, PipeForward> getForwards();
+
+/**
+ * Get pipe type.
+ */
+String getType();
 
 /**
   * Register a PipeForward object to this Pipe. Global Forwards are added

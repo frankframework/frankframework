@@ -49,6 +49,7 @@ import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
@@ -290,8 +291,18 @@ public final class ShowConfigurationStatus extends Base {
 		for (int i=0; i<totalPipes; i++) {
 			Map<String, Object> pipesInfo = new HashMap<String, Object>();
 			IPipe pipe = pipeline.getPipe(i);
+			Map<String, PipeForward> pipeForwards = pipe.getForwards();
+
 			String pipename = pipe.getName();
+
+			Map<String, String> forwards = new HashMap<String, String>();
+			for (PipeForward fwrd : pipeForwards.values()) {
+				forwards.put(fwrd.getName(), fwrd.getPath());
+			}
+
 			pipesInfo.put("name", pipename);
+			pipesInfo.put("type", pipe.getType());
+			pipesInfo.put("forwards", forwards);
 			if (pipe instanceof MessageSendingPipe) {
 				MessageSendingPipe msp=(MessageSendingPipe)pipe;
 				ISender sender = msp.getSender();
