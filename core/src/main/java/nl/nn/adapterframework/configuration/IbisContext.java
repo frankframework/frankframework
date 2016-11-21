@@ -17,6 +17,7 @@ package nl.nn.adapterframework.configuration;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +38,7 @@ import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.FlowDiagram;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
@@ -73,6 +75,7 @@ public class IbisContext {
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	private static final String FLOW_CREATE_DIAGRAM_URL = APP_CONSTANTS.getResolvedProperty("flow.create.url");
+	private static final long UPTIME = System.currentTimeMillis();
 	static {
 		String applicationServerType = System.getProperty(
 				APPLICATION_SERVER_TYPE_PROPERTY);
@@ -514,6 +517,18 @@ public class IbisContext {
 			}
 		}
 		return version;
+	}
+	
+	public Date getUptimeDate() {
+		return new Date(UPTIME);
+	}
+	
+	public String getUptime() {
+		return getUptime(DateUtils.FORMAT_GENERICDATETIME);
+	}
+	
+	public String getUptime(String dateFormat) {
+		return DateUtils.format(getUptimeDate(), dateFormat);
 	}
 	
 	public String getVersionInfo() {

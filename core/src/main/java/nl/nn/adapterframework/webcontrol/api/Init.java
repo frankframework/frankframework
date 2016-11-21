@@ -71,6 +71,7 @@ public class Init extends Base {
 		returnMap.put("versionInfo", versionInfo);
 		Date date = new Date();
 		returnMap.put("serverTime", date.getTime());
+		returnMap.put("uptime", ibisContext.getUptimeDate());
 		
 		return Response.status(Response.Status.CREATED).entity(returnMap).build();
 	}

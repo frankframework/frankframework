@@ -271,10 +271,15 @@ public final class ShowConfigurationStatus extends ActionBase {
 				countAdapterStateError++;
 			}
 			adapterXML.addAttribute("configured", ""+adapter.configurationSucceeded());
-			adapterXML.addAttribute("upSince", adapter.getStatsUpSince(DateUtils.FORMAT_GENERICDATETIME));
 			Date statsUpSinceDate = adapter.getStatsUpSinceDate();
+			
 			if (statsUpSinceDate!=null) {
-				adapterXML.addAttribute("upSinceAge", Misc.getAge(statsUpSinceDate.getTime()));
+				if(statsUpSinceDate.getTime() > 0) {
+					adapterXML.addAttribute("upSince", adapter.getStatsUpSince(DateUtils.FORMAT_GENERICDATETIME));
+					adapterXML.addAttribute("upSinceAge", Misc.getAge(statsUpSinceDate.getTime()));
+				}
+				else
+					adapterXML.addAttribute("upSince", "-");
 			}
 			adapterXML.addAttribute("lastMessageDate", adapter.getLastMessageDate(DateUtils.FORMAT_GENERICDATETIME));
 			Date lastMessageDate = adapter.getLastMessageDateDate();

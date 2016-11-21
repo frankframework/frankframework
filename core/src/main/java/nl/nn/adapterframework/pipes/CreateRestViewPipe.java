@@ -22,6 +22,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -34,6 +35,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -200,6 +202,8 @@ public class CreateRestViewPipe extends XsltPipe {
 	private Map retrieveParameters(HttpServletRequest httpServletRequest,
 			ServletContext servletContext, String srcPrefix)
 			throws DomBuilderException {
+		String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
+		IbisContext ibisContext = (IbisContext) servletContext.getAttribute(attributeKey);
 		Map parameters = new Hashtable();
 		String requestInfoXml = "<requestInfo>" + "<servletRequest>"
 				+ "<serverInfo><![CDATA[" + servletContext.getServerInfo()
@@ -207,6 +211,7 @@ public class CreateRestViewPipe extends XsltPipe {
 				+ httpServletRequest.getServerName() + "</serverName>"
 				+ "</servletRequest>" + "</requestInfo>";
 		parameters.put("requestInfo", XmlUtils.buildNode(requestInfoXml));
+		parameters.put("upTime", XmlUtils.buildNode("<upTime>" + ibisContext.getUptime() + "</upTime>"));
 		String machineNameXml = "<machineName>" + Misc.getHostname()
 				+ "</machineName>";
 		parameters.put("machineName", XmlUtils.buildNode(machineNameXml));
@@ -281,7 +286,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"javascript:void(0)", "info", "Information"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"?theme=classic", "theme", "Theme Bootstrap"));
+				"Angular", "theme", "GUI 3.0"));
 		menuBar.addSubElement(imagelinkMenu);
 		return menuBar.toXML();
 	}

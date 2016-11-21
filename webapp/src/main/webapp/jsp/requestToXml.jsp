@@ -1,7 +1,9 @@
+<%@ page import="nl.nn.adapterframework.util.AppConstants"%>
+<%@ page import="nl.nn.adapterframework.webcontrol.ConfigurationServlet"%>
+<%@ page import="nl.nn.adapterframework.configuration.IbisContext" %>
 <%@ taglib uri="/WEB-INF/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/struts-bean.tld" prefix="bean" %>
 <%@ page import="java.util.Enumeration" %>
-
 
 <requestInfo>
 	<html:base/></base>
@@ -13,6 +15,13 @@
 		<bean:write name="message"/>
 	</html:messages>
 	</messages>
+
+	<%
+		ServletContext sc = request.getServletContext();
+		String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
+		IbisContext ibisContext = (IbisContext) sc.getAttribute(attributeKey);
+	%>
+	<upTime><![CDATA[<%=ibisContext.getUptime()%>]]></upTime>
 
 	<httpServletRequest>
 		<auth_type><![CDATA[<%=request.getAuthType()%>]]></auth_type>

@@ -751,6 +751,8 @@ public class Adapter implements IAdapter, NamedBean {
 						runState.setRunState(RunStateEnum.ERROR);
 						return;
 					}
+					//Update the adapter uptime.
+					statsUpSince = System.currentTimeMillis();
 					// as from version 3.0 the adapter is started,
 					// regardless of receivers are correctly started.
 					runState.setRunState(RunStateEnum.STARTED);
@@ -840,6 +842,8 @@ public class Adapter implements IAdapter, NamedBean {
 					waitForNoMessagesInProcess();
 					log.debug("Adapter [" + name + "] is stopping pipeline");
 					pipeline.stop();
+					//Set the adapter uptime to 0 as the adapter is stopped.
+					statsUpSince = 0;
 					runState.setRunState(RunStateEnum.STOPPED);
 					getMessageKeeper().add("Adapter stopped");
 				} catch (Throwable t) {

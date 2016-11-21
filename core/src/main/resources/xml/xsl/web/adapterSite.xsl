@@ -16,6 +16,7 @@
 
 	<xsl:param name="requestInfo" select="//requestInfo"/>
 	<xsl:param name="machineName" select="//machineName"/>
+	<xsl:param name="upTime" select="//upTime"/>
 	<xsl:param name="fileSystem" select="//fileSystem"/>
 	<xsl:param name="applicationConstants" select="//applicationConstants"/>
 	<xsl:param name="processMetrics" select="//processMetrics"/>
@@ -197,6 +198,9 @@
 							total disk space: <xsl:value-of select="$fileSystem/totalSpace"/>
 						</div>
 					</xsl:if>
+					<div>
+						uptime: <xsl:value-of select="$upTime"/>,
+					</div>
 					<div id="clock"/>
 				</p>
 				<p>

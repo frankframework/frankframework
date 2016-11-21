@@ -120,7 +120,8 @@
                                     </tr>
                                     <tr>
                                         <td>Up since</td>
-                                        <td><span to-date time="{{adapter.upSince}}"></span> (<span time-since time="{{adapter.upSince}}"></span>)</td>
+                                        <td ng-if="adapter.upSince > 0"><span to-date time="{{adapter.upSince}}"></span> (<span time-since time="{{adapter.upSince}}"></span>)</td>
+                                        <td ng-if="adapter.upSince == 0">-</td>
                                     </tr>
                                     <tr>
                                         <td>Last message</td>
