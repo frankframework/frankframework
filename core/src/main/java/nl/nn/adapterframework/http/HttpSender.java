@@ -704,7 +704,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		int statusCode = httpmethod.getStatusCode();
 		boolean ok = false;
 		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
-			prc.getSession().put(getResultStatusCodeSessionKey(), statusCode);
+			prc.getSession().put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
 			ok = true;
 		} else {
 			if (statusCode==HttpServletResponse.SC_OK) {
