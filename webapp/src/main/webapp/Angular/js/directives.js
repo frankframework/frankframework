@@ -13,7 +13,7 @@ function pageTitle($rootScope, $timeout) {
             };
             $rootScope.$on('$stateChangeStart', listener);
         }
-    }
+    };
 };
 
 function toDate(dateFilter, appConstants, Hooks) {
@@ -29,7 +29,7 @@ function toDate(dateFilter, appConstants, Hooks) {
                 element.text(dateFilter(toDate, appConstants.format));
             }
         }
-    }
+    };
 };
 
 function timeSince(appConstants, $interval) {
@@ -40,11 +40,7 @@ function timeSince(appConstants, $interval) {
             time: '@'
         },
         link: function(scope, element, attributes) {
-            var timeout;
-            element.on('$destroy', function() {
-                $interval.cancel(timeout);
-            });
-            timeout = $interval(updateTime, 5000);
+            var timeout = $interval(updateTime, 5000);
             function updateTime() {
                 var text = "";
                 var seconds = Math.round((new Date().getTime() - attributes.time + appConstants.timeOffset) / 1000);
@@ -64,13 +60,15 @@ function timeSince(appConstants, $interval) {
                 if (days < 1) {
                     return element.text( hours + 'h');
                 }
-                var weeks = days / 7;
                 days = Math.floor(days % 7);
                 return element.text( days + 'd');
             }
+            element.on('$destroy', function() {
+                $interval.cancel(timeout);
+            });
             updateTime();
         }
-    }
+    };
 };
 
 
@@ -78,7 +76,7 @@ function quickSubmitForm() {
     return {
         restrict: 'A',
         link: function(scope, element, attributes) {
-            var map = [];
+            var map = Array();
             element.bind("keydown keyup", function (event) {
                 if(event.which == 13 || event.which == 17)
                     map[event.keyCode] = event.type == 'keydown';
@@ -89,7 +87,7 @@ function quickSubmitForm() {
                 }
             });
         }
-    }
+    };
 };
 
 /**
@@ -135,6 +133,20 @@ function iboxToolsToggle($timeout) {
     };
 }
 
+function iboxExpand($timeout) {
+    return {
+        restrict: 'A',
+        controller: function ($scope, $element) {
+            var iboxTitle = $($element.context).find(".ibox-title");
+            iboxTitle.bind('dblclick', function() {
+                var iboxToolsToggle = iboxTitle.find(".ibox-tools > a");
+                if(iboxToolsToggle)
+                    iboxToolsToggle.trigger("click");
+            });
+        }
+    };
+}
+
 function iboxToolsClose($timeout) {
     return {
         restrict: 'A',
@@ -144,7 +156,7 @@ function iboxToolsClose($timeout) {
             $scope.closebox = function () {
                 var ibox = $element.closest('div.ibox');
                 ibox.remove();
-            }
+            };
         }
     };
 }
@@ -177,7 +189,7 @@ function minimalizaSidebar($timeout) {
                     // Remove all inline style from jquery fadeIn function to reset menu state
                     $('#side-menu').removeAttr('style');
                 }
-            }
+            };
         }
     };
 };
@@ -225,6 +237,7 @@ angular
     .directive('quickSubmitForm', quickSubmitForm)
     .directive('sideNavigation', sideNavigation)
     .directive('iboxToolsToggle', iboxToolsToggle)
+    .directive('iboxExpand', iboxExpand)
     .directive('iboxToolsClose', iboxToolsClose)
     .directive('minimalizaSidebar', minimalizaSidebar)
     .directive('fitHeight', fitHeight)

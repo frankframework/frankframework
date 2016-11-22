@@ -4444,30 +4444,6 @@ body.mini-navbar.fixed-sidebar .logo-element {
   border-top: 1px solid #e7eaec;
   padding: 15px 20px;
 }
-/* INVOICE */
-.invoice-table tbody > tr > td:last-child,
-.invoice-table tbody > tr > td:nth-child(4),
-.invoice-table tbody > tr > td:nth-child(3),
-.invoice-table tbody > tr > td:nth-child(2) {
-  text-align: right;
-}
-.invoice-table thead > tr > th:last-child,
-.invoice-table thead > tr > th:nth-child(4),
-.invoice-table thead > tr > th:nth-child(3),
-.invoice-table thead > tr > th:nth-child(2) {
-  text-align: right;
-}
-.invoice-total > tbody > tr > td:first-child {
-  text-align: right;
-}
-.invoice-total > tbody > tr > td {
-  border: 0 none;
-}
-.invoice-total > tbody > tr > td:last-child {
-  border-bottom: 1px solid #DDDDDD;
-  text-align: right;
-  width: 15%;
-}
 /* ERROR & LOGIN & LOCKSCREEN*/
 .middle-box {
   max-width: 400px;

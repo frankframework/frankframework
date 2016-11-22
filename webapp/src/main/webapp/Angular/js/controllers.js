@@ -197,7 +197,7 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
     });
 
     $scope.resetNotificationCount = function() { Notification.resetCount(); };
-    $scope.$watch(function () { return Notification.getCount() }, function () {
+    $scope.$watch(function () { return Notification.getCount(); }, function () {
         $scope.notificationCount = Notification.getCount();
         $scope.notificationList = Notification.getLatest(5);
     });
@@ -248,7 +248,7 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
             Poller.changeInterval(pollerObj[x], 2000);
         }
     });
-    
+
     checkVersion($http);
 };
 
@@ -294,11 +294,51 @@ function StatusCtrl($scope, Api, Hooks) {
         }
     }
 
+    $scope.collapseAll = function() {
+        $(".adapters").each(function(i,e) {
+            var ibox = $(e);
+            var icon = ibox.find(".ibox-tools").find('i:first');
+            var content = ibox.find('div.ibox-content');
+            content.slideUp(200);
+            icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+        });
+    };
+    $scope.expandAll = function() {
+        $(".adapters").each(function(i,e) {
+            var ibox = $(e);
+            var icon = ibox.find(".ibox-tools").find('i:first');
+            var content = ibox.find('div.ibox-content');
+            content.slideDown(200);
+            icon.addClass('fa-chevron-down').removeClass('fa-chevron-up');
+        });
+    };
+    $scope.stopAll = function() {
+        for(adapter in $scope.adapters) {
+            if($scope.hideAdapter[adapter] === true) continue;
+            Api.Put("adapters/" + adapter, {"action": "stop"});
+        }
+    };
+    $scope.startAll = function() {
+        for(adapter in $scope.adapters) {
+            if($scope.hideAdapter[adapter] === true) continue;
+            Api.Put("adapters/" + adapter, {"action": "start"});
+        }
+    };
+    $scope.reloadConfiguration = function() {
+        swal("Method not yet implemented!");
+    };
+    $scope.fullReload = function() {
+        swal("Method not yet implemented!");
+    };
+    $scope.showReferences = function() {
+        swal("Method not yet implemented!");
+    };
+
     $scope.selectedConfiguration = "All";
     $scope.changeConfiguration = function(name) {
         $scope.selectedConfiguration = name;
         applyStatusFilter();
-    }
+    };
 
     Hooks.register("adapterUpdated:1", function(adapter) {
         $scope.hideAdapter[adapter.name] = false;
@@ -412,7 +452,7 @@ function ShowConfiguration($scope, Api) {
     $scope.changeConfiguration = function(name) {
         $scope.selectedConfiguration = name;
         getConfiguration();
-    }
+    };
 
     getConfiguration = function() {
         var uri = "configuration";
