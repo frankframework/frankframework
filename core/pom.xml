@@ -10,34 +10,38 @@
   <artifactId>ibis-adapterframework-core</artifactId>
   <name>Ibis AdapterFramework core</name>
 
-	<properties>
-		<spring.version>3.2.16.RELEASE</spring.version>
-		<opencmis.version>0.12.0</opencmis.version>
-	</properties>
+  <properties>
+    <spring.version>3.2.16.RELEASE</spring.version>
+    <opencmis.version>0.12.0</opencmis.version>
+  </properties>
 
   <dependencies>
-	<dependency>
-		<groupId>org.hibernate</groupId>
-		<artifactId>hibernate-validator</artifactId>
-		<version>4.3.1.Final</version>
-	</dependency>
-
-	<dependency>
-		<groupId>org.jboss.resteasy</groupId>
-		<artifactId>resteasy-jaxrs</artifactId>
-		<version>3.0.4.Final</version>
-	</dependency>
-  	<dependency>
-		<groupId>org.jboss.resteasy</groupId>
-		<artifactId>resteasy-jackson-provider</artifactId>
-		<version>3.0.4.Final</version>
-	</dependency>
-	<dependency>
-		<groupId>org.jboss.resteasy</groupId>
-		<artifactId>resteasy-multipart-provider</artifactId>
-		<version>3.0.4.Final</version>
-	</dependency>
-
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>4.3.1.Final</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-jaxrs</artifactId>
+      <version>3.0.4.Final</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-jackson-provider</artifactId>
+      <version>3.0.4.Final</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-multipart-provider</artifactId>
+      <version>3.0.4.Final</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.xml.bind</groupId>
+          <artifactId>jsr173_api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
@@ -62,7 +66,7 @@
       <artifactId>mail</artifactId>
     </dependency>
     <!-- commons -->
-	<dependency>
+    <dependency>
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
       <version>3.2.2</version>
