@@ -76,39 +76,4 @@ public class IsolatedServiceCaller {
 		}
 	}
 
-	public class IsolatedServiceExecutor extends RequestReplyExecutor {
-		String serviceName; 
-		HashMap context;
-		boolean targetIsJavaListener;
-		Guard guard;
-		
-		public IsolatedServiceExecutor(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, Guard guard) {
-			super();
-			this.serviceName=serviceName;
-			this.correlationID=correlationID;
-			request=message;
-			this.context=context;
-			this.targetIsJavaListener=targetIsJavaListener;
-			this.guard=guard;
-		}
-
-		public void run() {
-			try {
-				if (targetIsJavaListener) {
-					reply = JavaListener.getListener(serviceName).processRequest(correlationID, request, context);
-				} else {
-					reply = ServiceDispatcher.getInstance().dispatchRequest(serviceName, correlationID, request, context);
-				}
-			} catch (Throwable t) {
-				log.warn("IsolatedServiceCaller caught exception",t);
-				throwable=t;
-			} finally {
-				if (guard != null) {
-					guard.releaseResource();
-				}
-			}
-		}
-
-	}
-
 }

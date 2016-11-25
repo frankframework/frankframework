@@ -20,12 +20,9 @@ import java.util.Iterator;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -69,9 +66,11 @@ public class ParallelSenders extends SenderSeries {
 		for (Iterator it=getSenderIterator();it.hasNext();) {
 			ISender sender = (ISender)it.next();
 			guard.addResource();
-			SenderExecutor se=new SenderExecutor(sender, correlationID, message, prc, guard);
-			executorMap.put(sender,se);
-			getTaskExecutor().execute(se);
+			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender,
+					correlationID, message, prc, guard,
+					getStatisticsKeeper(sender));
+			executorMap.put(sender, pse);
+			getTaskExecutor().execute(pse);
 		}
 		try {
 			guard.waitForAllResources();
@@ -81,13 +80,13 @@ public class ParallelSenders extends SenderSeries {
 		XmlBuilder resultsXml = new XmlBuilder("results");
 		for (Iterator it=getSenderIterator();it.hasNext();) {
 			ISender sender = (ISender)it.next();
-			SenderExecutor se = (SenderExecutor)executorMap.get(sender);
+			ParallelSenderExecutor pse = (ParallelSenderExecutor)executorMap.get(sender);
 			XmlBuilder resultXml = new XmlBuilder("result");
 			resultXml.addAttribute("senderClass",ClassUtils.nameOf(sender));
 			resultXml.addAttribute("senderName",sender.getName());
-			Throwable throwable = se.getThrowable();
+			Throwable throwable = pse.getThrowable();
 			if (throwable==null) {
-				Object result = se.getReply();
+				Object result = pse.getReply();
 				if (result==null) {
 					resultXml.addAttribute("type","null");
 				} else {
@@ -101,46 +100,6 @@ public class ParallelSenders extends SenderSeries {
 			resultsXml.addSubElement(resultXml); 
 		}
 		return resultsXml.toXML();
-	}
-
-
-
-	public class SenderExecutor extends RequestReplyExecutor {
-
-		ISender sender; 
-		ParameterResolutionContext prc;
-		Guard guard;
-		
-		public SenderExecutor(ISender sender, String correlationID, String message, ParameterResolutionContext prc, Guard guard) {
-			super();
-			this.sender=sender;
-			this.correlationID=correlationID;
-			request=message;
-			this.prc=prc;
-			this.guard=guard;
-		}
-
-		public void run() {
-			try {
-				long t1 = System.currentTimeMillis();
-				try {
-					if (sender instanceof ISenderWithParameters) {
-						reply = ((ISenderWithParameters)sender).sendMessage(correlationID,request,prc);
-					} else {
-						reply = sender.sendMessage(correlationID,request);
-					}
-				} catch (Throwable tr) {
-					throwable = tr;
-					log.warn("SenderExecutor caught exception",tr);
-				}
-				long t2 = System.currentTimeMillis();
-				StatisticsKeeper sk = getStatisticsKeeper(sender);
-				sk.addValue(t2-t1);
-			} finally {
-				guard.releaseResource();
-			} 
-		}
-
 	}
 
 	public void setSynchronous(boolean value) {

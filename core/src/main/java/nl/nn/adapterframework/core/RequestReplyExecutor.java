@@ -19,7 +19,7 @@ package nl.nn.adapterframework.core;
  * Runnable object for calling a request reply service. When a
  * <code>Throwable</code> has been thrown during execution is should be returned
  * by getThrowable() otherwise the reply should be returned by getReply().
- *    
+ *
  * @author Jaco de Groot
  */
 public abstract class RequestReplyExecutor implements Runnable {
@@ -31,23 +31,23 @@ public abstract class RequestReplyExecutor implements Runnable {
 	public void setCorrelationID(String correlationID) {
 		this.correlationID = correlationID;
 	}
-	
+
 	public String getCorrelationID() {
 		return correlationID;
 	}
 
-	public void setRequest(String request)  {
+	public void setRequest(String request) {
 		this.request = request;
 	}
-		
+
 	public Object getRequest() {
 		return request;
 	}
 
-	public void setReply(Object reply)  {
+	public void setReply(Object reply) {
 		this.reply = reply;
 	}
-		
+
 	public Object getReply() {
 		return reply;
 	}

@@ -121,6 +121,9 @@ Upcoming
 - Add resultStatusCodeSessionKey attribute to HttpSender (to store http status code from result)
 - Introduction to new IBIS API + IBIS console
 - Replace Apache XMLbeans library v2.5.0 by v2.6.0
+- Add attribute parallel to iterating pipes
+
+
 
 ### Non backwards compatible changes
 

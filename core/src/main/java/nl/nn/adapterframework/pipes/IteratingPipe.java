@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -30,12 +32,18 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.ParallelSenderExecutor;
+import nl.nn.adapterframework.senders.ParallelSenders;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.core.task.TaskExecutor;
 
 /**
  * Abstract base class to sends a message to a Sender for each item returned by a configurable iterator.
@@ -45,7 +53,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.IteratingPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setParallel(boolean) parallel}</td><td> when set <code>true</code>, the calls for all items are done in parallel (a new thread is started for each call). When collectResults set <code>true</code>, this pipe will wait for all calls to finish before results are collected and pipe result is returned</td><td>false</td></tr>
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
@@ -83,8 +91,8 @@ import org.apache.commons.lang.StringUtils;
  * 		Iteration stops if condition returns anything other than <code>false</code> or an empty result.
  * For example, to stop after the second child element has been processed, one of the following expressions could be used:
  * <table> 
- * <tr><td><li><code>result[@item='2']</code></td><td>returns result element after second child element has been processed</td></tr>
- * <tr><td><li><code>result/@item='2'</code></td><td>returns <code>false</code> after second child element has been processed, <code>true</code> for others</td></tr>
+ * <tr><td><li><code>result[position()='2']</code></td><td>returns result element after second child element has been processed</td></tr>
+ * <tr><td><li><code>position()='2'</code></td><td>returns <code>false</code> after second child element has been processed, <code>true</code> for others</td></tr>
  * </table> 
  * </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoveXmlDeclarationInResults(boolean) removeXmlDeclarationInResults}</td><td>postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document</td><td>false</td></tr>
@@ -142,6 +150,8 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.7
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
+	private TaskExecutor taskExecutor;
+	private boolean parallel = false;
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -184,6 +194,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		"</xsl:stylesheet>";
 	}
 
+	private StatisticsKeeper senderStatisticsKeeper;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -206,25 +217,32 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	}
 
 	protected class ItemCallback {
-		
-		IPipeLineSession session;
-		String correlationID;
-		ISender sender; 
-		ISenderWithParameters psender=null;
-		
+		private IPipeLineSession session;
+		private String correlationID;
+		private ISender sender; 
+		private ISenderWithParameters psender=null;
 		private StringBuffer results = new StringBuffer();
 		int count=0;
 		private Vector inputItems = new Vector();
-		
+		private Guard guard;
+		List<ParallelSenderExecutor> executorList;
+
 		public ItemCallback(IPipeLineSession session, String correlationID, ISender sender) {
 			this.session=session;
 			this.correlationID=correlationID;
 			this.sender=sender;
 			if (sender instanceof ISenderWithParameters && getParameterList()!=null) {
 				psender = (ISenderWithParameters) sender;
-			}		
+			}
+			if (isParallel() && isCollectResults()) {
+				guard = new Guard();
+				executorList = new ArrayList();
+			}
 		}
 		public boolean handleItem(String item) throws SenderException, TimeOutException {
+			if (isParallel() && isCollectResults()) {
+				guard.addResource();
+			}
 			if (isRemoveDuplicates()) {
 				if (inputItems.indexOf(item)>=0) {
 					log.debug(getLogPrefix(session)+"duplicate item ["+item+"] will not be processed");
@@ -260,11 +278,19 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 				} 
 			}
 			try {
-				if (psender!=null) {
-					//result = psender.sendMessage(correlationID, item, new ParameterResolutionContext(src, session));
-					itemResult = psender.sendMessage(correlationID, item, prc);
+				if (isParallel()) {
+					ParallelSenderExecutor pse= new ParallelSenderExecutor(
+							sender, correlationID, item, prc, guard, senderStatisticsKeeper);
+					if (isCollectResults()) {
+						executorList.add(pse);
+					}
+					getTaskExecutor().execute(pse);
 				} else {
-					itemResult = sender.sendMessage(correlationID, item);
+					if (psender!=null) {
+						itemResult = psender.sendMessage(correlationID, item, prc);
+					} else {
+						itemResult = sender.sendMessage(correlationID, item);
+					}
 				}
 				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(itemResult)) {
 					throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
@@ -288,20 +314,9 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 				}
 			}
 			try {
-				if (isCollectResults()) {
-					if (isRemoveXmlDeclarationInResults()) {
-						if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"removing XML declaration from ["+itemResult+"]");
-						itemResult = XmlUtils.skipXmlDeclaration(itemResult);
-					} 
-					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"partial result ["+itemResult+"]");
-					String itemInput="";
-					if (isAddInputToResult()) {
-						itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(item):item)+"</input>";
-					}
-					itemResult = "<result item=\"" + count + "\">\n"+itemInput+itemResult+"\n</result>";
-					results.append(itemResult+"\n");
+				if (isCollectResults() && !isParallel()) {
+					addResult(count, item, itemResult);
 				}
-
 				if (getStopConditionTp()!=null) {
 					String stopConditionResult = getStopConditionTp().transform(itemResult,null);
 					if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
@@ -320,7 +335,38 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 				throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
 			}
 		}
-		public StringBuffer getResults() {
+		private void addResult(int count, String item, String itemResult) {
+			if (isRemoveXmlDeclarationInResults()) {
+				if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"removing XML declaration from ["+itemResult+"]");
+				itemResult = XmlUtils.skipXmlDeclaration(itemResult);
+			} 
+			if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"partial result ["+itemResult+"]");
+			String itemInput="";
+			if (isAddInputToResult()) {
+				itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(item):item)+"</input>";
+			}
+			itemResult = "<result item=\"" + count + "\">\n"+itemInput+itemResult+"\n</result>";
+			results.append(itemResult+"\n");
+		}
+		public StringBuffer getResults() throws SenderException {
+			if (isParallel()) {
+				try {
+					guard.waitForAllResources();
+					int count = 0;
+					for (ParallelSenderExecutor pse : executorList) {
+						count++;
+						String itemResult;
+						if (pse.getThrowable() == null) {
+							itemResult = pse.getReply().toString();
+						} else {
+							itemResult = "<exception>"+XmlUtils.encodeChars(pse.getThrowable().getMessage())+"</exception>";
+						}
+						addResult(count, pse.getRequest().toString(), itemResult);
+					}
+				} catch (InterruptedException e) {
+					throw new SenderException(getLogPrefix(session)+"was interupted",e);
+				}
+			}
 			return results;
 		}
 		public int getCount() {
@@ -426,14 +472,34 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return (String)it.next();
 	}
 
+	@Override
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+		super.iterateOverStatistics(hski, data, action);
+		hski.handleStatisticsKeeper(data, senderStatisticsKeeper);
+	}
+
 	public void setSender(Object sender) {
 		if (sender instanceof ISender) {
 			super.setSender((ISender)sender);
 		} else {
 			throw new IllegalArgumentException("sender ["+ClassUtils.nameOf(sender)+"] must implment interface ISender");
 		}
+		senderStatisticsKeeper =  new StatisticsKeeper("-> "+ClassUtils.nameOf(sender));
 	}
 
+	public void setTaskExecutor(TaskExecutor executor) {
+		taskExecutor = executor;
+	}
+	public TaskExecutor getTaskExecutor() {
+		return taskExecutor;
+	}
+
+	public void setParallel(boolean parallel) {
+		this.parallel = parallel;
+	}
+	public boolean isParallel() {
+		return parallel;
+	}
 
 	public void setStopConditionXPathExpression(String string) {
 		stopConditionXPathExpression = string;
