@@ -500,8 +500,16 @@ public class IbisContext {
 		return ibisManager;
 	}
 
+	public String getApplicationName() {
+		return APP_CONSTANTS.getProperty("instance.name", null);
+	}
+
 	public String getApplicationVersion() {
 		return getVersion(APP_CONSTANTS, "instance.version", "instance.build_id");
+	}
+
+	public String getFrameworkVersion() {
+		return APP_CONSTANTS.getProperty("application.version", null);
 	}
 
 	public String getConfigurationVersion(Properties properties) {
@@ -529,18 +537,6 @@ public class IbisContext {
 	
 	public String getUptime(String dateFormat) {
 		return DateUtils.format(getUptimeDate(), dateFormat);
-	}
-	
-	public String getVersionInfo() {
-		String versionInfo = APP_CONSTANTS.getProperty("application.name") + " "
-				+ APP_CONSTANTS.getProperty("application.version") + " "
-				+ APP_CONSTANTS.getProperty("instance.name") + " "
-				+ APP_CONSTANTS.getProperty("instance.version");
-		String buildId = APP_CONSTANTS.getProperty("instance.build_id");
-		if (StringUtils.isNotEmpty(buildId)) {
-			versionInfo += " " + buildId;
-		}
-		return versionInfo.trim();
 	}
 
 	public static void main(String[] args) {

@@ -17,14 +17,20 @@
         //Server to connect to, defaults to local server.
         //"server": "http://"+window.location.host+"/iaf-example/",
 
+        //How often the interactive frontend should poll the IAF API for new data
+        "console.pollerInterval": 3000,
+
+        //How often the interactive frontend should poll during IDLE state
+        "console.idle.pollerInterval": 15000,
+
         //After x minutes the app goes into 'idle' state (use 0 to disable)
-        "idleTime": 300,
+        "console.idle.time": 300,
 
         //After x minutes the user will be forcefully logged out
-        "idleTimeout": 300,
+        "console.idle.timeout": 0,
 
-        //Global timeformat
-        "format": "yyyy-MM-dd HH:mm:ss",
+        //Time format in which to display the time and date.
+        "console.dateFormat": "yyyy-MM-dd HH:mm:ss",
 
         //These will automatically be updated.
         "timeOffset": 0,

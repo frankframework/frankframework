@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Nationale-Nederlanden
+Copyright 2016 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -39,6 +39,8 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.ProcessMetrics;
 
 /**
 * Root collection for API.
@@ -62,15 +64,23 @@ public class Init extends Base {
 		for (Configuration configuration : ibisManager.getConfigurations()) {
 			Map<String, Object> cfg = new HashMap<String, Object>();
 			cfg.put("name", configuration.getName());
+			cfg.put("version", configuration.getVersion());
 			//cfg.put("url", configuration.getConfigurationURL());
 			configurations.add(cfg);
 		}
 		returnMap.put("configurations", configurations);
-		
-		String versionInfo = ibisContext.getVersionInfo();
-		returnMap.put("versionInfo", versionInfo);
+
+		returnMap.put("version", ibisContext.getFrameworkVersion());
+		returnMap.put("name", ibisContext.getApplicationName());
+		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
+		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
+		fileSystem.put("totalSpace", Misc.getFileSystemTotalSpace());
+		fileSystem.put("freeSpace", Misc.getFileSystemFreeSpace());
+		returnMap.put("fileSystem", fileSystem);
+		returnMap.put("processMetrics", ProcessMetrics.toMap());
 		Date date = new Date();
 		returnMap.put("serverTime", date.getTime());
+		returnMap.put("machineName" , Misc.getHostname());
 		returnMap.put("uptime", ibisContext.getUptimeDate());
 		
 		return Response.status(Response.Status.CREATED).entity(returnMap).build();

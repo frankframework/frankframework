@@ -26,7 +26,7 @@ function toDate(dateFilter, appConstants, Hooks) {
             scope.$watch('time', updateTime);
             function updateTime(time) {
                 var toDate = new Date(time - appConstants.timeOffset);
-                element.text(dateFilter(toDate, appConstants.format));
+                element.text(dateFilter(toDate, appConstants["console.dateFormat"]));
             }
         }
     };
@@ -66,7 +66,9 @@ function timeSince(appConstants, $interval) {
             element.on('$destroy', function() {
                 $interval.cancel(timeout);
             });
-            updateTime();
+            setTimeout(function(){
+                updateTime();
+            }, 50);
         }
     };
 };

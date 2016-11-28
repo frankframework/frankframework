@@ -83,12 +83,12 @@ angular.module('iaf.beheerconsole')
         this.absolutePath = absolutePath;
         this.etags = etags;
 
-    }]).service('Poller', ['Api', function(Api) {
+    }]).service('Poller', ['Api', 'appConstants', function(Api, appConstants) {
         var data = {};
         this.createPollerObject = function(uri, callback) {
             this.uri = uri;
             this.waiting = false;
-            this.pollerInterval = 2000; //Default to 2 seconds.
+            this.pollerInterval = appConstants["console.pollerInterval"]; //Default to 2 seconds.
             this.ai = {
                 list: [],
                 avg: 0,
@@ -157,7 +157,7 @@ angular.module('iaf.beheerconsole')
                 delete this.lastPolled;
                 this.waiting = !!bool;
                 this.start();
-            }
+            };
             this.restart = function() {
                 this.stop();
                 this.start();
@@ -191,7 +191,7 @@ angular.module('iaf.beheerconsole')
                 message: (msg) ? msg : false,
                 fn: (fn) ? fn: false,
                 time: new Date().getTime()
-            }
+            };
             list.unshift(obj);
             obj.id = list.length;
             count++;
@@ -224,22 +224,22 @@ angular.module('iaf.beheerconsole')
     }]).service('Session', function() {
         this.get = function(key) {
             return JSON.parse(sessionStorage.getItem(key));
-        }
+        };
         this.set = function(key, value) {
             sessionStorage.setItem(key, JSON.stringify(value));
-        }
+        };
         this.remove = function(key) {
             sessionStorage.removeItem(key);
-        }
+        };
     }).service('Hooks', ['$rootScope', '$timeout', function($rootScope, $timeout) {
         this.call = function() {
             $rootScope.callHook.apply(this, arguments);
             //$rootScope.$broadcast.apply(this, arguments);
-        }
+        };
         this.register = function() {
             $rootScope.registerHook.apply(this, arguments);
             //$rootScope.$on.apply(this, arguments);
-        }
+        };
     }]).run(function($rootScope, $timeout) {
         $rootScope.hooks = [];
 
@@ -325,7 +325,7 @@ angular.module('iaf.beheerconsole')
                 sessionStorage.clear();
                 $location.path("login");
             }
-        }
+        };
     }]).factory('Base64', function () {
         var keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
       
@@ -435,7 +435,7 @@ angular.module('iaf.beheerconsole')
                 type: type,
                 message: message,
                 time: new Date().getTime()
-            }
+            };
             list.unshift(obj);
             obj.id = list.length;
             Session.set("Alert", list);
@@ -446,10 +446,10 @@ angular.module('iaf.beheerconsole')
             var list = Session.get("Alert");
             if(preserveList == undefined) Session.set("Alert", []); //sessionStorage.setItem("Alert", JSON.stringify([])); //Clear after retreival
             return (list != null) ? list : [];
-        }
+        };
         this.getCount = function() {
             return this.get(true).length || 0;
-        }
+        };
         this.checkIfExists = function(message) {
             var list = this.get(true);
             if(list.length > 0) {
@@ -467,7 +467,7 @@ angular.module('iaf.beheerconsole')
                 responseError: function(rejection) {
                     switch (rejection.status) {
                         case -1:
-                            console.log(appConstants.init)
+                            console.log(appConstants.init);
                             sessionStorage.setItem("authToken", null);
                             if(appConstants.init == 1) {
                                 if(rejection.config.headers["Authorization"] != undefined) {

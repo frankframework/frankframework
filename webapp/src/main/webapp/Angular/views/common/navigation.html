@@ -5,21 +5,21 @@
 
                 <div class="profile-element">
                     <p>Ibis Adapter Framework</p>
-                    <span>Beheerpaneel</span>
+                    <span>Interactive Console</span>
                 </div>
                 <div class="logo-element">
                     IAF
                 </div>
             </li>
             <li ui-sref-active="active">
-           	    <a ui-sref="pages.status"><i class="fa fa-dashboard"></i> <span class="nav-label">Adapter Status</span></a>
-           	</li>
+                <a ui-sref="pages.status"><i class="fa fa-dashboard"></i> <span class="nav-label">Adapter Status</span></a>
+            </li>
             <li ui-sref-active="active">
-           	    <a ui-sref="pages.configuration"><i class="fa fa-cogs"></i> <span class="nav-label">Configuration</span></a>
-           	</li>
+                <a ui-sref="pages.configuration"><i class="fa fa-cogs"></i> <span class="nav-label">Configuration</span></a>
+            </li>
             <li ui-sref-active="active">
-           	    <a ui-sref="pages.logging"><i class="fa fa-life-ring"></i> <span class="nav-label">Logging</span></a>
-           	</li>
+                <a ui-sref="pages.logging"><i class="fa fa-life-ring"></i> <span class="nav-label">Logging</span></a>
+            </li>
             <li ng-class="{active: $state.includes('jms')}">
                 <a href=""><i class="fa fa-th-large"></i> <span class="nav-label">JMS</span> <span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level" ng-class="{in: $state.includes('jms')}">
@@ -28,20 +28,20 @@
                 </ul>
             </li>
             <li ui-sref-active="active">
-           	    <a ui-sref="pages.test_pipeline"><i class="fa fa-flask"></i> <span class="nav-label">Test Pipeline</span></a>
-           	</li>
+                <a ui-sref="pages.test_pipeline"><i class="fa fa-flask"></i> <span class="nav-label">Test Pipeline</span></a>
+            </li>
             <li ui-sref-active="active">
-           	    <a ui-sref="pages.test_serviceListner"><i class="fa fa-flask"></i> <span class="nav-label">Test serviceListener</span></a>
-           	</li>
+                <a ui-sref="pages.test_serviceListner"><i class="fa fa-flask"></i> <span class="nav-label">Test serviceListener</span></a>
+            </li>
             <li ui-sref-active="active">
-           	    <a ui-sref="pages.webservices"><i class="fa fa-paper-plane-o"></i> <span class="nav-label">Webservices</span></a>
-           	</li>
+                <a ui-sref="pages.webservices"><i class="fa fa-paper-plane-o"></i> <span class="nav-label">Webservices</span></a>
+            </li>
             <li ui-sref-active="active">
-           	    <a ui-sref="pages.scheduler"><i class="fa fa-calendar"></i> <span class="nav-label">Scheduler</span></a>
-           	</li>
+                <a ui-sref="pages.scheduler"><i class="fa fa-calendar"></i> <span class="nav-label">Scheduler</span></a>
+            </li>
             <li ui-sref-active="active">
-           	    <a ui-sref="pages.environment_variables"><i class="fa fa-language"></i> <span class="nav-label">Environment Variables</span></a>
-           	</li>
+                <a ui-sref="pages.environment_variables"><i class="fa fa-language"></i> <span class="nav-label">Environment Variables</span></a>
+            </li>
             <li ng-class="{active: $state.includes('jdbc')}">
                 <a href=""><i class="fa fa-cubes"></i> <span class="nav-label">JDBC</span> <span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level" ng-class="{in: $state.includes('jdbc')}">
@@ -68,9 +68,9 @@
                     <li><a ui-sref="pages.ladybug">Ladybug</a></li>
                 </ul>
             </li>
-            <li ui-sref-active="active">
-           	    <a ui-sref="pages.information"><i class="fa fa-info-circle"></i> <span class="nav-label">Information</span></a>
-           	</li>
+            <li>
+                <a ng-click="openInfoModel()"><i class="fa fa-info-circle"></i> <span class="nav-label">Information</span></a>
+            </li>
         </ul>
     </div>
 </nav>

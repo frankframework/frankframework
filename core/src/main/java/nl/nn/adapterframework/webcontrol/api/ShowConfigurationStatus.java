@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Nationale-Nederlanden
+Copyright 2016 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ public final class ShowConfigurationStatus extends Base {
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
 		}
-		
+
 		Map<String, Object> adapterInfo = mapAdapter(adapter);
 		adapterInfo.put("receivers", mapAdapterReceivers(adapter));
 		adapterInfo.put("pipes", mapAdapterPipes(adapter));
@@ -141,7 +141,57 @@ public final class ShowConfigurationStatus extends Base {
 		response = Response.status(Response.Status.CREATED).entity(adapterInfo).tag(etag);
 		return response.build();
 	}
-	
+
+	//Normally you don't use the PUT method on a collection...
+	@PUT
+	@RolesAllowed({"ObserverAccess", "IbisTester", "AdminAccess"})
+	@Path("/adapters/")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response updateAdapters(LinkedHashMap<String, Object> json, @Context ServletConfig servletConfig) throws ApiException {
+		initBase(servletConfig);
+
+		if (ibisManager == null) {
+			throw new ApiException("Config not found!");
+		}
+
+		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
+		String action = null;
+		ArrayList<String> adapters = new ArrayList<String>();
+
+		for (Entry<String, Object> entry : json.entrySet()) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
+				if(value.equals("stop")) { action = "stopadapter"; }
+				if(value.equals("start")) { action = "startadapter"; }
+			}
+			if(key.equalsIgnoreCase("adapters")) {
+				try {
+					adapters.addAll((ArrayList) value);
+				}
+				catch(Exception e) {
+					return response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+				}
+			}
+		}
+		
+		if(action != null) {
+			response.status(Response.Status.ACCEPTED);
+			if(adapters.size() == 0) {
+				ibisManager.handleAdapter(action, "*ALL*", "*ALL*", null, null, false);
+			}
+			else {
+				for (Iterator<String> iterator = adapters.iterator(); iterator.hasNext();) {
+					String adapterName = iterator.next();
+					ibisManager.handleAdapter(action, "", adapterName, null, null, false);
+				}
+			}
+		}
+
+		return response.build();
+	}
+
 	@PUT
 	@RolesAllowed({"ObserverAccess", "IbisTester", "AdminAccess"})
 	@Path("/adapters/{adapterName}")
@@ -171,9 +221,9 @@ public final class ShowConfigurationStatus extends Base {
 				if(value.equals("stop")) { action = "stopadapter"; }
 				if(value.equals("start")) { action = "startadapter"; }
 				
-			    ibisManager.handleAdapter(action, "", adapterName, null, null, false);
+				ibisManager.handleAdapter(action, "", adapterName, null, null, false);
 				
-			    response.entity("{\"status\":\"ok\"}");
+				response.entity("{\"status\":\"ok\"}");
 			}
 		}
 		

@@ -1,0 +1,21 @@
+<div class="inmodal">
+    <div class="modal-header">
+        <h4 class="modal-title"><i class="fa fa-info-circle"></i> Information</h4>
+    </div>
+    <div class="modal-body">
+        <p>
+	        <strong>IAF {{version}}</strong>: {{name}}<br/>
+	        Running on <strong>{{machineName}}</strong> using <strong>{{applicationServer}}</strong><br/>
+	        Heap size: <strong>{{processMetrics.heapSize}}</strong>, total JVM memory: <strong>{{processMetrics.totalMemory}}</strong><br/>
+	        Free disk space: <strong>{{fileSystem.freeSpace}}</strong>, total disk space: <strong>{{fileSystem.totalSpace}}</strong><br/>
+	        Uptime: <strong><span to-date time="{{uptime}}"></span></strong> (<span time-since time="{{uptime}}"></span>)
+        </p>
+    </div>
+    <div class="modal-footer">
+        <span class="pull-left p-xxs">
+            <a href="//github.com/ibissource/iaf" target="_blank" alt="github.com/ibissource/iaf">github.com/ibissource/iaf</a> |
+            <a href="//integrationpartners.nl/ibis-adapter-framework/handleiding-iaf-beheerconsole" target="_blank" alt="IAF GUI Manual">GUI Manual</a>
+        </span>
+        <button type="button" class="btn btn-white" ng-click="close()">Close</button>
+    </div>
+</div>
