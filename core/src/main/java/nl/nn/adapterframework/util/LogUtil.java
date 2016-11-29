@@ -71,9 +71,12 @@ public class LogUtil {
 						// NN JBoss
 						logDir = new File(logDir.getParent(), "log");
 						if (!logDir.exists()) {
-							// Eclipse Tomcat
-							logDir = new File(System.getProperty("wtp.deploy"));
-							logDir = new File(logDir.getParent(), "logs");
+							String wtpDeploy = System.getProperty("wtp.deploy");
+							if (wtpDeploy != null) {
+								// Eclipse Tomcat
+								logDir = new File(wtpDeploy);
+								logDir = new File(logDir.getParent(), "logs");
+							}
 						}
 					}
 				}
