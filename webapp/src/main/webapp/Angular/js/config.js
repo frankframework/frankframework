@@ -1,8 +1,8 @@
 function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLoadProvider, IdleProvider, KeepaliveProvider, appConstants) {
 
-    if(appConstants.idleTime && appConstants.idleTime > 0) {
-        IdleProvider.idle(appConstants.idleTime);
-        IdleProvider.timeout(appConstants.idleTimeout);
+    if(appConstants["console.idle.time"] && appConstants["console.idle.time"] > 0) {
+        IdleProvider.idle(appConstants["console.idle.time"]);
+        IdleProvider.timeout(appConstants["console.idle.timeout"]);
     }
 
     $urlRouterProvider.otherwise("/status");
@@ -247,17 +247,6 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
     })
     .state('pages.ladybug', {
         url: "/testing/ladybug",
-        templateUrl: "views/empty_page.html",
-        data: {
-            pageTitle: 'Show Configuration',
-            breadcrumbs: 'Show Configuration'
-        },
-        controller: function(Notification){
-            Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
-        }
-    })
-    .state('pages.information', {
-        url: "/information",
         templateUrl: "views/empty_page.html",
         data: {
             pageTitle: 'Show Configuration',

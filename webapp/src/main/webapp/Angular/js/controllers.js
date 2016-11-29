@@ -3,7 +3,7 @@
  * Used on all pages except login/logout
  *
  */
-function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http) {
+function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, $uibModal) {
     $scope.loading = true;
     Pace.on("done", function() {
         if(appConstants.init == 0) {
@@ -24,12 +24,12 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
                 function updateTime() {
                     var serverDate = new Date();
                     serverDate.setTime(serverDate.getTime() - appConstants.timeOffset);
-                    $scope.serverTime = dateFilter(serverDate, appConstants.format);
+                    $scope.serverTime = dateFilter(serverDate, appConstants["console.dateFormat"]);
                 }
                 $interval(updateTime, 1000);
                 updateTime();
 
-                angular.element(".iaf-info").html(data.versionInfo);
+                angular.element(".iaf-info").html("IAF " + data.version + ": " + data.name );
 
                 $scope.configurations = data.configurations;
 
@@ -43,8 +43,8 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
                 if(data["Application Constants"]) {
                     appConstants = $.extend(appConstants, data["Application Constants"]);
                     Hooks.call("appConstants", data);
-                    var idleTime = (parseInt(appConstants.idleTime) > 0) ? parseInt(appConstants.idleTime) : false;
-                    var idleTimeout = (parseInt(appConstants.idleTimeout) > 0) ? parseInt(appConstants.idleTimeout) : false;
+                    var idleTime = (parseInt(appConstants["console.idle.time"]) > 0) ? parseInt(appConstants["console.idle.time"]) : false;
+                    var idleTimeout = (parseInt(appConstants["console.idle.timeout"]) > 0) ? parseInt(appConstants["console.idle.timeout"]) : false;
                     Idle.setIdle(idleTime);
                     Idle.setTimeout(idleTimeout);
                 }
@@ -205,10 +205,10 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
     $scope.$on('IdleStart', function () {
         var pollerObj = Poller.getAll();
         for(x in pollerObj) {
-            Poller.changeInterval(pollerObj[x], 15000);
+            Poller.changeInterval(pollerObj[x], appConstants["console.idle.pollerInterval"]);
         }
 
-        var idleTimeout = (parseInt(appConstants.idleTimeout) > 0) ? parseInt(appConstants.idleTimeout) : false;
+        var idleTimeout = (parseInt(appConstants["console.idle.timeout"]) > 0) ? parseInt(appConstants["console.idle.timeout"]) : false;
         if(!idleTimeout) return;
 
         swal({
@@ -249,7 +249,24 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
         }
     });
 
+    $scope.openInfoModel = function () {
+        $uibModal.open({
+            templateUrl: 'views/information.html',
+//            size: 'sm',
+            controller: InformationCtrl
+        });
+    };
+
     checkVersion($http);
+};
+
+function InformationCtrl ($scope, $uibModalInstance, Api) {
+    Api.Get("server/info", function(data) {
+        $.extend( $scope, data );
+    });
+    $scope.close = function () {
+        $uibModalInstance.close();
+    };
 };
 
 function checkVersion($http) {
@@ -313,16 +330,20 @@ function StatusCtrl($scope, Api, Hooks) {
         });
     };
     $scope.stopAll = function() {
+        var adapters = Array();
         for(adapter in $scope.adapters) {
             if($scope.hideAdapter[adapter] === true) continue;
-            Api.Put("adapters/" + adapter, {"action": "stop"});
+           adapters.push(adapter);
         }
+        Api.Put("adapters", {"action": "stop", "adapters": adapters});
     };
     $scope.startAll = function() {
+        var adapters = Array();
         for(adapter in $scope.adapters) {
             if($scope.hideAdapter[adapter] === true) continue;
-            Api.Put("adapters/" + adapter, {"action": "start"});
+           adapters.push(adapter);
         }
+        Api.Put("adapters", {"action": "start", "adapters": adapters});
     };
     $scope.reloadConfiguration = function() {
         swal("Method not yet implemented!");
@@ -590,6 +611,7 @@ angular
     .controller('LogoutCtrl', LogoutCtrl)
     .controller('LoadingCtrl', LoadingCtrl)
     .controller('MainCtrl', MainCtrl)
+//    .controller('InformationCtrl', InformationCtrl)
     .controller('StatusCtrl', StatusCtrl)
     .controller('NotificationsCtrl', NotificationsCtrl)
     .controller('ExecuteJdbcQuery', ExecuteJdbcQuery)
