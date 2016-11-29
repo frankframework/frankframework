@@ -56,8 +56,8 @@ Eclipse
   [Tomcat](http://tomcat.apache.org/) (version 7.0.22 is known to work, but
   other version are expected to work too)), OK, Finish.
 - Double click Tomcat v7.0 Server at localhost, Open launch configuration,
-  Arguments, VM arguments, add -Dlog.dir=C:\\\\Temp (or any other folder) and
-  otap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
+  Arguments, VM arguments, add -Dotap.stage=LOC, OK, Modules, Add Web Module...,
+  iaf-example, OK, File, Save
 - Right click Tomcat v7.0 Server at localhost, Start.
 - Browse the IAF console at
   [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).

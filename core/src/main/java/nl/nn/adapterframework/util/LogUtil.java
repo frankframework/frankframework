@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -53,6 +54,41 @@ public class LogUtil {
 	private static Hierarchy hierarchy=null;
 
 	static {
+		if (System.getProperty("log.dir") == null) {
+			File logDir = null;
+			String userDir = System.getProperty("user.dir");
+			String siteLogDir = System.getProperty("site.logdir");
+			if (siteLogDir != null) {
+				// Azure Tomcat
+				logDir = new File(siteLogDir);
+			} else if (userDir != null) {
+				// AWS Elastic Beanstalk Tomcat
+				logDir = new File(userDir, "logs");
+				if (!logDir.exists()) {
+					// NN WebSphere
+					logDir = new File(userDir, "log");
+					if (!logDir.exists()) {
+						// NN JBoss
+						logDir = new File(logDir.getParent(), "log");
+						if (!logDir.exists()) {
+							// Eclipse Tomcat
+							logDir = new File(System.getProperty("wtp.deploy"));
+							logDir = new File(logDir.getParent(), "logs");
+						}
+					}
+				}
+			}
+			if (logDir != null && logDir.exists()) {
+				// Replace backslashes because log.dir is used in log4j4ibis.xml
+				// on which substVars is done (see below) which will replace
+				// double backslashes into one backslash and after that the same
+				// is done by Log4j:
+				// https://issues.apache.org/bugzilla/show_bug.cgi?id=22894
+				System.setProperty("log.dir", logDir.getPath().replaceAll("\\\\", "/"));
+			} else {
+				System.out.println(DEBUG_LOG_PREFIX + "did not find system property log.dir and is unable to locate log dir based on user.dir '" + userDir + "'");
+			}
+		}
 		String l4jxml;
 		URL url = LogUtil.class.getClassLoader().getResource(LOG4J_XML_FILE);
 		if (url == null) {
@@ -66,7 +102,6 @@ public class LogUtil {
 				System.out.println(DEBUG_LOG_PREFIX + "could not read " + url + " (" + e.getClass().getName() + ": " + e.getMessage() + "), will try " + LOG4J_PROPS_FILE + " instead" + DEBUG_LOG_SUFFIX);
 			}
 		}
-
 		log4jProperties = getProperties(LOG4J_PROPS_FILE);
 		if (log4jProperties != null) {
 			Properties dsProperties = getProperties("DeploymentSpecifics.properties");
