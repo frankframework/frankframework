@@ -122,6 +122,7 @@ Upcoming
 - Introduction to new IBIS API + IBIS console
 - Replace Apache XMLbeans library v2.5.0 by v2.6.0
 - Add attribute parallel to iterating pipes
+- Add log4j.properties for libraries like Spring
 
 
 
