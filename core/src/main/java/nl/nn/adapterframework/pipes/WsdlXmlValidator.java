@@ -151,6 +151,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		Set<XSD> xsds = new HashSet<XSD>();
 		if (getSoapVersion() == null || "1.1".equals(getSoapVersion()) || "any".equals(getSoapVersion())) {
 			XSD xsd = new XSD();
+			xsd.setClassLoader(classLoader);
 			xsd.setNamespace(SoapValidator.SoapVersion.VERSION_1_1.namespace);
 			xsd.setResource(SoapValidator.SoapVersion.VERSION_1_1.location);
 			xsd.init();
@@ -158,6 +159,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 		if ("1.2".equals(getSoapVersion()) || "any".equals(getSoapVersion())) {
 			XSD xsd = new XSD();
+			xsd.setClassLoader(classLoader);
 			xsd.setNamespace(SoapValidator.SoapVersion.VERSION_1_2.namespace);
 			xsd.setResource(SoapValidator.SoapVersion.VERSION_1_2.location);
 			xsd.init();
@@ -201,6 +203,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 		for (Schema schema : filteredSchemas) {
 			XSD xsd = new XSD();
+			xsd.setClassLoader(classLoader);
 			xsd.setWsdlSchema(definition, schema);
 			xsd.setResource(getWsdl());
 			if (StringUtils.isNotEmpty(schemaLocation)) {

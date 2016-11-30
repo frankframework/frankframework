@@ -140,10 +140,9 @@ public class SchemaUtils {
 	 * @return XSD's when xmlStreamWriter is null, otherwise write to
 	 *		 xmlStreamWriter
 	 */
-	public static Set<XSD>
-			mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
-			Map<String, Set<XSD>> xsdsGroupedByNamespace,
-			XMLStreamWriter xmlStreamWriter)
+	public static Set<XSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
+			ClassLoader classLoader, Map<String,
+			Set<XSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter)
 			throws XMLStreamException, IOException, ConfigurationException {
 		Set<XSD> resultXsds = new HashSet<XSD>();
 		for (String namespace: xsdsGroupedByNamespace.keySet()) {
@@ -164,6 +163,7 @@ public class SchemaUtils {
 			if (xmlStreamWriter == null) {
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 				resultXsd = new XSD();
+				resultXsd.setClassLoader(classLoader);
 				resultXsd.setNamespace(namespace);
 				resultXsd.setByteArrayOutputStream(byteArrayOutputStream);
 				resultXsd.setSourceXsds(xsds);

@@ -521,6 +521,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		Set<XSD> xsds = new HashSet<XSD>();
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			XSD xsd = new XSD();
+			xsd.setClassLoader(classLoader);
 			xsd.setNoNamespaceSchemaLocation(getNoNamespaceSchemaLocation());
 			xsd.setResource(getNoNamespaceSchemaLocation());
 			xsd.init();
@@ -530,6 +531,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + schemaLocation);
 			for (int i = 0; i < split.length; i += 2) {
 				XSD xsd = new XSD();
+				xsd.setClassLoader(classLoader);
 				xsd.setNamespace(split[i]);
 				xsd.setResource(split[i + 1]);
 				xsd.setAddNamespaceToSchema(isAddNamespaceToSchema());
@@ -552,7 +554,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				Map<String, Set<XSD>> xsdsGroupedByNamespace =
 						SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
 				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
-						xsdsGroupedByNamespace, null);
+						classLoader, xsdsGroupedByNamespace, null);
 			} catch(Exception e) {
 				throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
 			}
@@ -630,6 +632,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				throw new PipeRunException(this, getLogPrefix(session) + "could not find schema at [" + schemaLocation + "]");
 			}
 			XSD xsd = new XSD();
+			xsd.setClassLoader(classLoader);
 			xsd.setNoNamespaceSchemaLocation(schemaLocation);
 			try {
 				xsd.init();

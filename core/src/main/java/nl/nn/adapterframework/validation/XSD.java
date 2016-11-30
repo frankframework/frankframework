@@ -56,8 +56,8 @@ import org.xml.sax.InputSource;
  */
 public class XSD implements Schema, Comparable<XSD> {
 	private static final Logger LOG = LogUtil.getLogger(XSD.class);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
+	private ClassLoader classLoader;
 	private nl.nn.javax.wsdl.Definition wsdlDefinition;
 	private nl.nn.javax.wsdl.extensions.schema.Schema wsdlSchema;
 	private String resource;
@@ -80,6 +80,10 @@ public class XSD implements Schema, Comparable<XSD> {
 	private Set<String> importedNamespaces = new HashSet<String>();
 	private String xsdTargetNamespace;
 	private String xsdDefaultNamespace;
+
+	public void setClassLoader(ClassLoader classLoader) {
+		this.classLoader = classLoader;
+	}
 
 	public void setWsdlSchema(
 			nl.nn.javax.wsdl.Definition wsdlDefinition,
@@ -441,6 +445,7 @@ public class XSD implements Schema, Comparable<XSD> {
                             }
                             if (!skip) {
                                 XSD x = new XSD();
+                                x.setClassLoader(classLoader);
                                 x.setNamespace(namespace);
                                 x.setResource(getResourceBase() + schemaLocationAttribute.getValue());
                                 x.setAddNamespaceToSchema(addNamespaceToSchema);

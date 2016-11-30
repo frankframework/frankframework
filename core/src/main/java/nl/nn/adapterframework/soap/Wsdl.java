@@ -341,70 +341,63 @@ public class Wsdl {
     }
 
     public void init() throws IOException, XMLStreamException, ConfigurationException {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(
-                    pipeLine.getAdapter().getConfiguration().getClassLoader());
-            inputXsds = new HashSet<XSD>();
-            outputXsds = new HashSet<XSD>();
-            xsds = new HashSet<XSD>();
-            rootXsds = new HashSet<XSD>();
-            Set<XSD> inputRootXsds = new HashSet<XSD>();
-            inputRootXsds.addAll(getXsds(inputValidator));
-            rootXsds.addAll(inputRootXsds);
-            inputXsds.addAll(SchemaUtils.getXsdsRecursive(inputRootXsds));
-            xsds.addAll(inputXsds);
-            if (outputValidator != null) {
-                Set<XSD> outputRootXsds = new HashSet<XSD>();
-                outputRootXsds.addAll(getXsds(outputValidator));
-                rootXsds.addAll(outputRootXsds);
-                outputXsds.addAll(SchemaUtils.getXsdsRecursive(outputRootXsds));
-                xsds.addAll(outputXsds);
-            }
-            prefixByXsd = new LinkedHashMap<XSD, String>();
-            namespaceByPrefix = new LinkedHashMap<String, String>();
-            int prefixCount = 1;
-            xsdsGroupedByNamespace =
-                    SchemaUtils.getXsdsGroupedByNamespace(xsds, true);
-            for (String namespace: xsdsGroupedByNamespace.keySet()) {
-                // When a schema has targetNamespace="http://www.w3.org/XML/1998/namespace"
-                // it needs to be ignored as prefix xml is the only allowed prefix
-                // for namespace http://www.w3.org/XML/1998/namespace. The xml
-                // prefix doesn't have to be declared as the prefix xml is by
-                // definition bound to the namespace name http://www.w3.org/XML/1998/namespace
-                // (see http://www.w3.org/TR/xml-names/#ns-decl).
-                if (!"http://www.w3.org/XML/1998/namespace".equals(namespace)) {
-                    for (XSD xsd: xsdsGroupedByNamespace.get(namespace)) {
-                        prefixByXsd.put(xsd, "ns" + prefixCount);
-                    }
-                    namespaceByPrefix.put("ns" + prefixCount, namespace);
-                    prefixCount++;
+        inputXsds = new HashSet<XSD>();
+        outputXsds = new HashSet<XSD>();
+        xsds = new HashSet<XSD>();
+        rootXsds = new HashSet<XSD>();
+        Set<XSD> inputRootXsds = new HashSet<XSD>();
+        inputRootXsds.addAll(getXsds(inputValidator));
+        rootXsds.addAll(inputRootXsds);
+        inputXsds.addAll(SchemaUtils.getXsdsRecursive(inputRootXsds));
+        xsds.addAll(inputXsds);
+        if (outputValidator != null) {
+            Set<XSD> outputRootXsds = new HashSet<XSD>();
+            outputRootXsds.addAll(getXsds(outputValidator));
+            rootXsds.addAll(outputRootXsds);
+            outputXsds.addAll(SchemaUtils.getXsdsRecursive(outputRootXsds));
+            xsds.addAll(outputXsds);
+        }
+        prefixByXsd = new LinkedHashMap<XSD, String>();
+        namespaceByPrefix = new LinkedHashMap<String, String>();
+        int prefixCount = 1;
+        xsdsGroupedByNamespace =
+                SchemaUtils.getXsdsGroupedByNamespace(xsds, true);
+        for (String namespace: xsdsGroupedByNamespace.keySet()) {
+            // When a schema has targetNamespace="http://www.w3.org/XML/1998/namespace"
+            // it needs to be ignored as prefix xml is the only allowed prefix
+            // for namespace http://www.w3.org/XML/1998/namespace. The xml
+            // prefix doesn't have to be declared as the prefix xml is by
+            // definition bound to the namespace name http://www.w3.org/XML/1998/namespace
+            // (see http://www.w3.org/TR/xml-names/#ns-decl).
+            if (!"http://www.w3.org/XML/1998/namespace".equals(namespace)) {
+                for (XSD xsd: xsdsGroupedByNamespace.get(namespace)) {
+                    prefixByXsd.put(xsd, "ns" + prefixCount);
                 }
+                namespaceByPrefix.put("ns" + prefixCount, namespace);
+                prefixCount++;
             }
-            for (XSD xsd : xsds) {
-                if (StringUtils.isEmpty(xsd.getTargetNamespace())
-                        && !xsd.isAddNamespaceToSchema()) {
-                    warn("XSD '" + xsd
-                            + "' doesn't have a targetNamespace and addNamespaceToSchema is false");
-                }
+        }
+        for (XSD xsd : xsds) {
+            if (StringUtils.isEmpty(xsd.getTargetNamespace())
+                    && !xsd.isAddNamespaceToSchema()) {
+                warn("XSD '" + xsd
+                        + "' doesn't have a targetNamespace and addNamespaceToSchema is false");
             }
-            inputRoot = getRoot(inputValidator);
-            inputHeaderElement = getHeaderElement(inputValidator, inputXsds);
-            inputBodyElement = getBodyElement(inputValidator, inputXsds, "inputValidator");
-            if (outputValidator != null) {
-                outputRoot = getRoot(outputValidator);
-                outputHeaderElement = getHeaderElement(outputValidator, outputXsds);
-                outputBodyElement = getBodyElement(outputValidator, outputXsds, "outputValidator");
+        }
+        inputRoot = getRoot(inputValidator);
+        inputHeaderElement = getHeaderElement(inputValidator, inputXsds);
+        inputBodyElement = getBodyElement(inputValidator, inputXsds, "inputValidator");
+        if (outputValidator != null) {
+            outputRoot = getRoot(outputValidator);
+            outputHeaderElement = getHeaderElement(outputValidator, outputXsds);
+            outputBodyElement = getBodyElement(outputValidator, outputXsds, "outputValidator");
+        }
+        for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+            if (listener instanceof WebServiceListener) {
+                httpActive = true;
+            } else if (listener instanceof JmsListener) {
+                jmsActive = true;
             }
-            for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
-                if (listener instanceof WebServiceListener) {
-                    httpActive = true;
-                } else if (listener instanceof JmsListener) {
-                    jmsActive = true;
-                }
-            }
-        } finally {
-            Thread.currentThread().setContextClassLoader(classLoader);
         }
     }
 
@@ -420,6 +413,7 @@ public class Wsdl {
             // validated. In this case we use the serviceNamespaceURI from
             // the WebServiceListener as the namespace for the schema.
             XSD xsd = new XSD();
+            xsd.setClassLoader(pipeLine.getAdapter().getConfiguration().getClassLoader());
             xsd.setNamespace(webServiceListenerNamespace);
             xsd.setResource(inputSchema);
             xsd.setAddNamespaceToSchema(true);
@@ -543,6 +537,7 @@ public class Wsdl {
                     SchemaUtils.getXsdsGroupedByNamespace(rootXsds, true), w);
         }  else {
             SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
+                    pipeLine.getAdapter().getConfiguration().getClassLoader(),
                     xsdsGroupedByNamespace, w);
         }
         w.writeEndElement();
