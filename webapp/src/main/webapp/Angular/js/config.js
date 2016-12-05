@@ -190,17 +190,6 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
             Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
         }
     })
-    .state('pages.console', {
-        url: "/ibis-console",
-        templateUrl: "views/empty_page.html",
-        data: {
-            pageTitle: 'Show Configuration',
-            breadcrumbs: 'Show Configuration'
-        },
-        controller: function(Notification){
-            Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
-        }
-    })
     .state('pages.security_items', {
         url: "/security-items",
         templateUrl: "views/empty_page.html",
