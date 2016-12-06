@@ -41,7 +41,7 @@
 		<param name="Append" value="true"/>
 		<param name="DatePattern" value="'.'yyyy-MM-dd"/>
 		<param name="File" value="${log.dir}/${instance.name.lc}-messages.log"/>
-		<param name="RetentionDays" value="7"/>
+		<param name="RetentionDays" value="${log.msg.retentionDays}"/>
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
 			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
 		</layout>
