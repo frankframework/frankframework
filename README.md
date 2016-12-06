@@ -37,6 +37,9 @@ Eclipse
 - Start Eclipse with Java 7. You might want to
   [use -vm in eclipse.ini](http://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM).
 - Close Welcome.
+- Make sure that the default text file line delimiter is set to Unix and
+  default encoding is set to UTF-8: Window, Preferences, General, Workspace,
+  New text file line delimiter: Unix, Text file encoding: UTF-8.
 - Make sure Maven is able to access the internet. E.g. when behind a proxy:
   Window, Preferences, Maven, User Settings, settings.xml should exist and
   contain proxy configuration.
