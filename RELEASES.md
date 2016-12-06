@@ -125,6 +125,7 @@ Upcoming
 - Add log4j.properties for libraries like Spring
 - When log.dir not specified try to set it automatically
 - Fix xmlValidator.lazyInit caused by multiple configuration support
+- Fix NPE in SenderWrapper caused by multiple configuration support
 
 
 

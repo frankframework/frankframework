@@ -13,18 +13,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.pipes;
+package nl.nn.adapterframework.senders;
 
 /**
  * When a sender implements this interface it will get a reverence to the
- * MessageSendingPipe.
+ * SenderWrapperPipe.
  * 
- * @author Jaco de Groot
+ * @author Peter Leeuwenburgh
  *
  */
-public interface MessageSendingPipeAware {
+public interface SenderWrapperAware {
 
-	public void setMessageSendingPipe(MessageSendingPipe messageSendingPipe);
-	public MessageSendingPipe getMessageSendingPipe();
+	public void setSenderWrapper(SenderWrapper senderWrapper);
 
 }

@@ -21,6 +21,8 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.pipes.MessageSendingPipeAware;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 
@@ -47,8 +49,9 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class SenderWrapper extends SenderWrapperBase {
+public class SenderWrapper extends SenderWrapperBase implements MessageSendingPipeAware {
 	private ISender sender;
+	private MessageSendingPipe messageSendingPipe;
 	
 	protected boolean isSenderConfigured() {
 		return getSender()!=null;
@@ -56,6 +59,9 @@ public class SenderWrapper extends SenderWrapperBase {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+		if (getSender() instanceof SenderWrapperAware) {
+			((SenderWrapperAware)getSender()).setSenderWrapper(this);
+		}
 		getSender().configure();
 	}
 	public void open() throws SenderException {
@@ -83,6 +89,13 @@ public class SenderWrapper extends SenderWrapperBase {
 		}
 	}
 
+	public void setMessageSendingPipe(MessageSendingPipe messageSendingPipe) {
+		this.messageSendingPipe = messageSendingPipe;
+	}
+	public MessageSendingPipe getMessageSendingPipe() {
+		return messageSendingPipe;
+	}
+
 	public boolean isSynchronous() {
 		return getSender().isSynchronous();
 	}
@@ -93,5 +106,4 @@ public class SenderWrapper extends SenderWrapperBase {
 	protected ISender getSender() {
 		return sender;
 	}
-
 }

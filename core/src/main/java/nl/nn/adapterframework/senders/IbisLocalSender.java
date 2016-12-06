@@ -96,10 +96,11 @@ import org.apache.commons.lang.exception.ExceptionUtils;
  * @author Gerrit van Brakel
  * @since  4.2
  */
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, MessageSendingPipeAware {
+public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, MessageSendingPipeAware, SenderWrapperAware {
 	
 	private String name;
 	private MessageSendingPipe messageSendingPipe;
+	private SenderWrapper senderWrapper;
 	private Configuration configuration;
 	private String serviceName;
 	private String javaListener;
@@ -126,8 +127,19 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 						|| StringUtils.isNotEmpty(getJavaListenerSessionKey()))) {
 			throw new ConfigurationException(getLogPrefix()+"serviceName and javaListener cannot be specified both");
 		}
-		if (configuration==null) {
-			configuration = messageSendingPipe.getPipeLine().getAdapter().getConfiguration(); 
+		if (configuration == null) {
+			if (messageSendingPipe != null) {
+				configuration = messageSendingPipe.getPipeLine().getAdapter()
+						.getConfiguration();
+			} else {
+				if (senderWrapper != null) {
+					if (senderWrapper instanceof MessageSendingPipeAware) {
+						configuration = ((MessageSendingPipeAware) senderWrapper)
+								.getMessageSendingPipe().getPipeLine()
+								.getAdapter().getConfiguration();
+					}
+				}
+			}
 		}
 	}
 
@@ -265,7 +277,14 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	public void setMessageSendingPipe(MessageSendingPipe messageSendingPipe) {
 		this.messageSendingPipe = messageSendingPipe;
 	}
+	public MessageSendingPipe getMessageSendingPipe() {
+		return messageSendingPipe;
+	}
 
+	public void setSenderWrapper(SenderWrapper senderWrapper) {
+		this.senderWrapper = senderWrapper;
+	}
+	
 	public void setConfiguration(Configuration configuration) {
 		this.configuration = configuration;
 	}
