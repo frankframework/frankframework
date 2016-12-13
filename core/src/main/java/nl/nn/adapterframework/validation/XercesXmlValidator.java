@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013-2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,13 +21,15 @@ import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
+import nl.nn.adapterframework.cache.EhCache;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.util.AppConstants;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.impl.Constants;
@@ -79,24 +81,48 @@ import org.xml.sax.XMLReader;
  */
 public class XercesXmlValidator extends AbstractXmlValidator {
 
-    /** Property identifier: grammar pool. */
-    public static final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
+	/** Property identifier: grammar pool. */
+	public static final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
 
-    /** Namespaces feature id (http://xml.org/sax/features/namespaces). */
-    protected static final String NAMESPACES_FEATURE_ID = Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+	/** Namespaces feature id (http://xml.org/sax/features/namespaces). */
+	protected static final String NAMESPACES_FEATURE_ID = Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
 
-    /** Validation feature id (http://xml.org/sax/features/validation). */
-    protected static final String VALIDATION_FEATURE_ID = Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+	/** Validation feature id (http://xml.org/sax/features/validation). */
+	protected static final String VALIDATION_FEATURE_ID = Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
 
-    /** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
-    protected static final String SCHEMA_VALIDATION_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
+	/** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
+	protected static final String SCHEMA_VALIDATION_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
 
-    /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
-    protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
+	/** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
+	protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
 
-    private Map<String, SymbolTable> symbolTables =  new ConcurrentHashMap<String, SymbolTable>();
-    private Map<String, XMLGrammarPool> grammarPools = new ConcurrentHashMap<String, XMLGrammarPool>();
-    private Map<String, Set<String>> namespaceSets = new ConcurrentHashMap<String, Set<String>>();
+	private static final int maxInitialised = AppConstants.getInstance().getInt("xmlValidator.maxInitialised", -1);
+
+	private static EhCache cache;
+	static {
+		if (maxInitialised != -1) {
+			cache = new EhCache();
+			cache.setMaxElementsInMemory(maxInitialised);
+			cache.setEternal(true);
+			try {
+				cache.configure("XercesXmlValidator");
+			} catch (ConfigurationException e) {
+				cache = null;
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				configWarnings.add(log,
+						"Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)",
+						e);
+			}
+			cache.open();
+		}
+	}
+	private static AtomicLong counter = new AtomicLong();
+	private String preparseResultId;
+	private PreparseResult preparseResult;
+
+	public XercesXmlValidator() {
+		preparseResultId = "" + counter.getAndIncrement();
+	}
 
 	@Override
 	protected void init() throws ConfigurationException {
@@ -105,35 +131,40 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			if (schemasProvider == null) throw new IllegalStateException("No schema provider");
 			String schemasId = schemasProvider.getSchemasId();
 			if (schemasId != null) {
-				preparse(schemasId, schemasProvider.getSchemas());
+				PreparseResult preparseResult = preparse(schemasId, schemasProvider.getSchemas());
+				if (cache == null) {
+					this.preparseResult = preparseResult;
+				} else {
+					cache.putObject(preparseResultId, preparseResult);
+				}
 			}
 		}
 	}
 
-	private synchronized void preparse(String schemasId, List<Schema> schemas) throws ConfigurationException {
-		if (symbolTables.get(schemasId) == null) {
-			SymbolTable symbolTable = new SymbolTable(BIG_PRIME);
-			XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
-			Set<String> namespaceSet = new HashSet<String>();
-			XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
-			preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
-			preparser.setProperty(GRAMMAR_POOL, grammarPool);
-			preparser.setFeature(NAMESPACES_FEATURE_ID, true);
-			preparser.setFeature(VALIDATION_FEATURE_ID, true);
-			preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
-			preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
-			MyErrorHandler errorHandler = new MyErrorHandler();
-			errorHandler.warn = warn;
-			preparser.setErrorHandler(errorHandler);
-			for (Schema schema : schemas) {
-				Grammar grammar = preparse(preparser, schemasId, schema);
-				registerNamespaces(grammar, namespaceSet);
-			}
-			grammarPool.lockPool();
-			symbolTables.put(schemasId, symbolTable);
-			grammarPools.put(schemasId, grammarPool);
-			namespaceSets.put(schemasId, namespaceSet);
+	private synchronized PreparseResult preparse(String schemasId, List<Schema> schemas) throws ConfigurationException {
+		SymbolTable symbolTable = new SymbolTable(BIG_PRIME);
+		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
+		Set<String> namespaceSet = new HashSet<String>();
+		XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
+		preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
+		preparser.setProperty(GRAMMAR_POOL, grammarPool);
+		preparser.setFeature(NAMESPACES_FEATURE_ID, true);
+		preparser.setFeature(VALIDATION_FEATURE_ID, true);
+		preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
+		preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
+		MyErrorHandler errorHandler = new MyErrorHandler();
+		errorHandler.warn = warn;
+		preparser.setErrorHandler(errorHandler);
+		for (Schema schema : schemas) {
+			Grammar grammar = preparse(preparser, schemasId, schema);
+			registerNamespaces(grammar, namespaceSet);
 		}
+		grammarPool.lockPool();
+		PreparseResult preparseResult = new PreparseResult();
+		preparseResult.setSymbolTable(symbolTable);
+		preparseResult.setGrammarPool(grammarPool);
+		preparseResult.setNamespaceSet(namespaceSet);
+		return preparseResult;
 	}
 
 	private static Grammar preparse(XMLGrammarPreparser preparser,
@@ -171,11 +202,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	 */
 	@Override
 	public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		try {
-			init();
-		} catch (ConfigurationException e) {
-			throw new XmlValidatorException(e.getMessage(), e);
-		}
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			log.debug(logPrefix+ "removing contents of sessionKey ["+getReasonSessionKey()+ "]");
 			session.remove(getReasonSessionKey());
@@ -186,15 +212,29 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			session.remove(getXmlReasonSessionKey());
 		}
 
+		PreparseResult preparseResult;
 		String schemasId = schemasProvider.getSchemasId();
 		if (schemasId == null) {
 			schemasId = schemasProvider.getSchemasId(session);
-			preparse(schemasId, schemasProvider.getSchemas(session));
+			preparseResult = preparse(schemasId, schemasProvider.getSchemas(session));
+		} else {
+			if (cache == null) {
+				preparseResult = this.preparseResult;
+				if (preparseResult == null) {
+					init();
+					preparseResult = this.preparseResult;
+				}
+			} else {
+				preparseResult = (PreparseResult)cache.getObject(preparseResultId);
+				if (preparseResult == null) {
+					preparseResult = preparse(schemasId, schemasProvider.getSchemas());
+					cache.putObject(preparseResultId, preparseResult);
+				}
+			}
 		}
-
-		SymbolTable symbolTable = symbolTables.get(schemasId);
-		XMLGrammarPool grammarPool = grammarPools.get(schemasId);
-		Set<String> namespacesSet = namespaceSets.get(schemasId);
+		SymbolTable symbolTable = preparseResult.getSymbolTable();
+		XMLGrammarPool grammarPool = preparseResult.getGrammarPool();
+		Set<String> namespacesSet = preparseResult.getNamespaceSet();
 
 		String mainFailureMessage = "Validation using "
 				+ schemasProvider.getClass().getSimpleName() + " with '"
@@ -248,4 +288,35 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
 	}
 
+}
+
+
+class PreparseResult {
+	private SymbolTable symbolTable;
+	private XMLGrammarPool grammarPool;
+	private Set<String> namespaceSet;
+
+	public SymbolTable getSymbolTable() {
+		return symbolTable;
+	}
+
+	public void setSymbolTable(SymbolTable symbolTable) {
+		this.symbolTable = symbolTable;
+	}
+
+	public XMLGrammarPool getGrammarPool() {
+		return grammarPool;
+	}
+
+	public void setGrammarPool(XMLGrammarPool grammarPool) {
+		this.grammarPool = grammarPool;
+	}
+
+	public Set<String> getNamespaceSet() {
+		return namespaceSet;
+	}
+
+	public void setNamespaceSet(Set<String> namespaceSet) {
+		this.namespaceSet = namespaceSet;
+	}
 }

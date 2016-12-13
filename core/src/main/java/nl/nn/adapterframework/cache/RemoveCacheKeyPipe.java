@@ -17,12 +17,12 @@ package nl.nn.adapterframework.cache;
 
 import java.io.Serializable;
 
+import net.sf.ehcache.Cache;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.util.TransformerPool;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -62,7 +62,12 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Object input, IPipeLineSession session)
 			throws PipeRunException {
 		String cacheKey = keyTransformer.transformKey((String)input, session);
-		ibisCacheManager.removeCacheKey(cacheName, cacheKey);
+		Cache cache = ibisCacheManager.getCache(cacheName);
+		if (cache.remove("r"+cacheKey) && cache.remove("s"+cacheKey)) {
+			log.debug("removed cache key [" + cacheKey + "] from cache ["+cacheName+"]");
+		} else {
+			log.warn("could not find cache key [" + cacheKey + "] to remove from cache ["+cacheName+"]");
+		}
 		return new PipeRunResult(getForward(), input);
 	}
 
@@ -137,6 +142,20 @@ class KeyTransformer extends CacheAdapterBase {
 
 	@Override
 	protected void putElement(String arg0, Serializable arg1) {
+	}
+
+	@Override
+	protected Object getElementObject(Object key) {
+		return null;
+	}
+
+	@Override
+	protected void putElementObject(Object key, Object value) {
+	}
+
+	@Override
+	protected boolean removeElement(Object key) {
+		return false;
 	}
 
 }

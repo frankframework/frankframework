@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -86,13 +86,8 @@ public class IbisCacheManager {
 		cacheManager.removeCache(cacheName);
 	}
 
-	public void removeCacheKey(String cacheName, String cacheKey) {
-		if (cacheManager.getCache(cacheName).remove("r"+cacheKey)
-				&& cacheManager.getCache(cacheName).remove("s"+cacheKey)) {
-			log.debug("removed cache key [" + cacheKey + "] from cache ["+cacheName+"]");
-		} else {
-			log.warn("could not find cache key [" + cacheKey + "] to remove from cache ["+cacheName+"]");
-		}
+	public Cache getCache(String cacheName) {
+		return cacheManager.getCache(cacheName);
 	}
 
 	public static void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {

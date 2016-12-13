@@ -126,6 +126,7 @@ Upcoming
 - When log.dir not specified try to set it automatically
 - Fix xmlValidator.lazyInit caused by multiple configuration support
 - Fix NPE in SenderWrapper caused by multiple configuration support
+- Add xmlValidator.maxInitialised to limit memory usage by validators
 
 
 

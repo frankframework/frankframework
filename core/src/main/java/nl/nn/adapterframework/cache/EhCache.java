@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -143,7 +143,6 @@ public class EhCache extends CacheAdapterBase {
 		cache=null;
 	}
 
-
 	protected Serializable getElement(String key) {
 		Element element = cache.get(key);
 		if (element==null) {
@@ -157,7 +156,23 @@ public class EhCache extends CacheAdapterBase {
 		cache.put(element);
 	}
 
-	
+	protected Object getElementObject(Object key) {
+		Element element = cache.get(key);
+		if (element==null) {
+			return null;
+		}
+		return element.getObjectValue();
+	}
+
+	protected void putElementObject(Object key, Object value) {
+		Element element = new Element(key,value);
+		cache.put(element);
+	}
+
+	protected boolean removeElement(Object key) {
+		return cache.remove(key);
+	}
+
 	public int getMaxElementsInMemory() {
 		return maxElementsInMemory;
 	}

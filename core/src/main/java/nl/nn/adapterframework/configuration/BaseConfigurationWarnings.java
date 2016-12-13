@@ -29,11 +29,23 @@ public class BaseConfigurationWarnings extends LinkedList {
 	protected Vector defaultValueExceptions = new Vector();
 
 	public boolean add(Logger log, String msg) {
-		return add(log, msg, false);
+		return add(log, msg, null, false);
+	}
+
+	public boolean add(Logger log, String msg, Throwable t) {
+		return add(log, msg, t, false);
 	}
 
 	public boolean add(Logger log, String msg, boolean onlyOnce) {
-		log.warn(msg);
+		return add(log, msg, null, onlyOnce);
+	}
+
+	public boolean add(Logger log, String msg, Throwable t, boolean onlyOnce) {
+		if (t == null) {
+			log.warn(msg);
+		} else {
+			log.warn(msg, t);
+		}
 		if (!onlyOnce || !super.contains(msg)) {
 			return super.add(msg);
 		} else {

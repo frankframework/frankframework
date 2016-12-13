@@ -94,6 +94,9 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	
 	protected abstract Serializable getElement(String key);
 	protected abstract void putElement(String key, Serializable value);
+	protected abstract Object getElementObject(Object key);
+	protected abstract void putElementObject(Object key, Object value);
+	protected abstract boolean removeElement(Object key);
 
 	public String transformKey(String input, Map sessionContext) {
 		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && sessionContext!=null) {
@@ -150,6 +153,17 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	}
 	public void put(String key, Serializable value) {
 		putElement(key, value);
+	}
+
+	public Object getObject(String key){
+		return getElementObject(key);
+	}
+	public void putObject(Object key, Object value) {
+		putElementObject(key, value);
+	}
+	
+	public boolean remove(Object key) {
+		return removeElement(key);
 	}
 
 	public String getName() {

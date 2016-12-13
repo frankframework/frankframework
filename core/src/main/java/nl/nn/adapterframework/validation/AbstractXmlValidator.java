@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ import java.util.*;
  * @author Jaco de Groot
  */
 public abstract class AbstractXmlValidator {
-	protected Logger log = LogUtil.getLogger(this);
+	protected static Logger log = LogUtil.getLogger(AbstractXmlValidator.class);
 
 	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
 	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
