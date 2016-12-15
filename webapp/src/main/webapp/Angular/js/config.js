@@ -249,8 +249,17 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
         url: "/empty_page",
         templateUrl: "views/empty_page.html",
         data: { pageTitle: 'Empty Page' }
+    })
+    .state('pages.iaf_update', {
+        url: "/iaf-update",
+        templateUrl: "views/iaf-update.html",
+        data: { pageTitle: 'IAF Update' },
+        controller: function($scope, $location) {
+            if($scope.release == undefined)
+                $location.path("status");
+        }
     });
-    
+
     $locationProvider.html5Mode(false);
 
 }

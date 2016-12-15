@@ -36,12 +36,13 @@ import nl.nn.adapterframework.configuration.Configuration;
 
 @Path("/")
 public final class ShowConfiguration extends Base {
+	@Context ServletConfig servletConfig;
 
 	@GET
 	@RolesAllowed({"ObserverAccess", "IbisTester"})
-	@Path("/configuration")
+	@Path("/configurations")
 	@Produces(MediaType.APPLICATION_XML)
-	public Response getConfiguration(@QueryParam("loadedConfiguration") boolean loadedConfiguration, @Context ServletConfig servletConfig) throws ApiException {
+	public Response getConfiguration(@QueryParam("loadedConfiguration") boolean loadedConfiguration) throws ApiException {
 		initBase(servletConfig);
 		
 		if (ibisManager == null) {
@@ -63,9 +64,9 @@ public final class ShowConfiguration extends Base {
 
 	@GET
 	@RolesAllowed({"ObserverAccess", "IbisTester"})
-	@Path("/configuration/{configuration}")
+	@Path("/configurations/{configuration}")
 	@Produces(MediaType.APPLICATION_XML)
-	public Response getConfigurationByName(@PathParam("configuration") String configurationName, @QueryParam("loadedConfiguration") boolean loadedConfiguration,@Context ServletConfig servletConfig) throws ApiException {
+	public Response getConfigurationByName(@PathParam("configuration") String configurationName, @QueryParam("loadedConfiguration") boolean loadedConfiguration) throws ApiException {
 		initBase(servletConfig);
 		
 		if (ibisManager == null) {

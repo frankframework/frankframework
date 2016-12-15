@@ -33,7 +33,7 @@ import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
 */
 
 @SuppressWarnings("serial")
-public class ServletDispatcher extends HttpServletDispatcher{
+public class ServletDispatcher extends HttpServletDispatcher {
 
     private boolean consoleActive = AppConstants.getInstance().getBoolean("console.active", false);
 

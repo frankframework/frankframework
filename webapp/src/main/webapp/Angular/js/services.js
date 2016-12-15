@@ -1,12 +1,6 @@
 angular.module('iaf.beheerconsole')
-    .service('Api', ['$http', 'appConstants', function($http, appConstants) {
-        var absolutePath = appConstants.server;
-        if(!absolutePath) {
-        	absolutePath = window.location.origin;
-        	var path = window.location.pathname;
-        	absolutePath += path.substr(0, path.indexOf("Angular"));
-        }
-        if(absolutePath && absolutePath.slice(-1) != "/") absolutePath += "/";
+    .service('Api', ['$http', 'appConstants', 'Misc', function($http, appConstants, Misc) {
+        var absolutePath = Misc.getServerPath();
         absolutePath += "api/";
         var etags = [];
         
@@ -290,6 +284,13 @@ angular.module('iaf.beheerconsole')
         return function(input) {
             return (angular.isString(s) && s.length > 0) ? s[0].toUpperCase() + s.substr(1).toLowerCase() : s;
         };
+    }).filter('markDown', function() {
+        return function(input) {
+            if(!input) return;
+            input = input.replace(/(?:\r\n|\r|\n)/g, '<br />');
+            input = input.replace(/\[(.*?)\]\((.+?)\)/g, '<a target="_blank" href="$2" alt="$1">$1</a>');
+            return input;
+        };
     }).factory('authService', ['$rootScope', '$http', 'Base64', '$location', 'appConstants', 
         function($rootScope, $http, Base64, $location, appConstants) {
         var authToken;
@@ -406,7 +407,91 @@ angular.module('iaf.beheerconsole')
                 return output;
             }
         };
-    }).service('Alert', ['$timeout', 'Session', function($timeout, Session) {
+    }).service('Misc', ['appConstants', function(appConstants) {
+        this.getServerPath = function() {
+            var absolutePath = appConstants.server;
+            if(!absolutePath) {
+                absolutePath = window.location.origin;
+                var path = window.location.pathname;
+                absolutePath += path.substr(0, path.indexOf("Angular"));
+            }
+            if(absolutePath && absolutePath.slice(-1) != "/") absolutePath += "/";
+            return absolutePath;
+        };
+        this.compare_version = function(v1, v2, operator) {
+            // See for more info: http://locutus.io/php/info/version_compare/
+
+            var i, x, compare = 0;
+            var vm = {
+                'dev': -6,
+                'alpha': -5,
+                'a': -5,
+                'beta': -4,
+                'b': -4,
+                'RC': -3,
+                'rc': -3,
+                '#': -2,
+                'p': 1,
+                'pl': 1
+            };
+
+            var _prepVersion = function (v) {
+                v = ('' + v).replace(/[_\-+]/g, '.');
+                v = v.replace(/([^.\d]+)/g, '.$1.').replace(/\.{2,}/g, '.');
+                return (!v.length ? [-8] : v.split('.'));
+            };
+            var _numVersion = function (v) {
+                return !v ? 0 : (isNaN(v) ? vm[v] || -7 : parseInt(v, 10));
+            };
+
+            v1 = _prepVersion(v1);
+            v2 = _prepVersion(v2);
+            x = Math.max(v1.length, v2.length);
+            for (i = 0; i < x; i++) {
+                if (v1[i] === v2[i]) {
+                    continue;
+                }
+                v1[i] = _numVersion(v1[i]);
+                v2[i] = _numVersion(v2[i]);
+                if (v1[i] < v2[i]) {
+                    compare = -1;
+                    break;
+                } else if (v1[i] > v2[i]) {
+                    compare = 1;
+                    break;
+                }
+            }
+            if (!operator) {
+                return compare;
+            }
+
+            switch (operator) {
+                case '>':
+                case 'gt':
+                    return (compare > 0);
+                case '>=':
+                case 'ge':
+                    return (compare >= 0);
+                case '<=':
+                case 'le':
+                    return (compare <= 0);
+                case '===':
+                case '=':
+                case 'eq':
+                    return (compare === 0);
+                case '<>':
+                case '!==':
+                case 'ne':
+                    return (compare !== 0);
+                case '':
+                case '<':
+                case 'lt':
+                    return (compare < 0);
+                default:
+                    return null;
+            }
+        };
+    }]).service('Alert', ['$timeout', 'Session', function($timeout, Session) {
         this.add = function(level, message, non_repeditive) {
             if(non_repeditive === true)
                 if(this.checkIfExists(message))
@@ -462,12 +547,13 @@ angular.module('iaf.beheerconsole')
             return false;
         };
     }]).config(['$httpProvider', function($httpProvider) {
-        $httpProvider.interceptors.push(['$rootScope', 'appConstants', '$q', '$location', 'Alert', function($rootScope, appConstants, $q, $location, Alert) {
+        $httpProvider.interceptors.push(['$rootScope', 'appConstants', '$q', '$location', 'Alert', 'Misc', function($rootScope, appConstants, $q, $location, Alert, Misc) {
             return {
                 responseError: function(rejection) {
+                    if(rejection.config && rejection.config.url && !rejection.config.url.includes(Misc.getServerPath())) return;
                     switch (rejection.status) {
                         case -1:
-                            console.log(appConstants.init);
+                            console.log(appConstants.init, rejection);
                             sessionStorage.setItem("authToken", null);
                             if(appConstants.init == 1) {
                                 if(rejection.config.headers["Authorization"] != undefined) {

@@ -25,6 +25,8 @@ function toDate(dateFilter, appConstants, Hooks) {
         link: function(scope, element, attributes) {
             scope.$watch('time', updateTime);
             function updateTime(time) {
+                if(isNaN(time))
+                    time = new Date(time).getTime();
                 var toDate = new Date(time - appConstants.timeOffset);
                 element.text(dateFilter(toDate, appConstants["console.dateFormat"]));
             }

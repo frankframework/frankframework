@@ -3,7 +3,7 @@
  * Used on all pages except login/logout
  *
  */
-function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, $uibModal) {
+function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal) {
     $scope.loading = true;
     Pace.on("done", function() {
         if(appConstants.init == 0) {
@@ -96,6 +96,22 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
     };
 
     Hooks.register("appConstants:once", function() {
+        /* Check IAF version */
+        $http.get("https://api.github.com/repos/ibissource/iaf/releases").then(function(response) {
+            if(!response  || !response.data) return false;
+
+            var release = response.data[0]; //Not sure what ID to pick, smallest or latest?
+            var newVersion = release.tag_name.substr(1);
+            var oldVersion = appConstants["application.version"];
+            var version = Misc.compare_version(newVersion, oldVersion);
+            if(version > 0) {
+                $scope.release = release;
+                Notification.add('fa-exclamation-circle', "IAF update available!", false, function() {
+                    $location.path("iaf-update");
+                });
+            }
+        });
+
         Api.Get("server/warnings", function(warnings) {
             for(i in warnings) {
                 var warning = warnings[i];
@@ -158,8 +174,8 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
             warn:0,
             error:0
         };
-        for(adapter in $scope.adapters) {
-            var adapter = $scope.adapters[adapter];
+        for(adapterName in $scope.adapters) {
+            var adapter = $scope.adapters[adapterName];
             for(i in adapter.messages) {
                 var level = adapter.messages[i].level.toLowerCase();
                 summary[level]++;
@@ -245,7 +261,7 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
 
         var pollerObj = Poller.getAll();
         for(x in pollerObj) {
-            Poller.changeInterval(pollerObj[x], 2000);
+            Poller.changeInterval(pollerObj[x], appConstants["console.pollerInterval"]);
         }
     });
 
@@ -256,11 +272,9 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
             controller: InformationCtrl
         });
     };
-
-    checkVersion($http);
 };
 
-function InformationCtrl ($scope, $uibModalInstance, Api) {
+function InformationCtrl($scope, $uibModalInstance, Api) {
     Api.Get("server/info", function(data) {
         $.extend( $scope, data );
     });
@@ -269,22 +283,12 @@ function InformationCtrl ($scope, $uibModalInstance, Api) {
     };
 };
 
-function checkVersion($http) {
-    /*
-     * API call to github.
-     * Since no releases have been published it wont show the latest version on git yet :L
-    $http.get("https://api.github.com/repos/ibissource/iaf/releases").then(function(data) {
-        console.log(data);
-    });
-    */
-}
-
 function StatusCtrl($scope, Api, Hooks) {
     this.filter = {
         "started": true,
         "stopped": true,
         "warning": true
-    }
+    };
     $scope.filter = this.filter;
     $scope.hideAdapter = {};
     $scope.applyFilter = function(filter) {
@@ -292,8 +296,8 @@ function StatusCtrl($scope, Api, Hooks) {
         applyStatusFilter();
     };
     function applyStatusFilter() {
-        for(adapter in $scope.adapters) {
-            var adapter = $scope.adapters[adapter];
+        for(adapterName in $scope.adapters) {
+            var adapter = $scope.adapters[adapterName];
             $scope.hideAdapter[adapter.name] = false;
             for(x in $scope.filter) {
                 if($scope.filter[x] == false && adapter.status == x) {
@@ -304,8 +308,8 @@ function StatusCtrl($scope, Api, Hooks) {
         applyConfigFilter();
     }
     function applyConfigFilter() {
-        for(adapter in $scope.adapters) {
-            var adapter = $scope.adapters[adapter];
+        for(adapterName in $scope.adapters) {
+            var adapter = $scope.adapters[adapterName];
             if($scope.hideAdapter[adapter.name] === true) continue;
             $scope.hideAdapter[adapter.name] = (adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") ? false : true;
         }
@@ -476,7 +480,7 @@ function ShowConfiguration($scope, Api) {
     };
 
     getConfiguration = function() {
-        var uri = "configuration";
+        var uri = "configurations";
         if($scope.selectedConfiguration != "All") uri += "/" + $scope.selectedConfiguration;
         if($scope.loadedConfiguration) uri += "?loadedConfiguration=true";
         Api.Get(uri, function(data) {

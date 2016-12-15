@@ -74,6 +74,8 @@ import org.apache.commons.lang.StringUtils;
 
 @Path("/")
 public final class ShowConfigurationStatus extends Base {
+	@Context ServletConfig servletConfig;
+	@Context Request request;
 
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
 	private boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
@@ -82,7 +84,7 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"ObserverAccess", "IbisTester"})
 	@Path("/adapters")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapters(@Context ServletConfig servletConfig) throws ApiException {
+	public Response getAdapters() throws ApiException {
 		initBase(servletConfig);
 		
 		if (ibisManager == null) {
@@ -107,7 +109,7 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"ObserverAccess", "IbisTester"})
 	@Path("/adapters/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapter(@PathParam("name") String name, @Context ServletConfig servletConfig, @Context Request request) throws ApiException {
+	public Response getAdapter(@PathParam("name") String name) throws ApiException {
 		initBase(servletConfig);
 
 		if (ibisManager == null) {
@@ -143,12 +145,13 @@ public final class ShowConfigurationStatus extends Base {
 	}
 
 	//Normally you don't use the PUT method on a collection...
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@PUT
 	@RolesAllowed({"ObserverAccess", "IbisTester", "AdminAccess"})
 	@Path("/adapters/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateAdapters(LinkedHashMap<String, Object> json, @Context ServletConfig servletConfig) throws ApiException {
+	public Response updateAdapters(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 
 		if (ibisManager == null) {
@@ -197,7 +200,7 @@ public final class ShowConfigurationStatus extends Base {
 	@Path("/adapters/{adapterName}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateAdapter(@PathParam("adapterName") String adapterName, LinkedHashMap<String, Object> json, @Context ServletConfig servletConfig) throws ApiException {
+	public Response updateAdapter(@PathParam("adapterName") String adapterName, LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 
 		if (ibisManager == null) {
@@ -235,7 +238,7 @@ public final class ShowConfigurationStatus extends Base {
 	@Path("/adapters/{adapterName}/receivers/{receiverName}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateReceiver(@PathParam("adapterName") String adapterName, @PathParam("receiverName") String receiverName, LinkedHashMap<String, Object> json, @Context ServletConfig servletConfig) throws ApiException {
+	public Response updateReceiver(@PathParam("adapterName") String adapterName, @PathParam("receiverName") String receiverName, LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 
 		if (ibisManager == null) {
@@ -259,8 +262,8 @@ public final class ShowConfigurationStatus extends Base {
 				if(value.equals("stop")) { action = "stopreceiver"; }
 				if(value.equals("start")) { action = "startreceiver"; }
 
-			    ibisManager.handleAdapter(action, "", adapterName, receiverName, null, false);
-			    response.entity("{\"status\":\"ok\"}");
+				ibisManager.handleAdapter(action, "", adapterName, receiverName, null, false);
+				response.entity("{\"status\":\"ok\"}");
 			}
 		}
 		
@@ -271,7 +274,7 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"ObserverAccess", "IbisTester"})
 	@Path("/adapters/{name}/pipes")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapterPipes(@PathParam("name") String adapterName, @Context ServletConfig servletConfig) throws ApiException {
+	public Response getAdapterPipes(@PathParam("name") String adapterName) throws ApiException {
 		initBase(servletConfig);
 
 		if (ibisManager == null) {
@@ -293,7 +296,7 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"ObserverAccess", "IbisTester"})
 	@Path("/adapters/{name}/messages")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapterMessages(@PathParam("name") String adapterName, @Context ServletConfig servletConfig) throws ApiException {
+	public Response getAdapterMessages(@PathParam("name") String adapterName) throws ApiException {
 		initBase(servletConfig);
 
 		if (ibisManager == null) {
@@ -315,7 +318,7 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"ObserverAccess", "IbisTester"})
 	@Path("/adapters/{name}/receivers")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapterReceivers(@PathParam("name") String adapterName, @Context ServletConfig servletConfig) throws ApiException {
+	public Response getAdapterReceivers(@PathParam("name") String adapterName) throws ApiException {
 		initBase(servletConfig);
 
 		if (ibisManager == null) {

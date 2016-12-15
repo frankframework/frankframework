@@ -15,8 +15,15 @@
 		<param-value>rest</param-value>
 	</context-param>
 	<context-param>
-		<param-name>resteasy.scan</param-name>
-		<param-value>true</param-value>
+		<param-name>resteasy.resources</param-name>
+		<param-value>
+			nl.nn.adapterframework.webcontrol.api.ExecuteJdbcQuery,
+			nl.nn.adapterframework.webcontrol.api.Init,
+			nl.nn.adapterframework.webcontrol.api.ShowConfiguration,
+			nl.nn.adapterframework.webcontrol.api.ShowConfigurationStatus,
+			nl.nn.adapterframework.webcontrol.api.ShowEnvironmentVariables,
+			nl.nn.adapterframework.webcontrol.api.TestPipeline
+		</param-value>
 	</context-param>
 
 	<filter>

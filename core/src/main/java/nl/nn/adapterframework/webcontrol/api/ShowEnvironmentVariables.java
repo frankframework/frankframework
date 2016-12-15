@@ -43,12 +43,13 @@ import nl.nn.adapterframework.util.Misc;
 
 @Path("/")
 public final class ShowEnvironmentVariables extends Base {
+	@Context ServletConfig servletConfig;
 
 	@GET
 	@RolesAllowed({"ObserverAccess", "IbisTester"})
 	@Path("/environmentvariables")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response environmentVariables(@Context ServletConfig servletConfig) throws ApiException {
+	public Response environmentVariables() throws ApiException {
 		initBase(servletConfig);
 		
 		if (ibisManager == null) {
@@ -87,10 +88,10 @@ public final class ShowEnvironmentVariables extends Base {
 		while (enumeration.hasMoreElements()) {
 			String propName = (String) enumeration.nextElement();
 			String propValue = props.getProperty(propName);
-        	if (propsToHide != null && propsToHide.contains(propName)) {
-        		propValue = Misc.hide(propValue);
-        	}
-        	properties.put(propName, propValue);
+			if (propsToHide != null && propsToHide.contains(propName)) {
+				propValue = Misc.hide(propValue);
+			}
+			properties.put(propName, propValue);
 		}
 		return properties;
 	}

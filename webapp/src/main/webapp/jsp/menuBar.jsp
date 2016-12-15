@@ -112,10 +112,13 @@
 				type="info"
 				alt="Information">
 			</imagelink>
-			<imagelink
-				href="Angular"
-				type="theme"
-				alt="GUI 3.0">
-			</imagelink>
+
+			<% if (AppConstants.getInstance().getBoolean("console.active", false)) { %>
+				<imagelink
+					href="Angular"
+					type="theme"
+					alt="GUI 3.0">
+				</imagelink>
+			<% } %>
 	</imagelinkMenu>
 </menuBar>

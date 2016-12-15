@@ -127,7 +127,10 @@ Upcoming
 - Fix xmlValidator.lazyInit caused by multiple configuration support
 - Fix NPE in SenderWrapper caused by multiple configuration support
 - Add xmlValidator.maxInitialised to limit memory usage by validators
-
+- Remove unused artifacts
+- Change IBIS API to use preconfigured endpoints
+- Add property 'console.active' to enable the IBIS API/console
+- Add IAF Upgrade notification when new version is available
 
 
 ### Non backwards compatible changes

@@ -50,13 +50,15 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 @Path("/")
 public final class ExecuteJdbcQuery extends Base {
+	@Context ServletConfig servletConfig;
+
 	public static final String DB2XML_XSLT="xml/xsl/dbxml2csv.xslt";
 
 	@GET
 	@RolesAllowed({"ObserverAccess", "IbisTester"})
 	@Path("/jdbc/query")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getJdbcInfo(@Context ServletConfig servletConfig) throws ApiException {
+	public Response getJdbcInfo() throws ApiException {
 		initBase(servletConfig);
 		
 		if (ibisManager == null) {
@@ -83,7 +85,7 @@ public final class ExecuteJdbcQuery extends Base {
 	@Path("/jdbc/query")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(@Context ServletConfig servletConfig, LinkedHashMap<String, Object> json) throws ApiException {
+	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 		
 		if (ibisManager == null) {

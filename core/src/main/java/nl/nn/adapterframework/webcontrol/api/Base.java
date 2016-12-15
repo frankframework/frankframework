@@ -33,10 +33,11 @@ import org.apache.log4j.Logger;
 */
 
 public abstract class Base {
+
 	protected Logger log = LogUtil.getLogger(this);
 	protected IbisContext ibisContext = null;
 	protected IbisManager ibisManager = null;
-	
+
 	protected void initBase(ServletConfig servletConfig) {
 		String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
 		ibisContext = (IbisContext) servletConfig.getServletContext().getAttribute(attributeKey);

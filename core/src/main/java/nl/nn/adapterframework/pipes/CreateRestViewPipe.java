@@ -285,8 +285,10 @@ public class CreateRestViewPipe extends XsltPipe {
 				"testtool", "ladybug", "Ladybug Test Tool"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"javascript:void(0)", "info", "Information"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"Angular", "theme", "GUI 3.0"));
+		if (appConstants.getBoolean("console.active", false)) {
+			imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
+					"Angular", "theme", "GUI 3.0"));
+		}
 		menuBar.addSubElement(imagelinkMenu);
 		return menuBar.toXML();
 	}

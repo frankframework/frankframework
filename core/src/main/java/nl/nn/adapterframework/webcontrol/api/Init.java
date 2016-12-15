@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,12 +25,19 @@ import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.jboss.resteasy.core.Dispatcher;
+import org.jboss.resteasy.core.ResourceInvoker;
+import org.jboss.resteasy.core.ResourceMethodRegistry;
 
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -50,12 +58,13 @@ import nl.nn.adapterframework.util.ProcessMetrics;
 
 @Path("/")
 public class Init extends Base {
+	@Context ServletConfig servletConfig;
 
 	@GET
 	@Path("/server/info")
 	@RolesAllowed({"ObserverAccess", "AdminAccess", "DataAdminAccess", "TesterAccess", "IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getServerInformation(@Context ServletConfig servletConfig) {
+	public Response getServerInformation() {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		List<Object> configurations = new ArrayList<Object>();
 		
@@ -90,7 +99,7 @@ public class Init extends Base {
 	@Path("/server/warnings")
 	@RolesAllowed({"ObserverAccess", "AdminAccess", "DataAdminAccess", "TesterAccess", "IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getServerConfiguration(@Context ServletConfig servletConfig) {
+	public Response getServerConfiguration() {
 
 		initBase(servletConfig);
 		ConfigurationWarnings globalConfigWarnings = ConfigurationWarnings.getInstance();
@@ -167,5 +176,50 @@ public class Init extends Base {
 		}
 		
 		return Response.status(Response.Status.CREATED).entity(warnings).build();
+	}
+
+	@Context Dispatcher dispatcher;
+	@GET
+	@Path("/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getAllResources(){
+		List<Object> resources = new ArrayList<Object>();
+
+		ResourceMethodRegistry registry = (ResourceMethodRegistry) dispatcher.getRegistry();
+
+		for (Map.Entry<String, List<ResourceInvoker>> entry : registry.getBounded().entrySet()) {
+			for (ResourceInvoker invoker : entry.getValue()) {
+				Method method = invoker.getMethod();
+
+				if(method.getDeclaringClass() == getClass()){
+					continue;
+				}
+
+				Map<String, Object> resource = new HashMap<String, Object>(3);
+
+				if(method.isAnnotationPresent(GET.class))
+					resource.put("method", "GET");
+				else if(method.isAnnotationPresent(POST.class))
+					resource.put("method", "POST");
+				else if(method.isAnnotationPresent(PUT.class))
+					resource.put("method", "PUT");
+				else if(method.isAnnotationPresent(DELETE.class))
+					resource.put("method", "DELETE");
+
+				Path path = method.getAnnotation(Path.class);
+				if(path != null) {
+					resource.put("path", path.value());
+				}
+
+				RolesAllowed rolesAllowed = method.getAnnotation(RolesAllowed.class);
+				if(rolesAllowed != null) {
+					resource.put("allowed", rolesAllowed.value());
+				}
+
+				resources.add(resource);
+			}
+		}
+
+		return Response.status(Response.Status.CREATED).entity(resources).build();
 	}
 }

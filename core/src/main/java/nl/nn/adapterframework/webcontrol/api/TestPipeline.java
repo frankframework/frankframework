@@ -64,6 +64,8 @@ import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 @Path("/")
 public final class TestPipeline extends TimeoutGuardPipe {
+	@Context ServletConfig servletConfig;
+
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
 	private boolean secLogEnabled = AppConstants.getInstance().getBoolean("sec.log.enabled", false);
@@ -74,10 +76,10 @@ public final class TestPipeline extends TimeoutGuardPipe {
 	@Path("/test-pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postTestPipeLine(@Context ServletConfig servletConfig, MultipartFormDataInput input) throws ApiException, PipeRunException {
+	public Response postTestPipeLine(MultipartFormDataInput input) throws ApiException, PipeRunException {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		IbisManager ibisManager = getIbisManager(servletConfig);
+		IbisManager ibisManager = getIbisManager();
 		if (ibisManager == null) {
 			throw new ApiException("Config not found!");
 		}
@@ -206,18 +208,18 @@ public final class TestPipeline extends TimeoutGuardPipe {
 		return adapter.processMessage(messageId, message, pls);
 	}
 	
-	private IbisManager getIbisManager(ServletConfig servletConfig) {
+	private IbisManager getIbisManager() {
 		String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
 		IbisContext ibisContext = (IbisContext) servletConfig.getServletContext().getAttribute(attributeKey);
-        if (ibisContext != null) {
-        	IbisManager ibisManager = ibisContext.getIbisManager();
+		if (ibisContext != null) {
+			IbisManager ibisManager = ibisContext.getIbisManager();
 			if (ibisManager==null) {
 				log.warn("Could not retrieve ibisManager from context");
 			} else {
 				log.debug("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context attribute ["+attributeKey+"]");
-	        	return ibisManager;
+				return ibisManager;
 			}
-        }
+		}
 		return null;
 	}
 }
