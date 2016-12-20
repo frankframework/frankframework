@@ -131,6 +131,7 @@ Upcoming
 - Change IBIS API to use preconfigured endpoints
 - Add property 'console.active' to enable the IBIS API/console
 - Add IAF Upgrade notification when new version is available
+- Add "webContent.dir" property to AppConstants properties
 
 
 ### Non backwards compatible changes

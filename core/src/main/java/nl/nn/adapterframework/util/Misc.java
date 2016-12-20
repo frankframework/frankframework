@@ -28,11 +28,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
@@ -882,5 +884,35 @@ public class Misc {
 		}
 		result.append(inputString.substring(previous, inputString.length()));
 		return result.toString();
+	}
+
+	public static String getWebContentDirectory() {
+		String path = new File(AppConstants.class.getClassLoader()
+				.getResource("").getPath()).getPath();
+		String fullPath;
+		try {
+			fullPath = URLDecoder.decode(path, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			log.warn("Error decoding path [" + path + "]", e);
+			return null;
+		}
+		if (fullPath.endsWith("classes")) {
+			String wcDirectory = null;
+			File file = new File(fullPath);
+			while (wcDirectory == null) {
+				File file2 = new File(file, "WebContent");
+				if (file2.exists() && file2.isAbsolute()) {
+					wcDirectory = file2.getPath();
+				} else {
+					file = file.getParentFile();
+					if (file == null) {
+						return null;
+					}
+				}
+			}
+			return wcDirectory;
+		} else {
+			return null;
+		}
 	}
 }

@@ -34,6 +34,12 @@
 	/>
 
 	<bean
+		name="webContentPropertyPlaceholderConfigurer"
+		class="nl.nn.adapterframework.configuration.WebContentPropertyPlaceholderConfigurer"
+		autowire="byName"
+	/>
+
+	<bean
 		name="jmsRealmsFactory"
 		class="nl.nn.adapterframework.jms.JmsRealmFactory"
 		autowire="byName"
