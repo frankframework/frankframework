@@ -134,6 +134,7 @@ Upcoming
 - Add "webContent.dir" property to AppConstants properties
 - Add attribute type to GetFromSession
 - Fix optional headers in WSDL generator
+- Extended classes for API management
 
 
 ### Non backwards compatible changes

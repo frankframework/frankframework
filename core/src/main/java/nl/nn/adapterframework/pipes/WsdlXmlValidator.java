@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -59,6 +60,7 @@ import org.xml.sax.InputSource;
  * <tr><td>*</td><td>all attributes available on {@link SoapValidator} can be used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWsdl(String) wsdl}</td><td>the WSDL to read the XSD's from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSchemaLocation(String) schemaLocation}</td><td>see schemaLocation attribute on XmlValidator except that the schema locations are referring to schema's in the WSDL, schema1 refers to the first, schema2 refers to the second and so on</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSchemaLocationToAdd(String) schemaLocationToAdd}</td><td>Pairs of URI references which will be added to the WSDL</td><td>&nbsp;</td></tr>
  * </table>
  * 
  * @author Michiel Meeuwissen
@@ -83,6 +85,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	
 	private String wsdl;
 	private Definition definition;
+	private String schemaLocationToAdd;
 
 	public void setWsdl(String wsdl) throws ConfigurationException {
 		this.wsdl = wsdl;
@@ -165,6 +168,19 @@ public class WsdlXmlValidator extends SoapValidator {
 			xsd.init();
 			xsds.add(xsd);
 		}
+		if (StringUtils.isNotEmpty(getSchemaLocationToAdd())) {
+			StringTokenizer st = new StringTokenizer(getSchemaLocationToAdd(), ", \t\r\n\f");
+			while (st.hasMoreTokens()) {
+				XSD xsd = new XSD();
+				xsd.setClassLoader(classLoader);
+				xsd.setNamespace(st.nextToken());
+				if (st.hasMoreTokens()) {
+					xsd.setResource(st.nextToken());
+				}
+				xsd.init();
+				xsds.add(xsd);
+			}
+		}
 		List<Schema> schemas = new ArrayList<Schema>();
 		List types = definition.getTypes().getExtensibilityElements();
 		for (Iterator i = types.iterator(); i.hasNext();) {
@@ -222,6 +238,13 @@ public class WsdlXmlValidator extends SoapValidator {
 		return xsds;
 	}
 
+	public void setSchemaLocationToAdd(String schemaLocationToAdd) {
+		this.schemaLocationToAdd = schemaLocationToAdd;
+	}
+
+	public String getSchemaLocationToAdd() {
+		return schemaLocationToAdd;
+	}
 }
 
 class ClassLoaderWSDLLocator implements WSDLLocator {
