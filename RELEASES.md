@@ -132,6 +132,7 @@ Upcoming
 - Add property 'console.active' to enable the IBIS API/console
 - Add IAF Upgrade notification when new version is available
 - Add "webContent.dir" property to AppConstants properties
+- Add attribute type to GetFromSession
 
 
 ### Non backwards compatible changes

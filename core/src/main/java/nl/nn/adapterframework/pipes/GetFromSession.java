@@ -15,10 +15,15 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * Gets the contents of the {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession} by a key specified by
@@ -31,6 +36,12 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the output message from</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setType(String) type}</td><td>
+ * <ul>
+ * 	<li><code>string</code>: renders the contents</li>
+ * 	<li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;item name="..."&gt;...&lt;/item&gt;&lt;/items&gt;)</li>
+ * </ul>
+ * </td><td>string</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -48,7 +59,9 @@ import nl.nn.adapterframework.core.PipeRunResult;
  public class GetFromSession  extends FixedForwardPipe {
 
     private String sessionKey;
-	/**
+	private String type = null;
+
+    /**
      * checks wether the proper forward is defined.
      * @throws ConfigurationException
      */
@@ -69,9 +82,21 @@ public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeR
 	
 	if (result==null) {
 		log.warn(getLogPrefix(session)+"got null value from session under key ["+getSessionKey()+"]");
-	} else {
-		log.debug(getLogPrefix(session) +"got ["+result.toString()+"] from pipeLineSession under key ["+getSessionKey()+"]");
-	}
+		} else {
+			if (Parameter.TYPE_MAP.equals(getType()) && result instanceof Map) {
+				Map<String, String> items = (Map<String, String>) result;
+				XmlBuilder itemsXml = new XmlBuilder("items");
+				for (Iterator it = items.keySet().iterator(); it.hasNext();) {
+					String item = (String) it.next();
+					XmlBuilder itemXml = new XmlBuilder("item");
+					itemXml.addAttribute("name", item);
+					itemXml.setValue(items.get(item));
+					itemsXml.addSubElement(itemXml);
+				}
+				result = itemsXml.toXML();
+			}
+			log.debug(getLogPrefix(session) + "got [" + result.toString() + "] from pipeLineSession under key [" + getSessionKey() + "]");
+		}
 	
 	return new PipeRunResult(getForward(), result);
 }
@@ -90,5 +115,13 @@ public String getSessionKey() {
  */
 public void setSessionKey(String newSessionKey) {
 	sessionKey = newSessionKey;
+}
+
+public String getType() {
+	return type;
+}
+
+public void setType(String type) {
+	this.type = type;
 }
 }
