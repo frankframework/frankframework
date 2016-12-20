@@ -133,6 +133,7 @@ Upcoming
 - Add IAF Upgrade notification when new version is available
 - Add "webContent.dir" property to AppConstants properties
 - Add attribute type to GetFromSession
+- Fix optional headers in WSDL generator
 
 
 ### Non backwards compatible changes

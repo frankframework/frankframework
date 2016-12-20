@@ -103,8 +103,10 @@ public class Wsdl {
     private String inputRoot;
     private String outputRoot;
     private QName inputHeaderElement;
+    private boolean inputHeaderIsOptional = false;
     private QName inputBodyElement;
     private QName outputHeaderElement;
+    private boolean outputHeaderIsOptional = false;
     private QName outputBodyElement;
 
     private boolean httpActive = false;
@@ -386,10 +388,12 @@ public class Wsdl {
         }
         inputRoot = getRoot(inputValidator);
         inputHeaderElement = getHeaderElement(inputValidator, inputXsds);
+    	inputHeaderIsOptional = isHeaderOptional(inputValidator);
         inputBodyElement = getBodyElement(inputValidator, inputXsds, "inputValidator");
         if (outputValidator != null) {
             outputRoot = getRoot(outputValidator);
             outputHeaderElement = getHeaderElement(outputValidator, outputXsds);
+        	outputHeaderIsOptional = isHeaderOptional(outputValidator);
             outputBodyElement = getBodyElement(outputValidator, outputXsds, "outputValidator");
         }
         for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
@@ -400,6 +404,21 @@ public class Wsdl {
             }
         }
     }
+
+	protected boolean isHeaderOptional(XmlValidator xmlValidator) {
+		if (xmlValidator instanceof SoapValidator) {
+			String root = ((SoapValidator) xmlValidator).getSoapHeader();
+			if (StringUtils.isNotEmpty(root)) {
+				String[] roots = root.trim().split(",", -1);
+				for (int i = 0; i < roots.length; i++) {
+					if (roots[i].trim().length() == 0) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
 
     public Set<XSD> getXsds(XmlValidator xmlValidator)
             throws IOException, XMLStreamException, ConfigurationException {
@@ -553,21 +572,39 @@ public class Wsdl {
     protected void messages(XMLStreamWriter w) throws XMLStreamException, IOException, ConfigurationException {
         List<QName> parts = new ArrayList<QName>();
         if (inputHeaderElement != null) {
-            parts.add(inputHeaderElement);
+        	if (!inputHeaderIsOptional) {
+            	parts.add(inputHeaderElement);
+        	}
         }
         if (inputBodyElement != null) {
             parts.add(inputBodyElement);
         }
         message(w, inputRoot, parts);
+        if (inputHeaderIsOptional) {
+        	parts.clear();
+            if (inputHeaderElement != null) {
+               	parts.add(inputHeaderElement);
+            }
+            message(w, inputRoot + "_" + inputHeaderElement.getLocalPart(), parts);
+        }
         if (outputValidator != null) {
             parts.clear();
             if (outputHeaderElement != null) {
-                parts.add(outputHeaderElement);
+            	if (!outputHeaderIsOptional) {
+            		parts.add(outputHeaderElement);
+            	}
             }
             if (outputBodyElement != null) {
                 parts.add(outputBodyElement);
             }
             message(w, outputRoot, parts);
+            if (outputHeaderIsOptional) {
+            	parts.clear();
+                if (outputHeaderElement != null) {
+                   	parts.add(outputHeaderElement);
+                }
+                message(w, outputRoot + "_"+ outputHeaderElement.getLocalPart(), parts);
+            }
         }
     }
 
@@ -671,13 +708,13 @@ public class Wsdl {
             w.writeAttribute("style", "document");
             w.writeAttribute("soapAction", getSoapAction(listener));
             w.writeStartElement(WSDL_NAMESPACE, "input"); {
-                writeSoapHeader(w, inputRoot, inputHeaderElement);
+                writeSoapHeader(w, inputRoot, inputHeaderElement, inputHeaderIsOptional);
                 writeSoapBody(w, inputBodyElement);
             }
             w.writeEndElement();
             if (outputValidator != null) {
                 w.writeStartElement(WSDL_NAMESPACE, "output"); {
-                    writeSoapHeader(w, outputRoot, outputHeaderElement);
+                    writeSoapHeader(w, outputRoot, outputHeaderElement, outputHeaderIsOptional);
                     writeSoapBody(w, outputBodyElement);
                 }
                 w.writeEndElement();
@@ -686,12 +723,12 @@ public class Wsdl {
         w.writeEndElement();
     }
 
-    protected void writeSoapHeader(XMLStreamWriter w, String root, QName headerElement) throws XMLStreamException, IOException {
+    protected void writeSoapHeader(XMLStreamWriter w, String root, QName headerElement, boolean isHeaderOptional) throws XMLStreamException, IOException {
         if (headerElement != null) {
             w.writeEmptyElement(soapNamespace, "header");
             w.writeAttribute("part", "Part_" + headerElement.getLocalPart());
             w.writeAttribute("use", "literal");
-            w.writeAttribute("message", getTargetNamespacePrefix() + ":" + "Message_" + root);
+            w.writeAttribute("message", getTargetNamespacePrefix() + ":" + "Message_" + root + (isHeaderOptional ? "_" + headerElement.getLocalPart() : ""));
         }
     }
 
@@ -866,15 +903,20 @@ public class Wsdl {
     }
 
     protected QName getRootElement(Set<XSD> xsds, String root) {
-        for (XSD xsd : xsds) {
-            for (String rootTag : xsd.getRootTags()) {
-                if (root.equals(rootTag)) {
-                    String prefix = prefixByXsd.get(xsd);
-                    return new QName(namespaceByPrefix.get(prefix), root, prefix);
-                }
-            }
-        }
-        warn("Root element '" + root + "' not found in XSD's");
+		String firstRoot = null;
+		if (root.trim().length() > 0) {
+			String[] roots = root.trim().split(",", -1);
+			firstRoot = roots[0].trim();
+	    	for (XSD xsd : xsds) {
+	            for (String rootTag : xsd.getRootTags()) {
+	                if (firstRoot.equals(rootTag)) {
+	                    String prefix = prefixByXsd.get(xsd);
+	                    return new QName(namespaceByPrefix.get(prefix), firstRoot, prefix);
+	                }
+	            }
+	        }
+	        warn("Root element '" + firstRoot + "' not found in XSD's");
+		}
         return null;
     }
 
