@@ -199,7 +199,7 @@
 						</div>
 					</xsl:if>
 					<div>
-						uptime: <xsl:value-of select="$upTime"/>,
+						uptime: <xsl:value-of select="$upTime"/>
 					</div>
 					<div id="clock"/>
 				</p>
