@@ -20,65 +20,57 @@
 		<% out.write(XmlUtils.replaceNonValidXmlCharacters(request.getAttribute("configurations").toString())); %>
 	</xtags:parse>
 	<xtags:if test="count(//configuration) > 1">
-		<xtags:forEach select="//configuration">
-			<xtags:variable id="configuration" select="."/>
-			<% if (configuration.equals(session.getAttribute("configurationName"))) { %>
-				<image
-					type="<%=showAs%>"
-					alt="<% out.write(XmlUtils.encodeChars(configuration)); %>"
-					text="<% out.write(XmlUtils.encodeChars(configuration)); %>"
-				/>
-			<% } else { %>
-				<imagelink
-					href="showConfiguration.do"
-					type="<%=showAs%>"
-					alt="<% out.write(XmlUtils.encodeChars(configuration)); %>"
-					text="<% out.write(XmlUtils.encodeChars(configuration)); %>"
-					>
-					<parameter name="configuration"><%=java.net.URLEncoder.encode(configuration)%></parameter>
-				</imagelink>
-			<% } %>
-		</xtags:forEach>
+		<ul class="tab">
+			<xtags:forEach select="//configuration">
+				<xtags:variable id="configuration" select="."/>
+				<% if (configuration.equals(session.getAttribute("configurationName"))) { %>
+					<li class="active">
+						<% out.write(XmlUtils.encodeChars(configuration)); %>
+					</li>
+				<% } else { %>
+					<li>
+						<a
+							href="showConfiguration.do?configuration=<%=java.net.URLEncoder.encode(configuration)%>"
+							alt="<% out.write(XmlUtils.encodeChars(configuration)); %>"
+							text="<% out.write(XmlUtils.encodeChars(configuration)); %>"
+							>
+							<% out.write(XmlUtils.encodeChars(configuration)); %>
+						</a>
+					</li>
+				<% } %>
+			</xtags:forEach>
+		</ul>
 	</xtags:if>
-
-	<br/>
-	<br/>
-
-	<% if (AppConstants.getInstance().getBoolean("showConfiguration.original", false)) { %>
-		<imagelink
-				href="configHandler.do"
-				type="showashtml"
-				alt="showloadedconfig"
-				text="Show loaded configuration"
-				>
-				<parameter name="action">showloadedconfig</parameter>
-		</imagelink>
-	<% } else { %>
-		<image
-			type="showashtml"
-			alt="Show loaded configuration"
-			text="Show loaded configuration"
-		/>
-	<% } %>
-	<% if (AppConstants.getInstance().getBoolean("showConfiguration.original", false)) { %>
-		<image
-			type="showastext"
-			alt="Show original configuration"
-			text="Show original configuration"
-		/>
-	<% } else { %>
-		<imagelink
-				href="configHandler.do"
-				type="showastext"
-				alt="showoriginalconfig"
-				text="Show original configuration"
-				>
-				<parameter name="action">showoriginalconfig</parameter>
-		</imagelink>
-	<% } %>
-
-	<pre><bean:write name="configXML" scope="request" filter="true"/></pre>
-
+	<div class="tabpanel">
+		<br/>
+		<ul class="tab">
+			<% if (AppConstants.getInstance().getBoolean("showConfiguration.original", false)) { %>
+				<li id="showconfig">
+					<a
+						href="configHandler.do?action=showloadedconfig"
+						alt="showloadedconfig"
+						text="showloadedconfig">
+						showloadedconfig
+					</a>
+				</li>
+			<% } else { %>
+				<li class="active" id="showconfig">showloadedconfig</li>
+			<% } %>
+			<% if (AppConstants.getInstance().getBoolean("showConfiguration.original", false)) { %>
+				<li class="active" id="showconfig">showoriginalconfig</li>
+			<% } else { %>
+				<li>
+					<a id="showconfig"
+						href="configHandler.do?action=showoriginalconfig"
+						alt="showoriginalconfig"
+						text="showoriginalconfig">
+						showoriginalconfig
+					</a>
+				</li>
+			<% } %>
+		</ul>
+		<pre><bean:write name="configXML" scope="request" filter="true"/></pre>
+	</div>
 	<br/>
 	<br/>
 

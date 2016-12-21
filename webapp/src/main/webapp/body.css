@@ -41,3 +41,64 @@ BODY.prd_as {
 BODY.prd_ep {	
 		background-image: url('images/prd-ep.png');
 }
+ul.tab {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #b4e2ff;
+}
+
+/* Float the list items side by side */
+ul.tab li {
+	float: left;
+    border-radius:5px 5px 0px 0px;
+    box-shadow:-1px 1px 1px rgba(0,0,0,0.15);}
+    
+
+/* Style the links inside the list items */
+ul.tab li a {
+    display: inline-block;
+    color: black;
+    text-align: center;
+    padding: 5px 5px;
+    text-decoration: none;
+    transition: 0.3s;
+    font-size: 125%;
+    background-color:#D9E7EC;
+    border-radius:5px 5px 0px 0px;
+    box-shadow:-1px 1px 1px rgba(0,0,0,0.15);
+}
+
+/* Change background color of links on hover */
+ul.tab li a:hover {
+	background-color: #3e9ade;
+	color: white;
+	border-radius:5px 5px 0px 0px;
+    box-shadow:-1px 1px 1px rgba(0,0,0,0.15);}
+
+
+/* Create an active/current tablink class */
+ul.tab li a:focus, .active {
+	background-color: #3e9ade; 
+	display: inline-block;
+    color: white;
+    text-align: center;
+    padding: 5px 5px;
+    text-decoration: none;
+    transition: 0.3s;
+    font-size: 125%;
+    border-radius:5px 5px 0px 0px;
+    box-shadow:-1px 1px 1px rgba(0,0,0,0.15);}
+   
+.tabpanel {
+	border-color:#3e9ade;
+ 	border-style:solid;
+ 	border-width:3px;
+ 	border-top-width:5px;
+	}
+	
+#showconfig {
+	background-color:light-orange;
+	border-radius: 10px 10px 10px 10px;
+}

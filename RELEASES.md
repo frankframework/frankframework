@@ -136,7 +136,7 @@ Upcoming
 - Fix optional headers in WSDL generator
 - Extended classes for API management
 - Add fileNameSessionKey to FixedResult pipe
-
+- Replace links in "Show configuration (status)" by tabs 
 
 
 ### Non backwards compatible changes
