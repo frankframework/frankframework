@@ -71,6 +71,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapHeaderParam(String) soapHeaderParam}</td><td>name of parameter containing SOAP header</td><td>soapHeader</td></tr>
+ * <tr><td>{@link #setxPathLoggingKeys(String) xPathLoggingKeys}</td><td>comma separated list of all xPath keys that need to be logged. (Overrides <code>msg.log.keys</code> property)</td><td>&nbsp;</td></tr>
  * </table>
  * 
  * @author  Gerrit van Brakel
