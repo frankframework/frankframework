@@ -135,6 +135,8 @@ Upcoming
 - Add attribute type to GetFromSession
 - Fix optional headers in WSDL generator
 - Extended classes for API management
+- Add fileNameSessionKey to FixedResult pipe
+
 
 
 ### Non backwards compatible changes

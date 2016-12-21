@@ -25,6 +25,7 @@ import javax.xml.transform.TransformerException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -42,7 +43,7 @@ import org.apache.commons.lang.SystemUtils;
 
 /**
  * Provides an example of a pipe. It may return the contents of a file
- * (in the classpath) when <code>fileName</code> is specified, otherwise the
+ * (in the classpath) when <code>fileName</code> or <code>fileNameSessionKey</code> is specified, otherwise the
  * input of <code>returnString</code> is returned.
  *
  * <p><b>Configuration:</b>
@@ -51,8 +52,9 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedResult</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setFileName(String) fileName}</td>        <td>name of the file containing the resultmessage</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
+ * <tr><td>{@link #setFileName(String) fileName}</td><td>name of the file containing the resultmessage</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFileNameSessionKey(String) fileNameSessionKey}</td><td>name of the session key containing the file name of the file containing the result message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReturnString(String) returnString}</td><td>returned message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSubstituteVars(boolean) substituteVars}</td><td>Should values between ${ and } be resolved from the PipeLineSession (search order: 1) system properties 2) pipeLineSession variables 3) application properties)</td><td>False</td></tr>
  * <tr><td>{@link #setReplaceFrom(String) replaceFrom}</td><td>string to search for in the returned message</td><td>&nbsp;</td></tr>
@@ -78,6 +80,7 @@ import org.apache.commons.lang.SystemUtils;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
+ * <tr><td>"filenotfound"</td><td>file not found (when this forward isn't specified an exception will be thrown)</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
@@ -85,8 +88,11 @@ import org.apache.commons.lang.SystemUtils;
  */
 public class FixedResult extends FixedForwardPipe {
 	
+	private final static String FILE_NOT_FOUND_FORWARD = "filenotfound";
+	
 	AppConstants appConstants;
     private String fileName;
+    private String fileNameSessionKey;
     private String returnString;
     private boolean substituteVars=false;
 	private String replaceFrom = null;
@@ -98,9 +104,9 @@ public class FixedResult extends FixedForwardPipe {
     /**
      * checks for correct configuration, and translates the fileName to
      * a file, to check existence. 
-     * If a fileName was specified, the contents of the file is put in the
-     * <code>returnString</code>, so that allways the <code>returnString</code>
-     * may be returned.
+     * If a fileName or fileNameSessionKey was specified, the contents of the file is put in the
+     * <code>returnString</code>, so that the <code>returnString</code>
+     * may always be returned.
      * @throws ConfigurationException
      */
     public void configure() throws ConfigurationException {
@@ -122,8 +128,8 @@ public class FixedResult extends FixedForwardPipe {
                 throw new ConfigurationException(getLogPrefix(null)+"got exception loading ["+getFileName()+"]", e);
             }
         }
-        if ((StringUtils.isEmpty(fileName)) && returnString==null) {  // allow an empty returnString to be specified
-            throw new ConfigurationException(getLogPrefix(null)+"has neither fileName nor returnString specified");
+        if ((StringUtils.isEmpty(fileName)) && (StringUtils.isEmpty(fileNameSessionKey)) && returnString==null) {  // allow an empty returnString to be specified
+            throw new ConfigurationException(getLogPrefix(null)+"has neither fileName nor fileNameSessionKey nor returnString specified");
         }
 		if (StringUtils.isNotEmpty(replaceFrom)) {
 			returnString = replace(returnString, replaceFrom, replaceTo );
@@ -132,23 +138,37 @@ public class FixedResult extends FixedForwardPipe {
     
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		String result=returnString;
-		if (StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
+		if ((StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime())
+				|| StringUtils.isNotEmpty(getFileNameSessionKey())) {
+			String fileName = null;
+			if (StringUtils.isNotEmpty(getFileNameSessionKey())) {
+				fileName = (String)session.get(fileNameSessionKey);
+			}
+			if (fileName == null) {
+				if (StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
+					fileName = getFileName();
+				}
+			}
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(classLoader, getFileName());
+				resource = ClassUtils.getResourceURL(classLoader, fileName);
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+getFileName()+"]", e);
+				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+fileName+"]", e);
 			}
-			if (resource==null) {
-				throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+getFileName()+"]");
+			if (resource == null) {
+				PipeForward fileNotFoundForward = findForward(FILE_NOT_FOUND_FORWARD);
+				if (fileNotFoundForward != null) {
+					return new PipeRunResult(fileNotFoundForward, input);
+				} else {
+					throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+fileName+"]");
+				}
 			}
 			try {
 				result = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+getFileName()+"]", e);
+				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+fileName+"]", e);
 			}
 		}
-
 		if (getParameterList()!=null) {
 			ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session);
 			ParameterValueList pvl;
@@ -236,6 +256,16 @@ public class FixedResult extends FixedForwardPipe {
     }
 	public String getFileName() {
 		return fileName;
+	}
+	
+	/**
+	 * @param filenameSessionKey the session key that contains the name of the file
+	 */
+	public void setFileNameSessionKey(String filenameSessionKey) {
+		this.fileNameSessionKey = filenameSessionKey;
+	}
+	public String getFileNameSessionKey() {
+		return fileNameSessionKey;
 	}
 
     public void setReturnString(String returnString) {
