@@ -136,7 +136,8 @@ Upcoming
 - Fix optional headers in WSDL generator
 - Extended classes for API management
 - Add fileNameSessionKey to FixedResult pipe
-- Replace links by tabs in "Show configuration", "Show configuration status" and "Show Environment variables" 
+- Replace links by tabs in "Show configuration", "Show configuration status" and "Show Environment variables"
+- Ladybug: Prevent NPE with regexFilter when new thread is started (e.g. with ParallelSenders)
 
 
 ### Non backwards compatible changes
