@@ -20,15 +20,18 @@ import nl.nn.adapterframework.pipes.WsdlXmlValidator;
 
 /**
  * Extension to WsdlXmlValidator for API Management.
- *
+ * 
  * @author Peter Leeuwenburgh
  */
 
 public class ApiWsdlXmlValidator extends WsdlXmlValidator {
+	protected static final String API_NAMESPACE = "http://api.nn.nl/MessageHeader";
 
 	public void configure() throws ConfigurationException {
 		setSoapHeader("MessageHeader,");
-		setSchemaLocationToAdd("http://api.nn.nl/MessageHeader /xml/xsd/api/MessageHeader.xsd");
+		setSoapHeaderNamespace(API_NAMESPACE);
+		setSchemaLocationToAdd(API_NAMESPACE
+				+ " /xml/xsd/api/MessageHeader.xsd");
 		setAddNamespaceToSchema(true);
 		super.configure();
 	}

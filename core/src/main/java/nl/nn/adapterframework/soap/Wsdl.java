@@ -903,6 +903,10 @@ public class Wsdl {
     }
 
     protected QName getRootElement(Set<XSD> xsds, String root) {
+    	return getRootElement(xsds, root, null);
+    }
+
+    protected QName getRootElement(Set<XSD> xsds, String root, String namespace) {
 		String firstRoot = null;
 		if (root.trim().length() > 0) {
 			String[] roots = root.trim().split(",", -1);
@@ -910,12 +914,18 @@ public class Wsdl {
 	    	for (XSD xsd : xsds) {
 	            for (String rootTag : xsd.getRootTags()) {
 	                if (firstRoot.equals(rootTag)) {
-	                    String prefix = prefixByXsd.get(xsd);
-	                    return new QName(namespaceByPrefix.get(prefix), firstRoot, prefix);
+	                	if (StringUtils.isEmpty(namespace) || namespace.equals(xsd.getNamespace())) {
+		                    String prefix = prefixByXsd.get(xsd);
+		                    return new QName(namespaceByPrefix.get(prefix), firstRoot, prefix);
+	                	}
 	                }
 	            }
 	        }
-	        warn("Root element '" + firstRoot + "' not found in XSD's");
+        	if (StringUtils.isEmpty(namespace)) {
+        		warn("Root element '" + firstRoot + "' not found in XSD's");
+        	} else {
+        		warn("Root element '" + firstRoot + "' with namespace '" + namespace + "' not found in XSD's");
+        	}
 		}
         return null;
     }
@@ -923,8 +933,9 @@ public class Wsdl {
     protected QName getHeaderElement(XmlValidator xmlValidator, Set<XSD> xsds) {
         if (xmlValidator instanceof SoapValidator) {
             String root = ((SoapValidator)xmlValidator).getSoapHeader();
+            String namespace = ((SoapValidator)xmlValidator).getSoapHeaderNamespace();
             if (StringUtils.isNotEmpty(root)) {
-                return getRootElement(xsds, root);
+                return getRootElement(xsds, root, namespace);
             }
         }
         return null;

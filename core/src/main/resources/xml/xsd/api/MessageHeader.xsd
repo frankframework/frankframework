@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://api.nn.nl/MessageHeader" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://api.nn.nl/MessageHeader" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:element name="MessageHeader" type="MessageHeaderType"/>
+	<xsd:complexType name="MessageHeaderType">
+		<xsd:sequence>
+			<xsd:element name="HeaderFields" type="HeaderFieldType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="HeaderFieldType">
+		<xsd:sequence>
+			<xsd:element name="ConversationId" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Global Unique Identifier (GUID) for the one particular Conversation a message participates in.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

@@ -38,6 +38,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setRoot(String) root}</td><td>always Envelope (not allowed to change)</td><td>Envelope</td></tr>
  * <tr><td>{@link #setSoapBody(String) soapBody}</td><td>name of the child element of the SOAP body. Or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapHeader(String) soapHeader}</td><td>name of the child element of the SOAP header. Or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSoapHeaderNamespace(String) soapHeaderNamespace}</td><td>can be used when the soap header element exists multiple times</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapVersion(String) soapVersion}</td><td>SOAP envelope XSD version to use: 1.1, 1.2 or any (both 1.1 and 1.2)</td><td>1.1</td></tr>
  * </table>
  *
@@ -50,6 +51,7 @@ public class SoapValidator extends XmlValidator {
 
     private String soapBody    = "";
     private String soapHeader  = "";
+    private String soapHeaderNamespace  = "";
     private String soapVersion = "1.1";
 
     private SoapVersion[] versions = new SoapVersion[] {SoapVersion.fromAttribute("1.1")};
@@ -118,6 +120,14 @@ public class SoapValidator extends XmlValidator {
 
     public String getSoapHeader() {
         return soapHeader;
+    }
+
+    public void setSoapHeaderNamespace(String soapHeaderNamespace) {
+        this.soapHeaderNamespace = soapHeaderNamespace;
+    }
+
+    public String getSoapHeaderNamespace() {
+        return soapHeaderNamespace;
     }
 
     public void setSoapVersion(String soapVersion) {
