@@ -138,6 +138,7 @@ Upcoming
 - Add fileNameSessionKey to FixedResult pipe
 - Replace links by tabs in "Show configuration", "Show configuration status" and "Show Environment variables"
 - Ladybug: Prevent NPE with regexFilter when new thread is started (e.g. with ParallelSenders)
+- Fix soapAction.xsl now works regardless of possible namespaces
 
 
 ### Non backwards compatible changes

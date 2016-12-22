@@ -7,7 +7,7 @@
 	<xsl:variable name="escDot" select="'\.'"/>
 	<xsl:template match="/">
 		<xsl:variable name="toLoc">
-			<xsl:value-of select="Envelope/Header/MessageHeader/To/Location"/>
+			<xsl:value-of select="/*[local-name() ='Envelope']/*[local-name() ='Header']/*[local-name() ='MessageHeader']/*[local-name() ='To']/*[local-name() ='Location']"/>
 		</xsl:variable>
 		<xsl:if test="string-length($toLoc)&gt;0 and contains($toLoc,$dot)">
 			<xsl:variable name="messagingLayer" select="substring-before($toLoc,$dot)"/>
