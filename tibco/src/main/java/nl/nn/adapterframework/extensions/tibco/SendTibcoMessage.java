@@ -15,7 +15,6 @@
  */
 package nl.nn.adapterframework.extensions.tibco;
 
-import java.io.IOException;
 import java.net.URL;
 
 import javax.jms.Connection;
@@ -28,20 +27,15 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 
 import org.apache.commons.lang.StringUtils;
@@ -89,7 +83,7 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
  * </p>
  * 
  * @author Peter Leeuwenburgh
- * @version $Id: SendTibcoMessage.java,v 1.9 2016/12/21 10:58:06 m99f706 Exp $
+ * @version $Id: SendTibcoMessage.java,v 1.13 2016/12/22 13:59:24 m99f706 Exp $
  */
 
 public class SendTibcoMessage extends TimeoutGuardPipe {
@@ -168,6 +162,19 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		soapAction_work = getParameterValue(pvl, "soapAction");
 		if (soapAction_work == null)
 			soapAction_work = getSoapAction();
+
+		if (StringUtils.isEmpty(soapAction_work) && !StringUtils.isEmpty(queueName_work)) {
+			String[] q = queueName_work.split("\\.");
+			if (q.length>0) {
+				if (q[0].equalsIgnoreCase("P2P") && q.length>=4) {
+					soapAction_work = q[3];
+				} else if (q[0].equalsIgnoreCase("ESB") && q.length==8) {
+					soapAction_work = q[5] + "_" + q[6];
+				} else if (q[0].equalsIgnoreCase("ESB") && q.length>8) {
+					soapAction_work = q[6] + "_" + q[7];
+				}
+			}
+		}
 
 		if (StringUtils.isEmpty(soapAction_work)) {
 			log.debug(getLogPrefix(session) + "deriving default soapAction");
