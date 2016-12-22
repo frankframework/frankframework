@@ -139,6 +139,7 @@ Upcoming
 - Replace links by tabs in "Show configuration", "Show configuration status" and "Show Environment variables"
 - Ladybug: Prevent NPE with regexFilter when new thread is started (e.g. with ParallelSenders)
 - Fix soapAction.xsl now works regardless of possible namespaces
+- Fix SendTibcoMessage now uses soapAction.xsl to derive the default soapAction
 
 
 ### Non backwards compatible changes
