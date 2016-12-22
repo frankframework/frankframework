@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.util.ClassUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -59,7 +60,7 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  * @since   4.7  
  */
-public class ResultBlock2Sender extends Result2StringWriter {
+public class ResultBlock2Sender extends Result2StringWriter implements PipeAware {
 
 	private ISender sender = null; 
 	private Map counters = new HashMap();
@@ -78,6 +79,9 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		}
 		if (StringUtils.isEmpty(sender.getName())) {
 			sender.setName("sender of "+getName());
+		}
+		if (getSender() instanceof PipeAware) {
+			((PipeAware)getSender()).setPipe(getPipe());
 		}
 		sender.configure();		
 	}

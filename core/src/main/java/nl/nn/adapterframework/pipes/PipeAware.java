@@ -13,17 +13,19 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.pipes;
+
+import nl.nn.adapterframework.core.IPipe;
 
 /**
- * When a sender implements this interface it will get a reverence to the
- * SenderWrapperPipe.
+ * When a sender implements this interface it will get a reference to the Pipe.
  * 
- * @author Peter Leeuwenburgh
+ * @author Jaco de Groot
  *
  */
-public interface SenderWrapperAware {
+public interface PipeAware {
 
-	public void setSenderWrapper(SenderWrapper senderWrapper);
+	public void setPipe(AbstractPipe pipe);
+	public AbstractPipe getPipe();
 
 }

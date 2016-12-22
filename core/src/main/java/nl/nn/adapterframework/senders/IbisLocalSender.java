@@ -26,9 +26,9 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
-import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.pipes.MessageSendingPipeAware;
+import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.Misc;
@@ -96,10 +96,10 @@ import org.apache.commons.lang.exception.ExceptionUtils;
  * @author Gerrit van Brakel
  * @since  4.2
  */
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, MessageSendingPipeAware, SenderWrapperAware {
+public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, PipeAware {
 	
 	private String name;
-	private MessageSendingPipe messageSendingPipe;
+	private AbstractPipe pipe;
 	private SenderWrapper senderWrapper;
 	private Configuration configuration;
 	private String serviceName;
@@ -128,15 +128,14 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			throw new ConfigurationException(getLogPrefix()+"serviceName and javaListener cannot be specified both");
 		}
 		if (configuration == null) {
-			if (messageSendingPipe != null) {
-				configuration = messageSendingPipe.getPipeLine().getAdapter()
+			if (pipe != null) {
+				configuration = pipe.getPipeLine().getAdapter()
 						.getConfiguration();
 			} else {
 				if (senderWrapper != null) {
-					if (senderWrapper instanceof MessageSendingPipeAware) {
-						configuration = ((MessageSendingPipeAware) senderWrapper)
-								.getMessageSendingPipe().getPipeLine()
-								.getAdapter().getConfiguration();
+					if (senderWrapper instanceof PipeAware) {
+						configuration = ((PipeAware) senderWrapper).getPipe()
+								.getPipeLine().getAdapter().getConfiguration();
 					}
 				}
 			}
@@ -274,11 +273,11 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		return name;
 	}
 
-	public void setMessageSendingPipe(MessageSendingPipe messageSendingPipe) {
-		this.messageSendingPipe = messageSendingPipe;
+	public void setPipe(AbstractPipe pipe) {
+		this.pipe = pipe;
 	}
-	public MessageSendingPipe getMessageSendingPipe() {
-		return messageSendingPipe;
+	public AbstractPipe getPipe() {
+		return pipe;
 	}
 
 	public void setSenderWrapper(SenderWrapper senderWrapper) {

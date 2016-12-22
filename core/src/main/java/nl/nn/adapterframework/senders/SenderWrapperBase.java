@@ -23,6 +23,8 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.pipes.AbstractPipe;
+import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.processors.SenderWrapperProcessor;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -50,17 +52,16 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled {
+public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled, PipeAware {
 
 	private String getInputFromSessionKey; 
 	private String getInputFromFixedValue=null;
 	private String storeResultInSessionKey; 
 	private boolean preserveInput=false; 
 	protected SenderWrapperProcessor senderWrapperProcessor;
-	
 	private ICacheAdapter cache=null;
+	private AbstractPipe pipe;
 
-	
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!isSenderConfigured()) {
@@ -145,6 +146,13 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	public void setSenderWrapperProcessor(SenderWrapperProcessor senderWrapperProcessor) {
 		this.senderWrapperProcessor = senderWrapperProcessor;
+	}
+
+	public void setPipe(AbstractPipe pipe) {
+		this.pipe = pipe;
+	}
+	public AbstractPipe getPipe() {
+		return pipe;
 	}
 
 }

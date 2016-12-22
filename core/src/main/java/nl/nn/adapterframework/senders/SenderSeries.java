@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -67,6 +68,9 @@ public class SenderSeries extends SenderWrapperBase {
 	public void configure() throws ConfigurationException {
 		for (Iterator it=senderList.iterator();it.hasNext();) {
 			ISender sender = (ISender)it.next();
+			if (sender instanceof PipeAware) {
+				((PipeAware)sender).setPipe(getPipe());
+			}
 			sender.configure();
 		}
 		super.configure();

@@ -286,8 +286,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			}
 	
 			try {
-				if (getSender() instanceof MessageSendingPipeAware) {
-					((MessageSendingPipeAware)getSender()).setMessageSendingPipe(this);
+				if (getSender() instanceof PipeAware) {
+					((PipeAware)getSender()).setPipe(this);
 				}
 				getSender().configure();
 			} catch (ConfigurationException e) {
