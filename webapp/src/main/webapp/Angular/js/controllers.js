@@ -44,9 +44,14 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
                     appConstants = $.extend(appConstants, data["Application Constants"]);
                     Hooks.call("appConstants", data);
                     var idleTime = (parseInt(appConstants["console.idle.time"]) > 0) ? parseInt(appConstants["console.idle.time"]) : false;
-                    var idleTimeout = (parseInt(appConstants["console.idle.timeout"]) > 0) ? parseInt(appConstants["console.idle.timeout"]) : false;
-                    Idle.setIdle(idleTime);
-                    Idle.setTimeout(idleTimeout);
+                    if(idleTime > 0) {
+	                    var idleTimeout = (parseInt(appConstants["console.idle.timeout"]) > 0) ? parseInt(appConstants["console.idle.timeout"]) : false;
+	                    Idle.setIdle(idleTime);
+	                    Idle.setTimeout(idleTimeout);
+                    }
+                    else {
+                        Idle.unwatch();
+                    }
                 }
             });
         }
@@ -125,7 +130,7 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
 
         Api.Get("adapters", function(allAdapters) {
             Hooks.call("adaptersLoaded", allAdapters);
-            
+
             $scope.adapters = allAdapters;
             $scope.displayAdapters = [];
             for(adapter in allAdapters) {
@@ -158,10 +163,9 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
                         data.status = data.started ? ((data.receiverStopped) ? 'warning' : 'started') : 'stopped';
                         $scope.adapters[data.name] = data;
 
-                        updateMessageSummary();
                         Hooks.call("adapterUpdated", data);
                     }
-                });
+                }, true);
             }
         }, function() {
             $scope.addAlert('danger', "An error occured while trying to load adapters!");
@@ -183,6 +187,7 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
         }
         $scope.messageSummary = summary;
     }
+    $interval(updateMessageSummary, 5000);
 
     Hooks.register("adapterUpdated:once", function(adapter) {
         if($location.hash()) {

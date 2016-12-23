@@ -81,19 +81,19 @@ angular.module('iaf.beheerconsole')
         var data = {};
         this.createPollerObject = function(uri, callback) {
             this.uri = uri;
-            this.waiting = false;
-            this.pollerInterval = appConstants["console.pollerInterval"]; //Default to 2 seconds.
+            this.waiting = true;
+            this.pollerInterval = appConstants["console.pollerInterval"];
             this.ai = {
                 list: [],
                 avg: 0,
                 push: function(obj) {
                     this.list.push(obj);
-                    if(this.list.length == 10) {
+                    if(this.list.length == 5) {
                         var tmp = 0;
                         for (var i = this.list.length - 1; i >= 0; i--) {
                             tmp += this.list[i];
                         }
-                        this.avg = Math.round((tmp / 10) / 100 ) * 100;
+                        this.avg = Math.round((tmp / this.list.length) / 100 ) * 100;
                         this.list = [];
                         return this.avg;
                     }
@@ -103,6 +103,8 @@ angular.module('iaf.beheerconsole')
             this.stop = function() {
                 if(!this.started()) return;
 
+                this.ai.list = [];
+                this.ai.avg = 0;
                 if(this.waiting)
                     clearTimeout(this.poller);
                 else
@@ -127,7 +129,7 @@ angular.module('iaf.beheerconsole')
                     if(this.lastPolled) {
                         var timeBetweenLastPolledAndNow = now - this.lastPolled;
                         var interval = this.ai.push(timeBetweenLastPolledAndNow);
-                        if(interval > 0) {
+                        if(interval > 0 && interval > this.pollerInterval) {
                             this.changeInterval(interval, false);
                             this.waitForResponse(false);
                             return;
@@ -150,23 +152,32 @@ angular.module('iaf.beheerconsole')
                 this.stop();
                 delete this.lastPolled;
                 this.waiting = !!bool;
+                if(bool != this.waiting)
+                    console.warn("waitForResponse for " + this.uri + " changed to: " + bool);
                 this.start();
             };
             this.restart = function() {
                 this.stop();
                 this.start();
             };
-            this.start();
         },
         this.changeInterval = function(uri, interval) {
+            data[uri].waitForResponse(true);
             data[uri].changeInterval(interval);
         },
-        this.add = function (uri, callback) {
-            data[uri] = new this.createPollerObject(uri, callback);
+        this.add = function (uri, callback, autoStart) {
+            var poller = new this.createPollerObject(uri, callback);
+            data[uri] = poller;
+            if(!!autoStart)
+                poller.start();
+            return poller;
         },
         this.remove = function (uri) {
             data[uri].stop();
             delete data[uri];
+        },
+        this.get = function (uri) {
+            return data[uri];
         },
         this.getAll = function () {
             var list = [];
