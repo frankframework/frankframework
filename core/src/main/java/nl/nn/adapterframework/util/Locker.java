@@ -74,6 +74,7 @@ import org.apache.commons.lang.StringUtils;
  * @author  Peter Leeuwenburgh
  */
 public class Locker extends JdbcFacade {
+	private static final String LOCK_IGNORED="%null%";
 
 	private String name;
 	private String objectId;
@@ -86,6 +87,7 @@ public class Locker extends JdbcFacade {
 	private int numRetries = 0;
 	private int firstDelay = 10000;
 	private int retryDelay = 10000;
+	private boolean ignoreTableNotExist = false;
 
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getObjectId())) {
@@ -111,6 +113,24 @@ public class Locker extends JdbcFacade {
 	}
 
 	public String lock() throws JdbcException, SQLException, InterruptedException {
+		Connection conn = getConnection();
+		try {
+			if (!JdbcUtil.tableExists(conn, "ibisLock")) {
+				if (isIgnoreTableNotExist()) {
+					log.info("table [ibisLock] does not exist, ignoring lock");
+					return LOCK_IGNORED;
+				} else {
+					throw new JdbcException("table [ibisLock] does not exist");
+				}
+			}
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				log.error("error closing JdbcConnection", e);
+			}
+		}
+		
 		String objectIdWithSuffix = null;
 		int r = -1;
 		while (objectIdWithSuffix == null && (numRetries == -1 || r < numRetries)) {
@@ -128,7 +148,6 @@ public class Locker extends JdbcFacade {
 				objectIdWithSuffix = objectIdWithSuffix.concat(formattedDate);
 			}
 			log.debug("preparing to set lock [" + objectIdWithSuffix + "]");
-			Connection conn;
 			conn = getConnection();
 			try {
 				PreparedStatement stmt = conn.prepareStatement(insertQuery);			
@@ -168,22 +187,26 @@ public class Locker extends JdbcFacade {
 	}
 
 	public void unlock(String objectIdWithSuffix) throws JdbcException, SQLException {
-		if (getType().equalsIgnoreCase("T")) {
-			log.debug("preparing to remove lock [" + objectIdWithSuffix + "]");
+		if (LOCK_IGNORED.equals(objectIdWithSuffix)) {
+			log.info("lock not set, ignoring unlock");
+		} else {
+			if (getType().equalsIgnoreCase("T")) {
+				log.debug("preparing to remove lock [" + objectIdWithSuffix + "]");
 
-			Connection conn;
-			conn = getConnection();
-			try {
-				PreparedStatement stmt = conn.prepareStatement(deleteQuery);			
-				stmt.clearParameters();
-				stmt.setString(1,objectIdWithSuffix);
-				stmt.executeUpdate();
-				log.debug("lock ["+objectIdWithSuffix+"] removed");
-			} finally {
+				Connection conn;
+				conn = getConnection();
 				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.error("error closing JdbcConnection", e);
+					PreparedStatement stmt = conn.prepareStatement(deleteQuery);			
+					stmt.clearParameters();
+					stmt.setString(1,objectIdWithSuffix);
+					stmt.executeUpdate();
+					log.debug("lock ["+objectIdWithSuffix+"] removed");
+				} finally {
+					try {
+						conn.close();
+					} catch (SQLException e) {
+						log.error("error closing JdbcConnection", e);
+					}
 				}
 			}
 		}
@@ -254,5 +277,13 @@ public class Locker extends JdbcFacade {
 
 	public void setRetryDelay(int retryDelay) {
 		this.retryDelay = retryDelay;
+	}
+
+	public void setIgnoreTableNotExist(boolean b) {
+		ignoreTableNotExist = b;
+	}
+
+	public boolean isIgnoreTableNotExist() {
+		return ignoreTableNotExist;
 	}
 }

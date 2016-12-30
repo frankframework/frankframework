@@ -5,6 +5,12 @@
 			cronExpression="${cleanup.database.cron}"
 			description="Run every day at a certain time (01:45) to cleanup the database"
 			function="cleanupDatabase"
-		/>
+		>
+			<locker
+				jmsRealm="jdbc"
+				objectId="CleanupDatabase"
+				ignoreTableNotExist="true"
+			/>
+		</job>
 	</scheduler>
 </module>

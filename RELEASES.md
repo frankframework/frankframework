@@ -141,6 +141,7 @@ Upcoming
 - Fix soapAction.xsl now works regardless of possible namespaces
 - Fix SendTibcoMessage now uses soapAction.xsl to derive the default soapAction
 - Add adapterToRunBeforeOnEmptyInput attribute to PipeLine
+- Add locker (with ignoreTableNotExist) to job CleanupDatabase
 
 
 ### Non backwards compatible changes
