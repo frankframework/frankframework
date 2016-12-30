@@ -83,6 +83,7 @@ import org.springframework.transaction.TransactionDefinition;
  * <tr><td>{@link #setMessageSizeWarn(String) messageSizeWarn}</td><td>if messageSizeWarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged</td><td>application default (3MB)</td></tr>
  * <tr><td>{@link #setForceFixedForwarding(boolean) forceFixedForwarding}</td><td>forces that each pipe in the pipeline is not automatically added to the globalForwards table</td><td>application default</td></tr>
  * <tr><td>{@link #setTransformNullMessage(String) transformNullMessage}</td><td>when specified and <code>null</code> is received as a message the message is changed to the specified value</td><td></td></tr>
+ * <tr><td>{@link #setAdapterToRunBeforeOnEmptyInput(String) adapterToRunBeforeOnEmptyInput}</td><td>when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline</td><td></td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -165,6 +166,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	private long messageSizeWarn  = Misc.getMessageSizeWarnByDefault();
 	private boolean forceFixedForwarding = Misc.isForceFixedForwardingByDefault();
 	private String transformNullMessage = null;
+	private String adapterToRunBeforeOnEmptyInput = null;
 
 	private List<IPipeLineExitHandler> exitHandlers = new ArrayList<IPipeLineExitHandler>();
 	//private CongestionSensorList congestionSensors = new CongestionSensorList();
@@ -828,4 +830,10 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		return requestSizeStats;
 	}
 
+	public void setAdapterToRunBeforeOnEmptyInput(String s) {
+		adapterToRunBeforeOnEmptyInput = s;
+	}
+	public String getAdapterToRunBeforeOnEmptyInput() {
+		return adapterToRunBeforeOnEmptyInput;
+	}
 }

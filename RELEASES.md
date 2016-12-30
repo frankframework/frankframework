@@ -140,6 +140,7 @@ Upcoming
 - Ladybug: Prevent NPE with regexFilter when new thread is started (e.g. with ParallelSenders)
 - Fix soapAction.xsl now works regardless of possible namespaces
 - Fix SendTibcoMessage now uses soapAction.xsl to derive the default soapAction
+- Add adapterToRunBeforeOnEmptyInput attribute to PipeLine
 
 
 ### Non backwards compatible changes

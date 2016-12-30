@@ -21,6 +21,10 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -35,8 +39,6 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.log4j.Logger;
 
 /**
  * @author Jaco de Groot
@@ -56,6 +58,37 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		// the PipeLineResult
 		PipeLineResult pipeLineResult=new PipeLineResult();
 
+		if (object == null
+				|| (object instanceof String && StringUtils.isEmpty(object
+						.toString()))) {
+			if (StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
+				log.debug("running adapterBeforeOnEmptyInput");
+				IAdapter adapter = pipeLine
+						.getAdapter()
+						.getConfiguration()
+						.getIbisManager()
+						.getRegisteredAdapter(
+								pipeLine.getAdapterToRunBeforeOnEmptyInput());
+				if (adapter == null) {
+					log.warn("adapterToRunBefore with specified name ["
+							+ pipeLine.getAdapterToRunBeforeOnEmptyInput()
+							+ "] could not be retrieved");
+				} else {
+					PipeLineResult plr = adapter.processMessage(messageId,
+							message, pipeLineSession);
+					if (plr == null || !plr.getState().equals("success")) {
+						throw new PipeRunException(null, "adapterToRunBefore ["
+								+ pipeLine.getAdapterToRunBeforeOnEmptyInput()
+								+ "] ended with state [" + plr.getState() + "]");
+					}
+					message = plr.getResult();
+					log.debug("input after running adapterBeforeOnEmptyInput ["
+							+ message + "]");
+					object = (Object) message;
+				}
+			}
+		}
+		
 		// ready indicates wether the pipeline processing is complete
 		boolean ready=false;
 
