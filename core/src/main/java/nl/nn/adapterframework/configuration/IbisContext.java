@@ -312,17 +312,8 @@ public class IbisContext {
 					}
 					classLoaders.put(currentConfigurationName, classLoader);
 				}
-				String currentConfigurationVersion = null;
-				URL buildInfoUrl = ClassUtils.getResourceURL(classLoader, "BuildInfo.properties");
-				if (buildInfoUrl != null) {
-					Properties buildInfoPproperties = new Properties();
-					try {
-						buildInfoPproperties.load(buildInfoUrl.openStream());
-						currentConfigurationVersion = getConfigurationVersion(buildInfoPproperties);
-					} catch (IOException e) {
-						log(currentConfigurationName, currentConfigurationVersion, "error reading [BuildInfo.properties]", MessageKeeperMessage.ERROR_LEVEL, e);
-					}
-				}
+				String currentConfigurationVersion =
+						getConfigurationVersion(AppConstants.getInstance(classLoader));
 				Configuration configuration = null;
 				ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 				if (classLoader != null) {
