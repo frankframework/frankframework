@@ -87,10 +87,12 @@ public final class ShowConfigurationStatus extends ActionBase {
 		List<Configuration> configurations = ibisManager.getConfigurations();
 		XmlBuilder configurationAllXml = new XmlBuilder("configuration");
 		configurationAllXml.setValue(CONFIG_ALL);
+		configurationAllXml.addAttribute("nameUC","0" + Misc.toSortName(CONFIG_ALL));
 		configurationsXml.addSubElement(configurationAllXml);
 		for (Configuration configuration : configurations) {
 			XmlBuilder configurationXml = new XmlBuilder("configuration");
 			configurationXml.setValue(configuration.getConfigurationName());
+			configurationXml.addAttribute("nameUC","1" + Misc.toSortName(configuration.getConfigurationName()));
 			configurationsXml.addSubElement(configurationXml);
 		}
 		request.setAttribute("configurations", configurationsXml.toXML());
@@ -255,8 +257,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 			adapterXML.addAttribute("name",adapterName);
 			String adapterDescription = adapter.getDescription();
 			adapterXML.addAttribute("description",adapterDescription);
-			// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter 
-			adapterXML.addAttribute("nameUC",StringUtils.upperCase(StringUtils.replace(adapterName,"_", "*")));
+			adapterXML.addAttribute("nameUC",Misc.toSortName(adapterName));
 			adapterXML.addAttribute("started", ""+(adapterRunState.equals(RunStateEnum.STARTED)));
 			adapterXML.addAttribute("state", adapterRunState.toString());
 			if (adapterRunState.equals(RunStateEnum.STARTING)) {

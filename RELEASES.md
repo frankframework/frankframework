@@ -142,6 +142,7 @@ Upcoming
 - Fix SendTibcoMessage now uses soapAction.xsl to derive the default soapAction
 - Add adapterToRunBeforeOnEmptyInput attribute to PipeLine
 - Add locker (with ignoreTableNotExist) to job CleanupDatabase
+- Sort tabs in "Show configuration", "Show configuration status" and "Show Environment variables"
 
 
 ### Non backwards compatible changes
@@ -212,7 +213,6 @@ Upcoming
 - Add message to security log for 'Test a PipeLine'
 - Upgrade from Java 5 to Java 6
 - `(end of v6.1-RC3)`
-
 
 
 ### Non backwards compatible changes

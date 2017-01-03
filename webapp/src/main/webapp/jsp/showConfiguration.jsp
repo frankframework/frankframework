@@ -21,7 +21,7 @@
 	</xtags:parse>
 	<xtags:if test="count(//configuration) > 1">
 		<ul class="tab">
-			<xtags:forEach select="//configuration">
+			<xtags:forEach select="//configuration" sort="@nameUC">
 				<xtags:variable id="configuration" select="."/>
 				<% if (configuration.equals(session.getAttribute("configurationName"))) { %>
 					<li class="active">

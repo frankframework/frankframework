@@ -80,6 +80,7 @@ public class ShowEnvironmentVariables extends ActionBase {
 		for (Configuration configuration : configurations) {
 			XmlBuilder configurationXml = new XmlBuilder("configuration");
 			configurationXml.setValue(configuration.getConfigurationName());
+			configurationXml.addAttribute("nameUC",Misc.toSortName(configuration.getConfigurationName()));
 			configurationsXml.addSubElement(configurationXml);
 		}
 		request.setAttribute("configurations", configurationsXml.toXML());

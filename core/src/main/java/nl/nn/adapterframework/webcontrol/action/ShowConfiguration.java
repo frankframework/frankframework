@@ -32,6 +32,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -108,10 +109,12 @@ public final class ShowConfiguration extends ActionBase {
 		List<Configuration> configurations = ibisManager.getConfigurations();
 		XmlBuilder configurationAllXml = new XmlBuilder("configuration");
 		configurationAllXml.setValue(CONFIG_ALL);
+		configurationAllXml.addAttribute("nameUC","0" + Misc.toSortName(CONFIG_ALL));
 		configurationsXml.addSubElement(configurationAllXml);
 		for (Configuration configuration : configurations) {
 			XmlBuilder configurationXml = new XmlBuilder("configuration");
 			configurationXml.setValue(configuration.getConfigurationName());
+			configurationXml.addAttribute("nameUC","1" + Misc.toSortName(configuration.getConfigurationName()));
 			configurationsXml.addSubElement(configurationXml);
 		}
 		request.setAttribute("configurations", configurationsXml.toXML());
