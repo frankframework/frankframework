@@ -915,4 +915,9 @@ public class Misc {
 			return null;
 		}
 	}
+	
+	public static String toSortName(String name) {
+		// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter 
+		return StringUtils.upperCase(StringUtils.replace(name,"_", "*"));
+	}
 }
