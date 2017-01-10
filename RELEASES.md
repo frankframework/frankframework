@@ -143,6 +143,10 @@ Upcoming
 - Add adapterToRunBeforeOnEmptyInput attribute to PipeLine
 - Add locker (with ignoreTableNotExist) to job CleanupDatabase
 - Sort tabs in "Show configuration", "Show configuration status" and "Show Environment variables"
+- Add IBIS API endpoints: Browse JDBC, Execute JDBC queries, view serviceListeners, view securityItems
+- Add option to disable IBIS Console idleTimeout functionality
+- Add IBIS API docs to view all API endpoints
+- Add IAF upgrade notification when new IAF version has been released
 
 
 ### Non backwards compatible changes

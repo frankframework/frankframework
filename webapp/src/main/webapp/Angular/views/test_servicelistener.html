@@ -1,13 +1,13 @@
 <!-- Angular ui-router hack-->
 <div ui-view></div>
 
-<div class="wrapper wrapper-content animated fadeInRight" ng-controller="testService">
+<div class="wrapper wrapper-content animated fadeInRight" ng-controller="testServiceListner">
     <uib-alert ng-repeat="alert in state" type="{{alert.type}}">{{alert.message}}</uib-alert>
     <div class="row">
         <div class="col-lg-12">
             <div class="ibox float-e-margins">
                 <div class="ibox-title">
-                    <h4>Test a Service</h4>
+                    <h4>Test a ServiceListener</h4>
                 </div>
                 <div class="ibox-content">
                     <form role="form" ng-submit="submit(form)">
@@ -37,7 +37,7 @@
                                 <textarea class="form-control" name="message" rows="5" style="resize:none;" ng-model="form.message"></textarea>
                             </div>
                         </div>
-                        <div class="col-lg-9 m-t-md">
+                        <div class="col-lg-offset-3 col-lg-9 m-t-md">
                             <button class="btn btn-primary btn-w-m font-bold" type="submit">Send</button>
                         </div>
                     </form>

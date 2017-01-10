@@ -15,7 +15,18 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.servlet.ServletConfig;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.StatusType;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -24,7 +35,13 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
 * Baseclass to fetch ibisContext + ibisManager
@@ -38,6 +55,11 @@ public abstract class Base {
 	protected IbisContext ibisContext = null;
 	protected IbisManager ibisManager = null;
 
+	/**
+	 * Retrieves ibisContext and ibisManager from <code>servletConfig</code>.
+	 *
+	 * @param servletConfig serveletConfig to derive ibisContext from.
+	 */
 	protected void initBase(ServletConfig servletConfig) {
 		String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
 		ibisContext = (IbisContext) servletConfig.getServletContext().getAttribute(attributeKey);
@@ -50,5 +72,45 @@ public abstract class Base {
 		} else {
 			log.debug("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context attribute ["+attributeKey+"]");
 		}
+	}
+	
+	protected List<Map<String, String>> Xml2Map(String xml) {
+		List<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
+		Document xmlDoc = null;
+		try {
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			InputSource inputSource = new InputSource(new StringReader(xml));
+			xmlDoc = dBuilder.parse(inputSource);
+			xmlDoc.getDocumentElement().normalize();
+		}
+		catch (Exception e) {
+			return null;
+		}
+		NodeList rowset = xmlDoc.getElementsByTagName("row");
+		for (int i = 0; i < rowset.getLength(); i++) {
+			Element row = (Element) rowset.item(i);
+			NodeList fieldsInRowset = row.getChildNodes();
+			if (fieldsInRowset != null && fieldsInRowset.getLength() > 0) {
+				Map<String, String> tmp = new HashMap<String, String>();
+				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
+					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
+						Element field = (Element) fieldsInRowset.item(j);
+						tmp.put(field.getAttribute("name"), field.getTextContent());
+					}
+				}
+				resultList.add(tmp);
+			}
+		}
+		return resultList;
+	}
+
+	protected Response buildErrorResponse(String err) {
+		return buildErrorResponse(err, Response.Status.BAD_REQUEST);
+	}
+	protected Response buildErrorResponse(String err, StatusType responseStatus) {
+		String error = err.replace("\n", " ").replace(System.getProperty("line.separator"), " ");
+		error = StringEscapeUtils.escapeHtml(error);
+		return Response.status(responseStatus).type(MediaType.TEXT_PLAIN).entity(error).build();
 	}
 }

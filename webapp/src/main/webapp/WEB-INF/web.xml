@@ -22,7 +22,11 @@
 			nl.nn.adapterframework.webcontrol.api.ShowConfiguration,
 			nl.nn.adapterframework.webcontrol.api.ShowConfigurationStatus,
 			nl.nn.adapterframework.webcontrol.api.ShowEnvironmentVariables,
-			nl.nn.adapterframework.webcontrol.api.TestPipeline
+			nl.nn.adapterframework.webcontrol.api.TestPipeline,
+			nl.nn.adapterframework.webcontrol.api.TestServiceListener,
+			nl.nn.adapterframework.webcontrol.api.ShowSecurityItems,
+			nl.nn.adapterframework.webcontrol.api.BrowseJdbcTable,
+			nl.nn.adapterframework.webcontrol.api.ShowIbisstoreSummary,
 		</param-value>
 	</context-param>
 

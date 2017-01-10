@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.StringEscapeUtils;
-
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
@@ -56,7 +54,7 @@ public final class ExecuteJdbcQuery extends Base {
 
 	@GET
 	@RolesAllowed({"ObserverAccess", "IbisTester"})
-	@Path("/jdbc/query")
+	@Path("/jdbc")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getJdbcInfo() throws ApiException {
 		initBase(servletConfig);
@@ -64,9 +62,9 @@ public final class ExecuteJdbcQuery extends Base {
 		if (ibisManager == null) {
 			throw new ApiException("Config not found!");
 		}
-		
+
 		Map<String, Object> result = new HashMap<String, Object>();
-		
+
 		List<String> jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		if (jmsRealms.size() == 0)
 			jmsRealms.add("no realms defined");
@@ -76,7 +74,7 @@ public final class ExecuteJdbcQuery extends Base {
 		resultTypes.add("csv");
 		resultTypes.add("xml");
 		result.put("resultTypes", resultTypes);
-		
+
 		return Response.status(Response.Status.CREATED).entity(result).build();
 	}
 
@@ -87,12 +85,13 @@ public final class ExecuteJdbcQuery extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
-		
+
 		if (ibisManager == null) {
 			throw new ApiException("Config not found!");
 		}
+
 		String realm = null, resultType = null, query = null, queryType = "select", result = "", returnType = MediaType.APPLICATION_XML;
-		System.out.println(json.entrySet());
+		Object returnEntity = null;
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			if(key.equalsIgnoreCase("realm")) {
@@ -103,15 +102,18 @@ public final class ExecuteJdbcQuery extends Base {
 				if(resultType.equalsIgnoreCase("csv")) {
 					returnType = MediaType.TEXT_PLAIN;
 				}
+				if(resultType.equalsIgnoreCase("json")) {
+					returnType = MediaType.APPLICATION_JSON;
+				}
 			}
 			if(key.equalsIgnoreCase("query")) {
 				query = entry.getValue().toString();
 				if(query.toLowerCase().indexOf("select") == -1) queryType = "other";
 			}
 		}
-		
+
 		if(realm == null || resultType == null || query == null) {
-			return Response.status(Response.Status.BAD_REQUEST).build();
+			return buildErrorResponse("Missing data, realm, resultType and query are expected.");
 		}
 
 		//We have all info we need, lets execute the query!
@@ -132,21 +134,25 @@ public final class ExecuteJdbcQuery extends Base {
 						result = XmlUtils.transformXml(t,result);
 					}
 				}
-				
+
 				qs.close();
 			} catch (Throwable t) {
-				String error = t.toString().replace("\n", " ").replace(System.getProperty("line.separator"), " ");
-				result = StringEscapeUtils.escapeHtml(error);
-				result = "An error occured on executing jdbc query: "+result;
-				return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(result).build();
+				return buildErrorResponse("An error occured on executing jdbc query: "+t.toString());
 			}
 		} catch (Exception e) {
-			String error = e.toString().replace("\n", " ").replace(System.getProperty("line.separator"), " ");
-			result = StringEscapeUtils.escapeHtml(error);
-			result = "An error occured on creating or closing the connection: "+result;
-			return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(result).build();
+			return buildErrorResponse("An error occured on creating or closing the connection: "+e.toString());
 		}
-		
-		return Response.status(Response.Status.CREATED).type(returnType).entity(result).build();
+
+		if(resultType.equalsIgnoreCase("json")) {
+			if(XmlUtils.isWellFormed(result)) {
+				returnEntity = Xml2Map(result);
+			}
+			if(returnEntity == null)
+				return buildErrorResponse("Invalid query result.");
+		}
+		else
+			returnEntity = result;
+
+		return Response.status(Response.Status.CREATED).type(returnType).entity(returnEntity).build();
 	}
 }

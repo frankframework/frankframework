@@ -25,12 +25,14 @@ import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -179,13 +181,15 @@ public class Init extends Base {
 	}
 
 	@Context Dispatcher dispatcher;
+	@Context HttpServletRequest httpServletRequest;
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAllResources(){
+	public Response getAllResources(@QueryParam("allowedRoles") boolean displayAllowedRoles){
 		List<Object> resources = new ArrayList<Object>();
 
 		ResourceMethodRegistry registry = (ResourceMethodRegistry) dispatcher.getRegistry();
+		String requestPath = httpServletRequest.getRequestURI();
 
 		for (Map.Entry<String, List<ResourceInvoker>> entry : registry.getBounded().entrySet()) {
 			for (ResourceInvoker invoker : entry.getValue()) {
@@ -208,11 +212,11 @@ public class Init extends Base {
 
 				Path path = method.getAnnotation(Path.class);
 				if(path != null) {
-					resource.put("path", path.value());
+					resource.put("path", requestPath + path.value());
 				}
 
 				RolesAllowed rolesAllowed = method.getAnnotation(RolesAllowed.class);
-				if(rolesAllowed != null) {
+				if(rolesAllowed != null && displayAllowedRoles) {
 					resource.put("allowed", rolesAllowed.value());
 				}
 

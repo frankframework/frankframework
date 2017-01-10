@@ -107,9 +107,13 @@ public final class TestPipeline extends TimeoutGuardPipe {
 				for (String name : contentDispositionHeader) {
 					if ((name.trim().startsWith("filename"))) {
 						String[] tmp = name.split("=");
-						fileName = tmp[1].trim().replaceAll("\"","");          
+						fileName = tmp[1].trim().replaceAll("\"","");
 					}
 				}
+
+				if(fileEncoding == null || fileEncoding.isEmpty())
+					fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+
 				if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 					try {
 						processZipFile(result, file, fileEncoding, adapter, writeSecLogMessage);
@@ -177,6 +181,7 @@ public final class TestPipeline extends TimeoutGuardPipe {
 		return "";
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private PipeLineResult processMessage(IAdapter adapter, String message, boolean writeSecLogMessage) {
 		String messageId = "testmessage" + Misc.createSimpleUUID();
 		IPipeLineSession pls = new PipeLineSessionBase();

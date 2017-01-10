@@ -130,12 +130,12 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
             breadcrumbs: 'Test a PipeLine'
         }
     })
-    .state('pages.test_serviceListner', {
-        url: "/test-serviceListner",
-        templateUrl: "views/test_serviceListner.html",
+    .state('pages.test_servicelistener', {
+        url: "/test-serviceListener",
+        templateUrl: "views/test_servicelistener.html",
         data: {
-            pageTitle: 'Test a Service',
-            breadcrumbs: 'Test a Service'
+            pageTitle: 'Test a ServiceListener',
+            breadcrumbs: 'Test a ServiceListener'
         }
     })
     .state('pages.webservices', {

@@ -187,8 +187,8 @@ angular.module('iaf.beheerconsole')
             return list;
         };
     }]).service('Notification', ['$rootScope', '$timeout', function($rootScope, $timeout) {
-        var list = [];
-        var count = 0;
+        this.list = [];
+        this.count = 0;
         this.add = function(icon, title, msg, fn) {
             var obj = {
                 icon: icon,
@@ -197,13 +197,13 @@ angular.module('iaf.beheerconsole')
                 fn: (fn) ? fn: false,
                 time: new Date().getTime()
             };
-            list.unshift(obj);
-            obj.id = list.length;
-            count++;
+            this.list.unshift(obj);
+            obj.id = this.list.length;
+            this.count++;
         };
         this.get = function(id) {
-            for (var i = 0; i < list.length; i++) {
-                var notification = list[i];
+            for (var i = 0; i < this.list.length; i++) {
+                var notification = this.list[i];
                 if(notification.id == id) {
                     if(notification.fn) {
                         $timeout(function(){
@@ -217,14 +217,14 @@ angular.module('iaf.beheerconsole')
             return false;
         };
         this.resetCount = function() {
-            count = 0;
+            this.count = 0;
         };
         this.getCount = function() {
-            return count;
+            return this.count;
         };
         this.getLatest = function(amount) {
             if(amount < 1) amount = 1;
-            return list.slice(0, amount);
+            return this.list.slice(0, amount);
         };
     }]).service('Session', function() {
         this.get = function(key) {

@@ -15,8 +15,13 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.net.URL;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -53,7 +58,10 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
+import nl.nn.adapterframework.ftp.FtpSender;
+import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.RestListener;
+import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.jms.JmsListenerBase;
 import nl.nn.adapterframework.jms.JmsMessageBrowser;
@@ -61,6 +69,7 @@ import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunStateEnum;
 
@@ -335,7 +344,105 @@ public final class ShowConfigurationStatus extends Base {
 		
 		return Response.status(Response.Status.CREATED).entity(receiverInfo).build();
 	}
-	
+
+	private Map<String, Object> addCertificateInfo(WebServiceSender s) {
+		String certificate = s.getCertificate();
+		if (certificate == null || StringUtils.isEmpty(certificate))
+			return null;
+
+		Map<String, Object> certElem = new HashMap<String, Object>(4);
+		certElem.put("name", certificate);
+		String certificateAuthAlias = s.getCertificateAuthAlias();
+		certElem.put("authAlias", certificateAuthAlias);
+		URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
+		if (certificateUrl == null) {
+			certElem.put("url", null);
+			certElem.put("info", "*** ERROR ***");
+		} else {
+			certElem.put("url", certificateUrl.toString());
+			String certificatePassword = s.getCertificatePassword();
+			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
+			String keystoreType = s.getKeystoreType();
+			certElem.put("info", getCertificateInfo(certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain"));
+		}
+		return certElem;
+	}
+
+	private Map<String, Object> addCertificateInfo(HttpSender s) {
+		String certificate = s.getCertificate();
+		if (certificate == null || StringUtils.isEmpty(certificate))
+			return null;
+
+		Map<String, Object> certElem = new HashMap<String, Object>(4);
+		certElem.put("name", certificate);
+		String certificateAuthAlias = s.getCertificateAuthAlias();
+		certElem.put("authAlias", certificateAuthAlias);
+		URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
+		if (certificateUrl == null) {
+			certElem.put("url", "");
+			certElem.put("info", "*** ERROR ***");
+		} else {
+			certElem.put("url", certificateUrl.toString());
+			String certificatePassword = s.getCertificatePassword();
+			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
+			String keystoreType = s.getKeystoreType();
+			certElem.put("info", getCertificateInfo(certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain"));
+		}
+		return certElem;
+	}
+
+	private Map<String, Object> addCertificateInfo(FtpSender s) {
+		String certificate = s.getCertificate();
+		if (certificate == null || StringUtils.isEmpty(certificate))
+			return null;
+
+		Map<String, Object> certElem = new HashMap<String, Object>(4);
+		certElem.put("name", certificate);
+		String certificateAuthAlias = s.getCertificateAuthAlias();
+		certElem.put("authAlias", certificateAuthAlias);
+		URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
+		if (certificateUrl == null) {
+			certElem.put("url", "");
+			certElem.put("info", "*** ERROR ***");
+		} else {
+			certElem.put("url", certificateUrl.toString());
+			String certificatePassword = s.getCertificatePassword();
+			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
+			String keystoreType = s.getCertificateType();
+			certElem.put("info", getCertificateInfo(certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain"));
+		}
+		return certElem;
+	}
+
+	private ArrayList<Object> getCertificateInfo(final URL url, final String password, String keyStoreType, String prefix) {
+		ArrayList<Object> certificateList = new ArrayList<Object>();
+		try {
+			KeyStore keystore = KeyStore.getInstance(keyStoreType);
+			keystore.load(url.openStream(), password != null ? password.toCharArray() : null);
+			if (log.isInfoEnabled()) {
+				Enumeration<String> aliases = keystore.aliases();
+				while (aliases.hasMoreElements()) {
+					String alias = (String) aliases.nextElement();
+					ArrayList<Object> infoElem = new ArrayList<Object>();
+					infoElem.add(prefix + " '" + alias + "':");
+					Certificate trustedcert = keystore.getCertificate(alias);
+					if (trustedcert != null && trustedcert instanceof X509Certificate) {
+						X509Certificate cert = (X509Certificate) trustedcert;
+						infoElem.add("Subject DN: " + cert.getSubjectDN());
+						infoElem.add("Signature Algorithm: " + cert.getSigAlgName());
+						infoElem.add("Valid from: " + cert.getNotBefore());
+						infoElem.add("Valid until: " + cert.getNotAfter());
+						infoElem.add("Issuer: " + cert.getIssuerDN());
+					}
+					certificateList.add(infoElem);
+				}
+			}
+		} catch (Exception e) {
+			certificateList.add("*** ERROR ***");
+		}
+		return certificateList;
+	}
+
 	private ArrayList<Object> mapAdapterPipes(Adapter adapter) {
 		PipeLine pipeline = adapter.getPipeLine();
 		int totalPipes = pipeline.getPipes().size();
@@ -360,6 +467,24 @@ public final class ShowConfigurationStatus extends Base {
 				MessageSendingPipe msp=(MessageSendingPipe)pipe;
 				ISender sender = msp.getSender();
 				pipesInfo.put("sender", ClassUtils.nameOf(sender));
+				if (sender instanceof WebServiceSender) {
+					WebServiceSender s = (WebServiceSender) sender;
+					Map<String, Object> certInfo = addCertificateInfo(s);
+					if(certInfo != null)
+						pipesInfo.put("certificate", certInfo);
+				}
+				if (sender instanceof HttpSender) {
+					HttpSender s = (HttpSender) sender;
+					Map<String, Object> certInfo = addCertificateInfo(s);
+					if(certInfo != null)
+						pipesInfo.put("certificate", certInfo);
+				}
+				if (sender instanceof FtpSender) {
+					FtpSender s = (FtpSender) sender;
+					Map<String, Object> certInfo = addCertificateInfo(s);
+					if(certInfo != null)
+						pipesInfo.put("certificate", certInfo);
+				}
 				if (sender instanceof HasPhysicalDestination) {
 					pipesInfo.put("destination",((HasPhysicalDestination)sender).getPhysicalDestinationName());
 				}
@@ -403,7 +528,7 @@ public final class ShowConfigurationStatus extends Base {
 		}
 		return pipes;
 	}
-	
+
 	private ArrayList<Object> mapAdapterReceivers(Adapter adapter) {
 		ArrayList<Object> receivers = new ArrayList<Object>();
 		

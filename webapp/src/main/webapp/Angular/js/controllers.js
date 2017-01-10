@@ -107,8 +107,10 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
 
             var release = response.data[0]; //Not sure what ID to pick, smallest or latest?
             var newVersion = release.tag_name.substr(1);
-            var oldVersion = appConstants["application.version"];
-            var version = Misc.compare_version(newVersion, oldVersion);
+            var currentVersion = appConstants["application.version"];
+            var version = Misc.compare_version(newVersion, currentVersion);
+            console.log("Checking IAF version with remote...", "Comparing version: '"+currentVersion+"' with latest release: '"+newVersion+"'.");
+
             if(version > 0) {
                 $scope.release = release;
                 Notification.add('fa-exclamation-circle', "IAF update available!", false, function() {
@@ -434,17 +436,22 @@ function NotificationsCtrl($scope, Api, $stateParams, Hooks, Notification) {
     });
 };
 
-function ExecuteJdbcQuery($scope, Api, $timeout) {
+function ExecuteJdbcQuery($scope, Api, $timeout, $state) {
+    $scope.jmsRealms = {};
+    $scope.resultTypes = {};
     $scope.error = "";
-    Api.Get("jdbc/query", function(data) {
+    Api.Get("jdbc", function(data) {
         $scope.jmsRealms = data.jmsRealms;
         $scope.resultTypes = data.resultTypes;
     });
     $scope.submit = function(formData) {
-        if(!formData || !formData.realm || !formData.resultType || !formData.query) {
+        if(!formData || !formData.query) {
             $scope.error = "Please specify a jms realm, resulttype and query!";
             return;
         }
+        if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
+        if(!formData.resultType) formData.resultType = $scope.resultTypes[0] || false;
+
         Api.Post("jdbc/query", JSON.stringify(formData), function(returnData) {
             $scope.error = "";
             $scope.result = returnData;
@@ -455,18 +462,8 @@ function ExecuteJdbcQuery($scope, Api, $timeout) {
         });
     };
     $scope.reset = function() {
-        $scope.form.realm = "";
-        $scope.form.resultType = "";
         $scope.form.query = "";
         $scope.result = "";
-    };
-    $scope.cancel = function() {
-        swal({
-                title: "What does this do?",
-                type: "info",
-                showConfirmButton: false,
-                showCloseButton: true
-            });
     };
 };
 function ShowConfiguration($scope, Api) {
@@ -555,7 +552,7 @@ function test_pipeline($scope, Api, Alert, $interval) {
 };
 
 
-function testServiceListner($scope, Api, Alert, $interval) {
+function test_servicelistner($scope, Api, Alert, $interval) {
     $scope.state = [];
     $scope.file = null;
     $scope.addNote = function(type, message, removeQueue) {
@@ -595,7 +592,7 @@ function testServiceListner($scope, Api, Alert, $interval) {
             $scope.addNote("warning", "Please specify a file or message!");
             return;
         }
-        Api.Post("test-serviceListner", fd, function(returnData) {
+        Api.Post("test-servicelistener", fd, function(returnData) {
             var warnLevel = "success";
             if(returnData.state == "ERROR") warnLevel = "danger";
             $scope.addNote(warnLevel, returnData.state);
@@ -620,12 +617,11 @@ angular
     .controller('LogoutCtrl', LogoutCtrl)
     .controller('LoadingCtrl', LoadingCtrl)
     .controller('MainCtrl', MainCtrl)
-//    .controller('InformationCtrl', InformationCtrl)
     .controller('StatusCtrl', StatusCtrl)
     .controller('NotificationsCtrl', NotificationsCtrl)
     .controller('ExecuteJdbcQuery', ExecuteJdbcQuery)
     .controller('ShowConfiguration', ShowConfiguration)
     .controller('environment_variables', environment_variables)
     .controller('testPipeline', test_pipeline)
-    .controller('testServiceListner', testServiceListner)
+    .controller('testServiceListner', test_servicelistner)
     .controller('translateCtrl', translateCtrl);

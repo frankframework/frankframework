@@ -3,7 +3,7 @@
 
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="ExecuteJdbcQuery">
     <div class="alert alert-warning" role="alert" type="warning" ng-if="error">
-        <span class="ng-binding ng-scope">{{error}}</span>
+        <span class="ng-binding ng-scope" ng-bind-html="error"></span>
     </div>
     <div class="row">
         <div class="col-lg-12">
@@ -17,7 +17,7 @@
                             <label class="col-sm-3 control-label">Select a JMS realm</label>
                             <div class="col-sm-9">
                                 <select class="form-control m-b" name="realm" ng-model="form.realm">
-                                    <option ng-repeat="realm in jmsRealms">{{realm}}</option>
+                                    <option ng-repeat="realm in jmsRealms" selected="{{$first ? 'selected' : ''}}">{{realm}}</option>
                                 </select>
                             </div>
                         </div>
@@ -25,7 +25,7 @@
                             <label class="col-sm-3 control-label">Select a result type</label>
                             <div class="col-sm-9">
                                 <select class="form-control m-b" name="resultType" ng-model="form.resultType">
-                                    <option ng-repeat="resultType in resultTypes">{{resultType}}</option>
+                                    <option ng-repeat="resultType in resultTypes" selected="{{$first ? 'selected' : ''}}">{{resultType}}</option>
                                 </select>
                             </div>
                         </div>
@@ -37,7 +37,6 @@
                         </div>
                         <div class="col-lg-3 m-t-md">
                             <button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
-                            <button class="btn btn-info btn-w-m font-bold" type="button" ng-click="cancel()">Cancel</button>
                         </div>
                         <div class="col-lg-9 m-t-md">
                             <button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
