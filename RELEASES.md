@@ -147,6 +147,7 @@ Upcoming
 - Add option to disable IBIS Console idleTimeout functionality
 - Add IBIS API docs to view all API endpoints
 - Add IAF upgrade notification when new IAF version has been released
+- Change "Show configuration status: *ALL*" to summary page (with improved performance)
 
 
 ### Non backwards compatible changes

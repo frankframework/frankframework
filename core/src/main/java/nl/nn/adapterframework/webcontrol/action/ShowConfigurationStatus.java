@@ -118,7 +118,12 @@ public final class ShowConfigurationStatus extends ActionBase {
 		}
 
 		XmlBuilder adapters=new XmlBuilder("registeredAdapters");
-
+		if (configurationSelected != null) {
+			adapters.addAttribute("all", false);
+		} else {
+			adapters.addAttribute("all", true);
+		}
+		
 		XmlBuilder configurationMessages=new XmlBuilder("configurationMessages");
 		int countConfigurationMessagesInfo=0;
 		int countConfigurationMessagesWarn=0;
@@ -257,6 +262,8 @@ public final class ShowConfigurationStatus extends ActionBase {
 			adapterXML.addAttribute("name",adapterName);
 			String adapterDescription = adapter.getDescription();
 			adapterXML.addAttribute("description",adapterDescription);
+			adapterXML.addAttribute("config",adapter.getConfiguration().getName());
+			adapterXML.addAttribute("configUC",Misc.toSortName(adapter.getConfiguration().getName()));
 			adapterXML.addAttribute("nameUC",Misc.toSortName(adapterName));
 			adapterXML.addAttribute("started", ""+(adapterRunState.equals(RunStateEnum.STARTED)));
 			adapterXML.addAttribute("state", adapterRunState.toString());
@@ -319,211 +326,214 @@ public final class ShowConfigurationStatus extends ActionBase {
 					receiverXML.addAttribute("messagesReceived", ""+receiver.getMessagesReceived());
 					receiverXML.addAttribute("messagesRetried", ""+receiver.getMessagesRetried());
 					receiverXML.addAttribute("messagesRejected", ""+receiver.getMessagesRejected());
-					ISender sender=null;
-					if (receiver instanceof ReceiverBase ) {
-						ReceiverBase rb = (ReceiverBase) receiver;
-						IListener listener=rb.getListener();
-						receiverXML.addAttribute("listenerClass", ClassUtils.nameOf(listener));
-						if (listener instanceof HasPhysicalDestination) {
-							String pd = ((HasPhysicalDestination)rb.getListener()).getPhysicalDestinationName();
-							receiverXML.addAttribute("listenerDestination", pd);
-						}
-						if (listener instanceof HasSender) {
-							sender = ((HasSender)listener).getSender();
-						}
-						//receiverXML.addAttribute("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
-						ITransactionalStorage ts;
-						ts=rb.getErrorStorage();
-						receiverXML.addAttribute("hasErrorStorage", ""+(ts!=null));
-						if (ts!=null) {
-							try {
-								if (showCountErrorStore) {
-									receiverXML.addAttribute("errorStorageCount", ts.getMessageCount());
-								} else {
-									receiverXML.addAttribute("errorStorageCount", "?");
-								}
-							} catch (Exception e) {
-								log.warn(e);
-								receiverXML.addAttribute("errorStorageCount", "error");
+					if (configurationSelected != null) {
+						ISender sender=null;
+						if (receiver instanceof ReceiverBase ) {
+							ReceiverBase rb = (ReceiverBase) receiver;
+							IListener listener=rb.getListener();
+							receiverXML.addAttribute("listenerClass", ClassUtils.nameOf(listener));
+							if (listener instanceof HasPhysicalDestination) {
+								String pd = ((HasPhysicalDestination)rb.getListener()).getPhysicalDestinationName();
+								receiverXML.addAttribute("listenerDestination", pd);
 							}
-						}
-						ts=rb.getMessageLog();
-						receiverXML.addAttribute("hasMessageLog", ""+(ts!=null));
-						if (ts!=null) {
-							try {
-								if (showCountMessageLog) {
-									receiverXML.addAttribute("messageLogCount", ts.getMessageCount());
-								} else {
-									receiverXML.addAttribute("messageLogCount", "?");
-								}
-							} catch (Exception e) {
-								log.warn(e);
-								receiverXML.addAttribute("messageLogCount", "error");
+							if (listener instanceof HasSender) {
+								sender = ((HasSender)listener).getSender();
 							}
-						}
-						boolean isRestListener = (listener instanceof RestListener);
-						receiverXML.addAttribute("isRestListener", isRestListener);
-						if (isRestListener) {
-							RestListener rl = (RestListener) listener;
-							receiverXML.addAttribute("restUriPattern", rl.getRestUriPattern());
-							receiverXML.addAttribute("isView", (rl.isView()==null?false:rl.isView()));
-						}
-						if (count) {
-							if (listener instanceof JmsListenerBase) {
-								JmsListenerBase jlb = (JmsListenerBase) listener;
-								JmsMessageBrowser jmsBrowser;
-								if (StringUtils.isEmpty(jlb
-										.getMessageSelector())) {
-									jmsBrowser = new JmsMessageBrowser();
-								} else {
-									jmsBrowser = new JmsMessageBrowser(
-											jlb.getMessageSelector());
-								}
-								jmsBrowser.setName("MessageBrowser_"
-										+ jlb.getName());
-								jmsBrowser.setJmsRealm(jlb.getJmsRealName());
-								jmsBrowser.setDestinationName(jlb
-										.getDestinationName());
-								jmsBrowser.setDestinationType(jlb
-										.getDestinationType());
-								String numMsgs;
+							//receiverXML.addAttribute("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
+							ITransactionalStorage ts;
+							ts=rb.getErrorStorage();
+							receiverXML.addAttribute("hasErrorStorage", ""+(ts!=null));
+							if (ts!=null) {
 								try {
-									int messageCount = jmsBrowser
-											.getMessageCount();
-									numMsgs = String.valueOf(messageCount);
-								} catch (Throwable t) {
-									log.warn(t);
-									numMsgs = "?";
+									if (showCountErrorStore) {
+										receiverXML.addAttribute("errorStorageCount", ts.getMessageCount());
+									} else {
+										receiverXML.addAttribute("errorStorageCount", "?");
+									}
+								} catch (Exception e) {
+									log.warn(e);
+									receiverXML.addAttribute("errorStorageCount", "error");
 								}
-								receiverXML.addAttribute(
-										"pendingMessagesCount", numMsgs);
 							}
-						}
-						boolean isEsbJmsFFListener = false;
-						if (listener instanceof EsbJmsListener) {
-							EsbJmsListener ejl = (EsbJmsListener) listener;
-							if ("FF".equalsIgnoreCase(ejl.getMessageProtocol())) {
-								isEsbJmsFFListener = true;
+							ts=rb.getMessageLog();
+							receiverXML.addAttribute("hasMessageLog", ""+(ts!=null));
+							if (ts!=null) {
+								try {
+									if (showCountMessageLog) {
+										receiverXML.addAttribute("messageLogCount", ts.getMessageCount());
+									} else {
+										receiverXML.addAttribute("messageLogCount", "?");
+									}
+								} catch (Exception e) {
+									log.warn(e);
+									receiverXML.addAttribute("messageLogCount", "error");
+								}
+							}
+							boolean isRestListener = (listener instanceof RestListener);
+							receiverXML.addAttribute("isRestListener", isRestListener);
+							if (isRestListener) {
+								RestListener rl = (RestListener) listener;
+								receiverXML.addAttribute("restUriPattern", rl.getRestUriPattern());
+								receiverXML.addAttribute("isView", (rl.isView()==null?false:rl.isView()));
 							}
 							if (count) {
-								String esbNumMsgs = EsbUtils.getQueueMessageCount(ejl);
-								if (esbNumMsgs == null) {
-									esbNumMsgs = "?";
+								if (listener instanceof JmsListenerBase) {
+									JmsListenerBase jlb = (JmsListenerBase) listener;
+									JmsMessageBrowser jmsBrowser;
+									if (StringUtils.isEmpty(jlb
+											.getMessageSelector())) {
+										jmsBrowser = new JmsMessageBrowser();
+									} else {
+										jmsBrowser = new JmsMessageBrowser(
+												jlb.getMessageSelector());
+									}
+									jmsBrowser.setName("MessageBrowser_"
+											+ jlb.getName());
+									jmsBrowser.setJmsRealm(jlb.getJmsRealName());
+									jmsBrowser.setDestinationName(jlb
+											.getDestinationName());
+									jmsBrowser.setDestinationType(jlb
+											.getDestinationType());
+									String numMsgs;
+									try {
+										int messageCount = jmsBrowser
+												.getMessageCount();
+										numMsgs = String.valueOf(messageCount);
+									} catch (Throwable t) {
+										log.warn(t);
+										numMsgs = "?";
+									}
+									receiverXML.addAttribute(
+											"pendingMessagesCount", numMsgs);
 								}
-								receiverXML.addAttribute(
-										"esbPendingMessagesCount", esbNumMsgs);
+							}
+							boolean isEsbJmsFFListener = false;
+							if (listener instanceof EsbJmsListener) {
+								EsbJmsListener ejl = (EsbJmsListener) listener;
+								if ("FF".equalsIgnoreCase(ejl.getMessageProtocol())) {
+									isEsbJmsFFListener = true;
+								}
+								if (count) {
+									String esbNumMsgs = EsbUtils.getQueueMessageCount(ejl);
+									if (esbNumMsgs == null) {
+										esbNumMsgs = "?";
+									}
+									receiverXML.addAttribute(
+											"esbPendingMessagesCount", esbNumMsgs);
+								}
+							}
+							receiverXML.addAttribute("isEsbJmsFFListener", isEsbJmsFFListener);
+						}
+	
+						if (receiver instanceof HasSender) {
+							ISender rsender = ((HasSender) receiver).getSender();
+							if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null
+								sender=rsender; 
 							}
 						}
-						receiverXML.addAttribute("isEsbJmsFFListener", isEsbJmsFFListener);
-					}
-
-					if (receiver instanceof HasSender) {
-						ISender rsender = ((HasSender) receiver).getSender();
-						if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null
-							sender=rsender; 
+						if (sender != null) { 
+							receiverXML.addAttribute("senderName", sender.getName());
+							receiverXML.addAttribute("senderClass", ClassUtils.nameOf(sender));
+							if (sender instanceof HasPhysicalDestination) {
+								String pd = ((HasPhysicalDestination)sender).getPhysicalDestinationName();
+								receiverXML.addAttribute("senderDestination", pd);
+							}
 						}
-					}
-					if (sender != null) { 
-						receiverXML.addAttribute("senderName", sender.getName());
-						receiverXML.addAttribute("senderClass", ClassUtils.nameOf(sender));
-						if (sender instanceof HasPhysicalDestination) {
-							String pd = ((HasPhysicalDestination)sender).getPhysicalDestinationName();
-							receiverXML.addAttribute("senderDestination", pd);
-						}
-					}
-					if (receiver instanceof IThreadCountControllable) {
-						IThreadCountControllable tcc = (IThreadCountControllable)receiver;
-						if (tcc.isThreadCountReadable()) {
-							receiverXML.addAttribute("threadCount", tcc.getCurrentThreadCount()+"");
-							receiverXML.addAttribute("maxThreadCount", tcc.getMaxThreadCount()+"");
-						}
-						if (tcc.isThreadCountControllable()) {
-							receiverXML.addAttribute("threadCountControllable", "true");
+						if (receiver instanceof IThreadCountControllable) {
+							IThreadCountControllable tcc = (IThreadCountControllable)receiver;
+							if (tcc.isThreadCountReadable()) {
+								receiverXML.addAttribute("threadCount", tcc.getCurrentThreadCount()+"");
+								receiverXML.addAttribute("maxThreadCount", tcc.getMaxThreadCount()+"");
+							}
+							if (tcc.isThreadCountControllable()) {
+								receiverXML.addAttribute("threadCountControllable", "true");
+							}
 						}
 					}
 				}
 				adapterXML.addSubElement(receiversXML); 
 			}
 
-			// make list of pipes to be displayed in configuration status
-			XmlBuilder pipesElem = new XmlBuilder("pipes");
-			adapterXML.addSubElement(pipesElem);
-			PipeLine pipeline = adapter.getPipeLine();
-			for (int i=0; i<pipeline.getPipes().size(); i++) {
-				IPipe pipe = pipeline.getPipe(i);
-				String pipename=pipe.getName();
-				if (pipe instanceof MessageSendingPipe) {
-					MessageSendingPipe msp=(MessageSendingPipe)pipe;
-					XmlBuilder pipeElem = new XmlBuilder("pipe");
-					pipeElem.addAttribute("name",pipename);
-					pipesElem.addSubElement(pipeElem);
-					ISender sender = msp.getSender();
-					pipeElem.addAttribute("sender",ClassUtils.nameOf(sender));
-					if (sender instanceof HasPhysicalDestination) {
-						pipeElem.addAttribute("destination",((HasPhysicalDestination)sender).getPhysicalDestinationName());
-					}
-					if (sender instanceof JdbcSenderBase) {
-						pipeElem.addAttribute("isJdbcSender","true");
-					}
-					IListener listener = msp.getListener();
-					if (listener!=null) {
-						pipeElem.addAttribute("listenerName", listener.getName());
-						pipeElem.addAttribute("listenerClass", ClassUtils.nameOf(listener));
-						if (listener instanceof HasPhysicalDestination) {
-							String pd = ((HasPhysicalDestination)listener).getPhysicalDestinationName();
-							pipeElem.addAttribute("listenerDestination", pd);
+			if (configurationSelected != null) {
+				// make list of pipes to be displayed in configuration status
+				XmlBuilder pipesElem = new XmlBuilder("pipes");
+				adapterXML.addSubElement(pipesElem);
+				PipeLine pipeline = adapter.getPipeLine();
+				for (int i=0; i<pipeline.getPipes().size(); i++) {
+					IPipe pipe = pipeline.getPipe(i);
+					String pipename=pipe.getName();
+					if (pipe instanceof MessageSendingPipe) {
+						MessageSendingPipe msp=(MessageSendingPipe)pipe;
+						XmlBuilder pipeElem = new XmlBuilder("pipe");
+						pipeElem.addAttribute("name",pipename);
+						pipesElem.addSubElement(pipeElem);
+						ISender sender = msp.getSender();
+						pipeElem.addAttribute("sender",ClassUtils.nameOf(sender));
+						if (sender instanceof HasPhysicalDestination) {
+							pipeElem.addAttribute("destination",((HasPhysicalDestination)sender).getPhysicalDestinationName());
 						}
-					}
-					ITransactionalStorage messageLog = msp.getMessageLog();
-					if (messageLog!=null) {
-						pipeElem.addAttribute("hasMessageLog","true");
-						String messageLogCount;
-						try {
-							if (showCountMessageLog) {
-								messageLogCount=""+messageLog.getMessageCount();
-							} else {
-								messageLogCount="?";
+						if (sender instanceof JdbcSenderBase) {
+							pipeElem.addAttribute("isJdbcSender","true");
+						}
+						IListener listener = msp.getListener();
+						if (listener!=null) {
+							pipeElem.addAttribute("listenerName", listener.getName());
+							pipeElem.addAttribute("listenerClass", ClassUtils.nameOf(listener));
+							if (listener instanceof HasPhysicalDestination) {
+								String pd = ((HasPhysicalDestination)listener).getPhysicalDestinationName();
+								pipeElem.addAttribute("listenerDestination", pd);
 							}
-						} catch (Exception e) {
-							log.warn(e);
-							messageLogCount="error";
 						}
-						pipeElem.addAttribute("messageLogCount",messageLogCount);
-						XmlBuilder browserElem = new XmlBuilder("browser");
-						browserElem.addAttribute("name",messageLog.getName());
-						browserElem.addAttribute("type","log");
-						browserElem.addAttribute("slotId",messageLog.getSlotId());
-						browserElem.addAttribute("count", messageLogCount);
-						pipeElem.addSubElement(browserElem);
+						ITransactionalStorage messageLog = msp.getMessageLog();
+						if (messageLog!=null) {
+							pipeElem.addAttribute("hasMessageLog","true");
+							String messageLogCount;
+							try {
+								if (showCountMessageLog) {
+									messageLogCount=""+messageLog.getMessageCount();
+								} else {
+									messageLogCount="?";
+								}
+							} catch (Exception e) {
+								log.warn(e);
+								messageLogCount="error";
+							}
+							pipeElem.addAttribute("messageLogCount",messageLogCount);
+							XmlBuilder browserElem = new XmlBuilder("browser");
+							browserElem.addAttribute("name",messageLog.getName());
+							browserElem.addAttribute("type","log");
+							browserElem.addAttribute("slotId",messageLog.getSlotId());
+							browserElem.addAttribute("count", messageLogCount);
+							pipeElem.addSubElement(browserElem);
+						}
 					}
 				}
-			}
-		
-			// retrieve messages from adapters				
-			XmlBuilder adapterMessages=new XmlBuilder("adapterMessages");
-			adapterXML.addSubElement(adapterMessages);
-			for (int t=0; t<adapter.getMessageKeeper().size(); t++) {
-				XmlBuilder adapterMessage=new XmlBuilder("adapterMessage");
-				String msg = adapter.getMessageKeeper().getMessage(t).getMessageText();
-				if (maxMessageSize>0 && msg.length()>maxMessageSize) {
-					msg = msg.substring(0, maxMessageSize) + "...(" + (msg.length()-maxMessageSize) + " characters more)";
-				}
-				adapterMessage.setValue(msg,true);
-				adapterMessage.addAttribute("date", DateUtils.format(adapter.getMessageKeeper().getMessage(t).getMessageDate(), DateUtils.FORMAT_FULL_GENERIC));
-				String level = adapter.getMessageKeeper().getMessage(t).getMessageLevel();
-				adapterMessage.addAttribute("level", level);
-				adapterMessages.addSubElement(adapterMessage);
-				if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
-					countMessagesError++;
-				} else {
-					if (level.equals(MessageKeeperMessage.WARN_LEVEL)) {
-						countMessagesWarn++;
+			
+				// retrieve messages from adapters				
+				XmlBuilder adapterMessages=new XmlBuilder("adapterMessages");
+				adapterXML.addSubElement(adapterMessages);
+				for (int t=0; t<adapter.getMessageKeeper().size(); t++) {
+					XmlBuilder adapterMessage=new XmlBuilder("adapterMessage");
+					String msg = adapter.getMessageKeeper().getMessage(t).getMessageText();
+					if (maxMessageSize>0 && msg.length()>maxMessageSize) {
+						msg = msg.substring(0, maxMessageSize) + "...(" + (msg.length()-maxMessageSize) + " characters more)";
+					}
+					adapterMessage.setValue(msg,true);
+					adapterMessage.addAttribute("date", DateUtils.format(adapter.getMessageKeeper().getMessage(t).getMessageDate(), DateUtils.FORMAT_FULL_GENERIC));
+					String level = adapter.getMessageKeeper().getMessage(t).getMessageLevel();
+					adapterMessage.addAttribute("level", level);
+					adapterMessages.addSubElement(adapterMessage);
+					if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
+						countMessagesError++;
 					} else {
-						countMessagesInfo++;
+						if (level.equals(MessageKeeperMessage.WARN_LEVEL)) {
+							countMessagesWarn++;
+						} else {
+							countMessagesInfo++;
+						}
 					}
 				}
 			}
-
 		}
 
 		XmlBuilder summaryXML=new XmlBuilder("summary");
