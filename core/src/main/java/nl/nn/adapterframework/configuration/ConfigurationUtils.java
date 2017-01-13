@@ -125,7 +125,7 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			conn = qs.getConnection();
-			String query = "SELECT CONFIG FROM IBISCONFIG WHERE NAME=?";
+			String query = "SELECT CONFIG FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG= 'TRUE'";
 			PreparedStatement stmt = conn.prepareStatement(query);
 			stmt.setString(1, name);
 			rs = stmt.executeQuery();

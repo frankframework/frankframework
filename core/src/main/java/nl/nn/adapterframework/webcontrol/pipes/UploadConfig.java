@@ -68,6 +68,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 	}
 
 	private String doGet(IPipeLineSession session) throws PipeRunException {
+		session.put("activeConfig", "on");
 		return retrieveFormInput(session);
 	}
 
@@ -76,6 +77,11 @@ public class UploadConfig extends TimeoutGuardPipe {
 		String name = (String) session.get("name");
 		String version = (String) session.get("version");
 		String multipleConfigs = (String) session.get("multipleConfigs");
+		String activeConfig = (String) session.get("activeConfig");
+		FixedQuerySender qs = (FixedQuerySender) ibisContext
+				.createBeanAutowireByName(FixedQuerySender.class);
+		String form_jmsRealm = (String) session.get("jmsRealm");
+		String result = "";
 
 		if (!"on".equals(multipleConfigs)) {
 			if (StringUtils.isEmpty(name) && StringUtils.isEmpty(version)) {
@@ -105,7 +111,6 @@ public class UploadConfig extends TimeoutGuardPipe {
 					+ "Nothing to send or test");
 		}
 
-		String result = "";
 		if ("on".equals(multipleConfigs)) {
 			try {
 				result = processZipFile(session, fileName);
@@ -116,6 +121,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		} else {
 			result = processJarFile(session, name, version, fileName, "file");
 		}
+
 		session.put("result", result);
 		return "<dummy/>";
 	}
@@ -209,7 +215,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 			String version, String fileName, String fileNameSessionKey)
 			throws PipeRunException {
 		String form_jmsRealm = (String) session.get("jmsRealm");
-
+		String activeConfig = (String) session.get("activeConfig");
 		String result = "";
 		FixedQuerySender qs = (FixedQuerySender) ibisContext
 				.createBeanAutowireByName(FixedQuerySender.class);
@@ -235,13 +241,15 @@ public class UploadConfig extends TimeoutGuardPipe {
 			qs.close();
 		}
 
-		if (Integer.parseInt(result) > 0) {
+		if ("on".equals(activeConfig)) {
 			qs = (FixedQuerySender) ibisContext
 					.createBeanAutowireByName(FixedQuerySender.class);
+
 			try {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(form_jmsRealm);
-				qs.setQuery("DELETE FROM IBISCONFIG WHERE NAME=?");
+				qs.setQueryType("update");
+				qs.setQuery("UPDATE IBISCONFIG SET ACTIVECONFIG = 'FALSE' WHERE NAME=?");
 				Parameter param = new Parameter();
 				param.setName("name");
 				param.setValue(name);
@@ -259,8 +267,36 @@ public class UploadConfig extends TimeoutGuardPipe {
 				qs.close();
 			}
 		}
+		if (Integer.parseInt(result) > 0) {
+			qs = (FixedQuerySender) ibisContext
+					.createBeanAutowireByName(FixedQuerySender.class);
+			try {
+				qs.setName("QuerySender");
+				qs.setJmsRealm(form_jmsRealm);
+				qs.setQuery("DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION = ?");
+				Parameter param = new Parameter();
+				param.setName("name");
+				param.setValue(name);
+				qs.addParameter(param);
+				param = new Parameter();
+				param.setName("version");
+				param.setValue(version);
+				qs.addParameter(param);
+				qs.setScalar(true);
+				qs.configure();
+				qs.open();
+				ParameterResolutionContext prc = new ParameterResolutionContext(
+						"dummy", session);
+				result = qs.sendMessage("dummy", "dummy", prc);
+			} catch (Throwable t) {
+				throw new PipeRunException(this, getLogPrefix(session)
+						+ "Error occured on executing jdbc query", t);
+			} finally {
+				qs.close();
+			}
+		}
 
-		/*
+		/**
 		 * Why is the following not working (remoteUser is always empty)? String
 		 * remoteUser; try { remoteUser =
 		 * RestListenerUtils.retrieveRequestRemoteUser(session); } catch
@@ -268,6 +304,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		 * getLogPrefix(session) + "Error occured on retrieving remote user",
 		 * e); }
 		 */
+
 		String remoteUser = (String) session.get("principal");
 
 		qs = (FixedQuerySender) ibisContext
@@ -277,9 +314,9 @@ public class UploadConfig extends TimeoutGuardPipe {
 			qs.setJmsRealm(form_jmsRealm);
 			qs.setQueryType("insert");
 			if (StringUtils.isEmpty(remoteUser)) {
-				qs.setQuery("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)");
+				qs.setQuery("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, ACTIVECONFIG) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?)");
 			} else {
-				qs.setQuery("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?)");
+				qs.setQuery("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)");
 			}
 			Parameter param = new Parameter();
 			param.setName("name");
@@ -302,6 +339,17 @@ public class UploadConfig extends TimeoutGuardPipe {
 				param = new Parameter();
 				param.setName("ruser");
 				param.setValue(remoteUser);
+				qs.addParameter(param);
+			}
+			if ("on".equals(activeConfig)) {
+				param = new Parameter();
+				param.setName("activeconfig");
+				param.setValue("true");
+				qs.addParameter(param);
+			} else {
+				param = new Parameter();
+				param.setName("activeconfig");
+				param.setValue("false");
 				qs.addParameter(param);
 			}
 			qs.configure();
