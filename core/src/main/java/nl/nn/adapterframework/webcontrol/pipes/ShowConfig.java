@@ -17,20 +17,19 @@ package nl.nn.adapterframework.webcontrol.pipes;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Show configurations.
@@ -44,7 +43,8 @@ public class ShowConfig extends TimeoutGuardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		ibisContext = ((Adapter)getAdapter()).getConfiguration().getIbisManager().getIbisContext();
+		ibisContext = ((Adapter) getAdapter()).getConfiguration()
+				.getIbisManager().getIbisContext();
 	}
 
 	public String doPipeWithTimeoutGuarded(Object input,
@@ -74,13 +74,14 @@ public class ShowConfig extends TimeoutGuardPipe {
 							+ "No datasource jmsRealm available");
 				}
 			}
-			FixedQuerySender qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+			FixedQuerySender qs = (FixedQuerySender) ibisContext
+					.createBeanAutowireByName(FixedQuerySender.class);
 			String queryResult;
 			try {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(parm_jmsRealm);
 				qs.setQueryType("select");
-				qs.setQuery("SELECT CONFIG FROM IBISCONFIG WHERE NAME=?");
+				qs.setQuery("SELECT CONFIG FROM IBISCONFIG WHERE NAME = ? ORDER BY NAME");
 				Parameter param = new Parameter();
 				param.setName("name");
 				param.setSessionKey("name");
@@ -120,14 +121,13 @@ public class ShowConfig extends TimeoutGuardPipe {
 			XmlBuilder configXML = new XmlBuilder("config");
 			String jr = jmsRealms.get(i);
 			configXML.addAttribute("jmsRealm", jr);
-			FixedQuerySender qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+			FixedQuerySender qs = (FixedQuerySender) ibisContext
+					.createBeanAutowireByName(FixedQuerySender.class);
 			try {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(jr);
 				qs.setQueryType("select");
-				qs.setQuery("SELECT NAME, VERSION, FILENAME, "
-						+ qs.getDbmsSupport().getLength("CONFIG")
-						+ " AS LEN_CONFIG, CRE_TYDST, RUSER FROM IBISCONFIG ORDER BY NAME");
+				qs.setQuery("SELECT NAME, VERSION, FILENAME, CRE_TYDST, RUSER, ACTIVECONFIG FROM IBISCONFIG WHERE ACTIVECONFIG = 'TRUE' ORDER BY NAME");
 				qs.setBlobSmartGet(true);
 				qs.setIncludeFieldDefinition(false);
 				qs.configure();
