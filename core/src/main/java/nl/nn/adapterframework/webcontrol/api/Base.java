@@ -60,7 +60,7 @@ public abstract class Base {
 	 *
 	 * @param servletConfig serveletConfig to derive ibisContext from.
 	 */
-	protected void initBase(ServletConfig servletConfig) {
+	protected void initBase(ServletConfig servletConfig) throws ApiException {
 		String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
 		ibisContext = (IbisContext) servletConfig.getServletContext().getAttribute(attributeKey);
 		ibisManager = null;
@@ -69,11 +69,12 @@ public abstract class Base {
 		}
 		if (ibisManager==null) {
 			log.warn("Could not retrieve ibisManager from context");
+			throw new ApiException("Config not found!");
 		} else {
 			log.debug("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context attribute ["+attributeKey+"]");
 		}
 	}
-	
+
 	protected List<Map<String, String>> Xml2Map(String xml) {
 		List<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
 		Document xmlDoc = null;

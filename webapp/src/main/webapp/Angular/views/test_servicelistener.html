@@ -1,7 +1,7 @@
 <!-- Angular ui-router hack-->
 <div ui-view></div>
 
-<div class="wrapper wrapper-content animated fadeInRight" ng-controller="testServiceListner">
+<div class="wrapper wrapper-content animated fadeInRight" ng-controller="TestServiceListenerCtrl">
     <uib-alert ng-repeat="alert in state" type="{{alert.type}}">{{alert.message}}</uib-alert>
     <div class="row">
         <div class="col-lg-12">

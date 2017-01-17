@@ -64,10 +64,6 @@ public final class BrowseJdbcTable extends Base {
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
-
 		String realm = null, tableName = null, where = "", order = null;
 		Boolean rowNumbersOnly = false;
 		int minRow = 1, maxRow = 100;
@@ -77,7 +73,7 @@ public final class BrowseJdbcTable extends Base {
 			if(key.equalsIgnoreCase("realm")) {
 				realm = entry.getValue().toString();
 			}
-			if(key.equalsIgnoreCase("tableName")) {
+			if(key.equalsIgnoreCase("table")) {
 				tableName = entry.getValue().toString().toLowerCase();
 			}
 			if(key.equalsIgnoreCase("where")) {
@@ -90,13 +86,21 @@ public final class BrowseJdbcTable extends Base {
 				rowNumbersOnly = Boolean.parseBoolean(entry.getValue().toString());
 			}
 			if(key.equalsIgnoreCase("minRow")) {
-				minRow = Integer.parseInt(entry.getValue().toString());
-				minRow = Math.max(minRow, 0);
+				if(entry.getValue() != "") {
+					minRow = Integer.parseInt(entry.getValue().toString());
+					minRow = Math.max(minRow, 0);
+				}
 			}
 			if(key.equalsIgnoreCase("maxRow")) {
-				maxRow = Integer.parseInt(entry.getValue().toString());
-				maxRow = Math.min(Math.max(maxRow, 1), 100);
+				if(entry.getValue() != "") {
+					maxRow = Integer.parseInt(entry.getValue().toString());
+					maxRow = Math.min(Math.max(maxRow, 1), 100);
+				}
 			}
+		}
+
+		if(realm == null || tableName == null) {
+			return buildErrorResponse("realm and/or tableName not defined.");
 		}
 
 		if(maxRow < minRow)
@@ -106,10 +110,6 @@ public final class BrowseJdbcTable extends Base {
 		}
 		if (!readAllowed(permissionRules, tableName))
 			return buildErrorResponse("Access to table ("+tableName+") not allowed");
-
-		if(realm == null || tableName == null) {
-			return Response.status(Response.Status.BAD_REQUEST).build();
-		}
 
 		//We have all info we need, lets execute the query!
 		Map<String, Object> fieldDef = new HashMap<String, Object>();

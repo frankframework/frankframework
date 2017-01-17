@@ -18,6 +18,7 @@ package nl.nn.adapterframework.webcontrol.api;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -29,11 +30,17 @@ import javax.ws.rs.ext.Provider;
 */
 
 @Provider
-public class ApiExceptionHandler implements ExceptionMapper<ApiException> 
+public class ApiExceptionHandler implements ExceptionMapper<ApiException>
 {
-	@Produces(MediaType.APPLICATION_JSON)
-    public Response toResponse(ApiException exception)
-    {
-        return Response.status(Status.BAD_REQUEST).entity(("{\"status\":\"error\", \"error\":\"" + exception.getMessage() + "\"}")).build();  
-    }
+	@Override
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response toResponse(ApiException exception) {
+		ResponseBuilder response = Response.status(Status.INTERNAL_SERVER_ERROR);
+
+		String message = exception.getMessage();
+		if(message != null)
+			response.entity(("{\"status\":\"error\", \"error\":\"" + exception.getMessage() + "\"}")).type(MediaType.APPLICATION_JSON);
+
+		return response.build();
+	}
 }

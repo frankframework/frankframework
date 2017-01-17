@@ -71,10 +71,6 @@ public final class ShowIbisstoreSummary extends Base {
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
-
 		Response.ResponseBuilder response = Response.noContent(); //PUT defaults to no content
 
 		String query = AppConstants.getInstance().getProperty(SHOWIBISSTOREQUERYKEY);

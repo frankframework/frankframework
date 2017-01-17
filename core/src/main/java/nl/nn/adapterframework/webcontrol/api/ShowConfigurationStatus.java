@@ -121,10 +121,6 @@ public final class ShowConfigurationStatus extends Base {
 	public Response getAdapter(@PathParam("name") String name) throws ApiException {
 		initBase(servletConfig);
 
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
-		
 		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(name);
 		
 		if(adapter == null){
@@ -162,10 +158,6 @@ public final class ShowConfigurationStatus extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateAdapters(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
-
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
 
 		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 		String action = null;
@@ -212,18 +204,14 @@ public final class ShowConfigurationStatus extends Base {
 	public Response updateAdapter(@PathParam("adapterName") String adapterName, LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
-		
 		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
-		
+
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
 		}
-		
+
 		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
-		
+
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
@@ -238,7 +226,7 @@ public final class ShowConfigurationStatus extends Base {
 				response.entity("{\"status\":\"ok\"}");
 			}
 		}
-		
+
 		return response.build();
 	}
 	
@@ -250,18 +238,14 @@ public final class ShowConfigurationStatus extends Base {
 	public Response updateReceiver(@PathParam("adapterName") String adapterName, @PathParam("receiverName") String receiverName, LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
-		
 		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
-		
+
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
 		}
-		
+
 		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
-		
+
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
@@ -275,7 +259,7 @@ public final class ShowConfigurationStatus extends Base {
 				response.entity("{\"status\":\"ok\"}");
 			}
 		}
-		
+
 		return response.build();
 	}
 	
@@ -286,18 +270,14 @@ public final class ShowConfigurationStatus extends Base {
 	public Response getAdapterPipes(@PathParam("name") String adapterName) throws ApiException {
 		initBase(servletConfig);
 
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
-		
 		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
-		
+
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
 		}
-		
+
 		ArrayList<Object> adapterInfo = mapAdapterPipes(adapter);
-		
+
 		return Response.status(Response.Status.CREATED).entity(adapterInfo).build();
 	}
 	
@@ -308,18 +288,14 @@ public final class ShowConfigurationStatus extends Base {
 	public Response getAdapterMessages(@PathParam("name") String adapterName) throws ApiException {
 		initBase(servletConfig);
 
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
-		
 		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
-		
+
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
 		}
-		
+
 		ArrayList<Object> adapterInfo = mapAdapterMessages(adapter);
-		
+
 		return Response.status(Response.Status.CREATED).entity(adapterInfo).build();
 	}
 	
@@ -333,15 +309,15 @@ public final class ShowConfigurationStatus extends Base {
 		if (ibisManager == null) {
 			throw new ApiException("Config not found!");
 		}
-		
+
 		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
-		
+
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
 		}
-		
+
 		ArrayList<Object> receiverInfo = mapAdapterReceivers(adapter);
-		
+
 		return Response.status(Response.Status.CREATED).entity(receiverInfo).build();
 	}
 

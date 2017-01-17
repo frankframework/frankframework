@@ -181,13 +181,17 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
     })
     .state('pages.browse_tables', {
         url: "/jdbc/browse-tables",
-        templateUrl: "views/empty_page.html",
+        templateUrl: "views/jdbc_browse_tables.html",
         data: {
             pageTitle: 'Browse JDBC Tables',
             breadcrumbs: 'JDBC > Browse Tables'
         },
-        controller: function(Notification){
-            Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
+        resolve: {
+            loadPlugin: function ($ocLazyLoad) {
+                return $ocLazyLoad.load([ {
+                    files: ['css/plugins/iCheck/custom.css','js/plugins/iCheck/icheck.min.js']
+                } ]);
+            }
         }
     })
     .state('pages.security_items', {

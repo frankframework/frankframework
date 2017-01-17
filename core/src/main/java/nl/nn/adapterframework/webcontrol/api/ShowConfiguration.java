@@ -44,13 +44,9 @@ public final class ShowConfiguration extends Base {
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getConfiguration(@QueryParam("loadedConfiguration") boolean loadedConfiguration) throws ApiException {
 		initBase(servletConfig);
-		
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
-		
+
 		String result = "";
-		
+
 		for (Configuration configuration : ibisManager.getConfigurations()) {
 			if (loadedConfiguration) {
 				result = result + configuration.getOriginalConfiguration();
@@ -58,7 +54,7 @@ public final class ShowConfiguration extends Base {
 				result = result + configuration.getLoadedConfiguration();
 			}
 		}
-		
+
 		return Response.status(Response.Status.CREATED).entity(result).build();
 	}
 
@@ -68,20 +64,16 @@ public final class ShowConfiguration extends Base {
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getConfigurationByName(@PathParam("configuration") String configurationName, @QueryParam("loadedConfiguration") boolean loadedConfiguration) throws ApiException {
 		initBase(servletConfig);
-		
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
-		
+
 		String result = "";
-		
+
 		Configuration configuration = ibisManager.getConfiguration(configurationName);
 		if (loadedConfiguration) {
 			result = configuration.getOriginalConfiguration();
 		} else {
 			result = configuration.getLoadedConfiguration();
 		}
-		
+
 		return Response.status(Response.Status.CREATED).entity(result).build();
 	}
 }

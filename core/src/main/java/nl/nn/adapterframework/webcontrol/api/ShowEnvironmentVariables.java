@@ -51,28 +51,24 @@ public final class ShowEnvironmentVariables extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response environmentVariables() throws ApiException {
 		initBase(servletConfig);
-		
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
-		
+
 		List<String> propsToHide = new ArrayList<String>();
 		String propertiesHideString = AppConstants.getInstance().getString("properties.hide", null);
 		if (propertiesHideString!=null) {
 			propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
 		}
-		
+
 		Map<String, Object> envVars = new HashMap<String, Object>();
 
 		envVars.put("Application Constants", convertPropertiesToMap(AppConstants.getInstance(), propsToHide));
 		envVars.put("System Properties", convertPropertiesToMap(System.getProperties(), propsToHide));
-		
+
 		try {
 			envVars.put("Environment Variables", convertPropertiesToMap(Misc.getEnvironmentVariables()));
 		} catch (Throwable t) {
 			log.warn("caught Throwable while getting EnvironmentVariables",t);
 		}
-		
+
 		return Response.status(Response.Status.CREATED).entity(envVars).build();
 	}
 
@@ -82,9 +78,9 @@ public final class ShowEnvironmentVariables extends Base {
 
 	private Map<String, Object> convertPropertiesToMap(Properties props, List<String> propsToHide) {
 		Enumeration<Object> enumeration = props.keys();
-		
+
 		Map<String, Object> properties = new HashMap<String, Object>(props.size());
-		
+
 		while (enumeration.hasMoreElements()) {
 			String propName = (String) enumeration.nextElement();
 			String propValue = props.getProperty(propName);

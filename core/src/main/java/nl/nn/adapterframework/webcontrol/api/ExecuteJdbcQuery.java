@@ -58,10 +58,6 @@ public final class ExecuteJdbcQuery extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getJdbcInfo() throws ApiException {
 		initBase(servletConfig);
-		
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
 
 		Map<String, Object> result = new HashMap<String, Object>();
 
@@ -85,10 +81,6 @@ public final class ExecuteJdbcQuery extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
-
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
 
 		String realm = null, resultType = null, query = null, queryType = "select", result = "", returnType = MediaType.APPLICATION_XML;
 		Object returnEntity = null;

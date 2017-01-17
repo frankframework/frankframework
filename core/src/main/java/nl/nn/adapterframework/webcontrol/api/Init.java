@@ -66,10 +66,10 @@ public class Init extends Base {
 	@Path("/server/info")
 	@RolesAllowed({"ObserverAccess", "AdminAccess", "DataAdminAccess", "TesterAccess", "IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getServerInformation() {
+	public Response getServerInformation() throws ApiException {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		List<Object> configurations = new ArrayList<Object>();
-		
+
 		initBase(servletConfig);
 
 		for (Configuration configuration : ibisManager.getConfigurations()) {
@@ -93,7 +93,7 @@ public class Init extends Base {
 		returnMap.put("serverTime", date.getTime());
 		returnMap.put("machineName" , Misc.getHostname());
 		returnMap.put("uptime", ibisContext.getUptimeDate());
-		
+
 		return Response.status(Response.Status.CREATED).entity(returnMap).build();
 	}
 
@@ -101,7 +101,7 @@ public class Init extends Base {
 	@Path("/server/warnings")
 	@RolesAllowed({"ObserverAccess", "AdminAccess", "DataAdminAccess", "TesterAccess", "IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getServerConfiguration() {
+	public Response getServerConfiguration() throws ApiException {
 
 		initBase(servletConfig);
 		ConfigurationWarnings globalConfigWarnings = ConfigurationWarnings.getInstance();
@@ -131,7 +131,7 @@ public class Init extends Base {
 		} else {
 			esr = -1;
 		}
-		
+
 		if (esr!=0) {
 			Map<String, Object> messageObj = new HashMap<String, Object>(2);
 			String message;
@@ -156,7 +156,7 @@ public class Init extends Base {
 				warnings.add(messageObj);
 			}
 		}
-		
+
 		//Configuration specific warnings
 		for (Configuration configuration : ibisManager.getConfigurations()) {
 			BaseConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
@@ -167,7 +167,7 @@ public class Init extends Base {
 				warnings.add(messageObj);
 			}
 		}
-		
+
 		//Global warnings
 		if (globalConfigWarnings.size()>0) {
 			for (int j=0; j<globalConfigWarnings.size(); j++) {
@@ -176,7 +176,7 @@ public class Init extends Base {
 				warnings.add(messageObj);
 			}
 		}
-		
+
 		return Response.status(Response.Status.CREATED).entity(warnings).build();
 	}
 

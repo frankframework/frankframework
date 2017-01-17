@@ -436,7 +436,7 @@ function NotificationsCtrl($scope, Api, $stateParams, Hooks, Notification) {
     });
 };
 
-function ExecuteJdbcQuery($scope, Api, $timeout, $state) {
+function ExecuteJdbcQueryCtrl($scope, Api, $timeout, $state) {
     $scope.jmsRealms = {};
     $scope.resultTypes = {};
     $scope.error = "";
@@ -466,7 +466,69 @@ function ExecuteJdbcQuery($scope, Api, $timeout, $state) {
         $scope.result = "";
     };
 };
-function ShowConfiguration($scope, Api) {
+
+function BrowseJdbcTablesCtrl($scope, Api, $timeout, $state) {
+    $scope.jmsRealms = {};
+    $scope.resultTypes = {};
+    $scope.error = "";
+    var orderedGroups = ['rare', 'uncommon', 'common'];
+    $scope.groupComparator = function(item) {
+        return orderedGroups.indexOf(item.group);
+    };
+    Api.Get("jdbc", function(data) {
+        $scope.jmsRealms = data.jmsRealms;
+    });
+    $scope.submit = function(formData) {
+        if(!formData || !formData.table) {
+            $scope.error = "Please specify a jms realm and table name!";
+            return;
+        }
+        if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
+        if(!formData.resultType) formData.resultType = $scope.resultTypes[0] || false;
+
+        Api.Post("jdbc/browse", JSON.stringify(formData), function(returnData) {
+            $scope.error = "";
+            $scope.query = returnData.query;
+            $timeout(function(){
+                var thead = angular.element("table.jdbcBrowse thead");
+                var tbody = angular.element("table.jdbcBrowse tbody");
+                thead = thead.empty().append("<tr></tr>").find("tr");
+                tbody.empty();
+                var index = [];
+                thead.append("<th>RNUM</th>");
+                index.push("RNUM");
+                for(x in returnData.fielddefinition) {
+                    index.push(x);
+                    if(formData.minRow == undefined && formData.maxRow == undefined)
+                        x = x + " " + returnData.fielddefinition[x];
+                    thead.append("<th>"+x+"</th>");
+                }
+                for(x in returnData.result) {
+                    var tableRow = $("<tr></tr>");
+                    var row = returnData.result[x];
+                    for(def in row) {
+                        var p = "";
+                        if(returnData.result.length == 1 && def.indexOf("LENGTH ") == 0) {
+                            def.replace("LENGTH ", "");
+                            p = " (length)";
+                        }
+                        tableRow.append("<td>"+row[def] + p+"</td>");
+                    }
+                    tbody.append(tableRow);
+                };
+            }, 100);
+        }, function(errorData, status, errorMsg) {
+            var error = (errorData) ? errorData : errorMsg;
+            $scope.error = error;
+            $scope.query = "";
+        });
+    };
+    $scope.reset = function() {
+        $scope.result = "";
+    };
+};
+
+function ShowConfigurationCtrl($scope, Api) {
     this.configurationRadio = 'true';
     $scope.selectedConfiguration = "All";
     $scope.loadedConfiguration = true;
@@ -492,14 +554,14 @@ function ShowConfiguration($scope, Api) {
     getConfiguration();
 };
 
-function environment_variables($scope, Api, appConstants) {
+function EnvironmentVariablesCtrl($scope, Api, appConstants) {
     $scope.variables = [];
     Api.Get("environmentvariables", function(data) {
         $scope.variables = data;
     });
 };
 
-function test_pipeline($scope, Api, Alert, $interval) {
+function TestPipelineCtrl($scope, Api, Alert, $interval) {
     $scope.state = [];
     $scope.file = null;
     $scope.addNote = function(type, message, removeQueue) {
@@ -551,8 +613,7 @@ function test_pipeline($scope, Api, Alert, $interval) {
     };
 };
 
-
-function test_servicelistner($scope, Api, Alert, $interval) {
+function TestServiceListenerCtrl($scope, Api, Alert, $interval) {
     $scope.state = [];
     $scope.file = null;
     $scope.addNote = function(type, message, removeQueue) {
@@ -604,7 +665,7 @@ function test_servicelistner($scope, Api, Alert, $interval) {
     };
 };
 
-function translateCtrl($translate, $scope) {
+function TranslateCtrl($translate, $scope) {
     $scope.changeLanguage = function (langKey) {
         $translate.use(langKey);
         $scope.language = langKey;
@@ -619,9 +680,11 @@ angular
     .controller('MainCtrl', MainCtrl)
     .controller('StatusCtrl', StatusCtrl)
     .controller('NotificationsCtrl', NotificationsCtrl)
-    .controller('ExecuteJdbcQuery', ExecuteJdbcQuery)
-    .controller('ShowConfiguration', ShowConfiguration)
-    .controller('environment_variables', environment_variables)
-    .controller('testPipeline', test_pipeline)
-    .controller('testServiceListner', test_servicelistner)
-    .controller('translateCtrl', translateCtrl);
+    .controller('TranslateCtrl', TranslateCtrl)
+
+    .controller('ShowConfigurationCtrl', ShowConfigurationCtrl)
+    .controller('EnvironmentVariablesCtrl', EnvironmentVariablesCtrl)
+    .controller('ExecuteJdbcQueryCtrl', ExecuteJdbcQueryCtrl)
+    .controller('BrowseJdbcTablesCtrl', BrowseJdbcTablesCtrl)
+    .controller('TestPipelineCtrl', TestPipelineCtrl)
+    .controller('TestServiceListenerCtrl', TestServiceListenerCtrl);
