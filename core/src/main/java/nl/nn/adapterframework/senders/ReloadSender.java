@@ -15,19 +15,15 @@
  */
 package nl.nn.adapterframework.senders;
 
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.PipeAware;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import javax.xml.xpath.XPathExpressionException;
-
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisContext;
 
 /**
  * Performs a reload on database config .
@@ -61,23 +57,15 @@ public class ReloadSender extends SenderWithParametersBase implements PipeAware 
 		try {
 			configName = XmlUtils.evaluateXPathNodeSetFirstElement(message,
 					"row/field[@name='name']");
-		} catch (DomBuilderException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (XPathExpressionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} catch (Exception e) {
+			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression configName", e);
+		} 
 
 		try {
 			activeVersion = XmlUtils.evaluateXPathNodeSetFirstElement(message,
 					"row/field[@name='version']");
-		} catch (DomBuilderException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (XPathExpressionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression activeVersion", e);
 		}
 
 		Configuration configuration = getPipe().getAdapter().getConfiguration()
