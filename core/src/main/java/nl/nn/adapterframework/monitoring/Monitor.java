@@ -53,8 +53,8 @@ public class Monitor {
 	
 	private MonitorManager owner=null;
 
-	private List triggers = new ArrayList();
-	private Set destinationSet=new HashSet(); 
+	private List<Trigger> triggers = new ArrayList<Trigger>();
+	private Set<String> destinationSet=new HashSet<String>(); 
 	
 	public Monitor() {
 		super();
@@ -65,15 +65,21 @@ public class Monitor {
 	}
 	
 	public void configure() throws ConfigurationException {
-		if (MonitorManager.traceReconfigure && log.isDebugEnabled()) log.debug("monitor ["+getName()+"] configuring triggers");
-		for (Iterator it=triggers.iterator(); it.hasNext();) {
+		if (MonitorManager.traceReconfigure) {
+			if (log.isDebugEnabled())
+				log.debug("monitor ["+getName()+"] configuring triggers");
+		}
+		for (Iterator<Trigger> it=triggers.iterator(); it.hasNext();) {
 			Trigger trigger = (Trigger)it.next();
 			trigger.configure();
 		}
 	}
 	
-	public void registerEventNotificationListener(Trigger trigger, List eventCodes, Map adapterFilters, boolean filterOnLowerLevelObjects, boolean filterExclusive) throws MonitorException {
-		if (MonitorManager.traceReconfigure && log.isDebugEnabled()) log.debug("monitor ["+getName()+"] registerEventNotificationListener for trigger");
+	public void registerEventNotificationListener(Trigger trigger, List<String> eventCodes, Map<String, AdapterFilter> adapterFilters, boolean filterOnLowerLevelObjects, boolean filterExclusive) throws MonitorException {
+		if (MonitorManager.traceReconfigure) {
+			if (log.isDebugEnabled())
+				log.debug("monitor ["+getName()+"] registerEventNotificationListener for trigger");
+		}
 		getOwner().registerEventNotificationListener(trigger, eventCodes, adapterFilters, filterOnLowerLevelObjects, filterExclusive);
 	}
 	
@@ -114,7 +120,7 @@ public class Monitor {
 		}
 		setStateChangeDt(date);
 		
-		for (Iterator it=destinationSet.iterator();it.hasNext();) {
+		for (Iterator<String> it=destinationSet.iterator();it.hasNext();) {
 			String key=(String)it.next();
 			IMonitorAdapter monitorAdapter = getOwner().getDestination(key);
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+key+"]");
@@ -126,7 +132,7 @@ public class Monitor {
 
 
 	protected void notifyReverseTrigger(boolean alarm, EventThrowing source) {
-		for (Iterator it=triggers.iterator(); it.hasNext();) {
+		for (Iterator<Trigger> it=triggers.iterator(); it.hasNext();) {
 			Trigger trigger=(Trigger)it.next();
 			if (trigger.isAlarm()!=alarm) {
 				trigger.notificationOfReverseTrigger(source);
@@ -155,7 +161,7 @@ public class Monitor {
 		monitor.addAttribute("name",getName());
 		monitor.addAttribute("type",getType());
 		monitor.addAttribute("destinations",getDestinationsAsString());
-		for (Iterator it=triggers.iterator();it.hasNext();) {
+		for (Iterator<Trigger> it=triggers.iterator();it.hasNext();) {
 			Trigger trigger=(Trigger)it.next();
 			trigger.toXml(monitor);
 		}
@@ -169,7 +175,7 @@ public class Monitor {
 	public String getDestinationsAsString() {
 		//log.debug(getLogPrefix()+"calling getDestinationsAsString()");
 		String result=null;
-		for (Iterator it=getDestinationSet().iterator();it.hasNext();) {
+		for (Iterator<String> it=getDestinationSet().iterator();it.hasNext();) {
 			String item=(String)it.next();
 			if (result==null) {
 				result=item;
@@ -207,7 +213,7 @@ public class Monitor {
 			}
 		} else {
 			log.debug(getLogPrefix()+"entering setDestinations(String[])");
-			Set set=new HashSet();
+			Set<String> set=new HashSet<String>();
 			for (int i=0;i<newDestinations.length;i++) {
 				log.debug(getLogPrefix()+"adding destination ["+newDestinations[i]+"]");
 				set.add(newDestinations[i]); 
@@ -215,17 +221,17 @@ public class Monitor {
 			setDestinationSet(set);
 		}
 	}
-	public Set getDestinationSet() {
+	public Set<String> getDestinationSet() {
 		return destinationSet;
 	}
-	public void setDestinationSet(Set newDestinations) {
+	public void setDestinationSet(Set<String> newDestinations) {
 		if (newDestinations==null) {
 			log.debug(getLogPrefix()+"clearing destinations");
 			destinationSet.clear();
 		} else {
 			if (log.isDebugEnabled()) {
 				String destinations=null;
-				for (Iterator it=newDestinations.iterator();it.hasNext();) {
+				for (Iterator<String> it=newDestinations.iterator();it.hasNext();) {
 					if (destinations!=null) {
 						destinations+=","+(String)it.next();
 					} else {
@@ -267,7 +273,7 @@ public class Monitor {
 		return owner;
 	}
 
-	public List getTriggers() {
+	public List<Trigger> getTriggers() {
 		return triggers;
 	}
 	public Trigger getTrigger(int index) {

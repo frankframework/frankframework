@@ -37,12 +37,13 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
                 if(!$scope.loggedin) {
                     Idle.setTimeout(false);
                 }
+                Hooks.call("init", false);
             });
             appConstants.init = 1;
             Api.Get("environmentvariables", function(data) {
                 if(data["Application Constants"]) {
                     appConstants = $.extend(appConstants, data["Application Constants"]);
-                    Hooks.call("appConstants", data);
+                    Hooks.call("appConstants", appConstants);
                     var idleTime = (parseInt(appConstants["console.idle.time"]) > 0) ? parseInt(appConstants["console.idle.time"]) : false;
                     if(idleTime > 0) {
 	                    var idleTimeout = (parseInt(appConstants["console.idle.timeout"]) > 0) ? parseInt(appConstants["console.idle.timeout"]) : false;
@@ -100,7 +101,7 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
         error:0
     };
 
-    Hooks.register("appConstants:once", function() {
+    Hooks.register("init:once", function() {
         /* Check IAF version */
         $http.get("https://api.github.com/repos/ibissource/iaf/releases").then(function(response) {
             if(!response  || !response.data) return false;
@@ -561,6 +562,17 @@ function EnvironmentVariablesCtrl($scope, Api, appConstants) {
     });
 };
 
+function ShowMonitorsCtrl($scope, Api) {
+    $scope.monitors = [];
+    $scope.enabled = false;
+    $scope.destinations = [];
+    Api.Get("monitors", function(data) {
+        $scope.enabled = data.enabled;
+        $scope.monitors = data.monitors;
+        $scope.destinations = data.destinations;
+    });
+};
+
 function TestPipelineCtrl($scope, Api, Alert, $interval) {
     $scope.state = [];
     $scope.file = null;
@@ -686,5 +698,6 @@ angular
     .controller('EnvironmentVariablesCtrl', EnvironmentVariablesCtrl)
     .controller('ExecuteJdbcQueryCtrl', ExecuteJdbcQueryCtrl)
     .controller('BrowseJdbcTablesCtrl', BrowseJdbcTablesCtrl)
+    .controller('ShowMonitorsCtrl', ShowMonitorsCtrl)
     .controller('TestPipelineCtrl', TestPipelineCtrl)
     .controller('TestServiceListenerCtrl', TestServiceListenerCtrl);

@@ -3492,6 +3492,7 @@ ul.unstyled,
 ol.unstyled {
   list-style: none outside none;
   margin-left: 0;
+  padding-left: 0;
 }
 .big-icon {
   font-size: 160px !important;
@@ -3793,6 +3794,7 @@ code {
   border-image: none;
   border-style: solid solid none;
   border-width: 1px 0;
+  overflow: visible;
 }
 .ibox-footer {
   color: inherit;

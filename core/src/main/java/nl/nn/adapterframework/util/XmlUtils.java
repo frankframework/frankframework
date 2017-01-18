@@ -1171,13 +1171,13 @@ public class XmlUtils {
 	 *                      be safely cast to type
 	 *                      <code>org.w3c.dom.Element</code>.
 	 */
-	public static Collection getChildTags(Element el, String tag) {
-		Collection c;
+	public static Collection<Node> getChildTags(Element el, String tag) {
+		Collection<Node> c;
 		NodeList nl;
 		int len;
 		boolean allChildren;
 
-		c = new LinkedList();
+		c = new LinkedList<Node>();
 		nl = el.getChildNodes();
 		len = nl.getLength();
 

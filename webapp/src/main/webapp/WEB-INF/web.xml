@@ -27,6 +27,7 @@
 			nl.nn.adapterframework.webcontrol.api.ShowSecurityItems,
 			nl.nn.adapterframework.webcontrol.api.BrowseJdbcTable,
 			nl.nn.adapterframework.webcontrol.api.ShowIbisstoreSummary,
+			nl.nn.adapterframework.webcontrol.api.ShowMonitors,
 		</param-value>
 	</context-param>
 

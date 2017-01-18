@@ -198,6 +198,10 @@ public class Init extends Base {
 				if(method.getDeclaringClass() == getClass()){
 					continue;
 				}
+				if(method.getDeclaringClass().getName().endsWith("ShowMonitors") && 
+					!AppConstants.getInstance().getBoolean("monitoring.enabled", false)) {
+					continue;
+				}
 
 				Map<String, Object> resource = new HashMap<String, Object>(3);
 

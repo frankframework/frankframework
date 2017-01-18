@@ -47,8 +47,8 @@ public class Trigger {
 	private SeverityEnum severity;
 	private boolean alarm;
 
-	private List eventCodes = new ArrayList();
-	private Map adapterFilters = new LinkedHashMap();
+	private List<String> eventCodes = new ArrayList<String>();
+	private Map<String, AdapterFilter> adapterFilters = new LinkedHashMap<String, AdapterFilter>();
 	
 	private int sourceFiltering;
 	private boolean filterExclusive = false;
@@ -56,7 +56,7 @@ public class Trigger {
 	private int threshold=0;
 	private int period=0;
 	
-	private LinkedList eventDts=null;
+	private LinkedList<Date> eventDts=null;
 		
 
 	public void configure() throws ConfigurationException {
@@ -71,7 +71,7 @@ public class Trigger {
 		}
 		if (threshold>0) {
 			if (eventDts==null) {
-				eventDts = new LinkedList();
+				eventDts = new LinkedList<Date>();
 			}
 		} else {
 			eventDts=null;
@@ -137,7 +137,7 @@ public class Trigger {
 			filtersXml.addAttribute("filterExclusive",isFilterExclusive());
 			trigger.addSubElement(filtersXml);
 			if (getSourceFiltering()!=SOURCE_FILTERING_NONE) {
-				for (Iterator it=getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
+				for (Iterator<String> it=getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
 					String adapterName=(String)it.next();
 					AdapterFilter af = (AdapterFilter)getAdapterFilters().get(adapterName);
 					XmlBuilder adapter=new XmlBuilder("adapterfilter");
@@ -219,7 +219,7 @@ public class Trigger {
 		return (String[])eventCodes.toArray(new String[eventCodes.size()]);
 	}
 
-	public List getEventCodeList() {
+	public List<String> getEventCodeList() {
 		return eventCodes;
 	}
 
@@ -230,7 +230,7 @@ public class Trigger {
 	 */
 	public void setAdapters(String[] arr) {
 		log.debug(getLogPrefix()+"setAdapters()");
-		for (Iterator it=adapterFilters.keySet().iterator(); it.hasNext();) {
+		for (Iterator<String> it=adapterFilters.keySet().iterator(); it.hasNext();) {
 			String adapterName=(String)it.next();
 			boolean found=true;
 			for(int i=0; i<arr.length; i++) {
@@ -268,10 +268,10 @@ public class Trigger {
 		return result;
 	}
 
-	public List getAdapterList() {
-		List result=new LinkedList();
+	public List<IAdapter> getAdapterList() {
+		List<IAdapter> result=new LinkedList<IAdapter>();
 		MonitorManager mm=MonitorManager.getInstance();
-		for (Iterator it=adapterFilters.keySet(). iterator(); it.hasNext();) {
+		for (Iterator<String> it=adapterFilters.keySet(). iterator(); it.hasNext();) {
 			String adapterName=(String)it.next();
 			IAdapter adapter=mm.findAdapterByName(adapterName);
 			if (adapter!=null) {
@@ -291,7 +291,7 @@ public class Trigger {
 	 */
 	public void setSources(String[] sourcesArr) {
 		log.debug(getLogPrefix()+"setSources()");
-		List list=MonitorManager.getInstance().getEventSources((List)null);
+		List<EventThrowing> list=MonitorManager.getInstance().getEventSources((List<String>)null);
 		log.debug(getLogPrefix()+"setSources() clearing adapterFilter");
 		adapterFilters.clear();
 		for (int i=0; i<list.size();i++) {
@@ -327,7 +327,7 @@ public class Trigger {
 	 * get List of all throwers that can trigger this Trigger.
 	 */
 	public String[] getSources() {
-		List list=new ArrayList();
+		List<String> list=new ArrayList<String>();
 		for(Iterator adapterIterator=adapterFilters.entrySet().iterator();adapterIterator.hasNext();) {
 			Map.Entry entry= (Map.Entry)adapterIterator.next();
 			String adapterName=(String)entry.getKey();
@@ -344,9 +344,9 @@ public class Trigger {
 	}
 
 
-	public List getSourceList() {
+	public List<EventThrowing> getSourceList() {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"getSourceList() collecting sources:");
-		List list=new ArrayList();
+		List<EventThrowing> list=new ArrayList<EventThrowing>();
 		MonitorManager mm = MonitorManager.getInstance();
 		for(Iterator adapterIterator=adapterFilters.entrySet().iterator();adapterIterator.hasNext();) {
 			Map.Entry entry= (Map.Entry)adapterIterator.next();
@@ -391,7 +391,7 @@ public class Trigger {
 		return period;
 	}
 
-	public Map getAdapterFilters() {
+	public Map<String, AdapterFilter> getAdapterFilters() {
 		return adapterFilters;
 	}
 

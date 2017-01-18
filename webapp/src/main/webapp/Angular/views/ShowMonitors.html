@@ -1,0 +1,73 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content animated fadeInRight" ng-controller="ShowMonitorsCtrl">
+<!-- 	<div class="row"> -->
+<!-- 		<div class="col-lg-12"> -->
+<!-- 			<div class="ibox float-e-margins"> -->
+<!-- 				<div class="ibox-title"> -->
+<!-- 					<h4>Monitors</h4> -->
+<!-- 				</div> -->
+<!-- 				<div class="ibox-content" style="overflow: visible;"> -->
+<!-- 					<div class="col-md-12"> -->
+<!-- 						tekst -->
+<!-- 					</div> -->
+<!-- 				</div> -->
+<!-- 			</div> -->
+<!-- 		</div> -->
+<!-- 	</div> -->
+	<div class="row">
+		<div class="col-lg-6" ng-repeat="monitor in monitors">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title {{monitor.raised ? 'danger' : 'primary'}}">
+					<div class="pull-right"><button type="button" class="btn btn-info btn-xs pull-left m-r-sm">raise</button> <i class="fa fa-cogs check-link m-xxs" aria-hidden="true"></i> <i class="fa fa-times check-link m-xxs" aria-hidden="true"></i></div>
+					<h4>{{monitor.name}} <small class="m-l-sm ng-binding">&nbsp;({{monitor.type}})</small></h4>
+				</div>
+				<div class="ibox-content">
+					<div ng-if="monitor.raised" class="row alert {{monitor.severity == 'HARMLESS' ? 'alert-info' : (monitor.severity == 'WARNING' ? 'alert-warning' : 'alert-danger')}}" role="alert">
+						<div class="col-md-6">
+							Changed: <span to-date time="{{monitor.changed}}"></span><br/>
+							Hits: {{monitor.hits}} since last raise<br/>
+						</div>
+						<div class="col-md-6">
+							Source: {{monitor.source}}<br/>
+							Severity: {{monitor.severity}}<br/>
+						</div>
+					</div>
+					<div ng-if="monitor.destinations.length > 0">
+						<strong>Notifications:</strong>
+						<span ng-repeat="destination in monitor.destinations">
+							{{destination}}<span ng-if="!$last">,</span>
+						</span>
+					</div>
+					<div class="row">
+						<div class="col-md-12 table-responsive">
+							<table class="table no-margins">
+								<thead>
+									<tr>
+										<th class="col-md-1">Type</th>
+										<th class="col-md-5">EventCodes</th>
+										<th class="col-md-3">Sources</th>
+										<th class="col-md-1">Severity</th>
+										<th class="col-md-1">Threshold</th>
+										<th class="col-md-1">Period</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr ng-repeat="trigger in monitor.triggers">
+										<td>{{trigger.type}}</td>
+										<td><ul class="unstyled no-margins"><li ng-repeat="event in trigger.eventCodes">{{event}}</li></ul></td>
+										<td><ul class="unstyled no-margins"><li ng-repeat="source in trigger.sources">{{source}}</li></ul></td>
+										<td>{{trigger.severity}}</td>
+										<td>{{trigger.threshold}}</td>
+										<td>{{trigger.period}}</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

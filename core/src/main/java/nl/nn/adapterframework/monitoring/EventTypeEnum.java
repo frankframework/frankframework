@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.monitoring;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,18 +50,16 @@ public class EventTypeEnum extends Enum {
 	public static Map getEnumMap() {
 		return getEnumMap(EventTypeEnum.class);
 	}
-	public static String getNames() {
-		String result = "[";
+	public static String[] getNames() {
+		List<String> list = new ArrayList<String>();
 		for (Iterator i = iterator(EventTypeEnum.class); i.hasNext();) {
 			EventTypeEnum c = (EventTypeEnum)i.next();
-			result += c.getName();
-			if (i.hasNext())
-				result += ",";
+			list.add(c.getName());
 		}
-		result += "]";
-		return result;
-
+		String[] result=new String[list.size()];
+		return result=(String[])list.toArray(result);
 	}
+
 	public boolean isState(String state) {
 		return this.equals(getEnum(state.trim()));
 	}

@@ -37,7 +37,7 @@ public class SapSystemFactory {
 	private Logger log;
 
 	private static SapSystemFactory self = null;
-	private Hashtable sapSystems = new Hashtable();
+	private Hashtable<String, Object> sapSystems = new Hashtable<String, Object>();
 
 	private SapSystemFactory() {
 		super();
@@ -71,14 +71,14 @@ public class SapSystemFactory {
 		}
 	}
 
-	public Iterator getRegisteredSapSystemNames() {
-		SortedSet sortedKeys = new TreeSet(sapSystems.keySet());
+	public Iterator<String> getRegisteredSapSystemNames() {
+		SortedSet<String> sortedKeys = new TreeSet<String>(sapSystems.keySet());
 		return sortedKeys.iterator();
 	}
 
-	public List getRegisteredSapSystemsNamesAsList() {
-		Iterator it = getRegisteredSapSystemNames();
-		List result = new ArrayList();
+	public List<String> getRegisteredSapSystemsNamesAsList() {
+		Iterator<String> it = getRegisteredSapSystemNames();
+		List<String> result = new ArrayList<String>();
 		while (it.hasNext()) {
 			result.add((String) it.next());
 		}

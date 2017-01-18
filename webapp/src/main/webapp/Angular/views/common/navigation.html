@@ -53,7 +53,7 @@
             <li ui-sref-active="active">
                 <a ui-sref="pages.security_items"><i class="fa fa-lock"></i> <span class="nav-label">Security Items</span></a>
             </li>
-            <li ui-sref-active="active">
+            <li ng-if="monitoring" ui-sref-active="active">
                 <a ui-sref="pages.monitors"><i class="fa fa-clone"></i> <span class="nav-label">Monitors</span></a>
             </li>
             <li ng-class="{active: $state.includes('testing')}">

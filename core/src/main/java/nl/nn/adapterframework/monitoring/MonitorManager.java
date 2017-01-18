@@ -55,23 +55,23 @@ public class MonitorManager implements EventHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Configuration configuration;
-	private List monitors = new ArrayList();				// all monitors managed by this monitormanager
-	private Map destinations=new LinkedHashMap();	// all destinations (that can receive status messages) managed by this monitormanager
+	private List<Monitor> monitors = new ArrayList<Monitor>();				// all monitors managed by this monitormanager
+	private Map<String, IMonitorAdapter> destinations = new LinkedHashMap<String, IMonitorAdapter>();	// all destinations (that can receive status messages) managed by this monitormanager
 
-	private Map  eventNotificationListeners = new LinkedHashMap(); // map by event of triggers that need to be notified of occurrence of event.
+	private Map eventNotificationListeners = new LinkedHashMap(); // map by event of triggers that need to be notified of occurrence of event.
 
 
-	private List eventThrowers = new ArrayList();			// static list of all throwers of events;
+	private List<EventThrowing> eventThrowers = new ArrayList<EventThrowing>();			// static list of all throwers of events;
 
-	private Map  eventsByThrower = new LinkedHashMap();
-	private Map  eventsByThrowerType = new LinkedHashMap();
-	private Map  throwersByEvent = new LinkedHashMap();
-	private Map  throwerTypesByEvent = new LinkedHashMap();
+	private Map eventsByThrower = new LinkedHashMap();
+	private Map eventsByThrowerType = new LinkedHashMap();
+	private Map throwersByEvent = new LinkedHashMap();
+	private Map throwerTypesByEvent = new LinkedHashMap();
 
-	private Map  throwersByAdapter = new LinkedHashMap();
-	private Map  adaptersByThrowers = new LinkedHashMap();
-	private Map  eventsByAdapter = new LinkedHashMap();
-	private Map  adaptersByEvent = new LinkedHashMap();
+	private Map throwersByAdapter = new LinkedHashMap();
+	private Map adaptersByThrowers = new LinkedHashMap();
+	private Map eventsByAdapter = new LinkedHashMap();
+	private Map adaptersByEvent = new LinkedHashMap();
 
 
 
@@ -103,7 +103,7 @@ public class MonitorManager implements EventHandler {
 		if (traceReconfigure && log.isDebugEnabled()) log.debug("reconfigure() clearing eventNotificationListeners");
 		eventNotificationListeners.clear();
 		if (traceReconfigure && log.isDebugEnabled()) log.debug("reconfigure() configuring destinations");
-		for (Iterator it=destinations.keySet().iterator(); it.hasNext();) {
+		for (Iterator<String> it=destinations.keySet().iterator(); it.hasNext();) {
 			String name=(String)it.next();
 			IMonitorAdapter destination = getDestination(name);
 			destination.configure();
@@ -246,7 +246,7 @@ public class MonitorManager implements EventHandler {
 	public IMonitorAdapter getDestination(String name) {
 		return (IMonitorAdapter)destinations.get(name);
 	}
-	public Map getDestinations() {
+	public Map<String, IMonitorAdapter> getDestinations() {
 		return destinations;
 	}
 
@@ -288,7 +288,7 @@ public class MonitorManager implements EventHandler {
 		return null;
 	}
 
-	public List getMonitors() {
+	public List<Monitor> getMonitors() {
 		return monitors;
 	}
 
@@ -300,10 +300,10 @@ public class MonitorManager implements EventHandler {
 	 * Returns a list of eventcodes that each can be thrown by at least one of the throwers in the list.
 	 * Used by EditTrigger to populate events-listbox.
 	 */
-	public List getEventCodesBySources(List throwers) {
+	public List getEventCodesBySources(List<EventThrowing> throwers) {
 		if (log.isDebugEnabled()) {
 			log.debug("getEventCodesBySources() throwers:");
-			for (Iterator it=throwers.iterator(); it.hasNext();) {
+			for (Iterator<EventThrowing> it=throwers.iterator(); it.hasNext();) {
 				EventThrowing thrower=(EventThrowing)it.next();
 				log.debug("getEventCodesBySources() thrower ["+thrower.getEventSourceName()+"]");
 			}
@@ -392,18 +392,18 @@ public class MonitorManager implements EventHandler {
 	/**
 	 * Returns a list of throwers that can throw at least one of the events in the list.
 	 */
-	public List getEventSources(List eventCodes) {
+	public List<EventThrowing> getEventSources(List<String> eventCodes) {
 		if (eventCodes!=null) {
 			if (eventCodes.size()==0) {
 				return new ArrayList();
 			} else {
-				List result=new LinkedList();
+				List<EventThrowing> result=new LinkedList<EventThrowing>();
 				for (Iterator sit=eventsByThrower.keySet().iterator(); sit.hasNext();) {
 					EventThrowing thrower=(EventThrowing)sit.next();
 					log.debug("getEventSources() checks if thrower ["+thrower.getEventSourceName()+"] can throw one of the specified events");
 					List eventsOfThrower = (List)eventsByThrower.get(thrower);
 					boolean foundEvent=false;
-					for (Iterator eit=eventCodes.iterator(); !foundEvent && eit.hasNext();) {
+					for (Iterator<String> eit=eventCodes.iterator(); !foundEvent && eit.hasNext();) {
 						String eventCode=(String)eit.next();
 						log.debug("getEventSources() checks if thrower ["+thrower.getEventSourceName()+"] can throw event ["+eventCode+"]");
 
@@ -428,9 +428,9 @@ public class MonitorManager implements EventHandler {
 	 * Returns a list of names of throwers that can throw at least one of the events in the list.
 	 * Used by EditTrigger to populate sources-listbox.
 	 */
-	public List getEventSourceNamesByEventCodes(List eventCodes) {
-		List result = new ArrayList();
-		List sources=getEventSources(eventCodes);
+	public List<String> getEventSourceNamesByEventCodes(List<String> eventCodes) {
+		List<String> result = new ArrayList<String>();
+		List<EventThrowing> sources=getEventSources(eventCodes);
 		if (sources!=null) {
 			for (int i=0; i<sources.size(); i++) {
 				EventThrowing source=(EventThrowing)sources.get(i);

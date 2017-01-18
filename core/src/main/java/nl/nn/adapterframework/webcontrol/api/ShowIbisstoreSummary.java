@@ -18,7 +18,6 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -176,9 +175,9 @@ public final class ShowIbisstoreSummary extends Base {
 }
 
 class IbisstoreSummaryQuerySender extends DirectQuerySender {
-	private Map slotmap = new HashMap();
+	private Map<String, SlotIdRecord> slotmap = new HashMap<String, SlotIdRecord>();
 	
-	public void setSlotmap(Map slotmap) {
+	public void setSlotmap(Map<String, SlotIdRecord> slotmap) {
 		this.slotmap = slotmap;
 	}
 

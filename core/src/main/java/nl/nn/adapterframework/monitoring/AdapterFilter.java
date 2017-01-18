@@ -28,7 +28,7 @@ public class AdapterFilter {
 	
 	private String adapter;
 	
-	private List subObjectList=new ArrayList();
+	private List<String> subObjectList=new ArrayList<String>();
 
 	/**
 	 * Set the name of the Adapter that this AdapterFilter filters on.
@@ -49,7 +49,7 @@ public class AdapterFilter {
 	/**
 	 * Get the list of registered names of SubObjects included in the filter.
 	 */
-	public List getSubObjectList() {
+	public List<String> getSubObjectList() {
 		return subObjectList;
 	}
 }

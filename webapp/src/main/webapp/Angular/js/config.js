@@ -39,8 +39,13 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
 
     .state('pages', {
         abstract: true,
-        controller: function(authService) {
+        controller: function($scope, authService, Hooks) {
             authService.loggedin(); //Check if the user is logged in.
+            $scope.monitoring = false;
+            Hooks.register("appConstants:once", function(data) {
+                $scope.monitoring = (data["monitoring.enabled"] === 'true');
+            });
+            console.log($scope.monitoring);
         },
         templateUrl: "views/common/content.html",
     })
@@ -83,7 +88,7 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
     })
     .state('pages.configuration', {
         url: "/configuration",
-        templateUrl: "views/show_configuration.html",
+        templateUrl: "views/ShowConfiguration.html",
         data: {
             pageTitle: 'Show Configuration',
             breadcrumbs: 'Show Configuration',
@@ -124,7 +129,7 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
     })
     .state('pages.test_pipeline', {
         url: "/test-pipeline",
-        templateUrl: "views/test_pipeline.html",
+        templateUrl: "views/TestPipeline.html",
         data: {
             pageTitle: 'Test a PipeLine',
             breadcrumbs: 'Test a PipeLine'
@@ -132,7 +137,7 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
     })
     .state('pages.test_servicelistener', {
         url: "/test-serviceListener",
-        templateUrl: "views/test_servicelistener.html",
+        templateUrl: "views/TestServiceListener.html",
         data: {
             pageTitle: 'Test a ServiceListener',
             breadcrumbs: 'Test a ServiceListener'
@@ -162,7 +167,7 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
     })
     .state('pages.environment_variables', {
         url: "/environment-variables",
-        templateUrl: "views/environment_variables.html",
+        templateUrl: "views/ShowEnvironmentVariables.html",
         data: {
             pageTitle: 'Environment Variables',
             breadcrumbs: 'Environment Variables'
@@ -173,7 +178,7 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
     })
     .state('pages.execute_query', {
         url: "/jdbc/execute-query",
-        templateUrl: "views/jdbc_execute_query.html",
+        templateUrl: "views/ExecuteJdbcQuery.html",
         data: {
             pageTitle: 'Execute JDBC Query',
             breadcrumbs: 'JDBC > Execute Query'
@@ -181,7 +186,7 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
     })
     .state('pages.browse_tables', {
         url: "/jdbc/browse-tables",
-        templateUrl: "views/jdbc_browse_tables.html",
+        templateUrl: "views/BrowseJdbcTable.html",
         data: {
             pageTitle: 'Browse JDBC Tables',
             breadcrumbs: 'JDBC > Browse Tables'
@@ -207,13 +212,10 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
     })
     .state('pages.monitors', {
         url: "/monitors",
-        templateUrl: "views/empty_page.html",
+        templateUrl: "views/ShowMonitors.html",
         data: {
-            pageTitle: 'Show Configuration',
-            breadcrumbs: 'Show Configuration'
-        },
-        controller: function(Notification){
-            Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
+            pageTitle: 'Show Monitors',
+            breadcrumbs: 'Show Monitors'
         }
     })
     .state('pages.ibisstore_summary', {

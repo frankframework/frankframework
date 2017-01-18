@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.monitoring;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -45,17 +46,14 @@ public class SeverityEnum extends Enum {
 	public static Map getEnumMap() {
 		return getEnumMap(SeverityEnum.class);
 	}
-	public static String getNames() {
-		String result = "[";
+	public static String[] getNames() {
+		List<String> list = new ArrayList<String>();
 		for (Iterator i = iterator(SeverityEnum.class); i.hasNext();) {
-			SeverityEnum c = (SeverityEnum)i.next();
-			result += c.getName();
-			if (i.hasNext())
-				result += ",";
+			SeverityEnum c = (SeverityEnum) i.next();
+			list.add(c.getName());
 		}
-		result += "]";
-		return result;
-
+		String[] result=new String[list.size()];
+		return result=(String[])list.toArray(result);
 	}
 	public boolean isState(String state) {
 		return this.equals(getEnum(state.trim()));

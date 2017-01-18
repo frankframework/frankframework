@@ -52,6 +52,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
 * Shows the used certificate.
@@ -207,11 +208,11 @@ public final class ShowSecurityItems extends Base {
 
 	private ArrayList<Object> addSapSystems() {
 		ArrayList<Object> sapSystemList = new ArrayList<Object>();
-		List sapSystems = null;
+		List<String> sapSystems = null;
 		Object sapSystemFactory = null;
 		Method factoryGetSapSystemInfo = null;
 		try {
-			Class c = Class.forName("nl.nn.adapterframework.extensions.sap.SapSystemFactory");
+			Class<?> c = Class.forName("nl.nn.adapterframework.extensions.sap.SapSystemFactory");
 			Method factoryGetInstance = c.getMethod("getInstance");
 			sapSystemFactory = factoryGetInstance.invoke(null, null);
 			Method factoryGetRegisteredSapSystemsNamesAsList = c.getMethod("getRegisteredSapSystemsNamesAsList");
@@ -222,7 +223,7 @@ public final class ShowSecurityItems extends Base {
 		}
 		
 		if (sapSystems!=null) {
-			Iterator iter = sapSystems.iterator();
+			Iterator<String> iter = sapSystems.iterator();
 			while (iter.hasNext()) {
 				Map<String, Object> ss = new HashMap<String, Object>();
 				String name = (String) iter.next();
@@ -240,7 +241,7 @@ public final class ShowSecurityItems extends Base {
 
 	private ArrayList<Object> addAuthEntries() {
 		ArrayList<Object> authEntries = new ArrayList<Object>();
-		Collection entries = null;
+		Collection<Node> entries = null;
 		try {
 			URL url = ClassUtils.getResourceURL(this, AUTHALIAS_XSLT);
 			if (url != null) {
@@ -263,7 +264,7 @@ public final class ShowSecurityItems extends Base {
 		}
 
 		if (entries != null) {
-			Iterator iter = entries.iterator();
+			Iterator<Node> iter = entries.iterator();
 			while (iter.hasNext()) {
 				Map<String, Object> ae = new HashMap<String, Object>();
 				Element itemElement = (Element) iter.next();
