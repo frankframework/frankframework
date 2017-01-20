@@ -1,0 +1,200 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content animated fadeInRight" ng-controller="AdapterStatisticsCtrl">
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h4>{{adapterName}} Statistics</h4>
+				</div>
+				<div class="ibox-content">
+					<div class="col-md-12 table-responsive">
+						<h4>Adapter statistics by the hour</h4>
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Start time</th>
+									<td ng-repeat="t in stats.hourly">{{t.time}}</td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<th>Count</th>
+									<td ng-repeat="t in stats.hourly">{{t.count}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="col-md-4 m-t-md table-responsive">
+						<h4>Total message processing duration (in ms)</h4>
+						<table class="table">
+							<tbody>
+								<tr ng-repeat="(k, v) in stats.totalMessageProccessingTime">
+									<td>{{k}}</td>
+									<td>{{v}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="col-md-4 m-t-md table-responsive">
+						<h4>Counts for receivers</h4>
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Receiver</th>
+									<th>Messages received/retried</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="receiver in stats.receivers">
+									<td>{{receiver.name}}</td>
+									<td>{{receiver.messagesReceived}}/{{receiver.messagesRetried}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="col-md-12 m-t-md table-responsive">
+						<h4>Process statistics for receivers (in ms)</h4>
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Receiver</th>
+									<th>Threads</th>
+									<th>Count</th>
+									<th>Min</th>
+									<th>Max</th>
+									<th>Avg</th>
+									<th>stdDev</th>
+									<th>Sum</th>
+									<th>First</th>
+									<th>Last</th>
+									<th>< 100ms</th>
+									<th>< 1000ms</th>
+									<th>< 2000ms</th>
+									<th>< 10000ms</th>
+									<th>p50</th>
+									<th>p90</th>
+									<th>p95</th>
+									<th>p98</th>
+								</tr>
+							</thead>
+							<tbody ng-repeat="receiver in stats.receivers">
+								<tr ng-repeat="p in receiver.processing">
+									<td>{{receiver.name}}</td>
+									<td>Thread {{$index}}</td>
+									<td>{{p.count}}</td>
+									<td>{{p.min}}</td>
+									<td>{{p.max}}</td>
+									<td>{{p.avg}}</td>
+									<td>{{p.stdDev}}</td>
+									<td>{{p.sum}}</td>
+									<td>{{p.first}}</td>
+									<td>{{p.last}}</td>
+									<td>{{p['100ms']}}</td>
+									<td>{{p['1000ms']}}</td>
+									<td>{{p['2000ms']}}</td>
+									<td>{{p['10000ms']}}</td>
+									<td>{{p.p50}}</td>
+									<td>{{p.p90}}</td>
+									<td>{{p.p95}}</td>
+									<td>{{p.p98}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="col-md-12 m-t-md table-responsive">
+						<h4>Duration statistics per pipe (in ms)</h4>
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Receiver</th>
+									<th>Count</th>
+									<th>Min</th>
+									<th>Max</th>
+									<th>Avg</th>
+									<th>stdDev</th>
+									<th>Sum</th>
+									<th>First</th>
+									<th>Last</th>
+									<th>< 100ms</th>
+									<th>< 1000ms</th>
+									<th>< 2000ms</th>
+									<th>< 10000ms</th>
+									<th>p50</th>
+									<th>p90</th>
+									<th>p95</th>
+									<th>p98</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="(n,p) in stats.durationPerPipe">
+									<td>{{n}}</td>
+									<td>{{p.count}}</td>
+									<td>{{p.min}}</td>
+									<td>{{p.max}}</td>
+									<td>{{p.avg}}</td>
+									<td>{{p.stdDev}}</td>
+									<td>{{p.sum}}</td>
+									<td>{{p.first}}</td>
+									<td>{{p.last}}</td>
+									<td>{{p['100ms']}}</td>
+									<td>{{p['1000ms']}}</td>
+									<td>{{p['2000ms']}}</td>
+									<td>{{p['10000ms']}}</td>
+									<td>{{p.p50}}</td>
+									<td>{{p.p90}}</td>
+									<td>{{p.p95}}</td>
+									<td>{{p.p98}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="col-md-12 m-t-md table-responsive">
+						<h4>Size statistics per pipe (in bytes)</h4>
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Count</th>
+									<th>Min</th>
+									<th>Max</th>
+									<th>Avg</th>
+									<th>stdDev</th>
+									<th>Sum</th>
+									<th>First</th>
+									<th>Last</th>
+									<th>< 100000B</th>
+									<th>< 1000000B</th>
+									<th>p50</th>
+									<th>p90</th>
+									<th>p95</th>
+									<th>p98</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="(n,p) in stats.sizePerPipe">
+									<td>{{n}}</td>
+									<td>{{p.count}}</td>
+									<td>{{p.min}}</td>
+									<td>{{p.max}}</td>
+									<td>{{p.avg}}</td>
+									<td>{{p.stdDev}}</td>
+									<td>{{p.sum}}</td>
+									<td>{{p.first}}</td>
+									<td>{{p.last}}</td>
+									<td>{{p['100000B']}}</td>
+									<td>{{p['1000000B']}}</td>
+									<td>{{p.p50}}</td>
+									<td>{{p.p90}}</td>
+									<td>{{p.p95}}</td>
+									<td>{{p.p98}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

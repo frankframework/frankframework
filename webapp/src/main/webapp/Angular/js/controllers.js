@@ -437,6 +437,85 @@ function NotificationsCtrl($scope, Api, $stateParams, Hooks, Notification) {
     });
 };
 
+function TranslateCtrl($translate, $scope) {
+    $scope.changeLanguage = function (langKey) {
+        $translate.use(langKey);
+        $scope.language = langKey;
+    };
+};
+
+
+function ShowConfigurationCtrl($scope, Api) {
+    this.configurationRadio = 'true';
+    $scope.selectedConfiguration = "All";
+    $scope.loadedConfiguration = true;
+
+    $scope.loadedConfig = function(bool) {
+        $scope.loadedConfiguration = (bool == "true") ? true : false;
+        getConfiguration();
+    };
+
+    $scope.changeConfiguration = function(name) {
+        $scope.selectedConfiguration = name;
+        getConfiguration();
+    };
+
+    getConfiguration = function() {
+        var uri = "configurations";
+        if($scope.selectedConfiguration != "All") uri += "/" + $scope.selectedConfiguration;
+        if($scope.loadedConfiguration) uri += "?loadedConfiguration=true";
+        Api.Get(uri, function(data) {
+            $scope.configuration = data;
+        });
+    };
+    getConfiguration();
+};
+
+function EnvironmentVariablesCtrl($scope, Api, appConstants) {
+    $scope.variables = [];
+    Api.Get("environmentvariables", function(data) {
+        $scope.variables = data;
+    });
+};
+
+function AdapterStatisticsCtrl($scope, Api, $stateParams) {
+    var adapterName = $stateParams.name;
+    if(!adapterName)
+        return swal("Adapter not found!");
+    $scope.adapterName = adapterName;
+
+    $scope.stats = [];
+    Api.Get("adapters/"+adapterName+"/statistics", function(data) {
+        $scope.stats = data;
+    });
+};
+
+function SecurityItemsCtrl($scope, Api) {
+    $scope.monitors = [];
+    $scope.enabled = false;
+    $scope.destinations = [];
+    Api.Get("securityitems", function(data) {
+        $scope.enabled = data.enabled;
+        $scope.monitors = data.monitors;
+        $scope.destinations = data.destinations;
+    });
+};
+
+function SchedulerCtrl($scope, Api) {
+};
+
+function LoggingCtrl($scope, Api) {
+};
+
+function IBISstoreSummaryCtrl($scope, Api) {
+};
+
+function SendJmsMessageCtrl($scope, Api) {
+};
+
+function BrowseJmsQueueCtrl($scope, Api) {
+};
+
 function ExecuteJdbcQueryCtrl($scope, Api, $timeout, $state) {
     $scope.jmsRealms = {};
     $scope.resultTypes = {};
@@ -527,39 +606,6 @@ function BrowseJdbcTablesCtrl($scope, Api, $timeout, $state) {
     $scope.reset = function() {
         $scope.result = "";
     };
-};
-
-function ShowConfigurationCtrl($scope, Api) {
-    this.configurationRadio = 'true';
-    $scope.selectedConfiguration = "All";
-    $scope.loadedConfiguration = true;
-
-    $scope.loadedConfig = function(bool) {
-        $scope.loadedConfiguration = (bool == "true") ? true : false;
-        getConfiguration();
-    };
-
-    $scope.changeConfiguration = function(name) {
-        $scope.selectedConfiguration = name;
-        getConfiguration();
-    };
-
-    getConfiguration = function() {
-        var uri = "configurations";
-        if($scope.selectedConfiguration != "All") uri += "/" + $scope.selectedConfiguration;
-        if($scope.loadedConfiguration) uri += "?loadedConfiguration=true";
-        Api.Get(uri, function(data) {
-            $scope.configuration = data;
-        });
-    };
-    getConfiguration();
-};
-
-function EnvironmentVariablesCtrl($scope, Api, appConstants) {
-    $scope.variables = [];
-    Api.Get("environmentvariables", function(data) {
-        $scope.variables = data;
-    });
 };
 
 function ShowMonitorsCtrl($scope, Api) {
@@ -677,13 +723,6 @@ function TestServiceListenerCtrl($scope, Api, Alert, $interval) {
     };
 };
 
-function TranslateCtrl($translate, $scope) {
-    $scope.changeLanguage = function (langKey) {
-        $translate.use(langKey);
-        $scope.language = langKey;
-    };
-};
-
 angular
     .module('iaf.beheerconsole')
     .controller('LoginCtrl', LoginCtrl)
@@ -696,6 +735,13 @@ angular
 
     .controller('ShowConfigurationCtrl', ShowConfigurationCtrl)
     .controller('EnvironmentVariablesCtrl', EnvironmentVariablesCtrl)
+    .controller('AdapterStatisticsCtrl', AdapterStatisticsCtrl)
+    .controller('SecurityItemsCtrl', SecurityItemsCtrl)
+    .controller('SchedulerCtrl', SchedulerCtrl)
+    .controller('LoggingCtrl', LoggingCtrl)
+    .controller('IBISstoreSummaryCtrl', IBISstoreSummaryCtrl)
+    .controller('SendJmsMessageCtrl', SendJmsMessageCtrl)
+    .controller('BrowseJmsQueueCtrl', BrowseJmsQueueCtrl)
     .controller('ExecuteJdbcQueryCtrl', ExecuteJdbcQueryCtrl)
     .controller('BrowseJdbcTablesCtrl', BrowseJdbcTablesCtrl)
     .controller('ShowMonitorsCtrl', ShowMonitorsCtrl)

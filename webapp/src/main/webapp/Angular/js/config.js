@@ -45,7 +45,6 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
             Hooks.register("appConstants:once", function(data) {
                 $scope.monitoring = (data["monitoring.enabled"] === 'true');
             });
-            console.log($scope.monitoring);
         },
         templateUrl: "views/common/content.html",
     })
@@ -55,7 +54,7 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
         controller: 'StatusCtrl as status',
         data: {
             pageTitle: 'Adapter Status',
-            breadcrumbs: 'Adapter Status',
+            breadcrumbs: 'Adapter > Status',
         }
         //parent: "pages"
     })
@@ -63,16 +62,16 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
         url: "/adapter",
         templateUrl: "views/adapter_status.html",
     })
-    .state('pages.adapter.filter', {
-        url: "{uri:.*}",
+    .state('pages.adapterstatistics', {
+        url: "/adapter/:name/statistics",
+        templateUrl: "views/adapter_statistics.html",
         data: {
-            pageTitle: 'Adapter Status',
-            breadcrumbs: 'Adapter Status > Filter'
+            pageTitle: 'Adapter',
+            breadcrumbs: 'Adapter > Statistics'
         },
-    })
-    .state('pages.adapter.get', {
-        url: "{uri:.*}",
-        controller: StatusCtrl,
+        params: {
+            id: 0,
+        },
     })
     .state('pages.notifications', {
         url: "/notifications",
@@ -90,41 +89,32 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
         url: "/configuration",
         templateUrl: "views/ShowConfiguration.html",
         data: {
-            pageTitle: 'Show Configuration',
+            pageTitle: 'Configuration',
             breadcrumbs: 'Show Configuration',
         }
     })
     .state('pages.logging', {
         url: "/logging",
-        templateUrl: "views/empty_page.html",
+        templateUrl: "views/ShowLogging.html",
         data: {
-            pageTitle: 'Show Configuration',
-            breadcrumbs: 'Show Configuration'
-        },
-        controller: function(Notification){
-            //Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
+            pageTitle: 'Logging',
+            breadcrumbs: 'Show Logging'
         }
     })
     .state('pages.send_message', {
         url: "/jms/send-message",
-        templateUrl: "views/empty_page.html",
+        templateUrl: "views/SendJmsMessage.html",
         data: {
-            pageTitle: 'Show Configuration',
-            breadcrumbs: 'Show Configuration'
-        },
-        controller: function(Notification){
-            //Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
+            pageTitle: 'Send JMS Message',
+            breadcrumbs: 'JMS > Send Message'
         }
     })
     .state('pages.browse_queue', {
         url: "/jms/browse-queue",
-        templateUrl: "views/empty_page.html",
+        templateUrl: "views/BrowseJmsQueue.html",
         data: {
-            pageTitle: 'Show Configuration',
-            breadcrumbs: 'Show Configuration'
-        },
-        controller: function(Notification){
-            Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
+            pageTitle: 'Browse JMS Queue',
+            breadcrumbs: 'JMS > Browse Queue'
         }
     })
     .state('pages.test_pipeline', {
@@ -132,7 +122,7 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
         templateUrl: "views/TestPipeline.html",
         data: {
             pageTitle: 'Test a PipeLine',
-            breadcrumbs: 'Test a PipeLine'
+            breadcrumbs: 'Test > PipeLine'
         }
     })
     .state('pages.test_servicelistener', {
@@ -140,29 +130,23 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
         templateUrl: "views/TestServiceListener.html",
         data: {
             pageTitle: 'Test a ServiceListener',
-            breadcrumbs: 'Test a ServiceListener'
+            breadcrumbs: 'Test > ServiceListener'
         }
     })
     .state('pages.webservices', {
         url: "/webservices",
         templateUrl: "views/empty_page.html",
         data: {
-            pageTitle: 'Show Configuration',
-            breadcrumbs: 'Show Configuration'
-        },
-        controller: function(Notification){
-            Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
+            pageTitle: 'Webservices',
+            breadcrumbs: 'Webservices'
         }
     })
     .state('pages.scheduler', {
         url: "/scheduler",
-        templateUrl: "views/empty_page.html",
+        templateUrl: "views/ShowScheduler.html",
         data: {
-            pageTitle: 'Show Configuration',
-            breadcrumbs: 'Show Configuration'
-        },
-        controller: function(Notification){
-            Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
+            pageTitle: 'Scheduler',
+            breadcrumbs: 'Scheduler'
         }
     })
     .state('pages.environment_variables', {
@@ -171,9 +155,6 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
         data: {
             pageTitle: 'Environment Variables',
             breadcrumbs: 'Environment Variables'
-        },
-        controller: function(Notification){
-            Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
         }
     })
     .state('pages.execute_query', {
@@ -201,54 +182,69 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
     })
     .state('pages.security_items', {
         url: "/security-items",
-        templateUrl: "views/empty_page.html",
+        templateUrl: "views/ShowSecurityItems.html",
         data: {
-            pageTitle: 'Show Configuration',
-            breadcrumbs: 'Show Configuration'
-        },
-        controller: function(Notification){
-            Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
+            pageTitle: 'Security Items',
+            breadcrumbs: 'Security Items'
         }
     })
     .state('pages.monitors', {
         url: "/monitors",
         templateUrl: "views/ShowMonitors.html",
         data: {
-            pageTitle: 'Show Monitors',
-            breadcrumbs: 'Show Monitors'
+            pageTitle: 'Monitors',
+            breadcrumbs: 'Monitors'
         }
     })
     .state('pages.ibisstore_summary', {
         url: "/ibisstore-summary",
-        templateUrl: "views/empty_page.html",
+        templateUrl: "views/ShowIbisstoreSummary.html",
         data: {
-            pageTitle: 'Show Configuration',
-            breadcrumbs: 'Show Configuration'
-        },
-        controller: function(Notification){
-            Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
+            pageTitle: 'IBISstore Summary',
+            breadcrumbs: 'JDBC > IBISstore Summary'
         }
     })
     .state('pages.larva', {
         url: "/testing/larva",
-        templateUrl: "views/empty_page.html",
+        templateUrl: "views/iFrame.html",
         data: {
-            pageTitle: 'Show Configuration',
-            breadcrumbs: 'Show Configuration'
+            pageTitle: 'Larva',
+            breadcrumbs: 'Test > Larva'
         },
-        controller: function(Notification){
-            Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
+        controller: function($scope, Misc, $interval){
+            $scope.url = Misc.getServerPath() + "larva";
+            var iframe = angular.element("iframe");
+            var container = iframe.parent();
+            container.css({"margin-left":"-15px", "margin-right":"-15px", "padding-bottom":"50px"});
+
+            iframe[0].onload = function() {
+                $interval(function(){
+                    var height = iframe[0].contentWindow.document.body.clientHeight + 50;
+                    iframe.css("height", height);
+                }, 50);
+            };
         }
     })
     .state('pages.ladybug', {
         url: "/testing/ladybug",
-        templateUrl: "views/empty_page.html",
+        templateUrl: "views/iFrame.html",
         data: {
-            pageTitle: 'Show Configuration',
-            breadcrumbs: 'Show Configuration'
+            pageTitle: 'Ladybug',
+            breadcrumbs: 'Test > Ladybug'
         },
-        controller: function(Notification){
-            Notification.add('fa-exclamation-circle', "Test notification", "asfkasgf");
+        controller: function($scope, Misc, $timeout){
+            $scope.url = Misc.getServerPath() + "testtool";
+            var iframe = angular.element("iframe");
+            var container = iframe.parent();
+            container.css({"margin-left":"-15px", "margin-right":"-15px", "padding-bottom":"50px", "background-color":"#b4e2ff"});
+            iframe.css({"height":"800px"});
+            iframe[0].onload = function() {
+                var iframeBody = $(iframe[0].contentWindow.document.body);
+                $timeout(function() {
+                    var c_13_content_c_14 = iframeBody.children("form").find("#c_13_content_c_14");
+                    c_13_content_c_14.css("padding-right", "12px");
+                }, 500);
+            };
         }
     })
     .state('pages.empty_page', {

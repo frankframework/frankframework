@@ -9,7 +9,7 @@
                 <div class="ibox-title">
                     <h4>Adapter summary</h4>
                 </div>
-                <div class="ibox-content" style="overflow: visible;">
+                <div class="ibox-content">
                     <div class="row">
                         <div class="col-md-4">
                             <table class="table">
@@ -128,14 +128,22 @@
                 </div>
                 <div class="ibox-content p-md">
                     <div class="row">
-                        <div class="col-md-5">
+                        <div class="col-md-6">
                             <!-- adapter information -->
+                            <span class="pull-right">
+                                <button ui-sref="pages.adapterstatistics({name: adapter.name})" class="btn btn-xs pull-right" type="button"><i class="fa fa-bar-chart" aria-hidden="true"></i> More statistics</button>
+                            </span>
                             <h4>Adapter information</h4>
                             <table class="table">
                                 <tbody>
                                     <tr>
-                                        <td>State</td>
-                                        <td class="ucfirst">{{adapter.state}}</td>
+                                        <td class="col-md-6">State</td>
+                                        <td class="col-md-6">
+	                                        <button title="Stop adapter" ng-if="adapter.state =='started'" ng-click="stopAdapter(adapter.name)" class="btn btn-xs btn-primary" type="button"><i class="fa fa-check"></i> Started</button>
+	                                        <button ng-if="adapter.state =='starting'" class="btn btn-xs" type="button"><i class="fa fa-cog fa-spin"></i> Starting</button>
+	                                        <button title="Start adapter" ng-if="adapter.state =='stopped'" ng-click="startAdapter(adapter.name)" class="btn btn-xs btn-danger" type="button"><i class="fa fa-warning"></i> Stopped</button>
+	                                        <button ng-if="adapter.state =='stopping'" class="btn btn-xs" type="button"><i class="fa fa-cog fa-spin"></i> Stopping</button>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td>Configured</td>
@@ -153,14 +161,14 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="col-md-5">
+                        <div class="col-md-6">
                             <!-- for Message sending pipe -> Sender -->
                             <h4>Messages Information</h4>
                             <table class="table">
                                 <tbody>
                                     <tr>
-                                        <td>Processed</td>
-                                        <td>{{adapter.messagesProcessed}}</td>
+                                        <td class="col-md-6">Processed</td>
+                                        <td class="col-md-6">{{adapter.messagesProcessed}}</td>
                                     </tr>
                                     <tr>
                                         <td>In process</td>
@@ -172,12 +180,6 @@
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="pull-right">
-                                <button class="btn btn-primary dim" ng-hide="!adapter.started" type="button" ng-click="stopAdapter(adapter.name)"><i class="fa fa-check"></i> Started</button>
-                                <button class="btn btn-danger  dim " ng-hide="adapter.started" type="button" ng-click="startAdapter(adapter.name)"><i class="fa fa-warning"></i> Stopped</button>
-                            </div>
                         </div>
                     </div>
                     <div class="row">
@@ -193,7 +195,7 @@
                                             <th>Received</th>
                                             <th>Rejected</th>
                                             <th><i class="fa fa-envelope-o"></i></th>
-                                            <th><i class="fa fa-times-circle-o"></i></th>
+                                            <th><i class="fa fa-times-circle"></i></th>
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -209,8 +211,8 @@
                                             <td>
                                                 <span class="pull-right">
 
-                                    <button class="btn btn-primary btn-xs" ng-hide="!receiver.started" type="button" ng-click="stopReceiver(adapter.name, receiver.name)"><i class="fa fa-check"></i> Started</button>
-                                    <button class="btn btn-danger btn-xs" ng-hide="receiver.started" type="button" ng-click="startReceiver(adapter.name, receiver.name)"><i class="fa fa-warning"></i> Stopped</button>
+                                    <button title="Stop receiver" class="btn btn-primary btn-xs" ng-hide="!receiver.started" type="button" ng-click="stopReceiver(adapter.name, receiver.name)"><i class="fa fa-check"></i> Started</button>
+                                    <button title="Start receiver" class="btn btn-danger btn-xs" ng-hide="receiver.started" type="button" ng-click="startReceiver(adapter.name, receiver.name)"><i class="fa fa-warning"></i> Stopped</button>
 
                                                 </span>
                                             </td>
@@ -244,30 +246,36 @@
                         </div>
                     </div>
                     <div class="row">
-                        <h4>Messages</h4>
-                        <table class="table table-striped">
-                            <tbody>
-                                <tr ng-repeat="message in adapter.messages">
-                                    <td style="width:40px;" class="text-center" ng-if-start="message.level == 'INFO'">
-                                        &nbsp;<i class="fa fa-info"></i>
-                                    </td>
-                                    <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-                                    <td ng-if-end>{{message.message}}</td>
+                        <div class="col-lg-9 col-md-12 messages table-responsive">
+                            <h4>Messages</h4>
+                            <table class="table table-striped" style="min-width: 620px;">
+                                <tbody>
+                                    <tr ng-repeat="message in adapter.messages">
+                                        <td style="width:40px;" class="text-center" ng-if-start="message.level == 'INFO'">
+                                            &nbsp;<i class="fa fa-info"></i>
+                                        </td>
+                                        <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
+                                        <td ng-if-end>{{message.message}}</td>
 
-                                    <td style="width:40px;" class="text-center" ng-if-start="message.level == 'WARN'">
-                                        &nbsp;<i class="fa fa-warning"></i>
-                                    </td>
-                                    <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-                                    <td ng-if-end style="color:#f7a54a;">{{message.message}}</td>
+                                        <td style="width:40px;" class="text-center" ng-if-start="message.level == 'WARN'">
+                                            &nbsp;<i class="fa fa-warning"></i>
+                                        </td>
+                                        <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
+                                        <td ng-if-end style="color:#f7a54a;">{{message.message}}</td>
 
-                                    <td style="width:40px;" class="text-center" ng-if-start="message.level == 'ERROR'">
-                                        &nbsp;<i class="fa fa-times"></i>
-                                    </td>
-                                    <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-                                    <td ng-if-end style="color:#ea394c;">{{message.message}}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                        <td style="width:40px;" class="text-center" ng-if-start="message.level == 'ERROR'">
+                                            &nbsp;<i class="fa fa-times"></i>
+                                        </td>
+                                        <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
+                                        <td ng-if-end style="color:#ea394c;">{{message.message}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-lg-3 col-md-0 flow">
+                            <h4>Flow</h4>
+                            <canvas class="pull-right" style="width: 220px; height: 280px;"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>

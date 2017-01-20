@@ -28,6 +28,7 @@
 			nl.nn.adapterframework.webcontrol.api.BrowseJdbcTable,
 			nl.nn.adapterframework.webcontrol.api.ShowIbisstoreSummary,
 			nl.nn.adapterframework.webcontrol.api.ShowMonitors,
+			nl.nn.adapterframework.webcontrol.api.ShowAdapterStatistics,
 		</param-value>
 	</context-param>
 

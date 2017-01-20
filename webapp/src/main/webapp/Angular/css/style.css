@@ -5021,6 +5021,14 @@ dd.project-people {
     margin-left: 0;
   }
 }
+.flow {
+  width: 250px;
+}
+@media (min-width: 1200px) {
+  .messages {
+    width: calc(100% - 250px);
+  }
+}
 .chat-view .ibox-content {
   padding: 0;
 }
