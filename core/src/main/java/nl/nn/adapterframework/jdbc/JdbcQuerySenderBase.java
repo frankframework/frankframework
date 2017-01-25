@@ -422,7 +422,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 						OutputStream outputStream = response.getOutputStream();
 						Misc.streamToStream(inputStream, outputStream);
-
 						log.debug(getLogPrefix() + "copied blob input stream [" + inputStream + "] to output stream [" + outputStream + "]");
 						return "";
 					}
