@@ -50,9 +50,11 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
+import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -402,14 +404,22 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 						}
 					} else {
 						InputStream inputStream = JdbcUtil.getBlobInputStream(resultset, 1, isBlobsCompressed());
+						OutputStream outputStream = response.getOutputStream();
+
+						if ("decode".equalsIgnoreCase(getBlobBase64Direction())) {
+							inputStream = new Base64InputStream (inputStream);
+						}
+						else if ("encode".equalsIgnoreCase(getBlobBase64Direction())) {
+							inputStream = new Base64InputStream (inputStream, true);
+						}
+						Misc.streamToStream(inputStream, outputStream);
+
 						if (StringUtils.isNotEmpty(contentType)) {
 							response.setHeader("Content-Type", contentType); 
 						}
 						if (StringUtils.isNotEmpty(contentDisposition)) {
 							response.setHeader("Content-Disposition", contentDisposition); 
 						}
-						OutputStream outputStream = response.getOutputStream();
-						Misc.streamToStream(inputStream, outputStream);
 						log.debug(getLogPrefix() + "copied blob input stream [" + inputStream + "] to output stream [" + outputStream + "]");
 						return "";
 					}
