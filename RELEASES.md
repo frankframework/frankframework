@@ -149,6 +149,7 @@ Upcoming
 - Add IAF upgrade notification when new IAF version has been released
 - Change "Show configuration status: *ALL*" to summary page (with improved performance)
 - Add active checkbox to "Upload Configuration"
+- Bugfix Base64 encoding/decoding not working in JdbcQuerySender when streaming to servlet
 
 
 ### Non backwards compatible changes
