@@ -194,7 +194,7 @@ public final class ShowSecurityItems extends Base {
 			URL url = ClassUtils.getResourceURL(this, GETCONNPOOLPROP_XSLT);
 			if (url != null) {
 				Transformer t = XmlUtils.createTransformer(url, true);
-				Map<String, String> parameters = new Hashtable<String, String>();
+				Map<String, Object> parameters = new Hashtable<String, Object>();
 				parameters.put("providerType", providerType);
 				parameters.put("jndiName", jndiName);
 				XmlUtils.setTransformerParameters(t, parameters);
@@ -214,9 +214,9 @@ public final class ShowSecurityItems extends Base {
 		try {
 			Class<?> c = Class.forName("nl.nn.adapterframework.extensions.sap.SapSystemFactory");
 			Method factoryGetInstance = c.getMethod("getInstance");
-			sapSystemFactory = factoryGetInstance.invoke(null, null);
+			sapSystemFactory = factoryGetInstance.invoke(null, (Object[])null);
 			Method factoryGetRegisteredSapSystemsNamesAsList = c.getMethod("getRegisteredSapSystemsNamesAsList");
-			sapSystems = (List) factoryGetRegisteredSapSystemsNamesAsList.invoke(sapSystemFactory, null);
+			sapSystems = (List) factoryGetRegisteredSapSystemsNamesAsList.invoke(sapSystemFactory, (Object[])null);
 			factoryGetSapSystemInfo = c.getMethod("getSapSystemInfo", String.class);
 		} catch (Throwable t) {
 			log.debug("Caught NoClassDefFoundError, just no sapSystem available: " + t.getMessage());

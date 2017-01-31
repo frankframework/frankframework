@@ -187,6 +187,9 @@ angular.module('iaf.beheerconsole')
             return list;
         };
     }]).service('Notification', ['$rootScope', '$timeout', function($rootScope, $timeout) {
+        Tinycon.setOptions({
+            background: '#f03d25'
+        });
         this.list = [];
         this.count = 0;
         this.add = function(icon, title, msg, fn) {
@@ -200,6 +203,8 @@ angular.module('iaf.beheerconsole')
             this.list.unshift(obj);
             obj.id = this.list.length;
             this.count++;
+
+            Tinycon.setBubble(this.count);
         };
         this.get = function(id) {
             for (var i = 0; i < this.list.length; i++) {
@@ -217,6 +222,7 @@ angular.module('iaf.beheerconsole')
             return false;
         };
         this.resetCount = function() {
+            Tinycon.setBubble(0);
             this.count = 0;
         };
         this.getCount = function() {

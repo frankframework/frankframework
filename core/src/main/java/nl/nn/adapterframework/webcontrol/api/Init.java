@@ -190,6 +190,8 @@ public class Init extends Base {
 
 		ResourceMethodRegistry registry = (ResourceMethodRegistry) dispatcher.getRegistry();
 		String requestPath = httpServletRequest.getRequestURI();
+		if(requestPath.endsWith("/"))
+			requestPath = requestPath.substring(0, -1);
 
 		for (Map.Entry<String, List<ResourceInvoker>> entry : registry.getBounded().entrySet()) {
 			for (ResourceInvoker invoker : entry.getValue()) {

@@ -150,6 +150,7 @@ Upcoming
 - Change "Show configuration status: *ALL*" to summary page (with improved performance)
 - Add active checkbox to "Upload Configuration"
 - Bugfix Base64 encoding/decoding not working in JdbcQuerySender when streaming to servlet
+- Add interactive favicon for new GUI
 
 
 ### Non backwards compatible changes
