@@ -26,7 +26,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * 
  * @author Gerrit van Brakel
  */
-public class ParameterList extends ArrayList {
+public class ParameterList<E> extends ArrayList<E> {
 	
 	public ParameterList() {
 		super();
@@ -47,7 +47,7 @@ public class ParameterList extends ArrayList {
 	}
 	
 	public Parameter findParameter(String name) {
-		for (Iterator it=iterator();it.hasNext();) {
+		for (Iterator<E> it=iterator();it.hasNext();) {
 			Parameter p = (Parameter)it.next();
 			if (p!=null && p.getName().equals(name)) {
 				return p;

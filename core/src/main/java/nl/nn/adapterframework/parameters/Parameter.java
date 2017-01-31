@@ -181,12 +181,12 @@ public class Parameter implements INamedObject, IWithParameters {
 	private DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
 	private TransformerPool transformerPoolRemoveNamespaces;
-	protected ParameterList paramList = null;
+	protected ParameterList<Parameter> paramList = null;
 	private boolean configured = false;
 
 	public void addParameter(Parameter p) { 
 		if (paramList==null) {
-			paramList=new ParameterList();
+			paramList=new ParameterList<Parameter>();
 		}
 		paramList.add(p);
 	}
@@ -309,8 +309,8 @@ public class Parameter implements INamedObject, IWithParameters {
 							&& sourceObject instanceof List) {
 						List<String> items = (List<String>) sourceObject;
 						XmlBuilder itemsXml = new XmlBuilder("items");
-						for (Iterator it = items.iterator(); it.hasNext();) {
-							String item = (String) it.next();
+						for (Iterator<String> it = items.iterator(); it.hasNext();) {
+							String item = it.next();
 							XmlBuilder itemXml = new XmlBuilder("item");
 							itemXml.setValue(item);
 							itemsXml.addSubElement(itemXml);
@@ -320,8 +320,8 @@ public class Parameter implements INamedObject, IWithParameters {
 								&& sourceObject instanceof Map) {
 							Map<String, String> items = (Map<String, String>) sourceObject;
 							XmlBuilder itemsXml = new XmlBuilder("items");
-							for (Iterator it = items.keySet().iterator(); it.hasNext();) {
-								String item = (String) it.next();
+							for (Iterator<String> it = items.keySet().iterator(); it.hasNext();) {
+								String item = it.next();
 								XmlBuilder itemXml = new XmlBuilder("item");
 								itemXml.addAttribute("name", item);
 								itemXml.setValue(items.get(item));
@@ -501,7 +501,7 @@ public class Parameter implements INamedObject, IWithParameters {
 
 		// replace the named parameter with numbered parameters
 		StringBuffer formatPattern = new StringBuffer();
-		List params = new ArrayList();
+		List<Object> params = new ArrayList<Object>();
 		int paramPosition = 0;
 		while(endNdx != -1) {
 			// get name of parameter in pattern to be substituted 

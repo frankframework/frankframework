@@ -30,19 +30,19 @@ import nl.nn.adapterframework.core.ParameterException;
  */
 public class ParameterValueList {
 	
-	List list;
-	Map   map;
+	List<ParameterValue> list;
+	Map<String, ParameterValue> map;
 	
 	public ParameterValueList() {
 		super();
-		list = new ArrayList();
-		map  = new HashMap();
+		list = new ArrayList<ParameterValue>();
+		map  = new HashMap<String, ParameterValue>();
 	}
 
 	public ParameterValueList(int i) {
 		super();
-		list = new ArrayList(i);
-		map  = new HashMap();
+		list = new ArrayList<ParameterValue>(i);
+		map  = new HashMap<String, ParameterValue>();
 	}
 	
 	public void add(ParameterValue pv) {
@@ -74,7 +74,7 @@ public class ParameterValueList {
 		return list.size();
 	}
 	
-	Map getParameterValueMap() {
+	Map<String, ParameterValue> getParameterValueMap() {
 		return map;
 	}
 
@@ -83,7 +83,7 @@ public class ParameterValueList {
 	 * in the order in which they are defined 
 	 */
 	public void forAllParameters(IParameterHandler handler) throws ParameterException {
-		for (Iterator param = list.iterator(); param.hasNext();) {
+		for (Iterator<ParameterValue> param = list.iterator(); param.hasNext();) {
 			ParameterValue paramValue = (ParameterValue)param.next();
 			handler.handleParam(paramValue.getDefinition().getName(), paramValue.getValue());
 		}

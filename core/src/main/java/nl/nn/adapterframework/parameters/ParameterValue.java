@@ -24,6 +24,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * 
@@ -130,7 +131,7 @@ public class ParameterValue {
 		return value != null ? value.toString() : defaultValue;
 	}
 
-	public Collection asCollection() throws ParameterException {
+	public Collection<Node> asCollection() throws ParameterException {
 		if (value == null) {
 			return null;
 		}
