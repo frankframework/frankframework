@@ -154,6 +154,7 @@ Upcoming
 - Larva: show diffMessage (hidden) for "scenario passed/failed"
 - Larva: add httpRequest parameter
 - StreamPipe: add httpRequest parameter (for passing filestreams to the backend)
+- HttpSender: add multipartXmlSessionKey attribute
 
 
 ### Non backwards compatible changes

@@ -24,8 +24,10 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -147,6 +149,7 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setStreamResultToFileNameSessionKey(String) streamResultToFileNameSessionKey}</td><td>if set, the result is streamed to a file (instead of passed as a String)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultAsStreamInSessionKey(String) storeResultAsStreamInSessionKey}</td><td>if set, a pointer to an input stream of the result is put in the specified sessionKey (as the sender interface only allows a sender to return a string a sessionKey is used instead to return the stream)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setResultStatusCodeSessionKey(String) resultStatusCodeSessionKey}</td><td>if set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMultipartXmlSessionKey(String) multipartXmlSessionKey}</td><td>if set and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, a multipart/form-data entity is created instead of a request body. For each part element in the session key a part in the multipart entity is created</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -273,6 +276,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	private String storeResultAsStreamInSessionKey;
 	private String storeResultAsByteArrayInSessionKey;
 	private String resultStatusCodeSessionKey;
+	private String multipartXmlSessionKey;
 	
 	private TransformerPool transformerPool=null;
 
@@ -603,7 +607,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	protected PostMethod getPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, ParameterResolutionContext prc) throws SenderException {
 		try {
 			PostMethod hmethod = new PostMethod(uri.getPath());
-			if (!isMultipart()) {
+			if (!isMultipart() && StringUtils.isEmpty(getMultipartXmlSessionKey())) {
 				if (StringUtils.isNotEmpty(getInputMessageParam())) {
 					hmethod.addParameter(getInputMessageParam(),message);
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+getInputMessageParam()+"] with value ["+message+"]");
@@ -655,6 +659,46 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 							StringPart stringPart = new StringPart(name, value);
 							partList.add(stringPart);
 							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
+						}
+					}
+				}
+				if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
+					String multipartXml = (String) prc.getSession().get(getMultipartXmlSessionKey());
+					if (StringUtils.isEmpty(multipartXml)) {
+						log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
+					} else {
+						Element partsElement;
+						try {
+							partsElement = XmlUtils.buildElement(multipartXml);
+						} catch (DomBuilderException e) {
+							throw new SenderException(getLogPrefix()+"error building multipart xml", e);
+						}
+						Collection parts = XmlUtils.getChildTags(partsElement, "part");
+						if (parts==null || parts.size()==0) {
+							log.warn(getLogPrefix()+"no part(s) in multipart xml [" + multipartXml + "]");
+						} else {
+							int c = 0;
+							Iterator iter = parts.iterator();
+							while (iter.hasNext()) {
+								c++;
+								Element partElement = (Element) iter.next();
+								//String partType = partElement.getAttribute("type");
+								String partName = partElement.getAttribute("name");
+								String partSessionKey = partElement.getAttribute("sessionKey");
+								Object partObject = prc.getSession().get(partSessionKey);
+								if (partObject instanceof FileInputStream) {
+									FileInputStream fis = (FileInputStream)partObject;
+									FileStreamPartSource fsps = new FileStreamPartSource(fis, partName);
+									FilePart filePart = new FilePart(partSessionKey,fsps);
+									partList.add(filePart);
+									if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+partSessionKey+"]  with value ["+partObject+"] and name ["+partName+"]");
+								} else {
+									String partValue = (String) prc.getSession().get(partSessionKey);
+									StringPart stringPart = new StringPart(partSessionKey, partValue);
+									partList.add(stringPart);
+									if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+partSessionKey+"]  with value ["+partValue+"]");
+								}
+							}
 						}
 					}
 				}
@@ -1357,5 +1401,12 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	}
 	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
 		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
+	}
+
+	public String getMultipartXmlSessionKey() {
+		return multipartXmlSessionKey;
+	}
+	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
+		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}
 }
