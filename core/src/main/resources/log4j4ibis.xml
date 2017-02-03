@@ -15,7 +15,7 @@
 		</layout>
 		<filter class="nl.nn.adapterframework.extensions.log4j.IbisThreadFilter">
 			<param name="AcceptOnMatch" value="false"/>
-			<param name="Regex" value="(WebControl.*)"/>
+			<param name="Regex" value="${log.thread.rejectRegex}"/>
 		</filter>
 	</appender>
 	<appender name="XML" class="org.apache.log4j.RollingFileAppender">
@@ -26,7 +26,7 @@
 		<layout class="org.apache.log4j.xml.XMLLayout"/>
 		<filter class="nl.nn.adapterframework.extensions.log4j.IbisThreadFilter">
 			<param name="AcceptOnMatch" value="false"/>
-			<param name="Regex" value="(WebControl.*)"/>
+			<param name="Regex" value="${log.thread.rejectRegex}"/>
 		</filter>
 	</appender>
 	<appender name="galm" class="org.apache.log4j.RollingFileAppender">
