@@ -10,6 +10,10 @@
   <artifactId>ibis-adapterframework-larva</artifactId>
   <name>Ibis AdapterFramework Larva</name>
 
+  <properties>
+    <spring.version>3.2.16.RELEASE</spring.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.ibissource</groupId>
@@ -34,6 +38,11 @@
           <artifactId>jdom</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <version>${spring.version}</version>
     </dependency>
   </dependencies>
 
