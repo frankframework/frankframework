@@ -156,6 +156,7 @@ Upcoming
 - StreamPipe: add httpRequest parameter (for passing filestreams to the backend)
 - HttpSender: add multipartXmlSessionKey attribute
 - Add possibility to skip the retrieval of multipart http requests to sessionKeys (in RestListeners)
+- Bugfix in generating flow images for moving files
 
 
 ### Non backwards compatible changes

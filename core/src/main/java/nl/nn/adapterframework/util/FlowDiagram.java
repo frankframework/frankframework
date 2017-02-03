@@ -205,9 +205,10 @@ public class FlowDiagram {
 					File tempdotFile = FileUtils.createTempFile(null, ".dot");
 					Misc.stringToFile(dot, tempdotFile.getPath());
 					runCommandSender(tempdotFile, tempOutFile);
+					tempdotFile.delete();
 				}
 
-				if (FileUtils.moveFile(tempOutFile, destFile, true, 0) == null) {
+				if (FileUtils.moveFile(tempOutFile, destFile, 1, 0) == null) {
 					log.warn("could not rename file [" + tempOutFile.getPath()
 							+ "] to [" + destFile.getPath() + "]");
 				} else {
