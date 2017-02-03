@@ -2,6 +2,7 @@ package nl.nn.adapterframework.testtool;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -75,6 +76,14 @@ import org.apache.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.dom4j.DocumentException;
+
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
+
+import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
 import com.sun.syndication.io.XmlReader;
 
@@ -3449,6 +3458,61 @@ public class TestTool {
 					HttpServletResponseMock httpServletResponseMock = new HttpServletResponseMock();
 					httpServletResponseMock.setOutputFile(outputFile);
 					value = httpServletResponseMock;
+				} else if ("httpRequest".equals(type)) {
+					MockMultipartHttpServletRequest request = new MockMultipartHttpServletRequest();
+					// following line is required to avoid
+					// "(FileUploadException) the request was rejected because
+					// no multipart boundary was found"
+					request.setContentType(
+							"multipart/mixed;boundary=gc0p4Jq0M2Yt08jU534c0p");
+					List<Part> parts = new ArrayList<Part>();
+					boolean partsProcessed = false;
+					int j = 1;
+					while (!partsProcessed) {
+						String partFile = properties.getProperty(property
+								+ ".param" + i + ".part" + j + ".file");
+						if (partFile == null) {
+							partsProcessed = true;
+						} else {
+							String partType = properties.getProperty(property
+									+ ".param" + i + ".part" + j + ".type");
+							if ("file".equalsIgnoreCase(partType)) {
+								File file = new File(partFile);
+								try {
+									FilePart filePart = new FilePart("file" + j,
+											file.getName(), file);
+									parts.add(filePart);
+								} catch (FileNotFoundException e) {
+									errorMessage(
+											"Could not read file '" + partFile
+													+ "': " + e.getMessage(),
+											e, writers);
+								}
+							} else {
+								String string = readFile(partFile, writers);
+								StringPart stringPart = new StringPart(
+										"string" + j, string);
+								parts.add(stringPart);
+							}
+							j++;
+						}
+					}
+					Part allParts[] = new Part[parts.size()];
+					allParts = parts.toArray(allParts);
+					MultipartRequestEntity multipartRequestEntity = new MultipartRequestEntity(
+							allParts, new PostMethod().getParams());
+					ByteArrayOutputStream requestContent = new ByteArrayOutputStream();
+					try {
+						multipartRequestEntity.writeRequest(requestContent);
+					} catch (IOException e) {
+						errorMessage(
+								"Could not create multipart: " + e.getMessage(),
+								e, writers);
+					}
+					request.setContent(requestContent.toByteArray());
+					request.setContentType(
+							multipartRequestEntity.getContentType());
+					value = request;
 				} else {
 					value = properties.getProperty(property + ".param" + i + ".value");
 					if (value == null) {
