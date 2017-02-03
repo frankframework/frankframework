@@ -155,6 +155,7 @@ Upcoming
 - Larva: add httpRequest parameter
 - StreamPipe: add httpRequest parameter (for passing filestreams to the backend)
 - HttpSender: add multipartXmlSessionKey attribute
+- Add possibility to skip the retrieval of multipart http requests to sessionKeys (in RestListeners)
 
 
 ### Non backwards compatible changes

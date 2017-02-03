@@ -80,40 +80,7 @@ public class RestListenerServlet extends HttpServlet {
 			if (log.isTraceEnabled()) log.trace("setting parameter ["+paramname+"] to ["+paramvalue+"]");
 			messageContext.put(paramname, paramvalue);
 		}
-		if (ServletFileUpload.isMultipartContent(request)) {
-			try {
-				DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-				ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
-				List<FileItem> items = servletFileUpload.parseRequest(request);
-		        for (FileItem item : items) {
-		        	if (item.isFormField()) {
-		                // Process regular form field (input type="text|radio|checkbox|etc", select, etc).
-		                String fieldName = item.getFieldName();
-		                String fieldValue = item.getString();
-		    			if (log.isTraceEnabled()) log.trace("setting parameter ["+fieldName+"] to ["+fieldValue+"]");
-		    			messageContext.put(fieldName, fieldValue);
-		            } else {
-		                // Process form file field (input type="file").
-		                String fieldName = item.getFieldName();
-		                String fieldNameName = fieldName + "Name";
-		                String fileName = FilenameUtils.getName(item.getName());
-		    			if (log.isTraceEnabled()) log.trace("setting parameter ["+fieldNameName+"] to ["+fileName+"]");
-		    			messageContext.put(fieldNameName, fileName);
-		                InputStream inputStream = item.getInputStream();
-		                if (inputStream.available() > 0) {
-			    			if (log.isTraceEnabled()) log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
-			    			messageContext.put(fieldName, inputStream);
-		                } else {
-			    			if (log.isTraceEnabled()) log.trace("setting parameter ["+fieldName+"] to ["+null+"]");
-			    			messageContext.put(fieldName, null);
-		                }
-		            }
-		        }
-			} catch (FileUploadException e) {
-				log.warn("RestListenerServlet caught FileUploadException, will rethrow as ServletException",e);
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
-			}
-		} else {
+		if (!ServletFileUpload.isMultipartContent(request)) {
 			body=Misc.streamToString(request.getInputStream(),"\n",false);
 		}
 		try {
