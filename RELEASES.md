@@ -151,6 +151,7 @@ Upcoming
 - Add active checkbox to "Upload Configuration"
 - Bugfix Base64 encoding/decoding not working in JdbcQuerySender when streaming to servlet
 - Add interactive favicon for new GUI
+- Larva: show diffMessage (hidden) for "scenario passed/failed"
 
 
 ### Non backwards compatible changes

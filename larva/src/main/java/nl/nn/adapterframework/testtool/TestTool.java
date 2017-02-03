@@ -616,10 +616,24 @@ public class TestTool {
 		writeLog("<pre id='"+diffBoxId+"' class='diffBox'></pre>", method, writers, false);
 		writeLog("</div>", method, writers, false);
 
-		writeLog("<h5>Difference description:</h5>", method, writers, false);
-		writeLog("<p class='diffMessage'>" + XmlUtils.encodeChars(message) + "</p>", method, writers, true);
-		writeLog("</form>", method, writers, false);
-		writeLog("</div>", method, writers, false);
+		String scenario_passed_failed = "scenario passed/failed";
+		if (LOG_LEVEL_ORDER.indexOf(
+				"[" + (String) writers.get("loglevel") + "]") == LOG_LEVEL_ORDER
+						.indexOf("[" + scenario_passed_failed + "]")) {
+			writeLog("<h5 hidden='true'>Difference description:</h5>",
+					scenario_passed_failed, writers, false);
+			writeLog(
+					"<p class='diffMessage' hidden='true'>"
+							+ XmlUtils.encodeChars(message) + "</p>",
+					scenario_passed_failed, writers, true);
+		} else {
+			writeLog("<h5>Difference description:</h5>", method, writers,
+					false);
+			writeLog("<p class='diffMessage'>" + XmlUtils.encodeChars(message)
+					+ "</p>", method, writers, true);
+			writeLog("</form>", method, writers, false);
+			writeLog("</div>", method, writers, false);
+		}
 		
 		scenarioCounter++;
 		writers.put("scenariocounter", new Integer(scenarioCounter));
