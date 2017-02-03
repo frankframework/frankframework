@@ -132,14 +132,6 @@ refresh="showConfigurationStatus.do">
 							<parameter name="configurationName"><% out.write(java.net.URLEncoder.encode((String)session.getAttribute("configurationName"))); %></parameter>
 							<parameter name="adapterName">*ALL*</parameter>
 						</imagelink>
-						<imagelink
-							href="adapterHandler.do"
-							type="reload"
-							alt="reload configuration"
-							>
-							<parameter name="action">reload</parameter>
-							<parameter name="configurationName"><% out.write(java.net.URLEncoder.encode((String)session.getAttribute("configurationName"))); %></parameter>
-						</imagelink>
 						<% if ("*ALL*".equals(session.getAttribute("configurationName"))) { %>
 							<imagelink
 								href="adapterHandlerAsAdmin.do"
@@ -148,6 +140,15 @@ refresh="showConfigurationStatus.do">
 								>
 								<parameter name="action">fullreload</parameter>
 							</imagelink>
+						<% } else {%>
+						<imagelink
+							href="adapterHandler.do"
+							type="reload"
+							alt="reload configuration"
+							>
+							<parameter name="action">reload</parameter>
+							<parameter name="configurationName"><% out.write(java.net.URLEncoder.encode((String)session.getAttribute("configurationName"))); %></parameter>
+						</imagelink>
 						<% } %>
 						<imagelink
 							href="<%=XmlUtils.encodeChars(configFlowUrl)%>"
