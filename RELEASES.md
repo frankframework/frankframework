@@ -153,6 +153,7 @@ Upcoming
 - Add interactive favicon for new GUI
 - Larva: show diffMessage (hidden) for "scenario passed/failed"
 - Larva: add httpRequest parameter
+- StreamPipe: add httpRequest parameter (for passing filestreams to the backend)
 
 
 ### Non backwards compatible changes
