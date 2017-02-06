@@ -200,8 +200,8 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
         url: "/ibisstore-summary",
         templateUrl: "views/ShowIbisstoreSummary.html",
         data: {
-            pageTitle: 'IBISstore Summary',
-            breadcrumbs: 'JDBC > IBISstore Summary'
+            pageTitle: 'Ibisstore Summary',
+            breadcrumbs: 'JDBC > Ibisstore Summary'
         }
     })
     .state('pages.larva', {

@@ -3,7 +3,7 @@
  * Used on all pages except login/logout
  *
  */
-function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal) {
+function MainCtrl($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal) {
     $scope.loading = true;
     Pace.on("done", function() {
         if(appConstants.init == 0) {
@@ -134,12 +134,12 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
         Api.Get("adapters", function(allAdapters) {
             Hooks.call("adaptersLoaded", allAdapters);
 
-            $scope.adapters = allAdapters;
+            $rootScope.adapters = allAdapters;
             $scope.displayAdapters = [];
             for(adapter in allAdapters) {
                 $scope.adapterSummary[allAdapters[adapter].state] += 1;
                 Poller.add("adapters/" + adapter, function(data) {
-                    var oldAdapterData = $scope.adapters[data.name];
+                    var oldAdapterData = $rootScope.adapters[data.name];
                     if(oldAdapterData != data) {
                         if(oldAdapterData.state != data.state) {
                             //Is it up or down? Something has happened.
@@ -148,7 +148,7 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
                         }
                         data.receiverStopped = false;
                         for(x in data.receivers) {
-                            var oldReceiverData = ($scope.adapters[data.name].receivers) ? $scope.adapters[data.name].receivers[x] : {state: "unknown"};
+                            var oldReceiverData = ($rootScope.adapters[data.name].receivers) ? $rootScope.adapters[data.name].receivers[x] : {state: "unknown"};
                             if(oldReceiverData.state != data.receivers[x].state) {
                                 $scope.receiverSummary[oldReceiverData.state] -= 1;
                                 $scope.receiverSummary[data.receivers[x].state] += 1;
@@ -164,7 +164,7 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
                         }
 
                         data.status = data.started ? ((data.receiverStopped) ? 'warning' : 'started') : 'stopped';
-                        $scope.adapters[data.name] = data;
+                        $rootScope.adapters[data.name] = data;
 
                         Hooks.call("adapterUpdated", data);
                     }
@@ -181,8 +181,8 @@ function MainCtrl($scope, appConstants, Api, Hooks, $state, $location, Poller, N
             warn:0,
             error:0
         };
-        for(adapterName in $scope.adapters) {
-            var adapter = $scope.adapters[adapterName];
+        for(adapterName in $rootScope.adapters) {
+            var adapter = $rootScope.adapters[adapterName];
             for(i in adapter.messages) {
                 var level = adapter.messages[i].level.toLowerCase();
                 summary[level]++;
@@ -490,14 +490,30 @@ function AdapterStatisticsCtrl($scope, Api, $stateParams) {
     });
 };
 
-function SecurityItemsCtrl($scope, Api) {
-    $scope.monitors = [];
-    $scope.enabled = false;
-    $scope.destinations = [];
+function SecurityItemsCtrl($scope, $rootScope, Api) {
+    $scope.sapSystems = [];
+    $scope.serverProps = {};
+    $scope.authEntries = [];
+    $scope.jmsRealms = [];
+    $scope.securityRoles = [];
+    $scope.certificates = [];
+    for(a in $rootScope.adapters) {
+        var adapter = $rootScope.adapters[a];
+        if(adapter.pipes) {
+            for(p in adapter.pipes) {
+                var pipe = adapter.pipes[p];
+                if(pipe.certificate)
+                    $scope.certificates.push({
+                        adapter: a,
+                        pipe: p.name,
+                        certificate: pipe.certificate
+                    });
+            }
+        }
+    }
+
     Api.Get("securityitems", function(data) {
-        $scope.enabled = data.enabled;
-        $scope.monitors = data.monitors;
-        $scope.destinations = data.destinations;
+        $.extend($scope, data);
     });
 };
 
@@ -508,6 +524,31 @@ function LoggingCtrl($scope, Api) {
 };
 
 function IBISstoreSummaryCtrl($scope, Api) {
+    $scope.jmsRealms = {};
+
+    Api.Get("jdbc", function(data) {
+        $.extend($scope, data);
+    });
+
+    $scope.submit = function(formData) {
+        if(!formData) formData = {};
+
+        if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
+
+        Api.Post("jdbc/summary", JSON.stringify(formData), function(data) {
+            $scope.error = "";
+            $.extend($scope, data);
+        }, function(errorData, status, errorMsg) {
+            var error = (errorData) ? errorData.error : errorMsg;
+            $scope.error = error;
+            $scope.result = "";
+        });
+    };
+
+    $scope.reset = function() {
+        $scope.result = "";
+        $scope.error = "";
+    };
 };
 
 function SendJmsMessageCtrl($scope, Api) {
@@ -520,10 +561,11 @@ function ExecuteJdbcQueryCtrl($scope, Api, $timeout, $state) {
     $scope.jmsRealms = {};
     $scope.resultTypes = {};
     $scope.error = "";
+
     Api.Get("jdbc", function(data) {
-        $scope.jmsRealms = data.jmsRealms;
-        $scope.resultTypes = data.resultTypes;
+        $.extend($scope, data);
     });
+
     $scope.submit = function(formData) {
         if(!formData || !formData.query) {
             $scope.error = "Please specify a jms realm, resulttype and query!";
@@ -541,6 +583,7 @@ function ExecuteJdbcQueryCtrl($scope, Api, $timeout, $state) {
             $scope.result = "";
         });
     };
+
     $scope.reset = function() {
         $scope.form.query = "";
         $scope.result = "";

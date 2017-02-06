@@ -100,16 +100,16 @@ public final class BrowseJdbcTable extends Base {
 		}
 
 		if(realm == null || tableName == null) {
-			return buildErrorResponse("realm and/or tableName not defined.");
+			throw new ApiException("realm and/or tableName not defined.");
 		}
 
 		if(maxRow < minRow)
-			return buildErrorResponse("Rownum max must be greater than or equal to Rownum min");
+			throw new ApiException("Rownum max must be greater than or equal to Rownum min");
 		if (maxRow - minRow >= 100) {
-			return buildErrorResponse("Difference between Rownum max and Rownum min must be less than hundred");
+			throw new ApiException("Difference between Rownum max and Rownum min must be less than hundred");
 		}
 		if (!readAllowed(permissionRules, tableName))
-			return buildErrorResponse("Access to table ("+tableName+") not allowed");
+			throw new ApiException("Access to table ("+tableName+") not allowed");
 
 		//We have all info we need, lets execute the query!
 		Map<String, Object> fieldDef = new HashMap<String, Object>();
@@ -184,20 +184,20 @@ public final class BrowseJdbcTable extends Base {
 					//error("errors.generic","This function only supports oracle databases",null);
 				//}
 			} catch (Throwable t) {
-				return buildErrorResponse("An error occured on executing jdbc query: "+t.toString());
+				throw new ApiException("An error occured on executing jdbc query: "+t.toString());
 			} finally {
 				qs.close();
 			}
 		} catch (Exception e) {
-			return buildErrorResponse("An error occured on creating or closing the connection: "+e.toString());
+			throw new ApiException("An error occured on creating or closing the connection: "+e.toString());
 		}
 
 		List<Map<String, String>> resultMap = null;
 		if(XmlUtils.isWellFormed(result)) {
-			resultMap = Xml2Map(result);
+			resultMap = XmlQueryResult2Map(result);
 		}
 		if(resultMap == null)
-			return buildErrorResponse("Invalid query result.");
+			throw new ApiException("Invalid query result.");
 
 		Map<String, Object> resultObject = new HashMap<String, Object>();
 		resultObject.put("table", tableName);

@@ -22,9 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.StatusType;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -35,7 +32,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -75,7 +71,7 @@ public abstract class Base {
 		}
 	}
 
-	protected List<Map<String, String>> Xml2Map(String xml) {
+	protected List<Map<String, String>> XmlQueryResult2Map(String xml) {
 		List<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
 		Document xmlDoc = null;
 		try {
@@ -104,14 +100,5 @@ public abstract class Base {
 			}
 		}
 		return resultList;
-	}
-
-	protected Response buildErrorResponse(String err) {
-		return buildErrorResponse(err, Response.Status.BAD_REQUEST);
-	}
-	protected Response buildErrorResponse(String err, StatusType responseStatus) {
-		String error = err.replace("\n", " ").replace(System.getProperty("line.separator"), " ");
-		error = StringEscapeUtils.escapeHtml(error);
-		return Response.status(responseStatus).type(MediaType.TEXT_PLAIN).entity(error).build();
 	}
 }

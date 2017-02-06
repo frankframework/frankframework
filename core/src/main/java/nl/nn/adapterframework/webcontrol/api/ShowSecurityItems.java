@@ -16,6 +16,7 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
@@ -34,6 +35,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -51,8 +54,11 @@ import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
 * Shows the used certificate.
@@ -77,7 +83,7 @@ public final class ShowSecurityItems extends Base {
 		}
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
-		returnMap.put("applicationDeploymentDescriptor", addApplicationDeploymentDescriptor());
+		returnMap.put("securityRoles", addApplicationDeploymentDescriptor());
 		returnMap.put("securityRoleBindings", addSecurityRoleBindings());
 		returnMap.put("jmsRealms", addJmsRealms());
 		returnMap.put("sapSystems", addSapSystems());
@@ -87,28 +93,86 @@ public final class ShowSecurityItems extends Base {
 		return Response.status(Response.Status.CREATED).entity(returnMap).build();
 	}
 
-	private String addApplicationDeploymentDescriptor() {
+	private List<Map<String, String>> addApplicationDeploymentDescriptor() {
 		String appDDString = null;
+		List<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
+		Document xmlDoc = null;
+
 		try {
 			appDDString = Misc.getApplicationDeploymentDescriptor();
 			appDDString = XmlUtils.skipXmlDeclaration(appDDString);
 			appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
 			appDDString = XmlUtils.removeNamespaces(appDDString);
-		} catch (IOException e) {
-			appDDString = "*** ERROR ***";
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			InputSource inputSource = new InputSource(new StringReader(appDDString));
+			xmlDoc = dBuilder.parse(inputSource);
+			xmlDoc.getDocumentElement().normalize();
 		}
-		return appDDString;
+		catch (Exception e) {
+			return null;
+		}
+
+		NodeList rowset = xmlDoc.getElementsByTagName("security-role");
+		for (int i = 0; i < rowset.getLength(); i++) {
+			Element row = (Element) rowset.item(i);
+			NodeList fieldsInRowset = row.getChildNodes();
+			if (fieldsInRowset != null && fieldsInRowset.getLength() > 0) {
+				Map<String, String> tmp = new HashMap<String, String>();
+				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
+					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
+						Element field = (Element) fieldsInRowset.item(j);
+						tmp.put(field.getTagName(), field.getTextContent());
+					}
+				}
+				resultList.add(tmp);
+			}
+		}
+		
+		return resultList;
 	}
 
-	private String addSecurityRoleBindings() {
+	private Map<String, List<String>> addSecurityRoleBindings() {
 		String appBndString = null;
+		Map<String, List<String>> resultList = new HashMap<String, List<String>>();
+		Document xmlDoc = null;
+
 		try {
 			appBndString = Misc.getDeployedApplicationBindings();
 			appBndString = XmlUtils.removeNamespaces(appBndString);
-		} catch (IOException e) {
-			appBndString = "*** ERROR ***";
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			InputSource inputSource = new InputSource(new StringReader(appBndString));
+			xmlDoc = dBuilder.parse(inputSource);
+			xmlDoc.getDocumentElement().normalize();
 		}
-		return appBndString;
+		catch (Exception e) {
+			return null;
+		}
+
+		NodeList rowset = xmlDoc.getElementsByTagName("authorizations");
+		for (int i = 0; i < rowset.getLength(); i++) {
+			Element row = (Element) rowset.item(i);
+			NodeList fieldsInRowset = row.getChildNodes();
+			if (fieldsInRowset != null && fieldsInRowset.getLength() > 0) {
+				String role = null;
+				List<String> roles = new ArrayList<String>();
+				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
+					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
+						Element field = (Element) fieldsInRowset.item(j);
+
+						if(field.getTagName() == "role") {
+							role = field.getTextContent();
+						}
+						else {
+							roles.add(field.getAttribute("name"));
+						}
+					}
+				}
+				resultList.put(role, roles);
+			}
+		}
+		return resultList;
 	}
 
 	private ArrayList<Object> addJmsRealms() {
@@ -206,6 +270,7 @@ public final class ShowSecurityItems extends Base {
 		return connectionPoolProperties;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ArrayList<Object> addSapSystems() {
 		ArrayList<Object> sapSystemList = new ArrayList<Object>();
 		List<String> sapSystems = null;
@@ -216,6 +281,7 @@ public final class ShowSecurityItems extends Base {
 			Method factoryGetInstance = c.getMethod("getInstance");
 			sapSystemFactory = factoryGetInstance.invoke(null, (Object[])null);
 			Method factoryGetRegisteredSapSystemsNamesAsList = c.getMethod("getRegisteredSapSystemsNamesAsList");
+
 			sapSystems = (List) factoryGetRegisteredSapSystemsNamesAsList.invoke(sapSystemFactory, (Object[])null);
 			factoryGetSapSystemInfo = c.getMethod("getSapSystemInfo", String.class);
 		} catch (Throwable t) {
@@ -282,8 +348,8 @@ public final class ShowSecurityItems extends Base {
 					passWord = "*** ERROR ***";
 				}
 
-				ae.put("userName", userName);
-				ae.put("passWord", passWord);
+				ae.put("username", userName);
+				ae.put("password", passWord);
 				authEntries.add(ae);
 			}
 		}
@@ -299,6 +365,8 @@ public final class ShowSecurityItems extends Base {
 		} catch (Exception e) {
 			totalTransactionLifetimeTimeout = "*** ERROR ***";
 		}
+		if(totalTransactionLifetimeTimeout == null) totalTransactionLifetimeTimeout = "-";
+
 		serverProps.put("totalTransactionLifetimeTimeout", totalTransactionLifetimeTimeout);
 		String maximumTransactionTimeout;
 		try {
@@ -306,6 +374,7 @@ public final class ShowSecurityItems extends Base {
 		} catch (Exception e) {
 			maximumTransactionTimeout = "*** ERROR ***";
 		}
+		if(maximumTransactionTimeout == null) maximumTransactionTimeout = "-";
 		serverProps.put("maximumTransactionTimeout", maximumTransactionTimeout);
 		return serverProps;
 	}

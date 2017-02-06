@@ -105,7 +105,7 @@ public final class ExecuteJdbcQuery extends Base {
 		}
 
 		if(realm == null || resultType == null || query == null) {
-			return buildErrorResponse("Missing data, realm, resultType and query are expected.");
+			throw new ApiException("Missing data, realm, resultType and query are expected.");
 		}
 
 		//We have all info we need, lets execute the query!
@@ -129,18 +129,18 @@ public final class ExecuteJdbcQuery extends Base {
 
 				qs.close();
 			} catch (Throwable t) {
-				return buildErrorResponse("An error occured on executing jdbc query: "+t.toString());
+				throw new ApiException("An error occured on executing jdbc query: "+t.toString());
 			}
 		} catch (Exception e) {
-			return buildErrorResponse("An error occured on creating or closing the connection: "+e.toString());
+			throw new ApiException("An error occured on creating or closing the connection: "+e.toString());
 		}
 
 		if(resultType.equalsIgnoreCase("json")) {
 			if(XmlUtils.isWellFormed(result)) {
-				returnEntity = Xml2Map(result);
+				returnEntity = XmlQueryResult2Map(result);
 			}
 			if(returnEntity == null)
-				return buildErrorResponse("Invalid query result.");
+				throw new ApiException("Invalid query result.");
 		}
 		else
 			returnEntity = result;

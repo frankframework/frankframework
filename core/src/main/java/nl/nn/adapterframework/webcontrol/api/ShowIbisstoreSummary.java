@@ -102,20 +102,20 @@ public final class ShowIbisstoreSummary extends Base {
 				qs.open();
 				result = qs.sendMessage("dummy", query);
 			} catch (Throwable t) {
-				return buildErrorResponse("An error occured on executing jdbc query: "+t.toString());
+				throw new ApiException("An error occured on executing jdbc query: "+t.toString());
 			} finally {
 				qs.close();
 			}
 		} catch (Exception e) {
-			return buildErrorResponse("An error occured on creating or closing the connection: "+e.toString());
+			throw new ApiException("An error occured on creating or closing the connection: "+e.toString());
 		}
 
 		List<Map<String, String>> resultMap = null;
 		if(XmlUtils.isWellFormed(result)) {
-			resultMap = Xml2Map(result);
+			resultMap = XmlQueryResult2Map(result);
 		}
 		if(resultMap == null)
-			return buildErrorResponse("Invalid query result.");
+			throw new ApiException("Invalid query result.");
 
 		Map<String, Object> resultObject = new HashMap<String, Object>();
 		resultObject.put("query", query);

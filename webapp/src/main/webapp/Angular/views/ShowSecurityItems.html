@@ -5,12 +5,147 @@
 	<div class="row">
 		<div class="col-lg-12">
 			<div class="ibox float-e-margins">
-				<div class="ibox-title">
-					<h4>Security Items</h4>
+				<div class="col-md-9 m-t-md table-responsive">
+					<div class="ibox-title">
+						<h4>Security Role Bindings</h4>
+					</div>
+					<div class="ibox-content">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Role</th>
+									<th>&nbsp;</th>
+									<th>Special Subjects</th>
+									<th>Groups</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="role in securityRoles">
+									<td>{{role.name}}</td>
+									<td>{{role.active}}</td>
+									<td>{{role.specialSubjects}}</td>
+									<td>{{role.groups}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 				</div>
-				<div class="ibox-content">
-					<div class="col-md-12">
-						Todo
+				<div class="col-md-3 m-t-md table-responsive">
+					<div class="ibox-title">
+						<h4>Transaction Service</h4>
+					</div>
+					<div class="ibox-content">
+						<table class="table">
+							<tbody>
+								<tr>
+									<td>Total transaction lifetime timeout (in seconds)</td>
+									<td>{{serverProps.totalTransactionLifetimeTimeout}}</td>
+								</tr>
+								<tr>
+									<td>Maximum transaction timeout (in seconds)</td>
+									<td>{{serverProps.maximumTransactionTimeout}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="col-md-4 m-t-md table-responsive" ng-if="authEntries.length > 0">
+					<div class="ibox-title">
+						<h4>Used Authentication Entries</h4>
+					</div>
+					<div class="ibox-content">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Alias</th>
+									<th>Username</th>
+									<th>Password</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="alias in authEntries">
+									<td>{{alias.alias}}</td>
+									<td>{{alias.username}}</td>
+									<td>{{alias.password}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="col-md-4 m-t-md table-responsive" ng-if="sapSystems.length > 0">
+					<div class="ibox-title">
+						<h4>Used Sap Systems</h4>
+					</div>
+					<div class="ibox-content">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Info</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="sap in sapSystems">
+									<td>{{sap.name}}</td>
+									<td>{{sap.info}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="col-md-4 m-t-md table-responsive" ng-if="certificates.length > 0">
+					<div class="ibox-title">
+						<h4>Used Certificates</h4>
+					</div>
+					<div class="ibox-content">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Adapter</th>
+									<th>Pipe</th>
+									<th>Certificate</th>
+									<th>Info</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="cert in certificates">
+									<td>{{cert.adapter}}</td>
+									<td>{{cert.pipe}}</td>
+									<td>{{cert.certificate.name}}</td>
+									<td>{{cert.certificate}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="col-md-12 m-t-md table-responsive" ng-if="jmsRealms.length > 0">
+					<div class="ibox-title">
+						<h4>Used JmsRealms</h4>
+					</div>
+					<div class="ibox-content">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Datasource</th>
+									<th>QueueConnectionFactory</th>
+									<th>TopicConnectionFactory</th>
+									<th>Info</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat-start="realm in jmsRealms">
+									<td rowspan="2">{{realm.name}}</td>
+									<td rowspan="2">{{realm.datasourceName}}</td>
+									<td rowspan="2">{{realm.queueConnectionFactoryName}}</td>
+									<td rowspan="2">{{realm.topicConnectionFactoryName}}</td>
+									<td>{{realm.info}}</td>
+								</tr>
+								<tr ng-repeat-end>
+									<td>{{realm.connectionPoolProperties}}</td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 				</div>
 			</div>

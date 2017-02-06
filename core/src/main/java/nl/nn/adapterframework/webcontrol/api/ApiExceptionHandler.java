@@ -38,8 +38,12 @@ public class ApiExceptionHandler implements ExceptionMapper<ApiException>
 		ResponseBuilder response = Response.status(Status.INTERNAL_SERVER_ERROR);
 
 		String message = exception.getMessage();
-		if(message != null)
-			response.entity(("{\"status\":\"error\", \"error\":\"" + exception.getMessage() + "\"}")).type(MediaType.APPLICATION_JSON);
+
+		if(message != null) {
+			message = message.replace("\"", "\\\"").replace("\n", " ").replace(System.getProperty("line.separator"), " ");
+
+			response.entity(("{\"status\":\"error\", \"error\":\"" + message + "\"}")).type(MediaType.APPLICATION_JSON);
+		}
 
 		return response.build();
 	}
