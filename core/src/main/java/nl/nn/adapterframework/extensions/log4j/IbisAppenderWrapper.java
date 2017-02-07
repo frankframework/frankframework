@@ -47,7 +47,7 @@ public class IbisAppenderWrapper extends AppenderSkeleton implements
 			modifiedMessage = modifiedMessage.substring(0, maxMessageLength) + "...(" + (modifiedMessage.length() - maxMessageLength) + " characters more)";
 		}
 		if (StringUtils.isNotEmpty(hideRegex)) {
-			modifiedMessage = Misc.hideAll(modifiedMessage, hideRegex);
+			modifiedMessage = modifiedMessage.replaceAll(hideRegex,"$1**********$2");
 		}
 		LoggingEvent modifiedEvent = new LoggingEvent(
 				event.getFQNOfLoggerClass(), event.getLogger(),
