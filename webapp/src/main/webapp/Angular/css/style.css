@@ -6555,6 +6555,9 @@ body.body-small .vote-icon {
   }
 }
 @media (max-width: 768px) {
+  .maxWidth768 {
+    width: 100%;
+  }
   #page-wrapper {
     position: inherit;
     margin: 0 0 0 0;

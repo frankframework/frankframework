@@ -29,6 +29,7 @@
 			nl.nn.adapterframework.webcontrol.api.ShowIbisstoreSummary,
 			nl.nn.adapterframework.webcontrol.api.ShowMonitors,
 			nl.nn.adapterframework.webcontrol.api.ShowAdapterStatistics,
+			nl.nn.adapterframework.webcontrol.api.ShowScheduler,
 		</param-value>
 	</context-param>
 

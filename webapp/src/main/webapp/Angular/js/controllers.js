@@ -518,6 +518,31 @@ function SecurityItemsCtrl($scope, $rootScope, Api) {
 };
 
 function SchedulerCtrl($scope, Api) {
+    $scope.jobs = {};
+    $scope.scheduler = {};
+    update();
+
+    function update() {
+        Api.Get("schedules", function(data) {
+            $.extend($scope, data);
+        });
+    };
+
+    $scope.start = function() {
+        Api.Put("schedules", {action: "start"}, update);
+    };
+
+    $scope.pause = function() {
+        Api.Put("schedules", {action: "pause"}, update);
+    };
+
+    $scope.remove = function(jobGroup, jobName) {
+        Api.Delete("schedules/"+jobGroup+"/"+jobName, update);
+    };
+
+    $scope.trigger = function(jobGroup, jobName) {
+        Api.Put("schedules/"+jobGroup+"/"+jobName, null, update);
+    };
 };
 
 function LoggingCtrl($scope, Api) {

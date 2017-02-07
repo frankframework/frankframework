@@ -45,7 +45,17 @@ angular.module('iaf.beheerconsole')
         };
 
         this.Put = function (uri, object, callback, error) {
+            if(object == null) object = {};
             return $http.put(absolutePath + uri, object).then(function(response){
+                if(callback && typeof callback === 'function') {
+                    etags[uri] = response.headers("etag");
+                    callback(response.data);
+                }
+            }, function(response){ errorException(response, error); });
+        };
+
+        this.Delete = function (uri, callback, error) {
+            return $http({url:absolutePath + uri, method: "delete" }).then(function(response){
                 if(callback && typeof callback === 'function') {
                     etags[uri] = response.headers("etag");
                     callback(response.data);
