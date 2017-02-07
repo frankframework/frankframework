@@ -44,8 +44,7 @@ import nl.nn.adapterframework.core.ListenerException;
  * </td><td>true</td></tr>
  * <tr><td>{@link #setView(boolean) view}</td><td>indicates whether this listener supports a view (and a link should be put in the IBIS console)</td><td>if <code>method=GET</code> then <code>true</code>, else <code>false</code></td></tr> 
  * <tr><td>{@link #seAuthRoles(String) authRoles}</td><td>comma separated list of authorization roles which are granted for this REST service</td><td>IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService</td></tr>
- * <tr><td>{@link #setApplicationFaultsAsExceptions(boolean) retrieveMultipart}</td><td>indicates whether the parts of a multipart entity should be retrieved and put in session keys. This can only be done once!</td><td>true</td></tr>
- * <tr><td>{@link #setRetrieveMultipart(boolean) retrieveMultipart}</td><td>when true, a possible existing multipart/form-data entity is retrieved and the parts are stored in session keys</td><td>true</td></tr>
+ * <tr><td>{@link #setRetrieveMultipart(boolean) retrieveMultipart}</td><td>indicates whether the parts of a multipart entity should be retrieved and put in session keys. This can only be done once!</td><td>true</td></tr>
  * </table>
  * @author  Gerrit van Brakel 
  */
