@@ -137,7 +137,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * <tr><td>{@link #setCorrelationIDNamespaceDefs(String) correlationIDNamespaceDefs}</td><td>namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDStyleSheet(String) correlationIDStyleSheet}</td><td>stylesheet to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHideRegex(String) hideRegex}</td><td>Regular expression to mask strings in the error/logstore. Everything character between to strings in this expression will be replaced by a '*'that fits the expression is replaced. For Example, the regular expression (?&lt;=&lt;Party&gt;).*?(?=&lt;/Party&gt;) will replace every character between keys<party> and </party> </td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setHideMethod(String) hideMethod}</td><td>(only used when hideRegex is not empty) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked</td><td>"all"</td></tr>
  * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelNamespaceDefs(String) labelNamespaceDefs}</td><td>namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelStyleSheet(String) labelStyleSheet}</td><td>stylesheet to extract label from message</td><td>&nbsp;</td></tr>
@@ -239,7 +238,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
     
 	private String returnedSessionKeys=null;
 	private String hideRegex = null;
-	private String hideMethod = "all";
 	private String hiddenInputSessionKeys=null;
 	private boolean checkForDuplicates=false;
 	private String checkForDuplicatesMethod="MESSAGEID";
@@ -880,11 +878,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				}
 			}
 			if (hideRegex != null){
-				if (getHideMethod().equalsIgnoreCase("FIRSTHALF")) {
-					message = Misc.hideFirstHalf(message, hideRegex);
-				} else {
-					message = Misc.hideAll(message, hideRegex);
-				}
+				message = message.replaceAll(hideRegex,"$1********$2");
 				sobj=message;
 			}
 			if (errorStorage!=null) {
@@ -2119,13 +2113,5 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	public String getHideRegex() {
 		return hideRegex;
-	}
-
-	public void setHideMethod(String hideMethod) {
-		this.hideMethod = hideMethod;
-	}
-
-	public String getHideMethod() {
-		return hideMethod;
 	}
 }
