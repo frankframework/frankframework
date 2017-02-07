@@ -46,6 +46,12 @@ import nl.nn.adapterframework.core.ListenerException;
  * <tr><td>{@link #seAuthRoles(String) authRoles}</td><td>comma separated list of authorization roles which are granted for this REST service</td><td>IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService</td></tr>
  * <tr><td>{@link #setRetrieveMultipart(boolean) retrieveMultipart}</td><td>indicates whether the parts of a multipart entity should be retrieved and put in session keys. This can only be done once!</td><td>true</td></tr>
  * </table>
+ * </p>
+ * <p>
+ * Note:
+ * Servlets' multipart configuration expects a Content-Type of <code>multipart/form-data</code> (see http://docs.oracle.com/javaee/6/api/javax/servlet/annotation/MultipartConfig.html).
+ * So do not use other multipart content types like <code>multipart/related</code>
+ * </p>
  * @author  Gerrit van Brakel 
  */
 public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
