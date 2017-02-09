@@ -444,6 +444,7 @@ function TranslateCtrl($translate, $scope) {
     };
 };
 
+//** Ctrls **//
 
 function ShowConfigurationCtrl($scope, Api) {
     this.configurationRadio = 'true';
@@ -641,7 +642,7 @@ function ExecuteJdbcQueryCtrl($scope, Api, $timeout, $state) {
             $scope.error = "";
             $scope.result = returnData;
         }, function(errorData, status, errorMsg) {
-            var error = (errorData) ? errorData : errorMsg;
+            var error = (errorData.error) ? errorData.error : errorMsg;
             $scope.error = error;
             $scope.result = "";
         });
@@ -704,7 +705,7 @@ function BrowseJdbcTablesCtrl($scope, Api, $timeout, $state) {
                 };
             }, 100);
         }, function(errorData, status, errorMsg) {
-            var error = (errorData) ? errorData : errorMsg;
+            var error = (errorData.error) ? errorData.error : errorMsg;
             $scope.error = error;
             $scope.query = "";
         });

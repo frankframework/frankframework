@@ -30,19 +30,30 @@ import javax.ws.rs.ext.Provider;
 */
 
 @Provider
-public class ApiExceptionHandler implements ExceptionMapper<ApiException>
+public class ApiExceptionHandler implements ExceptionMapper<Exception>
 {
 	@Override
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response toResponse(ApiException exception) {
-		ResponseBuilder response = Response.status(Status.INTERNAL_SERVER_ERROR);
+	public Response toResponse(Exception exception) {
+		Status statusCode = Status.INTERNAL_SERVER_ERROR;
+		String statusText = "error";
+		String statusType = MediaType.TEXT_PLAIN;
+		if(exception instanceof ApiWarning) {
+			statusCode = Status.BAD_REQUEST;
+			statusText = "warning";
+			statusType = MediaType.APPLICATION_JSON;
+		}
+		if(exception instanceof ApiException)
+			statusType = MediaType.APPLICATION_JSON;
+
+		ResponseBuilder response = Response.status(statusCode);
 
 		String message = exception.getMessage();
 
 		if(message != null) {
 			message = message.replace("\"", "\\\"").replace("\n", " ").replace(System.getProperty("line.separator"), " ");
 
-			response.entity(("{\"status\":\"error\", \"error\":\"" + message + "\"}")).type(MediaType.APPLICATION_JSON);
+			response.entity(("{\"status\":\""+statusText+"\", \"error\":\"" + message + "\"}")).type(statusType);
 		}
 
 		return response.build();
