@@ -24,7 +24,7 @@ import java.util.Comparator;
  * @author  Gerrit van Brakel
  * @since   4.3
  */
-public class FileNameComparator implements Comparator {
+public class FileNameComparator implements Comparator<File> {
 
 	protected static int getNextIndex(String s, int start, boolean numericPart) {
 		int pos=start;
@@ -126,8 +126,8 @@ public class FileNameComparator implements Comparator {
 		return result;
 	}
 
-	public int compare(Object arg0, Object arg1) {
-		return compareFilenames((File) arg0, (File) arg1);
+	public int compare(File arg0, File arg1) {
+		return compareFilenames(arg0, arg1);
 	}
 
 }

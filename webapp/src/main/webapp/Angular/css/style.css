@@ -6537,6 +6537,14 @@ body.body-small .vote-icon {
 .pace-inactive {
   display: none;
 }
+.loggingBtn button {
+  margin: 0 3px;
+}
+@media (max-width: 1170px) {
+  .loggingBtn button span {
+    display: none;
+  }
+}
 @media (min-width: 768px) {
   #page-wrapper {
     position: inherit;

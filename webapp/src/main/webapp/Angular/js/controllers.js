@@ -545,7 +545,45 @@ function SchedulerCtrl($scope, Api) {
     };
 };
 
-function LoggingCtrl($scope, Api) {
+function LoggingCtrl($scope, Api, Misc, $timeout) {
+    $scope.viewFile = false;
+
+    Api.Get("logging", function(data) {
+        $.extend($scope, data);
+    });
+
+    $scope.view = function (file) {
+        $scope.viewFile = Misc.getServerPath() + "FileViewerServlet?resultType=html&fileName=" + file.path;
+        $scope.loading = true;
+        $timeout(function() {
+            var iframe = angular.element("iframe");
+            $scope.origDirectory = $scope.directory;
+            $scope.directory = file.path;
+
+            iframe[0].onload = function() {
+                $scope.loading = false;
+                var iframeBody = $(iframe[0].contentWindow.document.body);
+                iframeBody.css({"background-color": "rgb(243, 243, 244)"});
+                iframe.css({"height": iframeBody.height() + 50});
+            };
+        }, 50);
+    };
+
+    $scope.closeFile = function () {
+        $scope.viewFile = false;
+        $scope.directory = $scope.origDirectory;
+    };
+
+    $scope.download = function (file) {
+        var url = Misc.getServerPath() + "FileViewerServlet?resultType=bin&fileName=" + file.path;
+        window.open(url, "_blank");
+    };
+
+    $scope.openDirectory = function (file) {
+        Api.Get("logging?directory="+file.path, function(data) {
+            $.extend($scope, data);
+        });
+    };
 };
 
 function IBISstoreSummaryCtrl($scope, Api) {

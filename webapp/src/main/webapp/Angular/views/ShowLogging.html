@@ -6,12 +6,53 @@
 		<div class="col-lg-12">
 			<div class="ibox float-e-margins">
 				<div class="ibox-title">
-					<h4>Logging</h4>
-				</div>
-				<div class="ibox-content">
-					<div class="col-md-12">
-						Todo
+					<div class="pull-right" ng-if="viewFile">
+						<button ng-click="closeFile()" class="btn btn-xs pull-right" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
 					</div>
+					<h4>Logging <span class="m-l-md">{{directory}}</span></h4>
+				</div>
+				<div class="ibox-content" ng-if="!viewFile">
+					<div class="col-md-12">
+						<table class="table table-striped">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Size</th>
+									<th>Date</th>
+									<th>&nbsp;</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="file in list">
+									<td>{{file.name}}</td>
+									<td><span ng-if="file.type=='file'">{{file.size}}</span></td>
+									<td to-date time="{{file.lastModified}}"></td>
+									<td class="loggingBtn" ng-if="file.type=='file'">
+										<button ng-click="view(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-file-text-o" aria-hidden="true"></i> <span>View</span></button>
+										<button ng-click="download(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-arrow-circle-o-down aria-hidden="true"></i> <span>Download</span></button>
+									</td>
+									<td class="loggingBtn" ng-if="file.type=='directory'">
+										<button ng-click="openDirectory(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-folder-open-o" aria-hidden="true"></i> <span>Open</span></button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div ng-if="viewFile">
+					<div ng-if="loading" style="position: absolute; left: 0; right: 0; top: 0; bottom: 0; background: #f3f3f4; text-align: center;">
+						<h2>Loading</h2>
+						<div>
+							<div class="sk-spinner sk-spinner-wave">
+								<div class="sk-rect1"></div>
+								<div class="sk-rect2"></div>
+								<div class="sk-rect3"></div>
+								<div class="sk-rect4"></div>
+								<div class="sk-rect5"></div>
+							</div>
+						</div>
+					</div>
+					<iframe src="{{viewFile}}" style="width:100%; min-height:400px; border:none; overflow:hidden;"></iframe>
 				</div>
 			</div>
 		</div>
