@@ -29,6 +29,7 @@ import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -70,12 +71,14 @@ import org.xml.sax.InputSource;
 public final class ShowSecurityItems extends Base {
 	public static final String AUTHALIAS_XSLT = "xml/xsl/authAlias.xsl";
 	public static final String GETCONNPOOLPROP_XSLT = "xml/xsl/getConnectionPoolProperties.xsl";
+	@Context ServletConfig servletConfig;
+	@Context HttpServletRequest httpServletRequest;
 
 	@GET
 	@RolesAllowed({"ObserverAccess", "IbisTester"})
 	@Path("/securityitems")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getSecurityItems(@Context ServletConfig servletConfig) throws ApiException {
+	public Response getSecurityItems() throws ApiException {
 		initBase(servletConfig);
 
 		if (ibisManager == null) {
@@ -84,7 +87,7 @@ public final class ShowSecurityItems extends Base {
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		returnMap.put("securityRoles", addApplicationDeploymentDescriptor());
-		returnMap.put("securityRoleBindings", addSecurityRoleBindings());
+		returnMap.put("securityRoleBindings", getSecurityRoleBindings());
 		returnMap.put("jmsRealms", addJmsRealms());
 		returnMap.put("sapSystems", addSapSystems());
 		returnMap.put("authEntries", addAuthEntries());
@@ -93,9 +96,9 @@ public final class ShowSecurityItems extends Base {
 		return Response.status(Response.Status.CREATED).entity(returnMap).build();
 	}
 
-	private List<Map<String, String>> addApplicationDeploymentDescriptor() {
+	private Map<String, Object> addApplicationDeploymentDescriptor() {
 		String appDDString = null;
-		List<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
+		Map<String, Object> resultList = new HashMap<String, Object>();
 		Document xmlDoc = null;
 
 		try {
@@ -112,27 +115,37 @@ public final class ShowSecurityItems extends Base {
 		catch (Exception e) {
 			return null;
 		}
+		
+		Map<String, List<String>> secBindings = getSecurityRoleBindings();
 
 		NodeList rowset = xmlDoc.getElementsByTagName("security-role");
 		for (int i = 0; i < rowset.getLength(); i++) {
 			Element row = (Element) rowset.item(i);
 			NodeList fieldsInRowset = row.getChildNodes();
 			if (fieldsInRowset != null && fieldsInRowset.getLength() > 0) {
-				Map<String, String> tmp = new HashMap<String, String>();
+				Map<String, Object> tmp = new HashMap<String, Object>();
 				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
 					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
 						Element field = (Element) fieldsInRowset.item(j);
-						tmp.put(field.getTagName(), field.getTextContent());
+						tmp.put(field.getNodeName(), field.getTextContent());
 					}
 				}
-				resultList.add(tmp);
+				if(secBindings.containsKey(row.getAttribute("id")))
+					tmp.put("groups", secBindings.get(row.getAttribute("id")));
+				try {
+					if(tmp.containsKey("role-name")) {
+						String role = (String) tmp.get("role-name");
+						tmp.put("allowed", httpServletRequest.isUserInRole(role));
+					}
+				} catch(Exception e) {};
+				resultList.put(row.getAttribute("id"), tmp);
 			}
 		}
-		
+
 		return resultList;
 	}
 
-	private Map<String, List<String>> addSecurityRoleBindings() {
+	private Map<String, List<String>> getSecurityRoleBindings() {
 		String appBndString = null;
 		Map<String, List<String>> resultList = new HashMap<String, List<String>>();
 		Document xmlDoc = null;
@@ -161,15 +174,18 @@ public final class ShowSecurityItems extends Base {
 					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
 						Element field = (Element) fieldsInRowset.item(j);
 
-						if(field.getTagName() == "role") {
-							role = field.getTextContent();
+						if(field.getNodeName() == "role") {
+							role = field.getAttribute("href");
+							if(role.indexOf("#") > -1)
+								role = role.substring(role.indexOf("#")+1);
 						}
 						else {
 							roles.add(field.getAttribute("name"));
 						}
 					}
 				}
-				resultList.put(role, roles);
+				if(role != null && role != "")
+					resultList.put(role, roles);
 			}
 		}
 		return resultList;
