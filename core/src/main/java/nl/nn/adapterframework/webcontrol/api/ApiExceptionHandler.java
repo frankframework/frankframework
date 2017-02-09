@@ -15,6 +15,9 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -30,30 +33,22 @@ import javax.ws.rs.ext.Provider;
 */
 
 @Provider
-public class ApiExceptionHandler implements ExceptionMapper<Exception>
+public class ApiExceptionHandler implements ExceptionMapper<ApiException>
 {
 	@Override
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response toResponse(Exception exception) {
-		Status statusCode = Status.INTERNAL_SERVER_ERROR;
-		String statusText = "error";
-		String statusType = MediaType.TEXT_PLAIN;
-		if(exception instanceof ApiWarning) {
-			statusCode = Status.BAD_REQUEST;
-			statusText = "warning";
-			statusType = MediaType.APPLICATION_JSON;
-		}
-		if(exception instanceof ApiException)
-			statusType = MediaType.APPLICATION_JSON;
-
-		ResponseBuilder response = Response.status(statusCode);
-
+	public Response toResponse(ApiException exception) {
+		ResponseBuilder response = Response.status(Status.INTERNAL_SERVER_ERROR);
 		String message = exception.getMessage();
 
 		if(message != null) {
 			message = message.replace("\"", "\\\"").replace("\n", " ").replace(System.getProperty("line.separator"), " ");
+			Map<String, Object> entity = new HashMap<String, Object>(3);
+			entity.put("status", "error");
+			entity.put("error", message);
+			entity.put("stackTrace", exception.getStackTrace());
 
-			response.entity(("{\"status\":\""+statusText+"\", \"error\":\"" + message + "\"}")).type(statusType);
+			response.entity(entity).type(MediaType.APPLICATION_JSON);
 		}
 
 		return response.build();

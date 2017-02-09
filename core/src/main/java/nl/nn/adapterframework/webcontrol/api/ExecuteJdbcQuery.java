@@ -79,7 +79,7 @@ public final class ExecuteJdbcQuery extends Base {
 	@Path("/jdbc/query")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(LinkedHashMap<String, Object> json) throws ApiException, ApiWarning {
+	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 
 		String realm = null, resultType = null, query = null, queryType = "select", result = "", returnType = MediaType.APPLICATION_XML;
@@ -105,7 +105,7 @@ public final class ExecuteJdbcQuery extends Base {
 		}
 
 		if(realm == null || resultType == null || query == null) {
-			throw new ApiWarning("Missing data, realm, resultType and query are expected.");
+			throw new ApiException("Missing data, realm, resultType and query are expected.", 400);
 		}
 
 		//We have all info we need, lets execute the query!
@@ -129,10 +129,10 @@ public final class ExecuteJdbcQuery extends Base {
 
 				qs.close();
 			} catch (Throwable t) {
-				throw new ApiWarning("An error occured on executing jdbc query: "+t.toString());
+				throw new ApiException("An error occured on executing jdbc query: "+t.toString(), 400);
 			}
 		} catch (Exception e) {
-			throw new ApiWarning("An error occured on creating or closing the connection: "+e.toString());
+			throw new ApiException("An error occured on creating or closing the connection: "+e.toString(), 400);
 		}
 
 		if(resultType.equalsIgnoreCase("json")) {
@@ -140,7 +140,7 @@ public final class ExecuteJdbcQuery extends Base {
 				returnEntity = XmlQueryResult2Map(result);
 			}
 			if(returnEntity == null)
-				throw new ApiWarning("Invalid query result.");
+				throw new ApiException("Invalid query result.", 400);
 		}
 		else
 			returnEntity = result;

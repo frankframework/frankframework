@@ -61,7 +61,7 @@ public final class BrowseJdbcTable extends Base {
 	@Path("/jdbc/browse")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(LinkedHashMap<String, Object> json) throws ApiException, ApiWarning {
+	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 
 		String realm = null, tableName = null, where = "", order = null;
@@ -100,16 +100,16 @@ public final class BrowseJdbcTable extends Base {
 		}
 
 		if(realm == null || tableName == null) {
-			throw new ApiWarning("realm and/or tableName not defined.");
+			throw new ApiException("realm and/or tableName not defined.", 400);
 		}
 
 		if(maxRow < minRow)
-			throw new ApiWarning("Rownum max must be greater than or equal to Rownum min");
+			throw new ApiException("Rownum max must be greater than or equal to Rownum min", 400);
 		if (maxRow - minRow >= 100) {
-			throw new ApiWarning("Difference between Rownum max and Rownum min must be less than hundred");
+			throw new ApiException("Difference between Rownum max and Rownum min must be less than hundred", 400);
 		}
 		if (!readAllowed(permissionRules, tableName))
-			throw new ApiWarning("Access to table ("+tableName+") not allowed");
+			throw new ApiException("Access to table ("+tableName+") not allowed", 400);
 
 		//We have all info we need, lets execute the query!
 		Map<String, Object> fieldDef = new HashMap<String, Object>();
@@ -184,12 +184,12 @@ public final class BrowseJdbcTable extends Base {
 					//error("errors.generic","This function only supports oracle databases",null);
 				//}
 			} catch (Throwable t) {
-				throw new ApiWarning("An error occured on executing jdbc query: "+t.toString());
+				throw new ApiException("An error occured on executing jdbc query: "+t.toString(), 400);
 			} finally {
 				qs.close();
 			}
 		} catch (Exception e) {
-			throw new ApiWarning("An error occured on creating or closing the connection: "+e.toString());
+			throw new ApiException("An error occured on creating or closing the connection: "+e.toString(), 400);
 		}
 
 		List<Map<String, String>> resultMap = null;
@@ -197,7 +197,7 @@ public final class BrowseJdbcTable extends Base {
 			resultMap = XmlQueryResult2Map(result);
 		}
 		if(resultMap == null)
-			throw new ApiWarning("Invalid query result.");
+			throw new ApiException("Invalid query result.", 400);
 
 		Map<String, Object> resultObject = new HashMap<String, Object>();
 		resultObject.put("table", tableName);

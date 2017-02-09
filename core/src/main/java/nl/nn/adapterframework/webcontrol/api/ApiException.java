@@ -17,13 +17,19 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.Serializable;
 
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
+
 /**
 * Custom errors for the API.
 * 
 * @author	Niels Meijer
 */
 
-public class ApiException extends Exception implements Serializable
+public class ApiException extends WebApplicationException implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
@@ -31,11 +37,38 @@ public class ApiException extends Exception implements Serializable
 		super();
 	}
 
-	public ApiException(String msg) {
-		super(msg);
+	public ApiException(Exception e) {
+		super(e);
 	}
 
-	public ApiException(String msg, Exception e) {
-		super(msg, e);
+	public ApiException(String msg) {
+		super(formatException(msg, Status.INTERNAL_SERVER_ERROR, MediaType.APPLICATION_JSON));
+	}
+
+	public ApiException(String msg, int status) {
+		super(formatException(msg, Status.fromStatusCode(status), MediaType.APPLICATION_JSON));
+	}
+
+	public ApiException(String msg, Status status) {
+		super(formatException(msg, status, MediaType.APPLICATION_JSON));
+	}
+
+	public ApiException(String msg, int status, String MediaType) {
+		super(formatException(msg, Status.fromStatusCode(status), MediaType));
+	}
+
+	public ApiException(String msg, Status status, String MediaType) {
+		super(formatException(msg, status, MediaType));
+	}
+
+	private static Response formatException(String message, Status status, String mediaType) {
+		ResponseBuilder response = Response.status(status).type(mediaType);
+
+		if(message != null) {
+			message = message.replace("\"", "\\\"").replace("\n", " ").replace(System.getProperty("line.separator"), " ");
+
+			response.entity(("{\"status\":\"error\", \"error\":\"" + message + "\"}"));
+		}
+		return response.build();
 	}
 }
