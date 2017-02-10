@@ -135,7 +135,7 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
     })
     .state('pages.webservices', {
         url: "/webservices",
-        templateUrl: "views/empty_page.html",
+        templateUrl: "views/Webservices.html",
         data: {
             pageTitle: 'Webservices',
             breadcrumbs: 'Webservices'

@@ -106,7 +106,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private String targetDesignDocument;
 	private boolean active=true;
 
-	private Vector receivers = new Vector();
+	private Vector<IReceiver> receivers = new Vector<IReceiver>();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
 
@@ -166,9 +166,9 @@ public class Adapter implements IAdapter, NamedBean {
 			pipeline.setAdapter(this);
 			pipeline.configure();
 			messageKeeper.add("Adapter [" + name + "] pipeline successfully configured");
-			Iterator it = receivers.iterator();
+			Iterator<IReceiver> it = receivers.iterator();
 			while (it.hasNext()) {
-				IReceiver receiver = (IReceiver) it.next();
+				IReceiver receiver = it.next();
 				configureReceiver(receiver);
 			}
 			configurationSucceeded = true;
@@ -351,10 +351,10 @@ public class Adapter implements IAdapter, NamedBean {
 							 action==HasStatistics.STATISTICS_ACTION_RESET);
 		if (showDetails) {
 			Object recsData=hski.openGroup(adapterData,null,"receivers");
-			Iterator recIt=getReceiverIterator();
+			Iterator<IReceiver> recIt = getReceiverIterator();
 			if (recIt.hasNext()) {
 				while (recIt.hasNext()) {
-					IReceiver receiver=(IReceiver) recIt.next();
+					IReceiver receiver = recIt.next();
 					receiver.iterateOverStatistics(hski,recsData,action);
 				}
 			}
@@ -427,9 +427,9 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	public IReceiver getReceiverByName(String receiverName) {
-		Iterator it = receivers.iterator();
+		Iterator<IReceiver> it = receivers.iterator();
 		while (it.hasNext()) {
-			IReceiver receiver = (IReceiver) it.next();
+			IReceiver receiver = it.next();
 			if (receiver.getName().equalsIgnoreCase(receiverName)) {
 				return receiver;
 			}
@@ -437,7 +437,7 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		return null;
 	}
-	public Iterator getReceiverIterator() {
+	public Iterator<IReceiver> getReceiverIterator() {
 		return receivers.iterator();
 	}
 	
@@ -759,9 +759,9 @@ public class Adapter implements IAdapter, NamedBean {
 					getMessageKeeper().add("Adapter [" + getName() + "] up and running");
 					log.info("Adapter [" + getName() + "] up and running");
 					// starting receivers
-					Iterator it = receivers.iterator();
+					Iterator<IReceiver> it = receivers.iterator();
 					while (it.hasNext()) {
-						IReceiver receiver = (IReceiver) it.next();
+						IReceiver receiver = it.next();
 						receiver.startRunning();
 					}
 				} catch (Throwable t) {
@@ -809,9 +809,9 @@ public class Adapter implements IAdapter, NamedBean {
 						runState.setRunState(RunStateEnum.STOPPING);
 					}
 					log.debug("Adapter [" + name + "] is stopping receivers");
-					Iterator it = receivers.iterator();
+					Iterator<IReceiver> it = receivers.iterator();
 					while (it.hasNext()) {
-						IReceiver receiver = (IReceiver) it.next();
+						IReceiver receiver = it.next();
 						receiver.stopRunning();
 					}
 					// IPullingListeners might still be running, see also
@@ -867,10 +867,10 @@ public class Adapter implements IAdapter, NamedBean {
 		sb.append("[name=" + name + "]");
 		//sb.append("[version=" + version + "]");
 		sb.append("[targetDesignDocument=" + targetDesignDocument + "]");
-		Iterator it = receivers.iterator();
+		Iterator<IReceiver> it = receivers.iterator();
 		sb.append("[receivers=");
 		while (it.hasNext()) {
-			IReceiver receiver = (IReceiver) it.next();
+			IReceiver receiver = it.next();
 			sb.append(" " + receiver.getName());
 
 		}

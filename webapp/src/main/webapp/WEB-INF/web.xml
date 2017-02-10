@@ -31,6 +31,7 @@
 			nl.nn.adapterframework.webcontrol.api.ShowAdapterStatistics,
 			nl.nn.adapterframework.webcontrol.api.ShowScheduler,
 			nl.nn.adapterframework.webcontrol.api.ShowLogging,
+			nl.nn.adapterframework.webcontrol.api.Webservices,
 		</param-value>
 	</context-param>
 

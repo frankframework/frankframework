@@ -491,6 +491,13 @@ function AdapterStatisticsCtrl($scope, Api, $stateParams) {
     });
 };
 
+function WebservicesCtrl($scope, Api, Misc) {
+    $scope.rootURL = Misc.getServerPath() + 'rest/';
+    Api.Get("webservices", function(data) {
+        $.extend($scope, data);
+    });
+};
+
 function SecurityItemsCtrl($scope, $rootScope, Api) {
     $scope.sapSystems = [];
     $scope.serverProps = {};
@@ -553,8 +560,31 @@ function LoggingCtrl($scope, Api, Misc, $timeout) {
         $.extend($scope, data);
     });
 
-    $scope.view = function (file) {
-        $scope.viewFile = Misc.getServerPath() + "FileViewerServlet?resultType=html&fileName=" + file.path;
+    $scope.view = function (file, as) {
+        var resultType = "";
+        var params = "";
+        switch (as) {
+        case "stats":
+            resultType = "html";
+            params += "&stats=true";
+            break;
+
+        case "log4j":
+            resultType = "html";
+            params += "&log4j=true";
+
+        default:
+            resultType = as;
+            break;
+        }
+
+        var URL = Misc.getServerPath() + "FileViewerServlet?resultType=" + resultType + "&fileName=" + file.path + params;
+        if(resultType == "xml") {
+            window.open(URL, "_blank");
+            return;
+        }
+
+        $scope.viewFile = URL;
         $scope.loading = true;
         $timeout(function() {
             var iframe = angular.element("iframe");
@@ -843,6 +873,7 @@ angular
     .controller('ShowConfigurationCtrl', ShowConfigurationCtrl)
     .controller('EnvironmentVariablesCtrl', EnvironmentVariablesCtrl)
     .controller('AdapterStatisticsCtrl', AdapterStatisticsCtrl)
+    .controller('WebservicesCtrl', WebservicesCtrl)
     .controller('SecurityItemsCtrl', SecurityItemsCtrl)
     .controller('SchedulerCtrl', SchedulerCtrl)
     .controller('LoggingCtrl', LoggingCtrl)

@@ -27,8 +27,11 @@
 									<td>{{file.name}}</td>
 									<td><span ng-if="file.type=='file'">{{file.size}}</span></td>
 									<td to-date time="{{file.lastModified}}"></td>
-									<td class="loggingBtn" ng-if="file.type=='file'">
-										<button ng-click="view(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-file-text-o" aria-hidden="true"></i> <span>View</span></button>
+									<td class="hideBtn1170" ng-if="file.type=='file'">
+										<button ng-if="file.name.indexOf('-stats_') >= 0" ng-click="view(file, 'stats')" class="btn btn-xs pull-right" type="button"><i class="fa fa-file-text-o" aria-hidden="true"></i> <span>2HTML</span></button>
+										<button ng-if="file.name.indexOf('_xml.log') >= 0" ng-click="view(file, 'log4j')" class="btn btn-xs pull-right" type="button"><i class="fa fa-file-text-o" aria-hidden="true"></i> <span>2HTML</span></button>
+										<button ng-if="file.name.indexOf('-stats_') >= 0 || file.name.indexOf('_xml.log') >= 0" ng-click="view(file, 'xml')" class="btn btn-xs pull-right" type="button"><i class="fa fa-file-code-o" aria-hidden="true"></i> <span>XML</span></button>
+										<button ng-if="file.name.indexOf('-stats_') < 0 && file.name.indexOf('_xml.log') < 0" ng-click="view(file, 'html')" class="btn btn-xs pull-right" type="button"><i class="fa fa-file-text-o" aria-hidden="true"></i> <span>HTML</span></button>
 										<button ng-click="download(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-arrow-circle-o-down aria-hidden="true"></i> <span>Download</span></button>
 									</td>
 									<td class="loggingBtn" ng-if="file.type=='directory'">

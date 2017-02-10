@@ -6537,12 +6537,19 @@ body.body-small .vote-icon {
 .pace-inactive {
   display: none;
 }
-.loggingBtn button {
+.hideBtn1170 button, .hideBtn1170 a {
   margin: 0 3px;
 }
+.btn.default {
+  color: #676a6c;
+  background-color: buttonface;
+}
 @media (max-width: 1170px) {
-  .loggingBtn button span {
+  .hideBtn1170 span {
     display: none;
+  }
+  .hideBtn1170 {
+    min-width: 100px;
   }
 }
 @media (min-width: 768px) {
