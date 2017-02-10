@@ -115,6 +115,13 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
         data: {
             pageTitle: 'Browse JMS Queue',
             breadcrumbs: 'JMS > Browse Queue'
+        },
+        resolve: {
+            loadPlugin: function ($ocLazyLoad) {
+                return $ocLazyLoad.load([ {
+                    files: ['css/plugins/iCheck/custom.css','js/plugins/iCheck/icheck.min.js']
+                } ]);
+            }
         }
     })
     .state('pages.test_pipeline', {

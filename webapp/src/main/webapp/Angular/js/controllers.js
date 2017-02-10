@@ -649,6 +649,38 @@ function SendJmsMessageCtrl($scope, Api) {
 };
 
 function BrowseJmsQueueCtrl($scope, Api) {
+    $scope.destinationTypes = ["QUEUE", "TOPIC"]; 
+    Api.Get("jms", function(data) {
+        $.extend($scope, data);
+        angular.element("select[name='type']").val($scope.destinationTypes[0]);
+    });
+
+    $scope.submit = function(formData) {
+        if(!formData || !formData.destination) {
+            $scope.error = "Please specify a jms realm and destination!";
+            return;
+        }
+        if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
+        if(!formData.type) formData.type = $scope.destinationTypes[0] || false;
+
+        Api.Post("jms/browse", JSON.stringify(formData), function(returnData, status) {
+            $scope.error = "";
+            console.log("status", status);
+        }, function(errorData, status, errorMsg) {
+            $scope.error = (errorData.error) ? errorData.error : errorMsg;
+        });
+    };
+
+    $scope.reset = function() {
+        $scope.error = "";
+        if(!$scope.form) return;
+        if($scope.form.destination)
+            $scope.form.destination = "";
+        if($scope.form.rowNumbersOnly)
+            $scope.form.rowNumbersOnly = "";
+        if($scope.form.type)
+            $scope.form.type = $scope.destinationTypes[0];
+    };
 };
 
 function ExecuteJdbcQueryCtrl($scope, Api, $timeout, $state) {

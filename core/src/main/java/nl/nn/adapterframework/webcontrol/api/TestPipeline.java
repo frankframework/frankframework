@@ -148,7 +148,7 @@ public final class TestPipeline extends TimeoutGuardPipe {
 		return Response.status(Response.Status.CREATED).entity(result).build();
 	}
 
-	private String processZipFile(Map<String, Object> returnResult, InputStream inputStream, String fileEncoding, IAdapter adapter, boolean writeSecLogMessage) throws IOException {
+	private void processZipFile(Map<String, Object> returnResult, InputStream inputStream, String fileEncoding, IAdapter adapter, boolean writeSecLogMessage) throws IOException {
 		String result = "";
 		String lastState = null;
 		ZipInputStream archive = new ZipInputStream(inputStream);
@@ -178,7 +178,6 @@ public final class TestPipeline extends TimeoutGuardPipe {
 		archive.close();
 		returnResult.put("state", lastState);
 		returnResult.put("result", result);
-		return "";
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
