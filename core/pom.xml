@@ -201,11 +201,10 @@
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-struts</artifactId>
     </dependency>
-    <dependency><!-- Needed when running on Java 5 (without it tests fail with JDK 1.5 and succeed with JDK 1.7). -->
+    <dependency><!-- Needed when running on Java 5 (without it tests fail with JDK 1.5 and succeed with JDK 1.7). Probably also needed when running on WAS, see comment about SJSXP in XmlUtils.java -->
       <groupId>com.sun.xml.stream</groupId>
       <artifactId>sjsxp</artifactId>
       <version>1.0.2</version>
-      <scope>runtime</scope>
       <exclusions>
         <exclusion><!-- Exclude 1.0 as 1.0.1 is already included by xmlbeans. -->
           <groupId>javax.xml.stream</groupId>
