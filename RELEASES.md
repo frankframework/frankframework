@@ -157,6 +157,7 @@ Upcoming
 - HttpSender: add multipartXmlSessionKey attribute
 - Add possibility to skip the retrieval of multipart http requests to sessionKeys (in RestListeners)
 - Bugfix in generating flow images for moving files
+- Use the Sun Java Streaming XML Parser (SJSXP) as StAX implementation on all Application Servers
 
 
 ### Non backwards compatible changes

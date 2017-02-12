@@ -134,14 +134,30 @@ public class XmlUtils {
 
 	private static final String ADAPTERSITE_XSLT = "/xml/xsl/web/adapterSite.xsl";
 
-	public static final XMLEventFactory EVENT_FACTORY   = XMLEventFactory.newInstance();
-	public static final XMLInputFactory INPUT_FACTORY   = XMLInputFactory.newInstance();
-	public static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
-	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY = XMLOutputFactory.newInstance();
+	public static final XMLEventFactory EVENT_FACTORY;
+	public static final XMLInputFactory INPUT_FACTORY;
+	public static final XMLOutputFactory OUTPUT_FACTORY;
+	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY;
 	public static final String STREAM_FACTORY_ENCODING  = "UTF-8";
 
 	static {
-		XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
+		// Use the Sun Java Streaming XML Parser (SJSXP) as StAX implementation
+		// on all Application Servers. Don't leave it up to the newFactory
+		// method of javax.xml.stream.XMLOutputFactory which for example on
+		// WAS 8.5 with classloader parent first will result in
+		// com.ibm.xml.xlxp2.api.stax.XMLOutputFactoryImpl being used while
+		// with parent last it will use com.ctc.wstx.sw.RepairingNsStreamWriter
+		// from woodstox-core-asl-4.2.0.jar. At the time of testing the
+		// woodstox-core-asl-4.2.0.jar and sjsxp-1.0.2.jar were part of the
+		// webapp which both provide META-INF/services/javax.xml.stream.*. On
+		// Tomcat the sjsxp was used by newFactory while on WAS 8.5 with parent
+		// last woodstox was used (giving "Response already committed" error
+		// when a WSDL was generated).
+		EVENT_FACTORY = new com.sun.xml.stream.events.ZephyrEventFactory();
+		INPUT_FACTORY = new com.sun.xml.stream.ZephyrParserFactory();
+		OUTPUT_FACTORY = new com.sun.xml.stream.ZephyrWriterFactory();
+		REPAIR_NAMESPACES_OUTPUT_FACTORY = new com.sun.xml.stream.ZephyrWriterFactory();
+		REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
 	}
 
 	public XmlUtils() {
@@ -1171,13 +1187,13 @@ public class XmlUtils {
 	 *                      be safely cast to type
 	 *                      <code>org.w3c.dom.Element</code>.
 	 */
-	public static Collection<Node> getChildTags(Element el, String tag) {
-		Collection<Node> c;
+	public static Collection getChildTags(Element el, String tag) {
+		Collection c;
 		NodeList nl;
 		int len;
 		boolean allChildren;
 
-		c = new LinkedList<Node>();
+		c = new LinkedList();
 		nl = el.getChildNodes();
 		len = nl.getLength();
 
@@ -1539,7 +1555,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static Map<String, String> getIbisContext(String input) {
+	public static Map getIbisContext(String input) {
 		if (input.startsWith("<") && !input.startsWith("<?") && !input.startsWith("<!")) {
 			return null;
 		}
@@ -1548,7 +1564,7 @@ public class XmlUtils {
 			try {
 				Transformer t = XmlUtils.createTransformer(getIbisContext_xslt);
 				String str = XmlUtils.transformXml(t, input);
-				Map<String, String> ibisContexts = new LinkedHashMap<String, String>();
+				Map ibisContexts = new LinkedHashMap();
 				int indexBraceOpen = str.indexOf("{");
 				int indexBraceClose = 0;
 				int indexStartNextSearch = 0;
