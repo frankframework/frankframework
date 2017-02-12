@@ -148,25 +148,6 @@ public class IbisSoapServlet extends HttpServlet {
 		return ".wsdl";
 	}
 
-     /**
-      * TODO Unused
-      */
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-        try {
-            res.setContentType("text/xml");
-            new Soap().soap(req, res);
-
-        } catch (Exception e) {
-            throw new ServletException(e);
-        } finally {
-            HttpSession session = req.getSession();
-            if (session!=null) {
-                session.invalidate();
-            }
-        }
-    }
-
     protected void list(HttpServletRequest req, Writer w) throws IOException {
         w.write("<html>");
         w.write(  "<head>");
