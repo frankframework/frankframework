@@ -19,15 +19,18 @@
       <groupId>com.tibco</groupId>
       <artifactId>tibjms</artifactId>
       <version>4.4.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.tibco</groupId>
       <artifactId>tibjmsadmin</artifactId>
       <version>5.1.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-jms_1.1_spec</artifactId>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 
