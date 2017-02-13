@@ -63,7 +63,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	private List inputFields=new LinkedList(); 
 	private List recordIdentifyingFields=new LinkedList();
 	
-	protected ParameterList paramList = null;
+	protected ParameterList<Parameter> paramList = null;
 
 	public void configure() throws ConfigurationException {
 		if (paramList!=null) {
@@ -244,7 +244,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 
 	public void addParameter(Parameter p) {
 		if (paramList==null) {
-			paramList=new ParameterList();
+			paramList=new ParameterList<Parameter>();
 		}
 		paramList.add(p);
 	}

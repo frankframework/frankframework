@@ -1187,13 +1187,13 @@ public class XmlUtils {
 	 *                      be safely cast to type
 	 *                      <code>org.w3c.dom.Element</code>.
 	 */
-	public static Collection getChildTags(Element el, String tag) {
-		Collection c;
+	public static Collection<Node> getChildTags(Element el, String tag) {
+		Collection<Node> c;
 		NodeList nl;
 		int len;
 		boolean allChildren;
 
-		c = new LinkedList();
+		c = new LinkedList<Node>();
 		nl = el.getChildNodes();
 		len = nl.getLength();
 
@@ -1555,7 +1555,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static Map getIbisContext(String input) {
+	public static Map<String, String> getIbisContext(String input) {
 		if (input.startsWith("<") && !input.startsWith("<?") && !input.startsWith("<!")) {
 			return null;
 		}
@@ -1564,7 +1564,7 @@ public class XmlUtils {
 			try {
 				Transformer t = XmlUtils.createTransformer(getIbisContext_xslt);
 				String str = XmlUtils.transformXml(t, input);
-				Map ibisContexts = new LinkedHashMap();
+				Map<String, String> ibisContexts = new LinkedHashMap<String, String>();
 				int indexBraceOpen = str.indexOf("{");
 				int indexBraceClose = 0;
 				int indexStartNextSearch = 0;

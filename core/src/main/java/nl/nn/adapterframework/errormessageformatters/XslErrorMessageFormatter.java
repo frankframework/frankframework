@@ -57,7 +57,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 
-	protected ParameterList paramList = null;
+	protected ParameterList<Parameter> paramList = null;
 
     private String styleSheet;
 	private String xpathExpression;
@@ -87,7 +87,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 					errorTransformer = XmlUtils.createTransformer(XmlUtils.createXPathEvaluatorSource(xpath));
 	            }
 
-				ParameterList params = getParameterList();
+				ParameterList<Parameter> params = getParameterList();
 				if (params!=null) {
 					try {
 						params.configure();
@@ -96,7 +96,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 					}
 						ParameterResolutionContext prc = new ParameterResolutionContext(message, new PipeLineSessionBase());
 
-					Map parametervalues = null;
+					Map<String, Object> parametervalues = null;
 					try {
 						parametervalues = prc.getValueMap(params);
 					} catch (ParameterException e) {
@@ -123,12 +123,12 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 
 	public void addParameter(Parameter p) {
 		if (paramList == null) {
-			paramList = new ParameterList();
+			paramList = new ParameterList<Parameter>();
 		}
 		paramList.add(p);
 	}
 
-	public ParameterList getParameterList() {
+	public ParameterList<Parameter> getParameterList() {
 		return paramList;
 	}
 	

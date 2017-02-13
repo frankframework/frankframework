@@ -60,7 +60,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	private boolean blockByRecordType=true;
 	private AbstractPipe pipe;
 	
-	protected ParameterList paramList = null;
+	protected ParameterList<Parameter> paramList = null;
 
 	public void configure() throws ConfigurationException {
 		if (paramList!=null) {
@@ -83,7 +83,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 
 	public void addParameter(Parameter p) {
 		if (paramList==null) {
-			paramList=new ParameterList();
+			paramList=new ParameterList<Parameter>();
 		}
 		paramList.add(p);
 	}

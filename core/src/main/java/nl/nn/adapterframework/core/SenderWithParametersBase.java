@@ -34,7 +34,7 @@ import nl.nn.adapterframework.senders.SenderBase;
  */
 public abstract class SenderWithParametersBase extends SenderBase implements ISenderWithParameters {
 	
-	protected ParameterList paramList = null;
+	protected ParameterList<Parameter> paramList = null;
 
 	public void configure() throws ConfigurationException {
 		if (paramList!=null) {
@@ -48,7 +48,7 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 
 	public void addParameter(Parameter p) {
 		if (paramList==null) {
-			paramList=new ParameterList();
+			paramList=new ParameterList<Parameter>();
 		}
 		paramList.add(p);
 	}
@@ -56,7 +56,7 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 	/**
 	 * return the Parameters
 	 */
-	public ParameterList getParameterList() {
+	public ParameterList<Parameter> getParameterList() {
 		return paramList;
 	}
 

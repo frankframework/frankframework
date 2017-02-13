@@ -68,7 +68,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 	private String endOfRecord;
 
 	private TransformerPool transformerPool; 
-	private ParameterList parameterList = new ParameterList();
+	private ParameterList<Parameter> parameterList = new ParameterList<Parameter>();
 
 	private List outputFields; 
 
@@ -78,7 +78,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		ParameterList params = getParameterList();
+		ParameterList<Parameter> params = getParameterList();
 		if (params!=null) {
 			try {
 				params.configure();
@@ -140,7 +140,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		}
 	}
 
-	private ParameterList getParameterList() {
+	private ParameterList<Parameter> getParameterList() {
 		return parameterList;
 	}
 
