@@ -646,6 +646,64 @@ function IBISstoreSummaryCtrl($scope, Api) {
 };
 
 function SendJmsMessageCtrl($scope, Api) {
+    $scope.destinationTypes = ["QUEUE", "TOPIC"]; 
+    Api.Get("jms", function(data) {
+        $.extend($scope, data);
+        angular.element("select[name='type']").val($scope.destinationTypes[0]);
+    });
+
+    $scope.submit = function(formData) {
+        if(!formData) return;
+
+        var fd = new FormData();
+        if(formData.realm && formData.realm != "")
+            fd.append("realm", formData.realm);
+        else 
+            fd.append("realm", $scope.jmsRealms[0]);
+        if(formData.destination && formData.destination != "")
+            fd.append("destination", formData.destination);
+        if(formData.type && formData.type != "")
+            fd.append("type", formData.type);
+        else 
+            fd.append("type", $scope.destinationTypes[0]);
+        if(formData.replyTo && formData.replyTo != "")
+            fd.append("replyTo", formData.replyTo);
+        if(formData.persistent && formData.persistent != "")
+            fd.append("persistent", formData.persistent);
+
+        if(!formData.message && !formData.file) {
+            $scope.error = "Please specify a file or message!";
+            return;
+        }
+
+        if(formData.message && formData.message != "")
+            fd.append("message", formData.message);
+        if($scope.file)
+            fd.append("file", $scope.file, $scope.file.name);
+        if(formData.encoding && formData.encoding != "")
+            fd.append("encoding", formData.encoding);
+
+        Api.Post("jms/message", fd, { 'Content-Type': undefined }, function(returnData) {
+            //?
+        }, function(errorData, status, errorMsg) {
+            $scope.error = (errorData.error) ? errorData.error : errorMsg;
+        });
+    };
+
+    $scope.reset = function() {
+        $scope.error = "";
+        if(!$scope.form) return;
+        if($scope.form.destination)
+            $scope.form.destination = "";
+        if($scope.form.replyTo)
+            $scope.form.replyTo = "";
+        if($scope.form.message)
+            $scope.form.message = "";
+        if($scope.form.persistent)
+            $scope.form.persistent = "";
+        if($scope.form.type)
+            $scope.form.type = $scope.destinationTypes[0];
+    };
 };
 
 function BrowseJmsQueueCtrl($scope, Api) {

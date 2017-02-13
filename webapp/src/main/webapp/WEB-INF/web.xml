@@ -33,6 +33,7 @@
 			nl.nn.adapterframework.webcontrol.api.ShowLogging,
 			nl.nn.adapterframework.webcontrol.api.Webservices,
 			nl.nn.adapterframework.webcontrol.api.BrowseQueue,
+			nl.nn.adapterframework.webcontrol.api.SendJmsMessage,
 		</param-value>
 	</context-param>
 

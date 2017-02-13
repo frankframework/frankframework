@@ -107,6 +107,13 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
         data: {
             pageTitle: 'Send JMS Message',
             breadcrumbs: 'JMS > Send Message'
+        },
+        resolve: {
+            loadPlugin: function ($ocLazyLoad) {
+                return $ocLazyLoad.load([ {
+                    files: ['css/plugins/iCheck/custom.css','js/plugins/iCheck/icheck.min.js']
+                } ]);
+            }
         }
     })
     .state('pages.browse_queue', {
