@@ -3,7 +3,7 @@
  * Used on all pages except login/logout
  *
  */
-function MainCtrl($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal) {
+function MainCtrl($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session) {
     $scope.loading = true;
     Pace.on("done", function() {
         if(appConstants.init == 0) {
@@ -103,22 +103,51 @@ function MainCtrl($scope, $rootScope, appConstants, Api, Hooks, $state, $locatio
 
     Hooks.register("init:once", function() {
         /* Check IAF version */
-        $http.get("https://api.github.com/repos/ibissource/iaf/releases").then(function(response) {
-            if(!response  || !response.data) return false;
+        var Xrate = Session.get("X-RateLimit");
+        if(Xrate == undefined || Xrate.reset < parseInt(new Date().getTime()/1000)) {
+            $http.get("https://api.github.com/rate_limit", {headers:{"Authorization": undefined}}).then(function(response) {
+                if(!response  || !response.data) return false;
+    
+                var GithubXrate = {
+                    limit: parseInt(response.headers("X-RateLimit-Limit")) || 0,
+                    remaining: parseInt(response.headers("X-RateLimit-Remaining")) || 0,
+                    reset: parseInt(response.headers("X-RateLimit-Reset")) || 0,
+                    time: parseInt(new Date().getTime()/1000),
+                };
+                console.log("Fetching X-RateLimit from api.GitHub.com...");
+                Session.set("X-RateLimit", GithubXrate);
+            });
 
-            var release = response.data[0]; //Not sure what ID to pick, smallest or latest?
-            var newVersion = release.tag_name.substr(1);
-            var currentVersion = appConstants["application.version"];
-            var version = Misc.compare_version(newVersion, currentVersion);
-            console.log("Checking IAF version with remote...", "Comparing version: '"+currentVersion+"' with latest release: '"+newVersion+"'.");
+            $http.get("https://api.github.com/repos/ibissource/iaf/releases", {headers:{"Authorization": undefined}}).then(function(response) {
+                if(!response  || !response.data) return false;
 
-            if(version > 0) {
-                $scope.release = release;
+                var release = response.data[0]; //Not sure what ID to pick, smallest or latest?
+                handleGitHubResponse(release);
+            });
+        }
+        else {
+            var release = Session.get("IAF-Release");
+            if(release != null) {
                 Notification.add('fa-exclamation-circle', "IAF update available!", false, function() {
                     $location.path("iaf-update");
                 });
             }
-        });
+        }
+        function handleGitHubResponse(release) {
+            var newVersion = (release.tag_name.substr(0, 1) == "v") ? release.tag_name.substr(1) : release.tag_name;
+            var currentVersion = appConstants["application.version"];
+            var version = Misc.compare_version(newVersion, currentVersion);
+            console.log("Checking IAF version with remote...");
+            console.log("Comparing version: '"+currentVersion+"' with latest release: '"+newVersion+"'.");
+            Session.remove("IAF-Release");
+
+            if(version > 0) {
+                Session.set("IAF-Release", release);
+                Notification.add('fa-exclamation-circle', "IAF update available!", false, function() {
+                    $location.path("iaf-update");
+                });
+            }
+        };
 
         Api.Get("server/warnings", function(warnings) {
             for(i in warnings) {

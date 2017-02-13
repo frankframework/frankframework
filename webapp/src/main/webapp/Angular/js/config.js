@@ -270,7 +270,8 @@ function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLo
         url: "/iaf-update",
         templateUrl: "views/iaf-update.html",
         data: { pageTitle: 'IAF Update' },
-        controller: function($scope, $location) {
+        controller: function($scope, $location, Session) {
+            $scope.release = Session.get("IAF-Release");
             if($scope.release == undefined)
                 $location.path("status");
         }
