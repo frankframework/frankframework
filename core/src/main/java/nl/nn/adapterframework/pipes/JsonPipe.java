@@ -19,36 +19,64 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.json.XML;
 
 
+
 /**
  * Perform an JSON to XML transformation 
- *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.JsonPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDirection(String) direction}</td><td>Direction of the transformation. Either json2xml or xml2json</td><td>json2xml</td></tr>
- * </table>
+ * 
+ * <p>
+ * 	<b>Configuration:</b>
+ * 	<table border="1">
+ * 		<tr>
+ * 			<th>attributes</th>
+ * 			<th>description</th>
+ * 			<th>default</th>
+ * 		</tr>
+ * 		<tr>
+ * 			<td>className</td>
+ * 			<td>nl.nn.adapterframework.pipes.JsonPipe</td>
+ * 			<td>&nbsp;</td>
+ * 		</tr>
+ * 		<tr>
+ * 			<td>{@link #setDirection(String) direction}</td>
+ * 			<td>Direction of the transformation. Either json2xml or xml2json</td>
+ * 			<td>json2xml</td>
+ * 		</tr>
+ * 	</table>
  * </p>
  * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
- * </table>
+ * 	<table border="1">
+ * 		<tr>
+ * 			<th>state</th>
+ * 			<th>condition</th>
+ * 		</tr>
+ * 		<tr>
+ * 			<td>"success"</td>
+ * 			<td>default</td>
+ * 		</tr>
+ * 		<tr>
+ * 			<td>
+ * 				<i>{@link #setForwardName(String) forwardName}</i>
+ * 			</td>
+ * 			<td>if specified</td>
+ * 		</tr>
+ * 	</table>
  * </p>
  * @author Martijn Onstwedder
+ * @author Tom van der Heijden
  */
 
 public class JsonPipe extends FixedForwardPipe {
 	private String direction="json2xml";
-
+	
 	public void configure() throws ConfigurationException {
 		super.configure();
 		String dir=getDirection();
@@ -65,32 +93,44 @@ public class JsonPipe extends FixedForwardPipe {
 			throw new PipeRunException(this,
 				getLogPrefix(session)+"got null input");
 		}
- 	    if (!(input instanceof String)) {
-	        throw new PipeRunException(this,
-	            getLogPrefix(session)+"got an invalid type as input, expected String, got "
-	                + input.getClass().getName());
-	    }
-	    
+		if (!(input instanceof String)) {
+			throw new PipeRunException(this,
+				getLogPrefix(session)+"got an invalid type as input, expected String, got "+ input.getClass().getName());
+		}
+
 		try {
-			String stringResult = (String)input;
+			String stringResult = (String) input;
 	
-	    	String dir=getDirection();
-	    	if (dir.equalsIgnoreCase("json2xml")) {	
-					JSONTokener jsonTokener = new JSONTokener (stringResult);
-					JSONObject jsonObject  = new JSONObject ( jsonTokener );			
+			String dir=getDirection();
+			
+			if (dir.equalsIgnoreCase("json2xml")) {	
+				JSONTokener jsonTokener = new JSONTokener(stringResult);
+				if(stringResult.startsWith("{")) {
+					JSONObject jsonObject  = new JSONObject(jsonTokener);
 					stringResult = XML.toString(jsonObject);
-	    	}
-	    	
-			if (dir.equalsIgnoreCase("xml2json")) {	
-					JSONObject jsonObject = XML.toJSONObject(stringResult);
-					stringResult = jsonObject.toString();
 				}
+				if(stringResult.startsWith("[")) {
+					JSONArray jsonArray  = new JSONArray(jsonTokener);
+					stringResult = XML.toString(jsonArray);
+				}
+			}
+			
+			boolean isWellFormed = XmlUtils.isWellFormed(stringResult);
+			
+			if(isWellFormed==false) {
+				stringResult = "<root>" + stringResult + "</root>";
+			}
+			
+			if (dir.equalsIgnoreCase("xml2json")) {
+				JSONObject jsonObject = XML.toJSONObject(stringResult);
+				stringResult = jsonObject.toString();
+			}
 			
 			return new PipeRunResult(getForward(), stringResult);
-	    } 
-	    catch (Exception e) {
-	        throw new PipeRunException(this, getLogPrefix(session)+" Exception on transforming input", e);
-	    } 
+		}
+		catch (Exception e) {
+			throw new PipeRunException(this, getLogPrefix(session)+" Exception on transforming input", e);
+		}
 	}
 
 	public void setDirection(String string) {
@@ -100,5 +140,4 @@ public class JsonPipe extends FixedForwardPipe {
 	public String getDirection() {
 		return StringUtils.lowerCase(direction);
 	}
-
 }
