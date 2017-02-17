@@ -128,14 +128,15 @@ public class StreamPipe extends FixedForwardPipe {
 			} else if (httpRequest != null) {
 				StringBuilder resultString = new StringBuilder("<parts>");
 				if (ServletFileUpload.isMultipartContent(httpRequest)) {
-					log.debug(getLogPrefix(session) + " request contains multipart content");
+					log.debug(getLogPrefix(session) + "request with content type [" + httpRequest.getContentType() + "] and length [" + httpRequest.getContentLength() + "] contains multipart content");
 					DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 					ServletFileUpload servletFileUpload = new ServletFileUpload(
 							diskFileItemFactory);
 					List<FileItem> items = servletFileUpload
 							.parseRequest(httpRequest);
 					int fileCounter = 0, stringCounter = 0;
-					for (FileItem item : items) {
+	    			log.debug(getLogPrefix(session) + "multipart request items size [" + items.size() + "]");
+	    			for (FileItem item : items) {
 						if (item.isFormField()) {
 							// Process regular form field (input
 							// type="text|radio|checkbox|etc", select, etc).
@@ -174,7 +175,7 @@ public class StreamPipe extends FixedForwardPipe {
 						}
 					}
 				} else {
-					log.debug(getLogPrefix(session) + " request does not contain multipart content");
+					log.debug(getLogPrefix(session) + "request with content type [" + httpRequest.getContentType() + "] and length [" + httpRequest.getContentLength() + "] does NOT contain multipart content");
 				}
 				resultString.append("</parts>");
 				result = resultString.toString();
