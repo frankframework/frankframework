@@ -16,10 +16,9 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -33,11 +32,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -63,7 +58,35 @@ public class RestListenerServlet extends HttpServlet {
 		String path=request.getPathInfo();
 		String restPath=request.getServletPath();
 		String body = "";
-			
+		
+		if(restPath.contains("rest-public")) {
+			response.setHeader("Access-Control-Allow-Origin", "*");
+			String headers = request.getHeader("Access-Control-Request-Headers");
+			if (headers != null)
+				response.setHeader("Access-Control-Allow-Headers", headers);
+			response.setHeader("Access-Control-Expose-Headers", "ETag, Content-Disposition");
+
+			String pattern = sd.findMatchingPattern(path);
+			if(pattern!=null) {
+				Map methodConfig = sd.getMethodConfig(pattern, "OPTIONS");
+				if (methodConfig == null) { //If set, it means the adapter handles the OPTIONS request
+					Iterator iter = sd.getAvailableMethods(pattern).iterator();
+					StringBuilder sb = new StringBuilder();
+					sb.append("OPTIONS"); //Append preflight OPTIONS request
+					while (iter.hasNext()) {
+						sb.append(", ").append(iter.next());
+					}
+					response.setHeader("Access-Control-Allow-Methods", sb.toString());
+
+					if("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+						response.setStatus(200);
+						//Preflight OPTIONS request should not return any data.
+						return;
+					}
+				}
+			}
+		}
+		
 		String etag=request.getHeader("etag");
 		String contentType=request.getHeader("accept");
 

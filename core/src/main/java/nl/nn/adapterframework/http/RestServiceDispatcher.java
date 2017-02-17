@@ -18,6 +18,7 @@ package nl.nn.adapterframework.http;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -74,6 +75,40 @@ public class RestServiceDispatcher  {
         return self;
 	}
 
+	public String findMatchingPattern(String uri) {
+		String matchingPattern=null;
+		for (Iterator it=patternClients.keySet().iterator();it.hasNext();) {
+			String uriPattern=(String)it.next();
+			if (log.isTraceEnabled()) log.trace("comparing uri to pattern ["+uriPattern+"] ");
+			if (uri.startsWith(uriPattern)) {
+				matchingPattern=uriPattern;
+				break;
+			}
+		}
+		return matchingPattern;
+	}
+	
+	public Map getMethodConfig(String matchingPattern, String method) {
+		Map methodConfig;
+		Map patternEntry=(Map)patternClients.get(matchingPattern);
+		
+		methodConfig = (Map)patternEntry.get(method);
+		if (methodConfig==null) {
+			methodConfig = (Map)patternEntry.get(WILDCARD);
+		}
+		return methodConfig;
+	}
+	
+	public List getAvailableMethods(String matchingPattern) {
+		Map patternEntry=(Map)patternClients.get(matchingPattern);
+		Iterator it = patternEntry.entrySet().iterator();
+		List methods = new ArrayList<String>();
+		while (it.hasNext()) {
+			Map.Entry pair = (Map.Entry)it.next();
+			methods.add(pair.getKey());
+		}
+		return methods;
+	}
 
 	/**
 	 * Dispatch a request.
@@ -86,24 +121,13 @@ public class RestServiceDispatcher  {
 		String method = httpServletRequest.getMethod();
 		if (log.isTraceEnabled()) log.trace("searching listener for uri ["+uri+"] method ["+method+"]");
 		
-		String matchingPattern=null;
-		for (Iterator it=patternClients.keySet().iterator();it.hasNext();) {
-			String uriPattern=(String)it.next();
-			if (log.isTraceEnabled()) log.trace("comparing uri to pattern ["+uriPattern+"] ");
-			if (uri.startsWith(uriPattern)) {
-				matchingPattern=uriPattern;
-				break;
-			}
-		}
+		String matchingPattern = findMatchingPattern(uri);
 		if (matchingPattern==null) {
 			throw new ListenerException("no REST listener configured for uri ["+uri+"]");
 		}
-		Map patternEntry=(Map)patternClients.get(matchingPattern);
 		
-		Map methodConfig = (Map)patternEntry.get(method);
-		if (methodConfig==null) {
-			methodConfig = (Map)patternEntry.get(WILDCARD);
-		}
+		Map methodConfig = getMethodConfig(matchingPattern, method);
+		
 		if (methodConfig==null) {
 			throw new ListenerException("No RestListeners specified for uri ["+uri+"] method ["+method+"]");
 		}

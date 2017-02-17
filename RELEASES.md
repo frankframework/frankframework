@@ -158,6 +158,7 @@ Upcoming
 - Add possibility to skip the retrieval of multipart http requests to sessionKeys (in RestListeners)
 - Bugfix in generating flow images for moving files
 - Use the Sun Java Streaming XML Parser (SJSXP) as StAX implementation on all Application Servers
+- Add CORS headers to /rest-public/ endpoints
 
 
 ### Non backwards compatible changes
