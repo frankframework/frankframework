@@ -86,6 +86,7 @@ import org.springframework.core.task.TaskExecutor;
  *   <tr><td colspan="1">Full</td> <td>at adapter and pipe level (not yet available; only at adapter level)</td></tr>
  *  </table></td><td>application default (None)</td></tr>
  * <tr><td>{@link #setMsgLogHidden(boolean) msgLogHidden}</td><td>if set to <code>true</code>, the length of the message is shown in the MSG log instead of the content of the message</td><td>false</td></tr>
+ * <tr><td>{@link #setReplaceNullMessage(boolean) replaceNullMessage}</td><td>when <code>true</code> a null message is replaced by an empty message</td><td>false</td></tr>
  * </table>
  * 
  * @author Johan Verrips
@@ -131,6 +132,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private int msgLogLevel = MsgLogUtil.getMsgLogLevelByDefault();
 	private boolean msgLogHidden = MsgLogUtil.getMsgLogHiddenByDefault();
 	private boolean recover = false;
+	private boolean replaceNullMessage = false;
 
 	// state to put in PipeLineResult when a PipeRunException occurs;
 	private String errorState = "ERROR";
@@ -566,6 +568,10 @@ public class Adapter implements IAdapter, NamedBean {
 
 
 		try {
+			if (message == null && isReplaceNullMessage()) {
+				log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
+				message = "";
+			}
 			result = pipeline.process(messageId, message,pipeLineSession);
 			//if (isRequestReplyLogging()) {
 			long duration = System.currentTimeMillis() - startTime;
@@ -1001,5 +1007,13 @@ public class Adapter implements IAdapter, NamedBean {
 
 	public boolean isRecover() {
 		return recover;
+	}
+
+	public void setReplaceNullMessage(boolean b) {
+		replaceNullMessage = b;
+	}
+
+	public boolean isReplaceNullMessage() {
+		return replaceNullMessage;
 	}
 }

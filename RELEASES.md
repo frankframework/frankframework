@@ -159,6 +159,7 @@ Upcoming
 - Bugfix in generating flow images for moving files
 - Use the Sun Java Streaming XML Parser (SJSXP) as StAX implementation on all Application Servers
 - Add CORS headers to /rest-public/ endpoints
+- Add replaceNullMessage attribute to Adapter
 
 
 ### Non backwards compatible changes
