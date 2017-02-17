@@ -160,6 +160,7 @@ Upcoming
 - Use the Sun Java Streaming XML Parser (SJSXP) as StAX implementation on all Application Servers
 - Add CORS headers to /rest-public/ endpoints
 - Add replaceNullMessage attribute to Adapter
+- Add CheckReload adapter (with auto reload)
 
 
 ### Non backwards compatible changes

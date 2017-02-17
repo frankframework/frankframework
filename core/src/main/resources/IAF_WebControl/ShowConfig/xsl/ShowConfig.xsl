@@ -47,7 +47,8 @@
 						<th class="colHeader">Filename</th>
 						<th class="colHeader">Creation timestamp</th>
 						<th class="colHeader">User</th>
-						<th class="colHeader">Config length</th>
+						<th class="colHeader">Active config</th>
+						<th class="colHeader">Auto reload</th>
 					</tr>
 					<xsl:for-each select="result/rowset/row">
 						<xsl:variable name="class">
@@ -90,7 +91,10 @@
 								<xsl:value-of select="field[@name='RUSER']" />
 							</td>
 							<td class="filterRow">
-								<xsl:value-of select="field[@name='LEN_CONFIG']" />
+								<xsl:value-of select="field[@name='ACTIVECONFIG']" />
+							</td>
+							<td class="filterRow">
+								<xsl:value-of select="field[@name='AUTORELOAD']" />
 							</td>
 						</tr>
 					</xsl:for-each>

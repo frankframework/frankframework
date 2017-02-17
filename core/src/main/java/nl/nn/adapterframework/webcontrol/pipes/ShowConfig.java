@@ -127,7 +127,7 @@ public class ShowConfig extends TimeoutGuardPipe {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(jr);
 				qs.setQueryType("select");
-				qs.setQuery("SELECT NAME, VERSION, FILENAME, CRE_TYDST, RUSER, ACTIVECONFIG FROM IBISCONFIG WHERE ACTIVECONFIG = 'TRUE' ORDER BY NAME");
+				qs.setQuery("SELECT NAME, VERSION, FILENAME, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD FROM IBISCONFIG WHERE ACTIVECONFIG = 'TRUE' ORDER BY NAME");
 				qs.setBlobSmartGet(true);
 				qs.setIncludeFieldDefinition(false);
 				qs.configure();

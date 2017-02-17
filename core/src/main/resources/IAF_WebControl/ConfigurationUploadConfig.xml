@@ -24,6 +24,8 @@
 				<param name="version" sessionKey="version" />
 				<param name="fileEncoding" sessionKey="fileEncoding" />
 				<param name="multipleConfigs" sessionKey="multipleConfigs" />
+				<param name="activeConfig" sessionKey="activeConfig" />
+				<param name="autoReload" sessionKey="autoReload" />
 				<param name="result" sessionKey="result" />
 				<forward name="success" path="EXIT" />
 			</pipe>

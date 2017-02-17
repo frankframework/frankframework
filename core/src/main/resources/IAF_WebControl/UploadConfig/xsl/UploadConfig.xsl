@@ -9,6 +9,8 @@
 	<xsl:param name="version" />
 	<xsl:param name="fileEncoding" />
 	<xsl:param name="multipleConfigs" />
+	<xsl:param name="activeConfig" />
+	<xsl:param name="autoReload" />
 	<xsl:param name="result" />
 	<xsl:variable name="brvbar" select="'&#166;'" />
 	<xsl:template match="/">
@@ -142,6 +144,28 @@
 							<input class="checkbox" type="checkbox" name="multipleConfigs"
 								value="on">
 								<xsl:if test="$multipleConfigs='on'">
+									<xsl:attribute name="checked">checked</xsl:attribute>
+								</xsl:if>
+							</input>
+						</td>
+					</tr>
+					<tr>
+						<td>Make config active</td>
+						<td>
+							<input class="checkbox" type="checkbox" name="activeConfig"
+								value="on">
+								<xsl:if test="$activeConfig='on'">
+									<xsl:attribute name="checked">checked</xsl:attribute>
+								</xsl:if>
+							</input>
+						</td>
+					</tr>
+					<tr>
+						<td>Automatic reload</td>
+						<td>
+							<input class="checkbox" type="checkbox" name="autoReload"
+								value="on">
+								<xsl:if test="$autoReload='on'">
 									<xsl:attribute name="checked">checked</xsl:attribute>
 								</xsl:if>
 							</input>

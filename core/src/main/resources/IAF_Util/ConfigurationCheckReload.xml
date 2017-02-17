@@ -1,0 +1,25 @@
+<module>
+	<adapter name="CheckReload" active="${checkReload.active}">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="CheckReload" onError="close">
+			<listener name="CheckReload"
+				className="nl.nn.adapterframework.receivers.JavaListener" />
+		</receiver>
+		<pipeline firstPipe="checkReload">
+			<exits>
+				<exit state="success" path="EXIT" />
+			</exits>
+
+			<pipe name="checkReload" className="nl.nn.adapterframework.jdbc.ResultSetIteratingPipe"
+				jmsRealm="jdbc"
+				query="SELECT name, version FROM ibisconfig WHERE activeConfig = 'TRUE' and autoReload = 'TRUE'">
+				<sender className="nl.nn.adapterframework.senders.ReloadSender" />
+				<forward name="succes" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<scheduler>
+		<job name="CheckReload" adapterName="CheckReload" receiverName="CheckReload"
+			interval="${checkReload.interval}" function="sendMessage" active="${checkReload.active}" />
+	</scheduler>
+</module>

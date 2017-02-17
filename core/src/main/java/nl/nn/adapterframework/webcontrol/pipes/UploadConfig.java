@@ -69,6 +69,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 
 	private String doGet(IPipeLineSession session) throws PipeRunException {
 		session.put("activeConfig", "on");
+		session.put("autoReload", "off");
 		return retrieveFormInput(session);
 	}
 
@@ -78,6 +79,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		String version = (String) session.get("version");
 		String multipleConfigs = (String) session.get("multipleConfigs");
 		String activeConfig = (String) session.get("activeConfig");
+		String autoReload = (String) session.get("autoReload");
 		FixedQuerySender qs = (FixedQuerySender) ibisContext
 				.createBeanAutowireByName(FixedQuerySender.class);
 		String form_jmsRealm = (String) session.get("jmsRealm");
@@ -216,6 +218,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 			throws PipeRunException {
 		String form_jmsRealm = (String) session.get("jmsRealm");
 		String activeConfig = (String) session.get("activeConfig");
+		String autoReload = (String) session.get("autoReload");
 		String result = "";
 		FixedQuerySender qs = (FixedQuerySender) ibisContext
 				.createBeanAutowireByName(FixedQuerySender.class);
@@ -314,9 +317,9 @@ public class UploadConfig extends TimeoutGuardPipe {
 			qs.setJmsRealm(form_jmsRealm);
 			qs.setQueryType("insert");
 			if (StringUtils.isEmpty(remoteUser)) {
-				qs.setQuery("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, ACTIVECONFIG) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?)");
+				qs.setQuery("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)");
 			} else {
-				qs.setQuery("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)");
+				qs.setQuery("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)");
 			}
 			Parameter param = new Parameter();
 			param.setName("name");
@@ -349,6 +352,17 @@ public class UploadConfig extends TimeoutGuardPipe {
 			} else {
 				param = new Parameter();
 				param.setName("activeconfig");
+				param.setValue("false");
+				qs.addParameter(param);
+			}
+			if ("on".equals(autoReload)) {
+				param = new Parameter();
+				param.setName("autoReload");
+				param.setValue("true");
+				qs.addParameter(param);
+			} else {
+				param = new Parameter();
+				param.setName("autoReload");
 				param.setValue("false");
 				qs.addParameter(param);
 			}
