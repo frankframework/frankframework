@@ -1,6 +1,7 @@
 <!DOCTYPE configuration [
 	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
 	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
+	<!ENTITY GUIFeedback SYSTEM "ConfigurationSaveGUI3.0Feedback.xml">
 ]>
 <configuration name="Ibis4Example">
 	<jmsRealms>
@@ -9,4 +10,5 @@
 	</jmsRealms>
 	&HelloWorld;
 	&HelloWorlds;
+	&GUIFeedback;
 </configuration>

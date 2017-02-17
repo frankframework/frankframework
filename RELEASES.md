@@ -161,7 +161,8 @@ Upcoming
 - Add CORS headers to /rest-public/ endpoints
 - Add replaceNullMessage attribute to Adapter
 - Add CheckReload adapter (with auto reload)
-
+- Fix Jsonpipe to add roottag when non is present
+- Add Feedback button to GUI 3.0
 
 ### Non backwards compatible changes
 

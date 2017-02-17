@@ -5,6 +5,9 @@
             <span class="m-r-sm text-muted iaf-info"></span>
         </div>
         <ul class="nav navbar-top-links navbar-right">
+            <li class="m-r-sm rating" title="Please rate us!">
+                <i ng-repeat="n in [1,2,3,4,5]" class="fa fa-star-o rating{{$index}}" aria-hidden="true" ng-click="sendFeedback($index)"></i>
+            </li>
             <li>
                 <span class="m-r-sm text-muted serverTime">{{serverTime}}</span>
             </li>

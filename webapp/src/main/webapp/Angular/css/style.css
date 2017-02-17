@@ -3315,7 +3315,7 @@ body {
   font-size: 13px;
   color: #676a6c;
   overflow-x: hidden;
-  overflow-y: scroll;
+  overflow-y: scroll !important;
 }
 html,
 body {
@@ -6544,6 +6544,13 @@ body.body-small .vote-icon {
   color: #676a6c;
   background-color: buttonface;
 }
+
+.rating i {
+  display: inline;
+  cursor: pointer;
+  font-size: 16px;
+}
+
 @media (max-width: 1170px) {
   .hideBtn1170 span {
     display: none;

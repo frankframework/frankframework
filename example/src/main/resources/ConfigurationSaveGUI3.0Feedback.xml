@@ -1,0 +1,72 @@
+<module>
+	<adapter name="Save GUI3.0 Feedback">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="feedbackReceiver">
+			<listener className="nl.nn.adapterframework.http.RestListener"
+				name="feedbackListener" uriPattern="guiFeedbackx" method="POST" />
+		</receiver>
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+			name="CreateDiagramPublic">
+			<listener className="nl.nn.adapterframework.http.RestListener"
+				name="CreateDiagramPublic" restPath="/rest-public" uriPattern="guiFeedback"
+				method="POST" />
+		</receiver>
+		<pipeline firstPipe="JsonToXml">
+			<exits>
+				<exit state="success" path="EXIT" />
+			</exits>
+
+			<pipe
+				name="JsonToXml"
+				className="nl.nn.adapterframework.pipes.JsonPipe"
+				storeResultInSessionKey="OriginalXML"
+			>
+				<forward name="success" path="SaveFeedback" />
+			</pipe>
+
+			<pipe
+				name="SaveFeedback"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				getInputFromSessionKey="OriginalXML"
+			>
+				<sender
+					className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+					jmsRealm="jdbc"
+					query="INSERT INTO FEEDBACK (NAME, FEEDBACK, RATING) VALUES (?, ?, ?)"
+				>
+					<param name="name"		sessionKey="OriginalXML" xpathExpression="/root/name" />
+					<param name="feedback"	sessionKey="OriginalXML" xpathExpression="/root/feedback" />
+					<param name="rating"	sessionKey="OriginalXML" xpathExpression="/root/rating" />
+				</sender>
+
+				<forward name="exception"	path="ERROR" />
+				<forward name="success"		path="SUCCESS" />
+			</pipe>
+
+			<pipe
+				name="SUCCESS" 
+				getInputFromFixedValue="&lt;result&gt;ok&lt;/result&gt;"
+				className="nl.nn.adapterframework.pipes.EchoPipe"
+			>
+				<forward name="success" path="toJson" />
+			</pipe>
+
+			<pipe
+				name="ERROR" 
+				getInputFromFixedValue="&lt;result&gt;error&lt;/result&gt;"
+				className="nl.nn.adapterframework.pipes.EchoPipe"
+			>
+				<forward name="success" path="toJson" />
+			</pipe>
+
+			<pipe
+				name="toJson"
+				className="nl.nn.adapterframework.pipes.JsonPipe"
+				direction="xml2json"
+			>
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+		</pipeline>
+	</adapter>
+</module>
