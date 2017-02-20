@@ -21,7 +21,18 @@
 				className="nl.nn.adapterframework.pipes.JsonPipe"
 				storeResultInSessionKey="OriginalXML"
 			>
+				<forward name="success" path="validateXML" />
+			</pipe>
+
+			<pipe
+				name="validateXML"
+				className="nl.nn.adapterframework.pipes.XmlValidator"
+				schema="Feedback/xsd/Feedback.xsd"
+				root="root"
+			>
 				<forward name="success" path="SaveFeedback" />
+				<forward name="failure" path="ERROR" />
+				<forward name="parserError" path="ERROR" />
 			</pipe>
 
 			<pipe
