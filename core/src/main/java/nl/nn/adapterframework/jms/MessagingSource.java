@@ -153,20 +153,19 @@ public class MessagingSource  {
 		try {
 			qcf = getConnectionFactoryDelegate();
 			try {
-				return ClassUtils.invokeGetter(qcf,
-						"getManagedConnectionFactory", true);
+				return ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
 			} catch (Exception e) {
 				// In case of BTM.
 				return ClassUtils.invokeGetter(qcf, "getResource", true);
 			}
 		} catch (Exception e) {
-			String errorMsg = getLogPrefix()
-					+ "could not determine managed connection factory";
 			if (qcf != null) {
-				errorMsg += " for [" + ClassUtils.nameOf(qcf) + "]";
+				return qcf;
 			}
-			log.warn(errorMsg, e);
-			return null;
+			else {
+				log.warn(getLogPrefix() + "could not determine managed connection factory", e);
+				return null;
+			}
 		}
 	}
 
@@ -177,7 +176,7 @@ public class MessagingSource  {
 			try {
 				result=managedConnectionFactory.toString();
 				if (result.contains("activemq")) {
-					result += "[" + ClassUtils.invokeGetter(managedConnectionFactory,"getBrokerURL",true) + "]";
+					result += "[" + ClassUtils.invokeGetter(managedConnectionFactory, "getBrokerURL", true) + "]";
 				}
 			} catch (Exception e) {
 				result+= ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() "+ClassUtils.nameOf(e)+": "+e.getMessage();

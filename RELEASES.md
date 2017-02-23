@@ -9,8 +9,16 @@ Upcoming
 --------
 
 [JavaDocs](http://www.ibissource.org/iaf/maven/apidocs/index.html)
-[Commits](https://github.com/ibissource/iaf/compare/v6.1...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.0-B1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+- Fix IFSA no longer gives a warning when the managed connection factory can't be found
+
+7.0-B1
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v6.1...v7.0-B1)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-B1)](https://travis-ci.org/ibissource/iaf)
 
 - Replace Apache Commons Collections library v3.2 by v3.2.2
 - Don't temporarily move already temporarily moved messages
