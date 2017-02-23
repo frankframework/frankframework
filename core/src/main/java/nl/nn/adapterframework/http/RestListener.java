@@ -15,14 +15,21 @@
 */
 package nl.nn.adapterframework.http;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.pipes.JsonPipe;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -45,6 +52,9 @@ import nl.nn.adapterframework.core.ListenerException;
  * <tr><td>{@link #setView(boolean) view}</td><td>indicates whether this listener supports a view (and a link should be put in the IBIS console)</td><td>if <code>method=GET</code> then <code>true</code>, else <code>false</code></td></tr> 
  * <tr><td>{@link #seAuthRoles(String) authRoles}</td><td>comma separated list of authorization roles which are granted for this REST service</td><td>IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService</td></tr>
  * <tr><td>{@link #setRetrieveMultipart(boolean) retrieveMultipart}</td><td>indicates whether the parts of a multipart entity should be retrieved and put in session keys. This can only be done once!</td><td>true</td></tr>
+
+ * <tr><td>{@link #setConsumes(String) consumes}</td><td>mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher RestServiceDispatcher} receives as input</td><td>XML</td></tr>
+ * <tr><td>{@link #setProduces(String) produces}</td><td>mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher RestServiceDispatcher} sends as output</td><td>XML</td></tr>
  * </table>
  * </p>
  * <p>
@@ -52,7 +62,8 @@ import nl.nn.adapterframework.core.ListenerException;
  * Servlets' multipart configuration expects a Content-Type of <code>multipart/form-data</code> (see http://docs.oracle.com/javaee/6/api/javax/servlet/annotation/MultipartConfig.html).
  * So do not use other multipart content types like <code>multipart/related</code>
  * </p>
- * @author  Gerrit van Brakel 
+ * @author  Niels Meijer
+ * @author  Gerrit van Brakel
  */
 public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
 
@@ -66,7 +77,11 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	private boolean writeToSecLog = false;
 	private boolean writeSecLogMessage = false;
 	private boolean retrieveMultipart = true;
-	
+
+	private String consumes = "XML";
+	private String produces = "XML";
+	private List<String> mediaTypes = Arrays.asList("XML", "JSON", "TEXT");
+
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
@@ -79,7 +94,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 				setView(false);
 			}
 		}
-		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), method, etagSessionKey, contentTypeSessionKey);
+		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey());
 	}
 
 	@Override
@@ -88,14 +103,63 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		RestServiceDispatcher.getInstance().unregisterServiceClient(getUriPattern());
 	}
 
-	public String processRequest(String correlationId, String message,
-			Map requestContext) throws ListenerException {
+	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException {
+		HttpServletRequest httpServletRequest = (HttpServletRequest) requestContext.get("restListenerServletRequest");
+		String response;
+		String contentType = (String) requestContext.get("contentType");
+
+		//Check if valid path
 		String requestRestPath = (String) requestContext.get("restPath");
 		if (!getRestPath().equals(requestRestPath)) {
-			throw new ListenerException("illegal restPath value ["
-					+ requestRestPath + "], must be '" + getRestPath() + "'");
+			throw new ListenerException("illegal restPath value [" + requestRestPath + "], must be '" + getRestPath() + "'");
 		}
-		return super.processRequest(correlationId, message, requestContext);
+
+		//Check if consumes has been set or contentType is set to JSON
+		if(getConsumes().equalsIgnoreCase("JSON") || "application/json".equalsIgnoreCase(httpServletRequest.getContentType())) {
+			try {
+				message = transformToXml(message);
+			} catch (PipeRunException e) {
+				throw new ListenerException("Failed to transform JSON to XML");
+			}
+		}
+
+		//Check if contentType is not overwritten which disabled auto-converting and mediatype headers
+		if(contentType == null || StringUtils.isEmpty(contentType) || contentType.equalsIgnoreCase("*/*")) {
+			if(getProduces().equalsIgnoreCase("XML"))
+				requestContext.put("contentType", "application/xml");
+			if(getProduces().equalsIgnoreCase("JSON"))
+				requestContext.put("contentType", "application/json");
+			if(getProduces().equalsIgnoreCase("TEXT"))
+				requestContext.put("contentType", "text/plain");
+
+			response = super.processRequest(correlationId, message, requestContext);
+
+			if(getProduces().equalsIgnoreCase("JSON")) {
+				try {
+					response = transformToJson(response);
+				} catch (PipeRunException e) {
+					throw new ListenerException("Failed to transform XML to JSON");
+				}
+			}
+		}
+		else {
+			response = super.processRequest(correlationId, message, requestContext);
+		}
+
+		return response;
+	}
+
+	public String transformToJson(String message) throws PipeRunException {
+		JsonPipe pipe = new JsonPipe();
+		pipe.setDirection("xml2json");
+		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSessionBase());
+		return (String) pipeResult.getResult();
+	}
+
+	public String transformToXml(String message) throws PipeRunException {
+		JsonPipe pipe = new JsonPipe();
+		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSessionBase());
+		return (String) pipeResult.getResult();
 	}
 
 	public String getPhysicalDestinationName() {
@@ -186,5 +250,27 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 	public boolean isRetrieveMultipart() {
 		return retrieveMultipart;
+	}
+
+	public void setConsumes(String consumes) throws ConfigurationException {
+		if(mediaTypes.contains(consumes))
+			this.consumes = consumes;
+		else
+			throw new ConfigurationException("Unknown mediatype ["+consumes+"]");
+	}
+
+	public String getConsumes() {
+		return consumes;
+	}
+
+	public void setProduces(String produces) throws ConfigurationException {
+		if(mediaTypes.contains(produces))
+			this.produces = produces;
+		else
+			throw new ConfigurationException("Unknown mediatype ["+produces+"]");
+	}
+
+	public String getProduces() {
+		return produces;
 	}
 }
