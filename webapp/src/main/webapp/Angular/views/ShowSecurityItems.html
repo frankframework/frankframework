@@ -15,6 +15,7 @@
 								<tr>
 									<th>Role</th>
 									<th>&nbsp;</th>
+									<th>specialSubjects</th>
 									<th>Groups</th>
 								</tr>
 							</thead>
@@ -22,6 +23,7 @@
 								<tr ng-repeat="(roleName, role) in securityRoles">
 									<td>{{role["role-name"]}}</td>
 									<td><i class="fa {{role.allowed ? 'fa-check-square' : 'fa-times-circle'}}"></i></td>
+									<td><p ng-repeat="subject in role.specialSubjects">{{subject}}</p></td>
 									<td><p ng-repeat="group in role.groups">{{group}}</p></td>
 								</tr>
 							</tbody>

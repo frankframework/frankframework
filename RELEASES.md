@@ -14,6 +14,7 @@ Upcoming
 
 - Fix IFSA no longer gives a warning when the managed connection factory can't be found
 - Add consumes and produces option to rest endpoints to set mediatypes, this also transforms the data from and to JSON/XML when set
+- Fix GUI 3.0 securityItems page didn't display specialSubjects properly
 
 7.0-B1
 ---

@@ -116,7 +116,7 @@ public final class ShowSecurityItems extends Base {
 			return null;
 		}
 		
-		Map<String, List<String>> secBindings = getSecurityRoleBindings();
+		Map<String, Map<String, List<String>>> secBindings = getSecurityRoleBindings();
 
 		NodeList rowset = xmlDoc.getElementsByTagName("security-role");
 		for (int i = 0; i < rowset.getLength(); i++) {
@@ -131,7 +131,7 @@ public final class ShowSecurityItems extends Base {
 					}
 				}
 				if(secBindings.containsKey(row.getAttribute("id")))
-					tmp.put("groups", secBindings.get(row.getAttribute("id")));
+					tmp.putAll(secBindings.get(row.getAttribute("id")));
 				try {
 					if(tmp.containsKey("role-name")) {
 						String role = (String) tmp.get("role-name");
@@ -145,9 +145,9 @@ public final class ShowSecurityItems extends Base {
 		return resultList;
 	}
 
-	private Map<String, List<String>> getSecurityRoleBindings() {
+	private Map<String, Map<String, List<String>>> getSecurityRoleBindings() {
 		String appBndString = null;
-		Map<String, List<String>> resultList = new HashMap<String, List<String>>();
+		Map<String, Map<String, List<String>>> resultList = new HashMap<String, Map<String, List<String>>>();
 		Document xmlDoc = null;
 
 		try {
@@ -170,6 +170,7 @@ public final class ShowSecurityItems extends Base {
 			if (fieldsInRowset != null && fieldsInRowset.getLength() > 0) {
 				String role = null;
 				List<String> roles = new ArrayList<String>();
+				List<String> specialSubjects = new ArrayList<String>();
 				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
 					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
 						Element field = (Element) fieldsInRowset.item(j);
@@ -179,13 +180,20 @@ public final class ShowSecurityItems extends Base {
 							if(role.indexOf("#") > -1)
 								role = role.substring(role.indexOf("#")+1);
 						}
-						else {
+						else if(field.getNodeName() == "specialSubjects") {
+							specialSubjects.add(field.getAttribute("name"));
+						}
+						else if(field.getNodeName() == "groups") {
 							roles.add(field.getAttribute("name"));
 						}
 					}
 				}
-				if(role != null && role != "")
-					resultList.put(role, roles);
+				if(role != null && role != "") {
+					Map<String, List<String>> roleBinding = new HashMap<String, List<String>>();
+					roleBinding.put("groups", roles);
+					roleBinding.put("specialSubjects", specialSubjects);
+					resultList.put(role, roleBinding);
+				}
 			}
 		}
 		return resultList;
