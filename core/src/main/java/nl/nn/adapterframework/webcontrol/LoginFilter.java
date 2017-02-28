@@ -38,7 +38,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -93,6 +92,7 @@ public class LoginFilter implements Filter {
 
 	protected static final String AUTH_PATH_MODE_OBSERVER = "Observer";
 	protected static final String AUTH_PATH_MODE_DATAADMIN = "DataAdmin";
+	protected static final String AUTH_PATH_MODE_TESTER = "Tester";
 
 	protected String otapStage;
 	protected String instanceName;
@@ -101,122 +101,121 @@ public class LoginFilter implements Filter {
 	protected String ldapAuthUserBase;
 	protected String ldapAuthObserverBase;
 	protected String ldapAuthDataAdminBase;
+	protected String ldapAuthTesterBase;
 	protected final List<String> allowedExtentions = new ArrayList<String>();
 	protected final List<String> allowedObserverPaths = new ArrayList<String>();
 	protected final List<String> allowedDataAdminPaths = new ArrayList<String>();
+	protected final List<String> allowedTesterPaths = new ArrayList<String>();
 
 	public void init(FilterConfig filterConfig) throws ServletException {
-		otapStage = AppConstants.getInstance()
-				.getResolvedProperty("otap.stage");
-		instanceName = AppConstants.getInstance().getResolvedProperty(
-				"instance.name");
+		otapStage = AppConstants.getInstance().getResolvedProperty("otap.stage");
+		instanceName = AppConstants.getInstance().getResolvedProperty("instance.name");
 
-		String ldapAuthMode = AppConstants.getInstance().getString(
-				"ldap.auth.mode", LDAP_AUTH_MODE_NONE_STR);
+		String ldapAuthMode = AppConstants.getInstance().getString("ldap.auth.mode", LDAP_AUTH_MODE_NONE_STR);
 		ldapAuthModeNum = getLdapAuthModeNum(ldapAuthMode);
 		if (ldapAuthModeNum < 0) {
-			log.warn("Unknown ldapAuthMode [" + ldapAuthMode + "], will use ["
-					+ LDAP_AUTH_MODE_NONE_STR + "]");
+			log.warn("Unknown ldapAuthMode [" + ldapAuthMode + "], will use [" + LDAP_AUTH_MODE_NONE_STR + "]");
 			ldapAuthModeNum = 0;
 		}
 
 		if (ldapAuthModeNum >= LDAP_AUTH_MODE_SIMPLE) {
-			String allowedExtentionsString = filterConfig
-					.getInitParameter("allowedExtentions");
+			String allowedExtentionsString = filterConfig.getInitParameter("allowedExtentions");
 			if (allowedExtentionsString != null) {
-				allowedExtentions.addAll(Arrays.asList(allowedExtentionsString
-						.split("\\s+")));
+				allowedExtentions.addAll(Arrays.asList(allowedExtentionsString.split("\\s+")));
 			}
 
-			String allowedObserverPathsString = filterConfig
-					.getInitParameter("allowedObserverPaths");
+			String allowedObserverPathsString = filterConfig.getInitParameter("allowedObserverPaths");
 			if (allowedObserverPathsString != null) {
-				allowedObserverPaths.addAll(Arrays
-						.asList(allowedObserverPathsString.split("\\s+")));
+				allowedObserverPaths.addAll(Arrays.asList(allowedObserverPathsString.split("\\s+")));
 			}
 
-			String allowedDataAdminPathsString = filterConfig
-					.getInitParameter("allowedDataAdminPaths");
+			String allowedDataAdminPathsString = filterConfig.getInitParameter("allowedDataAdminPaths");
 			if (allowedDataAdminPathsString != null) {
-				allowedDataAdminPaths.addAll(Arrays
-						.asList(allowedDataAdminPathsString.split("\\s+")));
+				allowedDataAdminPaths.addAll(Arrays.asList(allowedDataAdminPathsString.split("\\s+")));
+			}
+
+			String allowedTesterPathsString = filterConfig.getInitParameter("allowedTesterPaths");
+			if (allowedTesterPathsString != null) {
+				allowedTesterPaths.addAll(Arrays.asList(allowedTesterPathsString.split("\\s+")));
 			}
 
 			if (ldapAuthModeNum >= LDAP_AUTH_MODE_BASIC) {
-				ldapAuthUrl = AppConstants.getInstance().getResolvedProperty(
-						"ldap.auth.url");
+				ldapAuthUrl = AppConstants.getInstance().getResolvedProperty("ldap.auth.url");
 				if (ldapAuthUrl == null) {
-					String ldapAuthUrlProp = "ldap.auth."
-							+ otapStage.toLowerCase() + ".url";
-					ldapAuthUrl = AppConstants.getInstance()
-							.getResolvedProperty(ldapAuthUrlProp);
+					String ldapAuthUrlProp = "ldap.auth." + otapStage.toLowerCase() + ".url";
+					ldapAuthUrl = AppConstants.getInstance().getResolvedProperty(ldapAuthUrlProp);
 				}
 
-				ldapAuthUserBase = AppConstants.getInstance()
-						.getResolvedProperty("ldap.auth.user.base");
+				ldapAuthUserBase = AppConstants.getInstance().getResolvedProperty("ldap.auth.user.base");
 				if (ldapAuthModeNum >= LDAP_AUTH_MODE_FULL) {
-					ldapAuthObserverBase = AppConstants.getInstance()
-							.getResolvedProperty("ldap.auth.observer.base");
+					ldapAuthObserverBase = AppConstants.getInstance().getResolvedProperty("ldap.auth.observer.base");
 					if (ldapAuthObserverBase == null) {
-						throw new ServletException(
-								"property [ldap.auth.observer.base] should be set");
+						throw new ServletException("property [ldap.auth.observer.base] should be set");
 					}
-					ldapAuthDataAdminBase = AppConstants.getInstance()
-							.getResolvedProperty("ldap.auth.dataadmin.base");
+					ldapAuthDataAdminBase = AppConstants.getInstance().getResolvedProperty("ldap.auth.dataadmin.base");
 					if (ldapAuthDataAdminBase == null) {
-						throw new ServletException(
-								"property [ldap.auth.dataadmin.base] should be set");
+						throw new ServletException("property [ldap.auth.dataadmin.base] should be set");
+					}
+					ldapAuthTesterBase = AppConstants.getInstance().getResolvedProperty("ldap.auth.tester.base");
+					if (ldapAuthTesterBase == null) {
+						throw new ServletException("property [ldap.auth.tester.base] should be set");
 					}
 				}
 			}
 		}
 	}
 
-	public void doFilter(ServletRequest servletRequest,
-			ServletResponse servletResponse, FilterChain filterChain)
-			throws IOException, ServletException {
+	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
 		HttpServletRequest req = (HttpServletRequest) servletRequest;
 		HttpServletResponse res = (HttpServletResponse) servletResponse;
-		String path = req.getServletPath();
-		String fullPath = path + req.getPathInfo();
-
-		if (fullPath.startsWith("/api/") || path.startsWith("/Angular")) {
-			filterChain.doFilter(req, res); // Continue the chain.
-			return;
-		}
 
 		if (ldapAuthModeNum >= LDAP_AUTH_MODE_SIMPLE) {
+			String path = req.getServletPath();
 			if (hasAllowedExtension(path)) {
 				filterChain.doFilter(servletRequest, servletResponse);
 			} else {
-				boolean allowedObserverPath = isAllowedObserverPath(path);
-				boolean allowedDataAdminPath = false;
-				String authorizePathMode = null;
-				if (ldapAuthModeNum >= LDAP_AUTH_MODE_FULL) {
-					allowedDataAdminPath = isAllowedDataAdminPath(path);
-					if (allowedObserverPath) {
-						authorizePathMode = AUTH_PATH_MODE_OBSERVER;
-					} else if (allowedDataAdminPath) {
-						authorizePathMode = AUTH_PATH_MODE_DATAADMIN;
+				if ("/rest-public".equals(path)) {
+					filterChain.doFilter(servletRequest, servletResponse);
+				} else {
+					if ("/rest".equals(path)) {
+						String info = req.getPathInfo();
+						if (info != null) {
+							path = path + info;
+							int i = ordinalIndexOf(path, "/", 2);
+							if (i > 0) {
+								path = path.substring(0, i);
+							}
+						}
 					}
-				}
-				if (allowedObserverPath || allowedDataAdminPath) {
-					if (ldapAuthModeNum >= LDAP_AUTH_MODE_BASIC) {
-						String authenticated = askUsername(req, res,
-								authorizePathMode);
-						if (authenticated == null) {
-							res.getWriter().write(
-									"<html>Not Allowed (" + path + ")</html>");
+					boolean allowedObserverPath = isAllowedPath(path, allowedObserverPaths);
+					boolean allowedDataAdminPath = false;
+					boolean allowedTesterPath = false;
+					String authorizePathMode = null;
+					if (ldapAuthModeNum >= LDAP_AUTH_MODE_FULL) {
+						allowedDataAdminPath = isAllowedPath(path, allowedDataAdminPaths);
+						allowedTesterPath = isAllowedPath(path, allowedTesterPaths);
+						if (allowedObserverPath) {
+							authorizePathMode = AUTH_PATH_MODE_OBSERVER;
+						} else if (allowedDataAdminPath) {
+							authorizePathMode = AUTH_PATH_MODE_DATAADMIN;
+						} else if (allowedTesterPath) {
+							authorizePathMode = AUTH_PATH_MODE_TESTER;
+						}
+					}
+					if (allowedObserverPath || allowedDataAdminPath || allowedTesterPath) {
+						if (ldapAuthModeNum >= LDAP_AUTH_MODE_BASIC) {
+							String authenticated = askUsername(req, res, authorizePathMode);
+							if (authenticated == null) {
+								res.getWriter().write("<html>Not Allowed (" + path + ")</html>");
+							} else {
+								filterChain.doFilter(servletRequest, servletResponse);
+							}
 						} else {
-							filterChain.doFilter(servletRequest,
-									servletResponse);
+							filterChain.doFilter(servletRequest, servletResponse);
 						}
 					} else {
-						filterChain.doFilter(servletRequest, servletResponse);
+						res.getWriter().write("<html>Not Allowed (" + path + ")</html>");
 					}
-				} else {
-					res.getWriter().write(
-							"<html>Not Allowed (" + path + ")</html>");
 				}
 			}
 		} else {
@@ -233,8 +232,8 @@ public class LoginFilter implements Filter {
 		return false;
 	}
 
-	private boolean isAllowedObserverPath(String path) {
-		for (String allowedPath : allowedObserverPaths) {
+	private boolean isAllowedPath(String path, List<String> allowedPaths) {
+		for (String allowedPath : allowedPaths) {
 			if (path.equals(allowedPath)) {
 				return true;
 			}
@@ -242,48 +241,33 @@ public class LoginFilter implements Filter {
 		return false;
 	}
 
-	private boolean isAllowedDataAdminPath(String path) {
-		for (String allowedPath : allowedDataAdminPaths) {
-			if (path.equals(allowedPath)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private String askUsername(HttpServletRequest req, HttpServletResponse res,
-			String authorizePathMode) {
+	private String askUsername(HttpServletRequest req, HttpServletResponse res, String authorizePathMode) {
 		String username = null;
 		String header = req.getHeader("Authorization");
 		if (header == null) {
 			log.debug("no Authorization header found yet, getting credentials");
 		} else {
-			String usernpassw = new String(Base64.decodeBase64(header
-					.substring(6)));
+			String usernpassw = new String(Base64.decodeBase64(header.substring(6)));
 			if (usernpassw != null) {
 				String uname = usernpassw.substring(0, usernpassw.indexOf(":"));
-				String pword = usernpassw
-						.substring(usernpassw.indexOf(":") + 1);
+				String pword = usernpassw.substring(usernpassw.indexOf(":") + 1);
 				if (checkUsernamePassword(uname, pword, authorizePathMode)) {
 					username = uname;
 				}
 			}
 		}
 		if (header == null || username == null) {
-			res.setHeader("WWW-Authenticate", "BASIC realm=\"" + instanceName
-					+ "\"");
+			res.setHeader("WWW-Authenticate", "BASIC realm=\"" + instanceName + "\"");
 			res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		}
 		return username;
 	}
 
-	private boolean checkUsernamePassword(String username, String password,
-			String authorizePathMode) {
+	private boolean checkUsernamePassword(String username, String password, String authorizePathMode) {
 		String dnUser = Misc.replace(ldapAuthUserBase, "%UID%", username);
 
 		Hashtable env = new Hashtable();
-		env.put(Context.INITIAL_CONTEXT_FACTORY,
-				"com.sun.jndi.ldap.LdapCtxFactory");
+		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		env.put(Context.PROVIDER_URL, ldapAuthUrl);
 		env.put(Context.SECURITY_AUTHENTICATION, "simple");
 		env.put(Context.SECURITY_PRINCIPAL, dnUser);
@@ -294,11 +278,8 @@ public class LoginFilter implements Filter {
 			try {
 				ctx = new InitialDirContext(env);
 			} catch (CommunicationException e) {
-				log.info("cannot create constructor for DirContext ("
-						+ e.getMessage()
-						+ "], will try again with dummy SocketFactory");
-				env.put("java.naming.ldap.factory.socket",
-						DummySSLSocketFactory.class.getName());
+				log.info("cannot create constructor for DirContext (" + e.getMessage() + "], will try again with dummy SocketFactory");
+				env.put("java.naming.ldap.factory.socket", DummySSLSocketFactory.class.getName());
 				ctx = new InitialLdapContext(env, null);
 			}
 
@@ -315,6 +296,11 @@ public class LoginFilter implements Filter {
 				}
 				if (authorizePathMode.equals(AUTH_PATH_MODE_DATAADMIN)) {
 					if (isMemberOf(ctx, dnUser, ldapAuthDataAdminBase)) {
+						return true;
+					}
+				}
+				if (authorizePathMode.equals(AUTH_PATH_MODE_TESTER)) {
+					if (isMemberOf(ctx, dnUser, ldapAuthTesterBase)) {
 						return true;
 					}
 				}
@@ -336,8 +322,7 @@ public class LoginFilter implements Filter {
 		return false;
 	}
 
-	private boolean isMemberOf(DirContext ctx, String dnUser, String dnGroup)
-			throws NamingException {
+	private boolean isMemberOf(DirContext ctx, String dnUser, String dnGroup) throws NamingException {
 		DirContext lookedContext = (DirContext) (ctx.lookup(dnGroup));
 		Attribute attrs = lookedContext.getAttributes("").get("member");
 		for (int i = 0; i < attrs.size(); i++) {
@@ -358,6 +343,13 @@ public class LoginFilter implements Filter {
 		} else {
 			return i;
 		}
+	}
+
+	private int ordinalIndexOf(String str, String s, int n) {
+		int pos = str.indexOf(s, 0);
+		while (n-- > 0 && pos != -1)
+			pos = str.indexOf(s, pos+1);
+		return pos;
 	}
 
 	public void destroy() {
