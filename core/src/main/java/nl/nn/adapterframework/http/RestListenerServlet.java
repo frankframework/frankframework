@@ -109,6 +109,12 @@ public class RestListenerServlet extends HttpServlet {
 		try {
 			log.trace("RestListenerServlet calling service ["+path+"]");
 			String result=sd.dispatchRequest(restPath, path, request, etag, contentType, body, messageContext, response, getServletContext());
+
+			int statusCode = 0;
+			if(messageContext.containsKey("exitcode"))
+				statusCode = Integer.parseInt((String) messageContext.get("exitcode"));
+			if(statusCode > 0)
+				response.setStatus(statusCode);
 			if (StringUtils.isEmpty(result)) {
 				log.trace("RestListenerServlet finished with result set in pipeline");
 			} else {

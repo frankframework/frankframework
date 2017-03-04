@@ -30,6 +30,7 @@ public class PipeLineResult {
 
 	private String result;
 	private String state;
+	private int exitCode;
 
 	public String toString(){
 		return "result=["+result+"] state=["+state+"]";
@@ -60,5 +61,13 @@ public class PipeLineResult {
 	 */
 	public void setState(String newState) {
 		state = newState;
+	}
+
+	public void setExitCode(int code) {
+		this.exitCode = code;
+	}
+
+	public int getExitCode() {
+		return this.exitCode;
 	}
 }

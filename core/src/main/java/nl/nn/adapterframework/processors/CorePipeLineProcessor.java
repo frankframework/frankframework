@@ -191,7 +191,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				}
 
 				PipeLineExit plExit= pipeLine.getPipeLineExits().get(nextPath);
-				if (null!=plExit){
+				if (null!=plExit) {
 					boolean outputWrapError = false;
 					IPipe outputWrapper = pipeLine.getOutputWrapper();
 					if (outputWrapper !=null) {
@@ -245,9 +245,11 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					if (ready) {
 						String state=plExit.getState();
 						pipeLineResult.setState(state);
-						if (object!=null) {
+						pipeLineResult.setExitCode(plExit.getExitCode());
+						if (object!=null && !plExit.getEmptyResult()) {
 							pipeLineResult.setResult(object.toString());
-						} else {
+						}
+						else {
 							pipeLineResult.setResult(null);
 						}
 						ready=true;

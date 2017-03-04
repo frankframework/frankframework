@@ -17,6 +17,7 @@ Upcoming
 - Fix GUI 3.0 securityItems page didn't display specialSubjects properly
 - Add ibisTester role to ldap loginFilter
 - Add rest and rest-public endpoints to loginFilter
+- Add exitCodes to pipeline exits, currently only work as statuscode for REST endpoints
 
 7.0-B1
 ---

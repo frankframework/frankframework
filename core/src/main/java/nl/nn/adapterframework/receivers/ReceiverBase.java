@@ -1163,6 +1163,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"activating TimeoutGuard with transactionTimeout ["+transactionTimeout+"]s");
 					tg.activateGuard(getTransactionTimeout());
 					pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, pipelineSession);
+					pipelineSession.put("exitcode", ""+ pipeLineResult.getExitCode());
 					result=pipeLineResult.getResult();
 					errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
 					if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"received result: "+errorMessage); }

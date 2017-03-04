@@ -230,9 +230,9 @@ public class RestServiceDispatcher  {
 	        	}
 			
 			String result=listener.processRequest(null, request, context);
-			if (result==null) {
+			if (result==null && !context.containsKey("exitcode")) {
 				log.warn("result is null!");
-			}			
+			}
 			return result;
 		} finally {
 			if (listener instanceof RestListener) {

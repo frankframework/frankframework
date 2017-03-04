@@ -25,6 +25,8 @@ public class PipeLineExit {
 	
 	private String path;
 	private String state;
+	private int exitCode = 0;
+	private boolean emptyResult = false;
 
 	public String getPath() {
 		return path;
@@ -32,11 +34,24 @@ public class PipeLineExit {
 	public void setPath(String newPath) {
 		path = newPath;
 	}
-	
+
 	public String getState() {
 		return state;
 	}
 	public void setState(String newState) {
 		state = newState;
+	}
+
+	public int getExitCode() {
+		return exitCode;
+	}
+	public void setCode(String code) {
+		this.exitCode = Integer.parseInt(code);
+	}
+	public boolean getEmptyResult() {
+		return emptyResult;
+	}
+	public void setEmpty(String b) {
+		emptyResult = Boolean.parseBoolean(b);
 	}
 }
