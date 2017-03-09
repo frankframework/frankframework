@@ -344,6 +344,12 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				} else {
 					statement.setDouble(i+1, ((Number)value).doubleValue());
 				}
+			} else if (Parameter.TYPE_INTEGER.equals(paramType)) {
+				if (value==null) {
+					statement.setNull(i+1, Types.INTEGER);
+				} else {
+					statement.setInt(i+1, (Integer) value);
+				}
 			} else if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
 				if (value instanceof FileInputStream) {
 					FileInputStream fis = (FileInputStream)value;

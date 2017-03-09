@@ -18,6 +18,7 @@ Upcoming
 - Add ibisTester role to ldap loginFilter
 - Add rest and rest-public endpoints to loginFilter
 - Add exitCodes to pipeline exits, currently only work as statuscode for REST endpoints
+- Add integer type to FixedQuerySender
 
 7.0-B1
 ---
