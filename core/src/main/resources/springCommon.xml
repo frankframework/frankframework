@@ -341,7 +341,7 @@
 		name="messageListenerClassName"
 		class="java.lang.String"
 		>
-		<constructor-arg value="org.springframework.jms.listener.DefaultMessageListenerContainer"/>
+		<constructor-arg value="${jms.messageListenerClassName}"/>
 	</bean>
 
 	<bean

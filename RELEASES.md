@@ -19,6 +19,8 @@ Upcoming
 - Add rest and rest-public endpoints to loginFilter
 - Add exitCodes to pipeline exits, currently only work as statuscode for REST endpoints
 - Add integer type to FixedQuerySender
+- Fix made DefaultMessageListenerContainer configurable for Jms102
+
 
 7.0-B1
 ---
