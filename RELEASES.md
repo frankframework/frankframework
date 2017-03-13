@@ -20,7 +20,7 @@ Upcoming
 - Add exitCodes to pipeline exits, currently only work as statuscode for REST endpoints
 - Add integer type to FixedQuerySender
 - Fix made DefaultMessageListenerContainer configurable for Jms102
-
+- Remove geronimo-jms_1.1_spec from runtime
 
 7.0-B1
 ---
