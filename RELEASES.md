@@ -25,6 +25,7 @@ Upcoming
 - Larva: add support for multipart
 - Add attribute mtomEnabled to HttpSender (to support MTOM in requests)
 - Introduction of the pipe IfMultipart
+- Add attribute elseForwardOnEmptyInput to IsXmlIfPipe
 
 7.0-B1
 ---

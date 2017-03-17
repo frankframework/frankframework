@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setThenForwardName(String) thenForwardName}</td><td>forward returned when 'true'</code></td><td>then</td></tr>
  * <tr><td>{@link #setElseForwardName(String) elseForwardName}</td><td>forward returned when 'false'</td><td>else</td></tr>
+ * <tr><td>{@link #setElseForwardOnEmptyInput(boolean) elseForwardOnEmptyInput}</td><td>return elseForward when input is empty (or thenForward)</td><td>true</td></tr>
  * </table>
  * </p>
  *
@@ -45,20 +46,32 @@ public class IsXmlIfPipe extends AbstractPipe {
 
 	private String thenForwardName = "then";
 	private String elseForwardName = "else";
+	private boolean elseForwardOnEmptyInput = true;
 
 	public PipeRunResult doPipe(Object input, IPipeLineSession session)
 			throws PipeRunException {
 		String forward = "";
-		String sInput = input.toString();
-
-		if (StringUtils.isEmpty(sInput)) {
-			forward = elseForwardName;
-		} else {
-			String firstChar = sInput.replaceAll("^\\s+", "").substring(0, 1);
-			if (firstChar.equals("<")) {
-				forward = thenForwardName;
-			} else {
+		if (input==null) {
+			if (isElseForwardOnEmptyInput()) {
 				forward = elseForwardName;
+			} else {
+				forward = thenForwardName;
+			}
+		} else {
+			String sInput = input.toString();
+			if (StringUtils.isEmpty(sInput)) {
+				if (isElseForwardOnEmptyInput()) {
+					forward = elseForwardName;
+				} else {
+					forward = thenForwardName;
+				}
+			} else {
+				String firstChar = sInput.replaceAll("^\\s+", "").substring(0, 1);
+				if (firstChar.equals("<")) {
+					forward = thenForwardName;
+				} else {
+					forward = elseForwardName;
+				}
 			}
 		}
 
@@ -90,5 +103,13 @@ public class IsXmlIfPipe extends AbstractPipe {
 
 	public String getElseForwardName() {
 		return elseForwardName;
+	}
+
+	public boolean isElseForwardOnEmptyInput() {
+		return elseForwardOnEmptyInput;
+	}
+
+	public void setElseForwardOnEmptyInput(boolean b) {
+		elseForwardOnEmptyInput = b;
 	}
 }
