@@ -21,7 +21,9 @@ import java.net.URL;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -33,8 +35,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
@@ -51,19 +57,11 @@ import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.w3c.dom.Element;
 
 /**
  * Shows the used certificate.
@@ -433,21 +431,25 @@ public final class ShowSecurityItems extends ActionBase {
 	private void addAuthEntries(XmlBuilder securityItems) {
 		XmlBuilder aes = new XmlBuilder("authEntries");
 		securityItems.addSubElement(aes);
-		Collection entries = null;
+		List entries = new ArrayList();
 		try {
 			URL url = ClassUtils.getResourceURL(this, AUTHALIAS_XSLT);
 			if (url != null) {
 				for (Configuration configuration : ibisManager.getConfigurations()) {
 					Transformer t = XmlUtils.createTransformer(url, true);
-					String configString = configuration.getOriginalConfiguration();
-					configString = StringResolver.substVars(configString, AppConstants.getInstance());
-					configString = ConfigurationUtils.getActivatedConfiguration(configuration, configString);
+					String configString = configuration.getLoadedConfiguration();
 					String authEntries = XmlUtils.transformXml(t, configString);
-					Element authEntriesElement = XmlUtils.buildElement(authEntries);
-					if (entries == null) {
-						entries = XmlUtils.getChildTags(authEntriesElement, "entry");
-					} else {
-						entries.addAll(XmlUtils.getChildTags(authEntriesElement, "entry"));
+					log.debug("authentication aliases for configuration ["
+							+ configuration.getName() + "] found ["
+							+ authEntries.trim() + "]");
+					Collection<String> c = XmlUtils.evaluateXPathNodeSet(authEntries, "authEntries/entry/@alias");
+					if (c != null && c.size() > 0) {
+						for (Iterator<String> cit = c.iterator(); cit.hasNext();) {
+							String entry = cit.next();
+							if (!entries.contains(entry)) {
+								entries.add(entry);
+							}
+						}						
 					}
 				}
 			}
@@ -458,10 +460,10 @@ public final class ShowSecurityItems extends ActionBase {
 		}
 
 		if (entries != null) {
+			Collections.sort(entries);
 			Iterator iter = entries.iterator();
 			while (iter.hasNext()) {
-				Element itemElement = (Element) iter.next();
-				String alias = itemElement.getAttribute("alias");
+				String alias = (String) iter.next();
 				CredentialFactory cf = new CredentialFactory(alias, null, null);
 				XmlBuilder ae = new XmlBuilder("entry");
 				aes.addSubElement(ae);
