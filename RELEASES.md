@@ -23,6 +23,7 @@ Upcoming
 - Remove geronimo-jms_1.1_spec from runtime
 - Bugfix in "Show Security Items - Used Authentication Entries", and add sorting (no duplicates)
 - Larva: add support for multipart
+- Add attribute mtomEnabled to HttpSender (to support MTOM in requests)
 
 7.0-B1
 ---

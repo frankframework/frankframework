@@ -30,33 +30,22 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.activation.DataHandler;
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.internet.ContentType;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.PreencodedMimeBodyPart;
+import javax.mail.util.ByteArrayDataSource;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerConfigurationException;
-
-import jcifs.util.Base64;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.core.TimeoutGuardSenderWithParametersBase;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
@@ -74,6 +63,7 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.HeadMethod;
+import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
@@ -93,6 +83,25 @@ import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
 import org.w3c.dom.Element;
+
+import jcifs.util.Base64;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutGuardSenderWithParametersBase;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE.
@@ -150,6 +159,7 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setStoreResultAsStreamInSessionKey(String) storeResultAsStreamInSessionKey}</td><td>if set, a pointer to an input stream of the result is put in the specified sessionKey (as the sender interface only allows a sender to return a string a sessionKey is used instead to return the stream)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setResultStatusCodeSessionKey(String) resultStatusCodeSessionKey}</td><td>if set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMultipartXmlSessionKey(String) multipartXmlSessionKey}</td><td>if set and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, a multipart/form-data entity is created instead of a request body. For each part element in the session key a part in the multipart entity is created</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMtomEnabled(boolean) mtomEnabled}</td><td>when true and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, MTOM is enabled and requests will be send as multipart/related with type="application/xop+xml". Can be used in combination with <code>multipartXmlSessionKey</code></td><td><code>false</code></td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -277,6 +287,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	private String storeResultAsByteArrayInSessionKey;
 	private String resultStatusCodeSessionKey;
 	private String multipartXmlSessionKey;
+	private boolean mtomEnabled = false;
 	
 	private TransformerPool transformerPool=null;
 
@@ -607,7 +618,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	protected PostMethod getPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, ParameterResolutionContext prc) throws SenderException {
 		try {
 			PostMethod hmethod = new PostMethod(uri.getPath());
-			if (!isMultipart() && StringUtils.isEmpty(getMultipartXmlSessionKey())) {
+			if (!isMultipart() && StringUtils.isEmpty(getMultipartXmlSessionKey()) && !isMtomEnabled()) {
 				if (StringUtils.isNotEmpty(getInputMessageParam())) {
 					hmethod.addParameter(getInputMessageParam(),message);
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+getInputMessageParam()+"] with value ["+message+"]");
@@ -627,92 +638,213 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 					}
 				}
 			} else {
-				List<Part> partList = new ArrayList<Part>();
-				if (StringUtils.isNotEmpty(getInputMessageParam())) {
-					StringPart stringPart = new StringPart(getInputMessageParam(), message);
-					partList.add(stringPart);
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getInputMessageParam()+"] with value ["+message+"]");
+				if (isMtomEnabled()) {
+					addMtomMultiPartToPostMethod(hmethod, message, parameters, prc);
+				} else {
+					addMultiPartToPostMethod(hmethod, message, parameters, prc);
 				}
-				if (parameters!=null) {
-					for(int i=0; i<parameters.size(); i++) {
-						ParameterValue pv = parameters.getParameterValue(i);
-						String paramType = pv.getDefinition().getType();
-						String name = pv.getDefinition().getName();
-						if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
-							Object value = pv.getValue();
-							if (value instanceof FileInputStream) {
-								FileInputStream fis = (FileInputStream)value;
-								String fileName = null;
-								String sessionKey = pv.getDefinition().getSessionKey();
-								if (sessionKey != null) {
-									fileName = (String) prc.getSession().get(sessionKey + "Name");
-								}
-								FileStreamPartSource fsps = new FileStreamPartSource(fis, fileName);
-								FilePart filePart = new FilePart(name,fsps);
-								partList.add(filePart);
-								if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+value+"] and name ["+fileName+"]");
-							} else {
-								throw new SenderException(getLogPrefix()+"unknown inputstream ["+value.getClass()+"] for parameter ["+name+"]");
-							}
-						} else {
-							String value = pv.asStringValue("");
-							StringPart stringPart = new StringPart(name, value);
-							partList.add(stringPart);
-							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
-						}
-					}
-				}
-				if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
-					String multipartXml = (String) prc.getSession().get(getMultipartXmlSessionKey());
-					if (StringUtils.isEmpty(multipartXml)) {
-						log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
-					} else {
-						Element partsElement;
-						try {
-							partsElement = XmlUtils.buildElement(multipartXml);
-						} catch (DomBuilderException e) {
-							throw new SenderException(getLogPrefix()+"error building multipart xml", e);
-						}
-						Collection parts = XmlUtils.getChildTags(partsElement, "part");
-						if (parts==null || parts.size()==0) {
-							log.warn(getLogPrefix()+"no part(s) in multipart xml [" + multipartXml + "]");
-						} else {
-							int c = 0;
-							Iterator iter = parts.iterator();
-							while (iter.hasNext()) {
-								c++;
-								Element partElement = (Element) iter.next();
-								//String partType = partElement.getAttribute("type");
-								String partName = partElement.getAttribute("name");
-								String partSessionKey = partElement.getAttribute("sessionKey");
-								Object partObject = prc.getSession().get(partSessionKey);
-								if (partObject instanceof FileInputStream) {
-									FileInputStream fis = (FileInputStream)partObject;
-									FileStreamPartSource fsps = new FileStreamPartSource(fis, partName);
-									FilePart filePart = new FilePart(partSessionKey,fsps);
-									partList.add(filePart);
-									if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+partSessionKey+"]  with value ["+partObject+"] and name ["+partName+"]");
-								} else {
-									String partValue = (String) prc.getSession().get(partSessionKey);
-									StringPart stringPart = new StringPart(partSessionKey, partValue);
-									partList.add(stringPart);
-									if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+partSessionKey+"]  with value ["+partValue+"]");
-								}
-							}
-						}
-					}
-				}
-				Part[] parts = new Part[partList.size()];
-				partList.toArray(parts);
-				MultipartRequestEntity request = new MultipartRequestEntity(parts, hmethod.getParams());
-				hmethod.setRequestEntity(request);
 			}
 			return hmethod;
-		} catch (URIException e) {
-			throw new SenderException(getLogPrefix()+"cannot find path from url ["+getUrl()+"]", e);
+		} catch (Exception e) {
+			throw new SenderException(getLogPrefix() + "got error creating postmethod for url [" + getUrl() + "]", e);
 		}
 	}
-	
+
+	protected void addMultiPartToPostMethod(PostMethod hmethod, String message, ParameterValueList parameters, ParameterResolutionContext prc) throws SenderException {
+		List<Part> partList = new ArrayList<Part>();
+		if (StringUtils.isNotEmpty(getInputMessageParam())) {
+			StringPart stringPart = new StringPart(getInputMessageParam(), message);
+			partList.add(stringPart);
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getInputMessageParam()+"] with value ["+message+"]");
+		}
+		if (parameters!=null) {
+			for(int i=0; i<parameters.size(); i++) {
+				ParameterValue pv = parameters.getParameterValue(i);
+				String paramType = pv.getDefinition().getType();
+				String name = pv.getDefinition().getName();
+				if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
+					Object value = pv.getValue();
+					if (value instanceof FileInputStream) {
+						FileInputStream fis = (FileInputStream)value;
+						String fileName = null;
+						String sessionKey = pv.getDefinition().getSessionKey();
+						if (sessionKey != null) {
+							fileName = (String) prc.getSession().get(sessionKey + "Name");
+						}
+						FileStreamPartSource fsps = new FileStreamPartSource(fis, fileName);
+						FilePart filePart = new FilePart(name,fsps);
+						partList.add(filePart);
+						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+value+"] and name ["+fileName+"]");
+					} else {
+						throw new SenderException(getLogPrefix()+"unknown inputstream ["+value.getClass()+"] for parameter ["+name+"]");
+					}
+				} else {
+					String value = pv.asStringValue("");
+					StringPart stringPart = new StringPart(name, value);
+					partList.add(stringPart);
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
+				}
+			}
+		}
+		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
+			String multipartXml = (String) prc.getSession().get(getMultipartXmlSessionKey());
+			if (StringUtils.isEmpty(multipartXml)) {
+				log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
+			} else {
+				Element partsElement;
+				try {
+					partsElement = XmlUtils.buildElement(multipartXml);
+				} catch (DomBuilderException e) {
+					throw new SenderException(getLogPrefix()+"error building multipart xml", e);
+				}
+				Collection parts = XmlUtils.getChildTags(partsElement, "part");
+				if (parts==null || parts.size()==0) {
+					log.warn(getLogPrefix()+"no part(s) in multipart xml [" + multipartXml + "]");
+				} else {
+					int c = 0;
+					Iterator iter = parts.iterator();
+					while (iter.hasNext()) {
+						c++;
+						Element partElement = (Element) iter.next();
+						//String partType = partElement.getAttribute("type");
+						String partName = partElement.getAttribute("name");
+						String partSessionKey = partElement.getAttribute("sessionKey");
+						Object partObject = prc.getSession().get(partSessionKey);
+						if (partObject instanceof FileInputStream) {
+							FileInputStream fis = (FileInputStream)partObject;
+							FileStreamPartSource fsps = new FileStreamPartSource(fis, partName);
+							FilePart filePart = new FilePart(partSessionKey,fsps);
+							partList.add(filePart);
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+partSessionKey+"]  with value ["+partObject+"] and name ["+partName+"]");
+						} else {
+							String partValue = (String) prc.getSession().get(partSessionKey);
+							StringPart stringPart = new StringPart(partSessionKey, partValue);
+							partList.add(stringPart);
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+partSessionKey+"]  with value ["+partValue+"]");
+						}
+					}
+				}
+			}
+		}
+		Part[] parts = new Part[partList.size()];
+		partList.toArray(parts);
+		MultipartRequestEntity request = new MultipartRequestEntity(parts, hmethod.getParams());
+		hmethod.setRequestEntity(request);
+	}
+
+	protected void addMtomMultiPartToPostMethod(PostMethod hmethod, String message, ParameterValueList parameters, ParameterResolutionContext prc) throws SenderException, MessagingException, IOException {
+		MyMimeMultipart mimeMultipart = new MyMimeMultipart("related");
+		String start = null;
+		if (StringUtils.isNotEmpty(getInputMessageParam())) {
+			MimeBodyPart mimeBodyPart = new MimeBodyPart();
+			mimeBodyPart.setContent(message, "application/xop+xml; charset=UTF-8; type=\"text/xml\"");
+			start = "<" + getInputMessageParam() + ">";
+			mimeBodyPart.setContentID(start);;
+			mimeMultipart.addBodyPart(mimeBodyPart);
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (string)part ["+getInputMessageParam()+"] with value ["+message+"]");
+		}
+		if (parameters!=null) {
+			for(int i=0; i<parameters.size(); i++) {
+				ParameterValue pv = parameters.getParameterValue(i);
+				String paramType = pv.getDefinition().getType();
+				String name = pv.getDefinition().getName();
+				if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
+					Object value = pv.getValue();
+					if (value instanceof FileInputStream) {
+						FileInputStream fis = (FileInputStream)value;
+						String fileName = null;
+						String sessionKey = pv.getDefinition().getSessionKey();
+						if (sessionKey != null) {
+							fileName = (String) prc.getSession().get(sessionKey + "Name");
+						}
+						MimeBodyPart mimeBodyPart = new PreencodedMimeBodyPart("binary");
+						mimeBodyPart.setDisposition(javax.mail.Part.ATTACHMENT);
+						ByteArrayDataSource ds = new ByteArrayDataSource(fis, "application/octet-stream"); 
+						mimeBodyPart.setDataHandler(new DataHandler(ds));
+						mimeBodyPart.setFileName(fileName);
+						mimeBodyPart.setContentID("<" + name + ">");
+				        mimeMultipart.addBodyPart(mimeBodyPart);
+						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (file)part ["+name+"] with value ["+value+"] and name ["+fileName+"]");
+					} else {
+						throw new SenderException(getLogPrefix()+"unknown inputstream ["+value.getClass()+"] for parameter ["+name+"]");
+					}
+				} else {
+					String value = pv.asStringValue("");
+					MimeBodyPart mimeBodyPart = new MimeBodyPart();
+					mimeBodyPart.setContent(value, "text/xml");
+					if (start==null) {
+						start = "<" + name + ">";
+						mimeBodyPart.setContentID(start);
+					} else {
+						mimeBodyPart.setContentID("<" + name + ">");
+					}
+					mimeMultipart.addBodyPart(mimeBodyPart);
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (string)part ["+name+"] with value ["+value+"]");
+				}
+			}
+		}
+		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
+			String multipartXml = (String) prc.getSession().get(getMultipartXmlSessionKey());
+			if (StringUtils.isEmpty(multipartXml)) {
+				log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
+			} else {
+				Element partsElement;
+				try {
+					partsElement = XmlUtils.buildElement(multipartXml);
+				} catch (DomBuilderException e) {
+					throw new SenderException(getLogPrefix()+"error building multipart xml", e);
+				}
+				Collection parts = XmlUtils.getChildTags(partsElement, "part");
+				if (parts==null || parts.size()==0) {
+					log.warn(getLogPrefix()+"no part(s) in multipart xml [" + multipartXml + "]");
+				} else {
+					int c = 0;
+					Iterator iter = parts.iterator();
+					while (iter.hasNext()) {
+						c++;
+						Element partElement = (Element) iter.next();
+						//String partType = partElement.getAttribute("type");
+						String partName = partElement.getAttribute("name");
+						String partMimeType = partElement.getAttribute("mimeType");
+						String partSessionKey = partElement.getAttribute("sessionKey");
+						Object partObject = prc.getSession().get(partSessionKey);
+						if (partObject instanceof FileInputStream) {
+							FileInputStream fis = (FileInputStream)partObject;
+							MimeBodyPart mimeBodyPart = new PreencodedMimeBodyPart("binary");
+							mimeBodyPart.setDisposition(javax.mail.Part.ATTACHMENT);
+							ByteArrayDataSource ds = new ByteArrayDataSource(fis, (partMimeType==null?"application/octet-stream":partMimeType));
+							mimeBodyPart.setDataHandler(new DataHandler(ds));
+							mimeBodyPart.setFileName(partName);
+							mimeBodyPart.setContentID("<" + partName + ">");
+					        mimeMultipart.addBodyPart(mimeBodyPart);
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (file)part ["+partSessionKey+"]  with value ["+partObject+"] and name ["+partName+"]");
+						} else {
+							String partValue = (String) prc.getSession().get(partSessionKey);
+							MimeBodyPart mimeBodyPart = new MimeBodyPart();
+							mimeBodyPart.setContent(partValue, "text/xml");
+							if (start==null) {
+								start = "<" + partName + ">";
+								mimeBodyPart.setContentID(start);
+							} else {
+								mimeBodyPart.setContentID("<" + partName + ">");
+							}
+							mimeMultipart.addBodyPart(mimeBodyPart);
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (string)part ["+partSessionKey+"]  with value ["+partValue+"]");
+						}
+					}
+				}
+			}
+		}
+		MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()));
+		mimeMessage.setContent(mimeMultipart);
+		mimeMessage.saveChanges();
+		InputStreamRequestEntity request = new InputStreamRequestEntity(mimeMessage.getInputStream());
+		hmethod.setRequestEntity(request);
+		String contentTypeMtom = "multipart/related; type=\"application/xop+xml\"; start=\"" + start + "\"; start-info=\"text/xml\"; boundary=\"" + mimeMultipart.getBoundary() + "\"";
+		Header header = new Header("Content-Type", contentTypeMtom);
+		hmethod.addRequestHeader(header);
+	}
+
 	private class FileStreamPartSource implements PartSource {
 		private FileInputStream fis = null;
 		private String fileName;
@@ -1408,5 +1540,35 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	}
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
+	}
+
+	public boolean isMtomEnabled() {
+		return mtomEnabled;
+	}
+	public void setMtomEnabled(boolean mtomEnabled) {
+		this.mtomEnabled = mtomEnabled;
+	}
+
+	public class MyMimeMultipart extends MimeMultipart {
+		private String boundary;
+		
+		public MyMimeMultipart(String subtype) {
+			super();
+			boundary = getBoundaryValue();
+			ContentType cType = new ContentType("multipart", subtype, null);
+			cType.setParameter("boundary", boundary);
+			contentType = cType.toString();
+		}
+
+		public String getBoundaryValue() {
+			StringBuffer buf = new StringBuffer(64);
+			buf.append("----=_Part_").append((new Object()).hashCode())
+					.append('.').append(System.currentTimeMillis());
+			return buf.toString();
+		}
+		
+		public String getBoundary() {
+			return boundary;
+		}
 	}
 }
