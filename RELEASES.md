@@ -22,6 +22,7 @@ Upcoming
 - Fix made DefaultMessageListenerContainer configurable for Jms102
 - Remove geronimo-jms_1.1_spec from runtime
 - Bugfix in "Show Security Items - Used Authentication Entries", and add sorting (no duplicates)
+- Larva: add support for multipart
 
 7.0-B1
 ---
