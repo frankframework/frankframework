@@ -1,5 +1,6 @@
 <module>
-	<adapter name="CheckReload" active="${checkReload.active}">
+	<adapter name="CheckReload" active="${checkReload.active}"
+		msgLogLevel="None">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
 			name="CheckReload" onError="close">
 			<listener name="CheckReload"
