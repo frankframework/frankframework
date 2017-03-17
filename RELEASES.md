@@ -24,6 +24,7 @@ Upcoming
 - Bugfix in "Show Security Items - Used Authentication Entries", and add sorting (no duplicates)
 - Larva: add support for multipart
 - Add attribute mtomEnabled to HttpSender (to support MTOM in requests)
+- Introduction of the pipe IfMultipart
 
 7.0-B1
 ---
