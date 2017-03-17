@@ -69,6 +69,8 @@ import nl.nn.adapterframework.util.Misc;
  * @author Jaco de Groot
  */
 public class StreamPipe extends FixedForwardPipe {
+	private boolean extractFirstStringPart = false;
+	private String multipartXmlSessionKey = "multipartXml";
 
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
@@ -126,7 +128,8 @@ public class StreamPipe extends FixedForwardPipe {
 						contentDisposition, httpResponse, log,
 						getLogPrefix(session));
 			} else if (httpRequest != null) {
-				StringBuilder resultString = new StringBuilder("<parts>");
+				StringBuilder partsString = new StringBuilder("<parts>");
+				String firstStringPart = null;
 				if (ServletFileUpload.isMultipartContent(httpRequest)) {
 					log.debug(getLogPrefix(session) + "request with content type [" + httpRequest.getContentType() + "] and length [" + httpRequest.getContentLength() + "] contains multipart content");
 					DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
@@ -140,16 +143,22 @@ public class StreamPipe extends FixedForwardPipe {
 						if (item.isFormField()) {
 							// Process regular form field (input
 							// type="text|radio|checkbox|etc", select, etc).
-							String fieldName = "part_string" + (++stringCounter>1?stringCounter:"");
 							String fieldValue = item.getString();
-							log.debug(getLogPrefix(session)
-									+ "setting parameter [" + fieldName
-									+ "] to [" + fieldValue + "]");
-							session.put(fieldName, fieldValue);
-							resultString
-									.append("<part type=\"string\" sessionKey=\""
-											+ fieldName + "\" size=\""
-											+ fieldValue.length() + "\"/>");
+							if (isExtractFirstStringPart() && firstStringPart==null) {
+								log.debug(getLogPrefix(session)
+										+ "extracting first string part  [" + fieldValue + "]");
+								firstStringPart = fieldValue;
+							} else {
+								String fieldName = "part_string" + (++stringCounter>1?stringCounter:"");
+								log.debug(getLogPrefix(session)
+										+ "setting parameter [" + fieldName
+										+ "] to [" + fieldValue + "]");
+								session.put(fieldName, fieldValue);
+								partsString
+										.append("<part type=\"string\" sessionKey=\""
+												+ fieldName + "\" size=\""
+												+ fieldValue.length() + "\"/>");
+							}
 						} else {
 							// Process form file field (input type="file").
 							String fieldName = "part_file" + (++fileCounter>1?fileCounter:"");
@@ -157,6 +166,7 @@ public class StreamPipe extends FixedForwardPipe {
 									.getName(item.getName());
 							InputStream is = item.getInputStream();
 							int size = is.available();
+							String mimeType = item.getContentType();
 							if (size > 0) {
 								log.debug(getLogPrefix(session)
 										+ "setting parameter [" + fieldName
@@ -169,16 +179,21 @@ public class StreamPipe extends FixedForwardPipe {
 										+ "] to [" + null + "]");
 								session.put(fieldName, null);
 							}
-							resultString.append("<part type=\"file\" name=\""
+							partsString.append("<part type=\"file\" name=\""
 									+ fileName + "\" sessionKey=\"" + fieldName
-									+ "\" size=\"" + size + "\"/>");
+									+ "\" size=\"" + size + "\" mimeType=\"" + mimeType + "\"/>");
 						}
 					}
 				} else {
 					log.debug(getLogPrefix(session) + "request with content type [" + httpRequest.getContentType() + "] and length [" + httpRequest.getContentLength() + "] does NOT contain multipart content");
 				}
-				resultString.append("</parts>");
-				result = resultString.toString();
+				partsString.append("</parts>");
+				if (isExtractFirstStringPart()) {
+					result = adjustFirstStringPart(firstStringPart, session);
+					session.put(getMultipartXmlSessionKey(), partsString.toString());
+				} else {
+					result = partsString.toString();
+				}
 			} else {
 				Misc.streamToStream(inputStream, outputStream);
 			}
@@ -188,5 +203,29 @@ public class StreamPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "FileUploadException getting multiparts from httpServletRequest", e);
 		}
 		return new PipeRunResult(getForward(), result);
+	}
+
+	protected String adjustFirstStringPart(String firstStringPart, IPipeLineSession session) throws PipeRunException {
+		if (firstStringPart==null) {
+			return "";
+		} else {
+			return firstStringPart;
+		}
+	}
+	
+	public void setExtractFirstStringPart(boolean b) {
+		extractFirstStringPart = b;
+	}
+
+	public boolean isExtractFirstStringPart() {
+		return extractFirstStringPart;
+	}
+
+	public String getMultipartXmlSessionKey() {
+		return multipartXmlSessionKey;
+	}
+
+	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
+		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}
 }

@@ -26,6 +26,7 @@ Upcoming
 - Add attribute mtomEnabled to HttpSender (to support MTOM in requests)
 - Introduction of the pipe IfMultipart
 - Add attribute elseForwardOnEmptyInput to IsXmlIfPipe
+- Add attributes extractFirstStringPart and multipartXmlSessionKey to StreamPipe (to support multipart) 
 
 7.0-B1
 ---
