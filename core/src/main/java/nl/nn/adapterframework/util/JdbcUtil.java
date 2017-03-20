@@ -841,6 +841,33 @@ public class JdbcUtil {
 		}
 	}
 
+	public static String executeBlobQuery(Connection connection, String query) throws JdbcException {
+		PreparedStatement stmt = null;
+
+		try {
+			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
+			stmt = connection.prepareStatement(query);
+			ResultSet rs = stmt.executeQuery();
+			try {
+				if (!rs.next()) {
+					return null;
+				}
+				return getBlobAsString(rs, 1, Misc.DEFAULT_INPUT_STREAM_ENCODING, false, true, true, false);
+			} finally {
+				rs.close();
+			}
+		} catch (Exception e) {
+			throw new JdbcException("could not obtain value using query ["+query+"]",e);
+		} finally {
+			if (stmt!=null) {
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					throw new JdbcException("could not close statement of query ["+query+"]",e);
+				}
+			}
+		}
+	}
 
 	public static int executeIntQuery(Connection connection, String query) throws JdbcException {
 		return executeIntQuery(connection,query,null,null);

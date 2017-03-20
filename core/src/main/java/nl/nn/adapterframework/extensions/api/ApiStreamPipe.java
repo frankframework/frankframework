@@ -21,13 +21,13 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.StreamPipe;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -38,6 +38,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class ApiStreamPipe extends StreamPipe {
 	private String jmsRealm;
+
+	private FixedQuerySender dummyQuerySender;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -74,6 +76,22 @@ public class ApiStreamPipe extends StreamPipe {
 							"Could not find messageId in request ["
 									+ firstStringPart + "]");
 				} else {
+					// TODO: create dummyQuerySender should be put in
+					// configure(), but gives an error
+					IbisContext ibisContext = getAdapter().getConfiguration()
+							.getIbisManager().getIbisContext();
+					dummyQuerySender = (FixedQuerySender) ibisContext
+							.createBeanAutowireByName(FixedQuerySender.class);
+					dummyQuerySender.setJmsRealm(jmsRealm);
+					dummyQuerySender
+							.setQuery("SELECT count(*) FROM ALL_TABLES");
+					try {
+						dummyQuerySender.configure();
+					} catch (ConfigurationException e) {
+						throw new PipeRunException(this,
+								"Exception configuring dummy query sender", e);
+					}
+
 					ParameterResolutionContext prc = new ParameterResolutionContext(
 							"", session);
 					String slotId = AppConstants.getInstance()
@@ -123,68 +141,26 @@ public class ApiStreamPipe extends StreamPipe {
 	}
 
 	private String selectMessageKey(String slotId, String messageId)
-			throws ConfigurationException, SenderException, TimeOutException {
-		IbisContext ibisContext = getAdapter().getConfiguration()
-				.getIbisManager().getIbisContext();
-		DirectQuerySender qs = (DirectQuerySender) ibisContext
-				.createBeanAutowireByName(DirectQuerySender.class);
-		try {
-			qs.setName("selectMessageKeySender");
-			qs.setJmsRealm(getJmsRealm());
-			qs.setQueryType("select");
-			qs.setScalar(true);
-			qs.configure(true);
-			qs.open();
-			String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='"
-					+ JdbcTransactionalStorage.TYPE_MESSAGESTORAGE
-					+ "' AND SLOTID='" + slotId + "' AND MESSAGEID='"
-					+ messageId + "'";
-			return qs.sendMessage("dummy", query);
-		} finally {
-			qs.close();
-		}
+			throws JdbcException {
+		String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='"
+				+ JdbcTransactionalStorage.TYPE_MESSAGESTORAGE
+				+ "' AND SLOTID='" + slotId + "' AND MESSAGEID='" + messageId
+				+ "'";
+		return JdbcUtil.executeStringQuery(dummyQuerySender.getConnection(),
+				query);
 	}
 
-	private String selectMessage(String messageKey)
-			throws ConfigurationException, SenderException, TimeOutException {
-		IbisContext ibisContext = getAdapter().getConfiguration()
-				.getIbisManager().getIbisContext();
-		DirectQuerySender qs = (DirectQuerySender) ibisContext
-				.createBeanAutowireByName(DirectQuerySender.class);
-		try {
-			qs.setName("selectMessageSender");
-			qs.setJmsRealm(getJmsRealm());
-			qs.setQueryType("select");
-			qs.setScalar(true);
-			qs.setBlobSmartGet(true);
-			qs.configure(true);
-			qs.open();
-			String query = "SELECT MESSAGE FROM IBISSTORE WHERE MESSAGEKEY='"
-					+ messageKey + "'";
-			return qs.sendMessage("dummy", query);
-		} finally {
-			qs.close();
-		}
+	private String selectMessage(String messageKey) throws JdbcException {
+		String query = "SELECT MESSAGE FROM IBISSTORE WHERE MESSAGEKEY='"
+				+ messageKey + "'";
+		return JdbcUtil.executeBlobQuery(dummyQuerySender.getConnection(),
+				query);
 	}
 
-	private void deleteMessage(String messageKey)
-			throws ConfigurationException, SenderException, TimeOutException {
-		IbisContext ibisContext = getAdapter().getConfiguration()
-				.getIbisManager().getIbisContext();
-		DirectQuerySender qs = (DirectQuerySender) ibisContext
-				.createBeanAutowireByName(DirectQuerySender.class);
-		try {
-			qs.setName("deleteMessageSender");
-			qs.setJmsRealm(getJmsRealm());
-			qs.setQueryType("delete");
-			qs.configure(true);
-			qs.open();
-			String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY='"
-					+ messageKey + "'";
-			qs.sendMessage("dummy", query);
-		} finally {
-			qs.close();
-		}
+	private void deleteMessage(String messageKey) throws JdbcException {
+		String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY='" + messageKey
+				+ "'";
+		JdbcUtil.executeStatement(dummyQuerySender.getConnection(), query);
 	}
 
 	public String getJmsRealm() {
@@ -194,4 +170,5 @@ public class ApiStreamPipe extends StreamPipe {
 	public void setJmsRealm(String jmsRealm) {
 		this.jmsRealm = jmsRealm;
 	}
+
 }
