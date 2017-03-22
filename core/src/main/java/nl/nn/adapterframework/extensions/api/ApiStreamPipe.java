@@ -15,16 +15,18 @@
  */
 package nl.nn.adapterframework.extensions.api;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.StreamPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -39,12 +41,18 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class ApiStreamPipe extends StreamPipe {
 	private String jmsRealm;
 
-	private FixedQuerySender dummyQuerySender;
+	private DirectQuerySender dummyQuerySender;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		setExtractFirstStringPart(true);
 		super.configure();
+
+		IbisContext ibisContext = getAdapter().getConfiguration()
+				.getIbisManager().getIbisContext();
+		dummyQuerySender = (DirectQuerySender) ibisContext
+				.createBeanAutowireByName(DirectQuerySender.class);
+		dummyQuerySender.setJmsRealm(jmsRealm);
 	}
 
 	@Override
@@ -68,70 +76,41 @@ public class ApiStreamPipe extends StreamPipe {
 					messageId = XmlUtils.evaluateXPathNodeSetFirstElement(
 							firstStringPart, "MessageID");
 				} catch (Exception e) {
-					throw new PipeRunException(this,
-							"Exception getting MessageID", e);
+					throw new PipeRunException(this, getLogPrefix(session)
+							+ "Exception getting MessageID", e);
 				}
 				if (StringUtils.isEmpty(messageId)) {
 					throw new PipeRunException(this,
-							"Could not find messageId in request ["
+							getLogPrefix(session)
+									+ "Could not find messageId in request ["
 									+ firstStringPart + "]");
 				} else {
-					// TODO: create dummyQuerySender should be put in
-					// configure(), but gives an error
-					IbisContext ibisContext = getAdapter().getConfiguration()
-							.getIbisManager().getIbisContext();
-					dummyQuerySender = (FixedQuerySender) ibisContext
-							.createBeanAutowireByName(FixedQuerySender.class);
-					dummyQuerySender.setJmsRealm(jmsRealm);
-					dummyQuerySender
-							.setQuery("SELECT count(*) FROM ALL_TABLES");
+					Connection conn = null;
 					try {
-						dummyQuerySender.configure();
-					} catch (ConfigurationException e) {
-						throw new PipeRunException(this,
-								"Exception configuring dummy query sender", e);
-					}
-
-					ParameterResolutionContext prc = new ParameterResolutionContext(
-							"", session);
-					String slotId = AppConstants.getInstance()
-							.getResolvedProperty("instance.name") + "/"
-							+ session.get("operation");
-					String selectMessageKeyResult = null;
-					try {
-						selectMessageKeyResult = selectMessageKey(slotId,
-								messageId);
-					} catch (Exception e) {
-						throw new PipeRunException(this,
-								"Exception getting messageKey", e);
-					}
-					if (StringUtils.isEmpty(selectMessageKeyResult)) {
-						throw new PipeRunException(this,
-								"Could not find message in MessageStore for slotId ["
-										+ slotId + "] and messageId ["
-										+ messageId + "]");
-					} else {
-						String selectMessageResult = null;
 						try {
-							selectMessageResult = selectMessage(
-									selectMessageKeyResult);
-						} catch (Exception e) {
+							conn = dummyQuerySender.getConnection();
+						} catch (JdbcException e) {
 							throw new PipeRunException(this,
-									"Exception getting message", e);
+									getLogPrefix(session)
+											+ "Exception getting connection",
+									e);
 						}
-						if (StringUtils.isEmpty(selectMessageResult)) {
-							throw new PipeRunException(this,
-									"Could not find message in MessageStore with messageKey ["
-											+ selectMessageKeyResult + "]");
-						} else {
+						String slotId = AppConstants.getInstance()
+								.getResolvedProperty("instance.name") + "/"
+								+ session.get("operation");
+						return retrieveMessageFromStore(conn, slotId, messageId,
+								session);
+					} finally {
+						if (conn != null) {
 							try {
-								deleteMessage(selectMessageKeyResult);
-							} catch (Exception e) {
-								throw new PipeRunException(this,
-										"Exception deleting message", e);
+								conn.close();
+							} catch (SQLException e) {
+								log.warn(
+										getLogPrefix(session)
+												+ "Exception closing connection",
+										e);
 							}
 						}
-						return selectMessageResult;
 					}
 				}
 			} else {
@@ -140,27 +119,52 @@ public class ApiStreamPipe extends StreamPipe {
 		}
 	}
 
-	private String selectMessageKey(String slotId, String messageId)
-			throws JdbcException {
-		String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='"
-				+ JdbcTransactionalStorage.TYPE_MESSAGESTORAGE
-				+ "' AND SLOTID='" + slotId + "' AND MESSAGEID='" + messageId
-				+ "'";
-		return JdbcUtil.executeStringQuery(dummyQuerySender.getConnection(),
-				query);
-	}
-
-	private String selectMessage(String messageKey) throws JdbcException {
-		String query = "SELECT MESSAGE FROM IBISSTORE WHERE MESSAGEKEY='"
-				+ messageKey + "'";
-		return JdbcUtil.executeBlobQuery(dummyQuerySender.getConnection(),
-				query);
-	}
-
-	private void deleteMessage(String messageKey) throws JdbcException {
-		String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY='" + messageKey
-				+ "'";
-		JdbcUtil.executeStatement(dummyQuerySender.getConnection(), query);
+	private String retrieveMessageFromStore(Connection conn, String slotId,
+			String messageId, IPipeLineSession session)
+			throws PipeRunException {
+		String selectMessageKeyResult = null;
+		try {
+			String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='"
+					+ JdbcTransactionalStorage.TYPE_MESSAGESTORAGE
+					+ "' AND SLOTID='" + slotId + "' AND MESSAGEID='"
+					+ messageId + "'";
+			selectMessageKeyResult = JdbcUtil.executeStringQuery(conn, query);
+		} catch (Exception e) {
+			throw new PipeRunException(this,
+					getLogPrefix(session) + "Exception getting messageKey", e);
+		}
+		if (StringUtils.isEmpty(selectMessageKeyResult)) {
+			throw new PipeRunException(this,
+					getLogPrefix(session)
+							+ "Could not find message in MessageStore for slotId ["
+							+ slotId + "] and messageId [" + messageId + "]");
+		} else {
+			String selectMessageResult = null;
+			try {
+				String query = "SELECT MESSAGE FROM IBISSTORE WHERE MESSAGEKEY='"
+						+ selectMessageKeyResult + "'";
+				selectMessageResult = JdbcUtil.executeBlobQuery(conn, query);
+			} catch (Exception e) {
+				throw new PipeRunException(this,
+						getLogPrefix(session) + "Exception getting message", e);
+			}
+			if (StringUtils.isEmpty(selectMessageResult)) {
+				throw new PipeRunException(this,
+						getLogPrefix(session)
+								+ "Could not find message in MessageStore with messageKey ["
+								+ selectMessageKeyResult + "]");
+			} else {
+				try {
+					String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY='"
+							+ selectMessageKeyResult + "'";
+					JdbcUtil.executeStatement(conn, query);
+				} catch (Exception e) {
+					throw new PipeRunException(this, getLogPrefix(session)
+							+ "Exception deleting message", e);
+				}
+			}
+			return selectMessageResult;
+		}
 	}
 
 	public String getJmsRealm() {
