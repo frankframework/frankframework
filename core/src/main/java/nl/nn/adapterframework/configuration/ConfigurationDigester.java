@@ -87,9 +87,7 @@ public class ConfigurationDigester {
 	private static final String DIGESTER_RULES_DEFAULT = "digester-rules.xml";
 
 	private static final String CONFIGURATION_VALIDATION_KEY = "validate.configuration";
-	private static final String CONFIGURATION_STUB4TESTTOOL_KEY = "stub4testtool.configuration";
 
-	private static final String stub4testtool_xslt = "/xml/xsl/stub4testtool.xsl";
 	private static final String attributesGetter_xslt = "/xml/xsl/AttributesGetter.xsl";
 
 	private String configurationFile = null;
@@ -249,7 +247,7 @@ public class ConfigurationDigester {
 	private  void fillConfigWarnDefaultValueExceptions(Configuration configuration) throws Exception {
 		URL xsltSource = ClassUtils.getResourceURL(this, attributesGetter_xslt);
 		if (xsltSource == null) {
-			throw new ConfigurationException("cannot find resource ["+stub4testtool_xslt+"]");
+			throw new ConfigurationException("cannot find resource ["+attributesGetter_xslt+"]");
 		}
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		String lineSeparator=SystemUtils.LINE_SEPARATOR;
