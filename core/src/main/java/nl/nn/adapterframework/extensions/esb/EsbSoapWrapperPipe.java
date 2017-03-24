@@ -5,7 +5,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -48,6 +48,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setRetrievePhysicalDestination(boolean) retrievePhysicalDestination}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code></td><td><code>true</code></td></tr>
  * <tr><td>{@link #setUseFixedValues(boolean) useFixedValues}</td><td>If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setFixResultNamespace(boolean) fixResultNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setDestinationFilter(String) destinationFilter}</td><td>used to check which messagingLayer for destination is being used</td><td><code>ESB.,P2P.</code></td></tr>
  * </table></p>
  * <p>
  * <b>/xml/xsl/esb/soapHeader.xsl:</b>
@@ -257,19 +258,20 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 
 	private boolean useFixedValues=false; 
 	private boolean fixResultNamespace=false; 
+	private String destinationFilter = "ESB.,P2P.";
 
-    public static enum Mode  {
-        I2T,
-        REG,
-        BIS
-    }
+	public static enum Mode  {
+		I2T,
+		REG,
+		BIS
+	}
 
 	private Mode mode = Mode.REG;
 	private int cmhVersion = 0;
 	private boolean addOutputNamespace = false;
 	private boolean retrievePhysicalDestination = true;
 	
-    @Override
+	@Override
 	public void configure() throws ConfigurationException {
 		if (mode == Mode.REG) {
 			if (cmhVersion == 0) {
@@ -341,63 +343,63 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		}
 	}
 
-    private String getParameterValue(String key) {
-        Parameter p = getParameterList().findParameter(key);
-        return p != null ? p.getValue() : "";
-    }
+	private String getParameterValue(String key) {
+		Parameter p = getParameterList().findParameter(key);
+		return p != null ? p.getValue() : "";
+	}
 
-    public static String getOutputNamespaceBaseUri() {
-        return OUTPUTNAMESPACEBASEURI;
-    }
+	public static String getOutputNamespaceBaseUri() {
+		return OUTPUTNAMESPACEBASEURI;
+	}
 
-    public String getBusinessDomain() {
-        return getParameterValue(BUSINESSDOMAIN);
-    }
+	public String getBusinessDomain() {
+		return getParameterValue(BUSINESSDOMAIN);
+	}
 
-    public String getServiceName() {
-        return getParameterValue(SERVICENAME);
-    }
+	public String getServiceName() {
+		return getParameterValue(SERVICENAME);
+	}
 
-    public String getServiceContext() {
-        return getParameterValue(SERVICECONTEXT);
-    }
+	public String getServiceContext() {
+		return getParameterValue(SERVICECONTEXT);
+	}
 
-    public String getServiceContextVersion() {
-        return getParameterValue(SERVICECONTEXTVERSION);
-    }
+	public String getServiceContextVersion() {
+		return getParameterValue(SERVICECONTEXTVERSION);
+	}
 
-    public String getOperationName() {
-        return getParameterValue(OPERATIONNAME);
-    }
+	public String getOperationName() {
+		return getParameterValue(OPERATIONNAME);
+	}
 
-    public String getOperationVersion() {
-        return getParameterValue(OPERATIONVERSION);
-    }
+	public String getOperationVersion() {
+		return getParameterValue(OPERATIONVERSION);
+	}
 
-    public String getDestination() {
-        Parameter p = getParameterList().findParameter(DESTINATION);
-        return p == null ? null : p.getValue();
-    }
+	public String getDestination() {
+		Parameter p = getParameterList().findParameter(DESTINATION);
+		return p == null ? null : p.getValue();
+	}
 
-    public String getMessagingLayer() {
-        return getParameterValue(MESSAGINGLAYER);
-    }
+	public String getMessagingLayer() {
+		return getParameterValue(MESSAGINGLAYER);
+	}
 
-    public String getServiceLayer() {
-        return getParameterValue(SERVICELAYER);
-    }
+	public String getServiceLayer() {
+		return getParameterValue(SERVICELAYER);
+	}
 
-    public String getParadigm() {
-        return getParameterValue(PARADIGM);
-    }
+	public String getParadigm() {
+		return getParameterValue(PARADIGM);
+	}
 
-    public String getApplicationName() {
-        return getParameterValue(APPLICATIONNAME);
-    }
+	public String getApplicationName() {
+		return getParameterValue(APPLICATIONNAME);
+	}
 
-    public String getApplicationFunction() {
-        return getParameterValue(APPLICATIONFUNCTION);
-    }
+	public String getApplicationFunction() {
+		return getParameterValue(APPLICATIONFUNCTION);
+	}
 
 	private void stripDestination() throws ConfigurationException {
 		ParameterList parameterList = getParameterList();
@@ -417,7 +419,19 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		}
 		Parameter p;
 		if (StringUtils.isNotEmpty(destination)) { 
-			if (destination.startsWith("ESB.") || destination.startsWith("P2P.")) {
+
+			boolean destinationInDestinationFilter = false;
+			StringTokenizer tokenizer = new StringTokenizer(destinationFilter, ",");
+			String strt = null;
+			while(tokenizer.hasMoreElements()) {
+				strt = tokenizer.nextToken();
+				if(destination.startsWith(strt)) {
+					destinationInDestinationFilter = true;
+				}
+			}
+
+
+			if (destinationInDestinationFilter) {
 				//In case the messaging layer is ESB, the destination syntax is:
 				// Destination = [MessagingLayer].[BusinessDomain].[ServiceLayer].[ServiceName].[ServiceContext].[ServiceContextVersion].[OperationName].[OperationVersion].[Paradigm]
 				//or (new standard since January 2016):
@@ -433,71 +447,71 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 					String str = st.nextToken();
 					p = new Parameter();
 					switch (count) {
-			        	case 1:
-			        		if (str.equals("P2P")) {
-			        			p2p = true;
+						case 1:
+							if (str.startsWith("P2P")) {
+								p2p = true;
 							} else {
 								esbDestinationWithoutServiceContext = isEsbDestinationWithoutServiceContext(destination);
 							}
-			        		p.setName(MESSAGINGLAYER);
-			        		break;
-			        	case 2:
-			        		p.setName(BUSINESSDOMAIN);
-			        		break;
-			        	case 3:
-			        		if (p2p) {
-				        		p.setName(APPLICATIONNAME);
-			        		} else {
-				        		p.setName(SERVICELAYER);
-			        		}
-			        		break;
-			        	case 4:
-			        		if (p2p) {
-				        		p.setName(APPLICATIONFUNCTION);
-			        		} else {
-				        		p.setName(SERVICENAME);
-			        		}
-			        		break;
-			        	case 5:
-			        		if (p2p) {
-				        		p.setName(PARADIGM);
-			        		} else {
-			        			if (esbDestinationWithoutServiceContext) {
-				        			p.setName(SERVICECONTEXTVERSION);
-			        			} else {
-					        		p.setName(SERVICECONTEXT);
-			        			}
-			        		}
-			        		break;
-			        	case 6:
-		        			if (esbDestinationWithoutServiceContext) {
-				        		p.setName(OPERATIONNAME);
-		        			} else {
-			        			p.setName(SERVICECONTEXTVERSION);
-		        			}
-			        		break;
-			        	case 7:
-		        			if (esbDestinationWithoutServiceContext) {
-				        		p.setName(OPERATIONVERSION);
-		        			} else {
-				        		p.setName(OPERATIONNAME);
-		        			}
-			        		break;
-			        	case 8:
-		        			if (esbDestinationWithoutServiceContext) {
-				        		p.setName(PARADIGM);
-		        			} else {
-				        		p.setName(OPERATIONVERSION);
-		        			}
-			        		break;
-			        	case 9:
-		        			if (esbDestinationWithoutServiceContext) {
-			        			// not possible
-		        			} else {
-				        		p.setName(PARADIGM);
-		        			}
-			        		break;
-			        	default:
+							p.setName(MESSAGINGLAYER);
+							break;
+						case 2:
+							p.setName(BUSINESSDOMAIN);
+							break;
+						case 3:
+							if (p2p) {
+								p.setName(APPLICATIONNAME);
+							} else {
+								p.setName(SERVICELAYER);
+							}
+							break;
+						case 4:
+							if (p2p) {
+								p.setName(APPLICATIONFUNCTION);
+							} else {
+								p.setName(SERVICENAME);
+							}
+							break;
+						case 5:
+							if (p2p) {
+								p.setName(PARADIGM);
+							} else {
+								if (esbDestinationWithoutServiceContext) {
+									p.setName(SERVICECONTEXTVERSION);
+								} else {
+									p.setName(SERVICECONTEXT);
+								}
+							}
+							break;
+						case 6:
+							if (esbDestinationWithoutServiceContext) {
+								p.setName(OPERATIONNAME);
+							} else {
+								p.setName(SERVICECONTEXTVERSION);
+							}
+							break;
+						case 7:
+							if (esbDestinationWithoutServiceContext) {
+								p.setName(OPERATIONVERSION);
+							} else {
+								p.setName(OPERATIONNAME);
+							}
+							break;
+						case 8:
+							if (esbDestinationWithoutServiceContext) {
+								p.setName(PARADIGM);
+							} else {
+								p.setName(OPERATIONVERSION);
+							}
+							break;
+						case 9:
+							if (esbDestinationWithoutServiceContext) {
+								// not possible
+							} else {
+								p.setName(PARADIGM);
+							}
+							break;
+						default:
 					}
 					p.setValue(str);
 					addParameter(p);
@@ -771,5 +785,9 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 
 	public boolean isFixResultNamespace() {
 		return fixResultNamespace;
+	}
+
+	public void setDestinationFilter(String b) {
+		destinationFilter=b;
 	}
 }

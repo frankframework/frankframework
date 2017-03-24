@@ -27,6 +27,7 @@ Upcoming
 - Introduction of the pipe IfMultipart
 - Add attribute elseForwardOnEmptyInput to IsXmlIfPipe
 - Add attributes extractFirstStringPart and multipartXmlSessionKey to StreamPipe (to support multipart) 
+- Fix splitting messagingLayer made configurable in EsbSoapWrapper
 
 7.0-B1
 ---
