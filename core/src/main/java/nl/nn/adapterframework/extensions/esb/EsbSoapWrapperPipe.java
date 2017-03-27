@@ -48,7 +48,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setRetrievePhysicalDestination(boolean) retrievePhysicalDestination}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code></td><td><code>true</code></td></tr>
  * <tr><td>{@link #setUseFixedValues(boolean) useFixedValues}</td><td>If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setFixResultNamespace(boolean) fixResultNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setDestinationFilter(String) destinationFilter}</td><td>used to check which messagingLayer for destination is being used</td><td><code>ESB.,P2P.</code></td></tr>
+ * <tr><td>{@link #setAllowedMessagingLayers(String) allowedMessagingLayers}</td><td>comma separated list of allowed values for the messagingLayer</td><td><code>ESB.,P2P.</code></td></tr>
  * </table></p>
  * <p>
  * <b>/xml/xsl/esb/soapHeader.xsl:</b>
@@ -258,7 +258,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 
 	private boolean useFixedValues=false; 
 	private boolean fixResultNamespace=false; 
-	private String destinationFilter = "ESB.,P2P.";
+	private String allowedMessagingLayers = "ESB.,P2P.";
 
 	public static enum Mode  {
 		I2T,
@@ -420,18 +420,17 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		Parameter p;
 		if (StringUtils.isNotEmpty(destination)) { 
 
-			boolean destinationInDestinationFilter = false;
-			StringTokenizer tokenizer = new StringTokenizer(destinationFilter, ",");
+			boolean messagingLayersAllowed = false;
+			StringTokenizer tokenizer = new StringTokenizer(allowedMessagingLayers, ",");
 			String strt = null;
 			while(tokenizer.hasMoreElements()) {
 				strt = tokenizer.nextToken();
 				if(destination.startsWith(strt)) {
-					destinationInDestinationFilter = true;
+					messagingLayersAllowed = true;
 				}
 			}
 
-
-			if (destinationInDestinationFilter) {
+			if (messagingLayersAllowed) {
 				//In case the messaging layer is ESB, the destination syntax is:
 				// Destination = [MessagingLayer].[BusinessDomain].[ServiceLayer].[ServiceName].[ServiceContext].[ServiceContextVersion].[OperationName].[OperationVersion].[Paradigm]
 				//or (new standard since January 2016):
@@ -787,7 +786,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return fixResultNamespace;
 	}
 
-	public void setDestinationFilter(String b) {
-		destinationFilter=b;
+	public void setAllowedMessagingLayers(String b) {
+		allowedMessagingLayers=b;
 	}
 }
