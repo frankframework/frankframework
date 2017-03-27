@@ -28,6 +28,7 @@ Upcoming
 - Add attribute elseForwardOnEmptyInput to IsXmlIfPipe
 - Add attributes extractFirstStringPart and multipartXmlSessionKey to StreamPipe (to support multipart) 
 - Fix splitting messagingLayer made configurable in EsbSoapWrapper
+- Add commons-validator dependency for Jboss servers
 
 7.0-B1
 ---
