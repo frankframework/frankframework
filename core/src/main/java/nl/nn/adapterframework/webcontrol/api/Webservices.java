@@ -49,7 +49,7 @@ public final class Webservices extends Base {
 	@Context ServletConfig servletConfig;
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/webservices")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getLogDirectory() throws ApiException {

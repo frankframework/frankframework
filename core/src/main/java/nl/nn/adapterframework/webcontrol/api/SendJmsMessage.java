@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -55,6 +56,7 @@ public final class SendJmsMessage extends Base {
 	@Context ServletConfig servletConfig;
 
 	@POST
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("jms/message")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)

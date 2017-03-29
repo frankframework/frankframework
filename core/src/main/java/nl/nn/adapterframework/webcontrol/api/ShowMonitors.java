@@ -60,7 +60,7 @@ public final class ShowMonitors extends Base {
 	@Context ServletConfig servletConfig;
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/monitors")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMonitors() throws ApiException {
@@ -144,6 +144,7 @@ public final class ShowMonitors extends Base {
 	}
 
 	@PUT
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/monitors/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response raiseMonitor(@PathParam("monitorName") String monitorName, @QueryParam("action") String action) throws ApiException {
@@ -178,6 +179,7 @@ public final class ShowMonitors extends Base {
 	}
 
 	@DELETE
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/monitors/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteMonitor(@PathParam("monitorName") String monitorName) throws ApiException {
@@ -201,6 +203,7 @@ public final class ShowMonitors extends Base {
 
 	@SuppressWarnings("unchecked")
 	@POST
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/monitors")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)

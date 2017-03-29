@@ -58,7 +58,7 @@ public final class ShowAdapterStatistics extends Base {
 	private DecimalFormat percentageFormat=new DecimalFormat(ItemList.PRINT_FORMAT_PERC);
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{adapterName}/statistics")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSchedules(@PathParam("adapterName") String adapterName) throws ApiException {

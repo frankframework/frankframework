@@ -72,7 +72,7 @@ public final class TestPipeline extends TimeoutGuardPipe {
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
 	@POST
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/test-pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)

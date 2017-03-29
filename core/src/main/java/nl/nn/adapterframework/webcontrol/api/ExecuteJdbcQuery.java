@@ -53,7 +53,7 @@ public final class ExecuteJdbcQuery extends Base {
 	public static final String DB2XML_XSLT="xml/xsl/dbxml2csv.xslt";
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getJdbcInfo() throws ApiException {
@@ -75,7 +75,7 @@ public final class ExecuteJdbcQuery extends Base {
 	}
 
 	@POST
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"IbisTester"})
 	@Path("/jdbc/query")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)

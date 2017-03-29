@@ -90,7 +90,7 @@ public final class ShowConfigurationStatus extends Base {
 	private boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
 	
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapters() throws ApiException {
@@ -115,7 +115,7 @@ public final class ShowConfigurationStatus extends Base {
 	}
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapter(@PathParam("name") String name) throws ApiException {
@@ -152,7 +152,7 @@ public final class ShowConfigurationStatus extends Base {
 	//Normally you don't use the PUT method on a collection...
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@PUT
-	@RolesAllowed({"ObserverAccess", "IbisTester", "AdminAccess"})
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -197,7 +197,7 @@ public final class ShowConfigurationStatus extends Base {
 	}
 
 	@PUT
-	@RolesAllowed({"ObserverAccess", "IbisTester", "AdminAccess"})
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{adapterName}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -231,7 +231,7 @@ public final class ShowConfigurationStatus extends Base {
 	}
 	
 	@PUT
-	@RolesAllowed({"ObserverAccess", "IbisTester", "AdminAccess"})
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{adapterName}/receivers/{receiverName}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -264,7 +264,7 @@ public final class ShowConfigurationStatus extends Base {
 	}
 	
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/pipes")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapterPipes(@PathParam("name") String adapterName) throws ApiException {
@@ -282,7 +282,7 @@ public final class ShowConfigurationStatus extends Base {
 	}
 	
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/messages")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapterMessages(@PathParam("name") String adapterName) throws ApiException {
@@ -300,7 +300,7 @@ public final class ShowConfigurationStatus extends Base {
 	}
 	
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/receivers")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapterReceivers(@PathParam("name") String adapterName) throws ApiException {

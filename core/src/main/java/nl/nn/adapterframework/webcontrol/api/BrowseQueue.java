@@ -53,7 +53,7 @@ public final class BrowseQueue extends Base {
 	@Context ServletConfig servletConfig;
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("jms")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getBrowseQueue() throws ApiException {
@@ -69,6 +69,7 @@ public final class BrowseQueue extends Base {
 	}
 
 	@POST
+	@RolesAllowed({"IbisTester"})
 	@Path("jms/browse")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)

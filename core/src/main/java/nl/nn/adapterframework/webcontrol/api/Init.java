@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
@@ -63,8 +64,8 @@ public class Init extends Base {
 	@Context ServletConfig servletConfig;
 
 	@GET
+	@PermitAll
 	@Path("/server/info")
-	@RolesAllowed({"ObserverAccess", "AdminAccess", "DataAdminAccess", "TesterAccess", "IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getServerInformation() throws ApiException {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
@@ -98,8 +99,8 @@ public class Init extends Base {
 	}
 
 	@GET
+	@PermitAll
 	@Path("/server/warnings")
-	@RolesAllowed({"ObserverAccess", "AdminAccess", "DataAdminAccess", "TesterAccess", "IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getServerConfiguration() throws ApiException {
 
@@ -183,15 +184,14 @@ public class Init extends Base {
 	@Context Dispatcher dispatcher;
 	@Context HttpServletRequest httpServletRequest;
 	@GET
+	@PermitAll
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAllResources(@QueryParam("allowedRoles") boolean displayAllowedRoles){
 		List<Object> resources = new ArrayList<Object>();
 
 		ResourceMethodRegistry registry = (ResourceMethodRegistry) dispatcher.getRegistry();
-		String requestPath = httpServletRequest.getRequestURI();
-		if(requestPath.endsWith("/"))
-			requestPath = requestPath.substring(0, -1);
+		StringBuffer requestPath = httpServletRequest.getRequestURL();
 
 		for (Map.Entry<String, List<ResourceInvoker>> entry : registry.getBounded().entrySet()) {
 			for (ResourceInvoker invoker : entry.getValue()) {
@@ -208,17 +208,17 @@ public class Init extends Base {
 				Map<String, Object> resource = new HashMap<String, Object>(3);
 
 				if(method.isAnnotationPresent(GET.class))
-					resource.put("method", "GET");
+					resource.put("type", "GET");
 				else if(method.isAnnotationPresent(POST.class))
-					resource.put("method", "POST");
+					resource.put("type", "POST");
 				else if(method.isAnnotationPresent(PUT.class))
-					resource.put("method", "PUT");
+					resource.put("type", "PUT");
 				else if(method.isAnnotationPresent(DELETE.class))
-					resource.put("method", "DELETE");
+					resource.put("type", "DELETE");
 
 				Path path = method.getAnnotation(Path.class);
 				if(path != null) {
-					resource.put("path", requestPath + path.value());
+					resource.put("href", requestPath + path.value());
 				}
 
 				RolesAllowed rolesAllowed = method.getAnnotation(RolesAllowed.class);
@@ -229,7 +229,9 @@ public class Init extends Base {
 				resources.add(resource);
 			}
 		}
+		Map<String, Object> ret = new HashMap<String, Object>(3);
+		ret.put("links", resources);
 
-		return Response.status(Response.Status.CREATED).entity(resources).build();
+		return Response.status(Response.Status.CREATED).entity(ret).build();
 	}
 }

@@ -54,7 +54,7 @@ public final class TestServiceListener extends Base {
 	@Context ServletConfig servletConfig;
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/test-servicelistener")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getServiceListeners() throws ApiException {
@@ -79,7 +79,7 @@ public final class TestServiceListener extends Base {
 	}
 
 	@POST
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/test-servicelistener")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)

@@ -39,7 +39,7 @@ public final class ShowConfiguration extends Base {
 	@Context ServletConfig servletConfig;
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getConfiguration(@QueryParam("loadedConfiguration") boolean loadedConfiguration) throws ApiException {
@@ -59,7 +59,7 @@ public final class ShowConfiguration extends Base {
 	}
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getConfigurationByName(@PathParam("configuration") String configurationName, @QueryParam("loadedConfiguration") boolean loadedConfiguration) throws ApiException {

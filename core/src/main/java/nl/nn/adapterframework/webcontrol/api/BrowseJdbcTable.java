@@ -57,7 +57,7 @@ public final class BrowseJdbcTable extends Base {
 	private Logger log = LogUtil.getLogger(this);
 
 	@POST
-	@RolesAllowed({"ObserverAccess", "IbisTester"})
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc/browse")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
