@@ -437,7 +437,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 					switch (count) {
 						case 1:
 							if (str.equals("P2P")|| (StringUtils.isNotEmpty(p2pAlias) && str.equalsIgnoreCase(p2pAlias))) {
-			        			p2p = true;
+								p2p = true;
 							} else {
 								esbDestinationWithoutServiceContext = isEsbDestinationWithoutServiceContext(destination);
 							}
