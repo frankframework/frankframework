@@ -67,7 +67,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
  * </table>
- * See {@link DB2XMLWriter (String) DB2XMLWriter} for Resultset
+ * See {@link nl.nn.adapterframework.util.DB2XMLWriter DB2XMLWriter} for Resultset
+ * {@link #setMaxRows(int) maxRows}
  * </p>
  * 
  * @author  Gerrit van Brakel
