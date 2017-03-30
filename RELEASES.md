@@ -29,6 +29,7 @@ Upcoming
 - Add attributes extractFirstStringPart and multipartXmlSessionKey to StreamPipe (to support multipart) 
 - Fix splitting messagingLayer made configurable in EsbSoapWrapper
 - Add commons-validator dependency for Jboss servers
+- Fix fieldnames in query result are now automatically capitalized
 
 7.0-B1
 ---

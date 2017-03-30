@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
  * <code><pre>
  * &lt;result&gt;
 	&lt;fielddefinition&gt;
-		&lt;field name="fieldname"
+		&lt;field name="FIELDNAME"
 		          type="columnType" 
 		          columnDisplaySize=""
 		          precision=""
@@ -43,14 +43,15 @@ import org.apache.log4j.Logger;
 	&lt;/fielddefinition&gt;
 	&lt;rowset&gt;
 		&lt;row number="1"&gt;
-			&lt;field name="fieldname"&gt;value&lt;/field&gt;
-			&lt;field name="fieldname" null="true" &gt;&lt;/field&gt;
-			&lt;field name="fieldname"&gt;value&lt;/field&gt;
-			&lt;field name="fieldname"&gt;value&lt;/field&gt;
+			&lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
+			&lt;field name="FIELDNAME" null="true" &gt;&lt;/field&gt;
+			&lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
+			&lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
 		&lt;/row&gt;
 	&lt;/rowset&gt;
 &lt;/result&gt;
 </pre></code>
+ * Note: that the fieldname and columntype are always capital case!
  *
  * @author Johan Verrips
  **/
@@ -93,7 +94,6 @@ public class DB2XMLWriter {
 		}
      	return ("Unknown");
     }
-       
 
    /**
     * Retrieve the Resultset as a well-formed XML string
@@ -136,7 +136,7 @@ public class DB2XMLWriter {
 				for (int j = 1; j <= nfields; j++) {
 					XmlBuilder field = new XmlBuilder("field");
 	
-					field.addAttribute("name", "" + rsmeta.getColumnName(j));
+					field.addAttribute("name", "" + rsmeta.getColumnName(j).toUpperCase());
 	
 					//Not every JDBC implementation implements these attributes!
 					try {
@@ -167,7 +167,7 @@ public class DB2XMLWriter {
 						log.debug("Could not determine isCurrency",e);
 					}
 					try {
-						field.addAttribute("columnTypeName", "" + rsmeta.getColumnTypeName(j));
+						field.addAttribute("columnTypeName", "" + rsmeta.getColumnTypeName(j).toUpperCase());
 					} catch (SQLException e) {
 						log.debug("Could not determine columnTypeName",e);
 					}
@@ -206,7 +206,7 @@ public class DB2XMLWriter {
 		for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
 			XmlBuilder resultField = new XmlBuilder("field");
 	
-			resultField.addAttribute("name", "" + rsmeta.getColumnName(i));
+			resultField.addAttribute("name", "" + rsmeta.getColumnName(i).toUpperCase());
 	
 			try {
 				String value = JdbcUtil.getValue(rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
