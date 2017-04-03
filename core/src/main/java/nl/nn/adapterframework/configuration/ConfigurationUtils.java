@@ -21,6 +21,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Hashtable;
+import java.util.Map;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -48,6 +50,7 @@ public class ConfigurationUtils {
 	protected static Logger log = LogUtil.getLogger(ConfigurationUtils.class);
 
 	private static final String CONFIGURATION_STUB4TESTTOOL_KEY = "stub4testtool.configuration";
+	private static final String VALIDATORS_DISABLED_KEY = "validators.disabled";
 
 	private static String stub4testtool_xslt = "/xml/xsl/stub4testtool.xsl";
 	private static String active_xslt = "/xml/xsl/active.xsl";
@@ -81,12 +84,15 @@ public class ConfigurationUtils {
 			throw new ConfigurationException("cannot find resource [" + stub4testtool_xslt + "]");
 		}
 		try {
-			Transformer active_transformer = XmlUtils.createTransformer(stub4testtool_xsltSource);
+			Transformer stub_transformer = XmlUtils.createTransformer(stub4testtool_xsltSource);
 			// Use namespaceAware=true, otherwise for some reason the
 			// transformation isn't working with a SAXSource, in system out it
 			// generates:
 			// jar:file: ... .jar!/xml/xsl/stub4testtool.xsl; Line #210; Column #13; java.lang.NullPointerException
-			return XmlUtils.transformXml(active_transformer, originalConfig, true);
+			Map parameters = new Hashtable();
+			parameters.put("disableValidators", AppConstants.getInstance().getBoolean(VALIDATORS_DISABLED_KEY, false));
+			XmlUtils.setTransformerParameters(stub_transformer, parameters);
+			return XmlUtils.transformXml(stub_transformer, originalConfig, true);
 		} catch (IOException e) {
 			throw new ConfigurationException("cannot retrieve [" + stub4testtool_xslt + "]", e);
 		} catch (TransformerConfigurationException tce) {

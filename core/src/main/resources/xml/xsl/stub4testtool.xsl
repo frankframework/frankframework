@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 	<xsl:output method="xml" indent="yes" />
+	<xsl:param name="disableValidators"/>
 	<!--
 		This XSLT adjusts the IBIS configuration as follows:
 		- disable all receiver elements, except those with childs JdbcQueryListener, DirectoryListener, JavaListener, WebServiceListener and RestListener
@@ -14,6 +15,7 @@
 		- add the attribute useFixedValues with value true to all pipe, inputWrapper and outputWrapper elements SoapWrapperPipe
 		- stub the pipe element GetPrincipalPipe by a pipe element FixedResult with attribute returnString set to tst9
 		- stub the pipe element IsUserInRolePipe by a pipe element EchoPipe
+		- stub the pipe element UUIDGeneratorPipe by a pipe element FixedResult with attribute returnString set to 0a4544b6-37489ec0_15ad0f006ae_-7ff3
 		- stub the pipe element FtpFileRetrieverPipe, LdapFindMemberPipe and SendTibcoMessage by a pipe element GenericMessageSendingPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
 		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements GenericMessageSendingPipe and ForEachChildElementPipe
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Request/Action' to all pipe and inputWrapper elements SoapWrapperPipe with attribute direction=wrap 
@@ -65,7 +67,7 @@
 							<xsl:attribute name="throwException">false</xsl:attribute>
 						</xsl:if>
 					</xsl:element>
-					<xsl:for-each select="parent::*[name()='adapter']/receiver/errorStorage[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage']">
+					<xsl:for-each select="parent::*[name()='adapter']/receiver/errorStorage[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']">
 						<xsl:if test="position()=1">
 							<xsl:copy-of select="." />
 						</xsl:if>
@@ -75,7 +77,7 @@
 							<xsl:copy-of select="." />
 						</xsl:if>
 					</xsl:for-each>
-					<xsl:for-each select="parent::*[name()='adapter']/receiver/messageLog[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage']">
+					<xsl:for-each select="parent::*[name()='adapter']/receiver/messageLog[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']">
 						<xsl:if test="position()=1">
 							<xsl:copy-of select="." />
 						</xsl:if>
@@ -144,6 +146,9 @@
 								<xsl:call-template name="copy" />
 							</xsl:when>
 							<xsl:when test="@className='nl.nn.adapterframework.jdbc.MessageStoreSender'">
+								<xsl:call-template name="copy" />
+							</xsl:when>
+							<xsl:when test="@className='nl.nn.adapterframework.senders.ReloadSender'">
 								<xsl:call-template name="copy" />
 							</xsl:when>
 							<xsl:otherwise>
@@ -256,6 +261,14 @@
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 				</xsl:element>
 			</xsl:when>
+			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.pipes.UUIDGeneratorPipe'">
+				<xsl:element name="pipe">
+					<xsl:apply-templates select="@*" />
+					<xsl:attribute name="className">nl.nn.adapterframework.pipes.FixedResult</xsl:attribute>
+					<xsl:attribute name="returnString">0a4544b6-37489ec0_15ad0f006ae_-7ff3</xsl:attribute>
+					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+				</xsl:element>
+			</xsl:when>
 			<xsl:when test="name()='pipe' and (@className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe' or @className='nl.nn.adapterframework.extensions.tibco.SendTibcoMessage' or @className='nl.nn.adapterframework.ldap.LdapFindMemberPipe')">
 				<xsl:element name="pipe">
 					<xsl:attribute name="name">
@@ -290,7 +303,10 @@
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 				</xsl:element>
 			</xsl:when>
-			<xsl:when test="(name()='errorStorage' or name()='messageLog') and parent::*[name()='pipe'] and (@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage')=false()">
+			<xsl:when test="(name()='errorStorage' or name()='messageLog') and parent::*[name()='pipe'] and (@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage')=false() and (@className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage')=false()">
+				<xsl:call-template name="disable" />
+			</xsl:when>
+			<xsl:when test="$disableValidators='true' and (name()='inputValidator' or name()='outputValidator')">
 				<xsl:call-template name="disable" />
 			</xsl:when>
 			<xsl:otherwise>

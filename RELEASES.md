@@ -30,6 +30,7 @@ Upcoming
 - Fix splitting messagingLayer made configurable in EsbSoapWrapper
 - Add commons-validator dependency for Jboss servers
 - Fix fieldnames in query result are now automatically capitalized
+- Add possibility to disable validators in stubbed mode
 
 7.0-B1
 ---
