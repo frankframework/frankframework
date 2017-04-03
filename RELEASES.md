@@ -31,6 +31,7 @@ Upcoming
 - Add commons-validator dependency for Jboss servers
 - Fix fieldnames in query result are now automatically capitalized
 - Add possibility to disable validators in stubbed mode
+- Larva: add silent mode
 
 7.0-B1
 ---

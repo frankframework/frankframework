@@ -103,8 +103,13 @@ public class TestTool {
 	// dirty solution by Marco de Reus:
 	private static String zeefVijlNeem = "";
 	private static String windiffCommand = "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
-
+	private static Writer silentOut = null;
+	
 	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
+		runScenarios(application, request, out, false);
+	}
+		
+	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, boolean silent) {
 		String logLevel = "wrong pipeline messages";
 		String autoScroll = "true";
 		
@@ -117,16 +122,21 @@ public class TestTool {
 			autoScroll = "false";
 		}
 
-		Map writers = new HashMap();
-		writers.put("out", out);
-		writers.put("htmlbuffer", new StringWriter());
-		writers.put("logbuffer", new StringWriter());
-		writers.put("loglevel", logLevel);
-		writers.put("autoscroll", autoScroll);
-		writers.put("usehtmlbuffer", "false");
-		writers.put("uselogbuffer", "true");
-		writers.put("messagecounter", new Integer(0));
-		writers.put("scenariocounter", new Integer(1));
+		Map writers = null;
+		if (!silent) {
+			writers = new HashMap();
+			writers.put("out", out);
+			writers.put("htmlbuffer", new StringWriter());
+			writers.put("logbuffer", new StringWriter());
+			writers.put("loglevel", logLevel);
+			writers.put("autoscroll", autoScroll);
+			writers.put("usehtmlbuffer", "false");
+			writers.put("uselogbuffer", "true");
+			writers.put("messagecounter", new Integer(0));
+			writers.put("scenariocounter", new Integer(1));
+		} else {
+			silentOut = out;
+		}
 
 		TestTool.debugMessage("Start logging to logbuffer until form is written", writers);
 		debugMessage("Get ibis context", writers);
@@ -171,7 +181,9 @@ public class TestTool {
 			debugMessage("Write html form", writers);
 			printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
 			debugMessage("Stop logging to logbuffer", writers);
-			writers.put("uselogbuffer", "stop");
+			if (writers!=null) {
+				writers.put("uselogbuffer", "stop");
+			}
 			debugMessage("Start debugging to out", writers);
 			debugMessage("Execute scenario(s) if execute parameter present and scenarios root directory did not change", writers);
 			if (paramExecute != null) {
@@ -215,10 +227,12 @@ public class TestTool {
 						String longName = scenarioFile.getAbsolutePath();
 						String shortName = longName.substring(currentScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
 	
-						if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") < LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
-							writeHtml("<br/>", writers, false);
-							writeHtml("<br/>", writers, false);
-							writeHtml("<div class='scenario'>", writers, false);
+						if (writers!=null) {
+							if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") < LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
+								writeHtml("<br/>", writers, false);
+								writeHtml("<br/>", writers, false);
+								writeHtml("<div class='scenario'>", writers, false);
+							}
 						}
 						debugMessage("Read property file " + scenarioFile.getName(), writers);
 						Properties properties = readProperties(appConstants, scenarioFile, writers);
@@ -275,7 +289,13 @@ public class TestTool {
 						}
 	
 						if (scenarioPassed) {
-							scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed", writers);						
+							scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed", writers);
+							if (silent) {
+								try {
+									out.write("[***PASSED***]");
+								} catch (IOException e) {
+								}
+							}
 							scenariosPassed++;
 						} else {
 							scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed", writers);
@@ -290,9 +310,11 @@ public class TestTool {
 					if (scenariosTotal == 0) {
 						scenariosTotalMessage("No scenarios found", writers);
 					} else {
-						if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
-							writeHtml("<br/>", writers, false);
-							writeHtml("<br/>", writers, false);
+						if (writers!=null) {
+							if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
+								writeHtml("<br/>", writers, false);
+								writeHtml("<br/>", writers, false);
+							}
 						}
 						debugMessage("Print statistics information", writers);
 						if (scenariosPassed == scenariosTotal) {
@@ -326,12 +348,16 @@ public class TestTool {
 						}
 					}
 					debugMessage("Start logging to htmlbuffer until form is written", writers);
-					writers.put("usehtmlbuffer", "start");
+					if (writers!=null) {
+						writers.put("usehtmlbuffer", "start");
+					}
 					writeHtml("<br/>", writers, false);
 					writeHtml("<br/>", writers, false);
 					printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
 					debugMessage("Stop logging to htmlbuffer", writers);
-					writers.put("usehtmlbuffer", "stop");
+					if (writers!=null) {
+						writers.put("usehtmlbuffer", "stop");
+					}
 					writeHtml("", writers, true);
 				}
 			}
@@ -339,192 +365,196 @@ public class TestTool {
 	}
 
 	public static void printHtmlForm(List scenariosRootDirectories, List scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List scenarioFiles, int waitBeforeCleanUp, String paramExecute, String autoScroll, Map writers) {
-		writeHtml("<form action=\"index.jsp\" method=\"post\">", writers, false);
+		if (writers!=null) {
+			writeHtml("<form action=\"index.jsp\" method=\"post\">", writers, false);
 
-		writeHtml("<table>", writers, false);
-		writeHtml("<tr>", writers, false);
-		writeHtml("<td>Scenario(s)</td>", writers, false);
-		writeHtml("</tr>", writers, false);
-		writeHtml("<tr>", writers, false);
-		writeHtml("<td>", writers, false);
-		writeHtml("<select name=\"execute\">", writers, false);
-		debugMessage("Fill execute select box.", writers);
-		Set addedDirectories = new HashSet();
-		Iterator scenarioFilesIterator = scenarioFiles.iterator();
-		while (scenarioFilesIterator.hasNext()) {
-			File scenarioFile = (File)scenarioFilesIterator.next();
-			String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
-			Properties properties = readProperties(appConstants, scenarioFile, writers);
-			debugMessage("Add parent directories of '" + scenarioDirectory + "'", writers);
-			int i = -1;
-			String scenarioDirectoryCanonicalPath;
-			String scenariosRootDirectoryCanonicalPath;
-			try {
-				scenarioDirectoryCanonicalPath = new File(scenarioDirectory).getCanonicalPath();
-				scenariosRootDirectoryCanonicalPath = new File(scenariosRootDirectory).getCanonicalPath();
-			} catch(IOException e) {
-				scenarioDirectoryCanonicalPath = scenarioDirectory;
-				scenariosRootDirectoryCanonicalPath = scenariosRootDirectory;
-				errorMessage("Could not get canonical path: " + e.getMessage(), e, writers);
-			}
-			if (scenarioDirectoryCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
-				i = scenariosRootDirectory.length() - 1;
-				while (i != -1) {
-					String longName = scenarioDirectory.substring(0, i + 1);
-					debugMessage("longName: '" + longName + "'", writers);
-					if (!addedDirectories.contains(longName)) {
-						String shortName = scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1);
-						String option = "<option value=\"" + XmlUtils.encodeChars(longName) + "\"";
-						debugMessage("paramExecute: '" + paramExecute + "'", writers);
-						if (paramExecute != null && paramExecute.equals(longName)) {
-							option = option + " selected";
-						}
-						option = option + ">" + XmlUtils.encodeChars(shortName) + "</option>";
-						writeHtml(option, writers, false);
-						addedDirectories.add(longName);
-					}
-					i = scenarioDirectory.indexOf(File.separator, i + 1);
+			writeHtml("<table>", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>Scenario(s)</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>", writers, false);
+			writeHtml("<select name=\"execute\">", writers, false);
+			debugMessage("Fill execute select box.", writers);
+			Set addedDirectories = new HashSet();
+			Iterator scenarioFilesIterator = scenarioFiles.iterator();
+			while (scenarioFilesIterator.hasNext()) {
+				File scenarioFile = (File)scenarioFilesIterator.next();
+				String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
+				Properties properties = readProperties(appConstants, scenarioFile, writers);
+				debugMessage("Add parent directories of '" + scenarioDirectory + "'", writers);
+				int i = -1;
+				String scenarioDirectoryCanonicalPath;
+				String scenariosRootDirectoryCanonicalPath;
+				try {
+					scenarioDirectoryCanonicalPath = new File(scenarioDirectory).getCanonicalPath();
+					scenariosRootDirectoryCanonicalPath = new File(scenariosRootDirectory).getCanonicalPath();
+				} catch(IOException e) {
+					scenarioDirectoryCanonicalPath = scenarioDirectory;
+					scenariosRootDirectoryCanonicalPath = scenariosRootDirectory;
+					errorMessage("Could not get canonical path: " + e.getMessage(), e, writers);
 				}
-				String longName = scenarioFile.getAbsolutePath();
-				String shortName = longName.substring(scenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
-				debugMessage("shortName: '" + shortName + "'", writers);
-				String option = "<option value=\"" + XmlUtils.encodeChars(longName) + "\"";
-				if (paramExecute != null && paramExecute.equals(longName)) {
+				if (scenarioDirectoryCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
+					i = scenariosRootDirectory.length() - 1;
+					while (i != -1) {
+						String longName = scenarioDirectory.substring(0, i + 1);
+						debugMessage("longName: '" + longName + "'", writers);
+						if (!addedDirectories.contains(longName)) {
+							String shortName = scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1);
+							String option = "<option value=\"" + XmlUtils.encodeChars(longName) + "\"";
+							debugMessage("paramExecute: '" + paramExecute + "'", writers);
+							if (paramExecute != null && paramExecute.equals(longName)) {
+								option = option + " selected";
+							}
+							option = option + ">" + XmlUtils.encodeChars(shortName) + "</option>";
+							writeHtml(option, writers, false);
+							addedDirectories.add(longName);
+						}
+						i = scenarioDirectory.indexOf(File.separator, i + 1);
+					}
+					String longName = scenarioFile.getAbsolutePath();
+					String shortName = longName.substring(scenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
+					debugMessage("shortName: '" + shortName + "'", writers);
+					String option = "<option value=\"" + XmlUtils.encodeChars(longName) + "\"";
+					if (paramExecute != null && paramExecute.equals(longName)) {
+						option = option + " selected";
+					}
+					option = option + ">" + XmlUtils.encodeChars(shortName + " - " + properties.getProperty("scenario.description")) + "</option>";
+					writeHtml(option, writers, false);
+				}
+			}
+			writeHtml("</select>", writers, false);
+			writeHtml("</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("</table>", writers, false);
+
+			writeHtml("<table align=\"left\">", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>Scenarios root directory</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>", writers, false);
+			writeHtml("<select name=\"scenariosrootdirectory\">", writers, false);
+			Iterator scenariosRootDirectoriesIterator = scenariosRootDirectories.iterator();
+			Iterator scenariosRootDescriptionsIterator = scenariosRootDescriptions.iterator();
+			while (scenariosRootDirectoriesIterator.hasNext()) {
+				String directory = (String)scenariosRootDirectoriesIterator.next();
+				String description = (String)scenariosRootDescriptionsIterator.next();
+				String option = "<option value=\"" + XmlUtils.encodeChars(directory) + "\"";
+				if (scenariosRootDirectory.equals(directory)) {
 					option = option + " selected";
 				}
-				option = option + ">" + XmlUtils.encodeChars(shortName + " - " + properties.getProperty("scenario.description")) + "</option>";
+				option = option + ">" + XmlUtils.encodeChars(description) + "</option>";
 				writeHtml(option, writers, false);
 			}
-		}
-		writeHtml("</select>", writers, false);
-		writeHtml("</td>", writers, false);
-		writeHtml("</tr>", writers, false);
-		writeHtml("</table>", writers, false);
+			writeHtml("</select>", writers, false);
+			writeHtml("</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("</table>", writers, false);
 
-		writeHtml("<table align=\"left\">", writers, false);
-		writeHtml("<tr>", writers, false);
-		writeHtml("<td>Scenarios root directory</td>", writers, false);
-		writeHtml("</tr>", writers, false);
-		writeHtml("<tr>", writers, false);
-		writeHtml("<td>", writers, false);
-		writeHtml("<select name=\"scenariosrootdirectory\">", writers, false);
-		Iterator scenariosRootDirectoriesIterator = scenariosRootDirectories.iterator();
-		Iterator scenariosRootDescriptionsIterator = scenariosRootDescriptions.iterator();
-		while (scenariosRootDirectoriesIterator.hasNext()) {
-			String directory = (String)scenariosRootDirectoriesIterator.next();
-			String description = (String)scenariosRootDescriptionsIterator.next();
-			String option = "<option value=\"" + XmlUtils.encodeChars(directory) + "\"";
-			if (scenariosRootDirectory.equals(directory)) {
-				option = option + " selected";
+			// Use a span to make IE put table on next line with a smaller window width
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			writeHtml("<table align=\"left\">", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>Wait before clean up (ms)</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>", writers, false);
+			writeHtml("<input type=\"text\" name=\"waitbeforecleanup\" value=\"" + waitBeforeCleanUp + "\">", writers, false);
+			writeHtml("</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("</table>", writers, false);
+
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			writeHtml("<table align=\"left\">", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>Log level</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>", writers, false);
+			writeHtml("<select name=\"loglevel\">", writers, false);
+			StringTokenizer tokenizer = new StringTokenizer(LOG_LEVEL_ORDER, ",");
+			while (tokenizer.hasMoreTokens()) {
+				String level = tokenizer.nextToken().trim();
+				level = level.substring(1, level.length() - 1);
+				String option = "<option value=\"" + XmlUtils.encodeChars(level) + "\"";
+				if (((String)writers.get("loglevel")).equals(level)) {
+					option = option + " selected";
+				}
+				option = option + ">" + XmlUtils.encodeChars(level) + "</option>";
+				writeHtml(option, writers, false);
 			}
-			option = option + ">" + XmlUtils.encodeChars(description) + "</option>";
-			writeHtml(option, writers, false);
-		}
-		writeHtml("</select>", writers, false);
-		writeHtml("</td>", writers, false);
-		writeHtml("</tr>", writers, false);
-		writeHtml("</table>", writers, false);
+			writeHtml("</select>", writers, false);
+			writeHtml("</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("</table>", writers, false);
 
-		// Use a span to make IE put table on next line with a smaller window width
-		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-		writeHtml("<table align=\"left\">", writers, false);
-		writeHtml("<tr>", writers, false);
-		writeHtml("<td>Wait before clean up (ms)</td>", writers, false);
-		writeHtml("</tr>", writers, false);
-		writeHtml("<tr>", writers, false);
-		writeHtml("<td>", writers, false);
-		writeHtml("<input type=\"text\" name=\"waitbeforecleanup\" value=\"" + waitBeforeCleanUp + "\">", writers, false);
-		writeHtml("</td>", writers, false);
-		writeHtml("</tr>", writers, false);
-		writeHtml("</table>", writers, false);
-
-		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-		writeHtml("<table align=\"left\">", writers, false);
-		writeHtml("<tr>", writers, false);
-		writeHtml("<td>Log level</td>", writers, false);
-		writeHtml("</tr>", writers, false);
-		writeHtml("<tr>", writers, false);
-		writeHtml("<td>", writers, false);
-		writeHtml("<select name=\"loglevel\">", writers, false);
-		StringTokenizer tokenizer = new StringTokenizer(LOG_LEVEL_ORDER, ",");
-		while (tokenizer.hasMoreTokens()) {
-			String level = tokenizer.nextToken().trim();
-			level = level.substring(1, level.length() - 1);
-			String option = "<option value=\"" + XmlUtils.encodeChars(level) + "\"";
-			if (((String)writers.get("loglevel")).equals(level)) {
-				option = option + " selected";
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			writeHtml("<table align=\"left\">", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>Auto scroll</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>", writers, false);
+			writeHtml("<input type=\"checkbox\" name=\"autoscroll\" value=\"true\"", writers, false);
+			if (autoScroll.equals("true")) {
+				writeHtml(" checked", writers, false);
 			}
-			option = option + ">" + XmlUtils.encodeChars(level) + "</option>";
-			writeHtml(option, writers, false);
+			writeHtml(">", writers, false);
+			writeHtml("</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("</table>", writers, false);
+
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			writeHtml("<table align=\"left\">", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>&nbsp;</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td align=\"right\">", writers, false);
+			writeHtml("<input type=\"submit\" name=\"submit\" value=\"start\">", writers, false);
+			writeHtml("</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("</table>", writers, false);
+
+			writeHtml("</form>", writers, false);
+			writeHtml("<br clear=\"all\"/>", writers, false);
 		}
-		writeHtml("</select>", writers, false);
-		writeHtml("</td>", writers, false);
-		writeHtml("</tr>", writers, false);
-		writeHtml("</table>", writers, false);
-
-		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-		writeHtml("<table align=\"left\">", writers, false);
-		writeHtml("<tr>", writers, false);
-		writeHtml("<td>Auto scroll</td>", writers, false);
-		writeHtml("</tr>", writers, false);
-		writeHtml("<tr>", writers, false);
-		writeHtml("<td>", writers, false);
-		writeHtml("<input type=\"checkbox\" name=\"autoscroll\" value=\"true\"", writers, false);
-		if (autoScroll.equals("true")) {
-			writeHtml(" checked", writers, false);
-		}
-		writeHtml(">", writers, false);
-		writeHtml("</td>", writers, false);
-		writeHtml("</tr>", writers, false);
-		writeHtml("</table>", writers, false);
-
-		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-		writeHtml("<table align=\"left\">", writers, false);
-		writeHtml("<tr>", writers, false);
-		writeHtml("<td>&nbsp;</td>", writers, false);
-		writeHtml("</tr>", writers, false);
-		writeHtml("<tr>", writers, false);
-		writeHtml("<td align=\"right\">", writers, false);
-		writeHtml("<input type=\"submit\" name=\"submit\" value=\"start\">", writers, false);
-		writeHtml("</td>", writers, false);
-		writeHtml("</tr>", writers, false);
-		writeHtml("</table>", writers, false);
-
-		writeHtml("</form>", writers, false);
-		writeHtml("<br clear=\"all\"/>", writers, false);
 	}
 
 	public static void write(String html, String type, String method, Map writers, boolean scroll) {
-		String useBuffer = (String)writers.get("use" + type + "buffer");
-		if (useBuffer.equals("start")) {
-			useBuffer = "true";
-			writers.put("use" + type + "buffer", useBuffer);
-		} else if (useBuffer.equals("stop")) {
-			Writer out = (Writer)writers.get("out");
-			StringWriter buffer = (StringWriter)writers.get(type + "buffer");
-			try {
-				out.write(buffer.toString());
-			} catch(IOException e) {
-			}
-			useBuffer = "false";
-			writers.put("use" + type + "buffer", useBuffer);
-		}
-		Writer writer;
-		if (useBuffer.equals("true")) {
-			writer = (Writer)writers.get(type + "buffer");
-		} else {
-			writer = (Writer)writers.get("out");
-		}
-		if (method == null || LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") <= LOG_LEVEL_ORDER.indexOf("[" + method + "]")) {
-			try {
-				writer.write(html + "\n");
-				if (scroll && "true".equals(writers.get("autoscroll"))) {
-					writer.write("<script type=\"text/javascript\"><!--\n");
-					writer.write("scrollToBottom();\n");
-					writer.write("--></script>\n");
+		if (writers!=null) {
+			String useBuffer = (String)writers.get("use" + type + "buffer");
+			if (useBuffer.equals("start")) {
+				useBuffer = "true";
+				writers.put("use" + type + "buffer", useBuffer);
+			} else if (useBuffer.equals("stop")) {
+				Writer out = (Writer)writers.get("out");
+				StringWriter buffer = (StringWriter)writers.get(type + "buffer");
+				try {
+					out.write(buffer.toString());
+				} catch(IOException e) {
 				}
-				writer.flush();
-			} catch(IOException e) {
+				useBuffer = "false";
+				writers.put("use" + type + "buffer", useBuffer);
+			}
+			Writer writer;
+			if (useBuffer.equals("true")) {
+				writer = (Writer)writers.get(type + "buffer");
+			} else {
+				writer = (Writer)writers.get("out");
+			}
+			if (method == null || LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") <= LOG_LEVEL_ORDER.indexOf("[" + method + "]")) {
+				try {
+					writer.write(html + "\n");
+					if (scroll && "true".equals(writers.get("autoscroll"))) {
+						writer.write("<script type=\"text/javascript\"><!--\n");
+						writer.write("scrollToBottom();\n");
+						writer.write("--></script>\n");
+					}
+					writer.flush();
+				} catch(IOException e) {
+				}
 			}
 		}
 	}
@@ -544,159 +574,176 @@ public class TestTool {
 	}
 
 	public static void debugPipelineMessage(String stepDisplayName, String message, String pipelineMessage, Map writers) {
-		String method = "pipeline messages";
-		int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
-		messageCounter ++;
-		
-		writeLog("<div class='message container'>", method, writers, false);
-		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
-		writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
-		writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
-		writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
-		writeLog("</div>", method, writers, false);
-		
-		writers.put("messagecounter", new Integer(messageCounter));
+		if (writers!=null) {
+			String method = "pipeline messages";
+			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
+			messageCounter ++;
+			
+			writeLog("<div class='message container'>", method, writers, false);
+			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
+			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
+			writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
+			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
+			writeLog("</div>", method, writers, false);
+			
+			writers.put("messagecounter", new Integer(messageCounter));
+		}
 	}
 
 	public static void debugPipelineMessagePreparedForDiff(String stepDisplayName, String message, String pipelineMessage, Map writers) {
-		String method = "pipeline messages prepared for diff";
-		int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
-		messageCounter ++;
+		if (writers!=null) {
+			String method = "pipeline messages prepared for diff";
+			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
+			messageCounter ++;
 
-		writeLog("<div class='message container'>", method, writers, false);
-		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
-		writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
-		writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
-		writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
-		writeLog("</div>", method, writers, false);
+			writeLog("<div class='message container'>", method, writers, false);
+			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
+			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
+			writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
+			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
+			writeLog("</div>", method, writers, false);
 
-		writers.put("messagecounter", new Integer(messageCounter));
+			writers.put("messagecounter", new Integer(messageCounter));
+		}
 	}
 
 	public static void wrongPipelineMessage(String message, String pipelineMessage, Map writers) {
-		String method = "wrong pipeline messages";
-		int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
-		messageCounter ++;
-		
-		writeLog("<div class='message container'>", method, writers, false);
-		writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
-		writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
-		writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
-		writeLog("</div>", method, writers, false);
+		if (writers!=null) {
+			String method = "wrong pipeline messages";
+			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
+			messageCounter ++;
+			
+			writeLog("<div class='message container'>", method, writers, false);
+			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
+			writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
+			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
+			writeLog("</div>", method, writers, false);
 
-		writers.put("messagecounter", new Integer(messageCounter));
+			writers.put("messagecounter", new Integer(messageCounter));
+		}
 	}
 
 	public static void wrongPipelineMessage(String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected, Map writers) {
-		String method = "wrong pipeline messages";
-		int scenarioCounter = ((Integer)writers.get("scenariocounter")).intValue();
-		String formName = "scenario" + scenarioCounter + "Wpm";
-		String resultBoxId = formName + "ResultBox";
-		String expectedBoxId = formName + "ExpectedBox";
-		String diffBoxId = formName + "DiffBox";
+		if (writers!=null) {
+			String method = "wrong pipeline messages";
+			int scenarioCounter = ((Integer)writers.get("scenariocounter")).intValue();
+			String formName = "scenario" + scenarioCounter + "Wpm";
+			String resultBoxId = formName + "ResultBox";
+			String expectedBoxId = formName + "ExpectedBox";
+			String diffBoxId = formName + "DiffBox";
 
-		writeLog("<div class='error container'>", method, writers, false);
-		writeLog("<form name='"+formName+"' action='saveResultToFile.jsp' method='post' target='saveResultWindow' accept-charset='UTF-8'>", method, writers, false);
-		writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
-		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
-		
-		writeLog("<hr/>", method, writers, false);
+			writeLog("<div class='error container'>", method, writers, false);
+			writeLog("<form name='"+formName+"' action='saveResultToFile.jsp' method='post' target='saveResultWindow' accept-charset='UTF-8'>", method, writers, false);
+			writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
+			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
+			
+			writeLog("<hr/>", method, writers, false);
 
-		writeLog("<div class='resultContainer'>", method, writers, false);
-		writeLog(writeCommands(resultBoxId, true, "<a href='javascript:void(0);' class='" + formName + "|saveResults'>save</a>"), method, writers, false);
-		writeLog("<h5>Result (raw):</h5>", method, writers, false);
-		writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
-		writeLog("</div>", method, writers, false);
-
-		writeLog("<div class='expectedContainer'>", method, writers, false);
-		writeLog(writeCommands(expectedBoxId, true, null), method, writers, true);
-		writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' />", method, writers, false);
-		writeLog("<input type='hidden' name='cmd' />", method, writers, false);
-		writeLog("<h5>Expected (raw):</h5>", method, writers, false);
-		writeLog("<textarea name='expectedBox' id='"+expectedBoxId+"'>" + XmlUtils.encodeChars(pipelineMessageExpected) + "</textarea>", method, writers, false);
-		writeLog("</div>", method, writers, false);
-		
-		writeLog("<hr/>", method, writers, false);
-
-		writeLog("<div class='differenceContainer'>", method, writers, false);
-		String btn1 = "<a class=\"['"+resultBoxId+"','"+expectedBoxId+"']|indentCompare|"+diffBoxId+"\" href=\"javascript:void(0)\">compare</a>";
-		String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
-		writeLog(writeCommands(diffBoxId, false, btn1+btn2), method, writers, false);
-		writeLog("<h5>Differences:</h5>", method, writers, false);
-		writeLog("<pre id='"+diffBoxId+"' class='diffBox'></pre>", method, writers, false);
-		writeLog("</div>", method, writers, false);
-
-		String scenario_passed_failed = "scenario passed/failed";
-		if (LOG_LEVEL_ORDER.indexOf(
-				"[" + (String) writers.get("loglevel") + "]") == LOG_LEVEL_ORDER
-						.indexOf("[" + scenario_passed_failed + "]")) {
-			writeLog("<h5 hidden='true'>Difference description:</h5>",
-					scenario_passed_failed, writers, false);
-			writeLog(
-					"<p class='diffMessage' hidden='true'>"
-							+ XmlUtils.encodeChars(message) + "</p>",
-					scenario_passed_failed, writers, true);
-		} else {
-			writeLog("<h5>Difference description:</h5>", method, writers,
-					false);
-			writeLog("<p class='diffMessage'>" + XmlUtils.encodeChars(message)
-					+ "</p>", method, writers, true);
-			writeLog("</form>", method, writers, false);
+			writeLog("<div class='resultContainer'>", method, writers, false);
+			writeLog(writeCommands(resultBoxId, true, "<a href='javascript:void(0);' class='" + formName + "|saveResults'>save</a>"), method, writers, false);
+			writeLog("<h5>Result (raw):</h5>", method, writers, false);
+			writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
+
+			writeLog("<div class='expectedContainer'>", method, writers, false);
+			writeLog(writeCommands(expectedBoxId, true, null), method, writers, true);
+			writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' />", method, writers, false);
+			writeLog("<input type='hidden' name='cmd' />", method, writers, false);
+			writeLog("<h5>Expected (raw):</h5>", method, writers, false);
+			writeLog("<textarea name='expectedBox' id='"+expectedBoxId+"'>" + XmlUtils.encodeChars(pipelineMessageExpected) + "</textarea>", method, writers, false);
+			writeLog("</div>", method, writers, false);
+			
+			writeLog("<hr/>", method, writers, false);
+
+			writeLog("<div class='differenceContainer'>", method, writers, false);
+			String btn1 = "<a class=\"['"+resultBoxId+"','"+expectedBoxId+"']|indentCompare|"+diffBoxId+"\" href=\"javascript:void(0)\">compare</a>";
+			String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
+			writeLog(writeCommands(diffBoxId, false, btn1+btn2), method, writers, false);
+			writeLog("<h5>Differences:</h5>", method, writers, false);
+			writeLog("<pre id='"+diffBoxId+"' class='diffBox'></pre>", method, writers, false);
+			writeLog("</div>", method, writers, false);
+
+			String scenario_passed_failed = "scenario passed/failed";
+			if (LOG_LEVEL_ORDER.indexOf(
+					"[" + (String) writers.get("loglevel") + "]") == LOG_LEVEL_ORDER
+							.indexOf("[" + scenario_passed_failed + "]")) {
+				writeLog("<h5 hidden='true'>Difference description:</h5>",
+						scenario_passed_failed, writers, false);
+				writeLog(
+						"<p class='diffMessage' hidden='true'>"
+								+ XmlUtils.encodeChars(message) + "</p>",
+						scenario_passed_failed, writers, true);
+			} else {
+				writeLog("<h5>Difference description:</h5>", method, writers,
+						false);
+				writeLog("<p class='diffMessage'>" + XmlUtils.encodeChars(message)
+						+ "</p>", method, writers, true);
+				writeLog("</form>", method, writers, false);
+				writeLog("</div>", method, writers, false);
+			}
+			
+			scenarioCounter++;
+			writers.put("scenariocounter", new Integer(scenarioCounter));
+		} else {
+			if (silentOut!=null) {
+				try {
+					silentOut.write(message);
+				} catch (IOException e) {
+				}
+			}
 		}
-		
-		scenarioCounter++;
-		writers.put("scenariocounter", new Integer(scenarioCounter));
 	}
 
 	public static void wrongPipelineMessagePreparedForDiff(String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff, Map writers) {
-		String method = "wrong pipeline messages prepared for diff";
-		int scenarioCounter = ((Integer)writers.get("scenariocounter")).intValue();
-		int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
-		String formName = "scenario" + scenarioCounter + "Wpmpfd";
-		String resultBoxId = formName + "ResultBox";
-		String expectedBoxId = formName + "ExpectedBox";
-		String diffBoxId = formName + "DiffBox";
+		if (writers!=null) {
+			String method = "wrong pipeline messages prepared for diff";
+			int scenarioCounter = ((Integer)writers.get("scenariocounter")).intValue();
+			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
+			String formName = "scenario" + scenarioCounter + "Wpmpfd";
+			String resultBoxId = formName + "ResultBox";
+			String expectedBoxId = formName + "ExpectedBox";
+			String diffBoxId = formName + "DiffBox";
 
-		writeLog("<div class='error container'>", method, writers, false);
-		writeLog("<form name='"+formName+"' action='saveResultToFile.jsp' method='post' target='saveResultWindow' accept-charset='UTF-8'>", method, writers, false);
-		writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
-		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
-		messageCounter ++;
-		
-		writeLog("<hr/>", method, writers, false);
-		
-		writeLog("<div class='resultContainer'>", method, writers, false);
-		writeLog(writeCommands(resultBoxId, true, null), method, writers, false);
-		writeLog("<h5>Result (prepared for diff):</h5>", method, writers, false);
-		writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlUtils.encodeChars(pipelineMessagePreparedForDiff) + "</textarea>", method, writers, false);
-		writeLog("</div>", method, writers, false);		
-		
-		messageCounter++;
-		writeLog("<div class='expectedContainer'>", method, writers, false);
-		writeLog(writeCommands(expectedBoxId, true, null), method, writers, false);
-		writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' />", method, writers, false);
-		writeLog("<input type='hidden' name='cmd' />", method, writers, false);
-		writeLog("<h5>Expected (prepared for diff):</h5>", method, writers, false);
-		writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlUtils.encodeChars(pipelineMessageExpectedPreparedForDiff) + "</textarea>", method, writers, false);
-		writeLog("</div>", method, writers, false);
-		
-		writeLog("<hr/>", method, writers, false);
+			writeLog("<div class='error container'>", method, writers, false);
+			writeLog("<form name='"+formName+"' action='saveResultToFile.jsp' method='post' target='saveResultWindow' accept-charset='UTF-8'>", method, writers, false);
+			writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
+			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
+			messageCounter ++;
+			
+			writeLog("<hr/>", method, writers, false);
+			
+			writeLog("<div class='resultContainer'>", method, writers, false);
+			writeLog(writeCommands(resultBoxId, true, null), method, writers, false);
+			writeLog("<h5>Result (prepared for diff):</h5>", method, writers, false);
+			writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlUtils.encodeChars(pipelineMessagePreparedForDiff) + "</textarea>", method, writers, false);
+			writeLog("</div>", method, writers, false);		
+			
+			messageCounter++;
+			writeLog("<div class='expectedContainer'>", method, writers, false);
+			writeLog(writeCommands(expectedBoxId, true, null), method, writers, false);
+			writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' />", method, writers, false);
+			writeLog("<input type='hidden' name='cmd' />", method, writers, false);
+			writeLog("<h5>Expected (prepared for diff):</h5>", method, writers, false);
+			writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlUtils.encodeChars(pipelineMessageExpectedPreparedForDiff) + "</textarea>", method, writers, false);
+			writeLog("</div>", method, writers, false);
+			
+			writeLog("<hr/>", method, writers, false);
 
-		messageCounter++;
-		writeLog("<div class='differenceContainer'>", method, writers, false);
+			messageCounter++;
+			writeLog("<div class='differenceContainer'>", method, writers, false);
 
-		String btn1 = "<a class=\"['"+resultBoxId+"','"+expectedBoxId+"']|indentCompare|"+diffBoxId+"\" href=\"javascript:void(0)\">compare</a>";
-		String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
-		writeLog(writeCommands(diffBoxId, false, btn1+btn2), method, writers, false);
-		writeLog("<h5>Differences:</h5>", method, writers, false);
-		writeLog("<pre id='"+diffBoxId+"' class='diffBox'></pre>", method, writers, false);
-		writeLog("</div>", method, writers, false);
-		
-		writeLog("</form>", method, writers, false);
-		writeLog("</div>", method, writers, false);
+			String btn1 = "<a class=\"['"+resultBoxId+"','"+expectedBoxId+"']|indentCompare|"+diffBoxId+"\" href=\"javascript:void(0)\">compare</a>";
+			String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
+			writeLog(writeCommands(diffBoxId, false, btn1+btn2), method, writers, false);
+			writeLog("<h5>Differences:</h5>", method, writers, false);
+			writeLog("<pre id='"+diffBoxId+"' class='diffBox'></pre>", method, writers, false);
+			writeLog("</div>", method, writers, false);
+			
+			writeLog("</form>", method, writers, false);
+			writeLog("</div>", method, writers, false);
 
-		writers.put("messagecounter", new Integer(messageCounter));
+			writers.put("messagecounter", new Integer(messageCounter));
+		}
 	}
 	
 	private static String writeCommands(String target, boolean textArea, String customCommand) {
@@ -756,26 +803,34 @@ public class TestTool {
 	public static void errorMessage(String message, Map writers) {
 		String method = "error";
 		writeLog("<h1 class='error'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+		if (silentOut!=null) {
+			try {
+				silentOut.write(message);
+			} catch (IOException e) {
+			}
+		}
 	}
 
 	public static void errorMessage(String message, Exception exception, Map writers) {
 		errorMessage(message, writers);
-		String method = "error";
-		Throwable throwable = exception;
-		while (throwable != null) {
-			StringWriter stringWriter = new StringWriter();
-			PrintWriter printWriter = new PrintWriter(stringWriter);
-			throwable.printStackTrace(printWriter);
-			printWriter.close();
-			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
-			messageCounter++;
-			writeLog("<div class='container'>", method, writers, false);
-			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
-			writeLog("<h5>Stack trace:</h5>", method, writers, false);
-			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(stringWriter.toString())) + "</textarea>", method, writers, false);
-			writeLog("</div>", method, writers, false);
-			writers.put("messagecounter", new Integer(messageCounter));
-			throwable = throwable.getCause();
+		if (writers!=null) {
+			String method = "error";
+			Throwable throwable = exception;
+			while (throwable != null) {
+				StringWriter stringWriter = new StringWriter();
+				PrintWriter printWriter = new PrintWriter(stringWriter);
+				throwable.printStackTrace(printWriter);
+				printWriter.close();
+				int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
+				messageCounter++;
+				writeLog("<div class='container'>", method, writers, false);
+				writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
+				writeLog("<h5>Stack trace:</h5>", method, writers, false);
+				writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(stringWriter.toString())) + "</textarea>", method, writers, false);
+				writeLog("</div>", method, writers, false);
+				writers.put("messagecounter", new Integer(messageCounter));
+				throwable = throwable.getCause();
+			}
 		}
 	}
 
@@ -3455,7 +3510,13 @@ public class TestTool {
 				Object value;
 				String type = properties.getProperty(property + ".param" + i + ".type");
 				if ("httpResponse".equals(type)) {
-					String outputFile = properties.getProperty(property + ".param" + i + ".outputfile");
+					String outputFile;
+					String filename = properties.getProperty(property + ".param" + i + ".filename");
+					if (filename != null) {
+						outputFile = properties.getProperty(property + ".param" + i + ".filename.absolutepath");
+					} else {
+						outputFile = properties.getProperty(property + ".param" + i + ".outputfile");
+					}
 					HttpServletResponseMock httpServletResponseMock = new HttpServletResponseMock();
 					httpServletResponseMock.setOutputFile(outputFile);
 					value = httpServletResponseMock;
