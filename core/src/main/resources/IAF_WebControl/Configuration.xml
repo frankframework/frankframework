@@ -5,6 +5,7 @@
 	<!ENTITY UploadConfig SYSTEM "ConfigurationUploadConfig.xml">
 	<!ENTITY ShowConfig SYSTEM "ConfigurationShowConfig.xml">
 	<!ENTITY ShowFlowDiagram SYSTEM "ConfigurationShowFlowDiagram.xml">
+	<!ENTITY ExecuteJdbcProperties SYSTEM "ConfigurationExecuteJdbcProperties.xml">
 ]>
 <configuration name="IAF_WebControl">
 	&Webservices;
@@ -13,4 +14,5 @@
 	&UploadConfig;
 	&ShowConfig;
 	&ShowFlowDiagram;
+	&ExecuteJdbcProperties;
 </configuration>

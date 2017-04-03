@@ -32,6 +32,7 @@ Upcoming
 - Fix fieldnames in query result are now automatically capitalized
 - Add possibility to disable validators in stubbed mode
 - Larva: add silent mode
+- Introduction of 'Jdbc Properties'
 
 7.0-B1
 ---

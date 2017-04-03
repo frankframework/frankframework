@@ -25,12 +25,12 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import nl.nn.adapterframework.configuration.IbisContext;
-
 import org.apache.commons.digester.substitution.VariableExpander;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+
+import nl.nn.adapterframework.configuration.IbisContext;
 /**
  * Singleton class that has the constant values for this application. <br/>
  * <p>When an instance is created, it tries to load the properties file specified
@@ -53,18 +53,27 @@ public final class AppConstants extends Properties implements Serializable{
 	private AppConstants() {
 		super();
 		load(null, null, propertiesFileName);
+		if (JdbcUtil.retrieveJdbcPropertiesFromDatabase()!=null) {
+			putAll(JdbcUtil.retrieveJdbcPropertiesFromDatabase());
+		}
 	}
 
 	private AppConstants(ClassLoader classLoader) {
 		super();
 		load(classLoader, null, propertiesFileName);
 		putAll(propertyPlaceholderConfigurerProperties);
+		if (JdbcUtil.retrieveJdbcPropertiesFromDatabase()!=null) {
+			putAll(JdbcUtil.retrieveJdbcPropertiesFromDatabase());
+		}
 	}
 
 	private AppConstants(String directory) {
 		super();
 		load(null, directory, propertiesFileName);
 		putAll(propertyPlaceholderConfigurerProperties);
+		if (JdbcUtil.retrieveJdbcPropertiesFromDatabase()!=null) {
+			putAll(JdbcUtil.retrieveJdbcPropertiesFromDatabase());
+		}
 	}
 
 	/**

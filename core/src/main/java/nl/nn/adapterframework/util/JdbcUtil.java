@@ -38,6 +38,7 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.List;
+import java.util.Properties;
 import java.util.zip.DataFormatException;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
@@ -48,8 +49,10 @@ import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.log4j.Logger;
@@ -64,6 +67,8 @@ public class JdbcUtil {
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 
 	private static final boolean useMetaDataForTableExists=false;
+	private static Properties jdbcProperties = null;
+	
 	/**
 	 * @return true if tableName exists in database in this connection
 	 */
@@ -869,6 +874,35 @@ public class JdbcUtil {
 		}
 	}
 
+	public static Properties executePropertiesQuery(Connection connection, String query) throws JdbcException {
+		PreparedStatement stmt = null;
+		Properties props = new Properties();
+		
+		try {
+			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
+			stmt = connection.prepareStatement(query);
+			ResultSet rs = stmt.executeQuery();
+			try {
+				while (rs.next()) {
+					props.put(rs.getString(1), rs.getString(2));
+				}
+				return props;
+			} finally {
+				rs.close();
+			}
+		} catch (Exception e) {
+			throw new JdbcException("could not obtain value using query ["+query+"]",e);
+		} finally {
+			if (stmt!=null) {
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					throw new JdbcException("could not close statement of query ["+query+"]",e);
+				}
+			}
+		}
+	}
+	
 	public static int executeIntQuery(Connection connection, String query) throws JdbcException {
 		return executeIntQuery(connection,query,null,null);
 	}
@@ -1080,5 +1114,40 @@ public class JdbcUtil {
 		}
 	}
 
+	public static synchronized Properties retrieveJdbcPropertiesFromDatabase() {
+		if (jdbcProperties == null) {
+			String jmsRealm = JmsRealmFactory.getInstance()
+					.getFirstDatasourceJmsRealm();
+			if (jmsRealm != null) {
+				jdbcProperties = new Properties();
+				JdbcFacade ibisProp = new JdbcFacade();
+				ibisProp.setJmsRealm(jmsRealm);
+				Connection conn = null;
+				try {
+					conn = ibisProp.getConnection();
+					if (JdbcUtil.tableExists(conn, "ibisprop")) {
+						String query = "select name, value from ibisprop";
+						jdbcProperties.putAll(executePropertiesQuery(conn, query));
+					}
+				} catch (Exception e) {
+					log.error("error reading jdbc properties", e);
+				} finally {
+					if (conn != null) {
+						try {
+							conn.close();
+						} catch (SQLException e) {
+							log.warn("exception closing connection", e);
+						}
+					}
+				}
+			}
+		}
+		return jdbcProperties;
+	}
 
+	public static synchronized void resetJdbcProperties() {
+		jdbcProperties.clear();
+		jdbcProperties = null;
+		retrieveJdbcPropertiesFromDatabase();
+	}
 }

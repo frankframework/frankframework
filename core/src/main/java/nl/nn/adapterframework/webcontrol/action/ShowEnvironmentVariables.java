@@ -15,14 +15,6 @@
 */
 package nl.nn.adapterframework.webcontrol.action;
 
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,10 +22,19 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -117,11 +118,12 @@ public class ShowEnvironmentVariables extends ActionBase {
 			log.warn("caught Throwable while getting EnvironmentVariables",t);
 		}
 	
+		addPropertiesToXmlBuilder(envVars,JdbcUtil.retrieveJdbcPropertiesFromDatabase(),"Jdbc Properties",propsToHide);
+		
 		request.setAttribute("envVars", envVars.toXML());
 
 		// Forward control to the specified success URI
 		log.debug("forward to success");
 		return (mapping.findForward("success"));
 	}
-	
 }
