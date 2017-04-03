@@ -60,7 +60,7 @@ public final class ShowMonitors extends Base {
 	@Context ServletConfig servletConfig;
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/monitors")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMonitors() throws ApiException {

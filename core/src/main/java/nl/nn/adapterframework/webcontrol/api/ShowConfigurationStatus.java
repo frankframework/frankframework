@@ -90,7 +90,7 @@ public final class ShowConfigurationStatus extends Base {
 	private boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
 	
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapters() throws ApiException {
@@ -115,7 +115,7 @@ public final class ShowConfigurationStatus extends Base {
 	}
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapter(@PathParam("name") String name) throws ApiException {
@@ -264,7 +264,7 @@ public final class ShowConfigurationStatus extends Base {
 	}
 	
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/pipes")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapterPipes(@PathParam("name") String adapterName) throws ApiException {
@@ -282,7 +282,7 @@ public final class ShowConfigurationStatus extends Base {
 	}
 	
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/messages")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapterMessages(@PathParam("name") String adapterName) throws ApiException {
@@ -300,7 +300,7 @@ public final class ShowConfigurationStatus extends Base {
 	}
 	
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/receivers")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapterReceivers(@PathParam("name") String adapterName) throws ApiException {

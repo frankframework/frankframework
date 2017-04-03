@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,57 +44,56 @@ import org.jboss.resteasy.core.ServerResponse;
 @Provider
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthorizationFilter implements ContainerRequestFilter {
-    private static final ServerResponse ACCESS_DENIED = new ServerResponse("{\"status\":\"error\", \"error\":\"access denied\"}", 401, new Headers<Object>());
-    private static final ServerResponse ACCESS_FORBIDDEN = new ServerResponse("{\"status\":\"error\", \"error\":\"forbidden\"}", 403, new Headers<Object>());
-    //private static final ServerResponse SERVER_ERROR = new ServerResponse("{\"status\":\"error\", \"error\":\"Internal Server Error\"}", 500, new Headers<Object>());
-    
+	private static final ServerResponse ACCESS_DENIED = new ServerResponse("{\"status\":\"error\", \"error\":\"access denied\"}", 401, new Headers<Object>());
+	private static final ServerResponse ACCESS_FORBIDDEN = new ServerResponse("{\"status\":\"error\", \"error\":\"forbidden\"}", 403, new Headers<Object>());
+	//private static final ServerResponse SERVER_ERROR = new ServerResponse("{\"status\":\"error\", \"error\":\"Internal Server Error\"}", 500, new Headers<Object>());
+	
 	public void filter(ContainerRequestContext requestContext) throws IOException {
-
 		if(requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {
 			//Preflight in here?
 			return;
 		}
 		
-    	SecurityContext securityContext = requestContext.getSecurityContext();
-    	if(securityContext.getUserPrincipal() == null) {
-    		//Not logged in. Auth restriction should be done via web.xml, if no userPrincipal is set it uses anonymous login
-    		return;
-    	}
-    	
-		ResourceMethodInvoker methodInvoker = (ResourceMethodInvoker) requestContext.getProperty("org.jboss.resteasy.core.ResourceMethodInvoker");
-        Method method = methodInvoker.getMethod();
-        
-        if(method.isAnnotationPresent(DenyAll.class)) {
-        	//Functionality has been disallowed.
-            requestContext.abortWith(ACCESS_FORBIDDEN);
-            return;
-        }
-        if(method.isAnnotationPresent(PermitAll.class)) {
-        	//No authorisation required.
-        	return;
-        }
+		SecurityContext securityContext = requestContext.getSecurityContext();
+		if(securityContext.getUserPrincipal() == null) {
+			//Not logged in. Auth restriction should be done via web.xml, if no userPrincipal is set it uses anonymous login
+			return;
+		}
 		
-        if(method.isAnnotationPresent(RolesAllowed.class)) {
-	        RolesAllowed rolesAnnotation = method.getAnnotation(RolesAllowed.class);
-	        Set<String> rolesSet = new HashSet<String>(Arrays.asList(rolesAnnotation.value()));
-            
-            //Verifying username and password
-            if(!doAuth(securityContext, rolesSet)) {
-                requestContext.abortWith(ACCESS_DENIED);
-                return;
-            }
-        }
-        //Don't do anything if no auth is set
+		ResourceMethodInvoker methodInvoker = (ResourceMethodInvoker) requestContext.getProperty("org.jboss.resteasy.core.ResourceMethodInvoker");
+		Method method = methodInvoker.getMethod();
+		
+		if(method.isAnnotationPresent(DenyAll.class)) {
+			//Functionality has been disallowed.
+			requestContext.abortWith(ACCESS_FORBIDDEN);
+			return;
+		}
+		if(method.isAnnotationPresent(PermitAll.class)) {
+			//No authorisation required.
+			return;
+		}
+		
+		if(method.isAnnotationPresent(RolesAllowed.class)) {
+			RolesAllowed rolesAnnotation = method.getAnnotation(RolesAllowed.class);
+			Set<String> rolesSet = new HashSet<String>(Arrays.asList(rolesAnnotation.value()));
+			
+			//Verifying username and password
+			if(!doAuth(securityContext, rolesSet)) {
+				requestContext.abortWith(ACCESS_DENIED);
+				return;
+			}
+		}
+		//Don't do anything if no auth is set
 	}
 	
 	private boolean doAuth(SecurityContext securityContext, final Set<String> rolesSet) {
-        //Principal userPrincipal = securityContext.getUserPrincipal();
+		//Principal userPrincipal = securityContext.getUserPrincipal();
 		
-        for (String role : rolesSet) {
+		for (String role : rolesSet) {
 			if(securityContext.isUserInRole(role) == true)
 				return true;
 		}
-        
+		
 		return false;
 	}
 }

@@ -74,6 +74,7 @@ public final class TestPipeline extends TimeoutGuardPipe {
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/test-pipeline")
+	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response postTestPipeLine(MultipartFormDataInput input) throws ApiException, PipeRunException {

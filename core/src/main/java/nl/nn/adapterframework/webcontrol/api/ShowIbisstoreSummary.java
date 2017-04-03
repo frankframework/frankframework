@@ -63,7 +63,7 @@ public final class ShowIbisstoreSummary extends Base {
 	public static final String SHOWIBISSTOREQUERYKEY="ibisstore.summary.query";
 
 	@POST
-	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc/summary")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)

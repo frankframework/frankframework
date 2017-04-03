@@ -63,8 +63,9 @@ public final class ShowScheduler extends Base {
 	@Context ServletConfig servletConfig;
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/schedules")
+	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSchedules() throws ApiException {
 		initBase(servletConfig);
@@ -295,6 +296,7 @@ public final class ShowScheduler extends Base {
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/schedules/")
+	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response putSchedules(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
@@ -363,6 +365,7 @@ public final class ShowScheduler extends Base {
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/schedules/{groupName}/{jobName}")
+	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response trigger(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName) throws ApiException {
 		initBase(servletConfig);
@@ -396,6 +399,7 @@ public final class ShowScheduler extends Base {
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/schedules/{groupName}/{jobName}")
+	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response PutSchedules(@PathParam("jobName") String jobName, @QueryParam("groupName") String groupName) throws ApiException {
 		initBase(servletConfig);

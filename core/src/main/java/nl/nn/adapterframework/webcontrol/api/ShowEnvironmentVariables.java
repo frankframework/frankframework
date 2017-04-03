@@ -46,7 +46,7 @@ public final class ShowEnvironmentVariables extends Base {
 	@Context ServletConfig servletConfig;
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/environmentvariables")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response environmentVariables() throws ApiException {
