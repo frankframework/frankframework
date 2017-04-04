@@ -216,7 +216,7 @@
 		</init-param>
 		<init-param>
 			<param-name>resteasy.role.based.security</param-name>
-			<param-value>false</param-value>
+			<param-value>true</param-value>
 		</init-param>
 		<init-param>
 			<param-name>resteasy.providers</param-name>
@@ -346,6 +346,9 @@
 			<role-name>IbisTester</role-name>
 			<role-name>IbisWebService</role-name>
 		</auth-constraint>
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
 	</security-constraint>
 
 	<security-constraint>

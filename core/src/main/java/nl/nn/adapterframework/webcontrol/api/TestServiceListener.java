@@ -54,8 +54,9 @@ public final class TestServiceListener extends Base {
 	@Context ServletConfig servletConfig;
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/test-servicelistener")
+	@Relation("servicelistener")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getServiceListeners() throws ApiException {
 		initBase(servletConfig);

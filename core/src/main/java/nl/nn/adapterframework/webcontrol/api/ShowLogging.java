@@ -50,8 +50,9 @@ public final class ShowLogging extends Base {
 	int maxItems = AppConstants.getInstance().getInt("logging.items.max", 500);
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/logging")
+	@Relation("logging")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getLogDirectory(
 			@QueryParam("directory") String directory, 

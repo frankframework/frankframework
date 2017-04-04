@@ -192,6 +192,8 @@ public class Init extends Base {
 
 		ResourceMethodRegistry registry = (ResourceMethodRegistry) dispatcher.getRegistry();
 		StringBuffer requestPath = httpServletRequest.getRequestURL();
+		if(requestPath.substring(requestPath.length()-1) == "/")
+			requestPath.delete(requestPath.length()-1, 1);
 
 		for (Map.Entry<String, List<ResourceInvoker>> entry : registry.getBounded().entrySet()) {
 			for (ResourceInvoker invoker : entry.getValue()) {
@@ -216,9 +218,14 @@ public class Init extends Base {
 				else if(method.isAnnotationPresent(DELETE.class))
 					resource.put("type", "DELETE");
 
+				if(method.isAnnotationPresent(Relation.class))
+					resource.put("rel", method.getAnnotation(Relation.class).value());
+
 				Path path = method.getAnnotation(Path.class);
 				if(path != null) {
-					resource.put("href", requestPath + path.value());
+					String p = path.value();
+					if(!p.startsWith("/")) p = "/" + p;
+					resource.put("href", requestPath + p);
 				}
 
 				RolesAllowed rolesAllowed = method.getAnnotation(RolesAllowed.class);

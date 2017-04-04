@@ -75,8 +75,9 @@ public final class ShowSecurityItems extends Base {
 	@Context HttpServletRequest httpServletRequest;
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/securityitems")
+	@Relation("securityitems")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSecurityItems() throws ApiException {
 		initBase(servletConfig);

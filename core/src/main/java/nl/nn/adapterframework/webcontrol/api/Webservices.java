@@ -49,8 +49,9 @@ public final class Webservices extends Base {
 	@Context ServletConfig servletConfig;
 
 	@GET
-	@RolesAllowed({"ObserverAccess", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/webservices")
+	@Relation("webservices")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getLogDirectory() throws ApiException {
 		initBase(servletConfig);
