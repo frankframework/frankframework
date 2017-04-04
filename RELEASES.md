@@ -33,6 +33,8 @@ Upcoming
 - Add possibility to disable validators in stubbed mode
 - Larva: add silent mode
 - Introduction of 'Jdbc Properties'
+- Fix jsp error for older servlets when retreiving the ServletContext
+
 
 7.0-B1
 ---
