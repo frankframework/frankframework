@@ -5,11 +5,21 @@
 	<xsl:template match="/">
 		<feedbackform>
 			<recipients>
-				<recipient><xsl:text>junkspam0002@gmail.com</xsl:text></recipient>
+				<recipient><xsl:text>1234@integrationpartners.nl</xsl:text></recipient>
 			</recipients>
-			<from><xsl:value-of select="root/name" /></from>
+			<from>
+				<xsl:choose>
+					<xsl:when test="root/name=''"><xsl:text>Anonymous</xsl:text></xsl:when>
+					<xsl:otherwise><xsl:value-of select="root/name" /></xsl:otherwise>
+				</xsl:choose>
+			</from>
 			<subject><xsl:text>Feedback GUI 3.0</xsl:text></subject>
-			<name><xsl:value-of select="root/name" /></name>
+			<name>
+				<xsl:choose>
+					<xsl:when test="root/name=''"><xsl:text>Anonymous</xsl:text></xsl:when>
+					<xsl:otherwise><xsl:value-of select="root/name" /></xsl:otherwise>
+				</xsl:choose>
+			</name>
 			<message>
 				<rating><xsl:value-of select="root/rating"/></rating>
 				<feedback><xsl:value-of select="root/feedback" /></feedback>
