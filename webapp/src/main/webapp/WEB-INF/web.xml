@@ -216,7 +216,7 @@
 		</init-param>
 		<init-param>
 			<param-name>resteasy.role.based.security</param-name>
-			<param-value>true</param-value>
+			<param-value>false</param-value>
 		</init-param>
 		<init-param>
 			<param-name>resteasy.providers</param-name>
