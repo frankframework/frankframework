@@ -34,6 +34,7 @@ Upcoming
 - Larva: add silent mode
 - Introduction of 'Jdbc Properties'
 - Fix jsp error for older servlets when retreiving the ServletContext
+- Fix soap:address location used rest/webservices instead of servler/rpcrouter
 
 
 7.0-B1
