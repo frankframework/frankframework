@@ -533,6 +533,28 @@ public final class ShowConfigurationStatus extends ActionBase {
 						}
 					}
 				}
+			} else {
+				int cme=0, cmw=0, cmi=0;
+				for (int t=0; t<adapter.getMessageKeeper().size(); t++) {
+					String level = adapter.getMessageKeeper().getMessage(t).getMessageLevel();
+					if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
+						cme++;
+					} else {
+						if (level.equals(MessageKeeperMessage.WARN_LEVEL)) {
+							cmw++;
+						} else {
+							cmi++;
+						}
+					}
+				}
+				XmlBuilder adapterMessages=new XmlBuilder("adapterMessages");
+				adapterXML.addSubElement(adapterMessages);
+				adapterMessages.addAttribute("error", cme+"");
+				adapterMessages.addAttribute("warn", cmw+"");
+				adapterMessages.addAttribute("info", cmi+"");
+				countMessagesError += cme;
+				countMessagesWarn += cmw;
+				countMessagesInfo += cmi;
 			}
 		}
 
