@@ -17,7 +17,7 @@
 	</messages>
 
 	<%
-		ServletContext sc = request.getServletContext();
+		ServletContext sc = request.getSession().getServletContext();
 		String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
 		IbisContext ibisContext = (IbisContext) sc.getAttribute(attributeKey);
 	%>

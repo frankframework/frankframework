@@ -33,6 +33,10 @@ Upcoming
 - Add possibility to disable validators in stubbed mode
 - Larva: add silent mode
 - Introduction of 'Jdbc Properties'
+- Fix jsp error for older servlets when retreiving the ServletContext
+- Fix soap:address location used rest/webservices instead of servler/rpcrouter
+- Add log messages state to "Show configuration status: *ALL*"
+
 
 7.0-B1
 ---

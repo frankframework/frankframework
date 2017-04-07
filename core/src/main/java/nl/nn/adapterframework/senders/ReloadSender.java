@@ -48,22 +48,21 @@ public class ReloadSender extends SenderWithParametersBase implements PipeAware 
 	private AbstractPipe pipe;
 
 	public String sendMessage(String correlationID, String message,
-			ParameterResolutionContext prc) throws SenderException,
-			TimeOutException {
+			ParameterResolutionContext prc) throws TimeOutException, SenderException {
 
-		String configName = null;
-		String activeVersion = null;
+		String configName;
+		String activeVersion;
 
 		try {
 			configName = XmlUtils.evaluateXPathNodeSetFirstElement(message,
-					"row/field[@name='name']");
+					"row/field[@name='NAME']");
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression configName", e);
 		} 
 
 		try {
 			activeVersion = XmlUtils.evaluateXPathNodeSetFirstElement(message,
-					"row/field[@name='version']");
+					"row/field[@name='VERSION']");
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression activeVersion", e);
 		}

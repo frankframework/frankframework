@@ -240,6 +240,7 @@ refresh="showConfigurationStatus.do">
 								<subHeader>Messages with error</subHeader>
 								<subHeader>Messages processed/in process</subHeader>
 								<subHeader>State receiver(s)</subHeader>
+								<subHeader>Log</subHeader>
 							</tr>
 							<xtags:forEach select="adapter" sort="concat(@configUC,'|',@nameUC)">
 								<xtags:variable id="adapterState" select="@state"/>
@@ -288,6 +289,19 @@ refresh="showConfigurationStatus.do">
 												<image type="starting" title="starting"/>
 											<%}%>
 										</xtags:forEach>
+									</td>
+									<td>
+										<xtags:choose>
+											<xtags:when test="number(adapterMessages/@error)!=0">
+													<image type="delete" title="error"/>
+											</xtags:when>
+											<xtags:when test="number(adapterMessages/@warn)!=0">
+													<image type="error" title="warn"/>
+											</xtags:when>
+											<xtags:otherwise>
+												<image type="check" title="info"/>
+											</xtags:otherwise>
+										</xtags:choose>
 									</td>
 								</tr>
 							</xtags:forEach>

@@ -483,6 +483,7 @@
 			<xsl:when test="@type='stopped'"			>images/disconnected.gif</xsl:when>
 			<xsl:when test="@type='stopping'"			>images/disconnecting.gif</xsl:when>
 			<xsl:when test="@type='error'"				>images/error.gif</xsl:when>
+			<xsl:when test="@type='check'"				>images/check.gif</xsl:when>
 		</xsl:choose>
 	</xsl:template>
 	

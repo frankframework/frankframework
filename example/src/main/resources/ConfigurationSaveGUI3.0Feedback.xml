@@ -30,28 +30,27 @@
 				schema="Feedback/xsd/Feedback.xsd"
 				root="root"
 			>
-				<forward name="success" path="SaveFeedback" />
+				<forward name="success" path="FormatEmail" />
 				<forward name="failure" path="ERROR" />
 				<forward name="parserError" path="ERROR" />
 			</pipe>
 
 			<pipe
-				name="SaveFeedback"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
-				getInputFromSessionKey="OriginalXML"
+				name="FormatEmail"
+				className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="Feedback/xsl/FormatMail.xsl"
+				xslt2="true"
 			>
-				<sender
-					className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					jmsRealm="jdbc"
-					query="INSERT INTO FEEDBACK (NAME, FEEDBACK, RATING) VALUES (?, ?, ?)"
-				>
-					<param name="name"		sessionKey="OriginalXML" xpathExpression="/root/name" />
-					<param name="feedback"	sessionKey="OriginalXML" xpathExpression="/root/feedback" />
-					<param name="rating"	sessionKey="OriginalXML" xpathExpression="/root/rating" />
-				</sender>
+				<forward name="success" path="Mailer" />
+			</pipe>
 
-				<forward name="exception"	path="ERROR" />
-				<forward name="success"		path="SUCCESS" />
+			<pipe
+				name="Mailer"
+				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			>
+				<sender className="nl.nn.adapterframework.senders.MailSender" smtpHost="localhost" />
+				<forward name="exception" path="ERROR"/>
+				<forward name="success" path="SUCCESS"/>
 			</pipe>
 
 			<pipe

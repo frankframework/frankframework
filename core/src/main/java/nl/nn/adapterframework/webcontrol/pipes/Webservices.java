@@ -167,7 +167,7 @@ public class Webservices extends TimeoutGuardPipe {
 		wsdl.setDocumentation(getDocumentation(wsdl, session));
 		wsdl.init();
 		wsdl.wsdl(RestListenerUtils.retrieveServletOutputStream(session),
-				RestListenerUtils.retrieveRequestURL(session));
+				RestListenerUtils.retrieveSOAPRequestURL(session));
 	}
 
 	private void zip(Adapter adapter, IPipeLineSession session)
