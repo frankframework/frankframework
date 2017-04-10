@@ -73,6 +73,7 @@ public class Misc {
 	private static Long messageSizeWarnByDefault = null;
 	private static Long responseBodySizeWarnByDefault = null;
 	private static Boolean forceFixedForwardingByDefault = null;
+	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
 	/**
 	* Creates a Universally Unique Identifier, via the java.rmi.server.UID class.
@@ -86,14 +87,14 @@ public class Misc {
 		return uidString;
 	}
 
-	static public String createUUID() {
+	public static String createUUID() {
 		return createSimpleUUID();
 	}
 
 	/**
 	* Creates a Universally Unique Identifier, via the java.util.UUID class (36 characters or 32 characters without dashes).
 	*/
-	static public String createRandomUUID(boolean removeDashes) {
+	public static String createRandomUUID(boolean removeDashes) {
 		String uuidString = java.util.UUID.randomUUID().toString();
 		if (removeDashes) {
 			return uuidString.replaceAll("-", "");
@@ -102,11 +103,9 @@ public class Misc {
 		}
 	}
 
-	static public String createRandomUUID() {
+	public static String createRandomUUID() {
 		return createRandomUUID(false);
 	}
-
-	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
     public static String asHex(byte[] buf)
     {
@@ -119,7 +118,7 @@ public class Misc {
         return new String(chars);
     }
 
-	static private byte[] getIPAddress() {
+	private static byte[] getIPAddress() {
 		InetAddress inetAddress = null;
 
 		try {
@@ -132,7 +131,7 @@ public class Misc {
 		}
 	}
 
-	static public String createNumericUUID() {
+	public static String createNumericUUID() {
 		byte[] ipAddress = getIPAddress();
 		DecimalFormat df = new DecimalFormat("000");
 		String ia1 = df.format(unsignedByteToInt(ipAddress[0]));
@@ -146,7 +145,7 @@ public class Misc {
 		String hash = df.format(hashL);
 
 		//Unique string is <ipaddress with length 4*3><currentTime with length 13><hashcode with length 6>
-		StringBuffer s = new StringBuffer();
+		StringBuilder s = new StringBuilder();
 		s.append(ia).append(getCurrentTimeMillis()).append(hash);
 
 		return s.toString();
@@ -174,7 +173,7 @@ public class Misc {
 	}
 	public static void streamToStream(InputStream input, OutputStream output, boolean closeInput) throws IOException {
 		if (input!=null) {
-			byte buffer[]=new byte[BUFFERSIZE];
+			byte[] buffer=new byte[BUFFERSIZE];
 			int bytesRead;
 			while ((bytesRead=input.read(buffer,0,BUFFERSIZE))>-1) {
 				output.write(buffer,0,bytesRead);
@@ -207,7 +206,9 @@ public class Misc {
 		byte[] buffer = new byte[1024];
 		while (true) {
 		    int r = inputStream.read(buffer);
-		    if (r == -1) break;
+		    if (r == -1) {
+		    	break;
+		    }
 		    out.write(buffer, 0, r);
 		}
 
@@ -220,7 +221,7 @@ public class Misc {
 	}
 	public static void readerToWriter(Reader reader, Writer writer, boolean closeInput) throws IOException {
 		if (reader!=null) {
-			char buffer[]=new char[BUFFERSIZE];
+			char[] buffer=new char[BUFFERSIZE];
 			int charsRead;
 			while ((charsRead=reader.read(buffer,0,BUFFERSIZE))>-1) {
 				writer.write(buffer,0,charsRead);
@@ -258,7 +259,7 @@ public class Misc {
 
 
 	public static String readerToString(Reader reader, String endOfLineString, boolean xmlEncode) throws IOException {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		int curChar = -1;
 		int prevChar = -1;
 		while ((curChar = reader.read()) != -1 || prevChar == '\r') {
@@ -275,7 +276,7 @@ public class Misc {
 			}
 			if (curChar != '\r' && curChar != '\n' && curChar != -1) {
 				String appendStr =""+(char) curChar;
-				sb.append(xmlEncode ? (XmlUtils.encodeChars(appendStr)):(appendStr));
+				sb.append(xmlEncode ? XmlUtils.encodeChars(appendStr) : appendStr);
 			}
 			prevChar = curChar;
 		}
@@ -344,7 +345,7 @@ public class Misc {
 		int fromLength = from.length();
 		char [] sourceArray = source.toCharArray();
 
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		int srcPos=0;
 
 		while (start != -1) {
@@ -499,8 +500,8 @@ public class Misc {
 		}
 
 		if (props.size() == 0) {
-			BufferedReader br = null;
-			Process p = null;
+			BufferedReader br;
+			Process p;
 			Runtime r = Runtime.getRuntime();
 			String OS = System.getProperty("os.name").toLowerCase();
 			if (OS.indexOf("windows 9") > -1) {
@@ -532,15 +533,11 @@ public class Misc {
 
 	public static String getHostname() {
 		String localHost=null;
-		// String localIP="";
 		try {
 			InetAddress localMachine = InetAddress.getLocalHost();
-			//localIP = localMachine.getHostAddress();
 			localHost = localMachine.getHostName();
 		} catch(UnknownHostException uhe) {
-			if (localHost==null) {
-				localHost="unknown ("+uhe.getMessage()+")";
-			}
+			localHost="unknown ("+uhe.getMessage()+")";
 		}
 		return localHost;
 	}
@@ -618,16 +615,16 @@ public class Misc {
 		  s = s.substring(0, index);
 		}
 		else if((index = s.indexOf("MB")) != -1) {
-		  multiplier = 1024*1024;
+		  multiplier = 1024L*1024;
 		  s = s.substring(0, index);
 		}
 		else if((index = s.indexOf("GB")) != -1) {
-		  multiplier = 1024*1024*1024;
+		  multiplier = 1024L*1024*1024;
 		  s = s.substring(0, index);
 		}
 		if(s != null) {
 			try {
-				return Long.valueOf(s).longValue() * multiplier;
+				return Long.parseLong(s) * multiplier;
 			}
 			catch (NumberFormatException e) {
 				log.error("[" + value + "] not in expected format", e);
@@ -641,17 +638,21 @@ public class Misc {
 	}
 
 	public static String toFileSize(long value, boolean format) {
-		long divider = 1024*1024*1024;
+		return toFileSize(value, format, false);
+	}
+
+	public static String toFileSize(long value, boolean format, boolean floor) {
+		long divider = 1024L * 1024 * 1024;
 		String suffix = null;
-		if (value>=divider) {
+		if (value >= divider) {
 			suffix = "GB";
 		} else {
-			divider = 1024*1024;
-			if (value>=divider) {
+			divider = 1024L * 1024;
+			if (value >= divider) {
 				suffix = "MB";
 			} else {
 				divider = 1024;
-				if (value>=divider) {
+				if (value >= divider) {
 					if (format) {
 						suffix = "kB";
 					} else {
@@ -660,35 +661,36 @@ public class Misc {
 				}
 			}
 		}
-		if (suffix==null) {
+		if (suffix == null) {
 			if (format) {
-				if (value>0) {
+				if (value > 0) {
 					return "1 kB";
 				} else {
 					return "0 kB";
 				}
 			} else {
-				return Long.toString(value);
+				return Long.toString(value) + (floor ? "B" : "");
 			}
 		} else {
-			float f = (float)value / divider;
-			return Math.round(f) + (format?" ":"") + suffix;
+			float f = (float) value / divider;
+			return Math.round(f) + (format ? " " : "") + suffix;
 		}
 	}
 
 	public static synchronized long getMessageSizeWarnByDefault() {
-		if (messageSizeWarnByDefault==null) {
-			String definitionString=AppConstants.getInstance().getString(MESSAGE_SIZE_WARN_BY_DEFAULT_KEY, null);
-			long definition=toFileSize(definitionString, -1);
+		if (messageSizeWarnByDefault == null) {
+			String definitionString = AppConstants.getInstance().getString(MESSAGE_SIZE_WARN_BY_DEFAULT_KEY, null);
+			long definition = toFileSize(definitionString, -1);
 			messageSizeWarnByDefault = new Long(definition);
 		}
 		return messageSizeWarnByDefault.longValue();
 	}
 
 	public static synchronized long getResponseBodySizeWarnByDefault() {
-		if (responseBodySizeWarnByDefault==null) {
-			String definitionString=AppConstants.getInstance().getString(RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY, null);
-			long definition=toFileSize(definitionString, -1);
+		if (responseBodySizeWarnByDefault == null) {
+			String definitionString = AppConstants.getInstance().getString(RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY,
+					null);
+			long definition = toFileSize(definitionString, -1);
 			responseBodySizeWarnByDefault = new Long(definition);
 		}
 		return responseBodySizeWarnByDefault.longValue();
@@ -703,7 +705,7 @@ public class Misc {
 	}
 
 	public static String listToString(List list) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (Iterator it=list.iterator(); it.hasNext();) {
 			sb.append((String) it.next());
 		}
@@ -809,16 +811,15 @@ public class Misc {
 		long currentTime = (new Date()).getTime();
 		long age = currentTime - value;
 		String ageString = DurationFormatUtils.formatDuration(age, "d") + "d";
-		if (ageString.equals("0d")) {
-			;
+		if ("0d".equals(ageString)) {
 			ageString = DurationFormatUtils.formatDuration(age, "H") + "h";
-			if (ageString.equals("0h")) {
-				;
+			if ("0h".equals(ageString)) {
 				ageString = DurationFormatUtils.formatDuration(age, "m") + "m";
-				if (ageString.equals("0m")) {
-					;
-					ageString = DurationFormatUtils.formatDuration(age, "s")
-							+ "s";
+				if ("0m".equals(ageString)) {
+					ageString = DurationFormatUtils.formatDuration(age, "s") + "s";
+					if ("0s".equals(ageString)) {
+						ageString = age + "ms";
+					}
 				}
 			}
 		}
@@ -833,22 +834,22 @@ public class Misc {
 		long multiplier = 1;
 		int index;
 
-		if ((index = s.indexOf("S")) != -1) {
+		if ((index = s.indexOf('S')) != -1) {
 			multiplier = 1000L;
 			s = s.substring(0, index);
-		} else if ((index = s.indexOf("M")) != -1) {
+		} else if ((index = s.indexOf('M')) != -1) {
 			multiplier = 60L * 1000L;
 			s = s.substring(0, index);
-		} else if ((index = s.indexOf("H")) != -1) {
+		} else if ((index = s.indexOf('H')) != -1) {
 			multiplier = 60L * 60L * 1000L;
 			s = s.substring(0, index);
-		} else if ((index = s.indexOf("D")) != -1) {
+		} else if ((index = s.indexOf('D')) != -1) {
 			multiplier = 24L * 60L * 60L * 1000L;
 			s = s.substring(0, index);
 		}
 		if (s != null) {
 			try {
-				return Long.valueOf(s).longValue() * multiplier;
+				return Long.parseLong(s) * multiplier;
 			} catch (NumberFormatException e) {
 				log.error("[" + value + "] not in expected format", e);
 			}

@@ -56,13 +56,16 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.MsgLogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Sends a message using a {@link nl.nn.adapterframework.core.ISender sender} and optionally receives a reply from the same sender, or 
@@ -155,6 +158,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
+	protected Logger msgLog = LogUtil.getLogger("MSG");
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -724,15 +728,28 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException, InterruptedException {
-		String sendResult = sendTextMessage(input, session, correlationID, getSender(), threadContext);
-		if (Thread.currentThread().isInterrupted()) {
-			throw new InterruptedException();
-		}
-		if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(sendResult)) {
-			throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
-		}
-		if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(sendResult)) {
-			throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
+		long startTime = System.currentTimeMillis();
+		String sendResult = null;
+		String error = null;
+		try {
+			sendResult = sendTextMessage(input, session, correlationID, getSender(), threadContext);
+			if (Thread.currentThread().isInterrupted()) {
+				error = "InterruptedException";
+				throw new InterruptedException();
+			}
+			if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(sendResult)) {
+				error = "TimeOutException";
+				throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
+			}
+			if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(sendResult)) {
+				error = "SenderException";
+				throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
+			}
+		} finally {
+			if (MsgLogUtil.getMsgLogLevelNum(getPipeLine().getAdapter().getMsgLogLevel())>=MsgLogUtil.MSGLOG_LEVEL_TERSE) {
+				String durationString = Misc.getAge(startTime);
+				msgLog.info("Sender [" + sender.getName() + "] class [" + sender.getClass().getSimpleName() + "] correlationID [" + correlationID + "] duration [" + durationString + "] got exit-state [" + (error==null?"success":error) + "]");
+			}
 		}
 		return sendResult;
 	}
