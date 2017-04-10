@@ -36,6 +36,9 @@ Upcoming
 - Fix jsp error for older servlets when retreiving the ServletContext
 - Fix soap:address location used rest/webservices instead of servler/rpcrouter
 - Add log messages state to "Show configuration status: *ALL*"
+- Fix log.level now set automatically dependant on otap.stage
+- Add senders to the MSG log
+
 
 
 7.0-B1
