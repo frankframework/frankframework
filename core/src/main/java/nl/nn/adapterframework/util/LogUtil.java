@@ -92,6 +92,22 @@ public class LogUtil {
 				System.out.println(DEBUG_LOG_PREFIX + "did not find system property log.dir and is unable to locate log dir based on user.dir '" + userDir + "'");
 			}
 		}
+
+		if (System.getProperty("log.level") == null) {
+			//Try to get otap.stage and determine log.level if not set
+			String stage = System.getProperty("otap.stage");
+			if("LOC".equalsIgnoreCase(stage))
+				System.setProperty("log.level", "TERSE");
+			if("DEV".equalsIgnoreCase(stage))
+				System.setProperty("log.level", "DEBUG");
+			if("TST".equalsIgnoreCase(stage))
+				System.setProperty("log.level", "DEBUG");
+			if("ACC".equalsIgnoreCase(stage))
+				System.setProperty("log.level", "WARN");
+			if("PRD".equalsIgnoreCase(stage))
+				System.setProperty("log.level", "WARN");
+		}
+
 		String l4jxml;
 		URL url = LogUtil.class.getClassLoader().getResource(LOG4J_XML_FILE);
 		if (url == null) {

@@ -35,6 +35,7 @@ Upcoming
 - Introduction of 'Jdbc Properties'
 - Fix jsp error for older servlets when retreiving the ServletContext
 - Fix soap:address location used rest/webservices instead of servler/rpcrouter
+- Fix log.level now set automatically dependant on otap.stage
 
 
 7.0-B1
