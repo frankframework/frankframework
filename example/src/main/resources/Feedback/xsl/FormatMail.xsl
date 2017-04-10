@@ -16,8 +16,8 @@
 				</xsl:choose>
 			</name>
 			<message>
-				<rating><xsl:value-of select="root/rating"/></rating>
-				<feedback><xsl:value-of select="root/feedback" /></feedback>
+				<xsl:text>Rating: </xsl:text><xsl:value-of select="root/rating"/><xsl:text>,&#xA;</xsl:text>
+				<xsl:text>Feedback: </xsl:text><xsl:value-of select="root/feedback" /><xsl:text>&#xA;</xsl:text>
 			</message>
 		</feedbackform>
 	</xsl:template>
