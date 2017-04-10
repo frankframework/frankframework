@@ -7,12 +7,7 @@
 			<recipients>
 				<recipient><xsl:text>1234@integrationpartners.nl</xsl:text></recipient>
 			</recipients>
-			<from>
-				<xsl:choose>
-					<xsl:when test="root/name=''"><xsl:text>Anonymous</xsl:text></xsl:when>
-					<xsl:otherwise><xsl:value-of select="root/name" /></xsl:otherwise>
-				</xsl:choose>
-			</from>
+			<from><xsl:text>noreply@integrationpartners.nl</xsl:text></from>
 			<subject><xsl:text>Feedback GUI 3.0</xsl:text></subject>
 			<name>
 				<xsl:choose>
