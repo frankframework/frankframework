@@ -214,10 +214,10 @@
 			<param-name>resteasy.servlet.mapping.prefix</param-name>
 			<param-value>/api</param-value>
 		</init-param>
-		<init-param>
+		<!-- REPLACE-MARKER init-param>
 			<param-name>resteasy.role.based.security</param-name>
-			<param-value>false</param-value>
-		</init-param>
+			<param-value>true</param-value>
+		</init-param> REPLACE-MARKER --> 
 		<init-param>
 			<param-name>resteasy.providers</param-name>
 			<param-value>nl.nn.adapterframework.webcontrol.api.ApiExceptionHandler</param-value>
