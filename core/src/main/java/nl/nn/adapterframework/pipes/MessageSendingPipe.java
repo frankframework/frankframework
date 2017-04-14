@@ -683,7 +683,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 		if (getOutputValidator()!=null) {
 			log.debug(getLogPrefix(session)+"validating response");
-			long validationStartTime= System.currentTimeMillis();
 			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, correlationID, result,session);
 			if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
 				return validationResult;
