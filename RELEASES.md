@@ -39,6 +39,7 @@ Upcoming
 - Fix log.level now set automatically dependant on otap.stage
 - Add senders to the MSG log
 - Improve check on duplicate messages in MessageStoreSender
+- Avoid NPE in "Show Scheduler Status"
 
 
 

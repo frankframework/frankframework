@@ -21,6 +21,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.StringUtils;
@@ -128,12 +129,17 @@ public class SchedulerAdapter {
 
 	public XmlBuilder getJobMessages(JobDef jobdef) {
 		XmlBuilder jobMessages = new XmlBuilder("jobMessages");
-		for (int t=0; t<jobdef.getMessageKeeper().size(); t++) {
-			XmlBuilder jobMessage=new XmlBuilder("jobMessage");
-			jobMessage.setValue(jobdef.getMessageKeeper().getMessage(t).getMessageText(),true);
-			jobMessage.addAttribute("date", DateUtils.format(jobdef.getMessageKeeper().getMessage(t).getMessageDate(), DateUtils.FORMAT_FULL_GENERIC));
-			jobMessage.addAttribute("level", jobdef.getMessageKeeper().getMessage(t).getMessageLevel());
-			jobMessages.addSubElement(jobMessage);
+		if (jobdef!=null) {
+			MessageKeeper jobMessageKeeper = jobdef.getMessageKeeper();
+			if (jobMessageKeeper!=null) {
+				for (int t=0; t<jobMessageKeeper.size(); t++) {
+					XmlBuilder jobMessage=new XmlBuilder("jobMessage");
+					jobMessage.setValue(jobMessageKeeper.getMessage(t).getMessageText(),true);
+					jobMessage.addAttribute("date", DateUtils.format(jobMessageKeeper.getMessage(t).getMessageDate(), DateUtils.FORMAT_FULL_GENERIC));
+					jobMessage.addAttribute("level", jobMessageKeeper.getMessage(t).getMessageLevel());
+					jobMessages.addSubElement(jobMessage);
+				}
+			}
 		}
 		return jobMessages;
 	}
