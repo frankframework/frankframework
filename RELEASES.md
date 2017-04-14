@@ -38,6 +38,7 @@ Upcoming
 - Add log messages state to "Show configuration status: *ALL*"
 - Fix log.level now set automatically dependant on otap.stage
 - Add senders to the MSG log
+- Improve check on duplicate messages in MessageStoreSender
 
 
 
