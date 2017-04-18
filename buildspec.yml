@@ -1,0 +1,10 @@
+version: 0.1
+phases:
+	build:
+		commands:
+			mvn
+
+artifacts:
+	type: war
+	files:
+		- example/target/ibis-adapterframework-example-7.0-B2-SNAPSHOT.war
