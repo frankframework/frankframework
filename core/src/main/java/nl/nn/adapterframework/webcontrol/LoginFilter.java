@@ -64,6 +64,7 @@ import org.apache.log4j.Logger;
  * <tr><td>ldap.auth.user.base</td><td>LDAP DN for the username</td><td>&nbsp;</td></tr>
  * <tr><td>ldap.auth.observer.base</td><td>LDAP DN to authorize user for IbisObserver</td><td>&nbsp;</td></tr>
  * <tr><td>ldap.auth.dataadmin.base</td><td>LDAP DN to authorize user for IbisDataAdmin</td><td>&nbsp;</td></tr>
+ * <tr><td>ldap.auth.tester.base</td><td>LDAP DN to authorize user for IbisDataAdmin</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
