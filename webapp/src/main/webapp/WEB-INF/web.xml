@@ -52,6 +52,10 @@
 			<param-name>allowedDataAdminPaths</param-name>
 			<param-value>/logHandler.do /browserExecute.do /schedulerHandler.do /showMonitorsExecute.do /editMonitorExecute.do /editTriggerExecute.do</param-value>
 		</init-param>
+		<init-param>
+			<param-name>allowedTesterPaths</param-name>
+			<param-value>/sendJmsMessage.do /sendJmsMessageExecute.do /testPipeLine.do /testPipeLineExecute.do /testIfsaService.do /testIfsaServiceExecute.do /testService.do /testServiceExecute.do /executeJdbcQuery.do /executeJdbcQueryExecute.do /testtool</param-value>
+		</init-param>
 	</filter>
 
 	<filter>

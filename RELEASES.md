@@ -40,6 +40,7 @@ Upcoming
 - Add senders to the MSG log
 - Improve check on duplicate messages in MessageStoreSender
 - Avoid NPE in "Show Scheduler Status"
+- Add IbisTester role to IBIS LoginFilter
 
 
 
