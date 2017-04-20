@@ -32,6 +32,11 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Extension to StreamPipe for API Management.
+ * <br/>
+ * In {@link nl.nn.adapterframework.pipes.StreamPipe} for parameter <code>httpRequest</code> and attribute 
+ * <code>extractFirstStringPart=true</code> the first part is returned to the pipeline.
+ * In this class the first part is checked. If it contains a 'MessageID' with namespace "http://www.w3.org/2005/08/addressing",
+ * then the message to return to the pipeline is retrieved from the MessageStore. 
  *
  * @author Peter Leeuwenburgh
  */
