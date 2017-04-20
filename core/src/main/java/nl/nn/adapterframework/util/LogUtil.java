@@ -64,32 +64,45 @@ public class LogUtil {
 			} else if (userDir != null) {
 				// AWS Elastic Beanstalk Tomcat
 				logDir = new File(userDir, "logs");
-				if (!logDir.exists()) {
+				if (!logDir.isDirectory()) {
 					// NN WebSphere
 					logDir = new File(userDir, "log");
-					if (!logDir.exists()) {
+					if (!logDir.isDirectory()) {
 						// NN JBoss
 						logDir = new File(logDir.getParent(), "log");
-						if (!logDir.exists()) {
+						if (!logDir.isDirectory()) {
 							String wtpDeploy = System.getProperty("wtp.deploy");
 							if (wtpDeploy != null) {
-								// Eclipse Tomcat
+								// Eclipse Tomcat ("Serve modules without publishing" disabled)
 								logDir = new File(wtpDeploy);
 								logDir = new File(logDir.getParent(), "logs");
 							}
+							if (!logDir.isDirectory()) {
+								String catalinaHome = System.getProperty("catalina.base");
+								if (catalinaHome != null) {
+									// Vanilla Tomcat and
+									// Eclipse Tomcat classic ("Serve modules without publishing" enabled)
+									logDir = new File(catalinaHome, "logs");
+								}
+							}
 						}
+						
 					}
 				}
 			}
-			if (logDir != null && logDir.exists()) {
-				// Replace backslashes because log.dir is used in log4j4ibis.xml
-				// on which substVars is done (see below) which will replace
-				// double backslashes into one backslash and after that the same
-				// is done by Log4j:
-				// https://issues.apache.org/bugzilla/show_bug.cgi?id=22894
-				System.setProperty("log.dir", logDir.getPath().replaceAll("\\\\", "/"));
+			if (logDir != null) {
+				if (logDir.isDirectory()) {
+					// Replace backslashes because log.dir is used in log4j4ibis.xml
+					// on which substVars is done (see below) which will replace
+					// double backslashes into one backslash and after that the same
+					// is done by Log4j:
+					// https://issues.apache.org/bugzilla/show_bug.cgi?id=22894
+					System.setProperty("log.dir", logDir.getPath().replaceAll("\\\\", "/"));
+				} else {
+					System.out.println(DEBUG_LOG_PREFIX + "did not find a directory specified by log.dir: " + logDir);
+				}
 			} else {
-				System.out.println(DEBUG_LOG_PREFIX + "did not find system property log.dir and is unable to locate log dir based on user.dir '" + userDir + "'");
+				System.out.println(DEBUG_LOG_PREFIX + "did not find system property log.dir and unable to locate it automatically");
 			}
 		}
 
