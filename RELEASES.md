@@ -42,6 +42,8 @@ Upcoming
 - Avoid NPE in "Show Scheduler Status"
 - Add IbisTester role to IBIS LoginFilter
 - Add queueConnectionFactoryName to XmlJmsBrowserSender possible input elements
+- Make xmlStreamWriter in ScanTibcoSolutionPipe use central 
+- Create XMLStreamWriter with XmlUtils.OUTPUT_FACTORY in all classes (ScanTibcoSolutionPipe didn't use XmlUtils.OUTPUT_FACTORY yet)
 
 
 
