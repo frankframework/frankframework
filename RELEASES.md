@@ -41,6 +41,7 @@ Upcoming
 - Improve check on duplicate messages in MessageStoreSender
 - Avoid NPE in "Show Scheduler Status"
 - Add IbisTester role to IBIS LoginFilter
+- Add queueConnectionFactoryName to XmlJmsBrowserSender possible input elements
 
 
 

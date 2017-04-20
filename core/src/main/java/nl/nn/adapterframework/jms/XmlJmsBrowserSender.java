@@ -53,7 +53,8 @@ import org.w3c.dom.Element;
  * <p>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th></tr>
- * <tr><td>jmsRealm</td><td>&nbsp;</td></tr>
+ * <tr><td>jmsRealm</td><td>when present will set jmsRealm from which to retrieve the JMS properties</td></tr>
+ * <tr><td>queueConnectionFactoryName</td><td>when present will set queueConnectionFactoryName (when queueConnectionFactoryName was set by jmsRealm it will be overwritten)</td></tr>
  * <tr><td>destinationName</td><td>name of the JMS destination (queue or topic) to use</td></tr>
  * <tr><td>destinationType</td><td>either QUEUE or TOPIC</td></tr>
  * </table>
@@ -104,6 +105,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 		Element queueBrowserElement;
 		String root = null;
 		String jmsRealm = null;
+		String queueConnectionFactoryName = null;
 		String destinationName = null;
 		String destinationType = null;
 		try {
@@ -111,6 +113,8 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			root = queueBrowserElement.getTagName();
 			jmsRealm = XmlUtils.getChildTagAsString(queueBrowserElement,
 					"jmsRealm");
+			queueConnectionFactoryName = XmlUtils.getChildTagAsString(queueBrowserElement,
+					"queueConnectionFactoryName");
 			destinationName = XmlUtils.getChildTagAsString(queueBrowserElement,
 					"destinationName");
 			destinationType = XmlUtils.getChildTagAsString(queueBrowserElement,
@@ -122,7 +126,12 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 
 		JmsMessageBrowser jmsBrowser = new JmsMessageBrowser();
 		jmsBrowser.setName("XmlQueueBrowserSender");
-		jmsBrowser.setJmsRealm(jmsRealm);
+		if (jmsRealm != null) {
+			jmsBrowser.setJmsRealm(jmsRealm);
+		}
+		if (queueConnectionFactoryName != null) {
+			jmsBrowser.setQueueConnectionFactoryName(queueConnectionFactoryName);
+		}
 		jmsBrowser.setDestinationName(destinationName);
 		jmsBrowser.setDestinationType(destinationType);
 		IMessageBrowser browser = jmsBrowser;
