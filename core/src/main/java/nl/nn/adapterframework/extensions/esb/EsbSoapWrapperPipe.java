@@ -1,11 +1,11 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-	   http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -48,8 +48,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setRetrievePhysicalDestination(boolean) retrievePhysicalDestination}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code></td><td><code>true</code></td></tr>
  * <tr><td>{@link #setUseFixedValues(boolean) useFixedValues}</td><td>If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setFixResultNamespace(boolean) fixResultNamespace}</td><td>(only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setP2pAlias(String) p2pAlias}</td><td>p2pAlias When the messagingLayer part of the destination has this value interpret it as P2P</td><td><code></code></td></tr>
- * <tr><td>{@link #setEsbAlias(String) esbAlias}</td><td>esbAlias When the messagingLayer part of the destination has this value interpret it as ESB</td><td><code></code></td></tr>
+ * <tr><td>{@link #setP2pAlias(String) p2pAlias}</td><td>When the messagingLayer part of the destination has this value interpret it as P2P</td><td><code></code></td></tr>
+ * <tr><td>{@link #setEsbAlias(String) esbAlias}</td><td>When the messagingLayer part of the destination has this value interpret it as ESB</td><td><code></code></td></tr>
  * </table></p>
  * <p>
  * <b>/xml/xsl/esb/soapHeader.xsl:</b>
@@ -257,10 +257,10 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	protected final static String MODE = "mode";
 	protected final static String CMHVERSION = "cmhVersion";
 
-	private boolean useFixedValues=false; 
-	private boolean fixResultNamespace=false; 
-	private String p2pAlias="";
-	private String esbAlias="";
+	private boolean useFixedValues = false; 
+	private boolean fixResultNamespace = false; 
+	private String p2pAlias;
+	private String esbAlias;
 
 	public static enum Mode  {
 		I2T,
@@ -421,7 +421,10 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		}
 		Parameter p;
 		if (StringUtils.isNotEmpty(destination)) { 
-			if(destination.startsWith("ESB.") || destination.startsWith("P2P.") || destination.startsWith(esbAlias+".") ||  destination.startsWith(p2pAlias+"."))  {
+			if(destination.startsWith("ESB.") || destination.startsWith("P2P.")
+					|| (StringUtils.isNotEmpty(esbAlias) && destination.startsWith(esbAlias + "."))
+					|| (StringUtils.isNotEmpty(p2pAlias) && destination.startsWith(p2pAlias + "."))
+					) {
 				//In case the messaging layer is ESB, the destination syntax is:
 				// Destination = [MessagingLayer].[BusinessDomain].[ServiceLayer].[ServiceName].[ServiceContext].[ServiceContextVersion].[OperationName].[OperationVersion].[Paradigm]
 				//In case the messaging layer is P2P, the destination syntax is:
@@ -436,7 +439,9 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 					p = new Parameter();
 					switch (count) {
 						case 1:
-							if (str.equals("P2P")|| (StringUtils.isNotEmpty(p2pAlias) && str.equalsIgnoreCase(p2pAlias))) {
+							if (str.equals("P2P")
+									|| (StringUtils.isNotEmpty(p2pAlias) && str.equalsIgnoreCase(p2pAlias))
+									) {
 								p2p = true;
 							} else {
 								esbDestinationWithoutServiceContext = isEsbDestinationWithoutServiceContext(destination);
@@ -775,11 +780,11 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return fixResultNamespace;
 	}
 
-	public void setP2pAlias(String b) {
-		p2pAlias=b;
+	public void setP2pAlias(String p2pAlias) {
+		this.p2pAlias = p2pAlias;
 	}
 	
-	public void setEsbAlias(String b) {
-		esbAlias=b;
+	public void setEsbAlias(String esbAlias) {
+		this.esbAlias = esbAlias;
 	}
 }
