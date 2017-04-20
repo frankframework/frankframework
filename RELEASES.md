@@ -205,7 +205,7 @@ Upcoming
 
 ### Non backwards compatible changes
 
-- The IBIS console function "Call an IFSA Service" has been deactivated. To active it add property active.ifsa=true
+- The IBIS console functions "Call an IFSA Service" and "Show Monitors" have been deactivated. To activate them again add properties active.ifsa=true and monitoring.enabled=true
 
 
 
