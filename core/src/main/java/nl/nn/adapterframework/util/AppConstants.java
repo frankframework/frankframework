@@ -44,15 +44,15 @@ import nl.nn.adapterframework.configuration.IbisContext;
 public final class AppConstants extends Properties implements Serializable{
 	private Logger log = LogUtil.getLogger(this);
 
-	public final static String propertiesFileName="AppConstants.properties";
-	private static AppConstants self=null;
-	private String additionalPropertiesFileKey="ADDITIONAL.PROPERTIES.FILE";
+	private final static String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
+	private final static String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
+	private static AppConstants self = null;
 	private VariableExpander variableExpander;
 	private static Properties propertyPlaceholderConfigurerProperties = new Properties();
 	
 	private AppConstants() {
 		super();
-		load(null, null, propertiesFileName);
+		load(null, null, APP_CONSTANTS_PROPERTIES_FILE);
 		if (JdbcUtil.retrieveJdbcPropertiesFromDatabase()!=null) {
 			putAll(JdbcUtil.retrieveJdbcPropertiesFromDatabase());
 		}
@@ -60,7 +60,7 @@ public final class AppConstants extends Properties implements Serializable{
 
 	private AppConstants(ClassLoader classLoader) {
 		super();
-		load(classLoader, null, propertiesFileName);
+		load(classLoader, null, APP_CONSTANTS_PROPERTIES_FILE);
 		putAll(propertyPlaceholderConfigurerProperties);
 		if (JdbcUtil.retrieveJdbcPropertiesFromDatabase()!=null) {
 			putAll(JdbcUtil.retrieveJdbcPropertiesFromDatabase());
@@ -69,7 +69,7 @@ public final class AppConstants extends Properties implements Serializable{
 
 	private AppConstants(String directory) {
 		super();
-		load(null, directory, propertiesFileName);
+		load(null, directory, APP_CONSTANTS_PROPERTIES_FILE);
 		putAll(propertyPlaceholderConfigurerProperties);
 		if (JdbcUtil.retrieveJdbcPropertiesFromDatabase()!=null) {
 			putAll(JdbcUtil.retrieveJdbcPropertiesFromDatabase());
@@ -233,11 +233,11 @@ public final class AppConstants extends Properties implements Serializable{
 					} else {
 						log.info("Application constants loaded from file [" + theFilename + "]");
 					}
-					if (getProperty(additionalPropertiesFileKey) != null) {
+					if (getProperty(ADDITIONAL_PROPERTIES_FILE_KEY) != null) {
 						// prevent reloading of the same file over and over again
-						String loadFile = getProperty(additionalPropertiesFileKey);
-						this.remove(additionalPropertiesFileKey);
-						String loadFileSuffix = getProperty(additionalPropertiesFileKey + ".SUFFIX");
+						String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY);
+						this.remove(ADDITIONAL_PROPERTIES_FILE_KEY);
+						String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY + ".SUFFIX");
 						if (StringUtils.isNotEmpty(loadFileSuffix)){
 							load(classLoader, directory, loadFile, loadFileSuffix);
 						} else {
@@ -256,7 +256,7 @@ public final class AppConstants extends Properties implements Serializable{
 					load(classLoader, directory, suffixedFilename);
 				}
 			} catch (IOException e) {
-				log.error("error reading [" + propertiesFileName + "]", e);
+				log.error("error reading [" + APP_CONSTANTS_PROPERTIES_FILE + "]", e);
 			}
 		}
 	}

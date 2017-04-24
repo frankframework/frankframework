@@ -46,9 +46,12 @@ import nl.nn.adapterframework.util.Misc;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
+ * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
+ * <tr><td>{@link #setExtractFirstStringPart(boolean) extractFirstStringPart}</td><td>(only used for parameter <code>httpRequest</code>) when true the first part is not put in a session key but returned to the pipeline (as the result of this pipe)</td><td>false</td></tr>
+ * <tr><td>{@link #setMultipartXmlSessionKey(String) multipartXmlSessionKey}</td><td>(only used when <code>extractFirstStringPart=true</code>) the session key to put the xml in with info about the stored parts</td><td><code>multipartXml</code></td></tr>
  * </table>
- * <b>Parameters:</b>
+ * </p>
+ * <p><b>Parameters:</b></p>
  * <table border="1">
  * <tr><th>name</th><th>default</th></tr>
  * <tr><td>inputStream</td><td>the input stream object to use instead of an input stream object taken from pipe input</td></tr>

@@ -182,10 +182,10 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
 
-	public final static String TYPE_ERRORSTORAGE="E";
-	public final static String TYPE_MESSAGESTORAGE="M";
-	public final static String TYPE_MESSAGELOG_PIPE="L";
-	public final static String TYPE_MESSAGELOG_RECEIVER="A";
+	public static final String TYPE_ERRORSTORAGE="E";
+	public static final String TYPE_MESSAGESTORAGE="M";
+	public static final String TYPE_MESSAGELOG_PIPE="L";
+	public static final String TYPE_MESSAGELOG_RECEIVER="A";
 
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	
@@ -212,7 +212,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private boolean blobsCompressed=true;
 	private boolean storeFullMessage=true;
 	private String indexName="IX_IBISSTORE";
-//	private String index2Name="IX_IBISSTORE_02";
+
 	private String prefix="";
 	private int retention = 30;
 	private String schemaOwner4Check=null;
@@ -243,6 +243,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
     protected String checkMessageIdQuery;
     protected String checkCorrelationIdQuery;
 	protected String getMessageCountQuery;
+	protected String selectDataQuery2;
     
 	protected boolean selectKeyQueryIsDbmsSupported;
 	
@@ -250,25 +251,21 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String sequenceName="seq_ibisstore";
 	protected String updateBlobQuery;		
 	
-	private final String CONTROL_PROPERTY_PREFIX="jdbc.storage.";
-	private final String PROPERTY_USE_INDEX_HINT=CONTROL_PROPERTY_PREFIX+"useIndexHint";
-	private final String PROPERTY_USE_FIRST_ROWS_HINT=CONTROL_PROPERTY_PREFIX+"useFirstRowsHint";
-	private final String PROPERTY_USE_PARAMETERS=CONTROL_PROPERTY_PREFIX+"useParameters";
-	private final String PROPERTY_ASSUME_PRIMARY_KEY_UNIQUE=CONTROL_PROPERTY_PREFIX+"assumePrimaryKeyUnique";
-	private final String PROPERTY_CHECK_TABLE=CONTROL_PROPERTY_PREFIX+"checkTable";
-	private final String PROPERTY_CHECK_INDICES=CONTROL_PROPERTY_PREFIX+"checkIndices";
-//	private final String PROPERTY_CHECK_INDEXNAMES=CONTROL_PROPERTY_PREFIX+"checkIndexNames";
+	private static final String CONTROL_PROPERTY_PREFIX="jdbc.storage.";
+	private static final String PROPERTY_USE_INDEX_HINT=CONTROL_PROPERTY_PREFIX+"useIndexHint";
+	private static final String PROPERTY_USE_FIRST_ROWS_HINT=CONTROL_PROPERTY_PREFIX+"useFirstRowsHint";
+	private static final String PROPERTY_USE_PARAMETERS=CONTROL_PROPERTY_PREFIX+"useParameters";
+	private static final String PROPERTY_ASSUME_PRIMARY_KEY_UNIQUE=CONTROL_PROPERTY_PREFIX+"assumePrimaryKeyUnique";
+	private static final String PROPERTY_CHECK_TABLE=CONTROL_PROPERTY_PREFIX+"checkTable";
+	private static final String PROPERTY_CHECK_INDICES=CONTROL_PROPERTY_PREFIX+"checkIndices";	
 	
-	
-	private final boolean documentQueries=false;
+	private static final boolean documentQueries=false;
 	private boolean useIndexHint;
 	private boolean useFirstRowsHint;
 	private boolean useParameters;
 	private boolean assumePrimaryKeyUnique;
 	private boolean checkTable;
-	private boolean checkIndices;
-//	private boolean checkIndexNames;
-	
+	private boolean checkIndices;	
 	
 	public JdbcTransactionalStorage() {
 		super();
@@ -287,34 +284,15 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		assumePrimaryKeyUnique = ac.getBoolean(PROPERTY_ASSUME_PRIMARY_KEY_UNIQUE, true);
 		checkTable = ac.getBoolean(PROPERTY_CHECK_TABLE, false);
 		checkIndices = ac.getBoolean(PROPERTY_CHECK_INDICES, true);
-//		checkIndexNames = ac.getBoolean(PROPERTY_CHECK_INDEXNAMES, true);
 	}
-	
-	private void checkTableColumnPresent(Connection connection, IDbmsSupport dbms, String columnName) throws JdbcException {
-		if (StringUtils.isNotEmpty(columnName)) {
-			if (!dbms.isTableColumnPresent(connection, getSchemaOwner4Check(), getTableName(), columnName)) {
-				String msg="Table ["+getTableName()+"] has no column ["+columnName+"]";
-				ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
-			}
+
+	private void checkTableColumnPresent(Connection connection, IDbmsSupport dbms, String columnName)
+			throws JdbcException {
+		if (StringUtils.isNotEmpty(columnName) && !dbms.isTableColumnPresent(connection, getSchemaOwner4Check(), getTableName(), columnName)) {
+			String msg = "Table [" + getTableName() + "] has no column [" + columnName + "]";
+			ConfigurationWarnings.getInstance().add(getLogPrefix() + msg);
 		}
 	}
-
-//	private void checkIndexColumnPresent(Connection connection, String indexName, String columnName, int position) {
-//		if (StringUtils.isNotEmpty(columnName)) {
-//			if (!JdbcUtil.isIndexColumnPresent(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName(), indexName, columnName)) {
-//				String msg="Index ["+indexName+"] on table ["+getTableName()+"] has no column ["+columnName+"]";
-//				ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
-//			} else {
-//				int columnPos=JdbcUtil.getIndexColumnPosition(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName(), indexName, columnName);
-//				if (columnPos!=position) {
-//					String msg="Index ["+indexName+"] on table ["+getTableName()+"] column ["+columnName+"] has position ["+columnPos+"] instead of ["+position+"]";
-//					ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
-//				}
-//			}
-//		}
-//	}
-
-
 	
 	private void checkTable(Connection connection) throws JdbcException {
 		IDbmsSupport dbms=getDbmsSupport();
@@ -368,7 +346,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	private void checkIndexOnColumnsPresent(Connection connection, List columns) {
-		if (columns!=null && columns.size()>0) {
+		if (columns!=null && !columns.isEmpty()) {
 			if (!JdbcUtil.hasIndexOnColumns(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName(), columns)) {
 				String msg="table ["+getTableName()+"] has no index on columns ["+columns.get(0);
 				for (int i=1;i<columns.size();i++) {
@@ -379,27 +357,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}
 		}
 	}
-	
-//	private void checkIndex(Connection connection) {
-//		if (JdbcUtil.isIndexPresent(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName(), getIndexName())) {
-//			int pos = 0;
-//			if (StringUtils.isNotEmpty(getTypeField())) {
-//				pos++;
-//				checkIndexColumnPresent(connection,getIndexName(),getTypeField(),pos);
-//			}
-//			if (StringUtils.isNotEmpty(getSlotIdField())) {
-//				pos++;
-//				checkIndexColumnPresent(connection,getIndexName(),getSlotIdField(),pos);
-//			}
-//			if (StringUtils.isNotEmpty(getDateField())) {
-//				pos++;
-//				checkIndexColumnPresent(connection,getIndexName(),getDateField(),pos);
-//			}
-//		} else {
-//			String msg="Index ["+getIndexName()+"] on table ["+getTableName()+"] not present";
-//			ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
-//		}
-//	}
 
 	private void checkSequence(Connection connection) {
 		if (JdbcUtil.isSequencePresent(connection, getDatabaseType(), getSchemaOwner4Check(), getSequenceName())) {
@@ -410,59 +367,34 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
-//	private void checkIndex2(Connection connection) {
-//		if (JdbcUtil.isIndexPresent(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName(), getIndex2Name())) {
-//			int pos = 0;
-//			if (StringUtils.isNotEmpty(getExpiryDateField())) {
-//				pos++;
-//				checkIndexColumnPresent(connection,getIndex2Name(),getExpiryDateField(),pos);
-//			}
-//		} else {
-//			String msg="Index ["+getIndex2Name()+"] on table ["+getTableName()+"] not present";
-//			ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
-//		}
-//	}
-
-
 	private void checkDatabase() throws ConfigurationException {
-		Connection connection=null;
+		Connection connection = null;
 		try {
-//			if (getDatabaseType()==DbmsSupportFactory.DBMS_ORACLE) {
-				if (checkTable || checkIndices) {
-					connection=getConnection();
-					if (schemaOwner4Check==null) {
-						IDbmsSupport dbms=getDbmsSupport();
-						try {
-							schemaOwner4Check=dbms.getSchema(connection);
-						} catch (Exception e) {
-							log.warn("Exception determining current schema", e);
-						}
+			if (checkTable || checkIndices) {
+				connection = getConnection();
+				if (schemaOwner4Check == null) {
+					IDbmsSupport dbms = getDbmsSupport();
+					try {
+						schemaOwner4Check = dbms.getSchema(connection);
+					} catch (Exception e) {
+						log.warn("Exception determining current schema", e);
 					}
-					if (StringUtils.isNotEmpty(getSchemaOwner4Check())){
-						if (checkTable) {
-							if (StringUtils.isNotEmpty(getTableName())) {
+				}
+				if (StringUtils.isNotEmpty(getSchemaOwner4Check())) {
+					if (checkTable) {
+						if (StringUtils.isNotEmpty(getTableName())) {
 							checkTable(connection);
-							} else {
-								throw new ConfigurationException("Attribute [tableName] is not set");
-							}
-							if (StringUtils.isNotEmpty(getSequenceName())) {
-								checkSequence(connection);
-							} else {
-								throw new ConfigurationException("Attribute [sequenceName] is not set");
-							}
+						} else {
+							throw new ConfigurationException("Attribute [tableName] is not set");
+						}
+						if (StringUtils.isNotEmpty(getSequenceName())) {
+							checkSequence(connection);
+						} else {
+							throw new ConfigurationException("Attribute [sequenceName] is not set");
+						}
 						}
 						if (checkIndices) {
 							checkIndices(connection);
-//							if (StringUtils.isNotEmpty(getIndexName())) {
-//								checkIndex(connection);
-//							} else {
-//								throw new ConfigurationException("Attribute [indexName] is not set");
-//							}
-//							if (StringUtils.isNotEmpty(getIndex2Name())) {
-//								checkIndex2(connection);
-//							} else {
-//								throw new ConfigurationException("Attribute [index2Name] is not set");
-//							}
 						}
 					} else {
 						ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: Schema owner is unknown");
@@ -470,9 +402,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				} else {
 					log.info(getLogPrefix()+"checking of table and indices is not enabled");
 				}
-//			} else {
-//				ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: Not an Oracle database");
-//			}
 		} catch (JdbcException e) {
 			ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: "+e.getMessage());
 		} finally {
@@ -490,7 +419,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	 * Creates a connection, checks if the table is existing and creates it when necessary
 	 */
 	public void configure() throws ConfigurationException {
-//		super.configure();
 		setOperationControls();
 		if (StringUtils.isEmpty(getTableName())) {
 			throw new ConfigurationException("Attribute [tableName] is not set");
@@ -501,9 +429,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		if (StringUtils.isEmpty(getSequenceName())) {
 			throw new ConfigurationException("Attribute [sequenceName] is not set");
 		}
-//		if (StringUtils.isEmpty(getIndex2Name())) {
-//			throw new ConfigurationException("Attribute [index2Name] is not set");
-//		}
 		if (StringUtils.isNotEmpty(getHostField())) {
 			host=Misc.getHostname();
 		}
@@ -525,10 +450,18 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	 * change datatypes used for specific database vendor. 
 	 */
 	protected void setDataTypes(IDbmsSupport dbmsSupport) {
-		if (StringUtils.isEmpty(getKeyFieldType())) setKeyFieldType(dbmsSupport.getAutoIncrementKeyFieldType());
-		if (StringUtils.isEmpty(getDateFieldType())) setDateFieldType(dbmsSupport.getTimestampFieldType());
-		if (StringUtils.isEmpty(getTextFieldType())) setTextFieldType(dbmsSupport.getTextFieldType());
-		if (StringUtils.isEmpty(getMessageFieldType())) setMessageFieldType(dbmsSupport.getBlobFieldType());
+		if (StringUtils.isEmpty(getKeyFieldType())) {
+			setKeyFieldType(dbmsSupport.getAutoIncrementKeyFieldType());
+		}
+		if (StringUtils.isEmpty(getDateFieldType())) {
+			setDateFieldType(dbmsSupport.getTimestampFieldType());
+		}
+		if (StringUtils.isEmpty(getTextFieldType())) {
+			setTextFieldType(dbmsSupport.getTextFieldType());
+		}
+		if (StringUtils.isEmpty(getMessageFieldType())) {
+			setMessageFieldType(dbmsSupport.getBlobFieldType());
+		}
 	}
 
 	protected void createQueryTexts(IDbmsSupport dbmsSupport) throws ConfigurationException {
@@ -572,6 +505,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		if (dbmsSupport.mustInsertEmptyBlobBeforeData()) {
 			updateBlobQuery = dbmsSupport.getUpdateBlobQuery(getPrefix()+getTableName(), getMessageField(), getKeyField()); 
 		}
+		selectDataQuery2 = "SELECT " + getMessageField() + " FROM " + getPrefix() + getTableName() + " WHERE " + getIdField() + "=?";
 		if (documentQueries && log.isDebugEnabled()) {
 			log.debug(
 					documentQuery("insertQuery",insertQuery,"Voeg een regel toe aan de tabel")+
@@ -583,7 +517,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 					documentQuery("checkMessageIdQuery",checkMessageIdQuery,"bekijk of een messageId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
 					documentQuery("checkCorrelationIdQuery",checkCorrelationIdQuery,"bekijk of een correlationId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
 					documentQuery("getMessageCountQuery",getMessageCountQuery,"tel het aantal regels in een gedeelte van de tabel. Kan via index.")+
-					documentQuery("updateBlobQuery",updateBlobQuery,"Geef de blob een waarde, via de primary key")
+					documentQuery("updateBlobQuery",updateBlobQuery,"Geef de blob een waarde, via de primary key")+
+					documentQuery("selectDataQuery2",selectDataQuery2,"Haal de blob van een regel op, via een messageId")
 //					+"\n"
 //					+"\n- slotId en type zou via ? kunnen"
 //					+"\n- selectListQuery zou in sommige gevallen extra filters in de where clause kunnen krijgen"
@@ -740,7 +675,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		PreparedStatement stmt=null;
 		
 		try {			
-			if (log.isDebugEnabled()) log.debug("preparing key retrieval statement ["+selectKeyQuery+"]");
+			if (log.isDebugEnabled()) {
+				log.debug("preparing key retrieval statement ["+selectKeyQuery+"]");
+			}
 			stmt = conn.prepareStatement(selectKeyQuery);			
 			if (!selectKeyQueryIsDbmsSupported) {
 				int paramPos=applyStandardParameters(stmt, true, false);
@@ -772,7 +709,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		PreparedStatement stmt = null;
 		try { 
 			IDbmsSupport dbmsSupport=getDbmsSupport();
-			if (log.isDebugEnabled()) log.debug("preparing insert statement ["+insertQuery+"]");
+			if (log.isDebugEnabled()) {
+				log.debug("preparing insert statement ["+insertQuery+"]");
+			}
 			if (!dbmsSupport.mustInsertEmptyBlobBeforeData()) {
 				stmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
 			} else {
@@ -839,10 +778,21 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				}
 				stmt.execute();
 				ResultSet rs = stmt.getGeneratedKeys();
-				if (rs.next()) {
-					return rs.getString(1);
+				boolean messageIdExists = false;
+				if (rs.next() && rs.getString(1) != null) {
+					return "<results><result>" + rs.getString(1) + "</result></results>";
 				} else {
-					return null;
+					messageIdExists = true;
+				}
+				
+				if (messageIdExists) {
+					boolean isMessageDifferent = isMessageDifferent(conn, messageId, message);
+					String resultString = createResultString(isMessageDifferent);
+					log.warn("MessageID [" + messageId + "] already exists");
+					if (isMessageDifferent) {
+						log.warn("Message with MessageID [" + messageId + "] is not equal");
+					}
+					return resultString;
 				}
 			}
 			if (isOnlyStoreWhenMessageIdUnique()) {
@@ -851,9 +801,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}
 			stmt.execute();
 			int updateCount = stmt.getUpdateCount();
-			if (log.isDebugEnabled()) log.debug("update count for insert statement: "+updateCount);
+			if (log.isDebugEnabled()) {
+				log.debug("update count for insert statement: "+updateCount);
+			}
 			if (updateCount > 0) {
-				if (log.isDebugEnabled()) log.debug("preparing select statement ["+selectKeyQuery+"]");
+				if (log.isDebugEnabled()) {
+					log.debug("preparing select statement ["+selectKeyQuery+"]");
+				}
 				stmt = conn.prepareStatement(selectKeyQuery);			
 				ResultSet rs = null;
 				try {
@@ -866,8 +820,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 					rs.close();
 	
 					// and update the blob
-					if (log.isDebugEnabled()) log.debug("preparing update statement ["+updateBlobQuery+"]");
-					stmt = conn.prepareStatement(updateBlobQuery);			
+					if (log.isDebugEnabled()) {
+						log.debug("preparing update statement ["+updateBlobQuery+"]");
+					}
+					stmt = conn.prepareStatement(updateBlobQuery);
 					stmt.clearParameters();
 					stmt.setString(1,newKey);
 	
@@ -875,11 +831,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 					if (!rs.next()) {
 						throw new SenderException("could not retrieve row for stored message ["+ messageId+"]");
 					}
-	//						String newKey = rs.getString(1);
-	//						BLOB blob = (BLOB)rs.getBlob(2);
 					Object blobHandle=dbmsSupport.getBlobUpdateHandle(rs, 1);
 					OutputStream out = dbmsSupport.getBlobOutputStream(rs, 1, blobHandle);
-	//					OutputStream out = JdbcUtil.getBlobUpdateOutputStream(rs,1);
 					if (isBlobsCompressed()) {
 						DeflaterOutputStream dos = new DeflaterOutputStream(out);
 						ObjectOutputStream oos = new ObjectOutputStream(dos);
@@ -915,6 +868,50 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
+	private boolean isMessageDifferent(Connection conn, String messageId, Serializable message) throws SQLException{
+		PreparedStatement stmt = null;
+		int paramPosition=0;
+		
+		try{
+			// preparing database query statement.
+			stmt = conn.prepareStatement(selectDataQuery2);
+			stmt.clearParameters();
+			stmt.setString(++paramPosition, messageId);
+			// executing query, getting message as response in a result set.
+			ResultSet rs = stmt.executeQuery();
+			// if rs.next() needed as you can not simply call rs.
+			if (rs.next()) {
+				String dataBaseMessage = retrieveObject(rs, 1).toString();
+				String inputMessage = message.toString();
+				if (dataBaseMessage.equals(inputMessage)) {
+					return false;
+				}
+				return true;
+			}
+			return true;
+		} catch (Exception e) {
+			log.warn("Exception comparing messages", e);
+			return true;
+		} finally {
+			if (stmt != null) {
+				stmt.close();
+			}
+		}
+	}
+	
+	private String createResultString(boolean isMessageDifferent){
+		String resultStringStart = "<results>";
+		String resultStringEnd = "</results>";
+		String messageIdExistsString = "<result>WARN_MESSAGEID_ALREADY_EXISTS</result>";
+		String resultString = resultStringStart+messageIdExistsString;
+		if(isMessageDifferent){
+			String messageIsDifferentString = "<result>ERROR_MESSAGE_IS_DIFFERENT</result>";
+			resultString = resultString+messageIsDifferentString;
+		}
+		resultString = resultString+resultStringEnd;
+		return resultString;
+	}
+	
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
 		TransactionStatus txStatus=null;
 		if (txManager!=null) {
@@ -1065,7 +1062,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			} else {
 				query=getSelectListQuery(getDbmsSupport(), startTime, endTime, forceDescending);
 			}
-			if (log.isDebugEnabled()) log.debug("preparing selectListQuery ["+query+"]");
+			if (log.isDebugEnabled()) {
+				log.debug("preparing selectListQuery ["+query+"]");
+			}
 			PreparedStatement stmt = conn.prepareStatement(query);
 			if (startTime==null && endTime==null) {
 				applyStandardParameters(stmt, false, false);
@@ -1150,9 +1149,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				return null;
 			}
 			if (compressed) {
-				blobStream=new InflaterInputStream(JdbcUtil.getBlobInputStream(blob, columnIndex+""));
+				blobStream=new InflaterInputStream(JdbcUtil.getBlobInputStream(blob, Integer.toString(columnIndex)));
 			} else {
-				blobStream=JdbcUtil.getBlobInputStream(blob, columnIndex+"");
+				blobStream=JdbcUtil.getBlobInputStream(blob, Integer.toString(columnIndex));
 			}
 			ObjectInputStream ois = new ObjectInputStream(blobStream);
 			Object result = ois.readObject();
@@ -1313,9 +1312,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			if (!rs.next()) {
 				throw new ListenerException("could not retrieve message for messageid ["+ messageId+"]");
 			}
-			
-			Object result = retrieveObject(rs,1);
-			return result;
+			return retrieveObject(rs,1);
 			
 		} catch (Exception e) {
 			throw new ListenerException("cannot deserialize message",e);
@@ -1639,13 +1636,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	public String getIndexName() {
 		return indexName;
 	}
-
-//	public void setIndex2Name(String string) {
-//		index2Name = string;
-//	}
-//	public String getIndex2Name() {
-//		return index2Name;
-//	}
 
 	public void setTxManager(PlatformTransactionManager manager) {
 		txManager = manager;

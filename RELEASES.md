@@ -38,6 +38,13 @@ Upcoming
 - Add log messages state to "Show configuration status: *ALL*"
 - Fix log.level now set automatically dependant on otap.stage
 - Add senders to the MSG log
+- Improve check on duplicate messages in MessageStoreSender
+- Avoid NPE in "Show Scheduler Status"
+- Add IbisTester role to IBIS LoginFilter
+- Add queueConnectionFactoryName to XmlJmsBrowserSender possible input elements
+- Make xmlStreamWriter in ScanTibcoSolutionPipe use central 
+- Create XMLStreamWriter with XmlUtils.OUTPUT_FACTORY in all classes (ScanTibcoSolutionPipe didn't use XmlUtils.OUTPUT_FACTORY yet)
+- Set log.dir automatically for Vanilla/Eclipse Tomcat too
 
 
 
@@ -201,7 +208,7 @@ Upcoming
 
 ### Non backwards compatible changes
 
-- The IBIS console function "Call an IFSA Service" has been deactivated. To active it add property active.ifsa=true
+- The IBIS console functions "Call an IFSA Service" and "Show Monitors" have been deactivated. To activate them again add properties active.ifsa=true and monitoring.enabled=true
 
 
 
