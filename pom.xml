@@ -229,6 +229,7 @@
   </distributionManagement>
 
   <profiles>
+   
     <profile>
       <id>iaf-without-proprietary-dependencies</id>
       <activation>
@@ -243,6 +244,7 @@
         <module>webapp</module>
       </modules>
     </profile>
+    
     <profile>
       <id>iaf-with-proprietary-dependencies</id>
       <activation>
@@ -262,23 +264,6 @@
         <module>webapp</module>
       </modules>
     </profile>
-   
-    <profile>
-      <id>selenium</id>
-      <activation>
-        <file>
-          <exists>D:/Data/chromedriver_win32/chromedriver.exe</exists>
-        </file>
-      </activation>
-      <dependencies>
-   		<dependency>
-		 	<groupId>org.seleniumhq.selenium</groupId> 
-		  	<artifactId>selenium-java</artifactId>
-		  	<version>2.35.0</version>
-		  	<scope>test</scope>
-		</dependency> 
-      </dependencies>
-    </profile>
-    
+       
   </profiles>
 </project>
