@@ -23,6 +23,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -219,164 +220,18 @@ public class UploadConfig extends TimeoutGuardPipe {
 		String form_jmsRealm = (String) session.get("jmsRealm");
 		String activeConfig = (String) session.get("activeConfig");
 		String autoReload = (String) session.get("autoReload");
+		boolean activate_config = ("on".equals(activeConfig));
+		boolean auto_reload = ("on".equals(autoReload));
 		String result = "";
-		FixedQuerySender qs = (FixedQuerySender) ibisContext
-				.createBeanAutowireByName(FixedQuerySender.class);
-		try {
-			qs.setName("QuerySender");
-			qs.setJmsRealm(form_jmsRealm);
-			qs.setQueryType("select");
-			qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG WHERE NAME=?");
-			Parameter param = new Parameter();
-			param.setName("name");
-			param.setValue(name);
-			qs.addParameter(param);
-			qs.setScalar(true);
-			qs.configure();
-			qs.open();
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					"dummy", session);
-			result = qs.sendMessage("dummy", "dummy", prc);
-		} catch (Throwable t) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Error occured on executing jdbc query", t);
-		} finally {
-			qs.close();
-		}
-
-		if ("on".equals(activeConfig)) {
-			qs = (FixedQuerySender) ibisContext
-					.createBeanAutowireByName(FixedQuerySender.class);
-
-			try {
-				qs.setName("QuerySender");
-				qs.setJmsRealm(form_jmsRealm);
-				qs.setQueryType("update");
-				qs.setQuery("UPDATE IBISCONFIG SET ACTIVECONFIG = 'FALSE' WHERE NAME=?");
-				Parameter param = new Parameter();
-				param.setName("name");
-				param.setValue(name);
-				qs.addParameter(param);
-				qs.setScalar(true);
-				qs.configure();
-				qs.open();
-				ParameterResolutionContext prc = new ParameterResolutionContext(
-						"dummy", session);
-				result = qs.sendMessage("dummy", "dummy", prc);
-			} catch (Throwable t) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "Error occured on executing jdbc query", t);
-			} finally {
-				qs.close();
-			}
-		}
-		if (Integer.parseInt(result) > 0) {
-			qs = (FixedQuerySender) ibisContext
-					.createBeanAutowireByName(FixedQuerySender.class);
-			try {
-				qs.setName("QuerySender");
-				qs.setJmsRealm(form_jmsRealm);
-				qs.setQuery("DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION = ?");
-				Parameter param = new Parameter();
-				param.setName("name");
-				param.setValue(name);
-				qs.addParameter(param);
-				param = new Parameter();
-				param.setName("version");
-				param.setValue(version);
-				qs.addParameter(param);
-				qs.setScalar(true);
-				qs.configure();
-				qs.open();
-				ParameterResolutionContext prc = new ParameterResolutionContext(
-						"dummy", session);
-				result = qs.sendMessage("dummy", "dummy", prc);
-			} catch (Throwable t) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "Error occured on executing jdbc query", t);
-			} finally {
-				qs.close();
-			}
-		}
-
-		/**
-		 * Why is the following not working (remoteUser is always empty)? String
-		 * remoteUser; try { remoteUser =
-		 * RestListenerUtils.retrieveRequestRemoteUser(session); } catch
-		 * (IOException e) { throw new PipeRunException(this,
-		 * getLogPrefix(session) + "Error occured on retrieving remote user",
-		 * e); }
-		 */
 
 		String remoteUser = (String) session.get("principal");
-
-		qs = (FixedQuerySender) ibisContext
-				.createBeanAutowireByName(FixedQuerySender.class);
+		InputStream file = (InputStream) session.get(fileNameSessionKey);
 		try {
-			qs.setName("QuerySender");
-			qs.setJmsRealm(form_jmsRealm);
-			qs.setQueryType("insert");
-			if (StringUtils.isEmpty(remoteUser)) {
-				qs.setQuery("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)");
-			} else {
-				qs.setQuery("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)");
-			}
-			Parameter param = new Parameter();
-			param.setName("name");
-			param.setValue(name);
-			qs.addParameter(param);
-			param = new Parameter();
-			param.setName("version");
-			param.setValue(version);
-			qs.addParameter(param);
-			param = new Parameter();
-			param.setName("fileName");
-			param.setValue(fileName);
-			qs.addParameter(param);
-			param = new Parameter();
-			param.setName("config");
-			param.setSessionKey(fileNameSessionKey);
-			param.setType(Parameter.TYPE_INPUTSTREAM);
-			qs.addParameter(param);
-			if (StringUtils.isNotEmpty(remoteUser)) {
-				param = new Parameter();
-				param.setName("ruser");
-				param.setValue(remoteUser);
-				qs.addParameter(param);
-			}
-			if ("on".equals(activeConfig)) {
-				param = new Parameter();
-				param.setName("activeconfig");
-				param.setValue("true");
-				qs.addParameter(param);
-			} else {
-				param = new Parameter();
-				param.setName("activeconfig");
-				param.setValue("false");
-				qs.addParameter(param);
-			}
-			if ("on".equals(autoReload)) {
-				param = new Parameter();
-				param.setName("autoReload");
-				param.setValue("true");
-				qs.addParameter(param);
-			} else {
-				param = new Parameter();
-				param.setName("autoReload");
-				param.setValue("false");
-				qs.addParameter(param);
-			}
-			qs.configure();
-			qs.open();
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					"dummy", session);
-			result = qs.sendMessage("dummy", "dummy", prc);
+			result = ""+ConfigurationUtils.addConfigToDatabase(ibisContext, form_jmsRealm, activate_config, auto_reload, name, version, fileName, file, remoteUser);
 		} catch (Throwable t) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Error occured on executing jdbc query", t);
-		} finally {
-			qs.close();
+			throw new PipeRunException(this, getLogPrefix(session) + "Error occured on executing jdbc query", t);
 		}
+
 		return result;
 	}
 
