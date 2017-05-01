@@ -19,6 +19,5 @@ notifications:
 addons:
   sauce_connect:
     username: "Baswat"
-    direct_domains: *.ibissource.org
+#    direct_domains: *.ibissource.org
     access_key: "d835004c-97a1-4e52-b63f-daa5b1d3d3fd"
-    
