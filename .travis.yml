@@ -10,8 +10,7 @@ jdk:
 # Default script phase: mvn test -B
 
 install: echo 'Skipping separate install phase'
-before_script: 
-	- python -m SimpleHTTPServer & 
+before_script: python -m SimpleHTTPServer &
 
 script: mvn install -B
 
