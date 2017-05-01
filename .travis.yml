@@ -8,6 +8,7 @@ jdk:
 # it's not needed to have a separate install phase.
 # Default install phase: mvn install -DskipTests=true -B
 # Default script phase: mvn test -B
+
 install: echo 'Skipping separate install phase'
 script: mvn install -B
 
@@ -18,4 +19,6 @@ notifications:
 addons:
   sauce_connect:
     username: "Baswat"
-    access_key: "f9f06419-8d66-4aa5-9dce-b4336ad42c5a"
+    direct_domains: *.ibissource.org
+    access_key: "d835004c-97a1-4e52-b63f-daa5b1d3d3fd"
+    
