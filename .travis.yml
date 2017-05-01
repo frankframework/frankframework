@@ -10,14 +10,17 @@ jdk:
 # Default script phase: mvn test -B
 
 install: echo 'Skipping separate install phase'
+before_script: 
+	- python -m SimpleHTTPServer & 
+
 script: mvn install -B
 
 notifications:
   email:
     - ibistravis@meeuw.org
+    - ibistravis@integrationpartners.nl
 
 addons:
   sauce_connect:
     username: "Baswat"
-#    direct_domains: *.ibissource.org
     access_key: "d835004c-97a1-4e52-b63f-daa5b1d3d3fd"
