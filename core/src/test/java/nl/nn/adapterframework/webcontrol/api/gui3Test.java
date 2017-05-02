@@ -38,13 +38,15 @@ public class gui3Test {
     	caps.setCapability("version", "45.0");
 	    caps.setCapability("tunnel-identifier", System.getProperty("TRAVIS_JOB_NUMBER"));
 
-	    if(System.getProperty("TRAVIS_JOB_NUMBER") != null) {
-	    	driver = new RemoteWebDriver(new URL(URL), caps);
-	    }
-	    else {
-	    	System.setProperty("webdriver.chrome.driver", "C:/Data/Vergaarbak/chromedriver_win32/chromedriver.exe");
-			driver = new ChromeDriver();
-	    }
+	    
+	    driver = new RemoteWebDriver(new URL(URL), caps);
+//	    if(System.getProperty("TRAVIS_JOB_NUMBER") != null) {
+//	    	driver = new RemoteWebDriver(new URL(URL), caps);
+//	    }
+//	    else {
+//	    	System.setProperty("webdriver.chrome.driver", "C:/Data/Vergaarbak/chromedriver_win32/chromedriver.exe");
+//			driver = new ChromeDriver();
+//	    }
 
     	//System.setProperty("webdriver.chrome.driver", "C:/Data/Vergaarbak/chromedriver_win32/chromedriver.exe");
     	driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
