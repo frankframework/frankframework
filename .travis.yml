@@ -19,8 +19,8 @@ install: echo 'Skipping separate install phase'
 #  - python -m SimpleHTTPServer &
 
 script: 
-	- mvn jetty:run
-	- mvn install -B
+- mvn jetty:run
+- mvn install -B
 
 notifications:
   email:
