@@ -11,13 +11,14 @@ jdk:
 
 install: echo 'Skipping separate install phase'
 
-before_script:
-before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3
+#before_script:
+#  - "export DISPLAY=:99.0"
+#  - "sh -e /etc/init.d/xvfb start"
+#  - sleep 3
 #  - fluxbox >/dev/null 2>&1 &
 #  - python -m SimpleHTTPServer &
+
+before_script: mvn jetty:run
 
 script: mvn install -B
 

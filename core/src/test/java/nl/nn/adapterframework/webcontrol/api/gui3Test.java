@@ -55,7 +55,7 @@ public class gui3Test {
     
     @Test
     public void gui3Test() {
-    	driver.get("http://localhost/iaf-example/Angular/");
+    	driver.get("http://localhost:8080/iaf-example/Angular/");
         driver.findElement(By.linkText("Logging")).click();
         driver.findElement(By.linkText("Test Pipeline")).click();
         driver.findElement(By.linkText("Test serviceListener")).click();
