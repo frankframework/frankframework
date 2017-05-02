@@ -127,10 +127,17 @@
 				<artifactId>mail</artifactId>
 				<version>1.4.5</version>
 			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-maven-plugin -->
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
-				<version>9.2.10.v20150310</version>
+				<version>9.2.21.v20170120</version>
+			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server -->
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-server</artifactId>
+				<version>9.2.21.v20170120</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -166,6 +173,11 @@
 				<configuration>
 					<redirectTestOutputToFile>true</redirectTestOutputToFile>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>9.2.21.v20170120</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
