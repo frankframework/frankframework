@@ -18,9 +18,9 @@ install: echo 'Skipping separate install phase'
 #  - fluxbox >/dev/null 2>&1 &
 #  - python -m SimpleHTTPServer &
 
-before_script: mvn jetty:run
-
-script: mvn install -B
+script: 
+	- mvn jetty:run
+	- mvn install -B
 
 notifications:
   email:
