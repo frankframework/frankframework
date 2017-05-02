@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.configuration.classloaders;
 
+import java.util.Map;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -22,6 +24,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 public class DatabaseClassLoader extends JarBytesClassLoader {
 	private IbisContext ibisContext;
 	private String configurationName;
+	private Map<String, Object> configuration;
 
 	public DatabaseClassLoader(IbisContext ibisContext, String configurationName) throws ConfigurationException {
 		super(DatabaseClassLoader.class.getClassLoader());
@@ -33,13 +36,31 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 	@Override
 	public void reload() throws ConfigurationException {
 		super.reload();
-		byte[] jarBytes = null;
-		jarBytes = ConfigurationUtils.getConfigFromDatabase(ibisContext, configurationName, null);
-		if (jarBytes == null) {
+		Map<String, Object> configuration = null;
+		configuration = ConfigurationUtils.getConfigFromDatabase(ibisContext, configurationName, null);
+		if (configuration == null) {
 			throw new ConfigurationException("Could not get config '" + configurationName + "' from database");
 		} else {
+			byte[] jarBytes = (byte[]) configuration.get("CONFIG");
+			configuration.remove("CONFIG");
+			this.configuration = configuration;
 			readResources(jarBytes, configurationName);
 		}
 	}
 
+	public String getFileName() {
+		return (String) configuration.get("FILENAME");
+	}
+
+	public String getUser() {
+		return (String) configuration.get("USER");
+	}
+
+	public String getVersion() {
+		return (String) configuration.get("VERSION");
+	}
+
+	public String getCreationDate() {
+		return (String) configuration.get("CREATED");
+	}
 }

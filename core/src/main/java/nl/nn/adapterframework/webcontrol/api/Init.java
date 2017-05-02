@@ -45,6 +45,7 @@ import org.jboss.resteasy.core.ResourceMethodRegistry;
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -77,7 +78,13 @@ public class Init extends Base {
 			Map<String, Object> cfg = new HashMap<String, Object>();
 			cfg.put("name", configuration.getName());
 			cfg.put("version", configuration.getVersion());
-			//cfg.put("url", configuration.getConfigurationURL());
+			cfg.put("type", configuration.getClassLoaderType());
+			ClassLoader classLoader = configuration.getClassLoader().getParent();
+			if(classLoader instanceof DatabaseClassLoader) {
+				cfg.put("filename", ((DatabaseClassLoader) classLoader).getFileName());
+				cfg.put("created", ((DatabaseClassLoader) classLoader).getCreationDate());
+				cfg.put("user", ((DatabaseClassLoader) classLoader).getUser());
+			}
 			configurations.add(cfg);
 		}
 		returnMap.put("configurations", configurations);
@@ -85,6 +92,7 @@ public class Init extends Base {
 		returnMap.put("version", ibisContext.getFrameworkVersion());
 		returnMap.put("name", ibisContext.getApplicationName());
 		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
+		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
 		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
 		fileSystem.put("totalSpace", Misc.getFileSystemTotalSpace());
 		fileSystem.put("freeSpace", Misc.getFileSystemFreeSpace());
@@ -207,7 +215,7 @@ public class Init extends Base {
 					continue;
 				}
 
-				Map<String, Object> resource = new HashMap<String, Object>(3);
+				Map<String, Object> resource = new HashMap<String, Object>(4);
 
 				if(method.isAnnotationPresent(GET.class))
 					resource.put("type", "GET");
@@ -236,7 +244,7 @@ public class Init extends Base {
 				resources.add(resource);
 			}
 		}
-		Map<String, Object> ret = new HashMap<String, Object>(3);
+		Map<String, Object> ret = new HashMap<String, Object>(1);
 		ret.put("links", resources);
 
 		return Response.status(Response.Status.CREATED).entity(ret).build();
