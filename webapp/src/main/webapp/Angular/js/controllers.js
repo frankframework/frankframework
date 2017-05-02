@@ -547,10 +547,6 @@ angular.module('iaf.beheerconsole')
 
 //** Ctrls **//
 
-.controller('ManageConfigurationsCtrl', ['$scope', function($scope) {
-	console.log("trallaa", $scope.configurations);
-}])
-
 .controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api', 'Debug', 'Misc', function($scope, $state, Api, Debug, Misc) {
 	$scope.configuration = $state.params.name;
 	Api.Get("configurations/manage/"+$state.params.name, function(data) {
