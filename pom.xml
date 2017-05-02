@@ -110,7 +110,7 @@
 			<dependency>
 				<groupId>commons-pool</groupId>
 				<artifactId>commons-pool</artifactId>
-				<version>1.5.5</version> 
+				<version>1.5.5</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-codec</groupId>
@@ -129,8 +129,8 @@
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-server</artifactId>
-				<version>9.2.21.v20170120</version>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>9.2.10.v20150310</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
