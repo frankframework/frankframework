@@ -1,7 +1,7 @@
 <!-- Angular ui-router hack-->
 <div ui-view></div>
 
-<div class="wrapper wrapper-content animated fadeInRight" ng-controller="ManageConfigurationsCtrl">
+<div class="wrapper wrapper-content animated fadeInRight">
 	<div class="row">
 		<div class="col-lg-12 table-responsive">
 			<div class="ibox float-e-margins">
@@ -25,7 +25,8 @@
 						</thead>
 						<tbody>
 							<tr ng-repeat="conf in configurations">
-								<td><a ui-sref="pages.manage_configuration_details(conf)">{{conf.name}}</a></td>
+								<td ng-if="conf.type == 'DatabaseClassLoader'"><a ui-sref="pages.manage_configuration_details(conf)">{{conf.name}}</a></td>
+								<td ng-if="conf.type != 'DatabaseClassLoader'">{{conf.name}}</td>
 								<td ng-if="conf.version">{{conf.version}}</td><td ng-if="!conf.version">-</td>
 								<td>{{conf.type}}</td>
 								<td ng-if="conf.filename">{{conf.filename}}</td><td ng-if="!conf.filename">-</td>
