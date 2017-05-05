@@ -26,7 +26,7 @@ import org.openqa.selenium.*;
 
 import static org.openqa.selenium.OutputType.*;
 
-public class gui3Test2 {
+public class gui3Test {
 	private static WebDriver driver;
 	public static final String USERNAME = "Baswat";
 	public static final String AUTOMATE_KEY = "d835004c-97a1-4e52-b63f-daa5b1d3d3fd";
@@ -55,7 +55,7 @@ public class gui3Test2 {
     }
     
     @Test
-    public void gui3Test2() {
+    public void gui3Test() {
     	driver.get("http://localhost:8080/Angular/");
     	Assert.assertEquals("http://localhost:8080/Angular/", driver.getTitle());
     	System.out.println("title of page is: " + driver.getTitle());
