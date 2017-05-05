@@ -58,6 +58,7 @@ public class gui3Test2 {
     public void gui3Test2() {
     	driver.get("http://localhost:8080/Angular/");
     	Assert.assertEquals("http://localhost:8080/Angular/", driver.getTitle());
+    	System.out.println("title of page is: " + driver.getTitle());
 //        driver.findElement(By.linkText("Logging")).click();
 //        driver.findElement(By.linkText("Test Pipeline")).click();
 //        driver.findElement(By.linkText("Test serviceListener")).click();
