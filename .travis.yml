@@ -19,7 +19,7 @@ before_script:
 
 script:
 - mvn jetty:run &
-- sleep 60
+- sleep 60000
 - cd ..
 - mvn install -B
 
