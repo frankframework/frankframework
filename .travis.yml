@@ -11,15 +11,11 @@ jdk:
 
 install: echo 'Skipping separate install phase'
 
-# before_script:
-#- mvn -Dlog.dir=C:\Temp jetty:run
-#
-before_script:
-- mvn install -DskipTests
+ before_script:
+- cd example
+- mvn jetty:run
 
-
-script: 
-- mvn jetty:run &
+script:
 - mvn install -B
 
 notifications:
