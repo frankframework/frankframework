@@ -7,7 +7,7 @@ jdk:
 # (doesn't happen locally when running the exact same commands). And with maven
 # it's not needed to have a separate install phase.
 # Default install phase: mvn install -DskipTests=true -B
-# Default script phase: mvn test -B
+# Default script phase: mvn test -B 
 
 # before_install: cd example
 
