@@ -19,6 +19,7 @@ before_script:
 
 script:
 - mvn jetty:run &
+- sleep 60
 - mvn install -B
 
 notifications:
