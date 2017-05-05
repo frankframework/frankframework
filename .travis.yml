@@ -16,11 +16,10 @@ install: echo 'Skipping separate install phase'
 before_script:
 - mvn install -DskipTests
 - cd example
+- mvn jetty:run &
+- cd ..
 
 script:
-- mvn jetty:run &
-- sleep 60000
-- cd ..
 - mvn install -B
 
 notifications:
