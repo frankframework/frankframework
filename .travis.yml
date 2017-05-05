@@ -13,10 +13,11 @@ install: echo 'Skipping separate install phase'
 
 before_script:
 - mvn install -DskipTests
-- cd example
+#- cd example
 - mvn jetty:run &
 
 script:
+#- mvn jetty:run &
 - mvn install -B
 
 notifications:
