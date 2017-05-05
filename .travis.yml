@@ -15,11 +15,11 @@ install: echo 'Skipping separate install phase'
 #- mvn -Dlog.dir=C:\Temp jetty:run
 #
 before_script:
-- mvn jetty:run &
+- mvn install -DskipTests
 
 
 script: 
-# - mvn jetty:run &
+- mvn jetty:run &
 - mvn install -B
 
 notifications:
