@@ -12,8 +12,9 @@ jdk:
 install: echo 'Skipping separate install phase'
 
 before_script:
+- mvn install -DskipTests
 - cd example
-- mvn jetty:run &
+- mvn jetty:run
 
 script:
 - mvn install -B
