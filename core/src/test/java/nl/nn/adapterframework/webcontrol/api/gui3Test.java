@@ -3,6 +3,7 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -29,8 +30,8 @@ public class gui3Test {
 	private static WebDriver driver;
 	public static final String USERNAME = "Baswat";
 	public static final String AUTOMATE_KEY = "d835004c-97a1-4e52-b63f-daa5b1d3d3fd";
-	private static String URL = "https://"+ USERNAME + ":" + AUTOMATE_KEY +  "@localhost:4445"; 
-//	private static String URL = "https://"+ USERNAME + ":" + AUTOMATE_KEY +  "@ondemand.saucelabs.com:443/wd/hub";
+//	private static String URL = "https://"+ USERNAME + ":" + AUTOMATE_KEY +  "@localhost:4445"; 
+	private static String URL = "https://"+ USERNAME + ":" + AUTOMATE_KEY +  "@ondemand.saucelabs.com:443/wd/hub";
 	
     @Before
     public void setUp() throws Exception {
@@ -55,17 +56,18 @@ public class gui3Test {
     
     @Test
     public void gui3Test() {
-    	driver.get("http://localhost:8080/iaf-example/Angular/");
-        driver.findElement(By.linkText("Logging")).click();
-        driver.findElement(By.linkText("Test Pipeline")).click();
-        driver.findElement(By.linkText("Test serviceListener")).click();
-        driver.findElement(By.linkText("Webservices")).click();
-        driver.findElement(By.linkText("Scheduler")).click();
-        driver.findElement(By.linkText("Environment Variables")).click();
-        driver.findElement(By.linkText("JDBC")).click();
-        driver.findElement(By.linkText("Browse Tables")).click();
-        driver.findElement(By.linkText("Information")).click();
-        driver.findElement(By.cssSelector("button.btn.btn-white")).click();
+    	driver.get("http://localhost:8080/Angular/");
+    	Assert.assertEquals("http://localhost:8080/Angular/", driver.getTitle());
+//        driver.findElement(By.linkText("Logging")).click();
+//        driver.findElement(By.linkText("Test Pipeline")).click();
+//        driver.findElement(By.linkText("Test serviceListener")).click();
+//        driver.findElement(By.linkText("Webservices")).click();
+//        driver.findElement(By.linkText("Scheduler")).click();
+//        driver.findElement(By.linkText("Environment Variables")).click();
+//        driver.findElement(By.linkText("JDBC")).click();
+//        driver.findElement(By.linkText("Browse Tables")).click();
+//        driver.findElement(By.linkText("Information")).click();
+//        driver.findElement(By.cssSelector("button.btn.btn-white")).click();
     }
     
     @After
