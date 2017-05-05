@@ -9,15 +9,16 @@ jdk:
 # Default install phase: mvn install -DskipTests=true -B
 # Default script phase: mvn test -B
 
+before_install: cd example
+
 install: echo 'Skipping separate install phase'
 
 before_script:
 - mvn install -DskipTests
-- cd example
-- mvn jetty:run
+# - cd example
 
 script:
-- mvn jetty:run
+- mvn jetty:run &
 - mvn install -B
 
 notifications:
