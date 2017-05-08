@@ -10,11 +10,10 @@ import java.net.URL;
 public class SampleSauceTest {
 
 	private static WebDriver driver;
-//	public static final String USERNAME = "Baswat";
-//	public static final String AUTOMATE_KEY = "d835004c-97a1-4e52-b63f-daa5b1d3d3fd";
-//	private static String URL = "https://"+ USERNAME + ":" + AUTOMATE_KEY +  "@localhost:4445"; 
-	private static String URL = "https://localhost:4445"; 
-//	private static String URL = "https://"+ USERNAME + ":" + AUTOMATE_KEY +  "@ondemand.saucelabs.com:443/wd/hub";
+	public static final String USERNAME = "Baswat";
+	public static final String AUTOMATE_KEY = "d835004c-97a1-4e52-b63f-daa5b1d3d3fd";
+	private static String URL = "http://"+ USERNAME + ":" + AUTOMATE_KEY +  "@localhost:4445/wd/hub"; 
+	//	private static String URL = "https://"+ USERNAME + ":" + AUTOMATE_KEY +  "@ondemand.saucelabs.com:443/wd/hub";
 
 	@Test
 	public void SampleSauceTest() throws Exception {
@@ -31,7 +30,7 @@ public class SampleSauceTest {
 
 		driver.get("https://saucelabs.com/test/guinea-pig");
 		System.out.println("title of page is: " + driver.getTitle());
-
+		
 		driver.quit();
 	}
 }
