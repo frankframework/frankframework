@@ -30,9 +30,7 @@ public class gui3Test {
 	private static WebDriver driver;
 	public static final String USERNAME = "Baswat";
 	public static final String AUTOMATE_KEY = "d835004c-97a1-4e52-b63f-daa5b1d3d3fd";
-	private static String URL = "http://"+ USERNAME + ":" + AUTOMATE_KEY +  "@localhost:4445/wd/hub"; 
-//	private static String URL = "https://localhost:4445";
-//	private static String URL = "https://"+ USERNAME + ":" + AUTOMATE_KEY +  "@ondemand.saucelabs.com:443/wd/hub";
+	private static String URL = null;
 	
     @Before
     public void setUp() throws Exception {
@@ -41,15 +39,17 @@ public class gui3Test {
     	caps.setCapability("version", "45.0");
 	    caps.setCapability("tunnel-identifier", System.getProperty("TRAVIS_JOB_NUMBER"));
 
-	    
-	    driver = new RemoteWebDriver(new URL(URL), caps);
-//	    if(System.getProperty("TRAVIS_JOB_NUMBER") != null) {
-//	    	driver = new RemoteWebDriver(new URL(URL), caps);
-//	    }
-//	    else {
+
+	    if(System.getProperty("TRAVIS_JOB_NUMBER") != null) {
+			URL = "http://"+ USERNAME + ":" + AUTOMATE_KEY +  "@localhost:4445/wd/hub"; 
+	    }
+	    else {
 //	    	System.setProperty("webdriver.chrome.driver", "C:/Data/Vergaarbak/chromedriver_win32/chromedriver.exe");
 //			driver = new ChromeDriver();
-//	    }
+			URL = "https://"+ USERNAME + ":" + AUTOMATE_KEY +  "@ondemand.saucelabs.com:443/wd/hub";
+	    }
+	    System.out.println("ASFD ->>>>>>>>>>>>>>>> " + URL);
+	    driver = new RemoteWebDriver(new URL(URL), caps);
 
     	//System.setProperty("webdriver.chrome.driver", "C:/Data/Vergaarbak/chromedriver_win32/chromedriver.exe");
     	driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
