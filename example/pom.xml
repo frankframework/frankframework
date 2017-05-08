@@ -51,6 +51,10 @@
 				<artifactId>jetty-maven-plugin</artifactId>
 				<version>9.0.7.v20131107</version>
 				<configuration>
+					<httpConnector>
+						<!--host>localhost</host -->
+						<port>8000</port>
+					</httpConnector>
 					<systemProperties>
 						<systemProperty>
 							<name>application.server.type</name>
