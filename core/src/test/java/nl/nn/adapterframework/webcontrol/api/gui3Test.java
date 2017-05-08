@@ -28,10 +28,10 @@ import static org.openqa.selenium.OutputType.*;
 
 public class gui3Test {
 	private static WebDriver driver;
-//	public static final String USERNAME = "Baswat";
-//	public static final String AUTOMATE_KEY = "d835004c-97a1-4e52-b63f-daa5b1d3d3fd";
-//	private static String URL = "https://"+ USERNAME + ":" + AUTOMATE_KEY +  "@localhost:4445"; 
-	private static String URL = "https://localhost:4445";
+	public static final String USERNAME = "Baswat";
+	public static final String AUTOMATE_KEY = "d835004c-97a1-4e52-b63f-daa5b1d3d3fd";
+	private static String URL = "https://"+ USERNAME + ":" + AUTOMATE_KEY +  "@localhost:4445"; 
+//	private static String URL = "https://localhost:4445";
 //	private static String URL = "https://"+ USERNAME + ":" + AUTOMATE_KEY +  "@ondemand.saucelabs.com:443/wd/hub";
 	
     @Before
