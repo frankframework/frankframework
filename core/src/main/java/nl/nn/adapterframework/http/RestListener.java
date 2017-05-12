@@ -115,7 +115,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		}
 
 		//Check if consumes has been set or contentType is set to JSON
-		if(getConsumes().equalsIgnoreCase("JSON") || "application/json".equalsIgnoreCase(httpServletRequest.getContentType())) {
+		if(getConsumes().equalsIgnoreCase("JSON") && "application/json".equalsIgnoreCase(httpServletRequest.getContentType())) {
 			try {
 				message = transformToXml(message);
 			} catch (PipeRunException e) {
