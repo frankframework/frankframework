@@ -57,7 +57,7 @@ public class gui3Test {
     
     @Test
     public void gui3Test() {
-    	driver.get("http://localhost:8000");
+    	driver.get("http://localhost:8000/Angular");
     	Assert.assertEquals("IAF | Adapter Status", driver.getTitle());
         driver.findElement(By.linkText("Logging")).click();
         driver.findElement(By.linkText("Test Pipeline")).click();
