@@ -1,10 +1,10 @@
-version: 0.1
+version: 0.2
 phases:
-	build:
-		commands:
-			mvn
+  build:
+    commands:
+      - mvn
 
 artifacts:
-	type: war
-	files:
-		- example/target/ibis-adapterframework-example-7.0-B2-SNAPSHOT.war
+  files:
+    - example/target/ibis-adapterframework-example-7.0-B2-SNAPSHOT/**
+  base-directory: example/target/ibis-adapterframework-example-7.0-B2-SNAPSHOT
