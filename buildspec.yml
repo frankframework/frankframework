@@ -6,5 +6,5 @@ phases:
 
 artifacts:
   files:
-    - **/*
+    - '**/*'
   base-directory: example/target/ibis-adapterframework-example-7.0-B2-SNAPSHOT
