@@ -46,6 +46,7 @@ Upcoming
 - Create XMLStreamWriter with XmlUtils.OUTPUT_FACTORY in all classes (ScanTibcoSolutionPipe didn't use XmlUtils.OUTPUT_FACTORY yet)
 - Set log.dir automatically for Vanilla/Eclipse Tomcat too
 - Add testtool.enabled property to enable the testtool on ACC and PRD
+- Add facility in "Show configuration status: *ALL*" to show only 'alerted' adapters
 
 
 
