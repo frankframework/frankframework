@@ -68,6 +68,19 @@ public class SoapWrapper {
 	private final static String extractFaultCountXPath="count(/soapenv:Envelope/soapenv:Body/soapenv:Fault)";
 	private final static String extractFaultCodeXPath="/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode";
 	private final static String extractFaultStringXPath="/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
+	
+	private TransformerPool extractBody_1_2;
+	private TransformerPool extractHeader_1_2;
+	private TransformerPool extractFaultCount_1_2;
+	private TransformerPool extractFaultCode_1_2;
+	private TransformerPool extractFaultString_1_2;	
+	private final static String extractNamespaceDefs_1_2="soapenv=http://www.w3.org/2003/05/soap-envelope";	
+	private final static String extractBodyXPath_1_2="/soapenv:Envelope/soapenv:Body/*";
+	private final static String extractHeaderXPath_1_2="/soapenv:Envelope/soapenv:Header/*";
+	private final static String extractFaultCountXPath_1_2="count(/soapenv:Envelope/soapenv:Body/soapenv:Fault)";
+	private final static String extractFaultCodeXPath_1_2="/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode";
+	private final static String extractFaultStringXPath_1_2="/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
+
 
 	private static SoapWrapper self=null;
 	
@@ -77,11 +90,19 @@ public class SoapWrapper {
 	
 	private void init() throws ConfigurationException {
 		try {
+			//Soap ver1.1
 			extractBody        = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractBodyXPath,"xml",false,null,false));
 			extractHeader      = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractHeaderXPath,"xml"));
 			extractFaultCount  = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractFaultCountXPath,"text"));
 			extractFaultCode   = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractFaultCodeXPath,"text"));
 			extractFaultString = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractFaultStringXPath,"text"));
+			//Soap ver _1_2
+			extractBody_1_2        = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs_1_2,extractBodyXPath_1_2,"xml",false,null,false));
+			extractHeader_1_2      = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs_1_2,extractHeaderXPath_1_2,"xml"));
+			extractFaultCount_1_2  = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs_1_2,extractFaultCountXPath_1_2,"text"));
+			extractFaultCode_1_2   = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs_1_2,extractFaultCodeXPath_1_2,"text"));
+			extractFaultString_1_2 = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs_1_2,extractFaultStringXPath_1_2,"text"));
+
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("cannot create SOAP transformer",e);
 		}
@@ -121,15 +142,37 @@ public class SoapWrapper {
 		}
 	}
 
+	public String getBody_1_2(String message) throws DomBuilderException, TransformerException, IOException  {
+		return extractBody_1_2.transform(message,null,true);
+	}
+	public String getBody_1_2(InputStream request) throws TransformerException, IOException {
+		return extractBody_1_2.transform(new StreamSource(request),null);
+	}
+
+	public String getHeader_1_2(String message) throws DomBuilderException, TransformerException, IOException {
+		return extractHeader_1_2.transform(message,null,true);
+	}
+	public String getHeader_1_2(InputStream request) throws TransformerException, IOException {
+		return extractHeader_1_2.transform(new StreamSource(request),null);
+	}
+	
 	public String getBody(String message) throws DomBuilderException, TransformerException, IOException  {
-		return extractBody.transform(message,null,true);
+		if (StringUtils.containsIgnoreCase(message, "http://www.w3.org/2003/05/soap-envelope")) {
+			return extractBody_1_2.transform(message,null,true);
+		}else{
+			return extractBody.transform(message,null,true);
+		}
 	}
 	public String getBody(InputStream request) throws TransformerException, IOException {
 		return extractBody.transform(new StreamSource(request),null);
 	}
 
 	public String getHeader(String message) throws DomBuilderException, TransformerException, IOException {
-		return extractHeader.transform(message,null,true);
+		if (StringUtils.containsIgnoreCase(message, "http://www.w3.org/2003/05/soap-envelope")) {
+			return extractHeader_1_2.transform(message,null,true);
+		}else{
+			return extractHeader.transform(message,null,true);
+		}
 	}
 	public String getHeader(InputStream request) throws TransformerException, IOException {
 		return extractHeader.transform(new StreamSource(request),null);
@@ -140,7 +183,12 @@ public class SoapWrapper {
 			log.warn("getFaultCount(): message is empty");
 			return 0;
 		}
-		String faultCount=extractFaultCount.transform(message,null,true);
+		String faultCount = null;
+		if (StringUtils.containsIgnoreCase(message, "http://www.w3.org/2003/05/soap-envelope")) {
+			faultCount=extractFaultCount_1_2.transform(message,null,true);
+		}else{
+			faultCount=extractFaultCount.transform(message,null,true);
+		}
 		if (StringUtils.isEmpty(faultCount)) {
 			log.warn("getFaultCount(): could not extract fault count, result is empty");
 			return 0;
@@ -149,12 +197,19 @@ public class SoapWrapper {
 		return Integer.parseInt(faultCount);
 	}
 	public String getFaultCode(String message) throws DomBuilderException, TransformerException, IOException {
-		return extractFaultCode.transform(message,null,true);
+		if (StringUtils.containsIgnoreCase(message, "http://www.w3.org/2003/05/soap-envelope")) {
+			return extractFaultCode_1_2.transform(message,null,true);
+		}else{
+			return extractFaultCode.transform(message,null,true);
+		}
 	}
 	public String getFaultString(String message) throws DomBuilderException, TransformerException, IOException {
-		return extractFaultString.transform(message,null,true);
+		if (StringUtils.containsIgnoreCase(message, "http://www.w3.org/2003/05/soap-envelope")) {
+			return extractFaultString_1_2.transform(message,null,true);
+		}else{
+			return extractFaultString.transform(message,null,true);
+		}
 	}
-	
 	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace) {
 		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, null);
 	}
