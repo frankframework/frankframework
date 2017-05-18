@@ -1,6 +1,6 @@
 language: java
 jdk:
-  - openjdk6
+  - openjdk7
 
 # Skip separate install phase as for some reason running the two default phases
 # on Travis seem to cause the second phases to select the wrong profile
@@ -8,9 +8,26 @@ jdk:
 # it's not needed to have a separate install phase.
 # Default install phase: mvn install -DskipTests=true -B
 # Default script phase: mvn test -B
+
 install: echo 'Skipping separate install phase'
-script: mvn install -B
+
+#before_script:
+#  - "export DISPLAY=:99.0"
+#  - "sh -e /etc/init.d/xvfb start"
+#  - sleep 3
+#  - fluxbox >/dev/null 2>&1 &
+#  - python -m SimpleHTTPServer &
+
+script: 
+- mvn jetty:run &
+- mvn install -B
 
 notifications:
   email:
     - ibistravis@meeuw.org
+    - ibistravis@integrationpartners.nl
+
+addons:
+  sauce_connect:
+    username: "Baswat"
+    access_key: "d835004c-97a1-4e52-b63f-daa5b1d3d3fd"
