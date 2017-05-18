@@ -460,12 +460,18 @@ public class SchemaUtils {
 			nl.nn.javax.wsdl.Definition wsdlDefinition,
 			nl.nn.javax.wsdl.extensions.schema.Schema wsdlSchema
 			) throws nl.nn.javax.wsdl.WSDLException {
-		nl.nn.com.ibm.wsdl.extensions.schema.SchemaSerializer schemaSerializer =
-				new nl.nn.com.ibm.wsdl.extensions.schema.SchemaSerializer();
 		StringWriter w = new StringWriter();
 		PrintWriter res = new PrintWriter(w);
-		schemaSerializer.marshall(Object.class, WSDL_SCHEMA, wsdlSchema, res,
-				wsdlDefinition, wsdlDefinition.getExtensionRegistry());
+		/*
+		 * Following block is synchronized to avoid a StackOverflowError (see
+		 * https://issues.apache.org/jira/browse/AXIS2-4517)
+		 */
+		synchronized (wsdlDefinition) {
+			nl.nn.com.ibm.wsdl.extensions.schema.SchemaSerializer schemaSerializer =
+					new nl.nn.com.ibm.wsdl.extensions.schema.SchemaSerializer();
+			schemaSerializer.marshall(Object.class, WSDL_SCHEMA, wsdlSchema, res,
+					wsdlDefinition, wsdlDefinition.getExtensionRegistry());
+		}
 		return w.toString().trim();
 	}
 
