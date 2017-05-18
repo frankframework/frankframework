@@ -36,7 +36,7 @@
 		class="org.apache.commons.dbcp.BasicDataSource"
 		>
 		<property name="driverClassName" value="org.h2.Driver"/>
-		<property name="url" value="jdbc:h2:h2/ibis4example"/>
+		<property name="url" value="jdbc:h2:${log.dir}/${instance.name.lc}"/>
 	</bean>
 
 </beans>
