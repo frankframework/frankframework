@@ -49,6 +49,7 @@ Upcoming
 - Add facility in "Show configuration status: *ALL*" to show only 'alerted' adapters
 - Bugfix in "Show EnvironmentVariables": "Application Constants" should not be resolved
 - Avoid StackOverflowError in caching validators
+- Fix performance on Oracle databases by providing more accurate path finding hints
 
 
 
