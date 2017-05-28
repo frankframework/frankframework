@@ -50,6 +50,7 @@ Upcoming
 - Bugfix in "Show EnvironmentVariables": "Application Constants" should not be resolved
 - Avoid StackOverflowError in caching validators
 - Fix performance on Oracle databases by providing more accurate path finding hints
+- Add MqttListener
 
 
 
