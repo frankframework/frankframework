@@ -8,7 +8,7 @@ Ibis AdapterFramework release notes
 Upcoming
 --------
 
-[JavaDocs](http://maven.ibissource.org/iaf/maven/apidocs/index.html)
+[JavaDocs](http://maven.ibissource.org/iaf/apidocs/index.html)
 [Commits](https://github.com/ibissource/iaf/compare/v7.0-B1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
