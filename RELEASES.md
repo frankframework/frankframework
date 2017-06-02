@@ -52,7 +52,8 @@ Upcoming
 - Fix performance on Oracle databases by providing more accurate path finding hints
 - Add MqttListener
 - Upgrade servlet version from 2.3 to 2.5
-- Add attribute logIntermediaryResults to AbstractPipe to overwrite value AppConstants
+- Add attribute logIntermediaryResults to AbstractPipe to overwrite value in AppConstants
+- Add attributes ignoreCaching and lazyInit to XmlValidator to overwrite value in AppConstants
 
 
 
