@@ -160,6 +160,14 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		serverProperties.setProperty(ServerDataProvider.JCO_PROGID, progid);
 		serverProperties.setProperty(ServerDataProvider.JCO_REP_DEST, sapSystem.getName());
 		serverProperties.setProperty(ServerDataProvider.JCO_CONNECTION_COUNT, connectionCount);
+
+		if(sapSystem.isSncEncrypted()) {
+			serverProperties.setProperty(ServerDataProvider.JCO_SNC_MODE, "1");
+			serverProperties.setProperty(ServerDataProvider.JCO_SNC_LIBRARY, sapSystem.getSncLibrary());
+			serverProperties.setProperty(ServerDataProvider.JCO_SNC_MYNAME, sapSystem.getMyName());
+			serverProperties.setProperty(ServerDataProvider.JCO_SNC_QOP, sapSystem.getSncQop());
+		}
+
 		return serverProperties;
 	}
 

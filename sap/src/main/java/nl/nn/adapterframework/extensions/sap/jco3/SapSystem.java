@@ -84,6 +84,12 @@ public class SapSystem extends GlobalListItem {
 
 	private int referenceCount=0;
 
+	//SNC Encryption
+	private boolean sncEnabled = false;
+	private String sncLibPath;
+	private int qop = 3;
+	private String myName;
+	private String partnerName;
 
 	/**
 	 * Retrieve a SapSystem from the list of systems.
@@ -175,7 +181,8 @@ public class SapSystem extends GlobalListItem {
 			protected boolean accept(Field f) {
 				return super.accept(f) && !f.getName().equals("passwd");
 			}
-		}).toString();	}
+		}).toString();
+	}
 
 	public void setHost(String host) {
 		this.host = host;
@@ -333,5 +340,40 @@ public class SapSystem extends GlobalListItem {
 
 	public int getTraceLevel() {
 		return traceLevel;
+	}
+
+	public void setSncEnabled(boolean sncEnabled) {
+		this.sncEnabled = sncEnabled;
+	}
+	public boolean isSncEncrypted() {
+		return sncEnabled;
+	}
+
+	public void setSncLibrary(String sncLibPath) {
+		this.sncLibPath = sncLibPath;
+	}
+	public String getSncLibrary() {
+		return sncLibPath;
+	}
+
+	public void setSncQop(int qop) {
+		this.qop = qop;
+	}
+	public String getSncQop() {
+		return qop+"";
+	}
+
+	public void setMyName(String myName) {
+		this.myName = myName;
+	}
+	public String getMyName() {
+		return myName;
+	}
+
+	public void setPartnerName(String partnerName) {
+		this.partnerName = partnerName;
+	}
+	public String getPartnerName() {
+		return partnerName;
 	}
 }

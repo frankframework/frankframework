@@ -54,6 +54,8 @@ Upcoming
 - Upgrade servlet version from 2.3 to 2.5
 - Add attribute logIntermediaryResults to AbstractPipe to overwrite value in AppConstants
 - Add attributes ignoreCaching and lazyInit to XmlValidator to overwrite value in AppConstants
+- Add SNC encryption to SAP Listeners/Senders
+
 
 
 

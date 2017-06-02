@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import com.sap.conn.jco.ext.DestinationDataEventListener;
 import com.sap.conn.jco.ext.DestinationDataProvider;
 import com.sap.conn.jco.ext.Environment;
+import com.sap.conn.jco.ext.ServerDataProvider;
 
 /**
  * @author  Jaco de Groot
@@ -73,6 +74,16 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 			destinationProperties.setProperty(DestinationDataProvider.JCO_LANG, sapSystem.getLanguage());
 			destinationProperties.setProperty(DestinationDataProvider.JCO_PCS, sapSystem.isUnicode()?"2":"1");
 			destinationProperties.setProperty(DestinationDataProvider.JCO_PEAK_LIMIT, ""+sapSystem.getMaxConnections());
+
+			if(sapSystem.isSncEncrypted()) {
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_MODE, "1");
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_LIBRARY, sapSystem.getSncLibrary());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_QOP, sapSystem.getSncQop());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_SSO, "0");
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_PARTNERNAME, sapSystem.getPartnerName());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_MYNAME, sapSystem.getMyName());
+			}
+
 			return destinationProperties;
 		}
 	}

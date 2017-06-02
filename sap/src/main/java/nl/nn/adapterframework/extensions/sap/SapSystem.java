@@ -189,4 +189,36 @@ public class SapSystem {
 		}
 	}
 
+	public void setSncEnabled(boolean sncEnabled) {
+		if (jcoVersion == 3) {
+			sapSystem3.setSncEnabled(sncEnabled);
+		}
+	}
+
+	public void setSncLibrary(String sncLibPath) {
+		if (jcoVersion == 3) {
+			sapSystem3.setSncLibrary(sncLibPath);
+		}
+	}
+
+	public void setSncQop(int qop) throws ConfigurationException {
+		if (jcoVersion == 3) {
+			if(qop < 1 || qop > 9)
+				throw new ConfigurationException("SNC QOP cannot be smaller then 0 or larger then 9");
+			sapSystem3.setSncQop(qop);
+		}
+	}
+
+	public void setMyName(String myName) {
+		if (jcoVersion == 3) {
+			sapSystem3.setMyName(myName);
+		}
+	}
+
+	public void setPartnerName(String partnerName) {
+		if (jcoVersion == 3) {
+			sapSystem3.setPartnerName(partnerName);
+		}
+	}
+
 }
