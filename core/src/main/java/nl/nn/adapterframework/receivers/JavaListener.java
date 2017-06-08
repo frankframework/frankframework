@@ -57,6 +57,7 @@ import org.apache.log4j.Logger;
  * 		<br>N.B. do not use this attribute, set an appropriate <code>transactionAttribute</code>, like <code>NotSupported</code> or <code>RequiresNew</code> instead</td><td>false</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the request is executed asynchronously. This implies <code>isolated=true</code>. N.B. Be aware that there is no limit on the number of threads generated</td><td>true</td></tr>
  * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>Should the JavaListener throw a ListenerException when it occurs or return an error message</td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setHttpWsdl(boolean)}</td><td>Property to include httpBinding in WSDL even if Listener is a JavaListener</td><td><code>true</code></td></tr>
  * </table>
  *
  * @author  Gerrit van Brakel
@@ -70,10 +71,12 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	private boolean synchronous=true;
 	private boolean opened=false;
 	private boolean throwException = true;
+	private boolean httpWsdl = false;
 
-	private static Map registeredListeners;
+	private static Map<String, JavaListener> registeredListeners;
 	private IMessageHandler handler;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (isIsolated()) {
 			throw new ConfigurationException("function of attribute 'isolated' is replaced by 'transactionAttribute' on PipeLine");
@@ -91,6 +94,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		}
 	}
 
+	@Override
 	public synchronized void open() throws ListenerException {
 		try {
 			// add myself to local list so that IbisLocalSenders can find me
@@ -116,6 +120,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		}
 	}
 
+	@Override
 	public synchronized void close() throws ListenerException {
 		opened=false;
 		try {
@@ -134,6 +139,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		}
 	}
 
+	@Override
 	public String processRequest(String correlationId, String message, HashMap context) throws ListenerException {
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
@@ -164,27 +170,6 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		}
 	}
 
-//	public String processRequest(String message) {
-//		try {
-//			return handler.processRequest(this, message);
-//		}
-//		catch (ListenerException e) {
-//			return handler.formatException(null,null, message,e);
-//		}
-//	}
-
-//	public String processRequestNoException(String correlationId, String message) {
-//		try {
-//			if (log.isDebugEnabled())
-//				log.debug("JavaListener [" + getName() + "] processing correlationId [" + correlationId + "]");
-//			return handler.processRequest(this, correlationId, message);
-//		}
-//		catch (ListenerException e) {
-//			return handler.formatException(null,correlationId, message,e);
-//		}
-//	}
-
-
 
 	/**
 	 * Register listener so that it can be used by a proxy
@@ -210,7 +195,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	/**
 	 * Get all registered JavaListeners
 	 */
-	private synchronized static Map getListeners() {
+	private static synchronized Map<String, JavaListener> getListeners() {
 		if (registeredListeners == null) {
 			registeredListeners = Collections.synchronizedMap(new HashMap());
 		}
@@ -221,26 +206,29 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		return getListeners().keySet();
 	}
 
+	@Override
 	public void setExceptionListener(IbisExceptionListener listener) {
 		// do nothing, no exceptions known
 	}
 
-
+	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
 		// do nothing
 	}
 
 
-
+	@Override
 	public String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException {
 		// do nothing
 		return null;
 	}
 
+	@Override
 	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
 		return (String)rawMessage;
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		if (StringUtils.isNotEmpty(getServiceName())) {
 			return "external: "+getServiceName();
@@ -256,13 +244,14 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
 	 *
 	 **/
+	@Override
 	public String toString() {
 		return super.toString();
 		// This gives stack overflows:
 		// return ToStringBuilder.reflectionToString(this);
 	}
 
-
+	@Override
 	public void setHandler(IMessageHandler handler) {
 		this.handler = handler;
 	}
@@ -277,10 +266,12 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		return serviceName;
 	}
 
-
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -312,5 +303,12 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	}
 	public boolean isThrowException() {
 		return throwException;
+	}
+	
+	public void setHttpWsdl(boolean httpWsdl) {
+		this.httpWsdl = httpWsdl;
+	}
+	public boolean isHttpWsdl() {
+		return httpWsdl;
 	}
 }
