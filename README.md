@@ -77,6 +77,10 @@ In some cases you might want/need to:
   the IAF project), Refresh, Refresh resources upon completion,
   Specific resources, Specify Resources..., iaf (Using "The project containing
   the selected resource" doesn't seem to work), Finish, Run.
+- The local Maven repository might contain corrupt jar files which for example
+  will result in java.lang.NoClassDefFoundError:
+  org/aspectj/lang/ProceedingJoinPoint when starting Tomcat. Remove the jar file
+  from the repository to make Maven download the file again.
 
 
 
