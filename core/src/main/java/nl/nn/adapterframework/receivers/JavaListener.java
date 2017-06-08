@@ -57,7 +57,7 @@ import org.apache.log4j.Logger;
  * 		<br>N.B. do not use this attribute, set an appropriate <code>transactionAttribute</code>, like <code>NotSupported</code> or <code>RequiresNew</code> instead</td><td>false</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the request is executed asynchronously. This implies <code>isolated=true</code>. N.B. Be aware that there is no limit on the number of threads generated</td><td>true</td></tr>
  * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>Should the JavaListener throw a ListenerException when it occurs or return an error message</td><td><code>true</code></td></tr>
- * <tr><td>{@link #setHttpWsdl(boolean)}</td><td>Property to include httpBinding in WSDL even if Listener is a JavaListener</td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setHttpWsdl(boolean)}</td><td>when <code>true</code>, the WSDL of the service provided by this listener is available for download </td><td><code>false</code></td></tr>
  * </table>
  *
  * @author  Gerrit van Brakel

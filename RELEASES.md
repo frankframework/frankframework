@@ -55,7 +55,8 @@ Upcoming
 - Add attribute logIntermediaryResults to AbstractPipe to overwrite value in AppConstants
 - Add attributes ignoreCaching and lazyInit to XmlValidator to overwrite value in AppConstants
 - Add SNC encryption to SAP Listeners/Senders
-
+- Add httpWsdl attribute to JavaListener for making WSDL available
+- Make unwrapping of SOAP messages independent of SOAP version
 
 
 
