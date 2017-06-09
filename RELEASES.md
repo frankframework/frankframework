@@ -58,6 +58,7 @@ Upcoming
 - Add httpWsdl attribute to JavaListener for making WSDL available
 - Make unwrapping of SOAP messages independent of SOAP version
 - Support all InputStreams for upload in HttpSender instead of only FileInputStream
+- Add MqttSender
 
 
 
