@@ -57,6 +57,7 @@ Upcoming
 - Add SNC encryption to SAP Listeners/Senders
 - Add httpWsdl attribute to JavaListener for making WSDL available
 - Make unwrapping of SOAP messages independent of SOAP version
+- Add MqttSender
 
 
 
