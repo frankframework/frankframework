@@ -59,6 +59,7 @@ Upcoming
 - Make unwrapping of SOAP messages independent of SOAP version
 - Support all InputStreams for upload in HttpSender instead of only FileInputStream
 - Add MqttSender
+- Fix DomainTransformerPipe nullPointerException on ibis startup
 
 
 
