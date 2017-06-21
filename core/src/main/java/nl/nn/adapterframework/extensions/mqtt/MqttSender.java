@@ -13,27 +13,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
 package nl.nn.adapterframework.extensions.mqtt;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Map;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IPushingListener;
-import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.IbisExceptionListener;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.receivers.ReceiverAware;
-import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
@@ -57,121 +47,66 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  * 
  * Links to <a href="https://www.eclipse.org/paho/files/javadoc" target="_blank">https://www.eclipse.org/paho/files/javadoc</a> are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.
  * 
- * @author Jaco de Groot
  * @author Niels Meijer
  */
 
-public class MqttListener extends MqttFacade implements ReceiverAware, IPushingListener, MqttCallbackExtended {
-
-	private ReceiverBase receiver;
-	private IMessageHandler messageHandler;
-	private IbisExceptionListener ibisExceptionListener;
-
-	public void setReceiver(IReceiver receiver) {
-		this.receiver = (ReceiverBase)receiver;
-	}
-
-	public IReceiver getReceiver() {
-		return receiver;
-	}
-
-	@Override
-	public void setHandler(IMessageHandler messageHandler) {
-		this.messageHandler = messageHandler;
-	}
-
-	@Override
-	public void setExceptionListener(IbisExceptionListener ibisExceptionListener) {
-		this.ibisExceptionListener = ibisExceptionListener;
-	}
+public class MqttSender extends MqttFacade implements ISenderWithParameters {
+	protected ParameterList<Parameter> paramList = null;
 
 	public void configure() throws ConfigurationException {
-		// See connectionLost(Throwable)
-		receiver.setOnError(ReceiverBase.ONERROR_RECOVER);
-		// Don't recreate client when trying to recover
-		if (!receiver.isRecover() && !receiver.isRecoverAdapter()) {
-			super.configure();
-			client.setCallback(this);
+		if (paramList!=null) {
+			paramList.configure();
 		}
+
+		super.configure();
 	}
 
-	public void open() throws ListenerException {
-		try {
-			super.open();
-			client.subscribe(getTopic(), getQos());
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new ListenerException("Could not subscribe to topic", e);
-		}
+	public void open() throws SenderException {
+//		try {
+//			super.open();
+//		} catch (Exception e) {
+//			throw new SenderException("Could not publish to topic", e);
+//		}
 	}
 
 	public void close() {
-		// Prevent log.warn() when trying to recover. Recover will be triggered
-		// when connectionLost was called or listener could not start in which
-		// case client is already disconnected.
-		if (!receiver.isRecover() && !receiver.isRecoverAdapter()) {
-			super.close();
+		super.close();
+	}
+
+	public void addParameter(Parameter p) { 
+		if (paramList==null) {
+			paramList = new ParameterList<Parameter>();
 		}
+		paramList.add(p);
 	}
 
-	@Override
-	public void connectComplete(boolean reconnect, String brokerUrl) {
-		String message = getLogPrefix() + "connection ";
-		if (reconnect) {
-			// Automatic reconnect by mqtt lib
-			receiver.setRunState(RunStateEnum.STARTED);
-			message = message + "restored";
-		} else {
-			message = message + "established";
-		}
-		receiver.getAdapter().getMessageKeeper().add(message);
-		log.debug(message);
+	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
+		return sendMessage(correlationID, message, null);
 	}
 
-	@Override
-	public void connectionLost(Throwable throwable) {
-		String message = getLogPrefix() + "connection lost";
-		receiver.getAdapter().getMessageKeeper().add(message);
-		log.debug(message);
-		// Call receiver which will set status to error after which recover job
-		// will try to recover. Note that at configure time
-		// receiver.setOnError(ReceiverBase.ONERROR_RECOVER) was called. Also
-		// note that mqtt lib will also try to recover (when automaticReconnect
-		// is true) (see connectComplete also) which will probably recover
-		// earlier because of it's smaller interval. When no connection was
-		// available at startup the mqtt lib reconnect isn't started. So in this
-		// case recovery will always be done by the recover job.
-		ibisExceptionListener.exceptionThrown(this, throwable);
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		return sendMessage(correlationID, message, prc, null);
 	}
 
-	@Override
-	public void deliveryComplete(IMqttDeliveryToken token) {
-	}
-
-	@Override
-	public void messageArrived(String topic, MqttMessage message) throws Exception {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, String soapHeader) throws SenderException, TimeOutException {
 		try {
-			messageHandler.processRawMessage(this, message);
-		} catch(Throwable t) {
-			log.error("Could not process raw message", t);
+			if(!client.isConnected()) {
+				super.open();
+			}
+
+			log.debug(message);
+			MqttMessage MqttMessage = new MqttMessage();
+			MqttMessage.setPayload(message.getBytes());
+			MqttMessage.setQos(getQos());
+			client.publish(getTopic(), MqttMessage);
 		}
-	}
-
-	@Override
-	public String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException {
-		return "" + ((MqttMessage)rawMessage).getId();
-	}
-
-	@Override
-	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
-		try {
-			return new String(((MqttMessage)rawMessage).getPayload(), getCharset());
-		} catch (UnsupportedEncodingException e) {
-			throw new ListenerException("Could not encode message", e);
+		catch (Exception e) {
+			throw new SenderException(e);
 		}
+		return message;
 	}
 
-	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
+	public boolean isSynchronous() {
+		return false;
 	}
 }

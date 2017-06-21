@@ -48,7 +48,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 	private String sessionKey = "file";
 	private String propertiesFileName = "wsdl.properties";
+	private static final String WSDL_EXTENSION = ".wsdl";
 
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session)
 			throws PipeRunException {
 		InputStream inputStream = (InputStream) session.get("file");
@@ -60,6 +62,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 		File tempDir;
 		String fileName;
+		
 		try {
 			tempDir = FileUtils.createTempDir(null, "WEB-INF" + File.separator
 					+ "classes");
@@ -171,7 +174,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			String inputNamespace = props.getProperty("input.namespace");
 			String inputRoot = props.getProperty("input.root");
 			String inputCmhString = props.getProperty("input.cmh", "1");
-			int inputCmh = Integer.valueOf(inputCmhString);
+			int inputCmh = Integer.parseInt(inputCmhString);
 			File inputXsdFile = new File(propertiesFile.getParent(), inputXsd);
 			EsbSoapValidator inputValidator = createValidator(inputXsdFile,
 					inputNamespace, inputRoot, 1, inputCmh);
@@ -182,7 +185,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			String outputNamespace = props.getProperty("output.namespace");
 			String outputRoot = props.getProperty("output.root");
 			String outputCmhString = props.getProperty("output.cmh", "1");
-			int outputCmh = Integer.valueOf(outputCmhString);
+			int outputCmh = Integer.parseInt(outputCmhString);
 			File outputXsdFile = new File(propertiesFile.getParent(), outputXsd);
 			int rootPosition;
 			if (inputXsd != null && inputXsd.equalsIgnoreCase(outputXsd)) {
@@ -307,15 +310,11 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	private String getWsdlDocumentation(String filename) {
 		return "Generated as "
 				+ filename
-				+ getWsdlExtension()
+				+ WSDL_EXTENSION
 				+ " by "
 				+ AppConstants.getInstance()
 						.getProperty("instance.name", "IAF") + " on "
 				+ DateUtils.getIsoTimeStamp() + ".";
-	}
-
-	private String getWsdlExtension() {
-		return ".wsdl";
 	}
 
 	public String getSessionKey() {
