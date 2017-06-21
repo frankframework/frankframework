@@ -55,6 +55,7 @@ Upcoming
 - Add attribute logIntermediaryResults to AbstractPipe to overwrite value in AppConstants
 - Add attributes ignoreCaching and lazyInit to XmlValidator to overwrite value in AppConstants
 - Add SNC encryption to SAP Listeners/Senders
+- Add custom SSLSocketFactory to CmisSender
 
 
 
