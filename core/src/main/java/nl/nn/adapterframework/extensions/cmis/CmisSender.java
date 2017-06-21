@@ -223,7 +223,7 @@ public class CmisSender extends SenderWithParametersBase {
 	private Session session;
 
 	private boolean allowSelfSignedCertificates = false;
-	private boolean verifyHostname = false;
+	private boolean verifyHostname = true;
 	private boolean ignoreCertificateExpiredException = false;
 	private String certificate = null;
 	private String certificateAuthAlias = null;
@@ -231,6 +231,10 @@ public class CmisSender extends SenderWithParametersBase {
 	private String truststore = null;
 	private String truststoreAuthAlias = null;
 	private String truststorePassword = null;
+	private String keystoreType = "pkcs12";
+	private String keyManagerAlgorithm = "PKIX";
+	private String truststoreType = "jks";
+	private String trustManagerAlgorithm = "PKIX";
 
 	private final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd HH:mm:ss";
 
@@ -733,12 +737,12 @@ public class CmisSender extends SenderWithParametersBase {
 
 			parameter.put("certificateUrl", getCertificate());
 			parameter.put("certificatePassword", certificateCf.getPassword());
-			parameter.put("keystoreType", "pkcs12");
-			parameter.put("keyManagerAlgorithm", "PKIX");
+			parameter.put("keystoreType", getKeystoreType());
+			parameter.put("keyManagerAlgorithm", getKeyManagerAlgorithm());
 			parameter.put("truststoreUrl", getTruststore());
 			parameter.put("truststorePassword", truststoreCf.getPassword());
-			parameter.put("truststoreType", "JKS");
-			parameter.put("trustManagerAlgorithm", "PKIX");
+			parameter.put("truststoreType", getTruststoreType());
+			parameter.put("trustManagerAlgorithm", getTrustManagerAlgorithm());
 		}
 
 		parameter.put("isAllowSelfSignedCertificates", "" + isAllowSelfSignedCertificates());
@@ -826,6 +830,39 @@ public class CmisSender extends SenderWithParametersBase {
 	public String getTruststorePassword() {
 		return truststorePassword;
 	}
+
+	public void setKeystoreType(String keystoreType) {
+		this.keystoreType = keystoreType;
+	}
+
+	public String getKeystoreType() {
+		return keystoreType;
+	}
+
+	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
+		this.keyManagerAlgorithm = keyManagerAlgorithm;
+	}
+
+	public String getKeyManagerAlgorithm() {
+		return keyManagerAlgorithm;
+	}
+
+	public void setTruststoreType(String truststoreType) {
+		this.truststoreType = truststoreType;
+	}
+
+	public String getTruststoreType() {
+		return truststoreType;
+	}
+
+	public void setTrustManagerAlgorithm(String getTrustManagerAlgorithm) {
+		this.trustManagerAlgorithm = getTrustManagerAlgorithm;
+	}
+
+	public String getTrustManagerAlgorithm() {
+		return trustManagerAlgorithm;
+	}
+
 
 	public String getRepositoryInfo(Session session) {
 		RepositoryInfo ri = session.getRepositoryInfo();
