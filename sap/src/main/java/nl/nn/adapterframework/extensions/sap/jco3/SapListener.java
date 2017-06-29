@@ -67,7 +67,7 @@ import com.sap.conn.jco.server.JCoServerTIDHandler;
  * <tr><td>className</td><td>nl.nn.adapterframework.extensions.sap.SapListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the Listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProgid(String) progid}</td><td>Name of the RFC-destination to be registered in the SAP system</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setConnectionCount(String) connectionCount}</td><td>The number of connections that should be registered at the gateway</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setConnectionCount(String) connectionCount}</td><td>The number of connections that should be registered at the gateway</td><td>2</td></tr>
  * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the SapSystem used by this object</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIdFieldIndex(int) correlationIdFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>0</td></tr>
  * <tr><td>{@link #setCorrelationIdFieldName(String) correlationIdFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>&nbsp;</td></tr>
