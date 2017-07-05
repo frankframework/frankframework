@@ -100,6 +100,20 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setUseRootFolder(boolean) useRootFolder}</td><td>(only used when <code>action=create</code>) if true, the document is created in the root folder of the repository. Otherwise the document is created in the repository</td><td>true</td></tr>
  * <tr><td>{@link #setResultOnNotFound(String) resultOnNotFound}</td><td>(only used when <code>action=get</code>) result returned when no document was found for the given id (e.g. "[NOT_FOUND]"). If empty an exception is thrown</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeepSession(boolean) keepSession}</td><td>if true, the session is not closed at the end and it will be used in the next call</td><td>true</td></tr>
+ * <tr><td>{@link #setCertificate(String) certificate}</td><td>resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCertificateAuthAlias(String) certificateAuthAlias}</td><td>alias used to obtain certificate password</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setKeystoreType(String) keystoreType}</td><td>&nbsp;</td><td>pkcs12</td></tr>
+ * <tr><td>{@link #setKeyManagerAlgorithm(String) keyManagerAlgorithm}</td><td>&nbsp;</td><td>PKIX</td></tr>
+ * <tr><td>{@link #setTruststore(String) truststore}</td><td>resource URL to truststore to be used for authentication</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTruststoreAuthAlias(String) truststoreAuthAlias}</td><td>alias used to obtain truststore password</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTruststoreType(String) truststoreType}</td><td>&nbsp;</td><td>jks</td></tr>
+ * <tr><td>{@link #setTrustManagerAlgorithm(String) trustManagerAlgorithm}</td><td>&nbsp;</td><td>PKIX</td></tr>
+ * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>when true, self signed certificates are accepted</td><td>false</td></tr>
+ * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
+ * <tr><td>{@link #setIgnoreCertificateExpiredException(boolean) ignoreCertificateExpiredException}</td><td>when true, the CertificateExpiredException is ignored</td><td>false</td></tr>
+ * 
  * </table>
  * </p>
  * <p>
