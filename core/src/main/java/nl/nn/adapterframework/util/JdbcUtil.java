@@ -350,12 +350,10 @@ public class JdbcUtil {
 			case Types.DATE :
 			{
 				try {
-					String formattedDate = null;
-					if(rsmeta.getColumnType(colNum) == Types.TIMESTAMP)
-						formattedDate = new SimpleDateFormat(TIMESTAMPFORMAT).format(rs.getTimestamp(colNum));
-					else
-						formattedDate = new SimpleDateFormat(DATEFORMAT).format(rs.getDate(colNum));
-					return formattedDate;
+					if(rsmeta.getColumnType(colNum) == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty())
+						return new SimpleDateFormat(TIMESTAMPFORMAT).format(rs.getTimestamp(colNum));
+					else if(rsmeta.getColumnType(colNum) == Types.DATE && !DATEFORMAT.isEmpty())
+						return new SimpleDateFormat(DATEFORMAT).format(rs.getDate(colNum));
 				}
 				catch (Exception e) {} //Do nothing it will handle the default..
 			}

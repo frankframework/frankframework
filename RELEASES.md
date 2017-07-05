@@ -61,9 +61,15 @@ Upcoming
 - Add MqttSender
 - Fix DomainTransformerPipe nullPointerException on ibis startup
 - Add custom SSLSocketFactory to CmisSender
-- Fix JDBC driver default timestamp value to yyyy-MM-dd HH:mm:ss
+- Fix JDBC driver default date format to yyyy-MM-dd
+- Fix JDBC driver default timestamp format to yyyy-MM-dd HH:mm:ss
 
 
+
+### Non backwards compatible changes
+
+- The default JDBC timestamp value has been set to yyyy-MM-dd HH:mm:ss, to disable this set the jdbc.timestampFormat property to an empty value
+- The default JDBC date value has been set to yyyy-MM-dd, to disable this set the jdbc.dateFormat property to an empty value
 
 
 7.0-B1
