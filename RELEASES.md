@@ -61,6 +61,7 @@ Upcoming
 - Add MqttSender
 - Fix DomainTransformerPipe nullPointerException on ibis startup
 - Add custom SSLSocketFactory to CmisSender
+- Fix JDBC driver default timestamp value to yyyy-MM-dd HH:mm:ss
 
 
 
