@@ -25,6 +25,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * instead.
  * 
  * @author  Jaco de Groot
+ * @author  Niels Meijer
  * @since   5.0
  */
 public class SapSystem {
@@ -218,6 +219,18 @@ public class SapSystem {
 	public void setPartnerName(String partnerName) {
 		if (jcoVersion == 3) {
 			sapSystem3.setPartnerName(partnerName);
+		}
+	}
+
+	public void setSncAuthMethod(String sncAuthMethod) {
+		if (jcoVersion == 3) {
+			sapSystem3.setSncAuthMethod(sncAuthMethod);
+		}
+	}
+
+	public void setSncSSO2(String sncSSO2) {
+		if (jcoVersion == 3) {
+			sapSystem3.setSncSSO2(sncSSO2);
 		}
 	}
 

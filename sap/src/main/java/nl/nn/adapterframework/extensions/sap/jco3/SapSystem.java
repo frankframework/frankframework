@@ -19,13 +19,10 @@ import java.lang.reflect.Field;
 import java.util.Iterator;
 
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.GlobalListItem;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 import com.sap.conn.idoc.IDocRepository;
 import com.sap.conn.idoc.jco.JCoIDoc;
 import com.sap.conn.jco.JCo;
@@ -56,10 +53,20 @@ import com.sap.conn.jco.JCoRepository;
  * <tr><td>{@link #setUnicode(boolean) unicode}</td><td>when set <code>true</code> the SAP system is interpreted as Unicode SAP system, otherwise as non-Unicode (only applies to SapListeners, not to SapSenders)</td><td>false</td></tr>
  * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>maximum number of connections that may connect simultaneously to the SAP system</td><td>10</td></tr>
  * <tr><td>{@link #setTraceLevel(int) traceLevel}</td><td>trace level (effective only when logging level is debug). 0=none, 10= maximum</td><td>0</td></tr>
+
+ * <tr><td>{@link #setSncEnabled(boolean) sncEnabled}</td><td>Enable or disable SNC</td><td>false</td></tr>
+ * <tr><td>{@link #setSncLibrary(String) sncLibPath}</td><td>Path where the SNC library has been installed</td><td></td></tr>
+ * <tr><td>{@link #setSncQop(int) qop}</td><td>SNC Quality of Protection. 1: Authentication only, 2: Authentication and integrity protection, 3: Authentication, integrity and privacy protection (encryption), 8: Global default configuration, 9: Maximum protection</td><td>8</td></tr>
+ * <tr><td>{@link #setMyName(String) myName}</td><td>Own SNC name of the caller. For example: p:CN=MyUserID, O=ACompany, C=EN</td><td></td></tr>
+ * <tr><td>{@link #setPartnerName(String) partnerName}</td><td>SNC name of the communication partner server. For example: p:CN=SID, O=ACompany, C=EN</td><td></td></tr>
+ * <tr><td>{@link #setSncAuthMethod(String) sncAuthMethod}</td><td>When using SNC, this specifies if SNC should authenticate via SSO or a username/password combination. 1=SSO, 0=username/password</td><td>0</td></tr>
+ * <tr><td>{@link #setSncSSO2(String) sncSSO2}</td><td>Use SAP Cookie Version 2 as logon ticket for SSO based authentication</td><td>1</td></tr>
+ * 
  * </table>
  * </p>	
- * @author Gerrit van Brakel
+ * @author  Gerrit van Brakel
  * @author  Jaco de Groot
+ * @author  Niels Meijer
  * @since   5.0
  */
 public class SapSystem extends GlobalListItem {
@@ -87,9 +94,11 @@ public class SapSystem extends GlobalListItem {
 	//SNC Encryption
 	private boolean sncEnabled = false;
 	private String sncLibPath;
-	private int qop = 3;
+	private int qop = 8;
 	private String myName;
 	private String partnerName;
+	private String authMethod = "0";
+	private String sncSSO2 = "1";
 
 	/**
 	 * Retrieve a SapSystem from the list of systems.
@@ -375,5 +384,19 @@ public class SapSystem extends GlobalListItem {
 	}
 	public String getPartnerName() {
 		return partnerName;
+	}
+
+	public void setSncAuthMethod(String sncAuthMethod) {
+		this.authMethod = sncAuthMethod;
+	}
+	public String getSncAuthMethod() {
+		return authMethod;
+	}
+
+	public void setSncSSO2(String sncSSO2) {
+		this.sncSSO2 = sncSSO2;
+	}
+	public String getSncSSO2() {
+		return sncSSO2;
 	}
 }

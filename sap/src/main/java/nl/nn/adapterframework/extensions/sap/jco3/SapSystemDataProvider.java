@@ -26,10 +26,10 @@ import org.apache.log4j.Logger;
 import com.sap.conn.jco.ext.DestinationDataEventListener;
 import com.sap.conn.jco.ext.DestinationDataProvider;
 import com.sap.conn.jco.ext.Environment;
-import com.sap.conn.jco.ext.ServerDataProvider;
 
 /**
  * @author  Jaco de Groot
+ * @author  Niels Meijer
  * @since   5.0
  */
 public class SapSystemDataProvider implements DestinationDataProvider {
@@ -69,8 +69,10 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 				destinationProperties.setProperty(DestinationDataProvider.JCO_GROUP, sapSystem.getGroup());
 			}
 			destinationProperties.setProperty(DestinationDataProvider.JCO_CLIENT, sapSystem.getMandant());
-			destinationProperties.setProperty(DestinationDataProvider.JCO_USER, cf.getUsername());
-			destinationProperties.setProperty(DestinationDataProvider.JCO_PASSWD, cf.getPassword());
+			if(cf.getUsername() != null) {
+				destinationProperties.setProperty(DestinationDataProvider.JCO_USER, cf.getUsername());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_PASSWD, cf.getPassword());
+			}
 			destinationProperties.setProperty(DestinationDataProvider.JCO_LANG, sapSystem.getLanguage());
 			destinationProperties.setProperty(DestinationDataProvider.JCO_PCS, sapSystem.isUnicode()?"2":"1");
 			destinationProperties.setProperty(DestinationDataProvider.JCO_PEAK_LIMIT, ""+sapSystem.getMaxConnections());
@@ -79,10 +81,16 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_MODE, "1");
 				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_LIBRARY, sapSystem.getSncLibrary());
 				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_QOP, sapSystem.getSncQop());
-				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_SSO, "0");
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_SSO, sapSystem.getSncAuthMethod());
 				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_PARTNERNAME, sapSystem.getPartnerName());
 				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_MYNAME, sapSystem.getMyName());
+				if(sapSystem.getSncAuthMethod().equals("1")) {
+					destinationProperties.setProperty(DestinationDataProvider.JCO_GETSSO2, sapSystem.getSncAuthMethod()); //Automatically order a SSO ticket after logon
+					if(sapSystem.getSncSSO2().equals("1"))
+						destinationProperties.setProperty(DestinationDataProvider.JCO_MYSAPSSO2, sapSystem.getSncSSO2());
+				}
 			}
+
 
 			return destinationProperties;
 		}
