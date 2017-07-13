@@ -1,0 +1,83 @@
+{"GetPolicyDetailsTravel_Response": {
+  "Result": {"Status": "OK"},
+  "children": [{"childDateOfBirth": "2016-01-05"}],
+  "clauses": {},
+  "coverages": [
+    {
+      "coverageDescription": "Medische kosten",
+      "coverageType": "MVZMED",
+      "termPremCoverage": "0.63"
+    },
+    {
+      "coverageDescription": "Annulering",
+      "coverageType": "MVZANN",
+      "insuredAmount": "2500",
+      "termPremCoverage": "7.77"
+    },
+    {
+      "coverageDescription": "Reisrechtsbijstand",
+      "coverageType": "MVZRB",
+      "termPremCoverage": "0.97"
+    },
+    {
+      "area": "Europa",
+      "coverageDescription": "Basisdekking",
+      "coverageType": "MVZREI",
+      "periodOfCoverage": "180 dagen",
+      "termPremCoverage": "10.04",
+      "totalDeductibleAmount": "50"
+    },
+    {
+      "coverageDescription": "Ongevallen",
+      "coverageType": "MVZONGV",
+      "termPremCoverage": "0.41"
+    }
+  ],
+  "coveragesSummary": "Basisdekking, Medische kosten, Ongevallen, Annulering en Reisrechtsbijstand",
+  "endDate": "2018-04-01",
+  "insuredFamilyComposition": "Gezinssamenstelling: gezin met kind(eren)",
+  "partnerIndicator": "Y",
+  "policyHolderIndicator": "Y",
+  "policyNumber": "26986319",
+  "productConditions": [
+    {
+      "conditionsDescription": "Annulering",
+      "conditionsNumber": "PP 4110-02",
+      "conditionsPDF": "https://adviseur.nn.nl/va/doorlink_ekf_documenten/ZPP_Voorwaarden/ZPP_PP4100-04.htm"
+    },
+    {
+      "conditionsDescription": "Hulpverlening, buitengewone kosten repatriering",
+      "conditionsNumber": "PP 4102-02",
+      "conditionsPDF": "https://adviseur.nn.nl/va/doorlink_ekf_documenten/ZPP_Voorwaarden/ZPP_PP4100-04.htm"
+    },
+    {
+      "conditionsDescription": "Geld",
+      "conditionsNumber": "PP 4104-02",
+      "conditionsPDF": "https://adviseur.nn.nl/va/doorlink_ekf_documenten/ZPP_Voorwaarden/ZPP_PP4100-04.htm"
+    },
+    {
+      "conditionsDescription": "Medische kosten",
+      "conditionsNumber": "PP 4105-02",
+      "conditionsPDF": "https://adviseur.nn.nl/va/doorlink_ekf_documenten/ZPP_Voorwaarden/ZPP_PP4100-04.htm"
+    },
+    {
+      "conditionsDescription": "Ongevallen",
+      "conditionsNumber": "PP 4106-02",
+      "conditionsPDF": "https://adviseur.nn.nl/va/doorlink_ekf_documenten/ZPP_Voorwaarden/ZPP_PP4100-04.htm"
+    },
+    {
+      "conditionsDescription": "Rechtsbijstand",
+      "conditionsNumber": "PP 4108-02",
+      "conditionsPDF": "https://adviseur.nn.nl/va/doorlink_ekf_documenten/ZPP_Voorwaarden/ZPP_PP4100-04.htm"
+    },
+    {
+      "conditionsDescription": "Bagage en schade vakantieverblijf",
+      "conditionsNumber": "PP 4103-02",
+      "conditionsPDF": "https://adviseur.nn.nl/va/doorlink_ekf_documenten/ZPP_Voorwaarden/ZPP_PP4100-04.htm"
+    }
+  ],
+  "productName": "Doorlopende reis en/of annulering",
+  "productPlanRef": "P100",
+  "productTermPremiumAndPaymentFrequency": "€ 19,82 / maand",
+  "sequenceNumber": "1"
+}}

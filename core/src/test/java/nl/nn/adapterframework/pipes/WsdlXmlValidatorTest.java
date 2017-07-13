@@ -21,9 +21,9 @@ import static org.mockito.Mockito.mock;
 
 public class WsdlXmlValidatorTest {
 
-    private static final String SIMPLE                = "test/simple.wsdl";
-    private static final String SIMPLE_WITH_INCLUDE   = "test/simple_withinclude.wsdl";
-    private static final String SIMPLE_WITH_REFERENCE = "test/simple_withreference.wsdl";
+    private static final String SIMPLE                = "validation/SimpleWsdl/simple.wsdl";
+    private static final String SIMPLE_WITH_INCLUDE   = "validation/SimpleWsdl/simple_withinclude.wsdl";
+    private static final String SIMPLE_WITH_REFERENCE = "validation/SimpleWsdl/simple_withreference.wsdl";
     private static final String TIBCO                 = "Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1.wsdl";
 
 
