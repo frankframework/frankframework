@@ -38,6 +38,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactoryBase;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -99,6 +100,20 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setUseRootFolder(boolean) useRootFolder}</td><td>(only used when <code>action=create</code>) if true, the document is created in the root folder of the repository. Otherwise the document is created in the repository</td><td>true</td></tr>
  * <tr><td>{@link #setResultOnNotFound(String) resultOnNotFound}</td><td>(only used when <code>action=get</code>) result returned when no document was found for the given id (e.g. "[NOT_FOUND]"). If empty an exception is thrown</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeepSession(boolean) keepSession}</td><td>if true, the session is not closed at the end and it will be used in the next call</td><td>true</td></tr>
+ * <tr><td>{@link #setCertificate(String) certificate}</td><td>resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCertificateAuthAlias(String) certificateAuthAlias}</td><td>alias used to obtain certificate password</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setKeystoreType(String) keystoreType}</td><td>&nbsp;</td><td>pkcs12</td></tr>
+ * <tr><td>{@link #setKeyManagerAlgorithm(String) keyManagerAlgorithm}</td><td>&nbsp;</td><td>PKIX</td></tr>
+ * <tr><td>{@link #setTruststore(String) truststore}</td><td>resource URL to truststore to be used for authentication</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTruststoreAuthAlias(String) truststoreAuthAlias}</td><td>alias used to obtain truststore password</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTruststoreType(String) truststoreType}</td><td>&nbsp;</td><td>jks</td></tr>
+ * <tr><td>{@link #setTrustManagerAlgorithm(String) trustManagerAlgorithm}</td><td>&nbsp;</td><td>PKIX</td></tr>
+ * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>when true, self signed certificates are accepted</td><td>false</td></tr>
+ * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
+ * <tr><td>{@link #setIgnoreCertificateExpiredException(boolean) ignoreCertificateExpiredException}</td><td>when true, the CertificateExpiredException is ignored</td><td>false</td></tr>
+ * 
  * </table>
  * </p>
  * <p>
@@ -221,6 +236,20 @@ public class CmisSender extends SenderWithParametersBase {
 
 	private Session session;
 
+	private boolean allowSelfSignedCertificates = false;
+	private boolean verifyHostname = true;
+	private boolean ignoreCertificateExpiredException = false;
+	private String certificate = null;
+	private String certificateAuthAlias = null;
+	private String certificatePassword = null;
+	private String truststore = null;
+	private String truststoreAuthAlias = null;
+	private String truststorePassword = null;
+	private String keystoreType = "pkcs12";
+	private String keyManagerAlgorithm = "PKIX";
+	private String truststoreType = "jks";
+	private String trustManagerAlgorithm = "PKIX";
+
 	private final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd HH:mm:ss";
 
 	public void configure() throws ConfigurationException {
@@ -279,9 +308,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	public String sendMessage(String correlationID, String message,
-			ParameterResolutionContext prc) throws SenderException,
-			TimeOutException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		try {
 			if (session == null || !isKeepSession()) {
 				String authAlias_work = null;
@@ -293,8 +320,7 @@ public class CmisSender extends SenderWithParametersBase {
 					if (prc != null && paramList != null) {
 						pvl = prc.getValues(paramList);
 						if (pvl != null) {
-							ParameterValue pv = pvl
-									.getParameterValue("authAlias");
+							ParameterValue pv = pvl .getParameterValue("authAlias");
 							if (pv != null) {
 								authAlias_work = (String) pv.getValue();
 							}
@@ -309,9 +335,7 @@ public class CmisSender extends SenderWithParametersBase {
 						}
 					}
 				} catch (ParameterException e) {
-					throw new SenderException(getLogPrefix() + "Sender ["
-							+ getName()
-							+ "] caught exception evaluating parameters", e);
+					throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 				}
 
 				if (authAlias_work == null) {
@@ -324,8 +348,7 @@ public class CmisSender extends SenderWithParametersBase {
 					password_work = getPassword();
 				}
 
-				CredentialFactory cf = new CredentialFactory(authAlias_work,
-						userName_work, password_work);
+				CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
 				session = connect(cf.getUsername(), cf.getPassword());
 			}
 
@@ -589,9 +612,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 	
-	private String sendMessageForActionFind(String correlationID,
-			String message, ParameterResolutionContext prc)
-			throws SenderException, TimeOutException {
+	private String sendMessageForActionFind(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		Element queryElement = null;
 		try {
 			if (XmlUtils.isWellFormed(message, "query")) {
@@ -602,17 +623,12 @@ public class CmisSender extends SenderWithParametersBase {
 		} catch (DomBuilderException e) {
 			throw new SenderException(e);
 		}
-		String statement = XmlUtils.getChildTagAsString(queryElement,
-				"statement");
-		String maxItems = XmlUtils
-				.getChildTagAsString(queryElement, "maxItems");
-		String skipCount = XmlUtils.getChildTagAsString(queryElement,
-				"skipCount");
-		String searchAllVersions = XmlUtils.getChildTagAsString(queryElement,
-				"searchAllVersions");
+		String statement = XmlUtils.getChildTagAsString(queryElement, "statement");
+		String maxItems = XmlUtils .getChildTagAsString(queryElement, "maxItems");
+		String skipCount = XmlUtils.getChildTagAsString(queryElement, "skipCount");
+		String searchAllVersions = XmlUtils.getChildTagAsString(queryElement, "searchAllVersions");
 
-		String includeAllowableActions = XmlUtils.getChildTagAsString(
-				queryElement, "includeAllowableActions");
+		String includeAllowableActions = XmlUtils.getChildTagAsString( queryElement, "includeAllowableActions");
 
 		OperationContext operationContext = session.createOperationContext();
 		if (StringUtils.isNotEmpty(maxItems)) {
@@ -623,11 +639,9 @@ public class CmisSender extends SenderWithParametersBase {
 			sav = Boolean.parseBoolean(searchAllVersions);
 		}
 		if (StringUtils.isNotEmpty(includeAllowableActions)) {
-			operationContext.setIncludeAllowableActions(Boolean
-					.parseBoolean(searchAllVersions));
+			operationContext.setIncludeAllowableActions(Boolean.parseBoolean(searchAllVersions));
 		}
-		ItemIterable<QueryResult> q = session.query(statement, sav,
-				operationContext);
+		ItemIterable<QueryResult> q = session.query(statement, sav, operationContext);
 		if (StringUtils.isNotEmpty(skipCount)) {
 			long sc = Long.parseLong(skipCount);
 			q = q.skipTo(sc);
@@ -691,8 +705,7 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	private Session connect() {
-		CredentialFactory cf = new CredentialFactory(getAuthAlias(),
-				getUserName(), getPassword());
+		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
 		return connect(cf.getUsername(), cf.getPassword());
 	}
 
@@ -730,11 +743,140 @@ public class CmisSender extends SenderWithParametersBase {
 					BindingType.WEBSERVICES.value());
 		}
 		parameter.put(SessionParameter.REPOSITORY_ID, getRepository());
+
+
+		if (getCertificate()!=null || getTruststore()!=null || isAllowSelfSignedCertificates()) {
+			CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
+			CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
+
+			parameter.put("certificateUrl", getCertificate());
+			parameter.put("certificatePassword", certificateCf.getPassword());
+			parameter.put("keystoreType", getKeystoreType());
+			parameter.put("keyManagerAlgorithm", getKeyManagerAlgorithm());
+			parameter.put("truststoreUrl", getTruststore());
+			parameter.put("truststorePassword", truststoreCf.getPassword());
+			parameter.put("truststoreType", getTruststoreType());
+			parameter.put("trustManagerAlgorithm", getTrustManagerAlgorithm());
+		}
+
+		parameter.put("isAllowSelfSignedCertificates", "" + isAllowSelfSignedCertificates());
+		parameter.put("isVerifyHostname", "" + isVerifyHostname());
+		parameter.put("isIgnoreCertificateExpiredException", "" + isIgnoreCertificateExpiredException());
+
+//		System.setProperty("org.apache.chemistry.opencmis.binding.webservices.jaxws.impl", "com.sun.xml.internal.ws.spi.ProviderImpl");
+		parameter.put(SessionParameter.AUTHENTICATION_PROVIDER_CLASS, "nl.nn.adapterframework.extensions.cmis.IbisAuthenticationProvider");
+
+
 		Session session = sessionFactory.createSession(parameter);
 		log.debug(getLogPrefix() + "connected with repository ["
 				+ getRepositoryInfo(session) + "]");
 		return session;
 	}
+
+	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
+		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
+	}
+
+	public boolean isAllowSelfSignedCertificates() {
+		return allowSelfSignedCertificates;
+	}
+
+	public void setVerifyHostname(boolean verifyHostname) {
+		this.verifyHostname = verifyHostname;
+	}
+
+	public boolean isVerifyHostname() {
+		return verifyHostname;
+	}
+
+	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
+		this.ignoreCertificateExpiredException = ignoreCertificateExpiredException;
+	}
+
+	public boolean isIgnoreCertificateExpiredException() {
+		return ignoreCertificateExpiredException;
+	}
+
+	public void setCertificateUrl(String certificate) {
+		this.certificate = certificate;
+	}
+
+	public String getCertificate() {
+		return certificate;
+	}
+
+	public void setCertificateAuthAlias(String certificateAuthAlias) {
+		this.certificateAuthAlias = certificateAuthAlias;
+	}
+
+	public String getCertificateAuthAlias() {
+		return certificateAuthAlias;
+	}
+
+	public void setCertificatePassword(String certificatePassword) {
+		this.certificatePassword = certificatePassword;
+	}
+
+	public String getCertificatePassword() {
+		return certificatePassword;
+	}
+
+	public void setTruststore(String truststore) {
+		this.truststore = truststore;
+	}
+
+	public String getTruststore() {
+		return truststore;
+	}
+
+	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
+		this.truststoreAuthAlias = truststoreAuthAlias;
+	}
+
+	public String getTruststoreAuthAlias() {
+		return truststoreAuthAlias;
+	}
+
+	public void setTruststorePassword(String truststorePassword) {
+		this.truststorePassword = truststorePassword;
+	}
+
+	public String getTruststorePassword() {
+		return truststorePassword;
+	}
+
+	public void setKeystoreType(String keystoreType) {
+		this.keystoreType = keystoreType;
+	}
+
+	public String getKeystoreType() {
+		return keystoreType;
+	}
+
+	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
+		this.keyManagerAlgorithm = keyManagerAlgorithm;
+	}
+
+	public String getKeyManagerAlgorithm() {
+		return keyManagerAlgorithm;
+	}
+
+	public void setTruststoreType(String truststoreType) {
+		this.truststoreType = truststoreType;
+	}
+
+	public String getTruststoreType() {
+		return truststoreType;
+	}
+
+	public void setTrustManagerAlgorithm(String getTrustManagerAlgorithm) {
+		this.trustManagerAlgorithm = getTrustManagerAlgorithm;
+	}
+
+	public String getTrustManagerAlgorithm() {
+		return trustManagerAlgorithm;
+	}
+
 
 	public String getRepositoryInfo(Session session) {
 		RepositoryInfo ri = session.getRepositoryInfo();

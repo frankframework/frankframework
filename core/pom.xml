@@ -12,7 +12,7 @@
 
   <properties>
     <spring.version>3.2.16.RELEASE</spring.version>
-    <opencmis.version>0.12.0</opencmis.version>
+    <opencmis.version>0.13.0</opencmis.version>
     <resteasy.version>3.0.4.Final</resteasy.version>
   </properties>
 
@@ -81,6 +81,11 @@
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
     </dependency>
+	<dependency>
+		<groupId>javax.xml</groupId>
+		<artifactId>jaxrpc-api</artifactId>
+		<version>1.1</version>
+	</dependency>
     <!-- commons -->
     <dependency>
       <groupId>commons-collections</groupId>

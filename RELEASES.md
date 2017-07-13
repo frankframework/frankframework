@@ -51,7 +51,25 @@ Upcoming
 - Avoid StackOverflowError in caching validators
 - Fix performance on Oracle databases by providing more accurate path finding hints
 - Add MqttListener
+- Upgrade servlet version from 2.3 to 2.5
+- Add attribute logIntermediaryResults to AbstractPipe to overwrite value in AppConstants
+- Add attributes ignoreCaching and lazyInit to XmlValidator to overwrite value in AppConstants
+- Add SNC encryption to SAP Listeners/Senders
+- Add httpWsdl attribute to JavaListener for making WSDL available
+- Make unwrapping of SOAP messages independent of SOAP version
+- Support all InputStreams for upload in HttpSender instead of only FileInputStream
+- Add MqttSender
+- Fix DomainTransformerPipe nullPointerException on ibis startup
+- Add custom SSLSocketFactory to CmisSender
+- Fix JDBC driver default date format to yyyy-MM-dd
+- Fix JDBC driver default timestamp format to yyyy-MM-dd HH:mm:ss
 
+
+
+### Non backwards compatible changes
+
+- The default JDBC timestamp value has been set to yyyy-MM-dd HH:mm:ss, to disable this set the jdbc.timestampFormat property to an empty value
+- The default JDBC date value has been set to yyyy-MM-dd, to disable this set the jdbc.dateFormat property to an empty value
 
 
 7.0-B1

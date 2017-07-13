@@ -76,12 +76,17 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	private FixedQuerySender qs;
 	private String query;
+	private Map proxiedDataSources;
+	private String jmsRealm;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
 
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
 		qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+
+		qs.setProxiedDataSources(proxiedDataSources);
+		qs.setJmsRealm(jmsRealm);
 
 		//dummy query required
 		qs.setQuery("SELECT count(*) FROM ALL_TABLES");
@@ -257,11 +262,11 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	}
 
 	public void setProxiedDataSources(Map proxiedDataSources) {
-		qs.setProxiedDataSources(proxiedDataSources);
+		this.proxiedDataSources = proxiedDataSources;
 	}
 
 	public void setJmsRealm(String jmsRealm) {
-		qs.setJmsRealm(jmsRealm);
+		this.jmsRealm = jmsRealm;
 	}
 
 	public void setTableName(String tableName) {

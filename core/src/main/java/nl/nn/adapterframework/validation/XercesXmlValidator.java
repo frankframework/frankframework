@@ -132,7 +132,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			String schemasId = schemasProvider.getSchemasId();
 			if (schemasId != null) {
 				PreparseResult preparseResult = preparse(schemasId, schemasProvider.getSchemas());
-				if (cache == null) {
+				if (cache == null || isIgnoreCaching()) {
 					this.preparseResult = preparseResult;
 				} else {
 					cache.putObject(preparseResultId, preparseResult);
@@ -218,7 +218,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			schemasId = schemasProvider.getSchemasId(session);
 			preparseResult = preparse(schemasId, schemasProvider.getSchemas(session));
 		} else {
-			if (cache == null) {
+			if (cache == null || isIgnoreCaching()) {
 				preparseResult = this.preparseResult;
 				if (preparseResult == null) {
 					init();

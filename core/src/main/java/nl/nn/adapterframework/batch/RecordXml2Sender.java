@@ -23,6 +23,8 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.pipes.AbstractPipe;
+import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -54,24 +56,28 @@ import nl.nn.adapterframework.util.ClassUtils;
  * 
  * @author  John Dekker
  */
-public class RecordXml2Sender extends RecordXmlTransformer {
+public class RecordXml2Sender extends RecordXmlTransformer implements PipeAware {
 
-	private ISender sender = null; 
+	private ISender sender = null;
+	private AbstractPipe parentPipe; 
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (sender==null) {
 			throw new ConfigurationException(ClassUtils.nameOf(this)+" has no sender");
 		}
-		sender.configure();		
+		if (sender instanceof PipeAware) {
+			((PipeAware)sender).setPipe(parentPipe);
+		}
+		sender.configure();
 	}
 	public void open() throws SenderException {
 		super.open();
-		sender.open();		
+		sender.open();
 	}
 	public void close() throws SenderException {
 		super.close();
-		sender.close();		
+		sender.close();
 	}
 
 	public Object handleRecord(IPipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
@@ -92,6 +98,14 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 	}
 	public ISender getSender() {
 		return sender;
+	}
+
+	public AbstractPipe getPipe() {
+		return parentPipe;
+	}
+
+	public void setPipe(AbstractPipe pipe) {
+		this.parentPipe = pipe;
 	}
 
 }

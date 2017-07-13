@@ -37,6 +37,7 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Types;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Properties;
 import java.util.zip.DataFormatException;
@@ -67,6 +68,9 @@ public class JdbcUtil {
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 
 	private static final boolean useMetaDataForTableExists=false;
+
+	private static final String DATEFORMAT = AppConstants.getInstance().getString("jdbc.dateFormat", "yyyy-MM-dd");
+	private static final String TIMESTAMPFORMAT = AppConstants.getInstance().getString("jdbc.timestampFormat", "yyyy-MM-dd HH:mm:ss");
 	private static Properties jdbcProperties = null;
 	
 	/**
@@ -314,9 +318,9 @@ public class JdbcUtil {
 				return false;
 		}
 	}
-	
+
 	public static String getValue(final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws JdbcException, IOException, SQLException, JMSException {
-        switch(rsmeta.getColumnType(colNum))
+		switch(rsmeta.getColumnType(colNum))
         {
 	        case Types.LONGVARBINARY :
 	        case Types.VARBINARY :
@@ -334,13 +338,25 @@ public class JdbcUtil {
 					log.debug("Caught JdbcException, assuming no clob found",e);
 					return nullValue;
 				}
-        	// return "undefined" for types that cannot be rendered to strings easily
+			// return "undefined" for types that cannot be rendered to strings easily
             case Types.ARRAY :
             case Types.DISTINCT :
             case Types.BINARY :
             case Types.REF :
             case Types.STRUCT :
                 return "undefined";
+			// return as specified date format
+			case Types.TIMESTAMP :
+			case Types.DATE :
+			{
+				try {
+					if(rsmeta.getColumnType(colNum) == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty())
+						return new SimpleDateFormat(TIMESTAMPFORMAT).format(rs.getTimestamp(colNum));
+					else if(rsmeta.getColumnType(colNum) == Types.DATE && !DATEFORMAT.isEmpty())
+						return new SimpleDateFormat(DATEFORMAT).format(rs.getDate(colNum));
+				}
+				catch (Exception e) {} //Do nothing it will handle the default..
+			}
             default :
             {
                 String value = rs.getString(colNum);

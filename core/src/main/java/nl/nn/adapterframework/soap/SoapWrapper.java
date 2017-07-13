@@ -58,162 +58,170 @@ public class SoapWrapper {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerPool extractBody;
+	private TransformerPool extractBody2;
 	private TransformerPool extractHeader;
 	private TransformerPool extractFaultCount;
 	private TransformerPool extractFaultCode;
 	private TransformerPool extractFaultString;
-	private final static String extractNamespaceDefs="soapenv=http://schemas.xmlsoap.org/soap/envelope/";
-	private final static String extractBodyXPath="/soapenv:Envelope/soapenv:Body/*";
-	private final static String extractHeaderXPath="/soapenv:Envelope/soapenv:Header/*";
-	private final static String extractFaultCountXPath="count(/soapenv:Envelope/soapenv:Body/soapenv:Fault)";
-	private final static String extractFaultCodeXPath="/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode";
-	private final static String extractFaultStringXPath="/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
+	private static final String EXTRACT_NAMESPACE_DEFS  = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
+	private static final String EXTRACT_NAMESPACE_DEFS2 = "soapenv=http://www.w3.org/2003/05/soap-envelope";
+	private static final String EXTRACT_BODY_XPATH = "/soapenv:Envelope/soapenv:Body/*";
+	private static final String EXTRACT_HEADER_XPATH = "/soapenv:Envelope/soapenv:Header/*";
+	private static final String EXTRACT_FAULTCOUNTER_XPATH = "count(/soapenv:Envelope/soapenv:Body/soapenv:Fault)";
+	private static final String EXTRACT_FAULTCODE_XPATH = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode";
+	private static final String EXTRACT_FAULTSTRING_XPATH = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
 
-	private static SoapWrapper self=null;
-	
+	private static SoapWrapper self = null;
+
 	private SoapWrapper() {
 		super();
 	}
-	
+
 	private void init() throws ConfigurationException {
 		try {
-			extractBody        = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractBodyXPath,"xml",false,null,false));
-			extractHeader      = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractHeaderXPath,"xml"));
-			extractFaultCount  = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractFaultCountXPath,"text"));
-			extractFaultCode   = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractFaultCodeXPath,"text"));
-			extractFaultString = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs,extractFaultStringXPath,"text"));
+			extractBody = new TransformerPool(XmlUtils.createXPathEvaluatorSource(EXTRACT_NAMESPACE_DEFS, EXTRACT_BODY_XPATH, "xml", false, null, false));
+			extractBody2 = new TransformerPool(XmlUtils.createXPathEvaluatorSource(EXTRACT_NAMESPACE_DEFS2, EXTRACT_BODY_XPATH,"xml",false,null,false));
+			extractHeader = new TransformerPool(XmlUtils.createXPathEvaluatorSource(EXTRACT_NAMESPACE_DEFS, EXTRACT_HEADER_XPATH, "xml"));
+			extractFaultCount = new TransformerPool(XmlUtils.createXPathEvaluatorSource(EXTRACT_NAMESPACE_DEFS, EXTRACT_FAULTCOUNTER_XPATH, "text"));
+			extractFaultCode = new TransformerPool(XmlUtils.createXPathEvaluatorSource(EXTRACT_NAMESPACE_DEFS, EXTRACT_FAULTCODE_XPATH, "text"));
+			extractFaultString = new TransformerPool(XmlUtils.createXPathEvaluatorSource(EXTRACT_NAMESPACE_DEFS, EXTRACT_FAULTSTRING_XPATH, "text"));
 		} catch (TransformerConfigurationException e) {
-			throw new ConfigurationException("cannot create SOAP transformer",e);
+			throw new ConfigurationException("cannot create SOAP transformer", e);
 		}
 	}
-	
+
 	public static SoapWrapper getInstance() throws ConfigurationException {
-		if (self==null) {
-			self=new SoapWrapper();
+		if (self == null) {
+			self = new SoapWrapper();
 			self.init();
 		}
 		return self;
 	}
 
 	public void checkForSoapFault(String responseBody, Throwable nested) throws SenderException {
-		String faultString=null;
-		String faultCode=null;
-		int faultCount=0;
+		String faultString = null;
+		String faultCode = null;
+		int faultCount = 0;
 		try {
 			faultCount = getFaultCount(responseBody);
-			log.debug("fault count="+faultCount);
+			log.debug("fault count=" + faultCount);
 			if (faultCount > 0) {
 				faultCode = getFaultCode(responseBody);
 				faultString = getFaultString(responseBody);
-				log.debug("faultCode="+faultCode+", faultString="+faultString);
+				log.debug("faultCode=" + faultCode + ", faultString=" + faultString);
 			}
 		} catch (DomBuilderException e) {
-			log.debug("IOException extracting fault message",e);
+			log.debug("IOException extracting fault message", e);
 		} catch (IOException e) {
-			log.debug("IOException extracting fault message",e);
+			log.debug("IOException extracting fault message", e);
 		} catch (TransformerException e) {
-			log.debug("TransformerException extracting fault message:"+e.getMessageAndLocation());
+			log.debug("TransformerException extracting fault message:" + e.getMessageAndLocation());
 		}
 		if (faultCount > 0) {
-			String msg = "SOAP fault ["+faultCode+"]: "+faultString;
+			String msg = "SOAP fault [" + faultCode + "]: " + faultString;
 			log.info(msg);
 			throw new SenderException(msg, nested);
 		}
 	}
 
 	public String getBody(String message) throws DomBuilderException, TransformerException, IOException  {
-		return extractBody.transform(message,null,true);
+		String result = extractBody.transform(message,null,true);
+		if (StringUtils.isNotEmpty(result))
+			return result;
+		return extractBody2.transform(message,null,true);
 	}
+
 	public String getBody(InputStream request) throws TransformerException, IOException {
-		return extractBody.transform(new StreamSource(request),null);
+		String result = extractBody.transform(new StreamSource(request),null);
+		if (StringUtils.isNotEmpty(result))
+			return result;
+		return extractBody2.transform(new StreamSource(request),null);
 	}
 
 	public String getHeader(String message) throws DomBuilderException, TransformerException, IOException {
-		return extractHeader.transform(message,null,true);
-	}
-	public String getHeader(InputStream request) throws TransformerException, IOException {
-		return extractHeader.transform(new StreamSource(request),null);
+		return extractHeader.transform(message, null, true);
 	}
 
-	public int getFaultCount(String message) throws NumberFormatException, DomBuilderException, TransformerException, IOException {
+	public String getHeader(InputStream request) throws TransformerException, IOException {
+		return extractHeader.transform(new StreamSource(request), null);
+	}
+
+	public int getFaultCount(String message) throws DomBuilderException, TransformerException, IOException {
 		if (StringUtils.isEmpty(message)) {
 			log.warn("getFaultCount(): message is empty");
 			return 0;
 		}
-		String faultCount=extractFaultCount.transform(message,null,true);
+		String faultCount = extractFaultCount.transform(message, null, true);
 		if (StringUtils.isEmpty(faultCount)) {
 			log.warn("getFaultCount(): could not extract fault count, result is empty");
 			return 0;
 		}
-		if (log.isDebugEnabled()) log.debug("getFaultCount(): transformation result ["+faultCount+"]");
+		if (log.isDebugEnabled()) {
+			log.debug("getFaultCount(): transformation result [" + faultCount + "]");
+		}
 		return Integer.parseInt(faultCount);
 	}
+
 	public String getFaultCode(String message) throws DomBuilderException, TransformerException, IOException {
-		return extractFaultCode.transform(message,null,true);
+		return extractFaultCode.transform(message, null, true);
 	}
+
 	public String getFaultString(String message) throws DomBuilderException, TransformerException, IOException {
-		return extractFaultString.transform(message,null,true);
+		return extractFaultString.transform(message, null, true);
 	}
-	
+
 	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace) {
 		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, null);
 	}
 
-	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace, String soapHeader) {
+	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace,
+			String soapHeader) {
 		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, soapHeader, null);
 	}
 
-	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace, String soapHeader, String namespaceDefs) {
+	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace,
+			String soapHeader, String namespaceDefs) {
 		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, soapHeader, namespaceDefs, null);
 	}
 
-	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace, String soapHeader, String namespaceDefs, String soapNamespace) {
-		String encodingStyle="";
-		String targetObjectNamespaceClause="";
+	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace,
+			String soapHeaderInitial, String namespaceDefs, String soapNamespace) {
+		String soapHeader = "";
+		String encodingStyle = "";
+		String targetObjectNamespaceClause = "";
 		if (!StringUtils.isEmpty(encodingStyleUri)) {
-			encodingStyle=" soapenv:encodingStyle=\""+ encodingStyleUri+"\"";
+			encodingStyle = " soapenv:encodingStyle=\"" + encodingStyleUri + "\"";
 		}
 		if (!StringUtils.isEmpty(targetObjectNamespace)) {
-			targetObjectNamespaceClause=" xmlns=\""+ targetObjectNamespace+"\"";
+			targetObjectNamespaceClause = " xmlns=\"" + targetObjectNamespace + "\"";
 		}
-		if (StringUtils.isNotEmpty(soapHeader)) {
-			soapHeader="<soapenv:Header>"+XmlUtils.skipXmlDeclaration(soapHeader)+"</soapenv:Header>";
-		} else {
-			soapHeader="";
-		}
-		String namespaceClause="";
+		if (StringUtils.isNotEmpty(soapHeaderInitial)) {
+			soapHeader = "<soapenv:Header>" + XmlUtils.skipXmlDeclaration(soapHeaderInitial) + "</soapenv:Header>";
+		} 
+		StringBuilder namespaceClause = new StringBuilder();
 		if (StringUtils.isNotEmpty(namespaceDefs)) {
-			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
+			StringTokenizer st1 = new StringTokenizer(namespaceDefs, ", \t\r\n\f");
 			while (st1.hasMoreTokens()) {
-				String namespaceDef=st1.nextToken();
-				log.debug("namespaceDef ["+namespaceDef+"]");
-				int separatorPos=namespaceDef.indexOf('=');
-				if (separatorPos<1) {
-					namespaceClause+=" xmlns=\""+namespaceDef+"\"";
+				String namespaceDef = st1.nextToken();
+				log.debug("namespaceDef [" + namespaceDef + "]");
+				int separatorPos = namespaceDef.indexOf('=');
+				if (separatorPos < 1) {
+					namespaceClause.append(" xmlns=\"" + namespaceDef + "\"");
 				} else {
-					namespaceClause+=" xmlns:"+namespaceDef.substring(0,separatorPos)+"=\""+namespaceDef.substring(separatorPos+1)+"\"";
+					namespaceClause.append(" xmlns:" + namespaceDef.substring(0, separatorPos) + "=\""
+							+ namespaceDef.substring(separatorPos + 1) + "\"");
 				}
 			}
-			log.debug("namespaceClause ["+namespaceClause+"]");
+			log.debug("namespaceClause [" + namespaceClause + "]");
 		}
 		String soapns = "http://schemas.xmlsoap.org/soap/envelope/";
 		if (StringUtils.isNotEmpty(soapNamespace)) {
 			soapns = soapNamespace;
 		}
-		String soapmsg= 
-		"<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" +
-			encodingStyle +
-			targetObjectNamespaceClause +
-//			"xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" " + 
-//			"xmlns:xsd=\"http://www.w3.org/1999/XMLSchema\" " +
-			namespaceClause +
-			">" + 
-			soapHeader+
-			"<soapenv:Body>" + 	
-				XmlUtils.skipXmlDeclaration(message) +
-			"</soapenv:Body>"+
-		"</soapenv:Envelope>";
-		return soapmsg;
+		return "<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
+				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(message)
+				+ "</soapenv:Body>" + "</soapenv:Envelope>";
+
 	}
 
 	public String putInEnvelope(String message, String encodingStyleUri) {
@@ -222,11 +230,8 @@ public class SoapWrapper {
 
 	public String createSoapFaultMessage(String faultcode, String faultstring) {
 		String faultCdataString = "<![CDATA[" + faultstring + "]]>";
-		String fault= 
-		"<soapenv:Fault>" + 	
-			"<faultcode>" + faultcode + "</faultcode>" +
-			"<faultstring>" + faultCdataString + "</faultstring>" +
-		"</soapenv:Fault>";
+		String fault = "<soapenv:Fault>" + "<faultcode>" + faultcode + "</faultcode>" + "<faultstring>"
+				+ faultCdataString + "</faultstring>" + "</soapenv:Fault>";
 		return putInEnvelope(fault, null, null, null);
 	}
 
@@ -264,7 +269,6 @@ public class SoapWrapper {
 			tokenBuilder.addCreated();
 			tokenBuilder.prepare(doc);
 
-		
 			WSSecSignature sign = new WSSecSignature();
 			sign.setUsernameToken(tokenBuilder);
 			sign.setKeyIdentifierType(WSConstants.UT_SIGNING);
@@ -274,18 +278,17 @@ public class SoapWrapper {
 			tokenBuilder.prependToHeader(secHeader);
 
 			// add a Timestamp
-			WSSecTimestamp timestampBuilder = new WSSecTimestamp(); 
+			WSSecTimestamp timestampBuilder = new WSSecTimestamp();
 			timestampBuilder.setTimeToLive(300);
 			timestampBuilder.prepare(doc);
 			timestampBuilder.prependToHeader(secHeader);
 
 			Document signedDoc = doc;
 
-			String result=DOM2Writer.nodeToString(signedDoc);
-		
-			return result;
-		} catch (Throwable t) {
-			throw new SenderException(t);
+			return DOM2Writer.nodeToString(signedDoc);
+
+		} catch (Exception e) {
+			throw new SenderException(e);
 		}
 	}
 }

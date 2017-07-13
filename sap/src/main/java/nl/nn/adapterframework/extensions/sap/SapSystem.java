@@ -25,6 +25,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * instead.
  * 
  * @author  Jaco de Groot
+ * @author  Niels Meijer
  * @since   5.0
  */
 public class SapSystem {
@@ -186,6 +187,50 @@ public class SapSystem {
 	public void setServiceOffset(int i) {
 		if (jcoVersion == 2) {
 			sapSystem2.setServiceOffset(i);
+		}
+	}
+
+	public void setSncEnabled(boolean sncEnabled) {
+		if (jcoVersion == 3) {
+			sapSystem3.setSncEnabled(sncEnabled);
+		}
+	}
+
+	public void setSncLibrary(String sncLibPath) {
+		if (jcoVersion == 3) {
+			sapSystem3.setSncLibrary(sncLibPath);
+		}
+	}
+
+	public void setSncQop(int qop) throws ConfigurationException {
+		if (jcoVersion == 3) {
+			if(qop < 1 || qop > 9)
+				throw new ConfigurationException("SNC QOP cannot be smaller then 0 or larger then 9");
+			sapSystem3.setSncQop(qop);
+		}
+	}
+
+	public void setMyName(String myName) {
+		if (jcoVersion == 3) {
+			sapSystem3.setMyName(myName);
+		}
+	}
+
+	public void setPartnerName(String partnerName) {
+		if (jcoVersion == 3) {
+			sapSystem3.setPartnerName(partnerName);
+		}
+	}
+
+	public void setSncAuthMethod(String sncAuthMethod) {
+		if (jcoVersion == 3) {
+			sapSystem3.setSncAuthMethod(sncAuthMethod);
+		}
+	}
+
+	public void setSncSSO2(String sncSSO2) {
+		if (jcoVersion == 3) {
+			sapSystem3.setSncSSO2(sncSSO2);
 		}
 	}
 

@@ -35,6 +35,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.Misc;
 
@@ -150,6 +151,9 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		for (Iterator it = registeredRecordHandlers.keySet().iterator(); it.hasNext();) {
 			String recordHandlerName = (String)it.next();
 			IRecordHandler handler = getRecordHandler(recordHandlerName);
+			if(handler instanceof PipeAware) {
+				((PipeAware)handler).setPipe(this);
+			}
 			handler.configure();
 		}
 		for (Iterator it = registeredResultHandlers.keySet().iterator(); it.hasNext();) {

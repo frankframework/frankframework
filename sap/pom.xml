@@ -40,13 +40,13 @@
     <dependency>
       <groupId>com.sap.jco3</groupId>
       <artifactId>sapidoc</artifactId>
-      <version>3</version>
+      <version>3.0.12</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.sap.jco3</groupId>
       <artifactId>sapjco</artifactId>
-      <version>3.0.8</version>
+      <version>3.0.16</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

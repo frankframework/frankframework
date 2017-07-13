@@ -21,10 +21,12 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -50,11 +52,22 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 			String pipeName=pipe==null?"<null>":pipe.getName();
 			sb.append("Pipeline of adapter ["+ownerName+"] messageId ["+messageId+"] is about to call pipe ["+ pipeName+"]");
 
+			boolean lir = false;
 			if (AppConstants.getInstance().getProperty("log.logIntermediaryResults")!=null) {
 				if (AppConstants.getInstance().getProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
-					sb.append(" current result ["+ message +"] ");
+					lir = true;
 				}
 			}
+			if (pipe instanceof AbstractPipe) {
+				AbstractPipe ap = (AbstractPipe) pipe;
+				if (StringUtils.isNotEmpty(ap.getLogIntermediaryResults())) {
+					lir = Boolean.valueOf(ap.getLogIntermediaryResults());
+				}
+			}
+			if (lir) {
+				sb.append(" current result ["+ message +"] ");
+			}
+
 			log.debug(sb.toString());
 		}
 

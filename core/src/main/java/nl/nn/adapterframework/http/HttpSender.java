@@ -808,11 +808,11 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 						String partMimeType = partElement.getAttribute("mimeType");
 						String partSessionKey = partElement.getAttribute("sessionKey");
 						Object partObject = prc.getSession().get(partSessionKey);
-						if (partObject instanceof FileInputStream) {
-							FileInputStream fis = (FileInputStream)partObject;
+						if (partObject instanceof InputStream) {
+							InputStream is = (InputStream)partObject;
 							MimeBodyPart mimeBodyPart = new PreencodedMimeBodyPart("binary");
 							mimeBodyPart.setDisposition(javax.mail.Part.ATTACHMENT);
-							ByteArrayDataSource ds = new ByteArrayDataSource(fis, (partMimeType==null?"application/octet-stream":partMimeType));
+							ByteArrayDataSource ds = new ByteArrayDataSource(is, (partMimeType==null?"application/octet-stream":partMimeType));
 							mimeBodyPart.setDataHandler(new DataHandler(ds));
 							mimeBodyPart.setFileName(partName);
 							mimeBodyPart.setContentID("<" + partName + ">");
