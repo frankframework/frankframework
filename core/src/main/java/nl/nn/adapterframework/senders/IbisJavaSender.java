@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -75,6 +76,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	private boolean multipartResponse = false;
 	private String multipartResponseContentType = "application/octet-stream";
 	private String multipartResponseCharset = "UTF-8";
+	private String dispatchType = "default";
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -100,7 +102,11 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			} else {
 				context=new HashMap();
 			}
-			DispatcherManager dm = DispatcherManagerFactory.getDispatcherManager();
+			DispatcherManager dm;
+			if(getDispatchType().equalsIgnoreCase("DLL"))
+				dm = DispatcherManagerFactory.getDispatcherManager(getDispatchType());
+			else
+				dm = DispatcherManagerFactory.getDispatcherManager();
 			result = dm.processRequest(getServiceName(),correlationID, message, context);
 			if (isMultipartResponse()) {
 				return HttpSender.handleMultipartResponse(multipartResponseContentType,
@@ -154,4 +160,14 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		return multipartResponse;
 	}
 
+	public void setDispatchType(String type) {
+		if(type.equalsIgnoreCase("DLL"))
+			dispatchType = type;
+		else
+			ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'setDispatchType' only supports the value 'DLL'");
+	}
+	
+	public String getDispatchType() {
+		return dispatchType;
+	}
 }
