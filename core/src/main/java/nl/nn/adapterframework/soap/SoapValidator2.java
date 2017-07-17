@@ -21,6 +21,7 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -45,9 +46,9 @@ import org.apache.log4j.Logger;
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
-public class SoapValidator extends XmlValidator {
+public class SoapValidator2 extends Json2XmlValidator {
 
-    private static final Logger LOG = LogUtil.getLogger(SoapValidator.class);
+    private static final Logger LOG = LogUtil.getLogger(SoapValidator2.class);
 
     private String soapBody    = "";
     private String soapHeader  = "";

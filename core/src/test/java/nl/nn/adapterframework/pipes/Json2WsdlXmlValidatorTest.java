@@ -20,7 +20,7 @@ import nl.nn.javax.wsdl.WSDLException;
 @RunWith(value=JUnit4.class)
 public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 
-	WsdlXmlValidator validator;
+	WsdlXmlValidator2 validator;
 	
     private IPipeLineSession session = new PipeLineSessionBase();
 	
@@ -34,7 +34,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 		return null;
 	}
 
-	public void validate(String description, WsdlXmlValidator val, String input, String outputFormat, boolean compactJsonArrays, String targetContent1, String targetContent2) {
+	public void validate(String description, WsdlXmlValidator2 val, String input, String outputFormat, boolean compactJsonArrays, String targetContent1, String targetContent2) {
 		val.setCompactJsonArrays(compactJsonArrays);
 		if (compactJsonArrays) {
 			description+=" (compact)";
@@ -66,7 +66,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	}
 	
 	public void wsdlValidate(String wsdl, String soapBody, String testXml, String testJsonStraight, String testJsonCompact, String targetContent1, String targetContent2) throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-        WsdlXmlValidator val = new WsdlXmlValidator();
+        WsdlXmlValidator2 val = new WsdlXmlValidator2();
         val.setWsdl(wsdl);
 //        val.setSoapBody("TradePriceRequest");
         val.setThrowException(true);

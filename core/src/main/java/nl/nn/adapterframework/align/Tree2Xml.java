@@ -41,7 +41,7 @@ public abstract class Tree2Xml<N> extends XmlAligner<N> {
 	private String rootElement;
 	private String targetNamespace;
 	private boolean autoInsertMandatory=false;   // TODO: behaviour needs to be tested.
-	private boolean mustProcessAllElements=true; // cannot be true if array element container elements are to be inserted
+	private boolean mustProcessAllElements=true;
 	
 	private String prefixPrefix="ns";
 	private int prefixPrefixCounter=1;

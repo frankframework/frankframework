@@ -33,7 +33,7 @@ public class WsdlXmlValidatorTest {
 
     @Test
     public void wsdlValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-        WsdlXmlValidator val = new WsdlXmlValidator();
+        WsdlXmlValidator2 val = new WsdlXmlValidator2();
         val.setWsdl(SIMPLE);
         val.setSoapBody("TradePriceRequest");
         val.setThrowException(true);
@@ -44,7 +44,7 @@ public class WsdlXmlValidatorTest {
 
     @Test
     public void wsdlValidateWithInclude() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-        WsdlXmlValidator val = new WsdlXmlValidator();
+        WsdlXmlValidator2 val = new WsdlXmlValidator2();
         val.setWsdl(SIMPLE_WITH_INCLUDE);
         val.setSoapBody("TradePriceRequest");
         val.setThrowException(true);
@@ -55,7 +55,7 @@ public class WsdlXmlValidatorTest {
 
     @Test
     public void wsdlValidateWithReference() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-        WsdlXmlValidator val = new WsdlXmlValidator();
+        WsdlXmlValidator2 val = new WsdlXmlValidator2();
         val.setWsdl(SIMPLE_WITH_REFERENCE);
         val.setSoapBody("TradePriceRequest");
         val.setThrowException(true);
@@ -66,7 +66,7 @@ public class WsdlXmlValidatorTest {
 
     @Test(expected = XmlValidatorException.class)
     public void wsdlValidateWithReferenceFail() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-        WsdlXmlValidator val = new WsdlXmlValidator();
+        WsdlXmlValidator2 val = new WsdlXmlValidator2();
         val.setWsdl(SIMPLE_WITH_REFERENCE);
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
@@ -78,7 +78,7 @@ public class WsdlXmlValidatorTest {
 
     @Test
     public void wsdlTibco() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-        WsdlXmlValidator val = new WsdlXmlValidator();
+        WsdlXmlValidator2 val = new WsdlXmlValidator2();
         val.setWsdl(TIBCO);
         val.setSoapHeader("MessageHeader");
         val.setSoapBody("Request");
@@ -116,7 +116,7 @@ public class WsdlXmlValidatorTest {
 
     @Test(expected = XmlValidatorException.class)
     public void wsdlTibcoFailEnvelop() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-        WsdlXmlValidator val = new WsdlXmlValidator();
+        WsdlXmlValidator2 val = new WsdlXmlValidator2();
         val.setWsdl(TIBCO);
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
@@ -150,7 +150,7 @@ public class WsdlXmlValidatorTest {
 
     @Test(expected = XmlValidatorException.class)
     public void wsdlTibcoFailMessage() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-        WsdlXmlValidator val = new WsdlXmlValidator();
+        WsdlXmlValidator2 val = new WsdlXmlValidator2();
         val.setWsdl(TIBCO);
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));

@@ -32,7 +32,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.soap.SoapValidator;
+import nl.nn.adapterframework.soap.SoapValidator2;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.validation.SchemaUtils;
@@ -57,7 +57,7 @@ import org.xml.sax.InputSource;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>*</td><td>all attributes available on {@link SoapValidator} can be used</td><td>&nbsp;</td></tr>
+ * <tr><td>*</td><td>all attributes available on {@link SoapValidator2} can be used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWsdl(String) wsdl}</td><td>the WSDL to read the XSD's from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSchemaLocation(String) schemaLocation}</td><td>see schemaLocation attribute on XmlValidator except that the schema locations are referring to schema's in the WSDL, schema1 refers to the first, schema2 refers to the second and so on</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSchemaLocationToAdd(String) schemaLocationToAdd}</td><td>Pairs of URI references which will be added to the WSDL</td><td>&nbsp;</td></tr>
@@ -66,8 +66,8 @@ import org.xml.sax.InputSource;
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
-public class WsdlXmlValidator extends SoapValidator {
-	private static final Logger LOG = LogUtil.getLogger(WsdlXmlValidator.class);
+public class WsdlXmlValidator2 extends SoapValidator2 {
+	private static final Logger LOG = LogUtil.getLogger(WsdlXmlValidator2.class);
 
 	private static final WSDLFactory FACTORY;
 	static {
@@ -92,7 +92,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		WSDLReader reader  = FACTORY.newWSDLReader();
 		reader.setFeature("javax.wsdl.verbose", false);
 		reader.setFeature("javax.wsdl.importDocuments", true);
-		ClassLoaderWSDLLocator wsdlLocator = new ClassLoaderWSDLLocator(classLoader, wsdl);
+		ClassLoaderWSDLLocator2 wsdlLocator = new ClassLoaderWSDLLocator2(classLoader, wsdl);
 		URL url = wsdlLocator.getUrl();
 		if (wsdlLocator.getUrl() == null) {
 			throw new ConfigurationException("Could not find WSDL: " + wsdl);
@@ -125,15 +125,15 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 	}
 
-	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		try {
-			PipeForward forward = validate(input.toString(), session);
-			return new PipeRunResult(forward, input);
-		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session), e);
-		}
-	}
+//	@Override
+//	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+//		try {
+//			PipeForward forward = validate(input.toString(), session);
+//			return new PipeRunResult(forward, input);
+//		} catch (Exception e) {
+//			throw new PipeRunException(this, getLogPrefix(session), e);
+//		}
+//	}
 
 	protected static void addNamespaces(Schema schema, Map<String, String> namespaces) {
 		for (Map.Entry<String,String> e : namespaces.entrySet()) {
@@ -155,16 +155,16 @@ public class WsdlXmlValidator extends SoapValidator {
 		if (getSoapVersion() == null || "1.1".equals(getSoapVersion()) || "any".equals(getSoapVersion())) {
 			XSD xsd = new XSD();
 			xsd.setClassLoader(classLoader);
-			xsd.setNamespace(SoapValidator.SoapVersion.VERSION_1_1.namespace);
-			xsd.setResource(SoapValidator.SoapVersion.VERSION_1_1.location);
+			xsd.setNamespace(SoapValidator2.SoapVersion.VERSION_1_1.namespace);
+			xsd.setResource(SoapValidator2.SoapVersion.VERSION_1_1.location);
 			xsd.init();
 			xsds.add(xsd);
 		}
 		if ("1.2".equals(getSoapVersion()) || "any".equals(getSoapVersion())) {
 			XSD xsd = new XSD();
 			xsd.setClassLoader(classLoader);
-			xsd.setNamespace(SoapValidator.SoapVersion.VERSION_1_2.namespace);
-			xsd.setResource(SoapValidator.SoapVersion.VERSION_1_2.location);
+			xsd.setNamespace(SoapValidator2.SoapVersion.VERSION_1_2.namespace);
+			xsd.setResource(SoapValidator2.SoapVersion.VERSION_1_2.location);
 			xsd.init();
 			xsds.add(xsd);
 		}
@@ -247,14 +247,14 @@ public class WsdlXmlValidator extends SoapValidator {
 	}
 }
 
-class ClassLoaderWSDLLocator implements WSDLLocator {
+class ClassLoaderWSDLLocator2 implements WSDLLocator {
 	private ClassLoader classLoader;
 	private String wsdl;
 	private URL url;
 	private IOException ioException;
 	private String latestImportURI;
 
-	ClassLoaderWSDLLocator(ClassLoader classLoader, String wsdl) {
+	ClassLoaderWSDLLocator2(ClassLoader classLoader, String wsdl) {
 		this.classLoader = classLoader;
 		this.wsdl = wsdl;
 		url = ClassUtils.getResourceURL(classLoader, wsdl);
