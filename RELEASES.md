@@ -63,6 +63,7 @@ Upcoming
 - Add custom SSLSocketFactory to CmisSender
 - Fix JDBC driver default date format to yyyy-MM-dd
 - Fix JDBC driver default timestamp format to yyyy-MM-dd HH:mm:ss
+- Bugfix in ShowIbisstoreSummary "(SQLServerException) SQLState [S00010], errorCode [195]: 'to_char' is not a recognized built-in function name." 
 
 
 

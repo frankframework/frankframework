@@ -57,7 +57,6 @@ import org.apache.struts.action.ActionMapping;
 public class ShowIbisstoreSummary extends ActionBase {
 
 	public static final String SHOWIBISSTORECOOKIE="ShowIbisstoreSummaryCookieName";
-	public static final String SHOWIBISSTOREQUERYKEY="ibisstore.summary.query";
 
 	private Map slotmap = new HashMap();
 
@@ -140,7 +139,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 
 		if (StringUtils.isNotEmpty(jmsRealm)) {
 
-			String formQuery=AppConstants.getInstance().getProperty(SHOWIBISSTOREQUERYKEY);
+//			String formQuery=AppConstants.getInstance().getProperty(SHOWIBISSTOREQUERYKEY);
 
 			String result = "<none/>";
 
@@ -155,7 +154,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 					qs.setBlobSmartGet(true);
 					qs.configure(true);
 					qs.open();
-					result = qs.sendMessage("dummy", formQuery);
+					result = qs.sendMessage("dummy", qs.getDbmsSupport().getIbisStoreSummaryQuery());
 				} catch (Throwable t) {
 					error("error occured on executing jdbc query",t);
 				} finally {

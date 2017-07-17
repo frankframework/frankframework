@@ -102,4 +102,5 @@ public interface IDbmsSupport {
 
 	String getLength(String column);
 
+	String getIbisStoreSummaryQuery();
 }

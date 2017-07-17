@@ -60,8 +60,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 public final class ShowIbisstoreSummary extends Base {
 	@Context ServletConfig servletConfig;
 
-	public static final String SHOWIBISSTOREQUERYKEY="ibisstore.summary.query";
-
 	@POST
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc/summary")
@@ -72,7 +70,7 @@ public final class ShowIbisstoreSummary extends Base {
 
 		Response.ResponseBuilder response = Response.noContent(); //PUT defaults to no content
 
-		String query = AppConstants.getInstance().getProperty(SHOWIBISSTOREQUERYKEY);
+		String query = null;
 		String realm = null;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
@@ -100,7 +98,7 @@ public final class ShowIbisstoreSummary extends Base {
 				qs.setBlobSmartGet(true);
 				qs.configure(true);
 				qs.open();
-				result = qs.sendMessage("dummy", query);
+				result = qs.sendMessage("dummy", (query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery()));
 			} catch (Throwable t) {
 				throw new ApiException("An error occured on executing jdbc query: "+t.toString());
 			} finally {
