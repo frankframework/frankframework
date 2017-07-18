@@ -138,9 +138,6 @@ public class ShowIbisstoreSummary extends ActionBase {
 		showIbisstoreSummaryForm.set("jmsRealms", jmsRealms);
 
 		if (StringUtils.isNotEmpty(jmsRealm)) {
-
-//			String formQuery=AppConstants.getInstance().getProperty(SHOWIBISSTOREQUERYKEY);
-
 			String result = "<none/>";
 
 			try {
@@ -202,7 +199,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
+	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
 		XmlBuilder result = new XmlBuilder("result");
 		String previousType=null;
 		XmlBuilder typeXml=null;

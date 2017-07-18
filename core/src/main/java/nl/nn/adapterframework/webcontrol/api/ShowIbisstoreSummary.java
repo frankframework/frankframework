@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -180,7 +181,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
+	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
 		XmlBuilder result = new XmlBuilder("result");
 		String previousType=null;
 		XmlBuilder typeXml=null;

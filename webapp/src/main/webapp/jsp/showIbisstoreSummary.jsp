@@ -155,7 +155,7 @@
 					
 					<xtags:forEach select="slot[position()>1]" >
 						<tr>
-							<td rowspan="><xtags:valueOf select="@datecount"/>">
+							<td rowspan="<xtags:valueOf select="@datecount"/>">
 								<xtags:valueOf select="@id"/>
 								<xtags:if test="@adapter!=''">
 									<xtags:variable id="type" select="../@id"/>
@@ -178,7 +178,7 @@
 									(<xtags:valueOf select="@adapter"/> / <xtags:valueOf select="@receiver"/>)
 								</xtags:if>
 							</td>
-							<td rowspan="><xtags:valueOf select="@datecount"/>">
+							<td rowspan="<xtags:valueOf select="@datecount"/>">
 								<xtags:valueOf select="@msgcount"/>
 							</td>
 							<td>
