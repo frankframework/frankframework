@@ -19,19 +19,12 @@ package nl.nn.adapterframework.validation;
 import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.xml.XMLConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
@@ -39,6 +32,7 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.XMLGrammarPreparser;
+import org.apache.xerces.util.ShadowedSymbolTable;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.xni.grammars.Grammar;
@@ -47,9 +41,8 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XSGrammar;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xs.XSModel;
-import org.w3c.dom.ls.LSInput;
-import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
@@ -61,6 +54,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.validation.xerces_2_11.XMLSchemaFactory;
 
 
 /**
@@ -132,7 +126,7 @@ public class XercesJavaxXmlValidator extends AbstractXmlValidator {
 	}
 	private static AtomicLong counter = new AtomicLong();
 	private String preparseResultId;
-	private PreparseResult2 preparseResult;
+	private PreparseResult2 preparseResult; // using this field does not allow schemaProvider to be in session variable!
 
 	public XercesJavaxXmlValidator() {
 		preparseResultId = "" + counter.getAndIncrement();
@@ -175,12 +169,12 @@ public class XercesJavaxXmlValidator extends AbstractXmlValidator {
 			registerNamespaces(grammar, namespaceSet);
 		}
 		grammarPool.lockPool();
-		javax.xml.validation.Schema schemaObject=getSchemaObject(schemasId, schemasProvider.getSchemas());
+		
 		PreparseResult2 preparseResult = new PreparseResult2();
 		preparseResult.setSchemasId(schemasId);
+		preparseResult.setSymbolTable(symbolTable);
 		preparseResult.setGrammarPool(grammarPool);
 		preparseResult.setNamespaceSet(namespaceSet);
-		preparseResult.setSchemaObject(schemaObject);
 		return preparseResult;
 	}
 
@@ -208,37 +202,6 @@ public class XercesJavaxXmlValidator extends AbstractXmlValidator {
 		}
 	}
 
-
-	
-	
-	public ValidatorHandler getValidatorHandler(IPipeLineSession session) throws ConfigurationException, PipeRunException {
-		PreparseResult2 preparseResult = getPreparseResult(session);
-		javax.xml.validation.Schema schemaObject=preparseResult.getSchemaObject();
-	
-		ValidatorHandler validatorHandler=schemaObject.newValidatorHandler();
-		try {
-			//validatorHandler.setFeature(NAMESPACES_FEATURE_ID, true);
-			validatorHandler.setFeature(VALIDATION_FEATURE_ID, true);
-			validatorHandler.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
-			validatorHandler.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
-		} catch (SAXNotRecognizedException e) {
-			throw new ConfigurationException(logPrefix + "ValidatorHandler does not recognize necessary feature", e);
-		} catch (SAXNotSupportedException e) {
-			throw new ConfigurationException(logPrefix + "ValidatorHandler does not support necessary feature", e);
-		}
-		return validatorHandler;
-	}
-	
-	public List<XSModel> getXSModels(IPipeLineSession session) throws ConfigurationException, PipeRunException {
-		PreparseResult2 preparseResult = getPreparseResult(session);
-		XMLGrammarPool grammarPool = preparseResult.getGrammarPool();
-		Grammar[] grammars=grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
-		List<XSModel> result = new LinkedList<XSModel>();
-		for(int i=0;i<grammars.length;i++) {
-			result.add(((XSGrammar)grammars[i]).toXSModel());
-		}
-		return result;
-	}
 	
 	protected PreparseResult2 getPreparseResult(IPipeLineSession session) throws ConfigurationException, PipeRunException {
 		PreparseResult2 preparseResult;
@@ -264,7 +227,78 @@ public class XercesJavaxXmlValidator extends AbstractXmlValidator {
 		return preparseResult;
 	}
 
+	public ValidationContext createValidationContext(IPipeLineSession session) throws ConfigurationException, PipeRunException {
+		
+		// clear session variables
+		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
+			log.debug(logPrefix+ "removing contents of sessionKey ["+getReasonSessionKey()+ "]");
+			session.remove(getReasonSessionKey());
+		}
+
+		if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
+			log.debug(logPrefix+ "removing contents of sessionKey ["+getXmlReasonSessionKey()+ "]");
+			session.remove(getXmlReasonSessionKey());
+		}
+
+		PreparseResult2 preparseResult = getPreparseResult(session);
+		XercesValidationContext result = new XercesValidationContext(preparseResult);
+		
+
+		String schemasId = preparseResult.getSchemasId();
+		String mainFailureMessage = "Validation using " + schemasProvider.getClass().getSimpleName() + " with '" + schemasId + "' failed";
+
+		XmlValidatorContentHandler xmlValidatorContentHandler =
+				new XmlValidatorContentHandler(preparseResult.getNamespaceSet(), rootValidations, invalidRootNamespaces, getIgnoreUnknownNamespaces());
+		XmlValidatorErrorHandler xmlValidatorErrorHandler = new XmlValidatorErrorHandler(xmlValidatorContentHandler, mainFailureMessage);
+		xmlValidatorContentHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
+		result.setContentHandler(xmlValidatorContentHandler);
+		result.setErrorHandler(xmlValidatorErrorHandler);
+		return result;
+	}
 	
+
+	public ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException {
+
+		ValidatorHandler validatorHandler=null;
+		try {
+			XMLSchemaFactory schemaFactory = new XMLSchemaFactory();
+			javax.xml.validation.Schema schemaObject=schemaFactory.newSchema(((XercesValidationContext)context).getGrammarPool());
+			validatorHandler=schemaObject.newValidatorHandler();
+		} catch (SAXException e) {
+			throw new ConfigurationException(logPrefix + "Cannot create schema", e);
+		}
+		try {
+			//validatorHandler.setFeature(NAMESPACES_FEATURE_ID, true);
+			validatorHandler.setFeature(VALIDATION_FEATURE_ID, true);
+			validatorHandler.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
+			validatorHandler.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
+			validatorHandler.setErrorHandler(context.getErrorHandler());
+		} catch (SAXNotRecognizedException e) {
+			throw new ConfigurationException(logPrefix + "ValidatorHandler does not recognize necessary feature", e);
+		} catch (SAXNotSupportedException e) {
+			throw new ConfigurationException(logPrefix + "ValidatorHandler does not support necessary feature", e);
+		}
+		return validatorHandler;
+	}
+	
+	public XMLReader getValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException {
+		SymbolTable symbolTable = ((XercesValidationContext)context).getSymbolTable();
+		XMLGrammarPool grammarPool = ((XercesValidationContext)context).getGrammarPool();
+
+		XMLReader parser = new SAXParser(new ShadowedSymbolTable(symbolTable), grammarPool);
+		try {
+			parser.setFeature(NAMESPACES_FEATURE_ID, true);
+			parser.setFeature(VALIDATION_FEATURE_ID, true);
+			parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
+			parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
+			parser.setErrorHandler(context.getErrorHandler());
+		} catch (SAXNotRecognizedException e) {
+			throw new XmlValidatorException(logPrefix + "parser does not recognize necessary feature", e);
+		} catch (SAXNotSupportedException e) {
+			throw new XmlValidatorException(logPrefix + "parser does not support necessary feature", e);
+		}
+		return parser;
+	}
 	
 	/**
 	 * Validate the XML string
@@ -277,77 +311,49 @@ public class XercesJavaxXmlValidator extends AbstractXmlValidator {
 	 */
 	@Override
 	public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		return validate(input, session, logPrefix, getValidatorHandler(session), null);
+		ValidationContext context = createValidationContext(session);
+		XMLReader parser = getValidatingParser(session, context);
+		return validate(input, session, logPrefix, parser, null, context);
 	}
 	
-	public String validate(Object input, IPipeLineSession session, String logPrefix, ValidatorHandler validatorHandler, XMLFilterImpl filter) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-			log.debug(logPrefix+ "removing contents of sessionKey ["+getReasonSessionKey()+ "]");
-			session.remove(getReasonSessionKey());
-		}
-
-		if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
-			log.debug(logPrefix+ "removing contents of sessionKey ["+getXmlReasonSessionKey()+ "]");
-			session.remove(getXmlReasonSessionKey());
-		}
-
-		PreparseResult2 preparseResult = getPreparseResult(session);
-
-		Set<String> namespacesSet = preparseResult.getNamespaceSet();
-		String schemasId = preparseResult.getSchemasId();
-
-		String mainFailureMessage = "Validation using "
-				+ schemasProvider.getClass().getSimpleName() + " with '"
-				+ schemasId + "' failed";
-
-		XmlValidatorContentHandler xmlValidatorContentHandler =
-				new XmlValidatorContentHandler(namespacesSet, rootValidations,
-						invalidRootNamespaces, getIgnoreUnknownNamespaces());
-		XmlValidatorErrorHandler xmlValidatorErrorHandler =
-				new XmlValidatorErrorHandler(xmlValidatorContentHandler,
-						mainFailureMessage);
-		xmlValidatorContentHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
+	public String validate(Object input, IPipeLineSession session, String logPrefix, XMLReader parser, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		if (filter!=null) {
-			filter.setContentHandler(xmlValidatorContentHandler);
-			filter.setErrorHandler(xmlValidatorErrorHandler);
-//			validatorHandler.setContentHandler(filter);
-//			validatorHandler.setErrorHandler(filter);
+			filter.setContentHandler(context.getContentHandler());
+			filter.setErrorHandler(context.getErrorHandler());
 		} else {
-			validatorHandler.setContentHandler(xmlValidatorContentHandler);
-			validatorHandler.setErrorHandler(xmlValidatorErrorHandler);
+			parser.setContentHandler(context.getContentHandler());
+			parser.setErrorHandler(context.getErrorHandler());
 		}
 		
-		XMLReader parser = new SAXParser();
-		parser.setErrorHandler(xmlValidatorErrorHandler);
-		parser.setContentHandler(validatorHandler);
-		try {
-			parser.setFeature(NAMESPACES_FEATURE_ID, true);
-			parser.setFeature(VALIDATION_FEATURE_ID, false);
-			parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, false);
-			parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, false);
-		} catch (SAXNotRecognizedException e) {
-			throw new XmlValidatorException(logPrefix + "parser does not recognize necessary feature", e);
-		} catch (SAXNotSupportedException e) {
-			throw new XmlValidatorException(logPrefix + "parser does not support necessary feature", e);
-		}
-
 		InputSource is = getInputSource(input);
-
+		
 		try {
 			parser.parse(is);
 		} catch (Exception e) {
-			return handleFailures(xmlValidatorErrorHandler,
-					session, XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, e);
+			return finalizeValidation(context, session, e);
 		}
+		return finalizeValidation(context, session, null);
+	}
 
-		if (xmlValidatorErrorHandler.hasErrorOccured()) {
-			return handleFailures(xmlValidatorErrorHandler, session,
-					XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
+	/**
+	 * Evaluate the validation and set 'reason' session variables.
+	 * 
+	 * @param context: the validationContext of this attempt
+	 * @param session: the PipeLineSession
+	 * @param t:       the exception thrown by the validation, or null
+	 * @return the result event, e.g. 'valid XML' or 'Invalid XML'
+	 * @throws XmlValidatorException, when configured to do so
+	 */
+	public String finalizeValidation(ValidationContext context, IPipeLineSession session, Throwable t) throws XmlValidatorException {
+		if (t!=null) {
+			return handleFailures(context.getErrorHandler(), session, XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, t);
+		}
+		if (context.getErrorHandler().hasErrorOccured()) {
+			return handleFailures(context.getErrorHandler(), session, XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
 		}
 		return XML_VALIDATOR_VALID_MONITOR_EVENT;
 	}
-
 
 	private static XMLInputSource stringToXMLInputSource(Schema schema) throws IOException, ConfigurationException {
 		// SystemId is needed in case the schema has an import. Maybe we should
@@ -359,56 +365,63 @@ public class XercesJavaxXmlValidator extends AbstractXmlValidator {
 		return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
 	}
 
-	/**
-	 * Returns the {@link Schema} associated with this validator. This ia an XSD schema containing knowledge about the
-	 * schema source as returned by {@link #getSchemaSources(List)}
-	 * @throws ConfigurationException
-	 */
-	protected synchronized javax.xml.validation.Schema getSchemaObject(String schemasId, List<nl.nn.adapterframework.validation.Schema> schemas) throws  ConfigurationException {
-//		Schema schema = javaxSchemas.get(schemasId);
-		javax.xml.validation.Schema schema=null;
-		if (schema == null) {
-			SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			factory.setResourceResolver(new LSResourceResolver() {
-				public LSInput resolveResource(String s, String s1, String s2, String s3, String s4) {
-					return null;
-				}
-			});
-			try {
-				Collection<Source> sources = getSchemaSources(schemas);
-				schema = factory.newSchema(sources.toArray(new Source[sources.size()]));
-//				javaxSchemas.put(schemasId, schema);
-			} catch (Exception e) {
-				throw new ConfigurationException("cannot read schema's [" + schemasId + "]", e);
-			}
-		}
-		return schema;
-	}
-
-	protected List<Source> getSchemaSources(List<nl.nn.adapterframework.validation.Schema> schemas) throws IOException, XMLStreamException, ConfigurationException {
-		List<Source> result = new ArrayList<Source>();
-		for (nl.nn.adapterframework.validation.Schema schema : schemas) {
-			result.add(new StreamSource(schema.getInputStream(), schema.getSystemId()));
-		}
-		return result;
-	}
-
 	
 	
 }
 
+class XercesValidationContext extends ValidationContext {
+
+	private PreparseResult2 preparseResult;
+	
+	XercesValidationContext(PreparseResult2 preparseResult) {
+		super();
+		this.preparseResult=preparseResult;
+	}
+
+	@Override
+	public String getSchemasId() {
+		return preparseResult.getSchemasId();
+	}
+
+	public SymbolTable getSymbolTable() {
+		return preparseResult.getSymbolTable();
+	}
+
+	public XMLGrammarPool getGrammarPool() {
+		return preparseResult.getGrammarPool();
+	}
+
+	@Override
+	public Set<String> getNamespaceSet() {
+		return preparseResult.getNamespaceSet();
+	}
+
+	@Override
+	public List<XSModel> getXsModels() {
+		return preparseResult.getXsModels();
+	}
+	
+}
 
 class PreparseResult2 {
 	private String schemasId;
+	private SymbolTable symbolTable;
 	private XMLGrammarPool grammarPool;
 	private Set<String> namespaceSet;
-	private javax.xml.validation.Schema schemaObject;
+	private List<XSModel> xsModels=null;
 
 	public String getSchemasId() {
 		return schemasId;
 	}
 	public void setSchemasId(String schemasId) {
 		this.schemasId = schemasId;
+	}
+
+	public SymbolTable getSymbolTable() {
+		return symbolTable;
+	}
+	public void setSymbolTable(SymbolTable symbolTable) {
+		this.symbolTable = symbolTable;
 	}
 
 	public XMLGrammarPool getGrammarPool() {
@@ -424,11 +437,19 @@ class PreparseResult2 {
 	public void setNamespaceSet(Set<String> namespaceSet) {
 		this.namespaceSet = namespaceSet;
 	}
-	
-	public javax.xml.validation.Schema getSchemaObject() {
-		return schemaObject;
+
+	public List<XSModel> getXsModels() {
+		if (xsModels==null) {
+			xsModels=new LinkedList<XSModel>();
+			Grammar[] grammars=grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
+			for(int i=0;i<grammars.length;i++) {
+				xsModels.add(((XSGrammar)grammars[i]).toXSModel());
+			}
+		}
+		return xsModels;
 	}
-	public void setSchemaObject(javax.xml.validation.Schema schemaObject) {
-		this.schemaObject = schemaObject;
+	
+	public void setXsModels(List<XSModel> xsModels) {
+		this.xsModels = xsModels;
 	}
 }

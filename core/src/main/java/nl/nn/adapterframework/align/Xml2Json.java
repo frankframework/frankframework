@@ -28,11 +28,11 @@ public class Xml2Json extends XMLFilterImpl {
 	private boolean skipArrayElementContainers;
 	private boolean DEBUG=false; 
 
-	private XmlAligner<?> aligner;
+	private XmlAligner aligner;
 	private Stack<JsonContentContainer> elementStack=new Stack<JsonContentContainer>(); 
 	private JsonContentContainer contentContainer=new JsonContentContainer(null, false, false);
 
-	public Xml2Json(XmlAligner<?> aligner, boolean skipArrayElementContainers) {
+	public Xml2Json(XmlAligner aligner, boolean skipArrayElementContainers) {
 		this.aligner=aligner;	
 		this.skipArrayElementContainers=skipArrayElementContainers;
 	}
@@ -68,12 +68,9 @@ public class Xml2Json extends XMLFilterImpl {
 //		log.debug("ignorable whitespace");
 //	}
 
-
 	@Override
 	public String toString() {
 		return contentContainer.toString();
 	}
 
-
-	
 }

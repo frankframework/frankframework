@@ -25,18 +25,21 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.xerces.xs.PSVIProvider;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.align.Json2Xml;
 import nl.nn.adapterframework.align.Xml2Json;
 import nl.nn.adapterframework.align.XmlAligner;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.validation.AbstractXmlValidator;
+import nl.nn.adapterframework.validation.ValidationContext;
 import nl.nn.adapterframework.validation.XercesJavaxXmlValidator;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 
@@ -134,51 +137,60 @@ public class Json2XmlValidator extends XmlValidator {
 				return super.doPipe(input,session);
 			}
 			try {
-				String json = alignXml2Json(messageToValidate, session);
-				throwEvent(JSON_XML_VALIDATOR_VALID_MONITOR_EVENT);
-				return new PipeRunResult(getForward(), json);
+				return alignXml2Json(messageToValidate, session);
 			} catch (Exception e) {
-				throwEvent(AbstractXmlValidator.XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);
-				throw new PipeRunException(this, "Alignment failed",e);
+				throw new PipeRunException(this, "Alignment of XML to JSON failed",e);
 			}
 		}
 		if (messageToValidate.charAt(i)!='{') {
 			throw new PipeRunException(this,"message is not XML or JSON, because it does not start with '{' or '<'");
 		}
 		try {
-			String xml = alignJson(messageToValidate, session);
-			throwEvent(JSON_XML_VALIDATOR_VALID_MONITOR_EVENT);
-			return new PipeRunResult(getForward(), xml);
-		} catch (Exception e) {
-			throwEvent(AbstractXmlValidator.XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);
-			throw new PipeRunException(this, "Alignment failed",e);
+			return alignJson(messageToValidate, session);
+		} catch (XmlValidatorException e) {
+			throw new PipeRunException(this, "Cannot align JSON", e);
 		}
 	}
 	
-	protected String alignXml2Json(String messageToValidate, IPipeLineSession session)
+	protected PipeRunResult alignXml2Json(String messageToValidate, IPipeLineSession session)
 			throws XmlValidatorException, PipeRunException, ConfigurationException {
 
-		ValidatorHandler validatorHandler = ((XercesJavaxXmlValidator) validator).getValidatorHandler(session);
-		XmlAligner aligner = new XmlAligner(validatorHandler);
-		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays());
+		ValidationContext context = ((XercesJavaxXmlValidator) validator).createValidationContext(session);
+		XMLReader parser = ((XercesJavaxXmlValidator) validator).getValidatingParser(session,context);
+		XmlAligner aligner = new XmlAligner((PSVIProvider)parser);
+		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays());	
+		parser.setContentHandler(aligner);
 		aligner.setContentHandler(xml2json);
-		aligner.setSchemaInformation(((XercesJavaxXmlValidator) validator).getXSModels(session));
+		aligner.setErrorHandler(context.getErrorHandler());
 		
-		((XercesJavaxXmlValidator) validator).validate(messageToValidate, session, getLogPrefix(session), validatorHandler, xml2json);
+		String resultEvent=((XercesJavaxXmlValidator) validator).validate(messageToValidate, session, getLogPrefix(session), parser, xml2json, context);
 		String out=xml2json.toString();
-		return out;
+		PipeForward forward=determineForward(resultEvent);
+		PipeRunResult result=new PipeRunResult(forward,out);
+		return result;
 	}
 	
-	protected String alignJson(String messageToValidate, IPipeLineSession session)
-			throws XmlValidatorException, PipeRunException, ConfigurationException {
+	protected PipeRunResult alignJson(String messageToValidate, IPipeLineSession session) throws PipeRunException, XmlValidatorException {
 
-		ValidatorHandler validatorHandler = ((XercesJavaxXmlValidator) validator).getValidatorHandler(session);
-		Json2Xml aligner = new Json2Xml(getTargetNamespace(), validatorHandler, isCompactJsonArrays());
-		aligner.setSchemaInformation(((XercesJavaxXmlValidator) validator).getXSModels(session));
-		JSONTokener jsonTokener = new JSONTokener(messageToValidate);
+		ValidationContext context;
+		ValidatorHandler validatorHandler;
 		try {
+			context = ((XercesJavaxXmlValidator) validator).createValidationContext(session);
+			validatorHandler = ((XercesJavaxXmlValidator) validator).getValidatorHandler(session, context);
+		} catch (ConfigurationException e) {
+			throw new PipeRunException(this,"Cannot create ValidationContext",e);
+		}
+		String resultEvent;
+		String out=null;
+		try {
+			Json2Xml aligner = new Json2Xml(validatorHandler, context.getXsModels(), isCompactJsonArrays());
+			if (StringUtils.isNotEmpty(getTargetNamespace())) {
+				aligner.setTargetNamespace(getTargetNamespace());
+			}
+			aligner.setErrorHandler(context.getErrorHandler());
+			JSONTokener jsonTokener = new JSONTokener(messageToValidate);
 			JSONObject json = new JSONObject(jsonTokener);
-			String out;
+			
 			if (getOutputFormat(session).equalsIgnoreCase("json")) {
 				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays());
 				aligner.setContentHandler(xml2json);
@@ -188,11 +200,13 @@ public class Json2XmlValidator extends XmlValidator {
 				Source source = aligner.asSource(json);
 				out = source2String(source);
 			}
-			return out;
 		} catch (Exception e) {
-			throw new PipeRunException(this,"Cannot align json", e);
+			resultEvent=((XercesJavaxXmlValidator) validator).finalizeValidation(context, session, e);
 		}
-
+		resultEvent=((XercesJavaxXmlValidator) validator).finalizeValidation(context, session, null);
+		PipeForward forward=determineForward(resultEvent);
+		PipeRunResult result=new PipeRunResult(forward,out);
+		return result;
 	}
 
 	public static String source2String(Source source) throws TransformerException {
@@ -237,6 +251,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public void setOutputFormatSessionKey(String outputFormatSessionKey) {
 		this.outputFormatSessionKey = outputFormatSessionKey;
 	}
+	
 	public boolean isCompactJsonArrays() {
 		return compactJsonArrays;
 	}

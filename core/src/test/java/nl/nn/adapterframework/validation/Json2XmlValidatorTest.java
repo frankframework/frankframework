@@ -2,8 +2,8 @@ package nl.nn.adapterframework.validation;
 
 import java.io.IOException;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -54,6 +54,8 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         instance.setThrowException(true);
         instance.setFullSchemaChecking(true);
         instance.setTargetNamespace(rootNamespace);
+        instance.registerForward(new PipeForward("failure",null));
+        instance.registerForward(new PipeForward("parserError",null));
         instance.configure(null);
         validator.setSchemasProvider(getSchemasProvider(schemaLocation, addNamespaceToSchema));
         validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
@@ -69,8 +71,18 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         try {
         	PipeRunResult prr = instance.doPipe(testJson, session);
         	String result = (String)prr.getResult();
-        	System.out.println("result ["+result+"]");
-        	evaluateResult("valid XML", session, null, expectedFailureReason);
+        	System.out.println("result ["+ToStringBuilder.reflectionToString(prr)+"]");
+        	String event;
+        	if (prr.getPipeForward().getName().equals("success")) {
+        		event="valid XML";
+        	} else {
+            	if (prr.getPipeForward().getName().equals("failure")) {
+            		event="Invalid XML";
+	        	} else {
+	        		event=prr.getPipeForward().getName();
+	        	}
+        	}
+        	evaluateResult(event, session, null, expectedFailureReason);
             try {
     	        String validationResult=validator.validate(result, session, "check result");
     	        evaluateResult(validationResult, session, null, expectedFailureReason);

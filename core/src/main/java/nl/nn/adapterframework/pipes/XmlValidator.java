@@ -235,8 +235,14 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 
      }
+     
+     
     protected PipeForward validate(String messageToValidate, IPipeLineSession session) throws XmlValidatorException, PipeRunException, ConfigurationException {
         String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session));
+        return determineForward(resultEvent);
+    }
+
+    protected PipeForward determineForward(String resultEvent) throws PipeRunException {
         throwEvent(resultEvent);
         if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
             return getForward();

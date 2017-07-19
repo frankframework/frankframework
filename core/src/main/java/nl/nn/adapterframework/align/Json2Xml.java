@@ -15,12 +15,15 @@
 */
 package nl.nn.adapterframework.align;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.xerces.xs.XSModel;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,8 +40,13 @@ public class Json2Xml extends Tree2Xml<Object> {
 	
 	private boolean insertElementContainerElements;
 
-	public Json2Xml(String targetNamespace, ValidatorHandler validatorHandler, boolean insertElementContainerElements) {
-		super(targetNamespace, validatorHandler);
+	public Json2Xml(ValidatorHandler validatorHandler, boolean insertElementContainerElements) {
+		super(validatorHandler);
+		this.insertElementContainerElements=insertElementContainerElements;
+	}
+
+	public Json2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation, boolean insertElementContainerElements) {
+		super(validatorHandler, schemaInformation);
 		this.insertElementContainerElements=insertElementContainerElements;
 	}
 
@@ -123,8 +131,9 @@ public class Json2Xml extends Tree2Xml<Object> {
 				if (DEBUG && log.isDebugEnabled()) log.debug("getChildrenByName() child named ["+name+"] is a JSONArray");
 				if (insertElementContainerElements) {
 					result.add(child);
-					if (DEBUG && log.isDebugEnabled()) log.debug("getChildrenByName() name ["+name+"] returning array node");
+					if (DEBUG && log.isDebugEnabled()) log.debug("getChildrenByName() name ["+name+"] returning array node (insertElementContainerElements=true)");
 				} else {
+					if (DEBUG && log.isDebugEnabled()) log.debug("getChildrenByName() name ["+name+"] returning elements of array node (insertElementContainerElements=false)");
 					JSONArray ja = (JSONArray)child;
 					for (int i=0;i<ja.length();i++) {
 						result.add(ja.get(i));
@@ -142,24 +151,24 @@ public class Json2Xml extends Tree2Xml<Object> {
 	}
 	
 	@Override
-	public List<String> getAllChildNames(Object node) throws SAXException {
+	public Set<String> getAllChildNames(Object node) throws SAXException {
 		if (DEBUG && log.isDebugEnabled()) log.debug("getAllChildNames() node ["+ToStringBuilder.reflectionToString(node)+"]");
 		try {
 			if (!(node instanceof JSONObject)) {
 				if (DEBUG && log.isDebugEnabled()) log.debug("getAllChildNames() parent node is not a JSONObject, but a ["+node.getClass().getName()+"]");
-				return new LinkedList<String>();
+				return new HashSet<String>();
 			} 
 			JSONObject o = (JSONObject)node;
 			JSONArray names= o.names();
 			if (names==null) {
 				if (DEBUG && log.isDebugEnabled()) log.debug("getAllChildNames() no children");
-				return new LinkedList<String>();
+				return new HashSet<String>();
 			}
-			List<String> result = new LinkedList<String>(); 
+			Set<String> result = new HashSet<String>(); 
 			for (int i=0;i<names.length();i++) {
 				String name=(String)names.get(i);
 				result.add(name);
-				if (DEBUG && log.isDebugEnabled()) log.debug("getAllChildNames() name ["+name+"] added to array");
+				if (DEBUG && log.isDebugEnabled()) log.debug("getAllChildNames() name ["+name+"] added to set");
 			}
 			return result;
 		} catch (JSONException e) {
@@ -167,7 +176,7 @@ public class Json2Xml extends Tree2Xml<Object> {
 		}
 	}
 	@Override
-	protected void processArray(Object node, String name, String childElementName, String childElementNameSpace, boolean mandatory, List<String> unProcessedChildren, List<String> processedChildren) throws SAXException {
+	protected void processArray(Object node, String name, String childElementName, String childElementNameSpace, boolean mandatory, Set<String> unProcessedChildren, Set<String> processedChildren) throws SAXException {
 		if (insertElementContainerElements) {
 			if (unProcessedChildren.isEmpty()) {
 				if  (node instanceof JSONArray) {

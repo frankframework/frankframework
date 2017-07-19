@@ -15,18 +15,33 @@
 */
 package nl.nn.adapterframework.align;
 
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import javax.xml.validation.Schema;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.xerces.xs.PSVIProvider;
+import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSModel;
+import org.apache.xerces.xs.XSNamedMap;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSParticle;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
@@ -36,12 +51,14 @@ import org.xml.sax.helpers.AttributesImpl;
  *
  * @param <N>
  */
-public abstract class Tree2Xml<N> extends XmlAligner<N> {
+public abstract class Tree2Xml<N> extends XmlAligner {
 
 	private String rootElement;
 	private String targetNamespace;
 	private boolean autoInsertMandatory=false;   // TODO: behaviour needs to be tested.
 	private boolean mustProcessAllElements=true;
+	private ValidatorHandler validatorHandler;
+	protected List<XSModel> schemaInformation; 
 	
 	private String prefixPrefix="ns";
 	private int prefixPrefixCounter=1;
@@ -52,17 +69,16 @@ public abstract class Tree2Xml<N> extends XmlAligner<N> {
 	public Tree2Xml() {
 		super();
 	}
-	public Tree2Xml(String targetNamespace, Schema schema) {
-		super(schema);
-		this.targetNamespace=targetNamespace;
+
+	public Tree2Xml(ValidatorHandler validatorHandler) {
+		super((PSVIProvider)validatorHandler);
+		validatorHandler.setContentHandler(this);
+		this.validatorHandler=validatorHandler;
 	}
-	public Tree2Xml(String targetNamespace, ValidatorHandler validatorHandler) {
-		super(validatorHandler);
-		this.targetNamespace=targetNamespace;
-	}
-	public Tree2Xml(String targetNamespace, String rootElement, Schema schema) {
-		this(targetNamespace, schema);
-		this.rootElement=rootElement;
+
+	public Tree2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {
+		this(validatorHandler);
+		this.schemaInformation=schemaInformation;
 	}
 
 	/**
@@ -76,10 +92,61 @@ public abstract class Tree2Xml<N> extends XmlAligner<N> {
 	
 //	public abstract boolean isLeafNode(N node); // only leaf nodes can contain text, leaf nodes cannot contain children
 	public abstract Iterable<N> getChildrenByName(N node, String name) throws SAXException; // returns null when no children present
-	public abstract List<String> getAllChildNames(N node) throws SAXException; // returns null when no children present
+	public abstract Set<String> getAllChildNames(N node) throws SAXException; // returns null when no children present
 	public abstract String getText(N node); // returns null when no text present
+
+
+	private class XmlAlignerInputSource extends InputSource {
+		N root;
+		XmlAlignerInputSource(N root) {
+			super();
+			this.root=root;
+		}
+	}
 	
+	/**
+	 * Obtain a the XmlAligner as a {@link Source} that can be used as input of a {@link Transformer}.
+	 */
+	public Source asSource(N root) {
+		return new SAXSource(this,root==null?null:new XmlAlignerInputSource(root));
+	}
+
+	/**
+	 * start the parse, obtain the root node from the InputSource when its a {@link XmlAlignerInputSource}.
+	 */
 	@Override
+	public void parse(InputSource input) throws SAXException, IOException {
+		N root=null;
+		if (input!=null && (input instanceof Tree2Xml.XmlAlignerInputSource)) {
+			root= (N)((XmlAlignerInputSource)input).root;
+		}
+		if (log.isDebugEnabled()) log.debug("parse(InputSource) root ["+root+"]");
+		startParse(root);
+	}
+
+	/**
+	 * Align the XML according to the schema. 
+	 */
+	public void startParse(N node) throws SAXException {
+		//if (log.isDebugEnabled()) log.debug("startParse() rootNode ["+node.toString()+"]"); // result of node.toString() is confusing. Do not log this.
+		validatorHandler.startDocument();
+		handleNode(node);
+		validatorHandler.endDocument();
+	}
+
+	protected void sendString(String string) throws SAXException {
+		validatorHandler.characters(string.toCharArray(), 0, string.length());
+	}
+	
+	
+	/**
+	 * Pushes node through validator.
+	 * 
+	 * Must push all nodes through validatorhandler, recursively, respecting the alignment request.
+	 * Must set current=node before calling validatorHandler.startElement(), in order to get the right argument for the onStartElement / performAlignment callbacks.
+	 * @param node 
+	 * @throws SAXException 
+	 */
 	public void handleNode(N node) throws SAXException {
 		handleNode(node, getTargetNamespace(), getRootElement());
 	}
@@ -93,26 +160,36 @@ public abstract class Tree2Xml<N> extends XmlAligner<N> {
 		if (nodeNamespace==null) {
 			nodeNamespace=findNamespaceForName(name);
 		}
+		if (nodeNamespace==null) {
+			if (log.isDebugEnabled()) log.debug("node ["+name+"] did not find namespace, assigning targetNamespace ["+getTargetNamespace()+"]");
+			nodeNamespace=getTargetNamespace();
+		}
 		
 		String nodeLocalname=name;
 		String elementNamespace=StringUtils.isNotEmpty(nodeNamespace)?nodeNamespace:StringUtils.isNotEmpty(targetNamespace)?targetNamespace:"";
-		String nodePrefix=prefixMap.get(elementNamespace);
+		String nodePrefix=null;
 		String createdPrefix=null;
-		if (nodePrefix==null) {
-			createdPrefix=createPrefix();
-			nodePrefix=createdPrefix;
-			prefixMap.put(elementNamespace, createdPrefix);
-			validatorHandler.startPrefixMapping(nodePrefix, elementNamespace);
-			//attributes.addAttribute(null, "xmlns", null, "string", elementNamespace);
+		String qname=null;
+		if (StringUtils.isNotEmpty(elementNamespace)) {
+			nodePrefix=prefixMap.get(elementNamespace);
+			if (nodePrefix==null) {
+				createdPrefix=createPrefix();
+				nodePrefix=createdPrefix;
+				prefixMap.put(elementNamespace, createdPrefix);
+				validatorHandler.startPrefixMapping(nodePrefix, elementNamespace);
+				//attributes.addAttribute(null, createdPrefix, "xmlns:"+createdPrefix, "string", elementNamespace);
+			}
+			qname=nodePrefix+":"+nodeLocalname;
+		} else {
+			qname=nodeLocalname;
 		}
-		String qname=nodePrefix+":"+nodeLocalname;
 		if (DEBUG && log.isDebugEnabled()) log.debug("namespaceuri ["+elementNamespace+"] node name ["+nodeLocalname+"] qname ["+qname+"]");
 		if (DEBUG && log.isDebugEnabled()) if (!elementNamespace.equals(nodeNamespace)) log.debug("switched namespace to ["+elementNamespace+"]");
 		newLine();
 		validatorHandler.startElement(elementNamespace, name, qname, attributes);
 		List<XSParticle> childParticles = this.childElementDeclarations;
-		List<String> unProcessedChildren = getAllChildNames(node);
-		List<String> processedChildren = new LinkedList<String>();
+		Set<String> unProcessedChildren = getAllChildNames(node);
+		Set<String> processedChildren = new HashSet<String>();
 		
 		if (childParticles!=null) {
 			if (childParticles.size()==1 && (childParticles.get(0).getMaxOccurs()>1 || childParticles.get(0).getMaxOccursUnbounded())) {
@@ -139,7 +216,7 @@ public abstract class Tree2Xml<N> extends XmlAligner<N> {
 			}
 		}
 		if (unProcessedChildren!=null && !unProcessedChildren.isEmpty()) {
-			List<String> unProcessedChildrenWorkingCopy=new LinkedList<String>(unProcessedChildren);
+			Set<String> unProcessedChildrenWorkingCopy=new HashSet<String>(unProcessedChildren);
 			for (String childName:unProcessedChildren) {
 				String namespace = findNamespaceForName(childName);
 				if (namespace!=null) {
@@ -160,7 +237,12 @@ public abstract class Tree2Xml<N> extends XmlAligner<N> {
 				}
 				String msg="Invalid content was found in node ["+name+"] that has ["+count+"] unprocessed children ["+elementList+"]";
 				if (mustProcessAllElements) {
-					throw new SAXException(msg);
+					ErrorHandler errorHandler=validatorHandler.getErrorHandler();
+					if (errorHandler!=null) {
+						errorHandler.error(new SAXParseException(msg,null));
+					} else {
+						throw new SAXException(msg);
+					}
 				}
 				log.warn(msg);
 			}
@@ -171,15 +253,20 @@ public abstract class Tree2Xml<N> extends XmlAligner<N> {
 		}
 	}
 
-	protected void processChildElement(N node, String name, String childElementName, String childElementNameSpace, boolean mandatory, List<String> unProcessedChildren, List<String> processedChildren) throws SAXException {
+	protected void processChildElement(N node, String name, String childElementName, String childElementNameSpace, boolean mandatory, Set<String> unProcessedChildren, Set<String> processedChildren) throws SAXException {
 		Iterable<N> childNodes = getChildrenByName(node,childElementName);
 		boolean childSeen=false;
 		if (childNodes!=null) {
+			int i=0;
 			for (N childNode:childNodes) {
+				i++;
 				handleNode(childNode,childElementNameSpace,childElementName);
 				childSeen=true;
 			}
-		} 
+			if (DEBUG && log.isDebugEnabled()) log.debug("processed ["+i+"] children found by name ["+childElementName+"] in ["+name+"]");
+		} else {
+			if (DEBUG && log.isDebugEnabled()) log.debug("no children found by name ["+childElementName+"] in ["+name+"]");
+		}
 		if (childSeen) {
 			if (unProcessedChildren==null) {
 				throw new IllegalStateException("child element ["+childElementName+"] found, but node ["+name+"] should have no children");
@@ -198,8 +285,43 @@ public abstract class Tree2Xml<N> extends XmlAligner<N> {
 		}
 	}
 
-	protected void processArray(N node, String name, String childElementName, String childElementNameSpace, boolean mandatory, List<String> unProcessedChildren, List<String> processedChildren) throws SAXException {
+	protected void processArray(N node, String name, String childElementName, String childElementNameSpace, boolean mandatory, Set<String> unProcessedChildren, Set<String> processedChildren) throws SAXException {
 		processChildElement(node, name, childElementName, childElementNameSpace, mandatory, unProcessedChildren, processedChildren);	
+	}
+	public String findNamespaceForName(String name) throws SAXException {
+		Set<String> namespaces=findNamespacesForName(name);
+		if (namespaces==null) {
+			log.warn("No namespaces found for ["+name+"]");
+			return null;
+		}
+		if (namespaces.size()>1) {
+			String[] namespacesArray=(String[])namespaces.toArray();
+			throw new SAXException("multiple ["+namespaces.size()+"] namespaces found for ["+name+"]: first two ["+namespacesArray[0]+"]["+namespacesArray[1]+"]");
+		}
+		if (namespaces.size()==1) {
+			return (String)namespaces.toArray()[0];
+		}
+		return null;
+	}
+	public Set<String> findNamespacesForName(String name) {
+		if (DEBUG && log.isDebugEnabled()) log.debug("schemaInformation ["+ToStringBuilder.reflectionToString(schemaInformation,ToStringStyle.MULTI_LINE_STYLE)+"]");
+		Set<String> result=new LinkedHashSet<String>();
+		if (schemaInformation==null) {
+			log.warn("No SchemaInformation specified, cannot find namespaces for ["+name+"]");
+			return null;
+		}
+		for (XSModel model:schemaInformation) {
+			XSNamedMap components = model.getComponents(XSConstants.ELEMENT_DECLARATION);
+			for (int i=0;i<components.getLength();i++) {
+				XSObject item=components.item(i);
+				if (DEBUG && log.isDebugEnabled()) log.debug("found component name ["+item.getName()+"] in namespace ["+item.getNamespace()+"]");
+				if (item.getName().equals(name)) {
+					if (log.isDebugEnabled()) log.debug("name ["+name+"] found in namespace ["+item.getNamespace()+"]");
+					result.add(item.getNamespace());
+				}
+			}
+		}
+		return result;
 	}
 	
 	
@@ -220,17 +342,26 @@ public abstract class Tree2Xml<N> extends XmlAligner<N> {
 	public void setTargetNamespace(String targetNamespace) {
 		this.targetNamespace = targetNamespace;
 	}
+	
 	public boolean isAutoInsertMandatory() {
 		return autoInsertMandatory;
 	}
 	public void setAutoInsertMandatory(boolean autoInsertMandatory) {
 		this.autoInsertMandatory = autoInsertMandatory;
 	}
+	
 	public boolean isMustProcessAllElements() {
 		return mustProcessAllElements;
 	}
 	public void setMustProcessAllElements(boolean mustProcessAllElements) {
 		this.mustProcessAllElements = mustProcessAllElements;
+	}
+
+	public List<XSModel> getSchemaInformation() {
+		return schemaInformation;
+	}
+	public void setSchemaInformation(List<XSModel> schemaInformation) {
+		this.schemaInformation = schemaInformation;
 	}
 
 }

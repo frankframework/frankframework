@@ -88,7 +88,7 @@ public abstract class ValidatorTestBase extends TestCase {
     			fail("expected XML to pass");
     		}
     		if (!event.equals("valid XML") && !event.equals("success")) {
-    			fail("result must be 'valid XML' or 'success'");
+    			fail("result must be 'valid XML' or 'success' but was ["+event+"]");
     		}
     	} else {
     		// expected invalid XML
