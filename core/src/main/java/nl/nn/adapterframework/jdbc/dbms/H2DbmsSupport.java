@@ -20,8 +20,6 @@ import java.sql.Connection;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
 
-import org.apache.commons.lang.StringUtils;
-
 /**
  * Support for H2.
  * 
@@ -49,4 +47,7 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		return doIsTableColumnPresent(conn, "INFORMATION_SCHEMA.COLUMNS", "TABLE_SCHEMA", "TABLE_NAME", "COLUMN_NAME", schemaName, tableName, columnName);
 	}
 
+	public String getIbisStoreSummaryQuery() {
+		return "select type, slotid, formatdatetime(MESSAGEDATE,'yyyy-MM-dd') msgdate, count(*) msgcount from ibisstore group by slotid, type, formatdatetime(MESSAGEDATE,'yyyy-MM-dd') order by type, slotid, formatdatetime(MESSAGEDATE,'yyyy-MM-dd')";
+	}
 }

@@ -130,4 +130,8 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public String getLength(String column) {
 		return "LEN("+column+")";
 	}
+
+	public String getIbisStoreSummaryQuery() {
+		return "select type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120) msgdate, count(*) msgcount from ibisstore group by slotid, type, CONVERT(VARCHAR(10), MESSAGEDATE, 120) order by type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120)";
+	}
 }
