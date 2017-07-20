@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,19 +33,21 @@ import com.sap.conn.jco.ext.Environment;
  * @since   5.0
  */
 public class SapSystemDataProvider implements DestinationDataProvider {
-	private Logger log = LogUtil.getLogger(this);
-	private static SapSystemDataProvider self=null;
+	private static Logger log = LogUtil.getLogger(SapSystemDataProvider.class);
+	private static SapSystemDataProvider self = null;
 	private DestinationDataEventListener destinationDataEventListener;
-
-	private int referenceCount=0;
 
 	private SapSystemDataProvider() {
 		super();
 	}
 
 	public static synchronized SapSystemDataProvider getInstance() {
-		if (self==null) {
-			self=new SapSystemDataProvider();
+		if (self == null) {
+			self = new SapSystemDataProvider();
+			log.debug("Register DestinationDataProvider");
+			// Method registerDestinationDataProvider can only be called once,
+			// see JCo javadoc: Throws: java.lang.IllegalStateException - if a provider is already registered
+			Environment.registerDestinationDataProvider(self);
 		}
 		return self;
 	}
@@ -105,13 +107,6 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 	}
 
 	public synchronized void registerSystem(SapSystem sapSytem) throws SapException {
-		if (referenceCount++<=0) {
-			referenceCount=1;
-			log.debug("Register DestinationDataProvider");
-			Environment.registerDestinationDataProvider(SapSystemDataProvider.getInstance());
-		} else {
-			log.debug("Reference count ["+referenceCount+"], registration already done");
-		}
 		log.debug("Register " + sapSytem.getName());
 		destinationDataEventListener.updated(sapSytem.getName());
 	}
@@ -119,13 +114,6 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 	public synchronized void unregisterSystem(SapSystem sapSytem) {
 		log.debug("Unregister " + sapSytem.getName());
 		destinationDataEventListener.deleted(sapSytem.getName());
-		if (--referenceCount<=0) {
-			referenceCount=0;
-			log.debug("Unregister DestinationDataProvider");
-			Environment.unregisterDestinationDataProvider(SapSystemDataProvider.getInstance());
-		} else {
-			log.debug("Reference count ["+referenceCount+"], waiting for other references to unregister");
-		}
 	}
 
 }

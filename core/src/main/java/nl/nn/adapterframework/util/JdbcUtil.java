@@ -723,25 +723,23 @@ public class JdbcUtil {
 	}
 
 	public static void fullClose(Connection connection, ResultSet rs) {
-		Statement statement=null;
-		
-		if (rs==null) {
+		if (rs == null) {
 			log.warn("resultset to close was null");
+			close(connection);
 			return;
 		}
+		Statement statement = null;
 		try {
 			statement = rs.getStatement();
 		} catch (SQLException e) {
-			log.warn("Could not obtain statement or connection from resultset",e);
+			log.warn("Could not obtain statement or connection from resultset", e);
 		} finally {
 			try {
 				rs.close();
 			} catch (SQLException e) {
 				log.warn("Could not close resultset", e);
 			} finally {
-				if (statement!=null) {
-					fullClose(connection, statement);
-				}
+				fullClose(connection, statement);
 			}
 		}
 	}
@@ -758,21 +756,29 @@ public class JdbcUtil {
 	 * @param statement   the statement to close
 	 */
 	public static void fullClose(Connection connection, Statement statement) {
+		if (statement == null) {
+			log.warn("statement to close was null");
+			close(connection);
+			return;
+		}
 		try {
 			statement.close();
 		} catch (SQLException e) {
 			log.warn("Could not close statement", e);
 		} finally {
-			if (connection!=null) {
-				try {
-					connection.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
+			close(connection);
 		}
 	}
 
+	public static void close(Connection connection) {
+		if (connection != null) {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				log.warn("Could not close connection", e);
+			}
+		}
+	}
 
 	private static String displayParameters(String param1, String param2) {
 		return (param1==null?"":(" param1 ["+param1+"]"+(param2==null?"":(" param2 ["+param2+"]"))));
