@@ -92,8 +92,9 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		qs.setQuery("SELECT count(*) FROM ALL_TABLES");
 		qs.configure();
 
+		Connection conn = null;
 		try {
-			Connection conn = qs.getConnection();
+			conn = qs.getConnection();
 			if (!JdbcUtil.columnExists(conn, tableName, "*")) {
 				throw new ConfigurationException("The table [" + tableName + "] doesn't exist");
 			}
@@ -106,13 +107,14 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 			if (!JdbcUtil.columnExists(conn, tableName, valueOutField)) {
 				throw new ConfigurationException("The column [" + valueOutField + "] doesn't exist");
 			}
-
 			query = "SELECT " + valueOutField + " FROM " + tableName + 
 					" WHERE " + labelField+ "=? AND " + valueInField + "=?";
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
 		} catch (SQLException e) {
 			throw new ConfigurationException(e);
+		} finally {
+			JdbcUtil.close(conn);
 		}
 	}
 
@@ -193,24 +195,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 				t);
 
 		} finally {
-			if (stmt != null) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					log.warn(
-						getLogPrefix(null) + "exception closing statement",
-						e);
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn(
-						getLogPrefix(null) + "exception closing connection",
-						e);
-				}
-			}
+			JdbcUtil.fullClose(conn, stmt);
 		}
 
 		return new PipeRunResult(getForward(), buffer.toString());
