@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import javax.xml.validation.ValidatorHandler;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
@@ -35,6 +37,7 @@ import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 /**
@@ -53,6 +56,8 @@ public class XmlAligner extends XMLFilterImpl {
 	protected List<XSParticle> childElementDeclarations=null;
 	protected Stack<Set<String>> multipleOccurringElements=new Stack<Set<String>>();
 	protected Set<String> multipleOccurringChildElements=null;
+	protected Stack<Boolean> parentOfSingleMultipleOccuringChildElements=new Stack<Boolean>();
+	protected boolean parentOfSingleMultipleOccuringChildElement=false;
 
 	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
 	private final int MAX_INDENT=INDENTOR.length/2;
@@ -66,6 +71,17 @@ public class XmlAligner extends XMLFilterImpl {
 		this();
 		setPsviProvider(psviProvider);
 	}
+
+	public XmlAligner(XMLReader psviProvidingXmlReader) {
+		this((PSVIProvider)psviProvidingXmlReader);
+		psviProvidingXmlReader.setContentHandler(this);
+	}
+
+	public XmlAligner(ValidatorHandler psviProvidingValidatorHandler) {
+		this((PSVIProvider)psviProvidingValidatorHandler);
+		psviProvidingValidatorHandler.setContentHandler(this);
+	}
+
 
 
 	public void newLine() throws SAXException {
@@ -86,6 +102,8 @@ public class XmlAligner extends XMLFilterImpl {
 		multipleOccurringElements.push(multipleOccurringChildElements);
 		// call findMultipleOccurringChildElements, to obtain all child elements that could be part of an array
 		multipleOccurringChildElements=findMultipleOccurringChildElements();
+		parentOfSingleMultipleOccuringChildElements.push(parentOfSingleMultipleOccuringChildElement);
+		parentOfSingleMultipleOccuringChildElement=isParentOfSingleMultipleOccurringChildElement();
 		super.startElement(namespaceUri, localName, qName, attributes);
 		indentLevel++;
 	}
@@ -95,17 +113,38 @@ public class XmlAligner extends XMLFilterImpl {
 		indentLevel--;
 		super.endElement(uri, localName, qName);
 		multipleOccurringChildElements=multipleOccurringElements.pop();
+		parentOfSingleMultipleOccuringChildElement=parentOfSingleMultipleOccuringChildElements.pop();
 	}
 
 
 	public boolean isPresentInSet(Set<String> set, String name) {
 		return set!=null && set.contains(name);
 	}
-	public boolean isMultipleOccuringChildElement(String name) {
+	public boolean isMultipleOccuringOnlyChildElement(String name) {
 		return isPresentInSet(multipleOccurringChildElements,name);
 	}
 	public boolean isMultipleOccuringChildInParentElement(String name) {
 		return isPresentInSet(multipleOccurringElements.peek(),name);
+	}
+
+
+	protected boolean isSingleMultipleOccurringChildElement() {
+		return parentOfSingleMultipleOccuringChildElements.peek();
+	}
+	
+	protected boolean isParentOfSingleMultipleOccurringChildElement() {
+		if (childElementDeclarations==null || childElementDeclarations.isEmpty()) {
+			if (DEBUG && log.isDebugEnabled()) log.debug("isParentOfSingleMultipleOccurringChildElement() no childElementDeclarations");
+			return false;
+		}
+		if (childElementDeclarations.size()>1) {
+			if (DEBUG && log.isDebugEnabled()) log.debug("isParentOfSingleMultipleOccurringChildElement() multiple childElementDeclarations");
+			return false;
+		}
+		XSParticle particle=childElementDeclarations.get(0);
+		XSTerm term = particle.getTerm();
+		if (DEBUG && log.isDebugEnabled()) log.debug("isParentOfSingleMultipleOccurringChildElement() single child element ["+term.getName()+"] occurring unbounded ["+particle.getMaxOccursUnbounded()+"] max occur ["+particle.getMaxOccurs()+"]");
+		return particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1;
 	}
 
 	protected Set<String> findMultipleOccurringChildElements() {

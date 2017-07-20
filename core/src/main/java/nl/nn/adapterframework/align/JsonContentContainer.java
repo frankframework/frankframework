@@ -32,18 +32,21 @@ public class JsonContentContainer {
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
-	private boolean arrayElement;
+	private boolean xmlArrayElement;
+	private boolean repeatedElement;
+	private boolean skipArrayElementContainers;
+
 	public StringBuffer stringContent;
 	private Map<String,Object> contentMap;
 	private JSONArray array;
 	
-	private boolean skipArrayElementContainers;
 	
 	private final boolean DEBUG=false; 	
 	
-	public JsonContentContainer(String name, boolean arrayElement, boolean skipArrayElementContainers) {
+	public JsonContentContainer(String name, boolean xmlArrayElement, boolean repeatedElement, boolean skipArrayElementContainers) {
 		this.name=name;
-		this.arrayElement=arrayElement;
+		this.xmlArrayElement=xmlArrayElement;
+		this.repeatedElement=repeatedElement;
 		this.skipArrayElementContainers=skipArrayElementContainers;
 	}
 	
@@ -51,8 +54,11 @@ public class JsonContentContainer {
 	public String getName() {
 		return name;
 	}
-	public boolean isArrayElement() {
-		return arrayElement;
+	public boolean isXmlArrayElement() {
+		return xmlArrayElement;
+	}
+	public boolean isRepeatedElement() {
+		return repeatedElement;
 	}
 
 	public void setContent(String content) {
@@ -80,7 +86,7 @@ public class JsonContentContainer {
 		if (stringContent!=null) {
 			throw new IllegalStateException("content already set as String for element ["+getName()+"]");
 		}
-		if (content.isArrayElement() && skipArrayElementContainers) {
+		if (content.isXmlArrayElement() && skipArrayElementContainers) {
 			if (array==null) {
 				array=new JSONArray();
 			} 
@@ -94,7 +100,7 @@ public class JsonContentContainer {
 			contentMap=new LinkedHashMap<String,Object>();
 		}
 		Object current=contentMap.get(childName);
-		if (content.isArrayElement()) {
+		if (content.isRepeatedElement()) {
 			if (current==null) {
 				current=new JSONArray();
 				contentMap.put(childName,current);
@@ -145,7 +151,8 @@ public class JsonContentContainer {
 		if (content instanceof JSONObject) {
 			try {
 				String result=((JSONObject)content).toString(2);
-				return result.replaceAll("\\\\u20ac", "€"); // TODO: Do something structural for diacritics! This is a hack for cosmetics!
+				// result.replaceAll("\\\\u20ac", "€"); // TODO: Do something structural for diacritics! This is a hack for cosmetics!
+				return result;
 			} catch (JSONException e) {
 				log.warn(e);
 			}

@@ -29,8 +29,6 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.xerces.xs.PSVIProvider;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
@@ -57,7 +55,7 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 	private String targetNamespace;
 	private boolean autoInsertMandatory=false;   // TODO: behaviour needs to be tested.
 	private boolean mustProcessAllElements=true;
-	private ValidatorHandler validatorHandler;
+	protected ValidatorHandler validatorHandler;
 	protected List<XSModel> schemaInformation; 
 	
 	private String prefixPrefix="ns";
@@ -148,10 +146,10 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 	 * @throws SAXException 
 	 */
 	public void handleNode(N node) throws SAXException {
-		handleNode(node, getTargetNamespace(), getRootElement());
+		handleNode(node, getRootElement(), getTargetNamespace());
 	}
-	public void handleNode(N node, String nodeNamespace, String name) throws SAXException {
-		if (DEBUG && log.isDebugEnabled()) log.debug("handleNode() namespace ["+nodeNamespace+"] name ["+name+"]");
+	public void handleNode(N node, String name, String nodeNamespace) throws SAXException {
+		if (DEBUG && log.isDebugEnabled()) log.debug("handleNode() name ["+name+"] namespace ["+nodeNamespace+"]");
 		AttributesImpl attributes=new AttributesImpl();
 		// TODO: handle attributes
 		if (nodeNamespace==null) {
@@ -183,7 +181,6 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 		} else {
 			qname=nodeLocalname;
 		}
-		if (DEBUG && log.isDebugEnabled()) log.debug("namespaceuri ["+elementNamespace+"] node name ["+nodeLocalname+"] qname ["+qname+"]");
 		if (DEBUG && log.isDebugEnabled()) if (!elementNamespace.equals(nodeNamespace)) log.debug("switched namespace to ["+elementNamespace+"]");
 		newLine();
 		validatorHandler.startElement(elementNamespace, name, qname, attributes);
@@ -208,22 +205,14 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 				}
 			}
 			newLine(-1);
-		} else {
-			String text = getText(node);
-			if (DEBUG && log.isDebugEnabled()) log.debug("textnode name ["+name+"] text ["+text+"]");
-			if (StringUtils.isNotEmpty(text)) {
-				sendString(text);
-			}
 		}
 		if (unProcessedChildren!=null && !unProcessedChildren.isEmpty()) {
 			Set<String> unProcessedChildrenWorkingCopy=new HashSet<String>(unProcessedChildren);
-			for (String childName:unProcessedChildren) {
+			for (String childName:unProcessedChildrenWorkingCopy) {
+				log.debug("processing unprocessed childelement ["+childName+"]");
 				String namespace = findNamespaceForName(childName);
-				if (namespace!=null) {
-					processChildElement(node, namespace, childName, namespace, false, unProcessedChildrenWorkingCopy, processedChildren);
-				}
+				processChildElement(node, namespace, childName, namespace, false, unProcessedChildren, processedChildren);
 			}
-			unProcessedChildren=unProcessedChildrenWorkingCopy;
 			if (!unProcessedChildren.isEmpty()) {
 				String elementList=null;
 				int count=0;
@@ -247,6 +236,13 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 				log.warn(msg);
 			}
 		}
+		if (processedChildren.isEmpty()) {
+			String text = getText(node);
+			if (DEBUG && log.isDebugEnabled()) log.debug("textnode name ["+name+"] text ["+text+"]");
+			if (StringUtils.isNotEmpty(text)) {
+				sendString(text);
+			}
+		}
 		validatorHandler.endElement(elementNamespace, name, qname);
 		if (createdPrefix!=null) {
 			validatorHandler.endPrefixMapping(createdPrefix);
@@ -260,7 +256,7 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 			int i=0;
 			for (N childNode:childNodes) {
 				i++;
-				handleNode(childNode,childElementNameSpace,childElementName);
+				handleNode(childNode,childElementName,childElementNameSpace);
 				childSeen=true;
 			}
 			if (DEBUG && log.isDebugEnabled()) log.debug("processed ["+i+"] children found by name ["+childElementName+"] in ["+name+"]");
@@ -281,13 +277,14 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 		}
 		if (!childSeen && mandatory && isAutoInsertMandatory()) {
 			if (log.isDebugEnabled()) log.debug("inserting mandatory element ["+childElementName+"]");
-			handleNode(node,childElementNameSpace,childElementName); // insert node when minOccurs > 0, and no node is present
+			handleNode(node,childElementName,childElementNameSpace); // insert node when minOccurs > 0, and no node is present
 		}
 	}
 
 	protected void processArray(N node, String name, String childElementName, String childElementNameSpace, boolean mandatory, Set<String> unProcessedChildren, Set<String> processedChildren) throws SAXException {
 		processChildElement(node, name, childElementName, childElementNameSpace, mandatory, unProcessedChildren, processedChildren);	
 	}
+	
 	public String findNamespaceForName(String name) throws SAXException {
 		Set<String> namespaces=findNamespacesForName(name);
 		if (namespaces==null) {
@@ -304,7 +301,7 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 		return null;
 	}
 	public Set<String> findNamespacesForName(String name) {
-		if (DEBUG && log.isDebugEnabled()) log.debug("schemaInformation ["+ToStringBuilder.reflectionToString(schemaInformation,ToStringStyle.MULTI_LINE_STYLE)+"]");
+		//if (DEBUG && log.isDebugEnabled()) log.debug("schemaInformation ["+ToStringBuilder.reflectionToString(schemaInformation,ToStringStyle.MULTI_LINE_STYLE)+"]");
 		Set<String> result=new LinkedHashSet<String>();
 		if (schemaInformation==null) {
 			log.warn("No SchemaInformation specified, cannot find namespaces for ["+name+"]");
@@ -314,7 +311,6 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 			XSNamedMap components = model.getComponents(XSConstants.ELEMENT_DECLARATION);
 			for (int i=0;i<components.getLength();i++) {
 				XSObject item=components.item(i);
-				if (DEBUG && log.isDebugEnabled()) log.debug("found component name ["+item.getName()+"] in namespace ["+item.getNamespace()+"]");
 				if (item.getName().equals(name)) {
 					if (log.isDebugEnabled()) log.debug("name ["+name+"] found in namespace ["+item.getNamespace()+"]");
 					result.add(item.getNamespace());
@@ -323,7 +319,6 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 		}
 		return result;
 	}
-	
 	
 	public String createPrefix() {
 		return prefixPrefix+prefixPrefixCounter++;
@@ -342,14 +337,12 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 	public void setTargetNamespace(String targetNamespace) {
 		this.targetNamespace = targetNamespace;
 	}
-	
 	public boolean isAutoInsertMandatory() {
 		return autoInsertMandatory;
 	}
 	public void setAutoInsertMandatory(boolean autoInsertMandatory) {
 		this.autoInsertMandatory = autoInsertMandatory;
 	}
-	
 	public boolean isMustProcessAllElements() {
 		return mustProcessAllElements;
 	}

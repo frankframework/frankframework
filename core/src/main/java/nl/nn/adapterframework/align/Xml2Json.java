@@ -15,11 +15,22 @@
 */
 package nl.nn.adapterframework.align;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URL;
 import java.util.Stack;
 
+import javax.xml.XMLConstants;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.ValidatorHandler;
+
 import org.apache.log4j.Logger;
+import org.apache.xerces.parsers.SAXParser;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 public class Xml2Json extends XMLFilterImpl {
@@ -30,20 +41,19 @@ public class Xml2Json extends XMLFilterImpl {
 
 	private XmlAligner aligner;
 	private Stack<JsonContentContainer> elementStack=new Stack<JsonContentContainer>(); 
-	private JsonContentContainer contentContainer=new JsonContentContainer(null, false, false);
+	private JsonContentContainer contentContainer=new JsonContentContainer(null, false, false, false);
 
 	public Xml2Json(XmlAligner aligner, boolean skipArrayElementContainers) {
 		this.aligner=aligner;	
 		this.skipArrayElementContainers=skipArrayElementContainers;
 	}
 
-
 	
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-		if (DEBUG && log.isDebugEnabled()) log.debug("startElement ["+localName+"] array ["+aligner.isMultipleOccuringChildInParentElement(localName)+"]");
+		if (DEBUG && log.isDebugEnabled()) log.debug("startElement ["+localName+"] xml array element ["+aligner.isSingleMultipleOccurringChildElement()+"] repeated element ["+aligner.isMultipleOccuringChildInParentElement(localName)+"]");
 		elementStack.push(contentContainer);
-		contentContainer=new JsonContentContainer(localName, aligner.isMultipleOccuringChildInParentElement(localName),skipArrayElementContainers);
+		contentContainer=new JsonContentContainer(localName, aligner.isSingleMultipleOccurringChildElement(),aligner.isMultipleOccuringChildInParentElement(localName), skipArrayElementContainers);
 		super.startElement(uri, localName, qName, atts);
 	}
 
@@ -67,6 +77,29 @@ public class Xml2Json extends XMLFilterImpl {
 //	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
 //		log.debug("ignorable whitespace");
 //	}
+
+
+	public static String translate(String xml, URL schemaURL, boolean compactJsonArrays) throws SAXException, IOException {
+
+		// create the ValidatorHandler
+    	SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = sf.newSchema(schemaURL); 
+		ValidatorHandler validatorHandler = schema.newValidatorHandler();
+ 	
+    	// create the parser, setup the chain
+    	XMLReader parser = new SAXParser();
+    	XmlAligner aligner = new XmlAligner(validatorHandler);
+    	Xml2Json xml2json = new Xml2Json(aligner, compactJsonArrays);   	
+    	parser.setContentHandler(validatorHandler);
+    	aligner.setContentHandler(xml2json);
+	
+    	// start translating
+    	InputSource is = new InputSource(new StringReader(xml));
+		parser.parse(is);
+    	String json=xml2json.toString();
+		
+    	return json;
+	}
 
 	@Override
 	public String toString() {

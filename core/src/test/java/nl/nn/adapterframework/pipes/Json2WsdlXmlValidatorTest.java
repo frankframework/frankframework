@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.align.Xml2Json;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -59,6 +60,11 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	        if (resultStr.indexOf(targetContent2)<0) { 
 	        	fail("result of ["+description+"] does not contain target content ["+targetContent2+"]"); 
 	        }
+//	        if ("xml".equals(outputFormat)) {
+//	        	result=val.doPipe(resultStr, session);
+//	        	resultStr=(String)result.getResult();
+//	        	System.out.println("back to json:"+resultStr);
+//	        }
 		} catch (PipeRunException e) {
 			e.printStackTrace();
 			fail(description +": "+ e.getMessage());
@@ -85,9 +91,12 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
         
         validate("Validate XML", val, getTestXml(testXml), null, compactJsonArrays, targetContent1, targetContent2);
         validate("XML to JSON",  val, getTestXml(testXml), "json", compactJsonArrays, targetContent1, targetContent2);
+        
+        // basic json Parsing compactJsonArrays=true
         validate("JSON to XML",  val, getTestXml(testJsonCompact), "xml", compactJsonArrays, targetContent1, targetContent2);
         validate("JSON to JSON", val, getTestXml(testJsonCompact), "json", compactJsonArrays, targetContent1, targetContent2);
 
+        // check compatibiliy of compactJsonArrays=true with straight json
         validate("straight JSON to XML",  val, getTestXml(testJsonStraight), "xml", compactJsonArrays, targetContent1, targetContent2);
         validate("straight JSON to JSON", val, getTestXml(testJsonStraight), "json", compactJsonArrays, targetContent1, targetContent2);
 	}
