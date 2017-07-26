@@ -68,6 +68,7 @@ Upcoming
 - Bugfix in ShowIbisstoreSummary (caused 2014-11-26)
 - Fix connection leak in DomainTransformerPipe
 - Prevent 'sap.jcoDestination does not exist'
+- Fix NPE at startup trying to determine webContent.dir
 
 
 
