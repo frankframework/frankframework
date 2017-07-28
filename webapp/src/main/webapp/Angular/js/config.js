@@ -53,7 +53,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 	})
 	.state('pages.status', {
 		url: "/status",
-		templateUrl: "views/adapter_status.html",
+		templateUrl: "views/ShowConfigurationStatus.html",
 		controller: 'StatusCtrl as status',
 		data: {
 			pageTitle: 'Adapter Status',
@@ -63,7 +63,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 	})
 	.state('pages.adapter', {
 		url: "/adapter",
-		templateUrl: "views/adapter_status.html",
+		templateUrl: "views/ShowConfigurationStatus.html",
 	})
 	.state('pages.adapterstatistics', {
 		url: "/adapter/:name/statistics",
@@ -294,6 +294,22 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 
 	$locationProvider.html5Mode(false);
 
-}]).run(['$rootScope', '$state', function($rootScope, $state) {
+}]).run(['$rootScope', '$state', 'Debug', function($rootScope, $state, Debug) {
 	$rootScope.$state = $state;
+
+	$rootScope.foist = function(callback) {
+		Debug.warn("Dirty injection!", callback);
+		try {
+			callback($rootScope);
+		}
+		catch(err) {
+			Debug.error("Failed to execute injected code!", err);
+		}
+		finally {
+			$rootScope.$apply();
+		}
+	};
+
+	if(location.hostname == "localhost")
+		Debug.setLevel(3);
 }]);

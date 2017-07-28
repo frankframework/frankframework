@@ -82,6 +82,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to JMS server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLookupDestination(boolean) lookupDestination}</td><td>when set <code>false</code>, the destinationName is used directly instead of performing a JNDI lookup</td><td>true</td></tr>
  * </table>
  * </p>
  *

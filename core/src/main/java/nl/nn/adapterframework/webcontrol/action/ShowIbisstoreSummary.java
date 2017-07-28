@@ -57,7 +57,6 @@ import org.apache.struts.action.ActionMapping;
 public class ShowIbisstoreSummary extends ActionBase {
 
 	public static final String SHOWIBISSTORECOOKIE="ShowIbisstoreSummaryCookieName";
-	public static final String SHOWIBISSTOREQUERYKEY="ibisstore.summary.query";
 
 	private Map slotmap = new HashMap();
 
@@ -139,9 +138,6 @@ public class ShowIbisstoreSummary extends ActionBase {
 		showIbisstoreSummaryForm.set("jmsRealms", jmsRealms);
 
 		if (StringUtils.isNotEmpty(jmsRealm)) {
-
-			String formQuery=AppConstants.getInstance().getProperty(SHOWIBISSTOREQUERYKEY);
-
 			String result = "<none/>";
 
 			try {
@@ -155,7 +151,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 					qs.setBlobSmartGet(true);
 					qs.configure(true);
 					qs.open();
-					result = qs.sendMessage("dummy", formQuery);
+					result = qs.sendMessage("dummy", qs.getDbmsSupport().getIbisStoreSummaryQuery());
 				} catch (Throwable t) {
 					error("error occured on executing jdbc query",t);
 				} finally {
@@ -203,7 +199,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
+	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
 		XmlBuilder result = new XmlBuilder("result");
 		String previousType=null;
 		XmlBuilder typeXml=null;

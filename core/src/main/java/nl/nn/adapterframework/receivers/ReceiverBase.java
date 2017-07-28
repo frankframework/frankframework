@@ -258,6 +258,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private boolean recover = false;
 
 	public static final String ONERROR_CONTINUE = "continue";
+	public static final String ONERROR_RECOVER = "recover";
 	public static final String ONERROR_CLOSE = "close";
 
 	private boolean active=true;
@@ -601,6 +602,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				throw new ConfigurationException(getLogPrefix()
 						+ "invalid value for hideMethod [" + getHideMethod()
 						+ "], must be 'all' or 'firstHalf'");
+			}
+			if (getListener() instanceof ReceiverAware) {
+				((ReceiverAware)getListener()).setReceiver(this);
 			}
 			if (getListener() instanceof IPushingListener) {
 				IPushingListener pl = (IPushingListener)getListener();
@@ -1366,6 +1370,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
 //			warn(msg+", will continue processing messages when they arrive: "+ t.getMessage());
 			error(msg+", will continue processing messages when they arrive",t);
+		} else if (ONERROR_RECOVER.equalsIgnoreCase(getOnError())) {
+			// Make JobDef.recoverAdapters() try to recover
+			setRunState(RunStateEnum.ERROR);
+			error(msg+", will try to recover",t);
 		} else {
 			error(msg+", stopping receiver", t);
 			stopRunning();

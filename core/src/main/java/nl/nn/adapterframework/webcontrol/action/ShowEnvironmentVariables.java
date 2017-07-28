@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class ShowEnvironmentVariables extends ActionBase {
 	private static final String CONFIG_ALL = "*ALL*";
 
-	public void addPropertiesToXmlBuilder(XmlBuilder container, Properties props, String setName, List<String> propsToHide) {
+	public void addPropertiesToXmlBuilder(XmlBuilder container, Properties props, String setName, List<String> propsToHide, boolean skipResolve) {
 		Enumeration enumeration = props.keys();
 		XmlBuilder propertySet = new XmlBuilder("propertySet");
 		propertySet.addAttribute("name", setName);
@@ -57,7 +57,12 @@ public class ShowEnvironmentVariables extends ActionBase {
 			String propName = (String) enumeration.nextElement();
 			XmlBuilder property = new XmlBuilder("property");
 			property.addAttribute("name", XmlUtils.encodeCdataString(propName));
-			String propValue = props.getProperty(propName);
+			String propValue;
+			if (skipResolve && props instanceof AppConstants) {
+				propValue = ((AppConstants)props).getUnresolvedProperty(propName);
+			} else {
+				propValue = props.getProperty(propName);
+			}
         	if (propsToHide != null && propsToHide.contains(propName)) {
         		propValue = Misc.hide(propValue);
         	}
@@ -65,6 +70,10 @@ public class ShowEnvironmentVariables extends ActionBase {
 			propertySet.addSubElement(property);
 		}
 
+	}
+
+	public void addPropertiesToXmlBuilder(XmlBuilder container, Properties props, String setName, List<String> propsToHide) {
+		addPropertiesToXmlBuilder(container, props, setName, propsToHide, false);
 	}
 
 	public void addPropertiesToXmlBuilder(XmlBuilder container, Properties props, String setName) {
@@ -109,7 +118,7 @@ public class ShowEnvironmentVariables extends ActionBase {
 		
 		XmlBuilder envVars = new XmlBuilder("environmentVariables");
 
-		addPropertiesToXmlBuilder(envVars,AppConstants.getInstance(configuration.getClassLoader()),"Application Constants",propsToHide);
+		addPropertiesToXmlBuilder(envVars,AppConstants.getInstance(configuration.getClassLoader()),"Application Constants",propsToHide, true);
 		addPropertiesToXmlBuilder(envVars,System.getProperties(),"System Properties",propsToHide);
 		
 		try {

@@ -6,24 +6,6 @@
         <dependent-module archiveName="ibis-adapterframework-larva-7.0-B2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-larva/iaf-larva">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-core-7.0-B2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-core/iaf-core">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-ifsa-7.0-B2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ifsa/iaf-ifsa">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-tibco-7.0-B2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-tibco/iaf-tibco">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-sap-7.0-B2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-sap/iaf-sap">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-coolgen-7.0-B2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-coolgen/iaf-coolgen">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-ibm-7.0-B2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ibm/iaf-ibm">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
         <dependent-module deploy-path="/" handle="module:/overlay/prj/iaf-webapp?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
             <dependency-type>consumes</dependency-type>
         </dependent-module>

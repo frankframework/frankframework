@@ -562,7 +562,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 	private String provideFirstRowsHintAfterFirstKeyword(IDbmsSupport dbmsSupport) {
 		if (useFirstRowsHint) {
-			return dbmsSupport.provideFirstRowsHintAfterFirstKeyword(100);
+			return dbmsSupport.provideFirstRowsHintAfterFirstKeyword(10);
 		}
 		return "";
 	}

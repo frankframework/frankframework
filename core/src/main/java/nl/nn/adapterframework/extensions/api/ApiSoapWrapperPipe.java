@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
+import nl.nn.adapterframework.util.AppConstants;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -29,7 +30,9 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class ApiSoapWrapperPipe extends SoapWrapperPipe {
-	protected final static String CONVERSATIONID = "conversationId";
+	protected static final String CONVERSATIONID = "conversationId";
+	protected static final String FROM_IN = "from_in";
+	protected static final String FROM_OUT = "from_out";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -59,5 +62,18 @@ public class ApiSoapWrapperPipe extends SoapWrapperPipe {
 			// p.setDefaultValueMethods("pattern");
 			addParameter(p);
 		}
+		if (parameterList.findParameter(FROM_IN) == null) {
+			p = new Parameter();
+			p.setName(FROM_IN);
+			p.setSessionKey(getSoapHeaderSessionKey());
+			p.setXpathExpression("MessageHeader/From");
+			addParameter(p);
+		}
+
+		p = new Parameter();
+		p.setName(FROM_OUT);
+		p.setValue(AppConstants.getInstance().getProperty("instance.name", ""));
+		addParameter(p);
+
 	}
 }

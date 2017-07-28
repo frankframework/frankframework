@@ -37,6 +37,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
+import java.security.AccessControlException;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -901,14 +902,18 @@ public class Misc {
 			String wcDirectory = null;
 			File file = new File(fullPath);
 			while (wcDirectory == null) {
-				File file2 = new File(file, "WebContent");
-				if (file2.exists() && file2.isAbsolute()) {
-					wcDirectory = file2.getPath();
-				} else {
-					file = file.getParentFile();
-					if (file == null) {
-						return null;
+				try {
+					File file2 = new File(file, "WebContent");
+					if (file2.exists() && file2.isAbsolute()) {
+						wcDirectory = file2.getPath();
+					} else {
+						file = file.getParentFile();
+						if (file == null) {
+							return null;
+						}
 					}
+				} catch(AccessControlException e) {
+					return null;
 				}
 			}
 			return wcDirectory;

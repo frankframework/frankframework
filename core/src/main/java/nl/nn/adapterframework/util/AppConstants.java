@@ -87,6 +87,13 @@ public final class AppConstants extends Properties implements Serializable{
 		return self;
 	}
 
+	public static synchronized void removeInstance() {
+		if (self!=null) {
+			self.clear();
+			self=null;
+		}
+	}
+
 	/**
 	 * Retrieve an instance based on a ClassLoader. This should be used by
 	 * classes which are part of the Ibis configuration (like pipes and senders)
@@ -135,6 +142,10 @@ public final class AppConstants extends Properties implements Serializable{
 	@Override
 	public String getProperty(String key) {
 		return getResolvedProperty(key);
+	}
+
+	public String getUnresolvedProperty(String key) {
+		return super.getProperty(key);
 	}
 
 	/**

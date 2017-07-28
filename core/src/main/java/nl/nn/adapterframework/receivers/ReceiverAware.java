@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2017 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,19 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.pipes;
+package nl.nn.adapterframework.receivers;
+
+import nl.nn.adapterframework.core.IReceiver;
 
 
 /**
- * When a sender implements this interface it will get a reference to it's
- * parent pipe.
+ * When a listener implements this interface it will get a reference to it's
+ * parent receiver.
  * 
  * @author Jaco de Groot
  *
  */
-public interface PipeAware {
+public interface ReceiverAware {
 
-	public void setPipe(AbstractPipe pipe);
-	public AbstractPipe getPipe();
+	public void setReceiver(IReceiver receiver);
+	public IReceiver getReceiver();
 
 }

@@ -8,7 +8,7 @@ Ibis AdapterFramework release notes
 Upcoming
 --------
 
-[JavaDocs](http://www.ibissource.org/iaf/maven/apidocs/index.html)
+[JavaDocs](http://maven.ibissource.org/iaf/apidocs/index.html)
 [Commits](https://github.com/ibissource/iaf/compare/v7.0-B1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
@@ -46,7 +46,36 @@ Upcoming
 - Create XMLStreamWriter with XmlUtils.OUTPUT_FACTORY in all classes (ScanTibcoSolutionPipe didn't use XmlUtils.OUTPUT_FACTORY yet)
 - Set log.dir automatically for Vanilla/Eclipse Tomcat too
 - Add testtool.enabled property to enable the testtool on ACC and PRD
+- Add facility in "Show configuration status: *ALL*" to show only 'alerted' adapters
+- Bugfix in "Show EnvironmentVariables": "Application Constants" should not be resolved
+- Avoid StackOverflowError in caching validators
+- Fix performance on Oracle databases by providing more accurate path finding hints
+- Add MqttListener
+- Upgrade servlet version from 2.3 to 2.5
+- Add attribute logIntermediaryResults to AbstractPipe to overwrite value in AppConstants
+- Add attributes ignoreCaching and lazyInit to XmlValidator to overwrite value in AppConstants
+- Add SNC encryption to SAP Listeners/Senders
+- Add httpWsdl attribute to JavaListener for making WSDL available
+- Make unwrapping of SOAP messages independent of SOAP version
+- Support all InputStreams for upload in HttpSender instead of only FileInputStream
+- Add MqttSender
+- Fix DomainTransformerPipe nullPointerException on ibis startup
+- Add custom SSLSocketFactory to CmisSender
+- Fix JDBC driver default date format to yyyy-MM-dd
+- Fix JDBC driver default timestamp format to yyyy-MM-dd HH:mm:ss
+- Bugfix in ShowIbisstoreSummary "(SQLServerException) SQLState [S00010], errorCode [195]: 'to_char' is not a recognized built-in function name." 
+- Add DllServiceDispatcher see [ibis-servicedispatcher](https://github.com/ibissource/ibis-servicedispatcher/commit/f759f897b063757bcc7a50229715035159d79dd5)
+- Bugfix in ShowIbisstoreSummary (caused 2014-11-26)
+- Fix connection leak in DomainTransformerPipe
+- Prevent 'sap.jcoDestination does not exist'
+- Fix NPE at startup trying to determine webContent.dir
 
+
+
+### Non backwards compatible changes
+
+- The default JDBC timestamp value has been set to yyyy-MM-dd HH:mm:ss, to disable this set the jdbc.timestampFormat property to an empty value
+- The default JDBC date value has been set to yyyy-MM-dd, to disable this set the jdbc.dateFormat property to an empty value
 
 
 7.0-B1

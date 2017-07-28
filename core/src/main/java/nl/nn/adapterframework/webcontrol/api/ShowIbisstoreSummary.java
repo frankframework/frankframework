@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -60,8 +61,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 public final class ShowIbisstoreSummary extends Base {
 	@Context ServletConfig servletConfig;
 
-	public static final String SHOWIBISSTOREQUERYKEY="ibisstore.summary.query";
-
 	@POST
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc/summary")
@@ -72,7 +71,7 @@ public final class ShowIbisstoreSummary extends Base {
 
 		Response.ResponseBuilder response = Response.noContent(); //PUT defaults to no content
 
-		String query = AppConstants.getInstance().getProperty(SHOWIBISSTOREQUERYKEY);
+		String query = null;
 		String realm = null;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
@@ -100,7 +99,7 @@ public final class ShowIbisstoreSummary extends Base {
 				qs.setBlobSmartGet(true);
 				qs.configure(true);
 				qs.open();
-				result = qs.sendMessage("dummy", query);
+				result = qs.sendMessage("dummy", (query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery()));
 			} catch (Throwable t) {
 				throw new ApiException("An error occured on executing jdbc query: "+t.toString());
 			} finally {
@@ -182,7 +181,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
+	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
 		XmlBuilder result = new XmlBuilder("result");
 		String previousType=null;
 		XmlBuilder typeXml=null;
