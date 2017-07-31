@@ -133,7 +133,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		}
 
 		if (pe != null) {
-			if (secLogEnabled && pe.isWriteToSecLog()) {
+			if (pe.isWriteToSecLog()) {
 				String secLogMsg = "adapter [" + owner.getName() + "] pipe ["
 						+ pe.getName() + "]";
 				if (pe.getSecLogSessionKeys() != null) {

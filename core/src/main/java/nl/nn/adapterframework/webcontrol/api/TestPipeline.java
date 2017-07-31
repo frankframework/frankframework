@@ -68,7 +68,6 @@ public final class TestPipeline extends TimeoutGuardPipe {
 
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
-	private boolean secLogEnabled = AppConstants.getInstance().getBoolean("sec.log.enabled", false);
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
 	@POST
@@ -84,8 +83,6 @@ public final class TestPipeline extends TimeoutGuardPipe {
 		if (ibisManager == null) {
 			throw new ApiException("Config not found!");
 		}
-
-		boolean writeSecLogMessage = (Boolean) (secLogEnabled && secLogMessage);
 		
 		String message = null, fileEncoding = null, fileName = null;
 		InputStream file = null;
@@ -117,7 +114,7 @@ public final class TestPipeline extends TimeoutGuardPipe {
 
 				if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 					try {
-						processZipFile(result, file, fileEncoding, adapter, writeSecLogMessage);
+						processZipFile(result, file, fileEncoding, adapter, secLogMessage);
 					} catch (Exception e) {
 						throw new PipeRunException(this, getLogPrefix(null) + "exception on processing zip file", e);
 					}
@@ -138,7 +135,7 @@ public final class TestPipeline extends TimeoutGuardPipe {
 		
 		if (StringUtils.isNotEmpty(message)) {
 			try {
-				PipeLineResult plr = processMessage(adapter, message, writeSecLogMessage);
+				PipeLineResult plr = processMessage(adapter, message, secLogMessage);
 				result.put("state", plr.getState());
 				result.put("result", plr.getResult());
 			} catch (Exception e) {
