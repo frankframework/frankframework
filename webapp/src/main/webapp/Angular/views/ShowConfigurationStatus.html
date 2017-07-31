@@ -156,7 +156,8 @@
                                     </tr>
                                     <tr>
                                         <td>Last message</td>
-                                        <td>{{adapter.lastMessage}}</td>
+                                        <td ng-if="adapter.lastMessage"><span to-date time="{{adapter.lastMessage}}"></span></td>
+                                        <td ng-if="!adapter.lastMessage">-</td>
                                     </tr>
                                 </tbody>
                             </table>

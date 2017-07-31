@@ -172,7 +172,7 @@ angular.module('iaf.beheerconsole')
 			$scope.displayAdapters = [];
 			for(adapter in allAdapters) {
 				$scope.adapterSummary[allAdapters[adapter].state] += 1;
-				Poller.add("adapters/" + adapter, function(data) {
+				Poller.add("adapters/" + adapter + "?expanded=all", function(data) {
 					var oldAdapterData = $rootScope.adapters[data.name];
 					if(oldAdapterData != data) {
 						if(oldAdapterData.state != data.state) {
