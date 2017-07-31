@@ -98,10 +98,10 @@
                                 <label class="btn btn-warning btn-outline btn-xs" ng-model="status.filter.warning" ng-click="applyFilter(status.filter)" uib-btn-checkbox>Warning</label>
                             </div>
                         </div>
-                        <div class="col-lg-5 m-t-xs m-b-xs">
+                        <div class="col-lg-5">
                             <span style="font-weight:700;margin-right:4px;">Configuration:</span>
                             <div class="btn-group" uib-dropdown>
-                                <button type="button" class="btn btn-default btn-xs" uib-dropdown-toggle>
+                                <button type="button" class="btn btn-default" uib-dropdown-toggle>
                                     {{selectedConfiguration}} <span class="caret"></span>
                                 </button>
                                 <ul role="menu" uib-dropdown-menu="">
@@ -122,7 +122,7 @@
     <div class="row">
         <div ng-repeat="adapter in adapters" class="col-lg-12 adapters" ng-hide="hideAdapter[adapter.name]">
             <div ibox-expand class="ibox {{(adapter.started && !adapter.receiverStopped) ? 'collapsed' : ''}} float-e-margins" id="{{adapter.name}}">
-                <div class="ibox-title {{adapter.started ? ((adapter.receiverStopped) ? 'warning' : 'primary') : 'danger'}}">
+                <div class="ibox-title {{adapter.started ? ((adapter.receiverStopped) ? 'warning' : 'primary') : 'danger'}}" title="Double-click to open">
                     <h5>{{adapter.name}} <small class="m-l-sm">&nbsp;{{adapter.description}}</small></h5>
                     <div ibox-tools-toggle></div>
                 </div>
