@@ -70,6 +70,7 @@ Upcoming
 - Prevent 'sap.jcoDestination does not exist'
 - Fix NPE at startup trying to determine webContent.dir
 - Remove property sec.log.enabled, security log is enabled by default
+- Add support for dynamically setting the directory to UnzipPipe
 
 
 
