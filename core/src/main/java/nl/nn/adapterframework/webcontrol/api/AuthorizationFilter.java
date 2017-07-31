@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Integration Partners B.V.
+Copyright 2016-2017 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,10 +36,11 @@ import org.jboss.resteasy.core.ResourceMethodInvoker;
 import org.jboss.resteasy.core.ServerResponse;
 
 /**
-* Manages authorization per resource/collection.
-* 
-* @author	Niels Meijer
-*/
+ * Manages authorization per resource/collection.
+ * 
+ * @since	7.0-B1
+ * @author	Niels Meijer
+ */
 
 @Provider
 @Produces(MediaType.APPLICATION_JSON)
