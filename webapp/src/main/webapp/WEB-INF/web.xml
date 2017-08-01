@@ -18,8 +18,9 @@
 	<context-param>
 		<param-name>resteasy.resources</param-name>
 		<param-value>
-			nl.nn.adapterframework.webcontrol.api.ExecuteJdbcQuery,
 			nl.nn.adapterframework.webcontrol.api.Init,
+			nl.nn.adapterframework.webcontrol.api.ExecuteJdbcQuery,
+			nl.nn.adapterframework.webcontrol.api.ServerStatistics,
 			nl.nn.adapterframework.webcontrol.api.ShowConfiguration,
 			nl.nn.adapterframework.webcontrol.api.ShowConfigurationStatus,
 			nl.nn.adapterframework.webcontrol.api.ShowEnvironmentVariables,

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Integration Partners B.V.
+Copyright 2016-2017 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,10 +36,11 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 
 /**
-* Shows the environment variables.
-* 
-* @author	Niels Meijer
-*/
+ * Shows the environment variables.
+ * 
+ * @since	7.0-B1
+ * @author	Niels Meijer
+ */
 
 @Path("/")
 public final class ShowEnvironmentVariables extends Base {

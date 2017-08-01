@@ -48,12 +48,9 @@ import org.apache.log4j.Logger;
  */
 
 public class TestPipeLine extends TimeoutGuardPipe {
-	protected Logger secLog = LogUtil.getLogger("SEC");
 
-	private boolean secLogEnabled = AppConstants.getInstance().getBoolean(
-			"sec.log.enabled", false);
-	private boolean secLogMessage = AppConstants.getInstance().getBoolean(
-			"sec.log.includeMessage", false);
+	protected Logger secLog = LogUtil.getLogger("SEC");
+	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
 	public String doPipeWithTimeoutGuarded(Object input,
 			IPipeLineSession session) throws PipeRunException {
@@ -96,7 +93,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 		}
 
 		boolean writeSecLogMessage = false;
-		if (secLogEnabled && secLogMessage) {
+		if (secLogMessage) {
 			writeSecLogMessage = (Boolean) session.get("writeSecLogMessage");
 		}
 

@@ -69,6 +69,8 @@ Upcoming
 - Fix connection leak in DomainTransformerPipe
 - Prevent 'sap.jcoDestination does not exist'
 - Fix NPE at startup trying to determine webContent.dir
+- Remove property sec.log.enabled, security log is enabled by default
+- Add support for dynamically setting the directory to UnzipPipe
 
 
 
@@ -76,6 +78,7 @@ Upcoming
 
 - The default JDBC timestamp value has been set to yyyy-MM-dd HH:mm:ss, to disable this set the jdbc.timestampFormat property to an empty value
 - The default JDBC date value has been set to yyyy-MM-dd, to disable this set the jdbc.dateFormat property to an empty value
+- The security log has been activated by default. It is no longer possible to disable the security log!
 
 
 7.0-B1

@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.processors;
 
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -29,8 +28,6 @@ import org.apache.log4j.Logger;
 public abstract class PipeProcessorBase implements PipeProcessor {
 	protected Logger log = LogUtil.getLogger(this);
 	protected Logger secLog = LogUtil.getLogger("SEC");
-
-	protected boolean secLogEnabled = AppConstants.getInstance().getBoolean("sec.log.enabled", false);
 
 	protected PipeProcessor pipeProcessor;
 

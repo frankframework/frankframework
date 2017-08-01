@@ -63,8 +63,7 @@ public abstract class ActionBase extends Action {
 	protected MessageResources messageResources;
 	protected ActionErrors errors;
 	protected HttpSession session;
-	
-	private boolean secLogEnabled = AppConstants.getInstance().getBoolean("sec.log.enabled", false);
+
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 	private boolean writeToSecLog = false;
 	private List<String> secLogParamNames = new ArrayList<String>();
@@ -83,7 +82,7 @@ public abstract class ActionBase extends Action {
      */
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
-    	if (secLogEnabled && isWriteToSecLog()) {
+    	if (isWriteToSecLog()) {
         	if (secLogMessage && isWriteSecLogMessage()) {
         		DynaActionForm dynaActionForm = (DynaActionForm) form;
         		String form_message = (String) dynaActionForm.get("message");

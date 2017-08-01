@@ -310,6 +310,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		}
 	};
 
+	// Set this asap on localhost to capture all debug data
 	if(location.hostname == "localhost")
 		Debug.setLevel(3);
 }]);

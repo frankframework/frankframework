@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Integration Partners B.V.
+Copyright 2016-2017 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,10 +24,11 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
 /**
-* Custom errors for the API.
-* 
-* @author	Niels Meijer
-*/
+ * Custom errors for the API.
+ * 
+ * @since	7.0-B1
+ * @author	Niels Meijer
+ */
 
 public class ApiException extends WebApplicationException implements Serializable
 {

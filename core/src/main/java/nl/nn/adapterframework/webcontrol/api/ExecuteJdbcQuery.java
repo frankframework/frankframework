@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Integration Partners B.V.
+Copyright 2016-2017 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -41,10 +41,11 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
-* Executes a query.
-* 
-* @author	Niels Meijer
-*/
+ * Executes a query.
+ * 
+ * @since	7.0-B1
+ * @author	Niels Meijer
+ */
 
 @Path("/")
 public final class ExecuteJdbcQuery extends Base {

@@ -62,8 +62,6 @@ public class RestServiceDispatcher  {
 	private final String KEY_ETAG_KEY="etagKey";
 	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
 
-	private boolean secLogEnabled = AppConstants.getInstance().getBoolean("sec.log.enabled", false);
-
 	private SortedMap patternClients=new TreeMap(new RestUriComparator());
 	
 	private static RestServiceDispatcher self=null;
@@ -225,10 +223,10 @@ public class RestServiceDispatcher  {
 			if (httpServletResponse!=null) context.put("restListenerServletResponse", httpServletResponse);
 			if (servletContext!=null) context.put("restListenerServletContext", servletContext);
 
-			if (secLogEnabled && writeToSecLog) {
-	        		secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
-	        	}
-			
+			if (writeToSecLog) {
+				secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
+			}
+
 			String result=listener.processRequest(null, request, context);
 			if (result==null && !context.containsKey("exitcode")) {
 				log.warn("result is null!");
