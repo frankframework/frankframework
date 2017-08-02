@@ -321,7 +321,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	private boolean unicodePwd = false;
 	private boolean replyNotFound = false;
 
-	protected ParameterList paramList = null;
+	protected ParameterList<Parameter> paramList = null;
 	private boolean principalParameterFound = false;
 	private Hashtable jndiEnv=null;
 
@@ -1312,7 +1312,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 	public void addParameter(Parameter p) {
 		if (paramList == null) {
-			paramList = new ParameterList();
+			paramList = new ParameterList<Parameter>();
 		}
 		paramList.add(p);
 	}

@@ -135,7 +135,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
 	private int maxThreads = 0;
-	private ParameterList parameterList = new ParameterList();
+	private ParameterList<Parameter> parameterList = new ParameterList<Parameter>();
 	private long durationThreshold = -1;
 	private String getInputFromSessionKey=null;
 	private String getInputFromFixedValue=null;
@@ -180,7 +180,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * <code>configure()</code> method, to improve performance.
 	 */
 	public void configure() throws ConfigurationException {
-		ParameterList params = getParameterList();
+		ParameterList<Parameter> params = getParameterList();
+		
 		if (params!=null) {
 			try {
 				params.configure();
@@ -391,7 +392,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * return the Parameters
 	 */
-	public ParameterList getParameterList() {
+	public ParameterList<Parameter> getParameterList() {
 		return parameterList;
 	}
 

@@ -49,7 +49,7 @@ public class ApiSoapWrapperPipe extends SoapWrapperPipe {
 	}
 
 	private void addParameters() {
-		ParameterList parameterList = getParameterList();
+		ParameterList<Parameter> parameterList = getParameterList();
 		Parameter p;
 		if (parameterList.findParameter(CONVERSATIONID) == null) {
 			p = new Parameter();

@@ -179,7 +179,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			}
 		
 		if (StringUtils.isNotEmpty(getColumnsReturned())) {
-			List tempList = new ArrayList();
+			List<String> tempList = new ArrayList<String>();
 			StringTokenizer st = new StringTokenizer(getColumnsReturned(),",");
 			while (st.hasMoreTokens()) {
 				String column = st.nextToken();
@@ -187,7 +187,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			}
 			columnsReturnedList = new String[tempList.size()];
 			for (int i=0; i<tempList.size(); i++) {
-				columnsReturnedList[i]=(String)tempList.get(i);
+				columnsReturnedList[i] = tempList.get(i);
 			}
 		}
 	}
@@ -228,7 +228,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		PreparedStatement statement=null;
-		ParameterList newParamList = new ParameterList();
+		ParameterList<Parameter> newParamList = new ParameterList<Parameter>();
 		if (paramList != null) {
 			newParamList = (ParameterList) paramList.clone();
 		}
@@ -315,7 +315,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 
-	private String adjustParamList(ParameterList paramList, String message) throws SenderException {
+	private String adjustParamList(ParameterList<Parameter> paramList, String message) throws SenderException {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix() + "Adjusting list of parameters ["	+ paramListToString(paramList) + "]");
 		}
@@ -326,7 +326,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			return message;
 		char[] messageChars = message.toCharArray();
 		int copyFrom = 0;
-		ParameterList oldParamList = new ParameterList();
+		ParameterList<Parameter> oldParamList = new ParameterList<Parameter>();
 		oldParamList = (ParameterList) paramList.clone();
 		paramList.clear();
 		while (startPos != -1) {
@@ -369,7 +369,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return buffer.toString();
 	}
 
-	private String paramListToString(ParameterList paramList) {
+	private String paramListToString(ParameterList<Parameter> paramList) {
 		String paramListString = "";
 		for (int i = 0; i < paramList.size(); i++) {
 			String key = paramList.getParameter(i).getName();
@@ -691,7 +691,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 
-	protected String executeOtherQuery(Connection connection, String correlationID, PreparedStatement statement, String message, ParameterResolutionContext prc, ParameterList newParamList) throws SenderException{
+	protected String executeOtherQuery(Connection connection, String correlationID, PreparedStatement statement, String message, ParameterResolutionContext prc, ParameterList<Parameter> newParamList) throws SenderException{
 		ResultSet resultset=null;
 		try {
 			int numRowsAffected = 0;

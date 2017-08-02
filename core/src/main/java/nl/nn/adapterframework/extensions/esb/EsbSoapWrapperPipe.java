@@ -404,7 +404,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	}
 
 	private void stripDestination() throws ConfigurationException {
-		ParameterList parameterList = getParameterList();
+		ParameterList<Parameter> parameterList = getParameterList();
 		Parameter pd = parameterList.findParameter(DESTINATION);
 		Parameter ppd = parameterList.findParameter(PHYSICALDESTINATION);
 		String destination = null;
@@ -539,7 +539,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	}
 
 	private void addParameters() {
-		ParameterList parameterList = getParameterList();
+		ParameterList<Parameter> parameterList = getParameterList();
 		Parameter p;
 		String paradigm = null;
 		p = parameterList.findParameter(PARADIGM);

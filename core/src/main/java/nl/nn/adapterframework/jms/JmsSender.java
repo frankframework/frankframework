@@ -99,7 +99,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	private String soapHeaderParam="soapHeader";
 	private String linkMethod="MESSAGEID";
 	
-	protected ParameterList paramList = null;
+	protected ParameterList<Parameter> paramList = null;
 	private SoapWrapper soapWrapper=null;
 
 	/**
@@ -138,7 +138,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 
 	public void addParameter(Parameter p) { 
 		if (paramList==null) {
-			paramList=new ParameterList();
+			paramList=new ParameterList<Parameter>();
 		}
 		paramList.add(p);
 	}

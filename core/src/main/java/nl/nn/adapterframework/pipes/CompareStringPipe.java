@@ -99,7 +99,7 @@ public class CompareStringPipe extends AbstractPipe {
 		if (StringUtils.isEmpty(sessionKey1) && StringUtils.isEmpty(sessionKey2)) {
 			boolean operand1Exists = false;
 			boolean operand2Exists = false;
-			ParameterList parameterList = getParameterList();
+			ParameterList<Parameter> parameterList = getParameterList();
 			for (int i = 0; i < parameterList.size(); i++) {
 				Parameter parameter = parameterList.getParameter(i);
 				if (parameter.getName().equalsIgnoreCase(OPERAND1)) {
@@ -237,7 +237,7 @@ public class CompareStringPipe extends AbstractPipe {
 	}
 
 	private String getParameterValue(ParameterValueList pvl, String parameterName) {
-		ParameterList parameterList = getParameterList();
+		ParameterList<Parameter> parameterList = getParameterList();
 		if (pvl != null && parameterList != null) {
 			for (int i = 0; i < parameterList.size(); i++) {
 				Parameter parameter = parameterList.getParameter(i);
