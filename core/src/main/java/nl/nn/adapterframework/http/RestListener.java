@@ -20,14 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang.StringUtils;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -36,7 +30,6 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.JsonPipe;
-import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -85,6 +78,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	private boolean writeSecLogMessage = false;
 	private boolean retrieveMultipart = true;
 
+	private String consumes = "XML";
 	private String produces = "XML";
 	private List<String> mediaTypes = Arrays.asList("XML", "JSON", "TEXT");
 
