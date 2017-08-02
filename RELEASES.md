@@ -37,6 +37,8 @@ Upcoming
 - Fix soap:address location used rest/webservices instead of servler/rpcrouter
 - Add log messages state to "Show configuration status: *ALL*"
 - Fix log.level now set automatically dependant on otap.stage
+- Add RESTFUL Etag caching to validate messages before they are processed by the IBIS
+- Add IRestEtagCache interface and etag.cache.type property to choose between different caching solutions
 
 
 7.0-B1

@@ -62,21 +62,29 @@ public class RestServiceDispatcher  {
 	private final String KEY_ETAG_KEY="etagKey";
 	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
 
-	private AppConstants appConstants = AppConstants.getInstance();
+	private static AppConstants appConstants = AppConstants.getInstance();
 	private boolean secLogEnabled = appConstants.getBoolean("sec.log.enabled", false);
+	private static String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
 
 	private SortedMap patternClients=new TreeMap(new RestUriComparator());
 
 	private static RestServiceDispatcher self = null;
-	private static RestEtagCache cache = null;
+	private static IRestEtagCache cache = null;
 
-	public static synchronized RestServiceDispatcher getInstance(){
+	public static synchronized RestServiceDispatcher getInstance() {
 		 if( self == null ) {
-			//TODO: if(appConstants.getString("etag.cache")
-			cache = new RestEtagCache();
+			cache = new RestEtagEhcache();
 			self = new RestServiceDispatcher();
-        }
-        return self;
+		}
+		return self;
+	}
+
+	public static synchronized IRestEtagCache getCache() {
+		 if( cache == null ) {
+			if(etagCacheType.equalsIgnoreCase("ehcache"))
+				cache = new RestEtagEhcache();
+		}
+		return cache;
 	}
 
 	public String findMatchingPattern(String uri) {
@@ -119,8 +127,8 @@ public class RestServiceDispatcher  {
 	 * @param uri the name of the IReceiver object
 	 * @param method the correlationId of this request;
 	 * @param request the <code>String</code> with the request/input
-	 * @return String with the result of processing the <code>request</code> throught the <code>serviceName</code>
-     */
+	 * @return String with the result of processing the <code>request</code> through the <code>serviceName</code>
+	 */
 	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, Map context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
 		String method = httpServletRequest.getMethod();
 		if (log.isTraceEnabled()) log.trace("searching listener for uri ["+uri+"] method ["+method+"]");
@@ -251,6 +259,7 @@ public class RestServiceDispatcher  {
 				uri = uri.split("?")[0];
 			}
 			String etagCacheKey = restPath+"_"+uri;
+			IRestEtagCache cache = getCache();
 			if(cache != null && cache.containsKey(etagCacheKey)) {
 				String cachedEtag = (String) cache.get(etagCacheKey);
 
@@ -327,9 +336,5 @@ public class RestServiceDispatcher  {
 			}
 		}
 		return uriPattern;
-	}
-
-	public RestEtagCache getCache() {
-		return cache;
 	}
 }

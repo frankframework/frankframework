@@ -10,11 +10,11 @@ import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class RestEtagCache {
+public class RestEtagEhcache implements IRestEtagCache {
 	private Logger log = LogUtil.getLogger(this);
 
 	private final String KEY_CACHE_NAME="etagCacheReceiver";
-	private final String KEY_PREFIX="cache.etag.";
+	private final String KEY_PREFIX="etag.ehcache.";
 	private final String KEY_MAX_ELEMENTS_IN_MEMORY=KEY_PREFIX+"maxElementsInMemory";
 	private final String KEY_MEMORYSTORE_EVICTION_POLICY=KEY_PREFIX+"memoryStoreEvictionPolicy";
 	private final String KEY_ETERNAL=KEY_PREFIX+"eternal";
@@ -23,7 +23,7 @@ public class RestEtagCache {
 	private final String KEY_DISK_PERSISTENT=KEY_PREFIX+"diskPersistent";
 	private final String KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS=KEY_PREFIX+"diskExpiryThreadIntervalSeconds";
 
-	private int maxElementsInMemory=128;
+	private int maxElementsInMemory=512;
 	private String memoryStoreEvictionPolicy="LRU";
 	private boolean eternal=true;
 	private boolean overflowToDisk=false;
@@ -34,7 +34,7 @@ public class RestEtagCache {
 	private Ehcache cache=null;
 	private IbisCacheManager cacheManager=null;
 
-	public RestEtagCache() {
+	public RestEtagEhcache() {
 		cacheManager = IbisCacheManager.getInstance();
 
 		AppConstants ac = AppConstants.getInstance();
