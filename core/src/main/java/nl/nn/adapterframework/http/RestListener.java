@@ -55,6 +55,8 @@ import nl.nn.adapterframework.pipes.JsonPipe;
 
  * <tr><td>{@link #setConsumes(String) consumes}</td><td>mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher RestServiceDispatcher} receives as input</td><td>XML</td></tr>
  * <tr><td>{@link #setProduces(String) produces}</td><td>mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher RestServiceDispatcher} sends as output, if set to json the ibis will automatically try to convert the xml message</td><td>XML</td></tr>
+ * <tr><td>{@link #setGenerateEtag(boolean) generateEtag}</td><td>when set to true the IBIS will automatically create an Etag</td><td>false</td></tr>
+ * <tr><td>{@link #setValidateEtag(boolean) validateEtag}</td><td>when set to true the IBIS will automatically validate and process Etags</td><td>false</td></tr>
  * </table>
  * </p>
  * <p>
