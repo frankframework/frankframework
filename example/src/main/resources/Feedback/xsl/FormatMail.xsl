@@ -9,15 +9,14 @@
 			</recipients>
 			<from><xsl:text>noreply@integrationpartners.nl</xsl:text></from>
 			<subject><xsl:text>Feedback GUI 3.0</xsl:text></subject>
-			<name>
-				<xsl:choose>
-					<xsl:when test="root/name=''"><xsl:text>Anonymous</xsl:text></xsl:when>
-					<xsl:otherwise><xsl:value-of select="root/name" /></xsl:otherwise>
-				</xsl:choose>
-			</name>
 			<message>
-				<rating><xsl:value-of select="root/rating"/></rating>
-				<feedback><xsl:value-of select="root/feedback" /></feedback>
+				<xsl:text>Name: </xsl:text>
+					<xsl:choose>
+						<xsl:when test="root/name=''"><xsl:text>Anonymous</xsl:text><xsl:text>,&#xA;</xsl:text></xsl:when>
+						<xsl:otherwise><xsl:value-of select="root/name" /><xsl:text>,&#xA;</xsl:text></xsl:otherwise>
+					</xsl:choose>
+				<xsl:text>Rating: </xsl:text><xsl:value-of select="root/rating"/><xsl:text>,&#xA;</xsl:text>
+				<xsl:text>Feedback: </xsl:text><xsl:value-of select="root/feedback" /><xsl:text>&#xA;</xsl:text>
 			</message>
 		</feedbackform>
 	</xsl:template>

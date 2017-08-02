@@ -82,6 +82,8 @@ import org.apache.log4j.Logger;
 * <tr><td>{@link #setImportedSchemaLocationsToIgnore(String) importedSchemaLocationsToIgnore}</td><td>comma separated list of schemaLocations which are excluded from an import or include in the schema document</td><td>&nbsp;</td></tr>
 * <tr><td>{@link #setUseBaseImportedSchemaLocationsToIgnore(boolean) useBaseImportedSchemaLocationsToIgnore}</td><td>when set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path</td><td><code>false</code></td></tr>
 * <tr><td>{@link #setImportedNamespacesToIgnore(String) importedNamespacesToIgnore}</td><td>comma separated list of namespaces which are excluded from an import or include in the schema document</td><td>&nbsp;</td></tr>
+* <tr><td>{@link #setIgnoreCaching(boolean) ignoreCaching}</td><td>when set <code>true</code>, the number for caching validators in AppConstants is ignored and NO caching is done (for this validator only)</td><td><code>false</code></td></tr>
+* <tr><td>{@link #setLazyInit(boolean) lazyInit}</td><td>when set, the value in AppConstants is overwritten (for this validator only)</td><td><code>application default (false)</code></td></tr>
 * </table>
 * <p><b>Exits:</b>
 * <table border="1">
@@ -667,4 +669,12 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 		return defaultValue;
 	}
+
+	public void setIgnoreCaching(boolean ignoreCaching) {
+		validator.setIgnoreCaching(ignoreCaching);
+	}
+
+    public void setLazyInit(boolean lazyInit) {
+    	validator.setLazyInit(lazyInit);
+    }
 }

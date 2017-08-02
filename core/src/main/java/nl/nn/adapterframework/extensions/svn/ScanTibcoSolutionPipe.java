@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden
+   Copyright 2015, 2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,10 +55,9 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Object input, IPipeLineSession session)
 			throws PipeRunException {
 		StringWriter stringWriter = new StringWriter();
-		XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
 		XMLStreamWriter xmlStreamWriter;
 		try {
-			xmlStreamWriter = xmlOutputFactory
+			xmlStreamWriter = XmlUtils.OUTPUT_FACTORY
 					.createXMLStreamWriter(stringWriter);
 			xmlStreamWriter.writeStartDocument();
 			xmlStreamWriter.writeStartElement("root");

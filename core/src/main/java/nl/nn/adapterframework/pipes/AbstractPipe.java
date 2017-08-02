@@ -19,8 +19,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
@@ -112,8 +110,9 @@ import org.springframework.transaction.TransactionDefinition;
  * 											      <tr><td>T1</td>  <td>error</td></tr>
  *  </table></td><td>Supports</td></tr>
  * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to process a message.</td><td><code>0</code> (use system default)</code></td></tr>
- * <tr><td>{@link #setWriteToSecLog (boolean) writeToSecLog}</td><td>when set <code>true</code> and property <code>sec.log.enabled=true</code>, a record is written to the security log when the pipe has finished successfully</td><td>false</td></tr>
- * <tr><td>{@link #setSecLogSessionKeys(String) secLogSessionKeys}</td><td>(only used when <code>writeToSecLog=true</code> and property <code>sec.log.enabled=true</code>) comma separated list of keys of session variables that is appended to the security log record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWriteToSecLog (boolean) writeToSecLog}</td><td>when set to <code>true</code> a record is written to the security log when the pipe has finished successfully</td><td>false</td></tr>
+ * <tr><td>{@link #setSecLogSessionKeys(String) secLogSessionKeys}</td><td>(only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLogIntermediaryResults (boolean) logIntermediaryResults}</td><td>when set, the value in AppConstants is overwritten (for this pipe only)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -136,7 +135,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
 	private int maxThreads = 0;
-	private ParameterList parameterList = new ParameterList();
+	private ParameterList<Parameter> parameterList = new ParameterList<Parameter>();
 	private long durationThreshold = -1;
 	private String getInputFromSessionKey=null;
 	private String getInputFromFixedValue=null;
@@ -157,6 +156,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private boolean writeToSecLog = false;
 	private String secLogSessionKeys = null;
 	private boolean recoverAdapter = false;
+	private String logIntermediaryResults = null;
 
 	private boolean active=true;
 
@@ -180,7 +180,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * <code>configure()</code> method, to improve performance.
 	 */
 	public void configure() throws ConfigurationException {
-		ParameterList params = getParameterList();
+		ParameterList<Parameter> params = getParameterList();
+		
 		if (params!=null) {
 			try {
 				params.configure();
@@ -391,7 +392,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * return the Parameters
 	 */
-	public ParameterList getParameterList() {
+	public ParameterList<Parameter> getParameterList() {
 		return parameterList;
 	}
 
@@ -617,5 +618,12 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	public void setRecoverAdapter(boolean b) {
 		recoverAdapter = b;
+	}
+
+	public void setLogIntermediaryResults(String string) {
+		logIntermediaryResults = string;
+	}
+	public String getLogIntermediaryResults() {
+		return logIntermediaryResults;
 	}
 }

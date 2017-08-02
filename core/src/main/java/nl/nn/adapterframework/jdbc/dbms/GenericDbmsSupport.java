@@ -397,4 +397,8 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public String getLength(String column) {
 		return "LENGTH("+column+")";
 	}
+
+	public String getIbisStoreSummaryQuery() {
+		return "select type, slotid, to_char(MESSAGEDATE,'YYYY-MM-DD') msgdate, count(*) msgcount from ibisstore group by slotid, type, to_char(MESSAGEDATE,'YYYY-MM-DD') order by type, slotid, to_char(MESSAGEDATE,'YYYY-MM-DD')";
+	}
 }

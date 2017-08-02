@@ -1,0 +1,10 @@
+version: 0.2
+phases:
+  build:
+    commands:
+      - mvn
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: example/target/ibis-adapterframework-example-7.0-B2-SNAPSHOT

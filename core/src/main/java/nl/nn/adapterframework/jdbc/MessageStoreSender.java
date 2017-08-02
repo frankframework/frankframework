@@ -87,7 +87,7 @@ import org.apache.commons.lang.text.StrBuilder;
  * @author Jaco de Groot
  */
 public class MessageStoreSender extends JdbcTransactionalStorage implements ISenderWithParameters {
-	private ParameterList paramList = null;
+	private ParameterList<Parameter> paramList = null;
 	private String sessionKeys = null;
 	private boolean onlyStoreWhenMessageIdUnique = true;
 
@@ -107,7 +107,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 
 	public void addParameter(Parameter p) {
 		if (paramList == null) {
-			paramList = new ParameterList();
+			paramList = new ParameterList<Parameter>();
 		}
 		paramList.add(p);
 	}

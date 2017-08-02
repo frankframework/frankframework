@@ -35,6 +35,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.DateUtils;
@@ -584,7 +585,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 
-	public void configure(ParameterList parameterList) throws ConfigurationException {
+	public void configure(ParameterList<Parameter> parameterList) throws ConfigurationException {
 		super.configure(parameterList);
 		ConfigurationWarnings cw = ConfigurationWarnings.getInstance();
 		cw.add("The XmlSender is not released for production. The configuration options for this pipe will change in a non-backward compatible way");

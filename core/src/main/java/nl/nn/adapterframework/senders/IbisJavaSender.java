@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -49,6 +50,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setMultipartResponse(boolean) multipartResponse}</td><td>currently used to mimic the HttpSender when it is stubbed locally. It could be useful in other situations too although currently the response string is used which isn't streamed, it would be better to pass the multipart as an input stream in the context map in which case content type and charset could also be passed</td><td>false</td></tr>
  * <tr><td>{@link #setMultipartResponseContentType(String) multipartResponseContentType}</td><td></td><td>application/octet-stream</td></tr>
  * <tr><td>{@link #setMultipartResponseCharset(String) multipartResponseCharset}</td><td></td><td>UTF-8</td></tr>
+ * <tr><td>{@link #setDispatchType(String) type}</td><td>set to 'DLL' to make the dispatcher communicate with a DLL set on the classpath</td><td></td></tr>
  * </table>
  * </p>
  * Any parameters are copied to the PipeLineSession of the service called.
@@ -75,6 +77,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	private boolean multipartResponse = false;
 	private String multipartResponseContentType = "application/octet-stream";
 	private String multipartResponseCharset = "UTF-8";
+	private String dispatchType = "default";
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -100,7 +103,11 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			} else {
 				context=new HashMap();
 			}
-			DispatcherManager dm = DispatcherManagerFactory.getDispatcherManager();
+			DispatcherManager dm;
+			if(getDispatchType().equalsIgnoreCase("DLL"))
+				dm = DispatcherManagerFactory.getDispatcherManager(getDispatchType());
+			else
+				dm = DispatcherManagerFactory.getDispatcherManager();
 			result = dm.processRequest(getServiceName(),correlationID, message, context);
 			if (isMultipartResponse()) {
 				return HttpSender.handleMultipartResponse(multipartResponseContentType,
@@ -154,4 +161,14 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		return multipartResponse;
 	}
 
+	public void setDispatchType(String type) {
+		if(type.equalsIgnoreCase("DLL"))
+			dispatchType = type;
+		else
+			ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'setDispatchType' only supports the value 'DLL'");
+	}
+	
+	public String getDispatchType() {
+		return dispatchType;
+	}
 }

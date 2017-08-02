@@ -47,6 +47,7 @@ public class ReloadSender extends SenderWithParametersBase implements PipeAware 
 
 	private AbstractPipe pipe;
 
+	@Override
 	public String sendMessage(String correlationID, String message,
 			ParameterResolutionContext prc) throws TimeOutException, SenderException {
 
@@ -66,27 +67,36 @@ public class ReloadSender extends SenderWithParametersBase implements PipeAware 
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression activeVersion", e);
 		}
-
+		
+		
 		Configuration configuration = getPipe().getAdapter().getConfiguration()
 				.getIbisManager().getConfiguration(configName);
 
-		String latestVersion = configuration.getVersion();
-
-		if (!latestVersion.equals(activeVersion)) {
-			IbisContext ibisContext = getPipe().getAdapter().getConfiguration()
-					.getIbisManager().getIbisContext();
-			ibisContext.reload(configName);
-			return "Reload " + configName + " succeeded";
+		if (configuration != null) {
+			String latestVersion = configuration.getVersion();
+			if (latestVersion != null && !activeVersion.equals(latestVersion)) {
+				IbisContext ibisContext = getPipe().getAdapter().getConfiguration()
+						.getIbisManager().getIbisContext();
+				ibisContext.reload(configName);
+				return "Reload " + configName + " succeeded";
+			} else {
+				return "Reload " + configName + " skipped";
+			}
 		} else {
-			return "Reload " + configName + " skipped";
+			log.warn("Configuration [" + configName + "] not loaded yet");
+			return "Reload " + configName + " skipped"; 
 		}
+		
+		
 	}
 
+	@Override
 	public void setPipe(AbstractPipe pipe) {
 		this.pipe = pipe;
 	}
 
+	@Override
 	public AbstractPipe getPipe() {
 		return pipe;
 	}
-};
+}

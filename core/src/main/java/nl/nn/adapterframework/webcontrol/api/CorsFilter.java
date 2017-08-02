@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Integration Partners B.V.
+Copyright 2016-2017 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,12 +22,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
-* Add CORS header info.
-* 
-* @author	Niels Meijer
-*/
+ * Add CORS header info.
+ * 
+ * @since	7.0-B1
+ * @author	Niels Meijer
+ */
 
 public class CorsFilter implements Filter {
+
+	//TODO: Maybe filter out the methods that are not present on the resource?
 	public static String VALID_METHODS = "GET, POST, PUT, DELETE, OPTIONS, HEAD";
 
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -45,6 +48,7 @@ public class CorsFilter implements Filter {
             }
         }
         else {
+            //TODO: Add a rate limit (X-Rate-Limit) to the amount of (public) calls that can be made?
             // This is a cross-domain request, add headers allowing access
             resp.setHeader("Access-Control-Allow-Origin", origin);
             resp.setHeader("Access-Control-Allow-Methods", VALID_METHODS);

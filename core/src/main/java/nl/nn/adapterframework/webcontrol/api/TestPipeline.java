@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Integration Partners B.V.
+Copyright 2016-2017 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -57,10 +57,11 @@ import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 /**
-* Test a PipeLine.
-* 
-* @author	Niels Meijer
-*/
+ * Test a PipeLine.
+ * 
+ * @since	7.0-B1
+ * @author	Niels Meijer
+ */
 
 @Path("/")
 public final class TestPipeline extends TimeoutGuardPipe {
@@ -68,7 +69,6 @@ public final class TestPipeline extends TimeoutGuardPipe {
 
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
-	private boolean secLogEnabled = AppConstants.getInstance().getBoolean("sec.log.enabled", false);
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
 	@POST
@@ -84,8 +84,6 @@ public final class TestPipeline extends TimeoutGuardPipe {
 		if (ibisManager == null) {
 			throw new ApiException("Config not found!");
 		}
-
-		boolean writeSecLogMessage = (Boolean) (secLogEnabled && secLogMessage);
 		
 		String message = null, fileEncoding = null, fileName = null;
 		InputStream file = null;
@@ -117,7 +115,7 @@ public final class TestPipeline extends TimeoutGuardPipe {
 
 				if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 					try {
-						processZipFile(result, file, fileEncoding, adapter, writeSecLogMessage);
+						processZipFile(result, file, fileEncoding, adapter, secLogMessage);
 					} catch (Exception e) {
 						throw new PipeRunException(this, getLogPrefix(null) + "exception on processing zip file", e);
 					}
@@ -138,7 +136,7 @@ public final class TestPipeline extends TimeoutGuardPipe {
 		
 		if (StringUtils.isNotEmpty(message)) {
 			try {
-				PipeLineResult plr = processMessage(adapter, message, writeSecLogMessage);
+				PipeLineResult plr = processMessage(adapter, message, secLogMessage);
 				result.put("state", plr.getState());
 				result.put("result", plr.getResult());
 			} catch (Exception e) {

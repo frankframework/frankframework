@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Integration Partners B.V.
+Copyright 2016-2017 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
@@ -76,10 +77,11 @@ import nl.nn.adapterframework.util.RunStateEnum;
 import org.apache.commons.lang.StringUtils;
 
 /**
-* Get adapter information from either all or a specified adapter
-* 
-* @author	Niels Meijer
-*/
+ * Get adapter information from either all or a specified adapter
+ * 
+ * @since	7.0-B1
+ * @author	Niels Meijer
+ */
 
 @Path("/")
 public final class ShowConfigurationStatus extends Base {
@@ -118,7 +120,7 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapter(@PathParam("name") String name) throws ApiException {
+	public Response getAdapter(@PathParam("name") String name, @QueryParam("expanded") String expanded) throws ApiException {
 		initBase(servletConfig);
 
 		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(name);
@@ -128,9 +130,26 @@ public final class ShowConfigurationStatus extends Base {
 		}
 
 		Map<String, Object> adapterInfo = mapAdapter(adapter);
-		adapterInfo.put("receivers", mapAdapterReceivers(adapter));
-		adapterInfo.put("pipes", mapAdapterPipes(adapter));
-		adapterInfo.put("messages", mapAdapterMessages(adapter));
+
+		if(expanded != null && !expanded.isEmpty()) {
+			if(expanded.equalsIgnoreCase("all")) {
+				adapterInfo.put("receivers", mapAdapterReceivers(adapter));
+				adapterInfo.put("pipes", mapAdapterPipes(adapter));
+				adapterInfo.put("messages", mapAdapterMessages(adapter));
+			}
+			else if(expanded.equalsIgnoreCase("receivers")) {
+				adapterInfo.put("receivers", mapAdapterReceivers(adapter));
+			}
+			else if(expanded.equalsIgnoreCase("pipes")) {
+				adapterInfo.put("pipes", mapAdapterPipes(adapter));
+			}
+			else if(expanded.equalsIgnoreCase("messages")) {
+				adapterInfo.put("messages", mapAdapterMessages(adapter));
+			}
+			else {
+				throw new ApiException("Invalid value ["+expanded+"] for parameter expanded supplied!");
+			}
+		}
 
 		Response.ResponseBuilder response = null;
 
@@ -149,9 +168,8 @@ public final class ShowConfigurationStatus extends Base {
 		return response.build();
 	}
 
-	//Normally you don't use the PUT method on a collection...
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	@PUT
+	@SuppressWarnings("unchecked")
+	@PUT //Normally you don't use the PUT method on a collection...
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -172,7 +190,7 @@ public final class ShowConfigurationStatus extends Base {
 			}
 			if(key.equalsIgnoreCase("adapters")) {
 				try {
-					adapters.addAll((ArrayList) value);
+					adapters.addAll((ArrayList<String>) value);
 				}
 				catch(Exception e) {
 					return response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -665,7 +683,7 @@ public final class ShowConfigurationStatus extends Base {
 	private Map<String, Object> mapAdapter(Adapter adapter) {
 		Map<String, Object> adapterInfo = new HashMap<String, Object>();
 		Configuration config = adapter.getConfiguration();
-		
+
 		String adapterName = adapter.getName();
 		adapterInfo.put("name", adapterName);
 		adapterInfo.put("description", adapter.getDescription());
@@ -674,23 +692,18 @@ public final class ShowConfigurationStatus extends Base {
 		String nameUC = StringUtils.upperCase(StringUtils.replace(adapterName,"_", "*"));
 		adapterInfo.put("nameUC", nameUC);
 		RunStateEnum adapterRunState = adapter.getRunState();
-		boolean started = adapterRunState.equals(RunStateEnum.STARTED);
-		adapterInfo.put("started", started);
+		adapterInfo.put("started", adapterRunState.equals(RunStateEnum.STARTED));
 		String state = adapterRunState.toString().toLowerCase().replace("*", "");
 		adapterInfo.put("state", state);
-		
-		boolean configured =  adapter.configurationSucceeded();
-		adapterInfo.put("configured", configured);
+
+		adapterInfo.put("configured", adapter.configurationSucceeded());
 		adapterInfo.put("upSince", adapter.getStatsUpSinceDate().getTime());
 		Date lastMessage = adapter.getLastMessageDateDate();
-		adapterInfo.put("lastMessage", (lastMessage == null) ? 0 : lastMessage.getTime());
-		int messagesInProcess = adapter.getNumOfMessagesInProcess();
-		adapterInfo.put("messagesInProcess", messagesInProcess);
-		long messagesProcessed = adapter.getNumOfMessagesProcessed();
-		adapterInfo.put("messagesProcessed", messagesProcessed);
-		long messagesInError = adapter.getNumOfMessagesInError();
-		adapterInfo.put("messagesInError", messagesInError);
-		
+		adapterInfo.put("lastMessage", (lastMessage == null) ? null : lastMessage.getTime());
+		adapterInfo.put("messagesInProcess", adapter.getNumOfMessagesInProcess());
+		adapterInfo.put("messagesProcessed", adapter.getNumOfMessagesProcessed());
+		adapterInfo.put("messagesInError", adapter.getNumOfMessagesInError());
+
 		return adapterInfo;
 	}
 }

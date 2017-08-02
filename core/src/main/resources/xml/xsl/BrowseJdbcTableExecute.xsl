@@ -63,9 +63,7 @@
 				<xsl:value-of select="$rownumMax"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:text>SELECT * FROM (SELECT /*+ FIRST_ROWS(</xsl:text>
-				<xsl:value-of select="$rownumMax - $rownumMin + 1"/>
-				<xsl:text>) */ rownum rnum, x.* FROM (SELECT </xsl:text>
+				<xsl:text>SELECT * FROM (SELECT /*+ FIRST_ROWS(10) */ rownum rnum, x.* FROM (SELECT </xsl:text>
 				<xsl:call-template name="selectAllFields"/>
 				<xsl:text> FROM </xsl:text>
 				<xsl:value-of select="$tableName"/>

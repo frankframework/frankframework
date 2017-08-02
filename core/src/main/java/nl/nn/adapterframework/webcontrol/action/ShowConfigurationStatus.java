@@ -80,6 +80,9 @@ public final class ShowConfigurationStatus extends ActionBase {
 
 		String countStr = request.getParameter("count");
 		boolean count = Boolean.valueOf(countStr);
+
+		String alertStr = request.getParameter("alert");
+		boolean alert = Boolean.valueOf(alertStr);
 		
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
@@ -123,6 +126,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 		} else {
 			adapters.addAttribute("all", true);
 		}
+		adapters.addAttribute("alert", alert);
 		
 		XmlBuilder configurationMessages=new XmlBuilder("configurationMessages");
 		int countConfigurationMessagesInfo=0;
@@ -251,6 +255,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 		int countMessagesWarn=0;
 		int countMessagesError=0;
 		for(IAdapter iAdapter : registeredAdapters) {
+			boolean stateAlert = false;
 			Adapter adapter = (Adapter)iAdapter;
 
 			XmlBuilder adapterXML=new XmlBuilder("adapter");
@@ -277,6 +282,9 @@ public final class ShowConfigurationStatus extends ActionBase {
 				countAdapterStateStopped++;
 			} else if ((adapterRunState.equals(RunStateEnum.ERROR))) {
 				countAdapterStateError++;
+			}
+			if (!(adapterRunState.equals(RunStateEnum.STARTED))) {
+				stateAlert = true;
 			}
 			adapterXML.addAttribute("configured", ""+adapter.configurationSucceeded());
 			Date statsUpSinceDate = adapter.getStatsUpSinceDate();
@@ -320,6 +328,11 @@ public final class ShowConfigurationStatus extends ActionBase {
 						countReceiverStateStopped++;
 					} else if ((receiverRunState.equals(RunStateEnum.ERROR))) {
 						countReceiverStateError++;
+					}
+					if (!stateAlert) {
+						if (!(receiverRunState.equals(RunStateEnum.STARTED))) {
+							stateAlert = true;
+						}
 					}
 					receiverXML.addAttribute("name",receiver.getName());
 					receiverXML.addAttribute("class", ClassUtils.nameOf(receiver));
@@ -452,6 +465,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 					}
 				}
 				adapterXML.addSubElement(receiversXML); 
+				adapterXML.addAttribute("stateAlert",stateAlert);
 			}
 
 			if (configurationSelected != null) {

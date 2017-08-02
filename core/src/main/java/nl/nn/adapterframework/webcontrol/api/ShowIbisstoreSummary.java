@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Integration Partners B.V.
+Copyright 2016-2017 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -46,21 +47,19 @@ import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
-* Executes a query.
-* 
-* @author	Niels Meijer
-*/
+ * Executes a query.
+ * 
+ * @since	7.0-B1
+ * @author	Niels Meijer
+ */
 
 @Path("/")
 public final class ShowIbisstoreSummary extends Base {
 	@Context ServletConfig servletConfig;
-
-	public static final String SHOWIBISSTOREQUERYKEY="ibisstore.summary.query";
 
 	@POST
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -72,7 +71,7 @@ public final class ShowIbisstoreSummary extends Base {
 
 		Response.ResponseBuilder response = Response.noContent(); //PUT defaults to no content
 
-		String query = AppConstants.getInstance().getProperty(SHOWIBISSTOREQUERYKEY);
+		String query = null;
 		String realm = null;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
@@ -100,7 +99,7 @@ public final class ShowIbisstoreSummary extends Base {
 				qs.setBlobSmartGet(true);
 				qs.configure(true);
 				qs.open();
-				result = qs.sendMessage("dummy", query);
+				result = qs.sendMessage("dummy", (query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery()));
 			} catch (Throwable t) {
 				throw new ApiException("An error occured on executing jdbc query: "+t.toString());
 			} finally {
@@ -182,7 +181,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
+	protected String getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
 		XmlBuilder result = new XmlBuilder("result");
 		String previousType=null;
 		XmlBuilder typeXml=null;

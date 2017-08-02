@@ -15,10 +15,10 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipe;
 
 /**
- * When a sender implements this interface it will get a reference to the Pipe.
+ * When a sender implements this interface it will get a reference to it's
+ * parent pipe.
  * 
  * @author Jaco de Groot
  *

@@ -63,7 +63,6 @@ public class RestServiceDispatcher  {
 	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
 
 	private static AppConstants appConstants = AppConstants.getInstance();
-	private boolean secLogEnabled = appConstants.getBoolean("sec.log.enabled", false);
 	private static String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
 
 	private SortedMap patternClients=new TreeMap(new RestUriComparator());
@@ -249,7 +248,7 @@ public class RestServiceDispatcher  {
 			if (httpServletResponse!=null) context.put("restListenerServletResponse", httpServletResponse);
 			if (servletContext!=null) context.put("restListenerServletContext", servletContext);
 
-			if (secLogEnabled && writeToSecLog) {
+			if (writeToSecLog) {
 				secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
 			}
 

@@ -76,7 +76,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	public void configure() throws ConfigurationException {
 		setRemoveOutputNamespaces(true);
 		if ("wrap".equalsIgnoreCase(getDirection())) {
-			ParameterList parameterList = getParameterList();
+			ParameterList<Parameter> parameterList = getParameterList();
 			Parameter parameter = parameterList.findParameter(DESTINATION);
 			if (parameter == null) {
 				parameter = new Parameter();

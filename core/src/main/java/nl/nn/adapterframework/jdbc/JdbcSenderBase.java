@@ -57,7 +57,7 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 	private int timeout = 0;
 
 	protected Connection connection=null;
-	protected ParameterList paramList = null;
+	protected ParameterList<Parameter> paramList = null;
 
 	public JdbcSenderBase() {
 		super();
@@ -66,12 +66,12 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 
 	public void addParameter(Parameter p) { 
 		if (paramList==null) {
-			paramList=new ParameterList();
+			paramList=new ParameterList<Parameter>();
 		}
 		paramList.add(p);
 	}
 
-	public void configure(ParameterList parameterList) throws ConfigurationException {
+	public void configure(ParameterList<Parameter> parameterList) throws ConfigurationException {
 		configure();		
 	}
 

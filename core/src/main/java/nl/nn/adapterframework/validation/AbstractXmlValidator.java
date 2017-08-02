@@ -83,6 +83,7 @@ public abstract class AbstractXmlValidator {
     protected boolean useBaseImportedSchemaLocationsToIgnore = false;
 	protected String importedNamespacesToIgnore;
 	protected Boolean ignoreUnknownNamespaces;
+	protected boolean ignoreCaching = false;
 
     public boolean isAddNamespaceToSchema() {
         return addNamespaceToSchema;
@@ -309,6 +310,22 @@ public abstract class AbstractXmlValidator {
 	public Boolean getIgnoreUnknownNamespaces() {
 		return ignoreUnknownNamespaces;
 	}
+
+    public boolean isIgnoreCaching() {
+        return ignoreCaching;
+    }
+
+    public void setIgnoreCaching(boolean ignoreCaching) {
+        this.ignoreCaching = ignoreCaching;
+    }
+
+    public boolean isLazyInit() {
+        return lazyInit;
+    }
+
+    public void setLazyInit(boolean lazyInit) {
+        this.lazyInit = lazyInit;
+    }
 
 	protected static class MyErrorHandler implements XMLErrorHandler {
 		protected Logger log = LogUtil.getLogger(this);

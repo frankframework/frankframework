@@ -228,8 +228,14 @@ refresh="showConfigurationStatus.do">
 					<br/>
 					<contentTable width="100%">
 						<tbody>
+							<xtags:variable id="alert" select="//registeredAdapters/@alert"/>
 							<tr>
-								<subHeader colspan="10" align="center"><h7>Adapters</h7></subHeader>
+								<subHeader colspan="10" align="center"><h7>
+									<xtags:choose>
+										<xtags:when test="$alert='true'">Adapters (only alerts)</xtags:when>
+										<xtags:otherwise>Adapters</xtags:otherwise>
+									</xtags:choose>
+								</h7></subHeader>
 							</tr>
 							<tr>
 								<subHeader>Configuration</subHeader>
@@ -243,67 +249,71 @@ refresh="showConfigurationStatus.do">
 								<subHeader>Log</subHeader>
 							</tr>
 							<xtags:forEach select="adapter" sort="concat(@configUC,'|',@nameUC)">
-								<xtags:variable id="adapterState" select="@state"/>
-								<tr ref="adapterRow">
-									<td>
-										<xtags:valueOf select="@config"/>
-									</td>
-									<td>
-										<xtags:valueOf select="@name"/>
-									</td>
-									<td>
-										<%   if (RunStateEnum.STOPPED.isState(adapterState)) { %>
-											<image type="stopped" title="stopped"/>
-										<% } if (RunStateEnum.STARTED.isState(adapterState)) { %>
-											<image type="started" title="started"/>
-										<% } if (RunStateEnum.ERROR.isState(adapterState)) { %>
-											<image type="error" title="error"/>
-										<% } if (RunStateEnum.STOPPING.isState(adapterState)) { %>
-											<image type="stopping" title="stopping"/>
-										<% } if (RunStateEnum.STARTING.isState(adapterState)) { %>
-											<image type="starting" title="starting"/>
-										<%}%>
-									</td>
-									<td>
-										<xtags:valueOf select="@upSince"/>
-										<xtags:if test="@upSinceAge!=''"> (<xtags:valueOf select="@upSinceAge"/>)</xtags:if>
-									</td>
-									<td>
-										<xtags:valueOf select="@lastMessageDate"/>
-										<xtags:if test="@lastMessageDateAge!=''"> (<xtags:valueOf select="@lastMessageDateAge"/>)</xtags:if>
-									</td>
-									<td align="right"><xtags:valueOf select="@messagesInError"/></td>
-									<td align="right"><xtags:valueOf select="@messagesProcessed"/>/<xtags:valueOf select="@messagesInProcess"/></td>
-									<td>
-										<xtags:forEach select="receivers/receiver">
-											<xtags:variable id="receiverState" select="@state"/>
-											<%   if (RunStateEnum.STOPPED.isState(receiverState) ){ %>
+								<xtags:variable id="stateAlert" select="@stateAlert"/>
+								<xtags:variable id="countMessagesAlert" select="number(adapterMessages/@warn)+number(adapterMessages/@error)"/>
+								<% if (Boolean.valueOf(alert)==false || (Boolean.valueOf(alert)==true && (Boolean.valueOf(stateAlert)==true || Integer.valueOf(countMessagesAlert)>0))) { %>
+									<xtags:variable id="adapterState" select="@state"/>
+									<tr ref="adapterRow">
+										<td>
+											<xtags:valueOf select="@config"/>
+										</td>
+										<td>
+											<xtags:valueOf select="@name"/>
+										</td>
+										<td>
+											<%   if (RunStateEnum.STOPPED.isState(adapterState)) { %>
 												<image type="stopped" title="stopped"/>
-											<% } if (RunStateEnum.STARTED.isState(receiverState) ){ %>
+											<% } if (RunStateEnum.STARTED.isState(adapterState)) { %>
 												<image type="started" title="started"/>
-											<% } if (RunStateEnum.ERROR.isState(receiverState) ){ %>
+											<% } if (RunStateEnum.ERROR.isState(adapterState)) { %>
 												<image type="error" title="error"/>
-											<% } if (RunStateEnum.STOPPING.isState(receiverState) ){ %>
+											<% } if (RunStateEnum.STOPPING.isState(adapterState)) { %>
 												<image type="stopping" title="stopping"/>
-											<% } if (RunStateEnum.STARTING.isState(receiverState) ){ %>
+											<% } if (RunStateEnum.STARTING.isState(adapterState)) { %>
 												<image type="starting" title="starting"/>
 											<%}%>
-										</xtags:forEach>
-									</td>
-									<td>
-										<xtags:choose>
-											<xtags:when test="number(adapterMessages/@error)!=0">
-													<image type="delete" title="error"/>
-											</xtags:when>
-											<xtags:when test="number(adapterMessages/@warn)!=0">
-													<image type="error" title="warn"/>
-											</xtags:when>
-											<xtags:otherwise>
-												<image type="check" title="info"/>
-											</xtags:otherwise>
-										</xtags:choose>
-									</td>
-								</tr>
+										</td>
+										<td>
+											<xtags:valueOf select="@upSince"/>
+											<xtags:if test="@upSinceAge!=''"> (<xtags:valueOf select="@upSinceAge"/>)</xtags:if>
+										</td>
+										<td>
+											<xtags:valueOf select="@lastMessageDate"/>
+											<xtags:if test="@lastMessageDateAge!=''"> (<xtags:valueOf select="@lastMessageDateAge"/>)</xtags:if>
+										</td>
+										<td align="right"><xtags:valueOf select="@messagesInError"/></td>
+										<td align="right"><xtags:valueOf select="@messagesProcessed"/>/<xtags:valueOf select="@messagesInProcess"/></td>
+										<td>
+											<xtags:forEach select="receivers/receiver">
+												<xtags:variable id="receiverState" select="@state"/>
+												<%   if (RunStateEnum.STOPPED.isState(receiverState) ){ %>
+													<image type="stopped" title="stopped"/>
+												<% } if (RunStateEnum.STARTED.isState(receiverState) ){ %>
+													<image type="started" title="started"/>
+												<% } if (RunStateEnum.ERROR.isState(receiverState) ){ %>
+													<image type="error" title="error"/>
+												<% } if (RunStateEnum.STOPPING.isState(receiverState) ){ %>
+													<image type="stopping" title="stopping"/>
+												<% } if (RunStateEnum.STARTING.isState(receiverState) ){ %>
+													<image type="starting" title="starting"/>
+												<%}%>
+											</xtags:forEach>
+										</td>
+										<td>
+											<xtags:choose>
+												<xtags:when test="number(adapterMessages/@error)!=0">
+														<image type="delete" title="error"/>
+												</xtags:when>
+												<xtags:when test="number(adapterMessages/@warn)!=0">
+														<image type="error" title="warn"/>
+												</xtags:when>
+												<xtags:otherwise>
+													<image type="check" title="info"/>
+												</xtags:otherwise>
+											</xtags:choose>
+										</td>
+									</tr>
+								<%}%>
 							</xtags:forEach>
 						</tbody>
 					</contentTable>

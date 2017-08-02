@@ -15,11 +15,11 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -36,13 +36,13 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.MsgLogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
 import org.springframework.beans.factory.NamedBean;
@@ -107,7 +107,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private String targetDesignDocument;
 	private boolean active=true;
 
-	private Vector<IReceiver> receivers = new Vector<IReceiver>();
+	private ArrayList<IReceiver> receivers = new ArrayList<IReceiver>();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
 
@@ -157,7 +157,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public void configure() throws ConfigurationException {
 		configurationSucceeded = false;
 		log.debug("configuring adapter [" + getName() + "]");
-		MessageKeeper messageKeeper = getMessageKeeper();
+		messageKeeper = getMessageKeeper();
 		statsMessageProcessingDuration = new StatisticsKeeper(getName());
 		if (pipeline == null) {
 			String msg = "No pipeline configured for adapter [" + getName() + "]";
@@ -203,11 +203,11 @@ public class Adapter implements IAdapter, NamedBean {
 	 * sends a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void error(boolean critical, String msg, Throwable t) {
-		log.error("Adapter [" + getName() + "] "+msg, t);
+		log.error("Adapter [" + getName() + "] " + msg, t);
 		if (!(t instanceof IbisException)) {
-			msg+=" (" + t.getClass().getName()+")";
+			msg += " (" + t.getClass().getName() + ")";
 		}
-		getMessageKeeper().add("ERROR: " + msg+": "+t.getMessage(), MessageKeeperMessage.ERROR_LEVEL);
+		getMessageKeeper().add("ERROR: " + msg + ": " + t.getMessage(), MessageKeeperMessage.ERROR_LEVEL);
 	}
 
 
@@ -263,11 +263,10 @@ public class Adapter implements IAdapter, NamedBean {
 				originalMessage,
 				messageID,
 				receivedTime);
-			//if (isRequestReplyLogging()) {
 			String logMsg = "Adapter [" + getName() + "] messageId [" + messageID + "] formatted errormessage, result [" + formattedErrorMessage + "]";
 			if (isMsgLogTerseEnabled()) {
 				if (isMsgLogHidden()) {
-					msgLog.info("Adapter [" + getName() + "] messageId [" + messageID + "] formatted errormessage, result [LENGTH=" + formattedErrorMessage.length() + "]");
+					msgLog.info("Adapter [" + getName() + "] messageId [" + messageID + "] formatted errormessage, result [SIZE=" + getFileSizeAsBytes(formattedErrorMessage) + "]");
 				} else {
 					msgLog.info(logMsg);
 				}
@@ -291,7 +290,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return getLastMessageDate(DateUtils.FORMAT_FULL_GENERIC);
 	}
 	public String getLastMessageDate(String dateFormat) {
-		String result = "";
+		String result;
 		if (lastMessageDate != 0)
 			result = DateUtils.format(new Date(lastMessageDate), dateFormat);
 		else
@@ -348,9 +347,9 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		hski.closeGroup(hourData);
 
-		boolean showDetails=(action==HasStatistics.STATISTICS_ACTION_FULL || 
-							 action==HasStatistics.STATISTICS_ACTION_MARK_FULL ||
-							 action==HasStatistics.STATISTICS_ACTION_RESET);
+		boolean showDetails = action == HasStatistics.STATISTICS_ACTION_FULL
+				|| action == HasStatistics.STATISTICS_ACTION_MARK_FULL
+				|| action == HasStatistics.STATISTICS_ACTION_RESET;
 		if (showDetails) {
 			Object recsData=hski.openGroup(adapterData,null,"receivers");
 			Iterator<IReceiver> recIt = getReceiverIterator();
@@ -375,7 +374,6 @@ public class Adapter implements IAdapter, NamedBean {
 	
 	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		Object adapterData=hski.openGroup(data,getName(),"adapter");
-//		hski.handleScalar(adapterData,"name", getName());
 		hski.handleScalar(adapterData,"upSince", getStatsUpSinceDate());
 		hski.handleScalar(adapterData,"lastMessageDate", getLastMessageDateDate());
 
@@ -502,7 +500,7 @@ public class Adapter implements IAdapter, NamedBean {
 			String logMsg = "Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.getResult() + "] from PipeLine";
 			if (isMsgLogTerseEnabled()) {
 				if (isMsgLogHidden()) {
-					msgLog.info("Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [LENGTH=" + result.getResult().length() + "] from PipeLine");
+					msgLog.info("Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [SIZE=" + getFileSizeAsBytes(result.getResult()) + "] from PipeLine");
 				} else {
 					msgLog.info(logMsg);
 				}
@@ -538,7 +536,7 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		
 		//if (isRequestReplyLogging()) {
-		String additionalLogging = "";
+		StringBuilder additionalLogging = new StringBuilder();
 		
 		String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
 		if(xPathLogKeys != null && xPathLogKeys != "") {
@@ -546,14 +544,16 @@ public class Adapter implements IAdapter, NamedBean {
 			while (tokenizer.hasMoreTokens()) {
 				String logName = tokenizer.nextToken();
 				String xPathResult = (String) pipeLineSession.get(logName);
-				additionalLogging = additionalLogging + " and " + logName + " [" + xPathResult + "]";
+				additionalLogging.append(" and ");
+				additionalLogging.append(logName);
+				additionalLogging.append(" [" + xPathResult + "]");
 			}
 		}
 		
 		String logMsg = "Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]" + additionalLogging;
 		if (isMsgLogTerseEnabled()) {
 			if (isMsgLogHidden()) {
-				String logMessage = "Adapter [" + name + "] received message [LENGTH=" + message.length() + "] with messageId [" + messageId + "]" + additionalLogging;
+				String logMessage = "Adapter [" + name + "] received message [SIZE=" + getFileSizeAsBytes(message) + "] with messageId [" + messageId + "]" + additionalLogging;
 				msgLog.info(logMessage);
 			} else {
 				msgLog.info(logMsg);
@@ -573,12 +573,11 @@ public class Adapter implements IAdapter, NamedBean {
 				message = "";
 			}
 			result = pipeline.process(messageId, message,pipeLineSession);
-			//if (isRequestReplyLogging()) {
-			long duration = System.currentTimeMillis() - startTime;
-			logMsg = "Adapter [" + getName() + "] messageId [" + messageId + "] duration [" + duration + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine";
+			String durationString = Misc.getAge(startTime);
+			logMsg = "Adapter [" + getName() + "] messageId [" + messageId + "] duration [" + durationString + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine";
 			if (isMsgLogTerseEnabled()) {
 				if (isMsgLogHidden()) {
-					msgLog.info("Adapter [" + getName() + "] messageId [" + messageId + "] duration [" + duration + "] got exit-state [" + result.getState() + "] and result [LENGTH=" + result.toString().length() + "] from PipeLine");
+					msgLog.info("Adapter [" + getName() + "] messageId [" + messageId + "] duration [" + durationString + "] got exit-state [" + result.getState() + "] and result [SIZE=" + getFileSizeAsBytes(result.toString()) + "] from PipeLine");
 				} else {
 					msgLog.info(logMsg);
 				}
@@ -717,6 +716,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	public void startRunning() {
 		Runnable runnable = new Runnable() {
+			@Override
 			public void run() {
 				Thread.currentThread().setName("starting Adapter "+getName());
 				try {
@@ -798,6 +798,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	public void stopRunning() {
 		Runnable runnable = new Runnable() {
+			@Override
 			public void run() {
 				Thread.currentThread().setName("stopping Adapter " +getName());
 				try {
@@ -867,11 +868,11 @@ public class Adapter implements IAdapter, NamedBean {
 		configuration.addStopAdapterThread(runnable);
 		taskExecutor.execute(runnable);
 	}
-
+	
+	@Override
 	public String toString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("[name=" + name + "]");
-		//sb.append("[version=" + version + "]");
 		sb.append("[targetDesignDocument=" + targetDesignDocument + "]");
 		Iterator<IReceiver> it = receivers.iterator();
 		sb.append("[receivers=");
@@ -892,6 +893,10 @@ public class Adapter implements IAdapter, NamedBean {
 		return sb.toString();
 	}
 
+	private String getFileSizeAsBytes(String string) {
+		return Misc.toFileSize(string.getBytes().length, false, true);
+	}
+	
 	public String getAdapterConfigurationAsString()
 			throws ConfigurationException {
 		String loadedConfig = getConfiguration().getLoadedConfiguration();
@@ -925,7 +930,6 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 	
 	public void setRequestReplyLogging(boolean requestReplyLogging) {
-		//this.requestReplyLogging = requestReplyLogging;
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (requestReplyLogging) {
 			String msg = "Adapter [" + getName() + "] implementing setting of requestReplyLogging=true as msgLogLevel=Terse";
@@ -937,11 +941,6 @@ public class Adapter implements IAdapter, NamedBean {
 			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_NONE);
 		}
 	}
-/*
-	public boolean isRequestReplyLogging() {
-		return requestReplyLogging;
-	}
-*/
 
 	public void setActive(boolean b) {
 		active = b;

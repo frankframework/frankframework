@@ -49,9 +49,9 @@ Eclipse
   on) also clone:
   URI: https://bitbucket.org/ibissource/mvn-repo-proprietary.git, User: ...,
   Password: ..., Next, Next, Finish. 
-- Right click iaf, Import projects..., Next, unless you cloned
-  mvn-repo-proprietary deselect: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap and
-  iaf-tibco, Finish.
+- Right click iaf, Import projects..., Next, **deselect**: iaf-coolgen, iaf-ibm,
+  iaf-ifsa, iaf-sap and iaf-tibco (unless you cloned mvn-repo-proprietary),
+  Finish.
 - Window, Open Perspective, Other..., Java EE.
 - Servers, No servers are available. Click this link to create a new server...,
   Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a
@@ -77,6 +77,10 @@ In some cases you might want/need to:
   the IAF project), Refresh, Refresh resources upon completion,
   Specific resources, Specify Resources..., iaf (Using "The project containing
   the selected resource" doesn't seem to work), Finish, Run.
+- The local Maven repository might contain corrupt jar files which for example
+  will result in java.lang.NoClassDefFoundError:
+  org/aspectj/lang/ProceedingJoinPoint when starting Tomcat. Remove the jar file
+  from the repository to make Maven download the file again.
 
 
 

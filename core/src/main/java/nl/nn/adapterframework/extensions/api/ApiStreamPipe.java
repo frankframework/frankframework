@@ -15,6 +15,9 @@
  */
 package nl.nn.adapterframework.extensions.api;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -32,7 +35,13 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Extension to StreamPipe for API Management.
- *
+ * <p>
+ * In {@link nl.nn.adapterframework.pipes.StreamPipe} for parameter <code>httpRequest</code> and attribute 
+ * <code>extractFirstStringPart=true</code> the first part is returned to the pipeline.
+ * In this class the first part is checked. If it contains a 'MessageID' with namespace "http://www.w3.org/2005/08/addressing",
+ * then the message to return to the pipeline is retrieved from the MessageStore. 
+ * </p>
+ * 
  * @author Peter Leeuwenburgh
  */
 
@@ -146,21 +155,52 @@ public class ApiStreamPipe extends StreamPipe {
 				+ JdbcTransactionalStorage.TYPE_MESSAGESTORAGE
 				+ "' AND SLOTID='" + slotId + "' AND MESSAGEID='" + messageId
 				+ "'";
-		return JdbcUtil.executeStringQuery(dummyQuerySender.getConnection(),
-				query);
+		Connection conn = dummyQuerySender.getConnection();
+		try {
+			return JdbcUtil.executeStringQuery(conn, query);
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					log.warn("Could not close connection", e);
+				}
+			}
+		}
 	}
 
 	private String selectMessage(String messageKey) throws JdbcException {
 		String query = "SELECT MESSAGE FROM IBISSTORE WHERE MESSAGEKEY='"
 				+ messageKey + "'";
-		return JdbcUtil.executeBlobQuery(dummyQuerySender.getConnection(),
-				query);
+		Connection conn = dummyQuerySender.getConnection();
+		try {
+			return JdbcUtil.executeBlobQuery(conn, query);
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					log.warn("Could not close connection", e);
+				}
+			}
+		}
 	}
 
 	private void deleteMessage(String messageKey) throws JdbcException {
 		String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY='" + messageKey
 				+ "'";
-		JdbcUtil.executeStatement(dummyQuerySender.getConnection(), query);
+		Connection conn = dummyQuerySender.getConnection();
+		try {
+			JdbcUtil.executeStatement(conn, query);
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					log.warn("Could not close connection", e);
+				}
+			}
+		}
 	}
 
 	public String getJmsRealm() {

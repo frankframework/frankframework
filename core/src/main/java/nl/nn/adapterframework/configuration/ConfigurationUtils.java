@@ -16,11 +16,13 @@
 package nl.nn.adapterframework.configuration;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -32,11 +34,14 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.webcontrol.api.ApiException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -108,15 +113,13 @@ public class ConfigurationUtils {
 		return AppConstants.getInstance().getBoolean(CONFIGURATION_STUB4TESTTOOL_KEY, false);
 	}
 
-	public static byte[] getConfigFromDatabase(IbisContext ibisContext, String name) throws ConfigurationException {
+	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name) throws ConfigurationException {
 		return getConfigFromDatabase(ibisContext, name, null);
 	}
 
-	public static byte[] getConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm)
-			throws ConfigurationException {
+	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm) throws ConfigurationException {
 		if (StringUtils.isEmpty(jmsRealm)) {
-			jmsRealm = JmsRealmFactory.getInstance()
-					.getFirstDatasourceJmsRealm();
+			jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 			if (StringUtils.isEmpty(jmsRealm)) {
 				return null;
 			}
@@ -124,19 +127,28 @@ public class ConfigurationUtils {
 
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		qs.setJmsRealm(jmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {
 			qs.open();
 			conn = qs.getConnection();
-			String query = "SELECT CONFIG FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG= 'TRUE'";
+			String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG='TRUE'";
 			PreparedStatement stmt = conn.prepareStatement(query);
 			stmt.setString(1, name);
 			rs = stmt.executeQuery();
 			if (rs.next()) {
-				return rs.getBytes(1);
+				Map<String, Object> configuration = new HashMap<String, Object>(5);
+				byte[] jarBytes = rs.getBytes(1);
+				if(jarBytes == null) return null;
+
+				configuration.put("CONFIG", jarBytes);
+				configuration.put("VERSION", rs.getString(2));
+				configuration.put("FILENAME", rs.getString(3));
+				configuration.put("CREATED", rs.getString(4));
+				configuration.put("USER", rs.getString(5));
+				return configuration;
 			}
 		} catch (SenderException e) {
 			throw new ConfigurationException(e);
@@ -162,5 +174,73 @@ public class ConfigurationUtils {
 			}
 		}
 		return null;
+	}
+
+	public static boolean addConfigToDatabase(IbisContext ibisContext, String jmsRealm, boolean activate_config, boolean automatic_reload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
+		if (StringUtils.isEmpty(jmsRealm)) {
+			jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+			if (StringUtils.isEmpty(jmsRealm)) {
+				return false;
+			}
+		}
+
+		Connection conn = null;
+		ResultSet rs = null;
+		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		qs.setJmsRealm(jmsRealm);
+		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.configure();
+		try {
+			qs.open();
+			conn = qs.getConnection();
+			int updated = 0;
+
+			if (activate_config) {
+				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG = 'FALSE' WHERE NAME=?");
+				PreparedStatement stmt = conn.prepareStatement(query);
+				stmt.setString(1, name);
+				updated = stmt.executeUpdate();
+			}
+			if (updated > 0) {
+				String query = ("DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION = ?");
+				PreparedStatement stmt = conn.prepareStatement(query);
+				stmt.setString(1, name);
+				stmt.setString(2, version);
+				stmt.execute();
+			}
+
+			String query = ("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)");
+			PreparedStatement stmt = conn.prepareStatement(query);
+			stmt.setString(1, name);
+			stmt.setString(2, version);
+			stmt.setString(3, fileName);
+			stmt.setBinaryStream(4, file);
+			stmt.setString(5, ruser);
+			stmt.setBoolean(6, activate_config);
+			stmt.setBoolean(7, automatic_reload);
+			return stmt.execute();
+		} catch (SenderException e) {
+			throw new ConfigurationException(e);
+		} catch (JdbcException e) {
+			throw new ConfigurationException(e);
+		} catch (SQLException e) {
+			throw new ConfigurationException(e);
+		} finally {
+			qs.close();
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					log.warn("Could not close resultset", e);
+				}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					log.warn("Could not close connection", e);
+				}
+			}
+		}
 	}
 }

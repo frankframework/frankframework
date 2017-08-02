@@ -113,10 +113,10 @@ public class XmlUtils {
 	public static final int XSLT_BUFFERSIZE_DEFAULT=4096;
 	public static final String INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY = "query.includeFieldDefinition.default";
 
-	public final static String OPEN_FROM_FILE = "file";
-	public final static String OPEN_FROM_URL = "url";
-	public final static String OPEN_FROM_RESOURCE = "resource";
-	public final static String OPEN_FROM_XML = "xml";
+	public static final String OPEN_FROM_FILE = "file";
+	public static final String OPEN_FROM_URL = "url";
+	public static final String OPEN_FROM_RESOURCE = "resource";
+	public static final String OPEN_FROM_XML = "xml";
 
 	private static Boolean namespaceAwareByDefault = null;
 	private static Boolean includeFieldDefinitionByDefault = null;
@@ -126,7 +126,7 @@ public class XmlUtils {
 	public static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
-	public static String IDENTITY_TRANSFORM =
+	public static final String IDENTITY_TRANSFORM =
 		"<?xml version=\"1.0\"?><xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
 			+ "<xsl:template match=\"@*|*|processing-instruction()|comment()\">"
 			+ "<xsl:copy><xsl:apply-templates select=\"*|@*|text()|processing-instruction()|comment()\" />"
@@ -230,24 +230,27 @@ public class XmlUtils {
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
 			+ "<xsl:template match=\"/*\">"
 			+ "<xsl:element name=\"{local-name()}\">"
-			+ "<xsl:apply-templates select=\"@* | node()\"/>"
+			+ "<xsl:apply-templates select=\"@* | comment() | node()\"/>"
 			+ "</xsl:element>"
 			+ "</xsl:template>"
 			+ "<xsl:template match=\"*\">"
 			+ "<xsl:choose>"
 			+ "<xsl:when test=\"namespace-uri() = namespace-uri(/*)\">"
 			+ "<xsl:element name=\"{local-name()}\">"
-			+ "<xsl:apply-templates select=\"@* | node()\"/>"
+			+ "<xsl:apply-templates select=\"@* | comment() | node()\"/>"
 			+ "</xsl:element>"
 			+ "</xsl:when>"
 			+ "<xsl:otherwise>"
 			+ "<xsl:element namespace=\"{namespace-uri()}\" name=\"{local-name()}\">"
-			+ "<xsl:apply-templates select=\"@* | node()\"/>"
+			+ "<xsl:apply-templates select=\"@* | comment() | node()\"/>"
 			+ "</xsl:element>"
 			+ "</xsl:otherwise>"
 			+ "</xsl:choose>"
 			+ "</xsl:template>"
 			+ "<xsl:template match=\"@*\">"
+			+ "<xsl:copy-of select=\".\"/>"
+			+ "</xsl:template>"
+			+ "<xsl:template match=\"comment()\">"
 			+ "<xsl:copy-of select=\".\"/>"
 			+ "</xsl:template>"
 			+ "</xsl:stylesheet>";
@@ -366,25 +369,22 @@ public class XmlUtils {
 		return buffersize.intValue();
 	}
 
-	static public void parseXml(ContentHandler handler, String source) throws IOException, SAXException {
+	public static void parseXml(ContentHandler handler, String source) throws IOException, SAXException {
 		parseXml(handler,new Variant(source).asXmlInputSource());
 	}
 
-	static public void parseXml(ContentHandler handler, InputSource source) throws IOException, SAXException {
+	public static void parseXml(ContentHandler handler, InputSource source) throws IOException, SAXException {
 		XMLReader parser;
 		parser = getParser();
 		parser.setContentHandler(handler);
 		parser.parse(source);
 	}
 
-	static private XMLReader getParser() throws SAXException {
-		XMLReader parser = null;
-		parser = XMLReaderFactory.createXMLReader();
-		return parser;
+	private static XMLReader getParser() throws SAXException {
+		return XMLReaderFactory.createXMLReader();
 	}
 
-
-	static public Document buildDomDocument(File file)
+	public static Document buildDomDocument(File file)
 		throws DomBuilderException {
 		Reader in;
 		Document output;
@@ -403,16 +403,16 @@ public class XmlUtils {
 		return output;
 	}
 
-	static public Document buildDomDocument(Reader in) throws DomBuilderException {
+	public static Document buildDomDocument(Reader in) throws DomBuilderException {
 		return buildDomDocument(in,isNamespaceAwareByDefault());
 	}
 
-	static public Document buildDomDocument(Reader in, boolean namespaceAware)
+	public static Document buildDomDocument(Reader in, boolean namespaceAware)
 		throws DomBuilderException {
 			return buildDomDocument(in, namespaceAware, false, false);
 		}
 
-	static public Document buildDomDocument(Reader in, boolean namespaceAware,
+	public static Document buildDomDocument(Reader in, boolean namespaceAware,
 			boolean xslt2, boolean resolveExternalEntities)
 		throws DomBuilderException {
 		Document document;
@@ -448,7 +448,7 @@ public class XmlUtils {
 	 */
 	public static Document buildDomDocument(String s) throws DomBuilderException {
 		StringReader sr = new StringReader(s);
-		return (buildDomDocument(sr));
+		return buildDomDocument(sr);
 	}
 
 	public static Document buildDomDocument(String s, boolean namespaceAware) throws DomBuilderException {
@@ -476,7 +476,7 @@ public class XmlUtils {
 	 * @return Document
 	 * @throws DomBuilderException
 	 */
-	static public Document buildDomDocument(URL url)
+	public static Document buildDomDocument(URL url)
 		throws DomBuilderException {
 		Reader in;
 		Document output;
@@ -523,8 +523,7 @@ public class XmlUtils {
 
 		return buildDomDocument(s).getDocumentElement();
 	}
-
-
+	
 	public static String skipXmlDeclaration(String xmlString) {
 		if (xmlString != null && xmlString.startsWith("<?xml")) {
 			int endPos = xmlString.indexOf("?>")+2;

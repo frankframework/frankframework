@@ -60,8 +60,9 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setDirectory(String) directory}</td>       <td>directory to extract the archive to</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDeleteOnExit(boolean) deleteOnExit}</td><td>when true, file is automatially deleted upon normal JVM termination</td><td>true</td></tr>
+ * <tr><td>{@link #setDirectory(String) directory}</td> <td>directory to extract the archive to</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDirectorySessionKey(String) directorySessionKey}</td> <td>SessionKey with a directory value to extract the archive to</td><td>&nbsp;</td></tr> 
+ * <tr><td>{@link #setDeleteOnExit(boolean) deleteOnExit}</td><td>when true, file is automatically deleted upon normal JVM termination</td><td>true</td></tr>
  * <tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>if set <code>false</code>, only a small summary is returned</td><td>true</td></tr>
  * <tr><td>{@link #setKeepOriginalFileName(boolean) keepOriginalFileName}</td><td>if set <code>false</code>, a suffix is added to the original filename to be sure it is unique</td><td>false</td></tr>
  * <tr><td>{@link #setCreateSubdirectories(boolean) createSubdirectories}</td><td>if set <code>true</code>, subdirectories in the zip file are supported</td><td>false</td></tr>
@@ -80,28 +81,34 @@ import org.apache.commons.lang.StringUtils;
  */
 public class UnzipPipe extends FixedForwardPipe {
 	
-    private String directory;
-    private boolean deleteOnExit=true;
+	private String directory;
+	private String directorySessionKey;
+	private boolean deleteOnExit=true;
 	private boolean collectResults=true;
 	private boolean keepOriginalFileName=false;
 	private boolean createSubdirectories=false;
-    
+
 	private File dir; // File representation of directory
-    
-    public void configure() throws ConfigurationException {
-    	super.configure();
-    	if (StringUtils.isEmpty(getDirectory())) {
-    		throw new ConfigurationException(getLogPrefix(null)+"directory must be specified");
-    	}
-    	dir= new File(getDirectory());
-    	if (!dir.exists()) {
-			throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] does not exist");
-    	}
-		if (!dir.isDirectory()) {
-			throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] is not a directory");
+
+
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (StringUtils.isEmpty(getDirectory())) {
+			if (StringUtils.isEmpty(getDirectorySessionKey())) {
+				throw new ConfigurationException(getLogPrefix(null)+"directory or directorySessionKey must be specified");
+			}
 		}
-    }
-    
+		else {
+			dir = new File(getDirectory());
+			if (!dir.exists()) {
+				throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] does not exist");
+			}
+			if (!dir.isDirectory()) {
+				throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] is not a directory");
+			}
+		}
+	}
+
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		InputStream in;
 		if (input instanceof InputStream) {
@@ -114,6 +121,21 @@ public class UnzipPipe extends FixedForwardPipe {
 				throw new PipeRunException(this, "could not find file ["+filename+"]",e);
 			}
 		}
+
+		if (StringUtils.isEmpty(getDirectory())) {
+			String directory = (String) session.get(getDirectorySessionKey());
+			if(StringUtils.isEmpty(directory))
+				throw new PipeRunException(this, "directorySessionKey is empty");
+
+			dir = new File(directory);
+			if (!dir.exists()) {
+				throw new PipeRunException(this, "directorySessionKey ["+directory+"] does not exist");
+			}
+			if (!dir.isDirectory()) {
+				throw new PipeRunException(this, "directorySessionKey ["+directory+"] is not a directory");
+			}
+		}
+
 		String entryResults = "";
 		int count = 0;
 		ZipInputStream zis = new ZipInputStream(new BufferedInputStream(in));
@@ -199,7 +221,14 @@ public class UnzipPipe extends FixedForwardPipe {
 	public String getDirectory() {
 		return directory;
 	}
-
+	
+	public void setDirectorySessionKey(String directorySessionKey) {
+		this.directorySessionKey = directorySessionKey;
+	}
+	public String getDirectorySessionKey() {
+		return directorySessionKey;
+	}
+	
 	public void setDeleteOnExit(boolean b) {
 		deleteOnExit = b;
 	}

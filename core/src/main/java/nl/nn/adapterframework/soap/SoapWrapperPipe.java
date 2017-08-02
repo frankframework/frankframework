@@ -18,6 +18,7 @@ package nl.nn.adapterframework.soap;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.xml.soap.SOAPException;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
@@ -78,7 +79,7 @@ import org.apache.commons.lang.StringUtils;
  * @author Peter Leeuwenburgh
  */
 public class SoapWrapperPipe extends FixedForwardPipe {
-	protected final static String DEFAULT_SOAP_HEADER_SESSION_KEY = "soapHeader";
+	protected static final String DEFAULT_SOAP_HEADER_SESSION_KEY = "soapHeader";
 
 	private String direction = "wrap";
 	private String soapHeaderSessionKey = null;
@@ -261,13 +262,13 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 					result = rootTp.transform(result, null, true);
 				}
 			}
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			throw new PipeRunException(this, getLogPrefix(session) + " Unexpected exception during (un)wrapping ", t);
 		}
 		return new PipeRunResult(getForward(), result);
 	}
 
-	protected String unwrapMessage(String messageText) throws DomBuilderException, TransformerException, IOException {
+	protected String unwrapMessage(String messageText) throws DomBuilderException, TransformerException, IOException, SOAPException {
 		return soapWrapper.getBody(messageText);
 	}
 
