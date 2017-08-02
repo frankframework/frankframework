@@ -156,7 +156,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 				eTag = response.hashCode();
 		}
 
-		if(getGenerateEtag() && eTag != 0) { //The etag can be a negative integer...
+		if(!requestContext.containsKey("etag") && getGenerateEtag() && eTag != 0) { //The etag can be a negative integer...
 			requestContext.put("etag", RestListenerUtils.formatEtag(getRestPath(), getUriPattern(), eTag));
 		}
 
