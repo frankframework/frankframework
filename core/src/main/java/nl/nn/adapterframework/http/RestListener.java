@@ -20,8 +20,14 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang.StringUtils;
 
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
+import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -30,6 +36,7 @@ import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.JsonPipe;
+import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -42,7 +49,7 @@ import nl.nn.adapterframework.pipes.JsonPipe;
  * <tr><td>{@link #setUriPattern(String) uriPattern}</td><td>uri pattern to match. </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMethod(String) method}</td><td>method (e.g. GET or POST) to match</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setEtagSessionKey(String) etagSessionKey}</td><td>key of Session variable to store ETAG</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setContentTypeSessionKey(String) contentTypeSessionKey}</td><td>key of Session variable to requested content type</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setContentTypeSessionKey(String) contentTypeSessionKey}</td><td>key of Session variable to requested content type, overwrites {@link #setProduces(String) produces}</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setApplicationFaultsAsExceptions(boolean) applicationFaultsAsExceptions}</td><td>Controls the behavior when an application-fault occurs: 
  *   <table>
  *     <tr><td><code>true</code></td><td>errors are returned as a HTTP internal server error (500)</td></tr>
@@ -54,7 +61,7 @@ import nl.nn.adapterframework.pipes.JsonPipe;
  * <tr><td>{@link #setRetrieveMultipart(boolean) retrieveMultipart}</td><td>indicates whether the parts of a multipart entity should be retrieved and put in session keys. This can only be done once!</td><td>true</td></tr>
 
  * <tr><td>{@link #setConsumes(String) consumes}</td><td>mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher RestServiceDispatcher} receives as input</td><td>XML</td></tr>
- * <tr><td>{@link #setProduces(String) produces}</td><td>mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher RestServiceDispatcher} sends as output</td><td>XML</td></tr>
+ * <tr><td>{@link #setProduces(String) produces}</td><td>mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher RestServiceDispatcher} sends as output, if set to json the ibis will automatically try to convert the xml message</td><td>XML</td></tr>
  * </table>
  * </p>
  * <p>
@@ -78,9 +85,11 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	private boolean writeSecLogMessage = false;
 	private boolean retrieveMultipart = true;
 
-	private String consumes = "XML";
 	private String produces = "XML";
 	private List<String> mediaTypes = Arrays.asList("XML", "JSON", "TEXT");
+
+	private boolean validateEtag = false;
+	private boolean generateEtag = false;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -94,7 +103,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 				setView(false);
 			}
 		}
-		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey());
+		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), getValidateEtag());
 	}
 
 	@Override
@@ -122,6 +131,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 				throw new ListenerException("Failed to transform JSON to XML");
 			}
 		}
+		int eTag = 0;
 
 		//Check if contentType is not overwritten which disabled auto-converting and mediatype headers
 		if(contentType == null || StringUtils.isEmpty(contentType) || contentType.equalsIgnoreCase("*/*")) {
@@ -133,6 +143,8 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 				requestContext.put("contentType", "text/plain");
 
 			response = super.processRequest(correlationId, message, requestContext);
+			if(response != null && !response.isEmpty())
+				eTag = response.hashCode();
 
 			if(getProduces().equalsIgnoreCase("JSON")) {
 				try {
@@ -144,6 +156,12 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		}
 		else {
 			response = super.processRequest(correlationId, message, requestContext);
+			if(response != null && !response.isEmpty())
+				eTag = response.hashCode();
+		}
+
+		if(getGenerateEtag() && eTag != 0) { //The etag can be a negative integer...
+			requestContext.put("etag", RestListenerUtils.formatEtag(getRestPath(), getUriPattern(), eTag));
 		}
 
 		return response;
@@ -272,5 +290,21 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	public String getProduces() {
 		return produces;
+	}
+
+	public void setValidateEtag(boolean b) {
+		this.validateEtag = b;
+	}
+
+	public boolean getValidateEtag() {
+		return validateEtag;
+	}
+
+	public void setGenerateEtag(boolean b) {
+		this.generateEtag = b;
+	}
+
+	public boolean getGenerateEtag() {
+		return generateEtag;
 	}
 }

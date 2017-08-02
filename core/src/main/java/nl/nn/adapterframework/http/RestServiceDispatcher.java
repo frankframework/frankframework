@@ -62,15 +62,19 @@ public class RestServiceDispatcher  {
 	private final String KEY_ETAG_KEY="etagKey";
 	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
 
-	private boolean secLogEnabled = AppConstants.getInstance().getBoolean("sec.log.enabled", false);
+	private AppConstants appConstants = AppConstants.getInstance();
+	private boolean secLogEnabled = appConstants.getBoolean("sec.log.enabled", false);
 
 	private SortedMap patternClients=new TreeMap(new RestUriComparator());
-	
-	private static RestServiceDispatcher self=null;
-	
+
+	private static RestServiceDispatcher self = null;
+	private static RestEtagCache cache = null;
+
 	public static synchronized RestServiceDispatcher getInstance(){
 		 if( self == null ) {
-            self = new RestServiceDispatcher();
+			//TODO: if(appConstants.getString("etag.cache")
+			cache = new RestEtagCache();
+			self = new RestServiceDispatcher();
         }
         return self;
 	}
@@ -117,7 +121,7 @@ public class RestServiceDispatcher  {
 	 * @param request the <code>String</code> with the request/input
 	 * @return String with the result of processing the <code>request</code> throught the <code>serviceName</code>
      */
-	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String etag, String contentType, String request, Map context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
+	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, Map context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
 		String method = httpServletRequest.getMethod();
 		if (log.isTraceEnabled()) log.trace("searching listener for uri ["+uri+"] method ["+method+"]");
 		
@@ -137,7 +141,19 @@ public class RestServiceDispatcher  {
 		context.put("restPath", restPath);
 		context.put("uri", uri);
 		context.put("method", method);
-		context.put("etag", etag);
+
+		String etag = null;
+		String ifNoneMatch = httpServletRequest.getHeader("If-None-Match");
+		if(ifNoneMatch != null && !ifNoneMatch.isEmpty()) {
+			context.put("if-none-match", ifNoneMatch);
+			etag = ifNoneMatch;
+		}
+		String ifMatch = httpServletRequest.getHeader("If-Match");
+		if(ifMatch != null && !ifMatch.isEmpty()) {
+			context.put("if-match", ifMatch);
+			etag = ifMatch;
+		}
+
 		context.put("contentType", contentType);
 		ServiceClient listener=(ServiceClient)methodConfig.get(KEY_LISTENER);
 		String etagKey=(String)methodConfig.get(KEY_ETAG_KEY);
@@ -226,11 +242,40 @@ public class RestServiceDispatcher  {
 			if (servletContext!=null) context.put("restListenerServletContext", servletContext);
 
 			if (secLogEnabled && writeToSecLog) {
-	        		secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
-	        	}
-			
+				secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
+			}
+
+			//Caching: check for etags
+			if(uri.startsWith("/")) uri = uri.substring(1);
+			if(uri.indexOf("?") > -1) {
+				uri = uri.split("?")[0];
+			}
+			String etagCacheKey = restPath+"_"+uri;
+			if(cache != null && cache.containsKey(etagCacheKey)) {
+				String cachedEtag = (String) cache.get(etagCacheKey);
+
+				if(ifNoneMatch != null && ifNoneMatch.equalsIgnoreCase(cachedEtag) && method.equalsIgnoreCase("GET")) {
+					//Exit with 304
+					context.put("exitcode", 304);
+					if(log.isDebugEnabled()) log.trace("aborting request with status 304, matched if-none-match ["+ifNoneMatch+"]");
+					return null;
+				}
+				if(ifMatch != null && !ifMatch.equalsIgnoreCase(cachedEtag) && !method.equalsIgnoreCase("GET")) {
+					//Exit with 412
+					context.put("exitcode", 412);
+					if(log.isDebugEnabled()) log.trace("aborting request with status 412, matched if-match ["+ifMatch+"] method ["+method+"]");
+					return null;
+				}
+			}
+
 			String result=listener.processRequest(null, request, context);
-			if (result==null && !context.containsKey("exitcode")) {
+
+			//Caching: pipeline has been processed, save etag
+			if(result != null && cache != null && context.containsKey("etag")) { //In case the eTag has manually been set and the pipeline exited in error state...
+				cache.put(etagCacheKey, context.get("etag"));
+			}
+
+			if (result == null && !context.containsKey("exitcode")) {
 				log.warn("result is null!");
 			}
 			return result;
@@ -242,7 +287,7 @@ public class RestServiceDispatcher  {
 	}
 
 	public void registerServiceClient(ServiceClient listener, String uriPattern,
-			String method, String etagSessionKey, String contentTypeSessionKey) throws ConfigurationException {
+			String method, String etagSessionKey, String contentTypeSessionKey, boolean validateEtag) throws ConfigurationException {
 		uriPattern = unifyUriPattern(uriPattern);
 		if (StringUtils.isEmpty(method)) {
 			method=WILDCARD;
@@ -259,6 +304,7 @@ public class RestServiceDispatcher  {
 		listenerConfig = new HashMap();
 		patternEntry.put(method,listenerConfig);
 		listenerConfig.put(KEY_LISTENER, listener);
+		listenerConfig.put("validateEtag", validateEtag);
 		if (StringUtils.isNotEmpty(etagSessionKey)) listenerConfig.put(KEY_ETAG_KEY, etagSessionKey);
 		if (StringUtils.isNotEmpty(contentTypeSessionKey)) listenerConfig.put(KEY_CONTENT_TYPE_KEY, contentTypeSessionKey);
 	}
@@ -281,5 +327,9 @@ public class RestServiceDispatcher  {
 			}
 		}
 		return uriPattern;
+	}
+
+	public RestEtagCache getCache() {
+		return cache;
 	}
 }

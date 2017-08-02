@@ -86,11 +86,12 @@ public class RestListenerServlet extends HttpServlet {
 				}
 			}
 		}
-		
-		String etag=request.getHeader("etag");
+
+		String ifNoneMatch=request.getHeader("If-None-Match");
+		String ifMatch=request.getHeader("If-Match");
 		String contentType=request.getHeader("accept");
 
-		if (log.isTraceEnabled()) log.trace("path ["+path+"] etag ["+etag+"] contentType ["+contentType+"]");
+		if (log.isTraceEnabled()) log.trace("path ["+path+"] If-Match ["+ifMatch+"] If-None-Match ["+ifNoneMatch+"] contentType ["+contentType+"]");
 		
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		Map messageContext= new HashMap();
@@ -108,27 +109,40 @@ public class RestListenerServlet extends HttpServlet {
 		}
 		try {
 			log.trace("RestListenerServlet calling service ["+path+"]");
-			String result=sd.dispatchRequest(restPath, path, request, etag, contentType, body, messageContext, response, getServletContext());
+			String result=sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response, getServletContext());
+
+			if(result == null && messageContext.containsKey("exitcode") && messageContext.containsKey("validateEtag")) {
+				int status = Integer.parseInt( ""+ messageContext.get("exitcode"));
+				response.setStatus(status);
+				//TODO: overbodig?
+				if(log.isDebugEnabled()) log.trace("aborted request with status ["+status+"]");
+				return;
+			}
+
+			String etag=(String)messageContext.get("etag");
+			if (StringUtils.isNotEmpty(etag))
+				response.setHeader("etag", etag);
 
 			int statusCode = 0;
 			if(messageContext.containsKey("exitcode"))
-				statusCode = Integer.parseInt((String) messageContext.get("exitcode"));
+				statusCode = Integer.parseInt( ""+ messageContext.get("exitcode"));
 			if(statusCode > 0)
 				response.setStatus(statusCode);
+
 			if (StringUtils.isEmpty(result)) {
 				log.trace("RestListenerServlet finished with result set in pipeline");
 			} else {
-				etag=(String)messageContext.get("etag");
 				contentType=(String)messageContext.get("contentType");
-				if (StringUtils.isNotEmpty(contentType)) { 
-					response.setHeader("Content-Type", contentType); 
+				if (StringUtils.isNotEmpty(contentType)) {
+					response.setHeader("Content-Type", contentType);
 				}
 				String contentDisposition=(String)messageContext.get("contentDisposition");
-				if (StringUtils.isNotEmpty(contentDisposition)) { 
-					response.setHeader("Content-Disposition", contentDisposition); 
+				if (StringUtils.isNotEmpty(contentDisposition)) {
+					response.setHeader("Content-Disposition", contentDisposition);
 				}
-				if (StringUtils.isNotEmpty(etag)) { 
-					response.setHeader("etag", etag); 
+				String allowedMethods=(String)messageContext.get("allowedMethods");
+				if (StringUtils.isNotEmpty(allowedMethods)) {
+					response.setHeader("Allow", allowedMethods);
 				}
 				response.getWriter().print(result);
 				log.trace("RestListenerServlet finished with result ["+result+"] etag ["+etag+"] contentType ["+contentType+"] contentDisposition ["+contentDisposition+"]");
@@ -138,5 +152,4 @@ public class RestListenerServlet extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
 		}
 	}
-	
 }

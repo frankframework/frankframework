@@ -1166,6 +1166,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					pipelineSession.put("exitcode", ""+ pipeLineResult.getExitCode());
 					result=pipeLineResult.getResult();
 					errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
+					if(pipelineSession.containsKey("exitcode")) {
+						int status = Integer.parseInt( ""+ pipelineSession.get("exitcode"));
+						if(status > 0)
+							errorMessage += ", exitcode ["+status+"]";
+					}
 					if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"received result: "+errorMessage); }
 					messageInError=txStatus.isRollbackOnly();
 				} finally {
