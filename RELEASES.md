@@ -73,6 +73,7 @@ Upcoming
 - Add support for dynamically setting the directory to UnzipPipe
 - Add RESTFUL Etag caching to validate messages before they are processed by the IBIS
 - Add IRestEtagCache interface and etag.cache.type property to choose between different caching solutions
+- Add option to use Memcached as etag caching server
 
 
 

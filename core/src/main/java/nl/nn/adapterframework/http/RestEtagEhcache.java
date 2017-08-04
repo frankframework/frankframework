@@ -1,10 +1,14 @@
 package nl.nn.adapterframework.http;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
+import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.config.Configuration;
+import net.sf.ehcache.config.DiskStoreConfiguration;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.util.AppConstants;
@@ -48,14 +52,20 @@ public class RestEtagEhcache implements IRestEtagCache {
 
 		cache = cacheManager.getCache(KEY_CACHE_NAME);
 		if(cache == null) {
-			createCache();
+			createCache(ac);
 		}
 	}
 
-	private void createCache() {
+	private void createCache(AppConstants ac) {
 		if (isDiskPersistent() && !isOverflowToDisk()) {
 			log.info("setting overflowToDisk true, to support diskPersistent=true");
 			setOverflowToDisk(true);
+		}
+
+		String DiskStorePath = null;
+		String cacheDir = ac.getResolvedProperty("etag.ehcache.dir");
+		if (StringUtils.isNotEmpty(cacheDir)) {
+			DiskStorePath = cacheDir;
 		}
 
 		Cache configCache = new Cache(
@@ -63,7 +73,7 @@ public class RestEtagEhcache implements IRestEtagCache {
 				maxElementsInMemory,
 				MemoryStoreEvictionPolicy.fromString(memoryStoreEvictionPolicy),
 				isOverflowToDisk(),
-				null,
+				DiskStorePath,
 				isEternal(),
 				0,
 				0,
@@ -117,7 +127,7 @@ public class RestEtagEhcache implements IRestEtagCache {
 		cache.flush();
 	}
 
-	public void removeAll() {
+	public void clear() {
 		cache.removeAll();
 	}
 

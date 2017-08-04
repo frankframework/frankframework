@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2017 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,20 +27,25 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.IRestEtagCache;
 import nl.nn.adapterframework.http.RestEtagEhcache;
 import nl.nn.adapterframework.http.RestListenerUtils;
+import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.AppConstants;
 
+/**
+ * Pipe to manage RESTFUL etag caching
+ * 
+ * @author Niels Meijer
+ *
+ */
 public class EtagHandlerPipe extends FixedForwardPipe {
-	private String action="";
+	private String action = null;
 //	hash over data genereren, uit cache lezen en teruggeven, in cache updaten, verwijderen uit cache, cache naar disk wegschrijven, cache legen
 	List<String> actions = Arrays.asList("generate", "get", "set", "delete", "flush", "clear");
 	private String restPath = "/rest";
 	private String uriPattern = null;
 	private IRestEtagCache cache = null;
-	private String etagCacheType = AppConstants.getInstance().getProperty("etag.cache.type", "ehcache");
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -63,8 +68,8 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		if(getUriPattern() == null && !hasUriPatternParameter) {
 			throw new ConfigurationException(getLogPrefix(null)+"no uriPattern found!");
 		}
-		if(etagCacheType.equalsIgnoreCase("ehcache"))
-			cache = new RestEtagEhcache();
+
+		cache = RestServiceDispatcher.getCache();
 	}
 
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
@@ -118,11 +123,13 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 				returnCode = cache.remove(cacheKey);
 			}
 			else if(getAction().equalsIgnoreCase("flush")) {
-				cache.flush();
-				returnCode = true;
+				if(cache instanceof RestEtagEhcache) {
+					((RestEtagEhcache) cache).flush();
+					returnCode = true;
+				}
 			}
 			else if(getAction().equalsIgnoreCase("clear")) {
-				cache.removeAll();
+				cache.clear();
 				returnCode = true;
 			}
 			else {
@@ -134,9 +141,17 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		}
 		else {
 			PipeForward pipeForward = findForward("exception");
+			String msg;
+
+			if(cache == null)
+				msg = "failed to locate cache";
+			else
+				msg = "failed to locate eTag ["+cacheKey+"] in cache";
+
 			if (pipeForward==null) {
-				throw new PipeRunException (this, getLogPrefix(session)+"failed to locate eTag ["+cacheKey+"] in cache");
+				throw new PipeRunException (this, getLogPrefix(session)+msg);
 			}
+
 			return new PipeRunResult(pipeForward, "");
 		}
 	}

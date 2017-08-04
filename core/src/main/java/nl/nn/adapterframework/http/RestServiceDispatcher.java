@@ -71,17 +71,19 @@ public class RestServiceDispatcher  {
 	private static IRestEtagCache cache = null;
 
 	public static synchronized RestServiceDispatcher getInstance() {
-		 if( self == null ) {
-			cache = new RestEtagEhcache();
+		if( self == null ) {
 			self = new RestServiceDispatcher();
 		}
 		return self;
 	}
 
 	public static synchronized IRestEtagCache getCache() {
-		 if( cache == null ) {
+		if( cache == null ) {
 			if(etagCacheType.equalsIgnoreCase("ehcache"))
 				cache = new RestEtagEhcache();
+			else if(etagCacheType.equalsIgnoreCase("memcached")) {
+				cache = new RestEtagMemcached();
+			}
 		}
 		return cache;
 	}
@@ -258,8 +260,11 @@ public class RestServiceDispatcher  {
 				uri = uri.split("?")[0];
 			}
 			String etagCacheKey = restPath+"_"+uri;
-			IRestEtagCache cache = getCache();
-			if(cache != null && cache.containsKey(etagCacheKey)) {
+
+			cache = getCache();
+			if(cache == null)
+				log.warn("failed to initialize IRestEtagCache, skipping");
+			else if(cache.containsKey(etagCacheKey)) {
 				String cachedEtag = (String) cache.get(etagCacheKey);
 
 				if(ifNoneMatch != null && ifNoneMatch.equalsIgnoreCase(cachedEtag) && method.equalsIgnoreCase("GET")) {

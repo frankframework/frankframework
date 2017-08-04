@@ -466,10 +466,15 @@
 		<artifactId>rhino</artifactId>
 		<version>1.7.7.1</version>
 	</dependency>
-    <dependency>
-      <groupId>org.eclipse.paho</groupId>
-      <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-      <version>1.1.1</version>
+	<dependency>
+		<groupId>org.eclipse.paho</groupId>
+		<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+		<version>1.1.1</version>
+	</dependency>
+	<dependency>
+		<groupId>net.spy</groupId>
+		<artifactId>spymemcached</artifactId>
+		<version>2.12.3</version>
     </dependency>
   </dependencies>
 </project>

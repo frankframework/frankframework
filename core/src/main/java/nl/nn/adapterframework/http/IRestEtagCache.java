@@ -42,13 +42,12 @@ public interface IRestEtagCache {
 	public boolean containsKey(String key);
 
 	/**
-	 * Flushes all cache items from memory to the disk store, and from the DiskStore to disk
-	 */
-	public void flush();
-
-
-	/**
 	 * Removes all items in the cache.
 	 */
-	public void removeAll();
+	public void clear();
+
+	/**
+	 * Closes the cache.
+	 */
+	public void destroy();
 }
