@@ -14,6 +14,7 @@ import net.spy.memcached.ConnectionFactory;
 import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
 import net.spy.memcached.ConnectionObserver;
 import net.spy.memcached.ConnectionFactoryBuilder;
+import net.spy.memcached.FailureMode;
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.auth.AuthDescriptor;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -32,7 +33,7 @@ public class RestEtagMemcached implements IRestEtagCache {
 				msg += " reconnectCount ["+reconnectCount+"]";
 			ConfigurationWarnings.getInstance().add(log, msg);
 		}
-	
+
 		public void connectionLost(SocketAddress sa) {
 			String msg = "lost memcached connection [" + sa + "] reconnecting...";
 			ConfigurationWarnings.getInstance().add(log, msg);
@@ -44,7 +45,7 @@ public class RestEtagMemcached implements IRestEtagCache {
 		String address = ac.getProperty("etag.cache.server", "localhost:11211");
 		String username = ac.getProperty("etag.cache.username", "");
 		String password = ac.getProperty("etag.cache.password", "");
-		int timeout = ac.getInt("etag.cache.timeout", 2500);
+		int timeout = ac.getInt("etag.cache.timeout", 10);
 
 		List<InetSocketAddress> addresses = AddrUtil.getAddresses(address);
 
@@ -52,6 +53,12 @@ public class RestEtagMemcached implements IRestEtagCache {
 			.setProtocol(Protocol.BINARY)
 			.setOpTimeout(timeout)
 			.setInitialObservers(Collections.singleton(obs));
+
+		if(addresses.size()  > 1)
+			connectionFactoryBuilder.setFailureMode(FailureMode.Redistribute);
+		else
+			connectionFactoryBuilder.setFailureMode(FailureMode.Retry);
+
 		if(!username.isEmpty())
 			connectionFactoryBuilder.setAuthDescriptor(AuthDescriptor.typical(username, password));
 
