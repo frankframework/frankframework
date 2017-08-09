@@ -16,12 +16,17 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import nl.nn.adapterframework.util.AppConstants;
 
+import nl.nn.adapterframework.http.HttpUtils;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.log4j.Logger;
 import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
 
 /**
@@ -34,6 +39,7 @@ import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
 @SuppressWarnings("serial")
 public class ServletDispatcher extends HttpServletDispatcher {
 
+	private Logger secLog = LogUtil.getLogger("SEC");
 	private boolean consoleActive = AppConstants.getInstance().getBoolean("console.active", false);
 
 	public void init(ServletConfig servletConfig) throws ServletException {
@@ -48,19 +54,22 @@ public class ServletDispatcher extends HttpServletDispatcher {
 		if(!consoleActive) {
 			return;
 		}
-		//HttpServletResponse resp = (HttpServletResponse) response;
+
+		if(!request.getMethod().equalsIgnoreCase("get"))
+			secLog.info(HttpUtils.getExtendedCommandIssuedBy(request));
+
 		//Fetch authorisation header
 		final String authorization = request.getHeader("Authorization");
 
 		if (!request.getMethod().equalsIgnoreCase("OPTIONS")) {
 			if(authorization == null) {
 				//Je moet inloggen
-				//resp.setStatus(401);
+				//response.setStatus(401);
 				//return;
 			}
 			if(request.getUserPrincipal() == null) {
 				//Foutief wachtwoord
-				//resp.setStatus(401);
+				//response.setStatus(401);
 				//return;
 			}
 		}

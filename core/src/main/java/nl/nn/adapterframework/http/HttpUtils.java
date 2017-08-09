@@ -67,7 +67,7 @@ public class HttpUtils {
 		Enumeration paramnames = request.getParameterNames();
 		while (paramnames.hasMoreElements()) {
 			String paramname = (String) paramnames.nextElement();
-			if (secLogParamNames.contains(paramname)) {
+			if (secLogParamNames == null || secLogParamNames.contains(paramname)) {
 				String paramvalue = request.getParameter(paramname);
 				if (StringUtils.isNotEmpty(paramvalue)) {
 					if (result.length() > 0) {
