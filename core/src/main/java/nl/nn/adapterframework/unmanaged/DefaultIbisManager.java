@@ -56,6 +56,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  */
 public class DefaultIbisManager implements IbisManager {
     protected Logger log = LogUtil.getLogger(this);
+	protected Logger secLog = LogUtil.getLogger("SEC");
 
     private IbisContext ibisContext;
     private List<Configuration> configurations = new ArrayList<Configuration>();
@@ -233,16 +234,21 @@ public class DefaultIbisManager implements IbisManager {
 			}
 		} else if (action.equalsIgnoreCase("RELOAD")) {
 			if (configurationName.equals("*ALL*")) {
-				log.info("Reload all configurations on request of [" + commandIssuedBy+"]");
+				String msg = "Reload all configurations on request of [" + commandIssuedBy+"]";
+				log.info(msg);
+				secLog.info(msg); //Log before executing the command!
 				ibisContext.reload(null);
 			} else {
-				log.info("Reload configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]");
+				String msg = "Reload configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]";
+				log.info(msg);
+				secLog.info(msg); //Log before executing the command!
 				ibisContext.reload(configurationName);
 			}
 		} else if (action.equalsIgnoreCase("FULLRELOAD")) {
 			log.info("Full reload on request of [" + commandIssuedBy+"]");
 			if (isAdmin) {
 				ibisContext.fullReload();
+				secLog.info("Full reload on request of [" + commandIssuedBy+"]");
 			} else {
 				log.warn("Full reload not allowed for [" + commandIssuedBy+"]");
 			}

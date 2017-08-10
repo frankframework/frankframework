@@ -72,10 +72,9 @@ public class LogHandler extends ActionBase {
         	iaw = (IbisAppenderWrapper) appender;
         }
 
-		log.warn("LogLevel changed from ["
+		String msg = ("LogLevel changed from ["
 			+lg.getLevel()
-			+"]  to ["
-			+level
+			+"] to [" +level
 			+"], logIntermediaryResults from ["
 			+AppConstants.getInstance().getProperty("log.logIntermediaryResults")
 			+ "] to ["
@@ -85,6 +84,8 @@ public class LogHandler extends ActionBase {
 			+ "] to ["
 			+ ""+form_lengthLogRecords
 			+"] by"+commandIssuedBy);
+		log.warn(msg);
+		secLog.info(msg);
 
 		if (iaw != null) {
 			iaw.setMaxMessageLength(form_lengthLogRecords);

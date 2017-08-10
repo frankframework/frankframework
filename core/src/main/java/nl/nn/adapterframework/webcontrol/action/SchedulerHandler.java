@@ -66,29 +66,33 @@ public class SchedulerHandler extends ActionBase {
 			return null;
 		}
 	    try {
+	        String msg = null;
 	        if (action.equalsIgnoreCase("startScheduler")) {
-	            log.info("start scheduler:" + new Date() + HttpUtils.getCommandIssuedBy(request));
+	            msg = "start scheduler:" + new Date() + HttpUtils.getCommandIssuedBy(request);
+		        log.info(msg);
+		        secLog.info(msg);
 	            scheduler.start();
 	        } else
-	            if (action.equalsIgnoreCase("pauseScheduler")) {
-	                log.info("pause scheduler:" + new Date() + HttpUtils.getCommandIssuedBy(request));
-	                scheduler.pause();
-	            } else
-	                if (action.equalsIgnoreCase("deleteJob")) {
-	                    log.info("delete job jobName [" + jobName
-	                            + "] groupName [" + groupName
-	                            + "] " + HttpUtils.getCommandIssuedBy(request));
-	                    scheduler.deleteJob(jobName, groupName);
-	                } else
-	                    if (action.equalsIgnoreCase("triggerJob")) {
-	                        log.info("trigger job jobName [" + jobName
-	                                + "] groupName [" + groupName
-	                                + "] " + HttpUtils.getCommandIssuedBy(request));
-	                        scheduler.triggerJob(jobName, groupName);
-	                    } else {
-	                        log.error("no valid argument for SchedulerHandler:" + action);
-	                    } 
-	
+            if (action.equalsIgnoreCase("pauseScheduler")) {
+                msg = "pause scheduler:" + new Date() + HttpUtils.getCommandIssuedBy(request);
+    	        log.info(msg);
+    	        secLog.info(msg);
+                scheduler.pause();
+            } else
+            if (action.equalsIgnoreCase("deleteJob")) {
+                msg = "delete job jobName [" + jobName + "] groupName [" + groupName + "] " + HttpUtils.getCommandIssuedBy(request);
+    	        log.info(msg);
+    	        secLog.info(msg);
+                scheduler.deleteJob(jobName, groupName);
+            } else
+            if (action.equalsIgnoreCase("triggerJob")) {
+                msg = "trigger job jobName [" + jobName + "] groupName [" + groupName + "] " + HttpUtils.getCommandIssuedBy(request);
+    	        log.info(msg);
+    	        secLog.info(msg);
+                scheduler.triggerJob(jobName, groupName);
+            } else {
+                log.error("no valid argument for SchedulerHandler:" + action);
+            }
 	    } catch (Exception e) {
 	        error("",e);
 	    }
