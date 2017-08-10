@@ -231,7 +231,7 @@
 		</init-param> REPLACE-MARKER --> 
 		<init-param>
 			<param-name>resteasy.providers</param-name>
-			<param-value>nl.nn.adapterframework.webcontrol.api.ApiExceptionHandler</param-value>
+			<param-value>nl.nn.adapterframework.webcontrol.api.ApiExceptionHandler, nl.nn.adapterframework.webcontrol.api.AuthorizationFilter</param-value>
 		</init-param>
 	</servlet>
     <servlet-mapping>

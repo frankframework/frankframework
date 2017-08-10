@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -55,24 +54,9 @@ public class ServletDispatcher extends HttpServletDispatcher {
 			return;
 		}
 
-		if(!request.getMethod().equalsIgnoreCase("get"))
+		final String method = request.getMethod();
+		if(!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("OPTIONS"))
 			secLog.info(HttpUtils.getExtendedCommandIssuedBy(request));
-
-		//Fetch authorisation header
-		final String authorization = request.getHeader("Authorization");
-
-		if (!request.getMethod().equalsIgnoreCase("OPTIONS")) {
-			if(authorization == null) {
-				//Je moet inloggen
-				//response.setStatus(401);
-				//return;
-			}
-			if(request.getUserPrincipal() == null) {
-				//Foutief wachtwoord
-				//response.setStatus(401);
-				//return;
-			}
-		}
 
 		super.service(request, response);
 	}
