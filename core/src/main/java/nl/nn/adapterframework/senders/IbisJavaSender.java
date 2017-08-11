@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -26,7 +27,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
-import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.Misc;
@@ -103,11 +103,23 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			} else {
 				context=new HashMap();
 			}
-			DispatcherManager dm;
-			if(getDispatchType().equalsIgnoreCase("DLL"))
-				dm = DispatcherManagerFactory.getDispatcherManager(getDispatchType());
-			else
-				dm = DispatcherManagerFactory.getDispatcherManager();
+			DispatcherManager dm = null;
+
+			Class c = Class.forName("nl.nn.adapterframework.dispatcher.DispatcherManagerFactory");
+			if(getDispatchType().equalsIgnoreCase("DLL")) {
+				try {
+					Method getDispatcherManager = c.getMethod("getDispatcherManager", String.class);
+					dm = (DispatcherManager) getDispatcherManager.invoke(null, getDispatchType());
+				}
+				catch (Exception e) {
+					throw new SenderException("IBIS-ServiceDispatcher out of date! Please update to version 1.4 or higher", e);
+				}
+			}
+			else {
+				Method getDispatcherManager = c.getMethod("getDispatcherManager");
+				dm = (DispatcherManager) getDispatcherManager.invoke(null, (Object[])null);
+			}
+
 			result = dm.processRequest(getServiceName(),correlationID, message, context);
 			if (isMultipartResponse()) {
 				return HttpSender.handleMultipartResponse(multipartResponseContentType,

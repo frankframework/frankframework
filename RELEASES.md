@@ -74,6 +74,7 @@ Upcoming
 - Add RESTFUL Etag caching to validate messages before they are processed by the IBIS
 - Add IRestEtagCache interface and etag.cache.type property to choose between different caching solutions
 - Add option to use Memcached as etag caching server
+- Fix made IAF backwards compatible with ibis-servicedispatcher v1.3
 
 
 
