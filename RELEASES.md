@@ -9,8 +9,16 @@ Upcoming
 --------
 
 [JavaDocs](http://maven.ibissource.org/iaf/apidocs/index.html)
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-B1...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.0-B2...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+
+
+7.0-B2
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.0-B1...v7.0-B2)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-B2)](https://travis-ci.org/ibissource/iaf)
 
 - Fix IFSA no longer gives a warning when the managed connection factory can't be found
 - Add consumes and produces option to rest endpoints to set mediatypes, this also transforms the data from and to JSON/XML when set
