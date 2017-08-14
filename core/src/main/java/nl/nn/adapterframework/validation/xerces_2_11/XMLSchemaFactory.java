@@ -40,7 +40,7 @@ import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SAXInputSource;
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.apache.xerces.util.SecurityManager;
-import org.apache.xerces.util.StAXInputSource;
+//import org.apache.xerces.util.StAXInputSource;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
@@ -211,16 +211,16 @@ public final class XMLSchemaFactory extends SchemaFactory {
                 String systemID = domSource.getSystemId();          
                 xmlInputSources[i] = new DOMInputSource(node, systemID);
             }
-            else if (source instanceof StAXSource) {
-                StAXSource staxSource = (StAXSource) source;
-                XMLEventReader eventReader = staxSource.getXMLEventReader();
-                if (eventReader != null) {
-                    xmlInputSources[i] = new StAXInputSource(eventReader);
-                }
-                else {
-                    xmlInputSources[i] = new StAXInputSource(staxSource.getXMLStreamReader());
-                }
-            }
+//            else if (source instanceof StAXSource) {
+//                StAXSource staxSource = (StAXSource) source;
+//                XMLEventReader eventReader = staxSource.getXMLEventReader();
+//                if (eventReader != null) {
+//                    xmlInputSources[i] = new StAXInputSource(eventReader);
+//                }
+//                else {
+//                    xmlInputSources[i] = new StAXInputSource(staxSource.getXMLStreamReader());
+//                }
+//            }
             else if (source == null) {
                 throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(fXMLSchemaLoader.getLocale(), 
                         "SchemaSourceArrayMemberNull", null));
