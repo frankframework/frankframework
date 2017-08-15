@@ -12,6 +12,8 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.0-B2...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
+- Add json to xml and xml to json converstion as well as json validation to xmlvalidators
+
 
 
 7.0-B2
