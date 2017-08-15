@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body>
+<ns1:GetPolicyDetailsTravel_Response xmlns:ns1="http://api.nn.nl/GetPolicyDetailsTravel">
+  <ns1:children>
+    <ns1:child>
+      <ns1:childDateOfBirth>2016-01-05</ns1:childDateOfBirth>
+    </ns1:child>
+  </ns1:children>
+  <ns1:clauses>
+  </ns1:clauses>
+  <ns1:coverages>
+    <ns1:coverage>
+      <ns1:coverageDescription>Medische kosten</ns1:coverageDescription>
+      <ns1:coverageType>MVZMED</ns1:coverageType>
+      <ns1:termPremCoverage>0.63</ns1:termPremCoverage>
+    </ns1:coverage>
+    <ns1:coverage>
+      <ns1:coverageDescription>Annulering</ns1:coverageDescription>
+      <ns1:coverageType>MVZANN</ns1:coverageType>
+      <ns1:insuredAmount>2500</ns1:insuredAmount>
+      <ns1:termPremCoverage>7.77</ns1:termPremCoverage>
+    </ns1:coverage>
+    <ns1:coverage>
+      <ns1:coverageDescription>Reisrechtsbijstand</ns1:coverageDescription>
+      <ns1:coverageType>MVZRB</ns1:coverageType>
+      <ns1:termPremCoverage>0.97</ns1:termPremCoverage>
+    </ns1:coverage>
+    <ns1:coverage>
+      <ns1:area>Europa</ns1:area>
+      <ns1:coverageDescription>Basisdekking</ns1:coverageDescription>
+      <ns1:coverageType>MVZREI</ns1:coverageType>
+      <ns1:periodOfCoverage>180 dagen</ns1:periodOfCoverage>
+      <ns1:termPremCoverage>10.04</ns1:termPremCoverage>
+      <ns1:totalDeductibleAmount>50</ns1:totalDeductibleAmount>
+    </ns1:coverage>
+    <ns1:coverage>
+      <ns1:coverageDescription>Ongevallen</ns1:coverageDescription>
+      <ns1:coverageType>MVZONGV</ns1:coverageType>
+      <ns1:termPremCoverage>0.41</ns1:termPremCoverage>
+    </ns1:coverage>
+  </ns1:coverages>
+  <ns1:coveragesSummary>Basisdekking, Medische kosten, Ongevallen, Annulering en Reisrechtsbijstand</ns1:coveragesSummary>
+  <ns1:endDate>2018-04-01</ns1:endDate>
+  <ns1:insuredFamilyComposition>Gezinssamenstelling: gezin met kind(eren)</ns1:insuredFamilyComposition>
+  <ns1:partnerIndicator>Y</ns1:partnerIndicator>
+  <ns1:policyHolderIndicator>Y</ns1:policyHolderIndicator>
+  <ns1:policyNumber>26986319</ns1:policyNumber>
+  <ns1:productConditions>
+    <ns1:conditions>
+      <ns1:conditionsDescription>Annulering</ns1:conditionsDescription>
+      <ns1:conditionsNumber>PP 4110-02</ns1:conditionsNumber>
+      <ns1:conditionsPDF>https://adviseur.nn.nl/va/doorlink_ekf_documenten/ZPP_Voorwaarden/ZPP_PP4100-04.htm</ns1:conditionsPDF>
+    </ns1:conditions>
+    <ns1:conditions>
+      <ns1:conditionsDescription>Hulpverlening, buitengewone kosten repatriering</ns1:conditionsDescription>
+      <ns1:conditionsNumber>PP 4102-02</ns1:conditionsNumber>
+      <ns1:conditionsPDF>https://adviseur.nn.nl/va/doorlink_ekf_documenten/ZPP_Voorwaarden/ZPP_PP4100-04.htm</ns1:conditionsPDF>
+    </ns1:conditions>
+    <ns1:conditions>
+      <ns1:conditionsDescription>Geld</ns1:conditionsDescription>
+      <ns1:conditionsNumber>PP 4104-02</ns1:conditionsNumber>
+      <ns1:conditionsPDF>https://adviseur.nn.nl/va/doorlink_ekf_documenten/ZPP_Voorwaarden/ZPP_PP4100-04.htm</ns1:conditionsPDF>
+    </ns1:conditions>
+    <ns1:conditions>
+      <ns1:conditionsDescription>Medische kosten</ns1:conditionsDescription>
+      <ns1:conditionsNumber>PP 4105-02</ns1:conditionsNumber>
+      <ns1:conditionsPDF>https://adviseur.nn.nl/va/doorlink_ekf_documenten/ZPP_Voorwaarden/ZPP_PP4100-04.htm</ns1:conditionsPDF>
+    </ns1:conditions>
+    <ns1:conditions>
+      <ns1:conditionsDescription>Ongevallen</ns1:conditionsDescription>
+      <ns1:conditionsNumber>PP 4106-02</ns1:conditionsNumber>
+      <ns1:conditionsPDF>https://adviseur.nn.nl/va/doorlink_ekf_documenten/ZPP_Voorwaarden/ZPP_PP4100-04.htm</ns1:conditionsPDF>
+    </ns1:conditions>
+    <ns1:conditions>
+      <ns1:conditionsDescription>Rechtsbijstand</ns1:conditionsDescription>
+      <ns1:conditionsNumber>PP 4108-02</ns1:conditionsNumber>
+      <ns1:conditionsPDF>https://adviseur.nn.nl/va/doorlink_ekf_documenten/ZPP_Voorwaarden/ZPP_PP4100-04.htm</ns1:conditionsPDF>
+    </ns1:conditions>
+    <ns1:conditions>
+      <ns1:conditionsDescription>Bagage en schade vakantieverblijf</ns1:conditionsDescription>
+      <ns1:conditionsNumber>PP 4103-02</ns1:conditionsNumber>
+      <ns1:conditionsPDF>https://adviseur.nn.nl/va/doorlink_ekf_documenten/ZPP_Voorwaarden/ZPP_PP4100-04.htm</ns1:conditionsPDF>
+    </ns1:conditions>
+  </ns1:productConditions>
+  <ns1:productName>Doorlopende reis en/of annulering</ns1:productName>
+  <ns1:productPlanRef>P100</ns1:productPlanRef>
+  <ns1:productTermPremiumAndPaymentFrequency>€ 19,82 / maand</ns1:productTermPremiumAndPaymentFrequency>
+  <ns1:sequenceNumber>1</ns1:sequenceNumber>
+  <ns2:Result xmlns:ns2="http://nn.nl/XSD/Generic/MessageHeader/1">
+    <ns2:Status>OK</ns2:Status>
+  </ns2:Result>
+</ns1:GetPolicyDetailsTravel_Response></Body></Envelope>

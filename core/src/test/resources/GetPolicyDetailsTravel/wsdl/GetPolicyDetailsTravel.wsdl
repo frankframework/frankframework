@@ -1,0 +1,625 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://api.nn.nl/GetPolicyDetailsTravelForCustomer/wsdl/" xmlns:ns1="http://api.nn.nl/GetPolicyDetailsTravel" xmlns:ns2="http://api.nn.nl/MessageHeader" xmlns:ns3="http://nn.nl/XSD/Generic/MessageHeader/1" targetNamespace="http://api.nn.nl/GetPolicyDetailsTravelForCustomer/wsdl/">
+	<wsdl:documentation>Generated at https://srdzzapp0220.insim.biz/ija_api/rest/webservices/GetPolicyDetailsTravel.wsdl as GetPolicyDetailsTravel.wsdl on 2017-07-10T14:36:39CEST.</wsdl:documentation>
+	<wsdl:types>
+		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ns0="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns="http://api.nn.nl/GetPolicyDetailsTravel" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:tns="http://nn.nl/XSD/PropertyAndCasualtyRetail/PRPolicyAppNL/1/GetPolicyDetailsTravel/1/GetPolicyDetailsTravel_1Impl/Operations/GetPolicyDetailsTravel/Starter" targetNamespace="http://api.nn.nl/GetPolicyDetailsTravel" attributeFormDefault="unqualified" elementFormDefault="qualified">
+			<xs:import namespace="http://nn.nl/XSD/Generic/MessageHeader/1"/>
+            
+            <xs:annotation>
+                <xs:documentation>Change Log XSD PropertyAndCasualtyRetail_PRPolicyAppNL_1_GetPolicyDetailsTravel_1.xsd</xs:documentation>
+                <xs:documentation>Version R0.1 27-2-2017 - Description: GJR-1863 - Erwin Bouwman</xs:documentation>
+                <xs:documentation>Version R0.1 2-3-2017 - Description: GJR-1863 N.a.v. review -Erwin Bouwman</xs:documentation>
+                <xs:documentation>Version R0.2 31-3-2017 - Erwin Bouwman: Added productIdentificationLong and productIdentificationLong </xs:documentation>
+                <xs:documentation>Version R0.3 18-4-2017 - Erwin Bouwman: GJR-2074: Added conditions and clauses and deleted InsuredPersons</xs:documentation>
+            </xs:annotation>
+            <xs:complexType name="ServiceRequest">
+                <xs:all>
+                    <xs:element type="xs:date" minOccurs="0" name="effectiveDate"/>
+                    <xs:element type="xs:string" name="policyNumber"/>
+                    <xs:element type="xs:integer" name="sequenceNumber"/>
+                </xs:all>
+            </xs:complexType>
+            <xs:complexType name="ServiceResponse">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="children">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element minOccurs="0" name="child" maxOccurs="10">
+                                    <xs:complexType>
+                                        <xs:all>
+                                            <xs:element type="xs:date" minOccurs="0" name="childDateOfBirth"/>
+                                        </xs:all>
+                                    </xs:complexType>
+                                </xs:element>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element minOccurs="0" name="clauses">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element minOccurs="0" name="clause" maxOccurs="unbounded">
+                                    <xs:complexType>
+                                        <xs:all>
+                                            <xs:element type="xs:string" minOccurs="0" name="clauseDescription"/>
+                                            <xs:element type="xs:string" minOccurs="0" name="clauseNumber"/>
+                                            <xs:element type="xs:string" minOccurs="0" name="linkToClause"/>
+                                        </xs:all>
+                                    </xs:complexType>
+                                </xs:element>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element minOccurs="0" name="coverages">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element minOccurs="0" name="coverage" maxOccurs="unbounded">
+                                    <xs:complexType>
+                                        <xs:all>
+                                            <xs:element type="xs:string" minOccurs="0" name="area"/>
+                                            <xs:element type="xs:string" minOccurs="0" name="coverageDescription"/>
+                                            <xs:element type="xs:string" minOccurs="0" name="coverageType"/>
+                                            <xs:element type="xs:string" minOccurs="0" name="extraMandatoryDeductibleAmount"/>
+                                            <xs:element type="xs:string" minOccurs="0" name="insuredAmount"/>
+                                            <xs:element type="xs:string" minOccurs="0" name="periodOfCoverage"/>
+                                            <xs:element type="xs:string" minOccurs="0" name="termPremCoverage"/>
+                                            <xs:element type="xs:string" minOccurs="0" name="totalDeductibleAmount"/>
+                                        </xs:all>
+                                    </xs:complexType>
+                                </xs:element>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element type="xs:string" minOccurs="0" name="coveragesSummary"/>
+                    <xs:element type="xs:date" minOccurs="0" name="endDate"/>
+                    <xs:element type="xs:string" minOccurs="0" name="insuredFamilyComposition"/>
+                    <xs:element type="xs:string" minOccurs="0" name="legacyPolicyNumber"/>
+                    <xs:element type="xs:string" minOccurs="0" name="partnerIndicator"/>
+                    <xs:element type="xs:string" minOccurs="0" name="policyHolderIndicator"/>
+                    <xs:element type="xs:string" minOccurs="0" name="policyNumber"/>
+                    <xs:element minOccurs="0" name="productConditions">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element minOccurs="0" name="conditions" maxOccurs="unbounded">
+                                    <xs:complexType>
+                                        <xs:all>
+                                            <xs:element type="xs:string" minOccurs="0" name="conditionsDescription"/>
+                                            <xs:element type="xs:string" minOccurs="0" name="conditionsNumber"/>
+                                            <xs:element type="xs:string" minOccurs="0" name="conditionsPDF"/>
+                                        </xs:all>
+                                    </xs:complexType>
+                                </xs:element>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element type="xs:string" minOccurs="0" name="productIdentificationLong"/>
+                    <xs:element type="xs:string" minOccurs="0" name="productIdentificationShort"/>
+                    <xs:element type="xs:string" minOccurs="0" name="productName"/>
+                    <xs:element type="xs:string" minOccurs="0" name="productPlanRef"/>
+                    <xs:element type="xs:string" minOccurs="0" name="productTermPremiumAndPaymentFrequency"/>
+                    <xs:element type="xs:integer" minOccurs="0" name="sequenceNumber"/>
+                    <xs:element type="xs:string" minOccurs="0" name="singlePremium"/>
+                    <xs:element type="xs:date" minOccurs="0" name="travelBookDate"/>
+                    <xs:element type="xs:date" minOccurs="0" name="travelEndDate"/>
+                    <xs:element type="xs:date" minOccurs="0" name="travelStartDate"/>
+                    <xs:element ref="ns0:Result"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element type="ns1:ServiceRequest" name="GetPolicyDetailsTravel_Request"/>
+            <xs:element type="ns1:ServiceResponse" name="GetPolicyDetailsTravel_Response"/>
+        </xs:schema>
+		<xsd:schema xmlns="http://api.nn.nl/MessageHeader" targetNamespace="http://api.nn.nl/MessageHeader" attributeFormDefault="unqualified" elementFormDefault="qualified">
+	<xsd:element type="MessageHeaderType" name="MessageHeader"/>
+	<xsd:complexType name="MessageHeaderType">
+		<xsd:sequence>
+			<xsd:element type="xsd:string" minOccurs="0" name="From">
+				<xsd:annotation>
+					<xsd:documentation>
+						Please fill this with source of the message (Blueriq project name, App, XC, NPA etc.)	
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element type="HeaderFieldType" name="HeaderFields"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="HeaderFieldType">
+		<xsd:sequence>
+			<xsd:element type="xsd:string" name="ConversationId">
+				<xsd:annotation>
+					<xsd:documentation>
+						Global Unique Identifier (GUID) for the one particular Conversation a message participates in.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>
+		<xsd:schema xmlns:ns0="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns:ns1="http://nn.nl/XSD/PropertyAndCasualtyRetail/PRPolicyAppNL/1/GetPolicyDetailsTravel/1" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:tns="http://nn.nl/XSD/PropertyAndCasualtyRetail/PRPolicyAppNL/1/GetPolicyDetailsTravel/1/GetPolicyDetailsTravel_1Impl/Operations/GetPolicyDetailsTravel/Starter" targetNamespace="http://nn.nl/XSD/Generic/MessageHeader/1" attributeFormDefault="unqualified" elementFormDefault="qualified">
+            <xsd:complexType name="ActionType">
+                <xsd:sequence>
+                    <xsd:element name="Paradigm">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Identification of the paradigm, can be Request, Response, Event, Action, Solicit, Notification
+     </xsd:documentation>
+                        </xsd:annotation>
+                        <xsd:simpleType>
+                            <xsd:restriction base="xsd:string">
+                                <xsd:enumeration value="Request"/>
+                                <xsd:enumeration value="Response"/>
+                                <xsd:enumeration value="Event"/>
+                                <xsd:enumeration value="Action"/>
+                                <xsd:enumeration value="Solicit"/>
+                                <xsd:enumeration value="Notification"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" name="Name">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      The name of the operation being invoked.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" name="Version">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      The major version of the operation being invoked.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ConnectionInfoType">
+                <xsd:annotation>
+                    <xsd:documentation/>
+                </xsd:annotation>
+                <xsd:sequence>
+                    <xsd:element type="xsd:string" minOccurs="0" name="Principal">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      ID or name of the front-end system or application
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" minOccurs="0" name="RemoteAddress">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      System name, Full Qualified Domain Name (FQDN) or IP address of the front-end system. Typically used for black-listing or for some investigation purposed.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ConsumingEndpointType">
+                <xsd:sequence>
+                    <xsd:element type="xsd:string" minOccurs="0" name="Id">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Unique identification of the endpoint being invoked.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" name="Location">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Destination of the endpoint being invoked.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="DetailListType">
+                <xsd:sequence>
+                    <xsd:element type="ns0:DetailType" name="Detail" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="DetailType">
+                <xsd:sequence>
+                    <xsd:element type="xsd:string" name="Code">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Service specific error code
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" minOccurs="0" name="SubCode">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Application specific error code
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="ns0:TextType" minOccurs="0" name="Text">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Detailed description of the error that occurred.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ErrorListType">
+                <xsd:sequence>
+                    <xsd:element type="ns0:ErrorType" name="Error" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ErrorType">
+                <xsd:sequence>
+                    <xsd:element type="xsd:string" name="Code">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Canonical error code with fixed value. 
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" name="Reason">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Canonical reason description of the canonical error. It provides the reason why an error has occurred.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="ns0:ServiceType" name="Service">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Description in which service and operation the error occurred.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="ns0:DetailListType" minOccurs="0" name="DetailList">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      List of specific non canonical errors.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="HeaderFieldType">
+                <xsd:sequence>
+                    <xsd:element type="xsd:string" name="CPAId">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Collaboration Protocol Agreement ID provided by the initiator of the business value chain of Transactions.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" name="ConversationId">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Global Unique IDdentifier (GUID) for the one particular Conversation a message participates in.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" name="MessageId">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Global Unique Identifier (GUID) for this message within the scope of the Conversation (see above).
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" minOccurs="0" name="CorrelationId">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Contains the request MessageId as part of the response in order to correlate two messages as part of the same MEP.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" minOccurs="0" name="ExternalRefToMessageId">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Unique identifier referring to an id passed from an external (front-end) system. This often uniquely identifies the Transaction as known with the initiator.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:dateTime" name="Timestamp">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Date and time message was sent, including the time zone.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="ns0:PropertiesType" minOccurs="0" name="HeaderProperties">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Used as extension on the HeaderFields for future use without backwards compatibility issues in existing implementations.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="HeaderPropertyType">
+                <xsd:attribute use="required" type="xsd:string" name="Name">
+                    <xsd:annotation>
+                        <xsd:documentation>
+     Attribute describing the name of the property
+    </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute use="required" type="xsd:string" name="Value">
+                    <xsd:annotation>
+                        <xsd:documentation>
+     Attribute describing the value of the property
+    </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+            </xsd:complexType>
+            <xsd:complexType name="MessageDataType">
+                <xsd:sequence>
+                    <xsd:element type="xsd:string" name="MessageId">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Unique Identifier for this message within the scope of the Conversation (see above). This is a copy of.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:dateTime" name="Timestamp">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Date and time message was sent, including the time zone. This is a copy of.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" minOccurs="0" name="RefToMessageId">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Unique identifier referring to an id passed from an external (front-end) system. This is a copy of.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="ns0:StatusType" name="Status"/>
+                    <xsd:element type="xsd:boolean" minOccurs="0" name="Retry_Option">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      A boolean indicating if the invocation can be retried
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="MessageHeaderType">
+                <xsd:sequence>
+                    <xsd:element type="ns0:ProducingEndpointType" name="From"/>
+                    <xsd:element type="ns0:ConsumingEndpointType" name="To"/>
+                    <xsd:element type="ns0:HeaderFieldType" name="HeaderFields"/>
+                    <xsd:element type="ns0:ConnectionInfoType" minOccurs="0" name="ConnectionInfo"/>
+                    <xsd:element type="ns0:ServiceType" name="Service"/>
+                    <xsd:element type="ns0:TraceHeaderListType" minOccurs="0" name="TraceHeaderList"/>
+                    <xsd:element type="ns0:TransactionListType" minOccurs="0" name="TransactionList"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ProducingEndpointType">
+                <xsd:sequence>
+                    <xsd:element type="xsd:string" name="Id">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Unique identification of the initiator.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" minOccurs="0" name="Location">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Destination of the endpoint of the initiator. Use when discriminating the Id with an location is of importance.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="PropertiesType">
+                <xsd:sequence>
+                    <xsd:element type="ns0:HeaderPropertyType" name="HeaderProperty" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Repeating structure to accommodate extra properties
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ResultType">
+                <xsd:sequence>
+                    <xsd:element type="ns0:StatusType" name="Status"/>
+                    <xsd:element type="ns0:ErrorListType" minOccurs="0" name="ErrorList">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Element which is the parent of all errors elements. Will only be present if the status equals ERROR
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ServiceType">
+                <xsd:sequence>
+                    <xsd:element type="xsd:string" name="Name">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      The name of the service being invoked
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" name="Context">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      The name of the service context being invoked.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="ns0:ActionType" name="Action">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Identification of the action being performed
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:simpleType name="StatusType">
+                <xsd:annotation>
+                    <xsd:documentation>
+    A string indicating if the invocation was successful or not. The field may have the value OK or ERROR
+   </xsd:documentation>
+                </xsd:annotation>
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="OK"/>
+                    <xsd:enumeration value="ERROR"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:complexType name="TextType">
+                <xsd:simpleContent>
+                    <xsd:extension base="xsd:string">
+                        <xsd:attribute type="xsd:string" name="language">
+                            <xsd:annotation>
+                                <xsd:documentation>
+							Detailing the language of the error based on ISO 639-1 Code.
+						</xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:attribute>
+                    </xsd:extension>
+                </xsd:simpleContent>
+            </xsd:complexType>
+            <xsd:complexType name="TraceHeaderListType">
+                <xsd:annotation>
+                    <xsd:documentation>
+    The ?raceHeaderList?part of the message is used to carry over parts of the header while invoking another operation or service. When a service is composed of multiple other services each header that is received will make up one element in the TraceHeaderList. A new TraceHeader entry is added to the bottom of the list. The newest entry is the lowest entry in a list. 
+   </xsd:documentation>
+                </xsd:annotation>
+                <xsd:sequence>
+                    <xsd:element type="ns0:TraceHeaderType" name="TraceHeader" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="TraceHeaderType">
+                <xsd:sequence>
+                    <xsd:element type="ns0:ProducingEndpointType" name="Sender">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      This is a copy of the From element
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="ns0:ConsumingEndpointType" name="Receiver">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      This is a copy of the To element
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="ns0:ServiceType" name="Service">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      This is a copy of the Service element
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="ns0:MessageDataType" name="MessageData">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      This element contains a copy of certain fields of the HeaderFields element
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="TransactionListType">
+                <xsd:annotation>
+                    <xsd:documentation>
+    The TransactionList part of the message holds information regarding the transaction the message is part of. This part should ONLY be used for SOx or other regulatory compliance requirements that have been identified for a certain service or system interface. A new Transaction entry is added to the bottom of the list. The newest entry is the lowest entry in a list.
+   </xsd:documentation>
+                </xsd:annotation>
+                <xsd:sequence>
+                    <xsd:element type="ns0:TransactionType" name="Transaction" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      For each transaction a new Transaction is added to bottom of the TransactionList.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="TransactionType">
+                <xsd:sequence>
+                    <xsd:element name="Interaction">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      When a system is called that is not part of the ESB or SOA platform, this field will hold the value Frontend or Backend respective to the type of system that is called
+     </xsd:documentation>
+                        </xsd:annotation>
+                        <xsd:simpleType>
+                            <xsd:restriction base="xsd:string">
+                                <xsd:enumeration value="Frontend"/>
+                                <xsd:enumeration value="Backend"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" name="TransactionId">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      The unique identification used as reference when a Transaction enters or leaves the ESB.
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" name="MessageId">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      The identification of the message. Must be unique within the TransactionList when multiple calls to external system 
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:string" name="SystemId">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      The unique identification of the external system
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element type="xsd:dateTime" name="Timestamp">
+                        <xsd:annotation>
+                            <xsd:documentation>
+      Date and time the message was sent to or received from the external system
+     </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:element type="ns0:MessageHeaderType" name="MessageHeader"/>
+            <xsd:element type="ns0:ResultType" name="Result"/>
+        </xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="Message_GetPolicyDetailsTravel_Request">
+		<wsdl:part name="Part_GetPolicyDetailsTravel_Request" element="ns1:GetPolicyDetailsTravel_Request"/>
+	</wsdl:message>
+	<wsdl:message name="Message_GetPolicyDetailsTravel_Request_MessageHeader">
+		<wsdl:part name="Part_MessageHeader" element="ns2:MessageHeader"/>
+	</wsdl:message>
+	<wsdl:message name="Message_GetPolicyDetailsTravel_Response">
+		<wsdl:part name="Part_GetPolicyDetailsTravel_Response" element="ns1:GetPolicyDetailsTravel_Response"/>
+	</wsdl:message>
+	<wsdl:message name="Message_GetPolicyDetailsTravel_Response_MessageHeader">
+		<wsdl:part name="Part_MessageHeader" element="ns2:MessageHeader"/>
+	</wsdl:message>
+	<wsdl:portType name="PortType_GetPolicyDetailsTravel">
+		<wsdl:operation name="Operation_PropertyAndCasualtyRetail_GetPolicyDetailsTravelForCustomer">
+			<wsdl:input message="tns:Message_GetPolicyDetailsTravel_Request"/>
+			<wsdl:output message="tns:Message_GetPolicyDetailsTravel_Response"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="Binding_GetPolicyDetailsTravel" type="tns:PortType_GetPolicyDetailsTravel">
+		<soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+		<wsdl:operation name="Operation_PropertyAndCasualtyRetail_GetPolicyDetailsTravelForCustomer">
+			<soap:operation style="document" soapAction="PropertyAndCasualtyRetail/GetPolicyDetailsTravelForCustomer"/>
+			<wsdl:input>
+				<soap:header part="Part_MessageHeader" use="literal" message="tns:Message_GetPolicyDetailsTravel_Request_MessageHeader"/>
+				<soap:body parts="Part_GetPolicyDetailsTravel_Request" use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:header part="Part_MessageHeader" use="literal" message="tns:Message_GetPolicyDetailsTravel_Response_MessageHeader"/>
+				<soap:body parts="Part_GetPolicyDetailsTravel_Response" use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="Service_GetPolicyDetailsTravel">
+		<wsdl:port name="Port_GetPolicyDetailsTravel" binding="tns:Binding_GetPolicyDetailsTravel">
+			<soap:address location="http://development.css-EP-app.nn.insim.biz/api/x2/execute/"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

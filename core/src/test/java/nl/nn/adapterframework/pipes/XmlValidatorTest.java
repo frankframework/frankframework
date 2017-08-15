@@ -1,25 +1,24 @@
 package nl.nn.adapterframework.pipes;
 
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.validation.AbstractXmlValidator;
-import nl.nn.adapterframework.validation.JavaxXmlValidator;
-import nl.nn.adapterframework.validation.XercesXmlValidator;
-import nl.nn.adapterframework.validation.XmlValidatorException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Collection;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.validation.AbstractXmlValidator;
+import nl.nn.adapterframework.validation.XercesXmlValidator;
+import nl.nn.adapterframework.validation.XmlValidatorException;
 
 /**
  * @author Michiel Meeuwissen
@@ -63,7 +62,7 @@ public class XmlValidatorTest {
                 "http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01 " +
                 "/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/getpartybasicdatabanking_01.xsd"
         ).
-            validate(getTestXml("/step5.xml"), new PipeLineSessionBase());
+            validate(getTestXml("/Tibco/in/step5.xml"), new PipeLineSessionBase());
     }
 
     @Test(expected = XmlValidatorException.class)
@@ -82,7 +81,7 @@ public class XmlValidatorTest {
                 "http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01 " +
                 "/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/getpartybasicdatabanking_01.xsd"
         ).
-            validate(getTestXml("/step5.xml"), new PipeLineSessionBase());
+            validate(getTestXml("/Tibco/in/step5.xml"), new PipeLineSessionBase());
     }
 
     @Test
@@ -106,7 +105,7 @@ public class XmlValidatorTest {
                 "http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01 " +
                 "/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/bankingcustomer_generate_01_getpartybasicdatabanking_response_01.xsd "
         ).
-            validate(getTestXml("/step5.xml"), new PipeLineSessionBase());
+            validate(getTestXml("/Tibco/in/step5.xml"), new PipeLineSessionBase());
     }
 
     @Test(expected = ConfigurationException.class)
@@ -131,7 +130,7 @@ public class XmlValidatorTest {
                 "/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/bankingcustomer_generate_01_getpartybasicdatabanking_request_01.xsd"
         );
         validator.setIgnoreUnknownNamespaces(false);
-        validator.validate(getTestXml("/step5errors1.xml"), new PipeLineSessionBase());
+        validator.validate(getTestXml("/Tibco/in/step5error_unknown_namespace.xml"), new PipeLineSessionBase());
     }
 
     @Test(expected = XmlValidatorException.class)
@@ -141,7 +140,7 @@ public class XmlValidatorTest {
                 "/Tibco/xsd/soap/envelope.xsd " // every other namespace is thus unknown
         );
 		validator.setIgnoreUnknownNamespaces(false);
-        validator.validate(getTestXml("/step5errors1.xml"), new PipeLineSessionBase());
+        validator.validate(getTestXml("/Tibco/in/step5error_unknown_namespace.xml"), new PipeLineSessionBase());
     }
 
     @Test
@@ -151,7 +150,7 @@ public class XmlValidatorTest {
                 "/Tibco/xsd/soap/envelope.xsd " // every other namespace is thus unknown
         );
 		validator.setIgnoreUnknownNamespaces(true);
-        validator.validate(getTestXml("/step5errors1.xml"), new PipeLineSessionBase());
+        validator.validate(getTestXml("/Tibco/in/step5error_unknown_namespace.xml"), new PipeLineSessionBase());
     }
 
     @Test(expected = XmlValidatorException.class)
@@ -169,7 +168,7 @@ public class XmlValidatorTest {
                 "http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01 " +
                 "/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/bankingcustomer_generate_01_getpartybasicdatabanking_request_01.xsd"
         ).
-            validate(getTestXml("/step5errors2.xml"), new PipeLineSessionBase());
+            validate(getTestXml("/Tibco/in/step5error_wrong_tag.xml"), new PipeLineSessionBase());
     }
 
     @Test(expected = XmlValidatorException.class)
@@ -179,34 +178,34 @@ public class XmlValidatorTest {
             "http://schemas.xmlsoap.org/soap/envelope/ " +
                 "/Tibco/xsd/soap/envelope.xsd "
         );
-        validator.validate(getTestXml("/step5.xml"), new PipeLineSessionBase());
+        validator.validate(getTestXml("/Tibco/in/step5.xml"), new PipeLineSessionBase());
     }
 
     @Test
     public void addNamespaceToSchema() throws ConfigurationException, IOException, PipeRunException, XmlValidatorException {
         XmlValidator validator = getValidator(
             "http://www.ing.com/testxmlns " +
-            "/GetIntermediaryAgreementDetails/xsd/A.xsd", true);
+            "/Basic/xsd/A_without_targetnamespace.xsd", true);
 
-        validator.validate(getTestXml("/intermediaryagreementdetails.xml"), new PipeLineSessionBase());
+        validator.validate(getTestXml("/Basic/in/ok.xml"), new PipeLineSessionBase());
     }
 
     @Test(expected = XmlValidatorException.class)
     public void addNamespaceToSchemaWithErrors() throws ConfigurationException, IOException, PipeRunException, XmlValidatorException {
         XmlValidator validator = getValidator(
             "http://www.ing.com/testxmlns " +
-                "/GetIntermediaryAgreementDetails/xsd/A.xsd", true);
+                "/Basic/xsd/A_without_targetnamespace.xsd", true);
 
-        validator.validate(getTestXml("/intermediaryagreementdetails_with_errors.xml"), new PipeLineSessionBase());
+        validator.validate(getTestXml("/Basic/in/with_errors.xml"), new PipeLineSessionBase());
     }
 
     @Test(expected = XmlValidatorException.class)
     public void addNamespaceToSchemaNamesspaceMismatch() throws ConfigurationException, IOException, PipeRunException, XmlValidatorException {
         XmlValidator validator = getValidator(
             "http://www.ing.com/testxmlns_mismatch " +
-                "/GetIntermediaryAgreementDetails/xsd/A.xsd", true);
+                "/Basic/xsd/A_without_targetnamespace.xsd", true);
 
-        validator.validate(getTestXml("/intermediaryagreementdetails.xml"), new PipeLineSessionBase());
+        validator.validate(getTestXml("/Basic/in/ok.xml"), new PipeLineSessionBase());
     }
 
     static PipeForward getSuccess() {
