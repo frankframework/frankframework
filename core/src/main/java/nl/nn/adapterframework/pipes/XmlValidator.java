@@ -28,6 +28,8 @@ import java.util.StringTokenizer;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerConfigurationException;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
@@ -36,7 +38,6 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
@@ -46,9 +47,6 @@ import nl.nn.adapterframework.validation.SchemasProvider;
 import nl.nn.adapterframework.validation.XSD;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
 import nl.nn.adapterframework.validation.XmlValidatorException;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 
 /**
@@ -99,8 +97,6 @@ import org.apache.log4j.Logger;
 * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
 */
 public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues {
-
-	protected Logger log = LogUtil.getLogger(this);
 
 	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
     private boolean forwardFailureToSuccess = false;
@@ -501,11 +497,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	public void setWarn(boolean warn) {
-        if (validator instanceof AbstractXmlValidator) {
-            ((AbstractXmlValidator) validator).setWarn(warn);
-        } else {
-            throw new UnsupportedOperationException();
-        }
+        validator.setWarn(warn);
     }
 
 	public void setIgnoreUnknownNamespaces(boolean ignoreUnknownNamespaces) {
@@ -516,6 +508,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return validator.getIgnoreUnknownNamespaces();
 	}
 
+	@Override
 	public String getSchemasId() {
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			return getNoNamespaceSchemaLocation();
@@ -553,6 +546,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return xsds;
 	}
 
+	@Override
 	public List<Schema> getSchemas() throws ConfigurationException {
 		Set<XSD> xsds = getXsds();
 		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
@@ -591,8 +585,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	private void checkRootValidations(Set<XSD> xsds) throws ConfigurationException {
-		if (validator.getRootValidations() != null) {
-			for (List<String> path: validator.getRootValidations()) {
+		Set<List<String>> rootValidations=validator.getRootValidations();
+		if (rootValidations != null) {
+			for (List<String> path: rootValidations) {
 				boolean found = false;
 				String validElements = path.get(path.size() - 1);
 				List<String> validElementsAsList = Arrays.asList(validElements.split(","));
@@ -619,6 +614,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 	}
 
+	@Override
 	public String getSchemasId(IPipeLineSession session) throws PipeRunException {
 		String schemaSessionKey = getSchemaSessionKey();
 		if (schemaSessionKey != null) {
@@ -631,6 +627,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return null;
 	}
 
+	@Override
 	public List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException {
 		List<Schema> xsds = new ArrayList<Schema>();
 		String schemaLocation = getSchemasId(session);
@@ -661,6 +658,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return forwardFailureToSuccess;
 	}
 
+	@Override
 	public Object getSpecialDefaultValue(String attributeName,
 			Object defaultValue, Map<String, String> attributes) {
 		// Different default value for ignoreUnknownNamespaces when using

@@ -16,12 +16,19 @@
 package nl.nn.adapterframework.validation;
 
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.util.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.xml.validation.ValidatorHandler;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.xerces.xni.XNIException;
@@ -29,12 +36,19 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLParseException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLFilterImpl;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.util.*;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.Variant;
 
 /**
  * baseclass for validating input message against a XML-Schema.
@@ -170,14 +184,79 @@ public abstract class AbstractXmlValidator {
 		return event;
 	}
 
-    /**
-     * Validate the XML string
-     * @param input a String
-     * @param session a {@link nl.nn.adapterframework.core.IPipeLineSession Pipelinesession}
-     * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
-     * @throws ConfigurationException
-     */
-    public abstract String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException;
+	public ValidationContext createValidationContext(IPipeLineSession session) throws ConfigurationException, PipeRunException {
+		
+		// clear session variables
+		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
+			log.debug(logPrefix+ "removing contents of sessionKey ["+getReasonSessionKey()+ "]");
+			session.remove(getReasonSessionKey());
+		}
+
+		if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
+			log.debug(logPrefix+ "removing contents of sessionKey ["+getXmlReasonSessionKey()+ "]");
+			session.remove(getXmlReasonSessionKey());
+		}
+		return null;
+	}
+
+	public abstract ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException;
+	public abstract XMLReader getValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException;
+
+	
+	/**
+	 * Validate the XML string
+	 * @param input a String
+	 * @param session a {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession}
+	 * @return MonitorEvent declared in{@link AbstractXmlValidator}
+	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
+	 * @throws PipeRunException
+	 * @throws ConfigurationException
+	 */
+	public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException {
+		ValidationContext context = createValidationContext(session);
+		XMLReader parser = getValidatingParser(session, context);
+		return validate(input, session, logPrefix, parser, null, context);
+	}
+	
+	public String validate(Object input, IPipeLineSession session, String logPrefix, XMLReader parser, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
+
+		if (filter!=null) {
+			filter.setContentHandler(context.getContentHandler());
+			filter.setErrorHandler(context.getErrorHandler());
+		} else {
+			parser.setContentHandler(context.getContentHandler());
+			parser.setErrorHandler(context.getErrorHandler());
+		}
+		
+		InputSource is = getInputSource(input);
+		
+		try {
+			parser.parse(is);
+		} catch (Exception e) {
+			return finalizeValidation(context, session, e);
+		}
+		return finalizeValidation(context, session, null);
+	}
+
+	/**
+	 * Evaluate the validation and set 'reason' session variables.
+	 * 
+	 * @param context: the validationContext of this attempt
+	 * @param session: the PipeLineSession
+	 * @param t:       the exception thrown by the validation, or null
+	 * @return the result event, e.g. 'valid XML' or 'Invalid XML'
+	 * @throws XmlValidatorException, when configured to do so
+	 */
+	public String finalizeValidation(ValidationContext context, IPipeLineSession session, Throwable t) throws XmlValidatorException {
+		if (t!=null) {
+			return handleFailures(context.getErrorHandler(), session, XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, t);
+		}
+		if (context.getErrorHandler().hasErrorOccured()) {
+			return handleFailures(context.getErrorHandler(), session, XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
+		}
+		return XML_VALIDATOR_VALID_MONITOR_EVENT;
+	}
+
 
     /**
      * Enable full schema grammar constraint checking, including
