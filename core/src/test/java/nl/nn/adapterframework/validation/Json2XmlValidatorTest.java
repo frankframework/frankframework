@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -98,6 +99,11 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		return null;
 	}
 	
+    @Test
+    public void jsonStructs() throws Exception {
+        validate(null,SCHEMA_LOCATION_ARRAYS, true ,INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON,null);
+        validate(null,SCHEMA_LOCATION_ARRAYS, true ,INPUT_FILE_SCHEMA_LOCATION_ARRAYS_FULL_JSON,null);
+    }
 	
     @Override
     @Ignore // check this later...

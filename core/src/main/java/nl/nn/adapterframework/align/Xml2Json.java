@@ -106,4 +106,7 @@ public class Xml2Json extends XMLFilterImpl {
 		return contentContainer.toString();
 	}
 
+	public String toString(boolean indent) {
+		return contentContainer.toString(indent);
+	}
 }

@@ -51,15 +51,26 @@ public class Json2Xml extends Tree2Xml<Object> {
 	private final boolean DEBUG=false; 
 	
 	private boolean insertElementContainerElements;
+	private boolean strictSyntax;
 
 	public Json2Xml(ValidatorHandler validatorHandler, boolean insertElementContainerElements) {
+		this(validatorHandler, insertElementContainerElements, false);
+	}
+
+	public Json2Xml(ValidatorHandler validatorHandler, boolean insertElementContainerElements, boolean strictSyntax) {
 		super(validatorHandler);
 		this.insertElementContainerElements=insertElementContainerElements;
+		this.strictSyntax=strictSyntax;
 	}
 
 	public Json2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation, boolean insertElementContainerElements) {
+		this(validatorHandler, schemaInformation, insertElementContainerElements, false);
+	}
+
+	public Json2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation, boolean insertElementContainerElements, boolean strictSyntax) {
 		super(validatorHandler, schemaInformation);
 		this.insertElementContainerElements=insertElementContainerElements;
+		this.strictSyntax=strictSyntax;
 	}
 
 	@Override
@@ -110,7 +121,10 @@ public class Json2Xml extends Tree2Xml<Object> {
 		try {
 			if (node instanceof LinkedList) {
 				if (DEBUG && log.isDebugEnabled()) log.debug("getChildrenByName() child ["+name+"], found LinkedList, straight json in compact mode");
-				return (LinkedList)node;
+				if (strictSyntax) {
+					throw new SAXException("getChildrenByName() child ["+name+"], found LinkedList, straight json found while in compacting mode and strict syntax checking");
+				}
+				return (List<Object>)node;
 			}
 			if (node instanceof JSONArray && insertElementContainerElements && isParentOfSingleMultipleOccurringChildElement()) {
 				if (DEBUG && log.isDebugEnabled()) log.debug("getChildrenByName() child ["+name+"] not found, but current node isParentOfSingleMultipleOccurringChildElement, assuming child needs to be inserted");
@@ -137,13 +151,13 @@ public class Json2Xml extends Tree2Xml<Object> {
 				}
 				if (DEBUG && log.isDebugEnabled()) log.debug("getChildrenByName() no children named ["+name+"] node ["+node+"]");
 				return null;
-			}
+			} 
 			List<Object> result = new LinkedList<Object>(); 
 			if (child instanceof JSONArray) {
 				if (DEBUG && log.isDebugEnabled()) log.debug("getChildrenByName() child named ["+name+"] is a JSONArray, current node isSingleMultipleOccurringChildElement ["+isSingleMultipleOccurringChildElement()+"] insertElementContainerElements ["+insertElementContainerElements+"]");
 				// if it could be necessary to insert elementContainers, we cannot return the individual elements now, because then the containing element would be duplicated
 				// we also cannot use the isSingleMultipleOccurringChildElement, because it is not valid yet
-				if (insertElementContainerElements && !isPresentInSet(multipleOccurringChildElements, name)) {
+				if ((insertElementContainerElements || !strictSyntax) && !isPresentInSet(multipleOccurringChildElements, name)) {
 					result.add(child);
 					if (DEBUG && log.isDebugEnabled()) log.debug("getChildrenByName() singleMultipleOccurringChildElement ["+name+"] returning array node (insertElementContainerElements=true)");
 				} else {
@@ -168,7 +182,7 @@ public class Json2Xml extends Tree2Xml<Object> {
 	public Set<String> getAllChildNames(Object node) throws SAXException {
 		if (DEBUG && log.isDebugEnabled()) log.debug("getAllChildNames() node isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"] isSingleMultipleOccurringChildElement ["+isSingleMultipleOccurringChildElement()+"] ["+node.getClass().getName()+"]["+node+"]");
 		try {
-			if (isParentOfSingleMultipleOccurringChildElement() && insertElementContainerElements && node instanceof JSONArray) {
+			if (isParentOfSingleMultipleOccurringChildElement() && (insertElementContainerElements || !strictSyntax) && node instanceof JSONArray) {
 				log.debug("isParentOfSingleMultipleOccurringChildElement() && insertElementContainerElements && node instanceof JSONArray, returning ["+multipleOccurringChildElements+"]");
 				return multipleOccurringChildElements;
 			}
@@ -193,25 +207,25 @@ public class Json2Xml extends Tree2Xml<Object> {
 			throw new SAXException(e);
 		}
 	}
-	
-	
+
+
 	@Override
 	protected void processArray(Object node, String name, String childElementName, String childElementNameSpace, boolean mandatory, Set<String> unProcessedChildren, Set<String> processedChildren) throws SAXException {
 		if (DEBUG && log.isDebugEnabled()) log.debug("processArray() nodeName ["+name+"] childElementName ["+childElementName+"], node ["+node+"]");
 		// this method is only called when isParentOfSingleMultipleOccurringChildElement is true
-		if (insertElementContainerElements) {
+		if (insertElementContainerElements || !strictSyntax) {
 			if (unProcessedChildren.isEmpty()) {
 				if (DEBUG && log.isDebugEnabled()) log.debug("unProcessedChildren.isEmpty()");
 				if  (node instanceof JSONArray) {
-					if (DEBUG && log.isDebugEnabled()) log.debug("processArray() name ["+name+"] node is JSONArray, inserting array elment container element, node ["+node+"]");
+					if (DEBUG && log.isDebugEnabled()) log.debug("processArray() name ["+name+"] node is JSONArray, inserting array element container element, node ["+node+"]");
 					unProcessedChildren.add(childElementName);
 				}
 				super.processArray(node, name, childElementName, childElementNameSpace, mandatory, unProcessedChildren, processedChildren);
 			} else {
 				if  (node instanceof JSONArray) {
-					// at this point we're expecting arrayElement containers, but we already have an arry.
+					// at this point we're expecting arrayElement containers, but we already have an array.
 					// So now we will handle each of the elements as a child
-					if (DEBUG && log.isDebugEnabled()) log.debug("node instanceof JSONArray, handling each of the nodes as a ["+childElementName+"]");
+					if (DEBUG && log.isDebugEnabled()) log.debug("processArray() node instanceof JSONArray, handling each of the nodes as a ["+childElementName+"]");
 					try {
 						JSONArray ja=(JSONArray)node;
 						for (int i=0;i<ja.length();i++) {
@@ -230,10 +244,10 @@ public class Json2Xml extends Tree2Xml<Object> {
 						JSONObject obj=(JSONObject)node;
 						Object childObject=obj.opt(childElementName);
 						if (childObject==null) {
-							log.warn("node ["+name+"] ParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"] child ["+childElementName+"] not found, nodetype ["+node.getClass().getName()+"] node ["+node+"], will insert elementcontainer ["+childElementName+"] --> need to be verified");
+							log.warn("processArray() node ["+name+"] ParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"] child ["+childElementName+"] not found, nodetype ["+node.getClass().getName()+"] node ["+node+"], will insert elementcontainer ["+childElementName+"] --> need to be verified");
 							handleNode(node, childElementName, childElementNameSpace);
 							unProcessedChildren.clear();
-							processedChildren.add("name");
+							processedChildren.add(name);
 						} else {
 							List<Object> helper=new LinkedList<Object>(); // We'll hack this by returning a LinkedList. getChildElementsByName() will recognize this.
 							if (childObject instanceof JSONArray) {
@@ -257,6 +271,9 @@ public class Json2Xml extends Tree2Xml<Object> {
 	}
 	
 	public static String translate(JSONObject json, URL schemaURL, boolean compactJsonArrays, String targetNamespace) throws SAXException, IOException {
+		return translate(json, schemaURL, compactJsonArrays, false, targetNamespace);
+	}
+	public static String translate(JSONObject json, URL schemaURL, boolean compactJsonArrays, boolean strictSyntax, String targetNamespace) throws SAXException, IOException {
 
 		// create the ValidatorHandler
     	SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -270,7 +287,7 @@ public class Json2Xml extends Tree2Xml<Object> {
 		schemaInformation.add(xsModel);
 
 		// create the validator, setup the chain
-		Json2Xml j2x = new Json2Xml(validatorHandler,schemaInformation,compactJsonArrays);
+		Json2Xml j2x = new Json2Xml(validatorHandler,schemaInformation,compactJsonArrays,strictSyntax);
 		if (targetNamespace!=null) {
 			j2x.setTargetNamespace(targetNamespace);
 		}
@@ -285,9 +302,9 @@ public class Json2Xml extends Tree2Xml<Object> {
 	        writer.flush();
 	        xml = writer.toString();
 		} catch (TransformerConfigurationException e) {
-			e.printStackTrace();
+			throw new SAXException(e);
 		} catch (TransformerException e) {
-			e.printStackTrace();
+			throw new SAXException(e);
 		}
     	return xml;
  	}

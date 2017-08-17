@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
@@ -31,6 +32,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
+import javax.xml.validation.ValidatorHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -39,12 +41,16 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xs.XSModel;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 
 /**
  * Straightforward XML-validation based on javax.validation. This is work in programs.
@@ -77,6 +83,39 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 			}
 		}
 	}
+
+	@Override
+	public JavaxValidationContext createValidationContext(IPipeLineSession session) throws ConfigurationException, PipeRunException {
+		// clear session variables
+		super.createValidationContext(session);
+	
+		String schemasId;
+		Schema schema;
+		Set<String> namespaceSet=null;
+		List<XSModel> xsModels=null;
+
+		schemasId = schemasProvider.getSchemasId();
+		if (schemasId == null) {
+			schemasId = schemasProvider.getSchemasId(session);
+			getSchemaObject(schemasId, schemasProvider.getSchemas(session));
+		}
+		schema = javaxSchemas.get(schemasId);
+
+		return new JavaxValidationContext(schemasId, schema, namespaceSet, xsModels);
+	}
+
+	@Override
+	public ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public XMLReader getValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 
 	@Override
 	public String validate(Object input/*impossible to understand*/,
@@ -159,4 +198,35 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		return result;
 	}
 
+}
+
+class JavaxValidationContext extends ValidationContext {
+
+	String schemasId;
+	Schema schema;
+	Set<String> namespaceSet;
+	List<XSModel> xsModels;
+	
+	JavaxValidationContext(String schemasId, Schema schema, Set<String> namespaceSet, List<XSModel> xsModels) {
+		this.schemasId=schemasId;
+		this.schema=schema;
+		this.namespaceSet=namespaceSet;
+		this.xsModels=xsModels;
+	}
+
+	@Override
+	public String getSchemasId() {
+		return schemasId;
+	}
+
+	@Override
+	public Set<String> getNamespaceSet() {
+		return namespaceSet;
+	}
+
+	@Override
+	public List<XSModel> getXsModels() {
+		return xsModels;
+	}
+	
 }

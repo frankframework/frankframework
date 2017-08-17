@@ -19,13 +19,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.pipes.XmlValidator;
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.pipes.Json2XmlValidator;
+import nl.nn.adapterframework.pipes.XmlValidator;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * XmlValidator that will automatically add the SOAP envelope XSD to the set of
@@ -45,7 +46,7 @@ import org.apache.log4j.Logger;
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
-public class SoapValidator extends XmlValidator {
+public class SoapValidator extends Json2XmlValidator {
 
     private static final Logger LOG = LogUtil.getLogger(SoapValidator.class);
 

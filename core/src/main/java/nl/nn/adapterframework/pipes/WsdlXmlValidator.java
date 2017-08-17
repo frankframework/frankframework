@@ -125,15 +125,15 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 	}
 
-	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		try {
-			PipeForward forward = validate(input.toString(), session);
-			return new PipeRunResult(forward, input);
-		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session), e);
-		}
-	}
+//	@Override
+//	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+//		try {
+//			PipeForward forward = validate(input.toString(), session);
+//			return new PipeRunResult(forward, input);
+//		} catch (Exception e) {
+//			throw new PipeRunException(this, getLogPrefix(session), e);
+//		}
+//	}
 
 	protected static void addNamespaces(Schema schema, Map<String, String> namespaces) {
 		for (Map.Entry<String,String> e : namespaces.entrySet()) {

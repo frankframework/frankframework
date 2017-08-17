@@ -17,6 +17,7 @@
 
 package nl.nn.adapterframework.validation.xerces_2_11;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 
 /**
@@ -70,5 +71,9 @@ final class XMLSchema extends AbstractXMLSchema {
     public boolean isFullyComposed() {
         return fFullyComposed;
     }
-    
+
+    // It appears to be necessary to implement this method, in order to be able to compile via maven.
+    public String getProperty(String property) {
+    	throw new NotImplementedException("XmlSchema.getProperty()");
+    }
 } // XMLSchema

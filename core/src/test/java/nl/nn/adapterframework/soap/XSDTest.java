@@ -34,16 +34,16 @@ public class XSDTest {
 	@Test
 	public void xsdName() throws URISyntaxException, XMLStreamException, IOException, ConfigurationException {
 		XSD xsd = new XSD();
-		xsd.setResource("v1 test.xsd");
+		xsd.setResource("XSDTest/v1 test.xsd");
 		xsd.setNamespace("http://test");
 		xsd.init();
-		assertEquals("v1 test.xsd", xsd.getResourceTarget());
+		assertEquals("XSDTest/v1 test.xsd", xsd.getResourceTarget());
 	}
 
 	@Test
 	public void xsdNamespace() throws URISyntaxException, XMLStreamException, IOException, ConfigurationException {
         XSD xsd = new XSD();
-        xsd.setResource("v1 test.xsd");
+        xsd.setResource("XSDTest/v1 test.xsd");
         xsd.setNamespace("http://test");
         xsd.init();
         assertEquals("http://test",

@@ -16,10 +16,13 @@
 package nl.nn.adapterframework.align;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,8 +41,10 @@ public class JsonContentContainer {
 
 	public StringBuffer stringContent;
 	private Map<String,Object> contentMap;
-	private JSONArray array;
+	private List<Object> array;
 	
+	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
+	private final int MAX_INDENT=INDENTOR.length/2;
 	
 	private final boolean DEBUG=false; 	
 	
@@ -88,9 +93,9 @@ public class JsonContentContainer {
 		}
 		if (content.isXmlArrayElement() && skipArrayElementContainers) {
 			if (array==null) {
-				array=new JSONArray();
+				array=new LinkedList<Object>();
 			} 
-			array.put(content.getContent());
+			array.add(content.getContent());
 			return;
 		}
 		if (array!=null) {
@@ -102,14 +107,14 @@ public class JsonContentContainer {
 		Object current=contentMap.get(childName);
 		if (content.isRepeatedElement()) {
 			if (current==null) {
-				current=new JSONArray();
+				current=new LinkedList<Object>();
 				contentMap.put(childName,current);
 			} else {
-				if (!(current instanceof JSONArray)) {
+				if (!(current instanceof List)) {
 					throw new IllegalArgumentException("element ["+childName+"] is not an array");
 				}
 			}
-			((JSONArray)current).put(content.getContent());
+			((List)current).add(content.getContent());
 		} else {
 			if (current!=null) {
 				throw new IllegalStateException("content already set for element ["+childName+"]");
@@ -126,7 +131,7 @@ public class JsonContentContainer {
 			return array;
 		}
 		if (contentMap!=null) {
-			return new JSONObject(contentMap);
+			return contentMap;
 		}
 		return new JSONObject();
 	}
@@ -144,19 +149,86 @@ public class JsonContentContainer {
 	
 	@Override
 	public String toString() {
+		return toString(true);
+	}
+	
+	public String toString(boolean indent) {
 		Object content=getContent();
 		if (content==null) {
 			return null;
 		}
-		if (content instanceof JSONObject) {
-			try {
-				String result=((JSONObject)content).toString(2);
-				// result.replaceAll("\\\\u20ac", "€"); // TODO: Do something structural for diacritics! This is a hack for cosmetics!
-				return result;
-			} catch (JSONException e) {
-				log.warn(e);
-			}
-		}
-		return content.toString();
+//		if (content instanceof JSONObject) {
+//			try {
+//				String result=((JSONObject)content).toString(2);
+//				// result.replaceAll("\\\\u20ac", "€"); // TODO: Do something structural for diacritics! This is a hack for cosmetics!
+//				return result;
+//			} catch (JSONException e) {
+//				log.warn(e);
+//			}
+//		}
+		StringBuffer sb = new StringBuffer();
+		toString(sb,this,indent?0:-1);
+		return sb.toString();
+//		return content.toString();
 	}
+	
+	public void toString(StringBuffer sb, Object item, int indentLevel) {
+		if (item instanceof JsonContentContainer) {
+				if (name!=null) {
+					sb.append('"').append(name).append("\": ");
+				}
+				if (stringContent!=null) {
+					toString(sb,contentMap, indentLevel);
+				}
+				if (contentMap!=null) {
+					toString(sb,contentMap, indentLevel);
+				}
+				if (array!=null) {
+					toString(sb,array, indentLevel);
+				}
+		} else if (item instanceof StringBuffer) {
+			sb.append('"').append(item).append("\"");
+		} else if (item instanceof Map) {
+			sb.append("{");
+			if (indentLevel>=0) indentLevel++;
+			for (Entry<String,Object> entry:((Map<String,Object>)item).entrySet()) {
+				newLine(sb, indentLevel);
+				sb.append('"').append(entry.getKey()).append("\": ");
+				toString(sb,entry.getValue(), indentLevel);
+				sb.append(",");
+			}
+			sb.deleteCharAt(sb.length()-1);
+			if (indentLevel>=0) indentLevel--;
+			newLine(sb, indentLevel);
+			sb.append("}");
+		} else if (item instanceof List) {
+			sb.append("[");
+			if (indentLevel>=0) indentLevel++;
+			for (Object subitem:(List)item) {
+				newLine(sb, indentLevel);
+				toString(sb,subitem, indentLevel);
+				sb.append(",");
+			}
+			sb.deleteCharAt(sb.length()-1);
+			if (indentLevel>=0) indentLevel--;
+			newLine(sb, indentLevel);
+			sb.append("]");
+		} else if (item instanceof JSONObject) {
+			try {
+				sb.append(((JSONObject)item).toString(2));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		} else {
+			throw new NotImplementedException("cannot handle class ["+item.getClass().getName()+"]");
+		}
+	}
+	
+	public void newLine(StringBuffer sb, int indentLevel) {
+		if (indentLevel>=0)  {
+			sb.append(INDENTOR, 0, (indentLevel<MAX_INDENT?indentLevel:MAX_INDENT)*2+1);
+		}
+	}
+
+	
 }

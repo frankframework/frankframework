@@ -22,7 +22,7 @@ public class SoapValidatorTest {
     @Test
 	@Ignore("Don't know what it should test any more")
     public void basic() {
-        SoapValidator2 validator = new SoapValidator2();
+        SoapValidator validator = new SoapValidator();
         validator.setSchemaLocation("http://www.ing.com/pim test.xsd");
         validator.setSoapBody("{http://www.ing.com/pim}a");
 		System.out.println(validator.getSoapBody());
@@ -33,7 +33,7 @@ public class SoapValidatorTest {
     @Test
 	@Ignore("Don't know what it should test any more")
     public void defaultNamespace()  {
-        SoapValidator2 validator = new SoapValidator2();
+        SoapValidator validator = new SoapValidator();
         validator.setSchemaLocation("http://www.ing.com/pim test.xsd");
         validator.setSoapBody("a");
 //		WTF assertEquals(new QName("http://www.ing.com/pim", "a"), validator.getSoapBodyTags().iterator().next());
@@ -43,56 +43,56 @@ public class SoapValidatorTest {
     @Test
     public void validate11() throws ConfigurationException, IOException, PipeRunException {
         XmlValidator xml = getSoapValidator(true);
-        xml.doPipe(getTestXml("/valid_soap.xml"), new PipeLineSessionBase());
+        xml.doPipe(getTestXml("/SoapValidator/valid_soap.xml"), new PipeLineSessionBase());
 
     }
 
     @Test
     public void validate12() throws ConfigurationException, IOException, PipeRunException {
-        SoapValidator2 xml = getSoapValidator(true);
+    	SoapValidator xml = getSoapValidator(true);
         System.out.println("1 " + new Date());
-        xml.doPipe(getTestXml("/valid_soap.xml"), new PipeLineSessionBase());
+        xml.doPipe(getTestXml("/SoapValidator/valid_soap.xml"), new PipeLineSessionBase());
         System.out.println("2" + new Date());
-        xml.doPipe(getTestXml("/valid_soap.xml"), new PipeLineSessionBase());
+        xml.doPipe(getTestXml("/SoapValidator/valid_soap.xml"), new PipeLineSessionBase());
         System.out.println("3" + new Date());
 
     }
 
     @Test
     public void validate12_explicitversion() throws ConfigurationException, IOException, PipeRunException {
-        SoapValidator2 xml = getSoapValidator(true, "1.2");
-        xml.doPipe(getTestXml("/valid_soap_1.2.xml"), new PipeLineSessionBase());
+    	SoapValidator xml = getSoapValidator(true, "1.2");
+        xml.doPipe(getTestXml("/SoapValidator/valid_soap_1.2.xml"), new PipeLineSessionBase());
     }
 
     @Test(expected = PipeRunException.class)
     public void validate12_invalidversion() throws ConfigurationException, IOException, PipeRunException {
-        SoapValidator2 xml = getSoapValidator();
+        SoapValidator xml = getSoapValidator();
         xml.setSoapVersion("1.2");
-        xml.doPipe(getTestXml("/valid_soap.xml"), new PipeLineSessionBase());
+        xml.doPipe(getTestXml("/SoapValidator/valid_soap.xml"), new PipeLineSessionBase());
 
     }
 
     @Test(expected = PipeRunException.class)
     public void validate12_invalid() throws ConfigurationException, IOException, PipeRunException {
-        SoapValidator2 xml = getSoapValidator();
+        SoapValidator xml = getSoapValidator();
         xml.setSoapVersion("1.2");
-        xml.doPipe(getTestXml("/invalid_soap.xml"), new PipeLineSessionBase());
+        xml.doPipe(getTestXml("/SoapValidator/invalid_soap.xml"), new PipeLineSessionBase());
 
     }
 
     @Test(expected = PipeRunException.class)
     public void validate12_invalid_body() throws ConfigurationException, IOException, PipeRunException {
-        SoapValidator2 xml = getSoapValidator();
+        SoapValidator xml = getSoapValidator();
         xml.setSoapVersion("1.1");
-        xml.doPipe(getTestXml("/invalid_soap_body.xml"), new PipeLineSessionBase());
+        xml.doPipe(getTestXml("/SoapValidator/invalid_soap_body.xml"), new PipeLineSessionBase());
 
     }
 
     @Test(expected = PipeRunException.class)
     public void validate12_unknown_namespace_body() throws ConfigurationException, IOException, PipeRunException {
-        SoapValidator2 xml = getSoapValidator();
+        SoapValidator xml = getSoapValidator();
         xml.setSoapVersion("1.1");
-        xml.doPipe(getTestXml("/unknown_namespace_soap_body.xml"), new PipeLineSessionBase());
+        xml.doPipe(getTestXml("/SoapValidator/unknown_namespace_soap_body.xml"), new PipeLineSessionBase());
 
     }
 
@@ -115,16 +115,16 @@ public class SoapValidatorTest {
         return forward;
     }
 
-    private SoapValidator2 getSoapValidator() throws ConfigurationException {
+    private SoapValidator getSoapValidator() throws ConfigurationException {
         return getSoapValidator(false);
     }
 
-    private SoapValidator2 getSoapValidator(boolean addNamespaceToSchema) throws ConfigurationException {
+    private SoapValidator getSoapValidator(boolean addNamespaceToSchema) throws ConfigurationException {
         return getSoapValidator(addNamespaceToSchema, null);
     }
 
-    private SoapValidator2 getSoapValidator(boolean addNamespaceToSchema, String soapVersion) throws ConfigurationException {
-        SoapValidator2 validator = new SoapValidator2();
+    private SoapValidator getSoapValidator(boolean addNamespaceToSchema, String soapVersion) throws ConfigurationException {
+    	SoapValidator validator = new SoapValidator();
         if (addNamespaceToSchema) {
             validator.setAddNamespaceToSchema(addNamespaceToSchema);
         }

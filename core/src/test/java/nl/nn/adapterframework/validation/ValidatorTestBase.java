@@ -51,8 +51,13 @@ public abstract class ValidatorTestBase extends TestCase {
 	public String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE            ="http://www.ing.com/testxmlns /Basic/xsd/A_without_targetnamespace.xsd";
 	public String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE_MISMATCH   ="http://www.ing.com/testxmlns_mismatch /Basic/xsd/A_without_targetnamespace.xsd";
 
+	
 	public String INPUT_FILE_BASIC_A_OK="/Basic/in/ok";
 	public String INPUT_FILE_BASIC_A_ERR="/Basic/in/with_errors";
+
+	public String SCHEMA_LOCATION_ARRAYS                            	="urn:arrays /Arrays/arrays.xsd";
+	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON		="/Arrays/arrays-compact";
+	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_FULL_JSON			="/Arrays/arrays-full";
 
     public void validate(String rootNamespace, String schemaLocation, String inputFile, String expectedFailureReason) throws Exception {
     	validate(rootNamespace,schemaLocation, false, inputFile, expectedFailureReason);
@@ -76,7 +81,11 @@ public abstract class ValidatorTestBase extends TestCase {
 
     public void evaluateResult(String event, IPipeLineSession session, Exception e, String expectedFailureReason) {
         String failureReason=(String)(session.get("failureReason"));
-        System.out.println("failure reason ["+failureReason+"]");
+        if (failureReason!=null) {
+        	System.out.println("no failure reason");
+        } else {
+        	System.out.println("failure reason ["+failureReason+"]");
+        }
         if (e!=null) {
         	System.out.println("exception ("+e.getClass().getName()+"): "+e.getMessage());
         }
