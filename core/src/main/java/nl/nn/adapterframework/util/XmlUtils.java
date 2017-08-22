@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -420,6 +421,7 @@ public class XmlUtils {
 
 		DocumentBuilderFactory factory = getDocumentBuilderFactory(xslt2, namespaceAware);
 		try {
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			if (!resolveExternalEntities) {
 				builder.setEntityResolver(new XmlExternalEntityResolver());
@@ -765,6 +767,7 @@ public class XmlUtils {
 		InputSource is = in.asXmlInputSource();
 		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
 		try {
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			XMLReader xmlReader = factory.newSAXParser().getXMLReader();
 			if (!resolveExternalEntities) {
 				xmlReader.setEntityResolver(new XmlExternalEntityResolver());
