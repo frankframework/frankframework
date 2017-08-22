@@ -1455,6 +1455,18 @@ public class XmlUtils {
 		return result;
 	}
 
+	static public String identityTransform(String input)
+			throws DomBuilderException {
+		String result = "";
+		Document document = XmlUtils.buildDomDocument((String) input);
+		try {
+			result = nodeToString(document, false);
+		} catch (TransformerException e) {
+			throw new DomBuilderException(e);
+		}
+		return result;
+	}
+	
 	public static String getVersionInfo() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(AppConstants.getInstance().getProperty("application.name") + " "
@@ -1620,8 +1632,14 @@ public class XmlUtils {
 	}
 
 	public static String nodeToString(Node node) throws TransformerException {
+		return nodeToString(node, true);
+	}
+
+	public static String nodeToString(Node node, boolean omitXmlDeclaration) throws TransformerException {
 		Transformer t = getTransformerFactory().newTransformer();
-		t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		if (omitXmlDeclaration) {
+			t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		}
 		StringWriter sw = new StringWriter();
 		t.transform(new DOMSource(node), new StreamResult(sw));
 		return sw.toString();
