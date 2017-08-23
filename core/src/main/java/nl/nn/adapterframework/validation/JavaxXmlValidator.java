@@ -98,6 +98,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		Set<String> namespaceSet=new HashSet<String>();
 		List<XSModel> xsModels=null;
 
+		init();
 		schemasId = schemasProvider.getSchemasId();
 		if (schemasId == null) {
 			schemasId = schemasProvider.getSchemasId(session);
