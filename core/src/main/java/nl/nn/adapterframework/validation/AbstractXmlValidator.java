@@ -42,9 +42,11 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.Variant;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * baseclass for validating input message against a XML-Schema.
@@ -224,7 +226,15 @@ public abstract class AbstractXmlValidator {
 			parser.setErrorHandler(context.getErrorHandler());
 		}
 		
-		InputSource is = getInputSource(input);
+		// Perform identity transform to prevent XML Entity Expansion (XEE) and XML External Entity (XXE) Injection
+		String inputString;
+		try {
+			inputString = XmlUtils.identityTransform((String) input);
+		} catch (DomBuilderException e) {
+			throw new XmlValidatorException(logPrefix + "caught DomBuilderException", e);
+		}
+		
+		InputSource is = getInputSource(inputString);
 		
 		try {
 			parser.parse(is);

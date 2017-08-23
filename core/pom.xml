@@ -315,7 +315,7 @@
     <dependency>
       <groupId>nl.nn.adapterframework</groupId>
       <artifactId>service-dispatcher</artifactId>
-      <version>1.3</version>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>

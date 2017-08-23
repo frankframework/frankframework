@@ -104,16 +104,15 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				context=new HashMap();
 			}
 			DispatcherManager dm = null;
-
 			Class c = Class.forName("nl.nn.adapterframework.dispatcher.DispatcherManagerFactory");
+
 			if(getDispatchType().equalsIgnoreCase("DLL")) {
-				try {
-					Method getDispatcherManager = c.getMethod("getDispatcherManager", String.class);
-					dm = (DispatcherManager) getDispatcherManager.invoke(null, getDispatchType());
-				}
-				catch (Exception e) {
-					throw new SenderException("IBIS-ServiceDispatcher out of date! Please update to version 1.4 or higher", e);
-				}
+				String version = nl.nn.adapterframework.dispatcher.Version.version;
+				if(version.contains("IbisServiceDispatcher 1.3"))
+					throw new SenderException("IBIS-ServiceDispatcher out of date! Please update to version 1.4 or higher");
+
+				Method getDispatcherManager = c.getMethod("getDispatcherManager", String.class);
+				dm = (DispatcherManager) getDispatcherManager.invoke(null, getDispatchType());
 			}
 			else {
 				Method getDispatcherManager = c.getMethod("getDispatcherManager");
