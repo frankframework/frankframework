@@ -6,9 +6,10 @@
         <p>
 	        <strong>IAF {{version}}</strong>: {{name}}<br/>
 	        Running on <strong>{{machineName}}</strong> using <strong>{{applicationServer}}</strong><br/>
+	        Java Version: <strong>{{javaVersion}}</strong><br/>
 	        Heap size: <strong>{{processMetrics.heapSize}}</strong>, total JVM memory: <strong>{{processMetrics.totalMemory}}</strong><br/>
 	        Free disk space: <strong>{{fileSystem.freeSpace}}</strong>, total disk space: <strong>{{fileSystem.totalSpace}}</strong><br/>
-	        Uptime: <strong><span to-date time="{{uptime}}"></span></strong> (<span time-since time="{{uptime}}"></span>)
+	        Up since: <strong><span to-date time="{{uptime}}"></span></strong> (<span time-since time="{{uptime}}"></span>)
         </p>
     </div>
     <div class="modal-footer">
