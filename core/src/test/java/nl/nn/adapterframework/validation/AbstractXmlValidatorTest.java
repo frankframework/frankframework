@@ -42,7 +42,7 @@ public class AbstractXmlValidatorTest {
         instance.setSchemasProvider(new SchemasProviderImpl(namespace, systemId));
         instance.setIgnoreUnknownNamespaces(false);
         instance.setAddNamespaceToSchema(addNamespaceToSchema);
-        instance.init();
+        instance.configure("Setup");
         String result=instance.validate(getTestXml(inputfile), new PipeLineSessionBase(), "test");
         if (expectedValid) {
             Assert.assertEquals("valid XML",result);

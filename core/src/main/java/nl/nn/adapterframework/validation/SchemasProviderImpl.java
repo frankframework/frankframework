@@ -61,19 +61,11 @@ public class SchemasProviderImpl implements SchemasProvider {
 
     @Override
     public String getSchemasId(IPipeLineSession session) throws PipeRunException {
-    	try {
-			return getSchemasId();
-		} catch (ConfigurationException e) {
-			throw new PipeRunException(null,"cannot get schemasid",e);
-		}
+    	return null;
     }
 
     @Override
     public List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException {
-    	try {
-			return getSchemas();
-		} catch (ConfigurationException e) {
-			throw new PipeRunException(null,"cannot get schemas",e);
-		}
+    	return null;
     }
 }
