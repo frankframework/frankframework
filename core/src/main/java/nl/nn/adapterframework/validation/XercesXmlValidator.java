@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.validation.ValidatorHandler;
 
+import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.parsers.SAXParser;
@@ -34,11 +35,14 @@ import org.apache.xerces.parsers.XMLGrammarPreparser;
 import org.apache.xerces.util.ShadowedSymbolTable;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XSGrammar;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -51,6 +55,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.validation.xerces_2_11.XMLSchemaFactory;
 
 
@@ -187,7 +192,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static void registerNamespaces(Grammar grammar, Set<String> namespaces) {
 		namespaces.add(grammar.getGrammarDescription().getNamespace());
 		if (grammar instanceof SchemaGrammar) {
-			List imported = ((SchemaGrammar)grammar).getImportedGrammars();
+			List<?> imported = ((SchemaGrammar)grammar).getImportedGrammars();
 			if (imported != null) {
 				for (Object g : imported) {
 					Grammar gr = (Grammar)g;
@@ -385,4 +390,38 @@ class PreparseResult {
 	public void setXsModels(List<XSModel> xsModels) {
 		this.xsModels = xsModels;
 	}
+
 }
+class MyErrorHandler implements XMLErrorHandler {
+	protected Logger log = LogUtil.getLogger(this);
+	protected boolean warn = true;
+
+	@Override
+	public void warning(String domain, String key, XMLParseException e) throws XNIException {
+		if (warn) {
+			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+		}
+	}
+
+	@Override
+	public void error(String domain, String key, XMLParseException e) throws XNIException {
+		// In case the XSD doesn't exist throw an exception to prevent the
+		// the adapter from starting.
+		if (e.getMessage() != null
+				&& e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
+			throw e;
+		}
+		if (warn) {
+			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+		}
+	}
+
+	@Override
+	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
+		if (warn) {
+			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+		}
+		throw new XNIException(e);
+	}
+}
+

@@ -10,14 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Ignore;
-import org.junit.Test;
-
-import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.pipes.XmlValidator;
 
@@ -165,6 +160,7 @@ public abstract class ValidatorTestBase extends TestCase {
 				return xsds;
 			}
 
+			@Override
 			public List<Schema> getSchemas() throws ConfigurationException {
 				Set<XSD> xsds = getXsds();
 				xsds = SchemaUtils.getXsdsRecursive(xsds);
@@ -189,12 +185,12 @@ public abstract class ValidatorTestBase extends TestCase {
 
 			@Override
 			public String getSchemasId(IPipeLineSession session) throws PipeRunException {
-				throw new PipeRunException(null,"getSchemasId not implemented");
+				return null;
 			}
 
 			@Override
 			public List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException {
-				throw new PipeRunException(null,"getSchemas not implemented");
+				return null;
 			}
 
 		};

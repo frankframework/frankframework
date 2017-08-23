@@ -31,16 +31,12 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
-import org.apache.xerces.xni.parser.XMLParseException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -406,33 +402,4 @@ public abstract class AbstractXmlValidator {
         this.lazyInit = lazyInit;
     }
 
-	protected static class MyErrorHandler implements XMLErrorHandler {
-		protected Logger log = LogUtil.getLogger(this);
-		protected boolean warn = true;
-
-		public void warning(String domain, String key, XMLParseException e) throws XNIException {
-			if (warn) {
-				ConfigurationWarnings.getInstance().add(log, e.getMessage());
-			}
-		}
-
-		public void error(String domain, String key, XMLParseException e) throws XNIException {
-			// In case the XSD doesn't exist throw an exception to prevent the
-			// the adapter from starting.
-			if (e.getMessage() != null
-					&& e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
-				throw e;
-			}
-			if (warn) {
-				ConfigurationWarnings.getInstance().add(log, e.getMessage());
-			}
-		}
-
-		public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
-			if (warn) {
-				ConfigurationWarnings.getInstance().add(log, e.getMessage());
-			}
-			throw new XNIException(e);
-		}
-	}
 }

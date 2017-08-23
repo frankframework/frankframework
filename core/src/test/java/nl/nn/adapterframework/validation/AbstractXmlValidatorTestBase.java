@@ -22,8 +22,7 @@ public abstract class AbstractXmlValidatorTestBase extends XmlValidatorTestBase 
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][]{
             {XercesXmlValidator.class}
-            //,{XercesJavaxXmlValidator.class}
-            //,{JavaxXmlValidator.class}
+            ,{JavaxXmlValidator.class}
         };
         return Arrays.asList(data);
     }
