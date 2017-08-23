@@ -16,41 +16,42 @@
 package nl.nn.adapterframework.validation;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.Source;
-import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 import javax.xml.validation.ValidatorHandler;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.xerces.impl.xs.XMLSchemaLoader;
+import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.grammars.XSGrammar;
+import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSModel;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSResourceResolver;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.log4j.Logger;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.xs.XSModel;
-import org.w3c.dom.ls.LSInput;
-import org.w3c.dom.ls.LSResourceResolver;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
 
 /**
  * Straightforward XML-validation based on javax.validation. This is work in programs.
@@ -59,7 +60,10 @@ import org.xml.sax.XMLReader;
  */
 public class JavaxXmlValidator extends AbstractXmlValidator {
 
-	protected static final Logger LOG = LogUtil.getLogger(JavaxXmlValidator.class);
+	public static final String PARSING_FEATURE_SECURE="http://javax.xml.XMLConstants/feature/secure-processing";
+	public static final String PARSING_FEATURE_EXTERNAL_GENERAL_ENTITIES="http://xml.org/sax/features/external-general-entities";
+	public static final String PARSING_FEATURE_EXTERNAL_PARAMETER_ENTITIES="http://xml.org/sax/features/external-parameter-entities";
+	public static final String PARSING_FEATURE_DISALLOW_INLINE_DOCTYPE="http://apache.org/xml/features/disallow-doctype-decl";
 
 	// TODO I think many (if not all) schemas can simply be registered globally, because xmlns should be uniquely defined.
 	// missing a generic generic mechanism for now
@@ -91,78 +95,117 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	
 		String schemasId;
 		Schema schema;
-		Set<String> namespaceSet=null;
+		Set<String> namespaceSet=new HashSet<String>();
 		List<XSModel> xsModels=null;
 
+		init();
 		schemasId = schemasProvider.getSchemasId();
 		if (schemasId == null) {
 			schemasId = schemasProvider.getSchemasId(session);
 			getSchemaObject(schemasId, schemasProvider.getSchemas(session));
 		}
 		schema = javaxSchemas.get(schemasId);
+		String mainFailureMessage = "Validation using " + schemasProvider.getClass().getSimpleName() + " with '" + schemasId + "' failed";
 
-		return new JavaxValidationContext(schemasId, schema, namespaceSet, xsModels);
+		if (schema!=null) {
+			org.apache.xerces.jaxp.validation.XSGrammarPoolContainer xercesSchema = (org.apache.xerces.jaxp.validation.XSGrammarPoolContainer)schema;
+			xercesSchema.getGrammarPool();
+	
+			xsModels=new LinkedList<XSModel>();
+			Grammar[] grammars=xercesSchema.getGrammarPool().retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
+			for(int i=0;i<grammars.length;i++) {
+				XSModel model=((XSGrammar)grammars[i]).toXSModel();
+				xsModels.add(model);
+				StringList namespaces=model.getNamespaces();
+				for (int j=0;j<namespaces.getLength();j++) {
+					String namespace=namespaces.item(j);
+					namespaceSet.add(namespace);
+				}
+			}
+		}
+
+		JavaxValidationContext result= new JavaxValidationContext(schemasId, schema, namespaceSet, xsModels);
+		XmlValidatorContentHandler xmlValidatorContentHandler =
+				new XmlValidatorContentHandler(namespaceSet, rootValidations, invalidRootNamespaces, getIgnoreUnknownNamespaces());
+		XmlValidatorErrorHandler xmlValidatorErrorHandler = new XmlValidatorErrorHandler(xmlValidatorContentHandler, mainFailureMessage);
+		xmlValidatorContentHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
+		result.setContentHandler(xmlValidatorContentHandler);
+		result.setErrorHandler(xmlValidatorErrorHandler);
+		return result;
 	}
 
 	@Override
 	public ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException {
-		// TODO Auto-generated method stub
-		return null;
+		Schema schema=getSchemaObject(context.getSchemasId(), schemasProvider.getSchemas(session));
+		return schema.newValidatorHandler();
 	}
 
 	@Override
-	public XMLReader getValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public String validate(Object input/*impossible to understand*/,
-			IPipeLineSession session, String logPrefix) throws XmlValidatorException, ConfigurationException, PipeRunException {
-		InputSource source = getInputSource(input);
-		SAXSource sax = new SAXSource(source);
-		return validate(sax, session);
-	}
-
-	protected String validate(Source source, IPipeLineSession session) throws XmlValidatorException, ConfigurationException, PipeRunException {
-        init();
-		String schemasId = schemasProvider.getSchemasId();
-		if (schemasId == null) {
-			schemasId = schemasProvider.getSchemasId(session);
-			getSchemaObject(schemasId, schemasProvider.getSchemas(session));
-		}
-		Schema xsd = javaxSchemas.get(schemasId);
+	public XMLReader getValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, PipeRunException {
+		SAXParser parser;
 		try {
-			Validator validator = xsd.newValidator();
-			validator.setResourceResolver(new LSResourceResolver() {
-				public LSInput resolveResource(String s, String s1, String s2, String s3, String s4) {
-                    System.out.println("--");
-					return null;//To change body of implemented methods Settings | File Templates.
-				}
-			});
-			validator.setErrorHandler(new ErrorHandler() {
-				public void warning(SAXParseException e) throws SAXException {
-                    LOG.warn(e.getMessage());
-				}
+			SAXParserFactory parserFactory=SAXParserFactory.newInstance();
+			parserFactory.setValidating(false);
+			parserFactory.setNamespaceAware(true);
+			parserFactory.setFeature(PARSING_FEATURE_SECURE, true);
+			parserFactory.setFeature(PARSING_FEATURE_EXTERNAL_GENERAL_ENTITIES, false);
+			parserFactory.setFeature(PARSING_FEATURE_EXTERNAL_PARAMETER_ENTITIES, false);
+			parserFactory.setFeature(PARSING_FEATURE_DISALLOW_INLINE_DOCTYPE, true);
 
-				public void error(SAXParseException e) throws SAXException {
-                    LOG.error(e.getMessage());
-                }
-
-				public void fatalError(SAXParseException e) throws SAXException {
-                    LOG.error(e.getMessage());
-				}
-			});
-			//validator.setFeature("http://xml.org/sax/features/namespace-prefixes", true); /// DOESNT" WORK any more?
-			validator.validate(source);
+			Schema schema=getSchemaObject(context.getSchemasId(), schemasProvider.getSchemas(session));
+			parserFactory.setSchema(schema);
+			
+			parser = parserFactory.newSAXParser();
+			return parser.getXMLReader();
+		} catch (ParserConfigurationException e) {
+			throw new XmlValidatorException(logPrefix + "cannot configure parser", e);
+		} catch (ConfigurationException e) {
+			throw new XmlValidatorException(logPrefix + "cannot configure parser", e);
 		} catch (SAXException e) {
-			throw new XmlValidatorException(e.getClass() + " " + e.getMessage());
-		} catch (IOException e) {
-			throw new XmlValidatorException(e.getMessage(), e);
+			throw new XmlValidatorException(logPrefix + "cannot create parser", e);
 		}
-		return XML_VALIDATOR_VALID_MONITOR_EVENT;
 	}
+
+
+
+//	protected String validate(Source source, IPipeLineSession session) throws XmlValidatorException, ConfigurationException, PipeRunException {
+//        init();
+//		String schemasId = schemasProvider.getSchemasId();
+//		if (schemasId == null) {
+//			schemasId = schemasProvider.getSchemasId(session);
+//			getSchemaObject(schemasId, schemasProvider.getSchemas(session));
+//		}
+//		Schema xsd = javaxSchemas.get(schemasId);
+//		try {
+//			Validator validator = xsd.newValidator();
+//			validator.setResourceResolver(new LSResourceResolver() {
+//				public LSInput resolveResource(String s, String s1, String s2, String s3, String s4) {
+//                    System.out.println("--");
+//					return null;//To change body of implemented methods Settings | File Templates.
+//				}
+//			});
+//			validator.setErrorHandler(new ErrorHandler() {
+//				public void warning(SAXParseException e) throws SAXException {
+//                    log.warn(e.getMessage());
+//				}
+//
+//				public void error(SAXParseException e) throws SAXException {
+//					log.error(e.getMessage());
+//                }
+//
+//				public void fatalError(SAXParseException e) throws SAXException {
+//					log.error(e.getMessage());
+//				}
+//			});
+//			//validator.setFeature("http://xml.org/sax/features/namespace-prefixes", true); /// DOESNT" WORK any more?
+//			validator.validate(source);
+//		} catch (SAXException e) {
+//			throw new XmlValidatorException(e.getClass() + " " + e.getMessage());
+//		} catch (IOException e) {
+//			throw new XmlValidatorException(e.getMessage(), e);
+//		}
+//		return XML_VALIDATOR_VALID_MONITOR_EVENT;
+//	}
 
 	/**
 	 * Returns the {@link Schema} associated with this validator. This ia an XSD schema containing knowledge about the
@@ -198,6 +241,15 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		return result;
 	}
 
+	protected List<XSModel> getXSModels(List<nl.nn.adapterframework.validation.Schema> schemas) throws IOException, XMLStreamException, ConfigurationException {
+		List<XSModel> result = new ArrayList<XSModel>();
+		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
+		for (nl.nn.adapterframework.validation.Schema schema : schemas) {
+			XSModel xsModel = xsLoader.loadURI(schema.getSystemId());
+			result.add(xsModel);
+		}
+		return result;
+	}
 }
 
 class JavaxValidationContext extends ValidationContext {
@@ -208,6 +260,7 @@ class JavaxValidationContext extends ValidationContext {
 	List<XSModel> xsModels;
 	
 	JavaxValidationContext(String schemasId, Schema schema, Set<String> namespaceSet, List<XSModel> xsModels) {
+		super();
 		this.schemasId=schemasId;
 		this.schema=schema;
 		this.namespaceSet=namespaceSet;

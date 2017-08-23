@@ -1,12 +1,14 @@
 package nl.nn.adapterframework.validation;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -19,13 +21,27 @@ import nl.nn.adapterframework.pipes.JsonPipe;
 /**
  * @author Gerrit van Brakel
  */
-@RunWith(value=JUnit4.class)
+@RunWith(value = Parameterized.class)
 public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
+    private Class<? extends AbstractXmlValidator> implementation;
+    private AbstractXmlValidator validator;
 
 	Json2XmlValidator instance;
-	XercesXmlValidator validator;
 	JsonPipe jsonPipe;
+
+    @Parameterized.Parameters
+    public static Collection<Object[]> data() {
+        Object[][] data = new Object[][]{
+            {XercesXmlValidator.class}
+            ,{JavaxXmlValidator.class}
+        };
+        return Arrays.asList(data);
+    }
+
+    public Json2XmlValidatorTest(Class<? extends AbstractXmlValidator> implementation) {
+        this.implementation = implementation;
+    }
 
 	protected void init() throws ConfigurationException  {
 		jsonPipe=new JsonPipe();
@@ -33,7 +49,13 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		jsonPipe.registerForward(new PipeForward("success",null));
 		jsonPipe.setDirection("xml2json");
 		jsonPipe.configure();
-		validator=new XercesXmlValidator();
+		try {
+			validator = implementation.newInstance();
+		} catch (IllegalAccessException e) {
+			throw new ConfigurationException(e);
+		} catch (InstantiationException e) {
+			throw new ConfigurationException(e);
+		}
     	validator.setThrowException(true);
     	validator.setFullSchemaChecking(true);
 
@@ -60,7 +82,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         instance.configure(null);
         validator.setSchemasProvider(getSchemasProvider(schemaLocation, addNamespaceToSchema));
         validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
-        validator.init();
+        validator.configure("setup");
 
         String testXml=inputFile!=null?getTestXml(inputFile+".xml"):null;
         System.out.println("testXml ["+inputFile+".xml] contents ["+testXml+"]");

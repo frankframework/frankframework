@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.validation.ValidatorHandler;
 
+import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.parsers.SAXParser;
@@ -34,11 +35,14 @@ import org.apache.xerces.parsers.XMLGrammarPreparser;
 import org.apache.xerces.util.ShadowedSymbolTable;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XSGrammar;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -51,6 +55,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.validation.xerces_2_11.XMLSchemaFactory;
 
 
@@ -97,6 +102,15 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 	/** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
 	protected static final String SCHEMA_VALIDATION_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
+
+	/** External general entities feature id (http://xml.org/sax/features/external-general-entities). */
+	protected static final String EXTERNAL_GENERAL_ENTITIES_FEATURE_ID = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
+
+	/** External paramter entities feature id (http://xml.org/sax/features/external-general-entities). */
+	protected static final String EXTERNAL_PARAMETER_ENTITIES_FEATURE_ID = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
+
+	/** Disallow doctype declarations feature id (http://apache.org/xml/features/disallow-doctype-decl). */
+	protected static final String DISSALLOW_DOCTYPE_DECL_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
 
 	/** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
 	protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
@@ -187,7 +201,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static void registerNamespaces(Grammar grammar, Set<String> namespaces) {
 		namespaces.add(grammar.getGrammarDescription().getNamespace());
 		if (grammar instanceof SchemaGrammar) {
-			List imported = ((SchemaGrammar)grammar).getImportedGrammars();
+			List<?> imported = ((SchemaGrammar)grammar).getImportedGrammars();
 			if (imported != null) {
 				for (Object g : imported) {
 					Grammar gr = (Grammar)g;
@@ -231,7 +245,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 		String schemasId = preparseResult.getSchemasId();
 		String mainFailureMessage = "Validation using " + schemasProvider.getClass().getSimpleName() + " with '" + schemasId + "' failed";
-
 		XmlValidatorContentHandler xmlValidatorContentHandler =
 				new XmlValidatorContentHandler(preparseResult.getNamespaceSet(), rootValidations, invalidRootNamespaces, getIgnoreUnknownNamespaces());
 		XmlValidatorErrorHandler xmlValidatorErrorHandler = new XmlValidatorErrorHandler(xmlValidatorContentHandler, mainFailureMessage);
@@ -274,6 +287,10 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		try {
 			parser.setFeature(NAMESPACES_FEATURE_ID, true);
 			parser.setFeature(VALIDATION_FEATURE_ID, true);
+			// parser.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // this feature is not recognized
+//			parser.setFeature(EXTERNAL_GENERAL_ENTITIES_FEATURE_ID, false); // this one appears to be not working
+//			parser.setFeature(EXTERNAL_PARAMETER_ENTITIES_FEATURE_ID, false);
+			parser.setFeature(DISSALLOW_DOCTYPE_DECL_FEATURE_ID, true);
 			parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 			parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
 			parser.setErrorHandler(context.getErrorHandler());
@@ -385,4 +402,38 @@ class PreparseResult {
 	public void setXsModels(List<XSModel> xsModels) {
 		this.xsModels = xsModels;
 	}
+
 }
+class MyErrorHandler implements XMLErrorHandler {
+	protected Logger log = LogUtil.getLogger(this);
+	protected boolean warn = true;
+
+	@Override
+	public void warning(String domain, String key, XMLParseException e) throws XNIException {
+		if (warn) {
+			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+		}
+	}
+
+	@Override
+	public void error(String domain, String key, XMLParseException e) throws XNIException {
+		// In case the XSD doesn't exist throw an exception to prevent the
+		// the adapter from starting.
+		if (e.getMessage() != null
+				&& e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
+			throw e;
+		}
+		if (warn) {
+			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+		}
+	}
+
+	@Override
+	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
+		if (warn) {
+			ConfigurationWarnings.getInstance().add(log, e.getMessage());
+		}
+		throw new XNIException(e);
+	}
+}
+

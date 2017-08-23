@@ -61,11 +61,16 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	public XmlValidatorContentHandler(Set<String> validNamespaces,
 				Set<List<String>> rootValidations,
 				Map<List<String>, List<String>> invalidRootNamespaces,
-				boolean ignoreUnknownNamespaces) {
+				Boolean ignoreUnknownNamespaces) {
 		this.validNamespaces = validNamespaces;
 		this.rootValidations = rootValidations;
 		this.invalidRootNamespaces = invalidRootNamespaces;
-		this.ignoreUnknownNamespaces = ignoreUnknownNamespaces;
+
+		if (ignoreUnknownNamespaces==null) {
+			this.ignoreUnknownNamespaces=false; // to avoid NullPointerException when not initialized
+		} else {
+			this.ignoreUnknownNamespaces = ignoreUnknownNamespaces;
+		}
 	}
 
 	public void setXmlValidatorErrorHandler(

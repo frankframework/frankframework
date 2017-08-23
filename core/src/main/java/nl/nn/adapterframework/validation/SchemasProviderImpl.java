@@ -15,15 +15,15 @@
 */
 package nl.nn.adapterframework.validation;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.util.ClassUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * @author Michiel Meeuwissen
@@ -38,16 +38,20 @@ public class SchemasProviderImpl implements SchemasProvider {
         this.id = id;
         this.xsd = xsd;
     }
-    public String getSchemasId() throws ConfigurationException {
+    @Override
+	public String getSchemasId() throws ConfigurationException {
         return id;
     }
 
+    @Override
     public List<Schema> getSchemas() throws ConfigurationException {
         return Collections.<Schema>singletonList(
                 new Schema() {
+                    @Override
                     public InputStream getInputStream() throws IOException {
                         return ClassUtils.getResourceURL(classLoader, xsd).openStream();
                     }
+                    @Override
                     public String getSystemId() {
                         return ClassUtils.getResourceURL(classLoader, xsd).toExternalForm();
                     }
@@ -55,17 +59,13 @@ public class SchemasProviderImpl implements SchemasProvider {
         );
     }
 
-    /**
-     * Not clear what this should do.
-     */
+    @Override
     public String getSchemasId(IPipeLineSession session) throws PipeRunException {
-        throw new UnsupportedOperationException();
+    	return null;
     }
 
-    /**
-     * Not clear what this should do.
-     */
+    @Override
     public List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException {
-        throw new UnsupportedOperationException();
+    	return null;
     }
 }

@@ -31,8 +31,8 @@ public class AbstractXmlValidatorTest {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][]{
-            {XercesXmlValidator.class}
-            //,{JavaxXmlValidator.class}
+            {XercesXmlValidator.class},
+            {JavaxXmlValidator.class}
         };
         return Arrays.asList(data);
     }
@@ -42,6 +42,7 @@ public class AbstractXmlValidatorTest {
         instance.setSchemasProvider(new SchemasProviderImpl(namespace, systemId));
         instance.setIgnoreUnknownNamespaces(false);
         instance.setAddNamespaceToSchema(addNamespaceToSchema);
+        instance.configure("Setup");
         String result=instance.validate(getTestXml(inputfile), new PipeLineSessionBase(), "test");
         if (expectedValid) {
             Assert.assertEquals("valid XML",result);

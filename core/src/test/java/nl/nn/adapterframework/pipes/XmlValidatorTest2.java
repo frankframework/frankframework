@@ -14,6 +14,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
+import nl.nn.adapterframework.validation.JavaxXmlValidator;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 import nl.nn.adapterframework.validation.XmlValidatorTestBase;
@@ -33,8 +34,8 @@ public class XmlValidatorTest2 extends XmlValidatorTestBase {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][]{
-            {XercesXmlValidator.class}/*,
-            {JavaxXmlValidator.class} Not fully implemented yet/anymore */
+            {XercesXmlValidator.class}
+            ,{JavaxXmlValidator.class}
         };
         return Arrays.asList(data);
     }
