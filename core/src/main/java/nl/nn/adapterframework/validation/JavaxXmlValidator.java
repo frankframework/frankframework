@@ -107,25 +107,18 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		schema = javaxSchemas.get(schemasId);
 		String mainFailureMessage = "Validation using " + schemasProvider.getClass().getSimpleName() + " with '" + schemasId + "' failed";
 
-		if (schema==null) {
-			System.out.println("----> schema is null");
-		} else {
-			System.out.println("----> schema systemId:");
-			System.out.println("----> schema:"+ToStringBuilder.reflectionToString(schema,ToStringStyle.MULTI_LINE_STYLE));
-			
+		if (schema!=null) {
 			org.apache.xerces.jaxp.validation.XSGrammarPoolContainer xercesSchema = (org.apache.xerces.jaxp.validation.XSGrammarPoolContainer)schema;
 			xercesSchema.getGrammarPool();
 	
 			xsModels=new LinkedList<XSModel>();
 			Grammar[] grammars=xercesSchema.getGrammarPool().retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
 			for(int i=0;i<grammars.length;i++) {
-				System.out.println(i+") "+grammars[i].toString());
 				XSModel model=((XSGrammar)grammars[i]).toXSModel();
 				xsModels.add(model);
 				StringList namespaces=model.getNamespaces();
 				for (int j=0;j<namespaces.getLength();j++) {
 					String namespace=namespaces.item(j);
-					System.out.println(namespace);
 					namespaceSet.add(namespace);
 				}
 			}

@@ -109,9 +109,6 @@ public abstract class AbstractXmlValidatorTestBase extends XmlValidatorTestBase 
     	reader.setContentHandler(ch);
 
     	reader.parse(is);
-    	
-    	System.out.println("----> result"+ sb.toString());
-    	
     	assertEquals("<A>    <B></B></A>", sb.toString());
     }
 
