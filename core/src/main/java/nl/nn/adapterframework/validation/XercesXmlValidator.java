@@ -103,6 +103,15 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	/** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
 	protected static final String SCHEMA_VALIDATION_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
 
+	/** External general entities feature id (http://xml.org/sax/features/external-general-entities). */
+	protected static final String EXTERNAL_GENERAL_ENTITIES_FEATURE_ID = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
+
+	/** External paramter entities feature id (http://xml.org/sax/features/external-general-entities). */
+	protected static final String EXTERNAL_PARAMETER_ENTITIES_FEATURE_ID = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
+
+	/** Disallow doctype declarations feature id (http://apache.org/xml/features/disallow-doctype-decl). */
+	protected static final String DISSALLOW_DOCTYPE_DECL_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
+
 	/** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
 	protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
 
@@ -236,7 +245,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 		String schemasId = preparseResult.getSchemasId();
 		String mainFailureMessage = "Validation using " + schemasProvider.getClass().getSimpleName() + " with '" + schemasId + "' failed";
-
 		XmlValidatorContentHandler xmlValidatorContentHandler =
 				new XmlValidatorContentHandler(preparseResult.getNamespaceSet(), rootValidations, invalidRootNamespaces, getIgnoreUnknownNamespaces());
 		XmlValidatorErrorHandler xmlValidatorErrorHandler = new XmlValidatorErrorHandler(xmlValidatorContentHandler, mainFailureMessage);
@@ -279,6 +287,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		try {
 			parser.setFeature(NAMESPACES_FEATURE_ID, true);
 			parser.setFeature(VALIDATION_FEATURE_ID, true);
+//			parser.setFeature(EXTERNAL_GENERAL_ENTITIES_FEATURE_ID, false); // this one appears to be not working
+//			parser.setFeature(EXTERNAL_PARAMETER_ENTITIES_FEATURE_ID, false);
+			parser.setFeature(DISSALLOW_DOCTYPE_DECL_FEATURE_ID, true);
 			parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 			parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
 			parser.setErrorHandler(context.getErrorHandler());

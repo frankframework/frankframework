@@ -49,6 +49,7 @@ public abstract class ValidatorTestBase extends TestCase {
 	
 	public String INPUT_FILE_BASIC_A_OK="/Basic/in/ok";
 	public String INPUT_FILE_BASIC_A_ERR="/Basic/in/with_errors";
+	public String INPUT_FILE_BASIC_A_ENTITY_EXPANSION="/Basic/in/entityExpansion";
 
 	public String SCHEMA_LOCATION_ARRAYS                            	="urn:arrays /Arrays/arrays.xsd";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON		="/Arrays/arrays-compact";
