@@ -287,6 +287,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		try {
 			parser.setFeature(NAMESPACES_FEATURE_ID, true);
 			parser.setFeature(VALIDATION_FEATURE_ID, true);
+			// parser.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // this feature is not recognized
 //			parser.setFeature(EXTERNAL_GENERAL_ENTITIES_FEATURE_ID, false); // this one appears to be not working
 //			parser.setFeature(EXTERNAL_PARAMETER_ENTITIES_FEATURE_ID, false);
 			parser.setFeature(DISSALLOW_DOCTYPE_DECL_FEATURE_ID, true);
