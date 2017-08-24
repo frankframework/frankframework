@@ -15,6 +15,7 @@ Upcoming
 - Add json to xml and xml to json conversion as well as json validation to xmlvalidators
 - Prevent XML Entity Expansion (XEE) injection
 - Upgrade ibis-servicedispatcher to version 1.4
+- Hide strings in logging for error stack traces too
 
 
 
