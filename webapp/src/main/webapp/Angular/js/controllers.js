@@ -175,18 +175,8 @@ angular.module('iaf.beheerconsole')
 				Poller.add("adapters/" + adapter + "?expanded=all", function(data) {
 					var oldAdapterData = $rootScope.adapters[data.name];
 					if(oldAdapterData != data) {
-						if(oldAdapterData.state != data.state) {
-							//Is it up or down? Something has happened.
-							$scope.adapterSummary[oldAdapterData.state] -= 1;
-							$scope.adapterSummary[data.state] += 1;
-						}
 						data.receiverStopped = false;
 						for(x in data.receivers) {
-							var oldReceiverData = ($rootScope.adapters[data.name].receivers) ? $rootScope.adapters[data.name].receivers[x] : {state: "unknown"};
-							if(oldReceiverData.state != data.receivers[x].state) {
-								$scope.receiverSummary[oldReceiverData.state] -= 1;
-								$scope.receiverSummary[data.receivers[x].state] += 1;
-							}
 							if(data.receivers[x].started == false)
 								data.receiverStopped = true;
 						}
@@ -200,6 +190,7 @@ angular.module('iaf.beheerconsole')
 						data.status = data.started ? ((data.receiverStopped) ? 'warning' : 'started') : 'stopped';
 						$rootScope.adapters[data.name] = data;
 
+						updateAdapterSummary();
 						Hooks.call("adapterUpdated", data);
 					}
 				}, true);
@@ -209,22 +200,45 @@ angular.module('iaf.beheerconsole')
 		});
 	});
 
-	function updateMessageSummary() {
-		var summary = {
+	function updateAdapterSummary() {
+		var adapterSummary = {
+			started:0,
+			stopped:0,
+			starting:0,
+			stopping:0,
+			error:0
+		};
+		var receiverSummary = {
+			started:0,
+			stopped:0,
+			starting:0,
+			stopping:0,
+			error:0
+		};
+		var messageSummary = {
 			info:0,
 			warn:0,
 			error:0
 		};
-		for(adapterName in $rootScope.adapters) {
-			var adapter = $rootScope.adapters[adapterName];
+
+		var allAdapters = $rootScope.adapters;
+		for(adapterName in allAdapters) {
+			var adapter = allAdapters[adapterName];
+			adapterSummary[adapter.state]++;
+			for(i in adapter.receivers) {
+				receiverSummary[adapter.receivers[i].state.toLowerCase()]++;
+			}
 			for(i in adapter.messages) {
 				var level = adapter.messages[i].level.toLowerCase();
-				summary[level]++;
+				messageSummary[level]++;
 			}
 		}
-		$scope.messageSummary = summary;
-	}
-	$interval(updateMessageSummary, 5000);
+
+		$scope.adapterSummary = adapterSummary;
+		$scope.receiverSummary = receiverSummary;
+		$scope.messageSummary = messageSummary;
+	};
+	//$interval(updateAdapterSummary, 2000);
 
 	Hooks.register("adapterUpdated:once", function(adapter) {
 		if($location.hash()) {
@@ -441,7 +455,7 @@ angular.module('iaf.beheerconsole')
 		var adapters = Array();
 		for(adapter in $scope.adapters) {
 			if($scope.hideAdapter[adapter] === true) continue;
-		   adapters.push(adapter);
+			adapters.push(adapter);
 		}
 		Api.Put("adapters", {"action": "stop", "adapters": adapters});
 	};
@@ -449,7 +463,7 @@ angular.module('iaf.beheerconsole')
 		var adapters = Array();
 		for(adapter in $scope.adapters) {
 			if($scope.hideAdapter[adapter] === true) continue;
-		   adapters.push(adapter);
+			adapters.push(adapter);
 		}
 		Api.Put("adapters", {"action": "start", "adapters": adapters});
 	};
@@ -479,16 +493,20 @@ angular.module('iaf.beheerconsole')
 	});
 
 	$scope.startAdapter = function(adapter) {
-		Api.Put("adapters/" + adapter, {"action": "start"});
+		adapter.state = 'starting';
+		Api.Put("adapters/" + adapter.name, {"action": "start"});
 	};
 	$scope.stopAdapter = function(adapter) {
-		Api.Put("adapters/" + adapter, {"action": "stop"});
+		adapter.state = 'stopping';
+		Api.Put("adapters/" + adapter.name, {"action": "stop"});
 	};
 	$scope.startReceiver = function(adapter, receiver) {
-		Api.Put("adapters/" + adapter + "/receivers/" + receiver, {"action": "start"});
+		receiver.state = 'loading';
+		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "start"});
 	};
 	$scope.stopReceiver = function(adapter, receiver) {
-		Api.Put("adapters/" + adapter + "/receivers/" + receiver, {"action": "stop"});
+		receiver.state = 'loading';
+		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "stop"});
 	};
 }])
 

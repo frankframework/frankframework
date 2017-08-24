@@ -3777,6 +3777,9 @@ code {
   padding: 14px 15px 7px;
   min-height: 48px;
 }
+.adapters .ibox-title {
+  cursor: pointer;
+}
 .ibox-title.warning {
   border-color: #f7a54a;
 }
@@ -4099,6 +4102,9 @@ a.close-canvas-menu:hover {
 .spiner-example {
   height: 200px;
   padding-top: 70px;
+}
+.lh22 {
+  line-height: 22px;
 }
 /* MARGINS & PADDINGS */
 .p-xxs {
