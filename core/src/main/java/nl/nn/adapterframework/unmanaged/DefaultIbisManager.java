@@ -236,19 +236,20 @@ public class DefaultIbisManager implements IbisManager {
 			if (configurationName.equals("*ALL*")) {
 				String msg = "Reload all configurations on request of [" + commandIssuedBy+"]";
 				log.info(msg);
-				secLog.info(msg); //Log before executing the command!
+				secLog.info(msg);
 				ibisContext.reload(null);
 			} else {
 				String msg = "Reload configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]";
 				log.info(msg);
-				secLog.info(msg); //Log before executing the command!
+				secLog.info(msg);
 				ibisContext.reload(configurationName);
 			}
 		} else if (action.equalsIgnoreCase("FULLRELOAD")) {
-			log.info("Full reload on request of [" + commandIssuedBy+"]");
 			if (isAdmin) {
+				String msg = "Full reload on request of [" + commandIssuedBy+"]";
+				log.info(msg);
+				secLog.info(msg);
 				ibisContext.fullReload();
-				secLog.info("Full reload on request of [" + commandIssuedBy+"]");
 			} else {
 				log.warn("Full reload not allowed for [" + commandIssuedBy+"]");
 			}
