@@ -200,7 +200,16 @@ angular.module('iaf.beheerconsole')
 		});
 	});
 
+	var lastUpdated = 0;
+	var timeout = null;
 	function updateAdapterSummary() {
+		var updated = (new Date().getTime());
+		if(updated - 3000 < lastUpdated) { //3 seconds
+			clearTimeout(timeout);
+			timeout = setTimeout(updateAdapterSummary, 1000);
+			return;
+		}
+
 		var adapterSummary = {
 			started:0,
 			stopped:0,
@@ -237,6 +246,7 @@ angular.module('iaf.beheerconsole')
 		$scope.adapterSummary = adapterSummary;
 		$scope.receiverSummary = receiverSummary;
 		$scope.messageSummary = messageSummary;
+		lastUpdated = updated;
 	};
 	//$interval(updateAdapterSummary, 2000);
 

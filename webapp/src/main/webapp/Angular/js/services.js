@@ -10,7 +10,7 @@ angular.module('iaf.beheerconsole')
 		}
 
 		$http.defaults.headers.post["Content-Type"] = "application/json";
-		$http.defaults.timeout = 5000;
+		$http.defaults.timeout = appConstants["console.pollerInterval"] - 1000;
 
 		this.Get = function (uri, callback, error, skipEtag) {
 			var skipEtag = (skipEtag===true);
