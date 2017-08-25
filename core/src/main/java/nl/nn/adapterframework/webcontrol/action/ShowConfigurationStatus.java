@@ -603,7 +603,6 @@ public final class ShowConfigurationStatus extends ActionBase {
 		summaryXML.addSubElement(messageLevelXML);
 		adapters.addSubElement(summaryXML);
 		request.setAttribute("adapters", adapters.toXML());
-		System.out.println(adapters.toXML());
 		
 		// Forward control to the specified success URI
 		log.debug("forward to success");

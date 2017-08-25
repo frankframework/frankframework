@@ -18,6 +18,7 @@ Upcoming
 - Hide strings in logging for error stack traces too
 - ShowConfigurationStatus: Uniform Exceptions layout with Warnings
 - ShowConfigurationStatus: Add link for 'alert' feature
+- Add attribute mtomContentTransferEncoding to HttpSender (bugfix for MTOM)
 
 
 
