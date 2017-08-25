@@ -18,7 +18,9 @@ package nl.nn.adapterframework.core;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
@@ -111,6 +113,18 @@ public class Adapter implements IAdapter, NamedBean {
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
 
+	private Map<String, SenderLastExitState> sendersLastExitState = new HashMap<String, SenderLastExitState>();
+	
+	private class SenderLastExitState {
+		private String lastExitState = null;
+		private long lastExitStateDate = 0;
+
+		public SenderLastExitState (long lastExitStateDate, String lastExitState) {
+			this.lastExitStateDate = lastExitStateDate;
+			this.lastExitState = lastExitState;
+		}
+	}
+	
 	private int numOfMessagesInProcess = 0;
    
 	private CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
@@ -241,6 +255,24 @@ public class Adapter implements IAdapter, NamedBean {
 	private void incNumOfMessagesInError() {
 		synchronized (statsMessageProcessingDuration) {
 			numOfMessagesInError.increase();
+		}
+	}
+
+	public void setLastExitState(String pipeName, long lastExitStateDate, String lastExitState) {
+		synchronized (sendersLastExitState) {
+			sendersLastExitState.put(pipeName, new SenderLastExitState(lastExitStateDate, lastExitState));
+		}
+	}
+
+	public long getLastExitIsTimeoutDate(String pipeName) {
+		synchronized (sendersLastExitState) {
+			SenderLastExitState sles = sendersLastExitState.get(pipeName);
+			if (sles!=null) {
+				if ("timeout".equals(sles.lastExitState)) {
+					return sles.lastExitStateDate;
+				}
+			}
+			return 0;
 		}
 	}
 

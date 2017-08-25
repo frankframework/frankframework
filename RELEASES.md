@@ -20,6 +20,7 @@ Upcoming
 - ShowConfigurationStatus: Add link for 'alert' feature
 - Add attribute mtomContentTransferEncoding to HttpSender (bugfix for MTOM)
 - Add attribute version to JsonPipe
+- Add dynamic throttling in senders
 
 
 
