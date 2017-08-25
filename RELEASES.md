@@ -16,6 +16,8 @@ Upcoming
 - Prevent XML Entity Expansion (XEE) injection
 - Upgrade ibis-servicedispatcher to version 1.4
 - Hide strings in logging for error stack traces too
+- ShowConfigurationStatus: Uniform Exceptions layout with Warnings
+- ShowConfigurationStatus: Add link for 'alert' feature
 
 
 
