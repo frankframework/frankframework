@@ -79,6 +79,7 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * <tr><td>{@link #setStrictJsonArraySyntax(boolean) strictJsonArraySyntax}</td><td>when true check that incoming json adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from json to xml</td><td>false</td></tr>
 * <tr><td>{@link #setOutputFormat(String) outputFormat}</td><td>format of the result. Either 'xml' or 'json'</td><td>xml</td></tr>
 * <tr><td>{@link #setOutputFormatSessionKey(String) outputFormatSessionKey}</td><td>session key to retrieve outputFormat from.</td><td>outputFormat</td></tr>
+* <tr><td>{@link #setStoreInputFormatSessionKey(String) storeInputFormatSessionKey}</td><td>session key to store the input format that was detected.</td><td>inputFormat</td></tr>
 * </table>
 * <p><b>Exits:</b>
 * <table border="1">
@@ -100,6 +101,7 @@ public class Json2XmlValidator extends XmlValidator {
 	private String targetNamespace;
 	private String outputFormat="xml";
 	protected String outputFormatSessionKey="outputFormat";
+	protected String storeInputFormatSessionKey="inputFormat";
 
 
 	public static final String JSON_XML_VALIDATOR_VALID_MONITOR_EVENT = "valid JSON";
@@ -109,6 +111,12 @@ public class Json2XmlValidator extends XmlValidator {
 		super.configure();
 		if (StringUtils.isNotEmpty(getSoapNamespace())) {
 			throw new ConfigurationException("soapNamespace attribute not supported");
+		}
+	}
+	
+	protected void storeInputFormat(String format, IPipeLineSession session) {
+		if (StringUtils.isNotEmpty(getStoreInputFormatSessionKey())) {
+			session.put(getStoreInputFormatSessionKey(), format);
 		}
 	}
 	
@@ -128,8 +136,10 @@ public class Json2XmlValidator extends XmlValidator {
 		if (i>=messageToValidate.length()) {
 			throw new PipeRunException(this,"message contains only whitespace");
 		}
-		if (messageToValidate.charAt(i)=='<') {
+		char firstChar=messageToValidate.charAt(i);
+		if (firstChar=='<') {
 			// message is XML
+			storeInputFormat("xml",session);
 			if (!getOutputFormat(session).equalsIgnoreCase("json")) {
 				return super.doPipe(input,session);
 			}
@@ -139,9 +149,10 @@ public class Json2XmlValidator extends XmlValidator {
 				throw new PipeRunException(this, "Alignment of XML to JSON failed",e);
 			}
 		}
-		if (messageToValidate.charAt(i)!='{') {
-			throw new PipeRunException(this,"message is not XML or JSON, because it does not start with '{' or '<'");
+		if (firstChar!='{' && firstChar!='[') {
+			throw new PipeRunException(this,"message is not XML or JSON, because it statrts with ["+firstChar+"] and not with '<', '{  or ''['");
 		}
+		storeInputFormat("json",session);
 		try {
 			return alignJson(messageToValidate, session);
 		} catch (XmlValidatorException e) {
@@ -249,6 +260,13 @@ public class Json2XmlValidator extends XmlValidator {
 		this.outputFormatSessionKey = outputFormatSessionKey;
 	}
 	
+	public String getStoreInputFormatSessionKey() {
+		return storeInputFormatSessionKey;
+	}
+	public void setStoreInputFormatSessionKey(String storeInputFormatSessionKey) {
+		this.storeInputFormatSessionKey = storeInputFormatSessionKey;
+	}
+
 	public boolean isCompactJsonArrays() {
 		return compactJsonArrays;
 	}
