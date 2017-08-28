@@ -115,7 +115,10 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	/** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
 	protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
 
+	protected static final String SECURITY_MANAGER_PROPERTY_ID = Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
+
 	private static final int maxInitialised = AppConstants.getInstance().getInt("xmlValidator.maxInitialised", -1);
+	private int entityExpansionLimit = AppConstants.getInstance().getInt("xmlValidator.entityExpansionLimit", 100000);
 
 	private static EhCache cache;
 	static {
@@ -278,8 +281,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		}
 		return validatorHandler;
 	}
-	
-	public XMLReader getValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException {
+	public XMLReader createValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException {
 		SymbolTable symbolTable = ((XercesValidationContext)context).getSymbolTable();
 		XMLGrammarPool grammarPool = ((XercesValidationContext)context).getGrammarPool();
 
@@ -290,10 +292,13 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			// parser.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // this feature is not recognized
 //			parser.setFeature(EXTERNAL_GENERAL_ENTITIES_FEATURE_ID, false); // this one appears to be not working
 //			parser.setFeature(EXTERNAL_PARAMETER_ENTITIES_FEATURE_ID, false);
-			parser.setFeature(DISSALLOW_DOCTYPE_DECL_FEATURE_ID, true);
+//			parser.setFeature(DISSALLOW_DOCTYPE_DECL_FEATURE_ID, true);
 			parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 			parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
 			parser.setErrorHandler(context.getErrorHandler());
+			org.apache.xerces.util.SecurityManager mgr = new org.apache.xerces.util.SecurityManager();
+			mgr.setEntityExpansionLimit(entityExpansionLimit);
+			parser.setProperty(SECURITY_MANAGER_PROPERTY_ID, mgr);
 		} catch (SAXNotRecognizedException e) {
 			throw new XmlValidatorException(logPrefix + "parser does not recognize necessary feature", e);
 		} catch (SAXNotSupportedException e) {
