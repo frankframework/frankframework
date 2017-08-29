@@ -22,6 +22,7 @@ Upcoming
 - Add attribute version to JsonPipe
 - Add dynamic throttling in senders
 - Add property jdbc.convertFieldnamesToUppercase
+- Fix UUIDGeneratorPipe when stubbed remove attribute type
 
 
 
