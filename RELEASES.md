@@ -23,6 +23,7 @@ Upcoming
 - Add dynamic throttling in senders
 - Add property jdbc.convertFieldnamesToUppercase
 - Add attribute hideRegex to pipes (next to global property)
+- Fix UUIDGeneratorPipe when stubbed remove attribute type
 
 
 

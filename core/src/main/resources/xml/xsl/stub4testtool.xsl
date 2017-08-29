@@ -263,7 +263,7 @@
 			</xsl:when>
 			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.pipes.UUIDGeneratorPipe'">
 				<xsl:element name="pipe">
-					<xsl:apply-templates select="@*" />
+					<xsl:apply-templates select="@*[name()!='type']" />
 					<xsl:attribute name="className">nl.nn.adapterframework.pipes.FixedResult</xsl:attribute>
 					<xsl:attribute name="returnString">0a4544b6-37489ec0_15ad0f006ae_-7ff3</xsl:attribute>
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
