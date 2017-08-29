@@ -19,6 +19,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
@@ -113,6 +114,7 @@ import org.springframework.transaction.TransactionDefinition;
  * <tr><td>{@link #setWriteToSecLog (boolean) writeToSecLog}</td><td>when set to <code>true</code> a record is written to the security log when the pipe has finished successfully</td><td>false</td></tr>
  * <tr><td>{@link #setSecLogSessionKeys(String) secLogSessionKeys}</td><td>(only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLogIntermediaryResults (boolean) logIntermediaryResults}</td><td>when set, the value in AppConstants is overwritten (for this pipe only)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setHideRegex(String) hideRegex}</td><td>Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>Note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -157,6 +159,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private String secLogSessionKeys = null;
 	private boolean recoverAdapter = false;
 	private String logIntermediaryResults = null;
+	private String hideRegex = null;
 
 	private boolean active=true;
 
@@ -625,5 +628,13 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 	public String getLogIntermediaryResults() {
 		return logIntermediaryResults;
+	}
+
+	public void setHideRegex(String hideRegex) {
+		this.hideRegex = hideRegex;
+	}
+
+	public String getHideRegex() {
+		return hideRegex;
 	}
 }
