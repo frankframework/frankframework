@@ -4,8 +4,8 @@
  *
  */
 angular.module('iaf.beheerconsole')
-.controller('MainCtrl', ['$scope', '$rootScope', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 
-	function($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug) {
+.controller('MainCtrl', ['$scope', '$rootScope', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', 
+	function($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert) {
 	$scope.loading = true;
 	Pace.on("done", function() {
 		if(appConstants.init == 0) {
@@ -269,10 +269,9 @@ angular.module('iaf.beheerconsole')
 		var idleTimeout = (parseInt(appConstants["console.idle.timeout"]) > 0) ? parseInt(appConstants["console.idle.timeout"]) : false;
 		if(!idleTimeout) return;
 
-		swal({
+		SweetAlert.Warning({
 			title: "Idle timer...",
 			text: "Your session will be terminated in <span class='idleTimer'>60:00</span> minutes.",
-			type: "warning",
 			showConfirmButton: false,
 			showCloseButton: true
 		});
@@ -280,7 +279,7 @@ angular.module('iaf.beheerconsole')
 
 	$scope.$on('IdleWarn', function (e, time) {
 		var minutes = Math.floor(time/60);
-		var seconds  = Math.round(time%60);
+		var seconds = Math.round(time%60);
 		if(minutes < 10) minutes = "0" + minutes;
 		if(seconds < 10) seconds = "0" + seconds;
 		var elm = angular.element(".swal2-container").find(".idleTimer");
@@ -288,10 +287,9 @@ angular.module('iaf.beheerconsole')
 	});
 
 	$scope.$on('IdleTimeout', function () {
-		swal({
+		SweetAlert.Info({
 			title: "Idle timer...",
 			text: "You have been logged out due to inactivity.",
-			type: "info",
 			showCloseButton: true
 		});
 		$location.path("logout");
@@ -339,7 +337,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('FeedbackCtrl', ['$scope', '$uibModalInstance', '$http', 'rating', '$timeout', 'appConstants', function($scope, $uibModalInstance, $http, rating, $timeout, appConstants) {
+.controller('FeedbackCtrl', ['$scope', '$uibModalInstance', '$http', 'rating', '$timeout', 'appConstants', 'SweetAlert', function($scope, $uibModalInstance, $http, rating, $timeout, appConstants, SweetAlert) {
 	var URL = appConstants["console.feedbackURL"];
 	$scope.form = {rating: rating, name: "", feedback: ""};
 
@@ -373,11 +371,11 @@ angular.module('iaf.beheerconsole')
 		form.rating++;
 		$http.post(URL, form, {headers:{"Authorization": undefined}}).then(function(response) {
 			if(response && response.data && response.data.result && response.data.result == "ok")
-				swal("Thank you for sending us feedback!");
+				SweetAlert.Success("Thank you for sending us feedback!");
 			else
-				swal("Oeps, something went wrong...", "Please try again later!");
+				SweetAlert.Error("Oops, something went wrong...", "Please try again later!");
 		}, function() {
-			swal("Oeps, something went wrong...", "Please try again later!");
+			SweetAlert.Error("Oops, something went wrong...", "Please try again later!");
 		});
 		$uibModalInstance.close();
 	};
@@ -387,7 +385,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', function($scope, Hooks, Api) {
+.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', function($scope, Hooks, Api, SweetAlert) {
 	this.filter = {
 		"started": true,
 		"stopped": true,
@@ -454,13 +452,13 @@ angular.module('iaf.beheerconsole')
 		Api.Put("adapters", {"action": "start", "adapters": adapters});
 	};
 	$scope.reloadConfiguration = function() {
-		swal("Method not yet implemented!");
+		SweetAlert.Info("Method not yet implemented!");
 	};
 	$scope.fullReload = function() {
-		swal("Method not yet implemented!");
+		SweetAlert.Info("Method not yet implemented!");
 	};
 	$scope.showReferences = function() {
-		swal("Method not yet implemented!");
+		SweetAlert.Info("Method not yet implemented!");
 	};
 
 	$scope.selectedConfiguration = "All";
@@ -668,10 +666,10 @@ angular.module('iaf.beheerconsole')
 	});
 }])
 
-.controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', function($scope, Api, $stateParams) {
+.controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', function($scope, Api, $stateParams, SweetAlert) {
 	var adapterName = $stateParams.name;
 	if(!adapterName)
-		return swal("Adapter not found!");
+		return SweetAlert.Warning("Adapter not found!");
 	$scope.adapterName = adapterName;
 
 	$scope.stats = [];

@@ -15,6 +15,14 @@ Upcoming
 - Add json to xml and xml to json conversion as well as json validation to xmlvalidators
 - Prevent XML Entity Expansion (XEE) injection
 - Upgrade ibis-servicedispatcher to version 1.4
+- Hide strings in logging for error stack traces too
+- ShowConfigurationStatus: Uniform Exceptions layout with Warnings
+- ShowConfigurationStatus: Add link for 'alert' feature
+- Add attribute mtomContentTransferEncoding to HttpSender (bugfix for MTOM)
+- Add attribute version to JsonPipe
+- Add dynamic throttling in senders
+- Add property jdbc.convertFieldnamesToUppercase
+- Add attribute hideRegex to pipes (next to global property)
 
 
 

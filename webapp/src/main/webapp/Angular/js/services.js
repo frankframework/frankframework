@@ -409,7 +409,64 @@ angular.module('iaf.beheerconsole')
 					console.error(args[a]);
 			};
 		};
-	}).service('Hooks', ['$rootScope', '$timeout', function($rootScope, $timeout) {
+	}).service('SweetAlert', ['Debug', function(Debug) {
+		this.defaultSettings = {
+//			confirmButtonColor: "#449d44"
+		};
+		this.defaults = function() {
+			var args = arguments || [];
+			var option = {};
+			if(args.length == 0 || args.length > 2)
+				Debug.warn("Invalid argument length specified for SweetAlert");
+
+			var options = angular.copy(this.defaultSettings);
+
+			if(typeof args[0] == "object")
+				option = args[0];
+			else if(typeof args[0] == "string")
+				options.title = args[0];
+			if(args.length == 2 && typeof args[1] == "string") {
+				options.text = args[1];
+			}
+			for(x in option) options[x] = option[x];
+
+			return options; //var [options, callback] = this.defaults.apply(this, arguments);
+		};
+		this.Input = function() {
+			var options = this.defaults.apply(this, arguments);
+			if(options.input == undefined)
+				options.input = "text";
+			options.showCancelButton = true;
+			return swal(options);
+		};
+		this.Confirm = function() {
+			var options = this.defaults.apply(this, arguments);
+			options.type = "question";
+			options.title = "Are you sure?";
+			options.showCancelButton = true;
+			return swal(options);
+		};
+		this.Info = function() {
+			var options = this.defaults.apply(this, arguments);
+			options.type = "info";
+			return swal(options);
+		};
+		this.Warning = function() {
+			var options = this.defaults.apply(this, arguments);
+			options.type = "warning";
+			return swal(options);
+		};
+		this.Error = function() {
+			var options = this.defaults.apply(this, arguments);
+			options.type = "error";
+			return swal(options);
+		};
+		this.Success = function() {
+			var options = this.defaults.apply(this, arguments);
+			options.type = "success";
+			return swal(options);
+		};
+	}]).service('Hooks', ['$rootScope', '$timeout', function($rootScope, $timeout) {
 		this.call = function() {
 			$rootScope.callHook.apply(this, arguments);
 			//$rootScope.$broadcast.apply(this, arguments);

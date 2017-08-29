@@ -18,14 +18,25 @@ package nl.nn.adapterframework.core;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.log4j.MDC;
+import org.apache.log4j.NDC;
+import org.springframework.beans.factory.NamedBean;
+import org.springframework.core.task.TaskExecutor;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -41,12 +52,6 @@ import nl.nn.adapterframework.util.MsgLogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
-import org.springframework.beans.factory.NamedBean;
-import org.springframework.core.task.TaskExecutor;
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
@@ -111,6 +116,18 @@ public class Adapter implements IAdapter, NamedBean {
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
 
+	private Map<String, SenderLastExitState> sendersLastExitState = new HashMap<String, SenderLastExitState>();
+	
+	private class SenderLastExitState {
+		private String lastExitState = null;
+		private long lastExitStateDate = 0;
+
+		public SenderLastExitState (long lastExitStateDate, String lastExitState) {
+			this.lastExitStateDate = lastExitStateDate;
+			this.lastExitState = lastExitState;
+		}
+	}
+	
 	private int numOfMessagesInProcess = 0;
    
 	private CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
@@ -138,6 +155,8 @@ public class Adapter implements IAdapter, NamedBean {
 	private String errorState = "ERROR";
 	
 	private TaskExecutor taskExecutor;
+
+	private String composedHideRegex;
 
 	/**
 	 * Indicates wether the configuration succeeded.
@@ -177,6 +196,30 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		catch (ConfigurationException e) {
 			error(true, "error initializing pipeline", e);
+		}
+
+		List<String> hrs = new ArrayList<String>();
+		for (IPipe pipe : pipeline.getPipes()) {
+			if (pipe instanceof AbstractPipe) {
+				AbstractPipe aPipe = (AbstractPipe) pipe;
+				if (aPipe.getHideRegex() != null) {
+					if (!hrs.contains(aPipe.getHideRegex())) {
+						hrs.add(aPipe.getHideRegex());
+					}
+				}
+			}
+		}
+		StringBuilder sb = new StringBuilder();
+		for (String hr : hrs) {
+			if (sb.length() > 0) {
+				sb.append("|");
+	}
+			sb.append("(");
+			sb.append(hr);
+			sb.append(")");
+		}
+		if (sb.length() > 0) {
+			composedHideRegex = sb.toString();
 		}
 	}
 
@@ -241,6 +284,24 @@ public class Adapter implements IAdapter, NamedBean {
 	private void incNumOfMessagesInError() {
 		synchronized (statsMessageProcessingDuration) {
 			numOfMessagesInError.increase();
+		}
+	}
+
+	public void setLastExitState(String pipeName, long lastExitStateDate, String lastExitState) {
+		synchronized (sendersLastExitState) {
+			sendersLastExitState.put(pipeName, new SenderLastExitState(lastExitStateDate, lastExitState));
+		}
+	}
+
+	public long getLastExitIsTimeoutDate(String pipeName) {
+		synchronized (sendersLastExitState) {
+			SenderLastExitState sles = sendersLastExitState.get(pipeName);
+			if (sles!=null) {
+				if ("timeout".equals(sles.lastExitState)) {
+					return sles.lastExitStateDate;
+				}
+			}
+			return 0;
 		}
 	}
 
@@ -535,6 +596,10 @@ public class Adapter implements IAdapter, NamedBean {
 			NDC.push(newNDC);
 		}
 		
+		if (StringUtils.isNotEmpty(composedHideRegex)) {
+			MDC.put("composedHideRegex", composedHideRegex);
+		}
+			
 		//if (isRequestReplyLogging()) {
 		StringBuilder additionalLogging = new StringBuilder();
 		
@@ -616,6 +681,7 @@ public class Adapter implements IAdapter, NamedBean {
 			if (ndcChanged) {
 				NDC.pop();
 			}
+			MDC.remove("composedHideRegex");
 		}
 	}
 

@@ -66,8 +66,8 @@ public class DB2XMLWriter {
 	private boolean decompressBlobs=false;
 	private boolean getBlobSmart=false;
 	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private static boolean convertFieldnamesToUppercase = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", true);
 
-   
     public static String getFieldType (int type) {
 	    switch (type) {
 	          case Types.INTEGER : return ("INTEGER");
@@ -112,10 +112,10 @@ public class DB2XMLWriter {
 	public synchronized String getXML(ResultSet rs, int maxlength, boolean includeFieldDefinition) {
 		if (null == rs)
 			return "";
-	
+
 		if (maxlength < 0)
 			maxlength = Integer.MAX_VALUE;
-	
+
 		XmlBuilder mainElement = new XmlBuilder(docname);
 		Statement stmt=null;
 		try {
@@ -131,13 +131,16 @@ public class DB2XMLWriter {
 			ResultSetMetaData rsmeta = rs.getMetaData();
 			if (includeFieldDefinition) {
 				int nfields = rsmeta.getColumnCount();
-	
+
 				XmlBuilder fields = new XmlBuilder("fielddefinition");
 				for (int j = 1; j <= nfields; j++) {
 					XmlBuilder field = new XmlBuilder("field");
-	
-					field.addAttribute("name", "" + rsmeta.getColumnName(j).toUpperCase());
-	
+
+					String columnName = "" + rsmeta.getColumnName(j);
+					if(convertFieldnamesToUppercase)
+						columnName = columnName.toUpperCase();
+					field.addAttribute("name", columnName);
+
 					//Not every JDBC implementation implements these attributes!
 					try {
 						field.addAttribute("type", "" + getFieldType(rsmeta.getColumnType(j)));
@@ -167,7 +170,10 @@ public class DB2XMLWriter {
 						log.debug("Could not determine isCurrency",e);
 					}
 					try {
-						field.addAttribute("columnTypeName", "" + rsmeta.getColumnTypeName(j).toUpperCase());
+						String columnTypeName = "" + rsmeta.getColumnTypeName(j);
+						if(convertFieldnamesToUppercase)
+							columnTypeName = columnTypeName.toUpperCase();
+						field.addAttribute("columnTypeName", columnTypeName);
 					} catch (SQLException e) {
 						log.debug("Could not determine columnTypeName",e);
 					}
@@ -180,11 +186,11 @@ public class DB2XMLWriter {
 				}
 				mainElement.addSubElement(fields);
 			}
-		
+
 			//----------------------------------------
 			// Process result rows
 			//----------------------------------------
-	
+
 			XmlBuilder queryresult = new XmlBuilder(recordname);
 			while (rs.next() && rowCounter < maxlength) {
 				XmlBuilder row = getRowXml(rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces,getBlobSmart);
@@ -198,16 +204,19 @@ public class DB2XMLWriter {
 		String answer = mainElement.toXML();
 		return answer;
 	}
-	
+
 	public static XmlBuilder getRowXml(ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException {
 		XmlBuilder row = new XmlBuilder("row");
 		row.addAttribute("number", "" + rowNumber);
 	
 		for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
 			XmlBuilder resultField = new XmlBuilder("field");
-	
-			resultField.addAttribute("name", "" + rsmeta.getColumnName(i).toUpperCase());
-	
+
+			String columnName = "" + rsmeta.getColumnName(i);
+			if(convertFieldnamesToUppercase)
+				columnName = columnName.toUpperCase();
+			resultField.addAttribute("name", columnName);
+
 			try {
 				String value = JdbcUtil.getValue(rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
 				if (rs.wasNull()) {
