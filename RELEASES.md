@@ -24,6 +24,7 @@ Upcoming
 - Add property jdbc.convertFieldnamesToUppercase
 - Add attribute hideRegex to pipes (next to global property)
 - Fix UUIDGeneratorPipe when stubbed remove attribute type
+- Add httpRequest and httpResponse sessionkeys to WebServiceListener
 
 
 
