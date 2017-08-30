@@ -14,6 +14,7 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.MDC;
 import org.apache.log4j.spi.AppenderAttachable;
 import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.ThrowableInformation;
 
 /**
  * Extension of AppenderSkeleton with the facility to truncate all messages to a specified length.
@@ -47,8 +48,21 @@ public class IbisAppenderWrapper extends AppenderSkeleton implements
 				&& modifiedMessage.length() > maxMessageLength) {
 			modifiedMessage = modifiedMessage.substring(0, maxMessageLength) + "...(" + (modifiedMessage.length() - maxMessageLength) + " characters more)";
 		}
+
+		String throwableStrReps[] = null;
+		ThrowableInformation throwableInfo = event.getThrowableInformation();
+		if (throwableInfo!=null) {
+			throwableStrReps = throwableInfo.getThrowableStrRep();
+		}
+
 		if (StringUtils.isNotEmpty(hideRegex)) {
 			modifiedMessage = Misc.hideAll(modifiedMessage, hideRegex);
+
+			if (throwableStrReps!=null) {
+				for (int i=0; i<throwableStrReps.length; i++) {
+					throwableStrReps[i] = Misc.hideAll(throwableStrReps[i], hideRegex);
+				}
+			}
 		}
 
 		String chr = (String) MDC.get("composedHideRegex");
@@ -65,7 +79,7 @@ public class IbisAppenderWrapper extends AppenderSkeleton implements
 		LoggingEvent modifiedEvent = new LoggingEvent(
 				event.getFQNOfLoggerClass(), event.getLogger(),
 				event.getTimeStamp(), event.getLevel(), modifiedMessage,
-				event.getThreadName(), event.getThrowableInformation(),
+				event.getThreadName(), new ThrowableInformation(throwableStrReps),
 				event.getNDC(), event.getLocationInformation(),
 				event.getProperties());
 

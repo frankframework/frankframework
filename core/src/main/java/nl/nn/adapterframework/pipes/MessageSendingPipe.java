@@ -125,6 +125,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setRetryNamespaceDefs(String) retryNamespaceDefs}</td><td>namespace defintions for retryXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUseInputForExtract(boolean) useInputForExtract}</td><td>when set <code>true</code>, the input of a pipe is used to extract audit trail, correlationID and label (instead of the wrapped input)</td><td>true</td></tr>
  * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is first base64 decoded and then streamed to the HttpServletResponse object which is stored in session key "restListenerServletResponse"</td><td>false</td></tr>
+ * <tr><td>{@link #setPresumedTimeOutInterval(int) presumedTimeOutInterval}</td><td>when the previous call was a timeout, the maximum time (in seconds) after this timeout to presume the current call is also a timeout. A value of -1 indicates to never presume timeouts</td><td>10 s</td></tr> 
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
@@ -164,9 +165,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
 	public static final String PIPE_EXCEPTION_MONITOR_EVENT = "Sender Exception Caught";
 
-	private final static String TIMEOUTFORWARD = "timeout";
-	private final static String EXCEPTIONFORWARD = "exception";
-	private final static String ILLEGALRESULTFORWARD = "illegalResult";
+	private final static String SUCCESS_FORWARD = "success";
+	private final static String TIMEOUT_FORWARD = "timeout";
+	private final static String EXCEPTION_FORWARD = "exception";
+	private final static String ILLEGAL_RESULT_FORWARD = "illegalResult";
+	private final static String PRESUMED_TIMEOUT_FORWARD = "presumedTimeout";
+	private final static String INTERRUPT_FORWARD = "interrupt";
+	
 	private final static String STUBFILENAME = "stubFileName";
 
 	public static final int MIN_RETRY_INTERVAL=1;
@@ -235,6 +240,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private String hideMethod = "all";
 
 	private boolean streamResultToServlet=false;
+	private int presumedTimeOutInterval=10;
 
 	protected void propagateName() {
 		ISender sender=getSender();
@@ -329,7 +335,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			}
 
 			if (isCheckXmlWellFormed() || StringUtils.isNotEmpty(getCheckRootTag())) {
-				if (findForward(ILLEGALRESULTFORWARD) == null)
+				if (findForward(ILLEGAL_RESULT_FORWARD) == null)
 					throw new ConfigurationException(getLogPrefix(null) + "has no forward with name [illegalResult]");
 			}
 			if (!ConfigurationUtils.stubConfiguration()) {
@@ -392,17 +398,17 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 		if (getInputValidator()!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName("success");
+			pf.setName(SUCCESS_FORWARD);
 			getInputValidator().registerForward(pf);
 		}
 		if (getOutputValidator()!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName("success");
+			pf.setName(SUCCESS_FORWARD);
 			getOutputValidator().registerForward(pf);
 		}
 		if (getInputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName("success");
+			pf.setName(SUCCESS_FORWARD);
 			getInputWrapper().registerForward(pf);
 			if (getInputWrapper() instanceof EsbSoapWrapperPipe) {
 				EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe)getInputWrapper();
@@ -412,7 +418,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 		if (getOutputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName("success");
+			pf.setName(SUCCESS_FORWARD);
 			getOutputWrapper().registerForward(pf);
 		}
 
@@ -430,7 +436,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		if (getInputWrapper()!=null) {
 			log.debug(getLogPrefix(session)+"wrapping input");
 			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), inputWrapper, correlationID, input, session);
-			if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
+			if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
 				return wrapResult;
 			} else {
 				input = wrapResult.getResult();
@@ -441,7 +447,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		if (getInputValidator()!=null) {
 			log.debug(getLogPrefix(session)+"validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, correlationID, input, session);
-			if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
+			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
 				return validationResult;
 			}
 		}
@@ -631,11 +637,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				if (!timeoutPending) {
 					timeoutPending=true;
 				}
-				PipeForward timeoutForward = findForward(TIMEOUTFORWARD);
+				PipeForward timeoutForward = findForward(TIMEOUT_FORWARD);
 				log.warn(getLogPrefix(session) + "timeout occured");
 				if (timeoutForward==null) {
 					if (StringUtils.isEmpty(getResultOnTimeOut())) {
-						timeoutForward=findForward(EXCEPTIONFORWARD);
+						timeoutForward=findForward(EXCEPTION_FORWARD);
 					} else {
 						timeoutForward=getForward();
 					}
@@ -660,7 +666,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	
 			} catch (Throwable t) {
 				throwEvent(PIPE_EXCEPTION_MONITOR_EVENT);
-				PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
+				PipeForward exceptionForward = findForward(EXCEPTION_FORWARD);
 				if (exceptionForward!=null) {
 					log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception:\n", t);
 					String resultmsg;
@@ -678,7 +684,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					}
 			}
 		if (!validResult(result)) {
-			PipeForward illegalResultForward = findForward(ILLEGALRESULTFORWARD);
+			PipeForward illegalResultForward = findForward(ILLEGAL_RESULT_FORWARD);
 			return new PipeRunResult(illegalResultForward, result);
 		}
 		if (getOutputValidator()!=null) {
@@ -691,7 +697,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		if (getOutputWrapper()!=null) {
 			log.debug(getLogPrefix(session)+"wrapping response");
 			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, correlationID, result, session);
-			if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
+			if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
 				return wrapResult;
 			} else {
 				result = wrapResult.getResult().toString();
@@ -729,25 +735,51 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	protected String sendMessage(Object input, IPipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException, InterruptedException {
 		long startTime = System.currentTimeMillis();
 		String sendResult = null;
-		String error = null;
+		String exitState = null;
 		try {
-			sendResult = sendTextMessage(input, session, correlationID, getSender(), threadContext);
+			if (getPresumedTimeOutInterval()>=0 && !ConfigurationUtils.stubConfiguration()) {
+				long lastExitIsTimeoutDate = getPipeLine().getAdapter().getLastExitIsTimeoutDate(getName());
+				if (lastExitIsTimeoutDate>0) {
+					long duration = startTime - lastExitIsTimeoutDate;
+					if (duration < (1000L * getPresumedTimeOutInterval())) {
+						exitState = PRESUMED_TIMEOUT_FORWARD;
+						throw new TimeOutException(getLogPrefix(session)+exitState);
+					}
+				}
+			}
+			try {
+				sendResult = sendTextMessage(input, session, correlationID, getSender(), threadContext);
+			} catch (SenderException se) {
+				exitState = EXCEPTION_FORWARD;
+				throw se;
+			} catch (TimeOutException toe) {
+				exitState = TIMEOUT_FORWARD;
+				throw toe;
+			}
 			if (Thread.currentThread().isInterrupted()) {
-				error = "InterruptedException";
+				exitState = INTERRUPT_FORWARD;
 				throw new InterruptedException();
 			}
 			if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(sendResult)) {
-				error = "TimeOutException";
+				exitState = TIMEOUT_FORWARD;
 				throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
 			}
 			if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(sendResult)) {
-				error = "SenderException";
+				exitState = EXCEPTION_FORWARD;
 				throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
 			}
 		} finally {
+			if (exitState==null) {
+				exitState = SUCCESS_FORWARD;
+			}
+			if (getPresumedTimeOutInterval()>=0 && !ConfigurationUtils.stubConfiguration()) {
+				if (!PRESUMED_TIMEOUT_FORWARD.equals(exitState)) {
+					getPipeLine().getAdapter().setLastExitState(getName(), System.currentTimeMillis(), exitState);
+				}
+			}
 			if (MsgLogUtil.getMsgLogLevelNum(getPipeLine().getAdapter().getMsgLogLevel())>=MsgLogUtil.MSGLOG_LEVEL_TERSE) {
 				String durationString = Misc.getAge(startTime);
-				msgLog.info("Sender [" + sender.getName() + "] class [" + sender.getClass().getSimpleName() + "] correlationID [" + correlationID + "] duration [" + durationString + "] got exit-state [" + (error==null?"success":error) + "]");
+				msgLog.info("Sender [" + sender.getName() + "] class [" + sender.getClass().getSimpleName() + "] correlationID [" + correlationID + "] duration [" + durationString + "] got exit-state [" + exitState + "]");
 			}
 		}
 		return sendResult;
@@ -1160,5 +1192,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 	public boolean isStreamResultToServlet() {
 		return streamResultToServlet;
+	}
+
+	public int getPresumedTimeOutInterval() {
+		return presumedTimeOutInterval;
+	}
+
+	public void setPresumedTimeOutInterval(int i) {
+		presumedTimeOutInterval = i;
 	}
 }

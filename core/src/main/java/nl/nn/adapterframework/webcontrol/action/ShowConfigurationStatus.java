@@ -183,19 +183,28 @@ public final class ShowConfigurationStatus extends ActionBase {
 			esr = -1;
 		}
 
+		List<String> ce = new ArrayList<String>();
 		if (configurationSelected!=null) {
-			XmlBuilder exceptionsXML=getConfigurationExceptionsAsXml(configurationSelected);
-			if (exceptionsXML!=null) {
-				adapters.addSubElement(exceptionsXML);
+			if (configurationSelected.getConfigurationException()!=null) {
+				ce.add(configurationSelected.getConfigurationException().getMessage());
 			}
 		} else {
 			for (Configuration configuration : configurations) {
-				XmlBuilder exceptionsXML=getConfigurationExceptionsAsXml(configuration);
-				if (exceptionsXML!=null) {
-					adapters.addSubElement(exceptionsXML);
+				if (configuration.getConfigurationException()!=null) {
+					ce.add(configuration.getConfigurationException().getMessage());
 				}
 			}
 		}
+		if (ce.size()>0) {
+			XmlBuilder exceptionsXML=new XmlBuilder("exceptions");
+			for (int j=0; j<ce.size(); j++) {
+				XmlBuilder exceptionXML=new XmlBuilder("exception");
+				exceptionXML.setValue(ce.get(j));
+				exceptionsXML.addSubElement(exceptionXML);
+			}
+			adapters.addSubElement(exceptionsXML);
+		}
+		
 		List<String> cw = new ArrayList<String>();
 		if (configurationSelected != null) {
 			BaseConfigurationWarnings configWarns = configurationSelected
@@ -594,21 +603,9 @@ public final class ShowConfigurationStatus extends ActionBase {
 		summaryXML.addSubElement(messageLevelXML);
 		adapters.addSubElement(summaryXML);
 		request.setAttribute("adapters", adapters.toXML());
-
+		
 		// Forward control to the specified success URI
 		log.debug("forward to success");
 		return (mapping.findForward("success"));
-	}
-
-	
-	private XmlBuilder getConfigurationExceptionsAsXml(Configuration configuration) {
-		if (configuration.getConfigurationException()!=null) {
-			XmlBuilder exceptionsXML=new XmlBuilder("exceptions");
-			XmlBuilder exceptionXML=new XmlBuilder("exception");
-			exceptionXML.setValue(configuration.getConfigurationException().getMessage());
-			exceptionsXML.addSubElement(exceptionXML);
-			return exceptionsXML;
-		}
-		return null;
 	}
 }

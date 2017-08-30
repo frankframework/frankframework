@@ -24,13 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.log4j.MDC;
-import org.apache.log4j.NDC;
-import org.springframework.beans.factory.NamedBean;
-import org.springframework.core.task.TaskExecutor;
-
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -52,6 +45,13 @@ import nl.nn.adapterframework.util.MsgLogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.log4j.MDC;
+import org.apache.log4j.NDC;
+import org.springframework.beans.factory.NamedBean;
+import org.springframework.core.task.TaskExecutor;
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
@@ -155,7 +155,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private String errorState = "ERROR";
 	
 	private TaskExecutor taskExecutor;
-
+	
 	private String composedHideRegex;
 
 	/**
@@ -213,7 +213,7 @@ public class Adapter implements IAdapter, NamedBean {
 		for (String hr : hrs) {
 			if (sb.length() > 0) {
 				sb.append("|");
-	}
+			}
 			sb.append("(");
 			sb.append(hr);
 			sb.append(")");
@@ -595,7 +595,7 @@ public class Adapter implements IAdapter, NamedBean {
 		if (ndcChanged) {
 			NDC.push(newNDC);
 		}
-		
+
 		if (StringUtils.isNotEmpty(composedHideRegex)) {
 			MDC.put("composedHideRegex", composedHideRegex);
 		}
