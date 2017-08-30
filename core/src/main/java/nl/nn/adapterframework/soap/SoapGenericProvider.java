@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
@@ -92,9 +93,12 @@ public class SoapGenericProvider implements Provider {
 			//String message=soapWrapper.getBody(reqContext.getBodyPart(0).getContent().toString());
 			String message=reqContext.getBodyPart(0).getContent().toString();
 			HttpServletRequest httpRequest=(HttpServletRequest) reqContext.getProperty(Constants.BAG_HTTPSERVLETREQUEST);
+			HttpServletResponse httpResponse=(HttpServletResponse) reqContext.getProperty(Constants.BAG_HTTPSERVLETRESPONSE);
 			ISecurityHandler securityHandler = new HttpSecurityHandler(httpRequest);
 			Map messageContext= new HashMap();
 			messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
+			messageContext.put("httpListenerServletRequest", httpRequest);
+			messageContext.put("httpListenerServletResponse", httpResponse);
 			String result=sd.dispatchRequest(targetObjectURI, null, message, messageContext);
 			//resContext.setRootPart( soapWrapper.putInEnvelope(result,null), Constants.HEADERVAL_CONTENT_TYPE_UTF8);
 			resContext.setRootPart( result, Constants.HEADERVAL_CONTENT_TYPE_UTF8);

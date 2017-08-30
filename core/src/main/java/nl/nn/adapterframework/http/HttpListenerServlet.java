@@ -60,6 +60,8 @@ public class HttpListenerServlet extends HttpServlet {
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		Map messageContext= new HashMap();
 		messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
+		messageContext.put("httpListenerServletRequest", request);
+		messageContext.put("httpListenerServletResponse", response);
 		String service=request.getParameter(SERVICE_ID_PARAM);
 		Enumeration paramnames=request.getParameterNames();
 		while (paramnames.hasMoreElements()) {
