@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -59,7 +61,7 @@ import org.xml.sax.InputSource;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>*</td><td>all attributes available on {@link SoapValidator} can be used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWsdl(String) wsdl}</td><td>the WSDL to read the XSD's from</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSchemaLocation(String) schemaLocation}</td><td>see schemaLocation attribute on XmlValidator except that the schema locations are referring to schema's in the WSDL, schema1 refers to the first, schema2 refers to the second and so on</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSchemaLocation(String) schemaLocation}</td><td>see schemaLocation attribute on XmlValidator except that the schema locations are referring to schema's in the WSDL, schema1 refers to the first, schema2 refers to the second and so on. If not set, all schema's are derived from the WSDL</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSchemaLocationToAdd(String) schemaLocationToAdd}</td><td>Pairs of URI references which will be added to the WSDL</td><td>&nbsp;</td></tr>
  * </table>
  * 
@@ -115,6 +117,48 @@ public class WsdlXmlValidator extends SoapValidator {
 	@Override
 	public void configure() throws ConfigurationException {
 		addSoapEnvelopeToSchemaLocation = false;
+
+		if (ConfigurationUtils.stubConfiguration()) {
+			if (StringUtils.isNotEmpty(getSchemaLocation())) {
+				if (isAddNamespaceToSchema()) {
+					StringBuilder sb = new StringBuilder();
+					int counter = 0;
+					for (Object o : definition.getTypes()
+							.getExtensibilityElements()) {
+						if (o instanceof Schema) {
+							Schema schema = (Schema) o;
+							String tns = schema.getElement()
+									.getAttribute("targetNamespace");
+							if (sb.length() > 0) {
+								sb.append(" ");
+							}
+							sb.append(tns);
+							sb.append(" ");
+							sb.append("schema" + ++counter);
+						}
+					}
+					if (getSchemaLocation().replaceAll("\\s", " ")
+							.equals(sb.toString())) {
+						ConfigurationWarnings configWarnings = ConfigurationWarnings
+								.getInstance();
+						String msg = getLogPrefix(null)
+								+ "attribute [schemaLocation] for wsdl ["
+								+ getWsdl() + "] already has a default value ["
+								+ sb.toString() + "]";
+						configWarnings.add(log, msg);
+					}
+				} else {
+					ConfigurationWarnings configWarnings = ConfigurationWarnings
+							.getInstance();
+					String msg = getLogPrefix(null)
+							+ "attribute [schemaLocation] for wsdl ["
+							+ getWsdl()
+							+ "] should only be set when addNamespaceToSchema=true";
+					configWarnings.add(log, msg);
+				}
+			}
+		}
+
 		super.configure();
 	}
 

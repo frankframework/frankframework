@@ -160,6 +160,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setResultStatusCodeSessionKey(String) resultStatusCodeSessionKey}</td><td>if set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMultipartXmlSessionKey(String) multipartXmlSessionKey}</td><td>if set and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, a multipart/form-data entity is created instead of a request body. For each part element in the session key a part in the multipart entity is created</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMtomEnabled(boolean) mtomEnabled}</td><td>when true and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, MTOM is enabled and requests will be send as multipart/related with type="application/xop+xml". Can be used in combination with <code>multipartXmlSessionKey</code></td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setMtomContentTransferEncoding(String) mtomContentTransferEncoding}</td><td>when <code>mtomEnabled=true</code>, content-transfer-encoding of the request (first part)</td><td>JavaMail's default behavior</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -225,6 +226,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  * please check password or authAlias configuration of the correspondig certificate. 
  *  
  * </p>
+ * <p>
+ * Note 5:
+ * When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
+ * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
+ 
+ *  
+ * </p>
  * @author Gerrit van Brakel
  * @since 4.2c
  */
@@ -288,6 +296,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	private String resultStatusCodeSessionKey;
 	private String multipartXmlSessionKey;
 	private boolean mtomEnabled = false;
+	private String mtomContentTransferEncoding=null;
 	
 	private TransformerPool transformerPool=null;
 
@@ -664,15 +673,15 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 				String name = pv.getDefinition().getName();
 				if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
 					Object value = pv.getValue();
-					if (value instanceof FileInputStream) {
-						FileInputStream fis = (FileInputStream)value;
+					if (value instanceof InputStream) {
+						InputStream is = (InputStream)value;
 						String fileName = null;
 						String sessionKey = pv.getDefinition().getSessionKey();
 						if (sessionKey != null) {
 							fileName = (String) prc.getSession().get(sessionKey + "Name");
 						}
-						FileStreamPartSource fsps = new FileStreamPartSource(fis, fileName);
-						FilePart filePart = new FilePart(name,fsps);
+						StreamPartSource sps = new StreamPartSource(is, fileName);
+						FilePart filePart = new FilePart(name,sps);
 						partList.add(filePart);
 						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+value+"] and name ["+fileName+"]");
 					} else {
@@ -710,10 +719,10 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 						String partName = partElement.getAttribute("name");
 						String partSessionKey = partElement.getAttribute("sessionKey");
 						Object partObject = prc.getSession().get(partSessionKey);
-						if (partObject instanceof FileInputStream) {
-							FileInputStream fis = (FileInputStream)partObject;
-							FileStreamPartSource fsps = new FileStreamPartSource(fis, partName);
-							FilePart filePart = new FilePart(partSessionKey,fsps);
+						if (partObject instanceof InputStream) {
+							InputStream is = (InputStream)partObject;
+							StreamPartSource sps = new StreamPartSource(is, partName);
+							FilePart filePart = new FilePart(partSessionKey,sps);
 							partList.add(filePart);
 							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+partSessionKey+"]  with value ["+partObject+"] and name ["+partName+"]");
 						} else {
@@ -739,7 +748,10 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 			MimeBodyPart mimeBodyPart = new MimeBodyPart();
 			mimeBodyPart.setContent(message, "application/xop+xml; charset=UTF-8; type=\"text/xml\"");
 			start = "<" + getInputMessageParam() + ">";
-			mimeBodyPart.setContentID(start);;
+			mimeBodyPart.setContentID(start);
+			if (StringUtils.isNotEmpty(getMtomContentTransferEncoding())) {
+				mimeBodyPart.setHeader("Content-Transfer-Encoding", getMtomContentTransferEncoding());
+			}
 			mimeMultipart.addBodyPart(mimeBodyPart);
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (string)part ["+getInputMessageParam()+"] with value ["+message+"]");
 		}
@@ -750,8 +762,8 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 				String name = pv.getDefinition().getName();
 				if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
 					Object value = pv.getValue();
-					if (value instanceof FileInputStream) {
-						FileInputStream fis = (FileInputStream)value;
+					if (value instanceof InputStream) {
+						InputStream is = (InputStream)value;
 						String fileName = null;
 						String sessionKey = pv.getDefinition().getSessionKey();
 						if (sessionKey != null) {
@@ -759,7 +771,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 						}
 						MimeBodyPart mimeBodyPart = new PreencodedMimeBodyPart("binary");
 						mimeBodyPart.setDisposition(javax.mail.Part.ATTACHMENT);
-						ByteArrayDataSource ds = new ByteArrayDataSource(fis, "application/octet-stream"); 
+						ByteArrayDataSource ds = new ByteArrayDataSource(is, "application/octet-stream"); 
 						mimeBodyPart.setDataHandler(new DataHandler(ds));
 						mimeBodyPart.setFileName(fileName);
 						mimeBodyPart.setContentID("<" + name + ">");
@@ -817,7 +829,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 							mimeBodyPart.setFileName(partName);
 							mimeBodyPart.setContentID("<" + partName + ">");
 					        mimeMultipart.addBodyPart(mimeBodyPart);
-							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (file)part ["+partSessionKey+"]  with value ["+partObject+"] and name ["+partName+"]");
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (file)part ["+partSessionKey+"] with value ["+partObject+"] and name ["+partName+"]");
 						} else {
 							String partValue = (String) prc.getSession().get(partSessionKey);
 							MimeBodyPart mimeBodyPart = new MimeBodyPart();
@@ -829,7 +841,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 								mimeBodyPart.setContentID("<" + partName + ">");
 							}
 							mimeMultipart.addBodyPart(mimeBodyPart);
-							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (string)part ["+partSessionKey+"]  with value ["+partValue+"]");
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (string)part ["+partSessionKey+"] with value ["+partValue+"]");
 						}
 					}
 				}
@@ -845,17 +857,17 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		hmethod.addRequestHeader(header);
 	}
 
-	private class FileStreamPartSource implements PartSource {
-		private FileInputStream fis = null;
+	private class StreamPartSource implements PartSource {
+		private InputStream is = null;
 		private String fileName;
 		
-		public FileStreamPartSource(FileInputStream fis, String fileName) {
-			this.fis = fis;
+		public StreamPartSource(InputStream is, String fileName) {
+			this.is = is;
 			this.fileName = fileName;
 		}
 		
 		public InputStream createInputStream() throws IOException {
-			return fis;
+			return is;
 		}
 
 		public String getFileName() {
@@ -868,9 +880,13 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		public long getLength() {
 			long len = 0;
 			try {
-				len = fis.getChannel().size();
+				if (is instanceof FileInputStream) {
+					len = ((FileInputStream)is).getChannel().size();
+				} else {
+					len = is.available();
+				}
 			} catch (IOException e) {
-				log.warn(getLogPrefix()+"could not determine file input stream size", e);
+				log.warn(getLogPrefix()+"could not determine input stream size", e);
 			}
 			return len;
 		}
@@ -1549,6 +1565,13 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		this.mtomEnabled = mtomEnabled;
 	}
 
+	public String getMtomContentTransferEncoding() {
+		return mtomContentTransferEncoding;
+	}
+	public void setMtomContentTransferEncoding(String mtomContentTransferEncoding) {
+		this.mtomContentTransferEncoding = mtomContentTransferEncoding;
+	}
+	
 	public class MyMimeMultipart extends MimeMultipart {
 		private String boundary;
 		

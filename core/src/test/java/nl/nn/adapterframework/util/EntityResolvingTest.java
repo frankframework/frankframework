@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 
 import javax.xml.transform.TransformerException;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
