@@ -7,6 +7,7 @@ angular.module('iaf.beheerconsole')
 .controller('MainCtrl', ['$scope', '$rootScope', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', 
 	function($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert) {
 	$scope.loading = true;
+	$rootScope.adapters = {};
 	Pace.on("done", function() {
 		if(appConstants.init == 0) {
 			Api.Get("server/info", function(data) {
@@ -119,7 +120,7 @@ angular.module('iaf.beheerconsole')
 					reset: parseInt(response.headers("X-RateLimit-Reset")) || 0,
 					time: parseInt(new Date().getTime()/1000),
 				};
-				console.log("Fetching X-RateLimit from api.GitHub.com...");
+				console.log("Fetching X-RateLimit from api.GitHub.com...", GithubXrate);
 				Session.set("X-RateLimit", GithubXrate);
 			});
 
@@ -175,10 +176,11 @@ angular.module('iaf.beheerconsole')
 				Poller.add("adapters/" + adapter + "?expanded=all", function(data) {
 					var oldAdapterData = $rootScope.adapters[data.name];
 					if(oldAdapterData != data) {
-						data.receiverStopped = false;
+						data.status = "started";
+
 						for(x in data.receivers) {
 							if(data.receivers[x].started == false)
-								data.receiverStopped = true;
+								data.status = 'warning';
 						}
 						data.hasSender = false;
 						for(x in data.pipes) {
@@ -186,8 +188,14 @@ angular.module('iaf.beheerconsole')
 								data.hasSender = true;
 							}
 						}
+						for(i in data.messages) {
+							var level = data.messages[i].level;
+							if(level != "INFO")
+								data.status = 'warning';
+						}
+						if(!data.started)
+							data.status = "stopped";
 
-						data.status = data.started ? ((data.receiverStopped) ? 'warning' : 'started') : 'stopped';
 						$rootScope.adapters[data.name] = data;
 
 						updateAdapterSummary();
@@ -409,6 +417,19 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
+.filter('adapterFilter', function() {
+	return function(adapters, $scope) {
+		if(!adapters || adapters.length < 1) return [];
+		var r = {};
+		for(adapterName in $scope.adapters) {
+			var adapter = $scope.adapters[adapterName];
+			if($scope.filter[adapter.status])
+				r[adapterName] = adapter;
+		}
+		return r;
+	};
+})
+
 .controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', function($scope, Hooks, Api, SweetAlert) {
 	this.filter = {
 		"started": true,
@@ -419,20 +440,8 @@ angular.module('iaf.beheerconsole')
 	$scope.hideAdapter = {};
 	$scope.applyFilter = function(filter) {
 		$scope.filter = filter;
-		applyStatusFilter();
 	};
-	function applyStatusFilter() {
-		for(adapterName in $scope.adapters) {
-			var adapter = $scope.adapters[adapterName];
-			$scope.hideAdapter[adapter.name] = false;
-			for(x in $scope.filter) {
-				if($scope.filter[x] == false && adapter.status == x) {
-					$scope.hideAdapter[adapter.name] = true;
-				}
-			}
-		}
-		applyConfigFilter();
-	}
+
 	function applyConfigFilter() {
 		for(adapterName in $scope.adapters) {
 			var adapter = $scope.adapters[adapterName];

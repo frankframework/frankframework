@@ -120,10 +120,10 @@
     </div>
 
     <div class="row">
-        <div ng-repeat="adapter in adapters" class="col-lg-12 adapters" ng-hide="hideAdapter[adapter.name]">
-            <div ibox-expand class="ibox {{(adapter.started && !adapter.receiverStopped) ? 'collapsed' : ''}} float-e-margins" id="{{adapter.name}}">
-                <div class="ibox-title {{adapter.started ? ((adapter.receiverStopped) ? 'warning' : 'primary') : 'danger'}}" title="Double-click to open">
-                    <h5>{{adapter.name}} <small class="m-l-sm">&nbsp;{{adapter.description}}</small></h5>
+        <div ng-repeat="adapter in adapters | adapterFilter:this" class="col-lg-12 adapters" ng-hide="hideAdapter[adapter.name]">
+            <div ibox-expand class="ibox {{(adapter.status != 'warning') ? 'collapsed' : ''}} float-e-margins" id="{{adapter.name}}">
+                <div class="ibox-title {{adapter.started ? ((adapter.status=='warning') ? 'warning' : 'primary') : 'danger'}}" title="Double-click to open">
+                    <h5>{{adapter.name}} <small class="m-l-sm">&nbsp;{{adapter.description}} {{adapter.status}}</small></h5>
                     <div ibox-tools-toggle></div>
                 </div>
                 <div class="ibox-content p-md">
