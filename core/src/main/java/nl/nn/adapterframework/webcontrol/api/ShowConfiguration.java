@@ -25,15 +25,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -87,6 +91,30 @@ public final class ShowConfiguration extends Base {
 		return Response.status(Response.Status.CREATED).entity(result).build();
 	}
 
+	@PUT
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response fullReload(LinkedHashMap<String, Object> json) throws ApiException {
+		initBase(servletConfig);
+
+		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
+
+		for (Entry<String, Object> entry : json.entrySet()) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			if(key.equalsIgnoreCase("action")) {
+				if(value.equals("reload")) {
+					ibisManager.handleAdapter("FULLRELOAD", "", "", "", null, false);
+				}
+				response.entity("{\"status\":\"ok\"}");
+			}
+		}
+
+		return response.build();
+	}
+
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}")
@@ -97,6 +125,11 @@ public final class ShowConfiguration extends Base {
 		String result = "";
 
 		Configuration configuration = ibisManager.getConfiguration(configurationName);
+
+		if(configuration == null){
+			throw new ApiException("Configuration not found!");
+		}
+
 		if (loadedConfiguration) {
 			result = configuration.getOriginalConfiguration();
 		} else {
@@ -104,6 +137,36 @@ public final class ShowConfiguration extends Base {
 		}
 
 		return Response.status(Response.Status.CREATED).entity(result).build();
+	}
+
+	@PUT
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response reloadConfiguration(@PathParam("configuration") String configurationName, LinkedHashMap<String, Object> json) throws ApiException {
+		initBase(servletConfig);
+
+		Configuration configuration = ibisManager.getConfiguration(configurationName);
+
+		if(configuration == null){
+			throw new ApiException("Configuration not found!");
+		}
+
+		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
+
+		for (Entry<String, Object> entry : json.entrySet()) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			if(key.equalsIgnoreCase("action")) {
+				if(value.equals("reload")) {
+					ibisManager.handleAdapter("RELOAD", configurationName, "", "", null, false);
+				}
+				response.entity("{\"status\":\"ok\"}");
+			}
+		}
+
+		return response.build();
 	}
 
 	@GET
