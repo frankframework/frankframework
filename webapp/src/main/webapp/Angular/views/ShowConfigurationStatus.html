@@ -131,28 +131,18 @@
                         <div class="col-md-6">
                             <!-- adapter information -->
                             <span class="pull-right">
-                                <button ui-sref="pages.adapterstatistics({name: adapter.name})" class="btn btn-xs btn-info pull-right m-r-xs" type="button"><i class="fa fa-bar-chart m-r-xs" aria-hidden="true"></i>More statistics</button>
+                                <button ui-sref="pages.adapterstatistics({name: adapter.name})" class="btn btn-xs pull-right" type="button"><i class="fa fa-bar-chart" aria-hidden="true"></i> More statistics</button>
                             </span>
                             <h4>Adapter information</h4>
                             <table class="table">
                                 <tbody>
                                     <tr>
                                         <td class="col-md-6">State</td>
-                                        <td class="col-md-6" ng-if="adapter.state =='starting'">
-                                            <span><i class="fa fa fa-check-square-o lh22 m-r-xs"></i> Starting</span>
-                                            <button style="float:right;" title="Starting adapter" class="btn btn-xs btn-warning" type="button"><i class="fa fa-cog fa-spin"></i> Starting adapter</button>
-                                        </td>
-                                        <td class="col-md-6" ng-if="adapter.state =='started'">
-                                            <span><i class="fa fa fa-check-square lh22 m-r-xs"></i> Started</span>
-                                            <button style="float:right;" title="Stop adapter" ng-click="stopAdapter(adapter)" class="btn btn-xs btn-danger" type="button"><i class="fa fa-warning m-r-xs"></i> Stop adapter</button>
-                                        </td>
-                                        <td class="col-md-6" ng-if="adapter.state =='stopping'">
-                                            <span><i class="fa fa fa-stop-circle-o lh22 m-r-xs"></i> Stopping</span>
-                                            <button style="float:right;" title="Stopping adapter" class="btn btn-xs btn-warning" type="button"><i class="fa fa-cog fa-spin"></i> Stopping adapter</button>
-                                        </td>
-                                        <td class="col-md-6" ng-if="adapter.state =='stopped'">
-                                            <span><i class="fa fa fa-stop-circle lh22 m-r-xs"></i> Stopped</span>
-                                            <button style="float:right;" title="Stop adapter" ng-click="startAdapter(adapter)" class="btn btn-xs btn-primary" type="button"><i class="fa fa-play m-r-xs"></i> Start adapter</button>
+                                        <td class="col-md-6">
+	                                        <button title="Stop adapter" ng-if="adapter.state =='started'" ng-click="stopAdapter(adapter.name)" class="btn btn-xs btn-primary" type="button"><i class="fa fa-check"></i> Started</button>
+	                                        <button ng-if="adapter.state =='starting'" class="btn btn-xs" type="button"><i class="fa fa-cog fa-spin"></i> Starting</button>
+	                                        <button title="Start adapter" ng-if="adapter.state =='stopped'" ng-click="startAdapter(adapter.name)" class="btn btn-xs btn-danger" type="button"><i class="fa fa-warning"></i> Stopped</button>
+	                                        <button ng-if="adapter.state =='stopping'" class="btn btn-xs" type="button"><i class="fa fa-cog fa-spin"></i> Stopping</button>
                                         </td>
                                     </tr>
                                     <tr>
@@ -221,9 +211,10 @@
                                             <td><span ng-show="{{receiver.hasErrorStorage}}">{{receiver.errorStorageCount}}</span></td>
                                             <td>
                                                 <span class="pull-right">
-                                                    <button title="Stop receiver" class="btn btn-danger btn-xs" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
-                                                    <button title="Start receiver" class="btn btn-primary btn-xs" ng-show="receiver.state =='stopped'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
-                                                    <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state !='started' && receiver.state !='stopped'" type="button"><i class="fa fa-cog fa-spin"></i></button>
+
+                                    <button title="Stop receiver" class="btn btn-primary btn-xs" ng-hide="!receiver.started" type="button" ng-click="stopReceiver(adapter.name, receiver.name)"><i class="fa fa-check"></i> Started</button>
+                                    <button title="Start receiver" class="btn btn-danger btn-xs" ng-hide="receiver.started" type="button" ng-click="startReceiver(adapter.name, receiver.name)"><i class="fa fa-warning"></i> Stopped</button>
+
                                                 </span>
                                             </td>
                                         </tr>

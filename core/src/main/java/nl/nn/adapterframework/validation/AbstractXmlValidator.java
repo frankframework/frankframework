@@ -45,6 +45,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.Variant;
+import nl.nn.adapterframework.util.XmlExternalEntityResolver;
 
 /**
  * baseclass for validating input message against a XML-Schema.
@@ -196,8 +197,18 @@ public abstract class AbstractXmlValidator {
 	}
 
 	public abstract ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException;
-	public abstract XMLReader getValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException;
+	public abstract XMLReader createValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException;
 
+	public XMLReader getValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException {
+		return getValidatingParser(session, context, false);
+	}
+	public XMLReader getValidatingParser(IPipeLineSession session, ValidationContext context, boolean resolveExternalEntities) throws XmlValidatorException, ConfigurationException, PipeRunException {
+		XMLReader parser = createValidatingParser(session, context);
+		if (!resolveExternalEntities) {
+			parser.setEntityResolver(new XmlExternalEntityResolver());
+		}
+		return parser;
+	}
 	
 	/**
 	 * Validate the XML string
@@ -209,8 +220,12 @@ public abstract class AbstractXmlValidator {
 	 * @throws ConfigurationException
 	 */
 	public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException {
+		return validate(input, session, logPrefix, false);
+	}
+	
+	public String validate(Object input, IPipeLineSession session, String logPrefix, boolean resolveExternalEntities) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = createValidationContext(session);
-		XMLReader parser = getValidatingParser(session, context);
+		XMLReader parser = getValidatingParser(session, context, resolveExternalEntities);
 		return validate(input, session, logPrefix, parser, null, context);
 	}
 	

@@ -45,11 +45,11 @@ refresh="showConfigurationStatus.do">
 				<contentTable width="100%">
 					<tbody>
 						<tr>
-							<subHeader align="center"><h7>Exceptions</h7></subHeader>
+							<subHeader><h1 style="color:red">Exceptions</h1></subHeader>
 						</tr>
 						<xtags:forEach select="exception">
 							<tr>
-								<td><font color="red"><xtags:valueOf select="."/></font></td>
+								<td><xtags:valueOf select="."/></td>
 							</tr>
 						</xtags:forEach>
 					</tbody>
@@ -230,29 +230,12 @@ refresh="showConfigurationStatus.do">
 						<tbody>
 							<xtags:variable id="alert" select="//registeredAdapters/@alert"/>
 							<tr>
-								<xtags:choose>
-									<xtags:when test="$alert='true'">
-										<subHeader colspan="8" align="center"><h7>Adapters (only alerts)</h7></subHeader>
-										<subHeader align="center">
-											<imagelink
-												href="showConfigurationStatus.do"
-												type="starting"
-												alt="all">
-											 </imagelink>
-										</subHeader>
-									</xtags:when>
-									<xtags:otherwise>
-										<subHeader colspan="8" align="center"><h7>Adapters</h7></subHeader>
-										<subHeader align="center">
-											<imagelink
-												href="showConfigurationStatus.do"
-												type="stopping"
-												alt="only alerts">
-												<parameter name="alert">true</parameter>
-											 </imagelink>
-										</subHeader>
-									</xtags:otherwise>
-								</xtags:choose>
+								<subHeader colspan="10" align="center"><h7>
+									<xtags:choose>
+										<xtags:when test="$alert='true'">Adapters (only alerts)</xtags:when>
+										<xtags:otherwise>Adapters</xtags:otherwise>
+									</xtags:choose>
+								</h7></subHeader>
 							</tr>
 							<tr>
 								<subHeader>Configuration</subHeader>
@@ -275,8 +258,7 @@ refresh="showConfigurationStatus.do">
 											<xtags:valueOf select="@config"/>
 										</td>
 										<td>
-											<xtags:variable id="cfg" select="@config"/>
-											<a href="showConfigurationStatus.do?configuration=<%=java.net.URLEncoder.encode(cfg)%>#<xtags:valueOf select="@name"/>"><xtags:valueOf select="@name"/></a>
+											<xtags:valueOf select="@name"/>
 										</td>
 										<td>
 											<%   if (RunStateEnum.STOPPED.isState(adapterState)) { %>
@@ -344,7 +326,7 @@ refresh="showConfigurationStatus.do">
 						<contentTable width="100%">
 							<tbody>
 								<xtags:variable id="adapterState" select="@state"/>
-								<tr><subHeader colspan="7"><h8><a name="<xtags:valueOf select="@name"/>"/><xtags:valueOf select="@name"/><xtags:if test="@description!=''"> (<xtags:valueOf select="@description"/>)</xtags:if></h8></subHeader></tr>
+								<tr><subHeader colspan="7"><h8><xtags:valueOf select="@name"/><xtags:if test="@description!=''"> (<xtags:valueOf select="@description"/>)</xtags:if></h8></subHeader></tr>
 								<tr>
 									<subHeader>State</subHeader>
 									<subHeader>Configured</subHeader>

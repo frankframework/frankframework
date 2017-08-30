@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE xxx [
+  <!ELEMENT xxx (#PCDATA)>
+  <!ATTLIST xxx
+	xmlns:xsi CDATA #FIXED "http://www.w3.org/2001/XMLSchema-instance"
+	xmlns CDATA #FIXED "urn:entities"
+  >
+  <!ENTITY yyy "yyy">
+  <!ENTITY yyy2 "&yyy;&yyy;&yyy;&yyy;&yyy;&yyy;&yyy;&yyy;&yyy;&yyy;">
+  <!ENTITY yyy3 "&yyy2;&yyy2;&yyy2;&yyy2;&yyy2;&yyy2;&yyy2;&yyy2;&yyy2;&yyy2;">
+  <!ENTITY yyy4 "&yyy3;&yyy3;&yyy3;&yyy3;&yyy3;&yyy3;&yyy3;&yyy3;&yyy3;&yyy3;">
+  <!ENTITY yyy5 "&yyy4;&yyy4;&yyy4;&yyy4;&yyy4;&yyy4;&yyy4;&yyy4;&yyy4;&yyy4;">
+  <!ENTITY yyy6 "&yyy5;&yyy5;&yyy5;&yyy5;&yyy5;&yyy5;&yyy5;&yyy5;&yyy5;&yyy5;">
+]>
+<xxx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:entities">&yyy6;</xxx>
