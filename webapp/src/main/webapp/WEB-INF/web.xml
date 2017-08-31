@@ -76,7 +76,7 @@
 
 	<filter-mapping>
 		<filter-name>CorsFilter</filter-name>
-		<url-pattern>/api/*</url-pattern>
+		<url-pattern>/iaf-api/*</url-pattern>
 	</filter-mapping>
 
 	<filter-mapping>
@@ -86,7 +86,7 @@
 
 	<filter-mapping>
 		<filter-name>CacheControlFilter</filter-name>
-		<url-pattern>/api/*</url-pattern>
+		<url-pattern>/iaf-api/*</url-pattern>
 	</filter-mapping>
 
 	<filter-mapping>
@@ -209,12 +209,12 @@
 		<servlet-class>nl.nn.adapterframework.http.RestListenerServlet</servlet-class>
 	</servlet>
 	<servlet>
-		<display-name>RestAPI</display-name>
-		<servlet-name>RestAPI</servlet-name>
+		<display-name>IAF API</display-name>
+		<servlet-name>IAFAPI</servlet-name>
 		<servlet-class>nl.nn.adapterframework.webcontrol.api.ServletDispatcher</servlet-class>
 		<init-param>
 			<param-name>resteasy.servlet.mapping.prefix</param-name>
-			<param-value>/api</param-value>
+			<param-value>/iaf-api</param-value>
 		</init-param>
 		<!-- REPLACE-MARKER init-param>
 			<param-name>resteasy.role.based.security</param-name>
@@ -257,8 +257,8 @@
 		<url-pattern>/rest-public/*</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
-		<servlet-name>RestAPI</servlet-name>
-		<url-pattern>/api/*</url-pattern>
+		<servlet-name>IAFAPI</servlet-name>
+		<url-pattern>/iaf-api/*</url-pattern>
 	</servlet-mapping>
 
 	<!-- Action Servlet Mapping -->
@@ -328,18 +328,18 @@
 	-->
 	<!-- security-constraint>
 		<web-resource-collection>
-			<web-resource-name>RestAPI</web-resource-name>
+			<web-resource-name>IAFAPI</web-resource-name>
 			<description></description>
-			<url-pattern>/api/*</url-pattern>
+			<url-pattern>/iaf-api/*</url-pattern>
 			<http-method>OPTIONS</http-method>
 		</web-resource-collection>
 	</security-constraint>
 
 	<security-constraint>
 		<web-resource-collection>
-			<web-resource-name>RestAPI</web-resource-name>
+			<web-resource-name>IAFAPI</web-resource-name>
 			<description></description>
-			<url-pattern>/api/*</url-pattern>
+			<url-pattern>/iaf-api/*</url-pattern>
 			<http-method>GET</http-method>
 			<http-method>POST</http-method>
 			<http-method>PUT</http-method>

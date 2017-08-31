@@ -1,7 +1,7 @@
 angular.module('iaf.beheerconsole')
 	.service('Api', ['$http', 'appConstants', 'Misc', 'Session', 'Debug', function($http, appConstants, Misc, Session, Debug) {
 		var absolutePath = Misc.getServerPath();
-		absolutePath += "api/";
+		absolutePath += "iaf-api/";
 		var etags = {};
 		var allowed = {};
 
