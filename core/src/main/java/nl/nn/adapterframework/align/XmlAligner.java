@@ -188,7 +188,7 @@ public class XmlAligner extends XMLFilterImpl {
 				if (term instanceof XSModelGroup) {
 					XSModelGroup modelGroup = (XSModelGroup)term;
 					short compositor = modelGroup.getCompositor();
-//					if (compositor==XSModelGroup.COMPOSITOR_SEQUENCE || compositor==XSModelGroup.COMPOSITOR_ALL) {
+					if (compositor==XSModelGroup.COMPOSITOR_SEQUENCE || compositor==XSModelGroup.COMPOSITOR_ALL) {
 						XSObjectList particles = modelGroup.getParticles();
 						if (DEBUG && log.isDebugEnabled()) log.debug("modelGroup particles ["+ToStringBuilder.reflectionToString(particles,ToStringStyle.MULTI_LINE_STYLE)+"]");
 						List<XSParticle> result = new LinkedList<XSParticle>();
@@ -202,15 +202,20 @@ public class XmlAligner extends XMLFilterImpl {
 								if (DEBUG && log.isDebugEnabled()) log.debug("childElementDeclaration name ["+childElementDeclaration.getName()+"]");
 								result.add(childParticle);
 							} else {
-								if (log.isDebugEnabled()) log.debug("childTerm is not a XSElementDeclaration, but is ["+ToStringBuilder.reflectionToString(childTerm,ToStringStyle.MULTI_LINE_STYLE)+"]");
+								log.warn("IGNORING childTerm because it is not a XSElementDeclaration, but is ["+childTerm.getClass().getName()+"]");
+								if (DEBUG && log.isDebugEnabled()) log.debug("childTerm ["+ToStringBuilder.reflectionToString(childTerm,ToStringStyle.MULTI_LINE_STYLE)+"]");
 							}
 						}
 						childElementDeclarations=result;
 						return result;
-//					} 
-//					log.warn("modelGroup compositor is not a COMPOSITOR_SEQUENCE or a COMPOSITOR_ALL, ignoring");
+					} 
+					if (compositor==XSModelGroup.COMPOSITOR_CHOICE) {
+						log.warn("SHOULD HANDLE properly: modelGroup compositor is a COMPOSITOR_CHOICE");
+					} else {
+						log.warn("UNKNOWN compositor in modelGroup ["+compositor+"], not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE");
+					}
 				} else {
-					log.warn("particle term is not a XSModelGroup, ignoring (for now)");
+					log.warn("IGNORING particle term because it is not a XSModelGroup but a ["+term.getClass().getName()+"]");
 				}
 			}
 		} else {

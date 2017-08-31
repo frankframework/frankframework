@@ -141,16 +141,16 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public XMLReader getValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, PipeRunException {
+	public XMLReader createValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, PipeRunException {
 		SAXParser parser;
 		try {
 			SAXParserFactory parserFactory=SAXParserFactory.newInstance();
 			parserFactory.setValidating(false);
 			parserFactory.setNamespaceAware(true);
 			parserFactory.setFeature(PARSING_FEATURE_SECURE, true);
-			parserFactory.setFeature(PARSING_FEATURE_EXTERNAL_GENERAL_ENTITIES, false);
-			parserFactory.setFeature(PARSING_FEATURE_EXTERNAL_PARAMETER_ENTITIES, false);
-			parserFactory.setFeature(PARSING_FEATURE_DISALLOW_INLINE_DOCTYPE, true);
+			//parserFactory.setFeature(PARSING_FEATURE_EXTERNAL_GENERAL_ENTITIES, false);
+			//parserFactory.setFeature(PARSING_FEATURE_EXTERNAL_PARAMETER_ENTITIES, false);
+			//parserFactory.setFeature(PARSING_FEATURE_DISALLOW_INLINE_DOCTYPE, true);
 
 			Schema schema=getSchemaObject(context.getSchemasId(), schemasProvider.getSchemas(session));
 			parserFactory.setSchema(schema);

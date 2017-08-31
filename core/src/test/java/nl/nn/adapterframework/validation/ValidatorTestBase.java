@@ -127,7 +127,6 @@ public abstract class ValidatorTestBase extends TestCase {
             line = buf.readLine();
         }
         return string.toString();
-
     }
        
 	public SchemasProvider getSchemasProvider(final String schemaLocation, final boolean addNamespaceToSchema) {

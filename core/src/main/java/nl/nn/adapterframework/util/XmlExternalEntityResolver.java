@@ -33,21 +33,22 @@ import org.xml.sax.ext.EntityResolver2;
 public class XmlExternalEntityResolver implements EntityResolver2 {
 	private Logger log = LogUtil.getLogger(this);
 
-	public InputSource resolveEntity(String publicId, String systemId)
-			throws SAXException, java.io.IOException {
+	@Override
+	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, java.io.IOException {
 		return resolveEntity(null, publicId, null, systemId);
 	}
 
-	public InputSource getExternalSubset(String arg0, String arg1)
-			throws SAXException, IOException {
+	@Override
+	public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
 		return null;
 	}
 
+	@Override
 	public InputSource resolveEntity(String name, String publicId,
 			String baseURI, String systemId) throws SAXException, IOException {
-		log.debug("Resolving entity with name '" + name + "', public id '"
-				+ publicId + "', base uri '" + baseURI + "' and system id '"
-				+ systemId + "' to an empty string");
+		log.warn("Resolving entity with name [" + name + "], public id ["
+				+ publicId + "], base uri [" + baseURI + "] and system id ["
+				+ systemId + "] to an empty string");
 		return new InputSource(new StringReader(""));
 	}
 
