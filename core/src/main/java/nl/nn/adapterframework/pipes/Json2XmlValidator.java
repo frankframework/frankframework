@@ -173,7 +173,7 @@ public class Json2XmlValidator extends XmlValidator {
 		
 		String resultEvent= validator.validate(messageToValidate, session, getLogPrefix(session), parser, xml2json, context);
 		String out=xml2json.toString();
-		PipeForward forward=determineForward(resultEvent);
+		PipeForward forward=determineForward(resultEvent, session);
 		PipeRunResult result=new PipeRunResult(forward,out);
 		return result;
 	}
@@ -212,7 +212,7 @@ public class Json2XmlValidator extends XmlValidator {
 			resultEvent= validator.finalizeValidation(context, session, e);
 		}
 		resultEvent= validator.finalizeValidation(context, session, null);
-		PipeForward forward=determineForward(resultEvent);
+		PipeForward forward=determineForward(resultEvent, session);
 		PipeRunResult result=new PipeRunResult(forward,out);
 		return result;
 	}

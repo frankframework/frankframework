@@ -93,6 +93,7 @@ public class Wsdl {
     private final PipeLine pipeLine;
     private final XmlValidator inputValidator;
     private final XmlValidator outputValidator;
+    private final boolean isMixedValidator; 
     private String webServiceListenerNamespace;
     private Set<XSD> inputXsds;
     private Set<XSD> outputXsds;
@@ -155,6 +156,7 @@ public class Wsdl {
                 throw new IllegalStateException(outputValidator.getConfigurationException().toString());
             }
         }
+		isMixedValidator = WsdlUtils.isMixedValidator(inputValidator, outputValidator);
         String fileName = getName();
         AppConstants appConstants = AppConstants.getInstance();
         String tns = appConstants.getResolvedProperty("wsdl." + getName() + ".targetNamespace");
@@ -248,8 +250,13 @@ public class Wsdl {
                     } else {
                         warn("Could not extract paradigm from soapBody attribute of inputValidator (should end with _Action, _Event, _Request or _Solicit)");
                     }
-                    if (outputValidator != null) {
-                        String outputParadigm = WsdlUtils.getEsbSoapParadigm(outputValidator);
+                    if (outputValidator != null || isMixedValidator) {
+                        String outputParadigm;
+                        if (outputValidator != null) {
+                            outputParadigm = WsdlUtils.getEsbSoapParadigm(outputValidator);
+                        } else {
+                            outputParadigm = WsdlUtils.getEsbSoapParadigm(inputValidator, true);
+                        }
                         if (outputParadigm != null) {
                             if (!"Response".equals(outputParadigm)) {
                                 warn("Paradigm for output message which was extracted from soapBody should be Response instead of '"
@@ -359,6 +366,10 @@ public class Wsdl {
             rootXsds.addAll(outputRootXsds);
             outputXsds.addAll(SchemaUtils.getXsdsRecursive(outputRootXsds));
             xsds.addAll(outputXsds);
+        } else {
+        	if (isMixedValidator) {
+                outputXsds.addAll(inputXsds);
+        	}
         }
         prefixByXsd = new LinkedHashMap<XSD, String>();
         namespaceByPrefix = new LinkedHashMap<String, String>();
@@ -396,6 +407,13 @@ public class Wsdl {
             outputHeaderElement = getHeaderElement(outputValidator, outputXsds);
         	outputHeaderIsOptional = isHeaderOptional(outputValidator);
             outputBodyElement = getBodyElement(outputValidator, outputXsds, "outputValidator");
+        } else {
+        	if (isMixedValidator) {
+                outputRoot = getRoot(inputValidator, true);
+                outputHeaderElement = inputHeaderElement;
+            	outputHeaderIsOptional = inputHeaderIsOptional;
+                outputBodyElement = getBodyElement(inputValidator, outputXsds, "outputValidator", true);
+        	}
         }
         for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
             if (listener instanceof WebServiceListener) {
@@ -590,7 +608,7 @@ public class Wsdl {
             }
             message(w, inputRoot + "_" + inputHeaderElement.getLocalPart(), parts);
         }
-        if (outputValidator != null) {
+        if (outputValidator != null || isMixedValidator) {
             parts.clear();
             if (outputHeaderElement != null && !outputHeaderIsOptional) {
             	parts.add(outputHeaderElement);
@@ -723,7 +741,7 @@ public class Wsdl {
                 writeSoapBody(w, inputBodyElement);
             }
             w.writeEndElement();
-            if (outputValidator != null) {
+            if (outputValidator != null || isMixedValidator) {
                 w.writeStartElement(WSDL_NAMESPACE, "output"); {
                     writeSoapHeader(w, outputRoot, outputHeaderElement, outputHeaderIsOptional);
                     writeSoapBody(w, outputBodyElement);
@@ -906,8 +924,16 @@ public class Wsdl {
     }
 
     protected String getRoot(XmlValidator xmlValidator) {
+        return getRoot(xmlValidator, false);
+    }
+
+    protected String getRoot(XmlValidator xmlValidator, boolean outputMode) {
         if (xmlValidator instanceof SoapValidator) {
-            return ((SoapValidator)xmlValidator).getSoapBody();
+        	if (outputMode) {
+            	return ((SoapValidator)xmlValidator).getOutputSoapBody();
+        	} else {
+            	return ((SoapValidator)xmlValidator).getSoapBody();
+        	}
         } else {
             return xmlValidator.getRoot();
         }
@@ -953,9 +979,17 @@ public class Wsdl {
     }
 
     protected QName getBodyElement(XmlValidator xmlValidator, Set<XSD> xsds, String type) {
+        return getBodyElement(xmlValidator, xsds, type, false);
+    }
+
+    protected QName getBodyElement(XmlValidator xmlValidator, Set<XSD> xsds, String type, boolean outputMode) {
         String root;
         if (xmlValidator instanceof SoapValidator) {
-            root = ((SoapValidator)xmlValidator).getSoapBody();
+        	if (outputMode) {
+            	root = ((SoapValidator)xmlValidator).getOutputSoapBody();
+        	} else {
+            	root = ((SoapValidator)xmlValidator).getSoapBody();
+        	}
             if (StringUtils.isEmpty(root)) {
                 warn("Attribute soapBody for " + type + " not found or empty");
             }

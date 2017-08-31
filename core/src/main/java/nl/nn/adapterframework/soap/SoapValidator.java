@@ -51,6 +51,7 @@ public class SoapValidator extends Json2XmlValidator {
     private static final Logger LOG = LogUtil.getLogger(SoapValidator.class);
 
     private String soapBody    = "";
+    private String outputSoapBody    = "";
     private String soapHeader  = "";
     private String soapHeaderNamespace  = "";
     private String soapVersion = "1.1";
@@ -78,6 +79,9 @@ public class SoapValidator extends Json2XmlValidator {
             configWarnings.add(log, "soapBody not specified");
         }
         validator.addRootValidation(Arrays.asList("Envelope", "Body", soapBody));
+        if (StringUtils.isNotEmpty(outputSoapBody)) {
+            validator.addOutputRootValidation(Arrays.asList("Envelope", "Body", outputSoapBody));
+        }
         validator.addRootValidation(Arrays.asList("Envelope", "Header", soapHeader));
         List<String> invalidRootNamespaces = new ArrayList<String>();
         for (SoapVersion version : versions) {
@@ -113,6 +117,14 @@ public class SoapValidator extends Json2XmlValidator {
 
     public String getSoapBody() {
         return soapBody;
+    }
+
+    public void setOutputSoapBody(String outputSoapBody) {
+        this.outputSoapBody = outputSoapBody;
+    }
+
+    public String getOutputSoapBody() {
+        return outputSoapBody;
     }
 
     public void setSoapHeader(String soapHeader) {

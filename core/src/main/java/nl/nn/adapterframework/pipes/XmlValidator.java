@@ -235,20 +235,30 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
      
     protected PipeForward validate(String messageToValidate, IPipeLineSession session) throws XmlValidatorException, PipeRunException, ConfigurationException {
         String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session));
-        return determineForward(resultEvent);
+        return determineForward(resultEvent, session);
     }
 
-    protected PipeForward determineForward(String resultEvent) throws PipeRunException {
+    protected PipeForward determineForward(String resultEvent, IPipeLineSession session) throws PipeRunException {
         throwEvent(resultEvent);
         if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
             return getForward();
         }
         PipeForward forward = null;
         if (AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT.equals(resultEvent)) {
-            forward = findForward("parserError");
+        	if (isOutputModeEnabled(session)) {
+            	forward = findForward("outputParserError");
+        	}
+            if (forward == null) {
+            	forward = findForward("parserError");
+            }
         }
         if (forward == null) {
-            forward = findForward("failure");
+        	if (isOutputModeEnabled(session)) {
+                forward = findForward("outputFailure");
+        	}
+            if (forward == null) {
+                forward = findForward("failure");
+        	}
         }
         if (forward == null) {
         	if (isForwardFailureToSuccess()) {
@@ -306,6 +316,18 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
     	 }
     	 return inputStr;
      }
+
+	public void enableOutputMode(IPipeLineSession session) {
+		validator.enableOutputMode(session);
+	}
+
+	public void disableOutputMode(IPipeLineSession session) {
+		validator.disableOutputMode(session);
+	}
+
+	public boolean isOutputModeEnabled(IPipeLineSession session) {
+    	return validator.isOutputModeEnabled(session);
+	}
 
     /**
      * Enable full schema grammar constraint checking, including

@@ -32,6 +32,7 @@ import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.XmlUtils;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.util.XMLChar;
 
 /**
@@ -58,8 +59,17 @@ public abstract class WsdlUtils {
     }
 
     public static String getEsbSoapParadigm(XmlValidator xmlValidator) {
+        return getEsbSoapParadigm(xmlValidator, false);
+    }
+
+    public static String getEsbSoapParadigm(XmlValidator xmlValidator, boolean outputMode) {
         if (xmlValidator instanceof SoapValidator) {
-            String soapBody = ((SoapValidator)xmlValidator).getSoapBody();
+        	String soapBody;
+        	if (outputMode) {
+            	soapBody = ((SoapValidator)xmlValidator).getOutputSoapBody();
+        	} else {
+            	soapBody = ((SoapValidator)xmlValidator).getSoapBody();
+        	}
             if (soapBody != null) {
                 int i = soapBody.lastIndexOf('_');
                 if (i != -1) {
@@ -107,4 +117,21 @@ public abstract class WsdlUtils {
     static String validUri(String uri) {
         return uri == null ? null : uri.replaceAll(" ", "_");
     }
+
+	public static boolean isMixedValidator(Object inputValidator) {
+		return isMixedValidator(inputValidator, null);
+	}
+
+	public static boolean isMixedValidator(Object inputValidator,
+			Object outputValidator) {
+		if (outputValidator == null && inputValidator != null) {
+			if (inputValidator instanceof SoapValidator) {
+				SoapValidator soapValidator = (SoapValidator) inputValidator;
+				if (StringUtils.isNotEmpty(soapValidator.getOutputSoapBody())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }

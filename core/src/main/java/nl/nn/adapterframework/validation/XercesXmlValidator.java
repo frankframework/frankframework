@@ -248,8 +248,10 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 		String schemasId = preparseResult.getSchemasId();
 		String mainFailureMessage = "Validation using " + schemasProvider.getClass().getSimpleName() + " with '" + schemasId + "' failed";
-		XmlValidatorContentHandler xmlValidatorContentHandler =
-				new XmlValidatorContentHandler(preparseResult.getNamespaceSet(), rootValidations, invalidRootNamespaces, getIgnoreUnknownNamespaces());
+		XmlValidatorContentHandler xmlValidatorContentHandler = 
+				new XmlValidatorContentHandler(preparseResult.getNamespaceSet(),
+				(isOutputModeEnabled(session) ? outputRootValidations : rootValidations),
+				invalidRootNamespaces, getIgnoreUnknownNamespaces());
 		XmlValidatorErrorHandler xmlValidatorErrorHandler = new XmlValidatorErrorHandler(xmlValidatorContentHandler, mainFailureMessage);
 		xmlValidatorContentHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
 		result.setContentHandler(xmlValidatorContentHandler);

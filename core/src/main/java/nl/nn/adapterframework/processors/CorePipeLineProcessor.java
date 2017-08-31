@@ -35,6 +35,8 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
+import nl.nn.adapterframework.pipes.XmlValidator;
+import nl.nn.adapterframework.soap.WsdlUtils;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -217,10 +219,19 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 					if (!outputWrapError) {
 						IPipe outputValidator = pipeLine.getOutputValidator();
-						if (outputValidator !=null && !outputValidated) {
+						boolean isMixedValidator = WsdlUtils.isMixedValidator(inputValidator, outputValidator); 
+						if ((outputValidator !=null || isMixedValidator) && !outputValidated) {
 							outputValidated=true;
 							log.debug("validating PipeLineResult");
-							PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, messageId, object, pipeLineSession);
+							PipeRunResult validationResult;
+							if (outputValidator !=null) {
+								validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, messageId, object, pipeLineSession);
+							} else {
+								XmlValidator mixedValidator = (XmlValidator) inputValidator;
+								mixedValidator.enableOutputMode(pipeLineSession);
+								validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, messageId, object, pipeLineSession);
+								mixedValidator.disableOutputMode(pipeLineSession);
+							}
 							if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
 								PipeForward validationForward=validationResult.getPipeForward();
 								if (validationForward.getPath()==null) {
@@ -289,5 +300,4 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		}
 		return pipeLineResult;
 	}
-
 }

@@ -74,6 +74,9 @@ public abstract class AbstractXmlValidator {
 	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
 	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
 
+	public static final String XML_VALIDATOR_MODE = "xmlValidatorMode";
+	public static final String XML_VALIDATOR_MODE_OUTPUT = "OUTPUT";
+
 	protected SchemasProvider schemasProvider;
     private boolean throwException = false;
     private boolean fullSchemaChecking = false;
@@ -81,6 +84,7 @@ public abstract class AbstractXmlValidator {
 	private String xmlReasonSessionKey = "xmlFailureReason";
 	private String root;
 	protected Set<List<String>> rootValidations;
+	protected Set<List<String>> outputRootValidations;
 	protected Map<List<String>, List<String>> invalidRootNamespaces;
 	private boolean validateFile=false;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
@@ -268,6 +272,18 @@ public abstract class AbstractXmlValidator {
 		return XML_VALIDATOR_VALID_MONITOR_EVENT;
 	}
 
+	public void enableOutputMode(IPipeLineSession session) {
+		session.put(XML_VALIDATOR_MODE, XML_VALIDATOR_MODE_OUTPUT);
+	}
+
+	public void disableOutputMode(IPipeLineSession session) {
+		session.remove(XML_VALIDATOR_MODE);
+	}
+
+	public boolean isOutputModeEnabled(IPipeLineSession session) {
+		String xmlValidatorMode = (String) session.get(XML_VALIDATOR_MODE);
+    	return XML_VALIDATOR_MODE_OUTPUT.equals(xmlValidatorMode);
+	}
 
     /**
      * Enable full schema grammar constraint checking, including
@@ -384,6 +400,17 @@ public abstract class AbstractXmlValidator {
 
 	public Set<List<String>> getRootValidations() {
 		return rootValidations;
+	}
+
+	public void addOutputRootValidation(List<String> path) {
+		if (outputRootValidations == null) {
+			outputRootValidations = new HashSet<List<String>>();
+		}
+		outputRootValidations.add(path);
+	}
+
+	public Set<List<String>> getOutputRootValidations() {
+		return outputRootValidations;
 	}
 
 	public void addInvalidRootNamespaces(List<String> path, List<String> invalidRootNamespaces) {
