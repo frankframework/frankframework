@@ -92,7 +92,7 @@ public final class ShowConfiguration extends Base {
 	}
 
 	@PUT
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisAdmin", "IbisTester"})
 	@Path("/configurations")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -106,7 +106,7 @@ public final class ShowConfiguration extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {
 				if(value.equals("reload")) {
-					ibisManager.handleAdapter("FULLRELOAD", "", "", "", null, false);
+					ibisManager.handleAdapter("FULLRELOAD", "", "", "", null, true);
 				}
 				response.entity("{\"status\":\"ok\"}");
 			}
