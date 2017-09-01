@@ -293,10 +293,7 @@ angular.module('iaf.beheerconsole')
 	});
 
 	$scope.$on('IdleStart', function () {
-		var pollerObj = Poller.getAll();
-		for(x in pollerObj) {
-			Poller.changeInterval(pollerObj[x], appConstants["console.idle.pollerInterval"]);
-		}
+		Poller.getAll().changeInterval(appConstants["console.idle.pollerInterval"]);
 
 		var idleTimeout = (parseInt(appConstants["console.idle.timeout"]) > 0) ? parseInt(appConstants["console.idle.timeout"]) : false;
 		if(!idleTimeout) return;
@@ -331,10 +328,7 @@ angular.module('iaf.beheerconsole')
 		var elm = angular.element(".swal2-container").find(".swal2-close");
 		elm.click();
 
-		var pollerObj = Poller.getAll();
-		for(x in pollerObj) {
-			Poller.changeInterval(pollerObj[x], appConstants["console.pollerInterval"]);
-		}
+		Poller.getAll().changeInterval(appConstants["console.pollerInterval"]);
 	});
 
 	$scope.openInfoModel = function () {
@@ -430,7 +424,7 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
-.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', function($scope, Hooks, Api, SweetAlert) {
+.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', function($scope, Hooks, Api, SweetAlert, Poller) {
 	this.filter = {
 		"started": true,
 		"stopped": true,
@@ -441,6 +435,8 @@ angular.module('iaf.beheerconsole')
 	$scope.applyFilter = function(filter) {
 		$scope.filter = filter;
 	};
+	$scope.reload = false;
+	$scope.selectedConfiguration = "All";
 
 	function applyConfigFilter() {
 		for(adapterName in $scope.adapters) {
@@ -485,19 +481,30 @@ angular.module('iaf.beheerconsole')
 		Api.Put("adapters", {"action": "start", "adapters": adapters});
 	};
 	$scope.reloadConfiguration = function() {
-		SweetAlert.Info("Method not yet implemented!");
+		$scope.reload = true;
+		if($scope.selectedConfiguration == "All") return;
+
+		Poller.getAll().stop();
+		Api.Put("configurations/"+$scope.selectedConfiguration, {"action": "reload"}, function() {
+			$scope.reload = false;
+			Poller.getAll().start();
+		});
 	};
 	$scope.fullReload = function() {
-		SweetAlert.Info("Method not yet implemented!");
+		$scope.reload = true;
+		Poller.getAll().stop();
+		Api.Put("configurations", {"action": "reload"}, function() {
+			$scope.reload = false;
+			Poller.getAll().start();
+		});
 	};
 	$scope.showReferences = function() {
 		SweetAlert.Info("Method not yet implemented!");
 	};
 
-	$scope.selectedConfiguration = "All";
 	$scope.changeConfiguration = function(name) {
 		$scope.selectedConfiguration = name;
-		applyStatusFilter();
+		applyConfigFilter();
 	};
 
 	Hooks.register("adapterUpdated:1", function(adapter) {
@@ -532,10 +539,7 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('LogoutCtrl', ['$scope', 'Poller', 'authService', 'Idle', function($scope, Poller, authService, Idle) {
-	var pollerObj = Poller.getAll();
-	for(x in pollerObj) {
-		Poller.remove(pollerObj[x]);
-	}
+	Poller.getAll().remove();
 	Idle.unwatch();
 	authService.logout();
 }])

@@ -237,11 +237,39 @@ angular.module('iaf.beheerconsole')
 			return data[uri];
 		},
 		this.getAll = function () {
-			var list = [];
-			for(uri in data) {
-				list.push(uri);
+			var args = arguments || [];
+			if(args.length > 0 && typeof args[0] == "function") {
+				var callback = args[0];
+				for(x in data) {
+					callback.apply(this, [data[x]]);
+				}
 			}
-			return list;
+			return {
+				changeInterval: function(interval) {
+					var i = interval || appConstants["console.pollerInterval"];
+					for(x in data)
+						data[x].setInterval(i, false);
+				},
+				start: function() {
+					for(x in data)
+						data[x].start();
+				},
+				stop: function() {
+					for(x in data)
+						data[x].stop();
+				},
+				remove: function() {
+					for(x in data)
+						data[x].remove();
+				},
+				list: function () {
+					this.list = [];
+					for(uri in data) {
+						this.list.push(uri);
+					}
+					return this.list;
+				}
+			};
 		};
 	}]).service('Notification', ['$rootScope', '$timeout', function($rootScope, $timeout) {
 		Tinycon.setOptions({
