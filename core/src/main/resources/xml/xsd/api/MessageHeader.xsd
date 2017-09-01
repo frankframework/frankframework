@@ -3,6 +3,13 @@
 	<xsd:element name="MessageHeader" type="MessageHeaderType"/>
 	<xsd:complexType name="MessageHeaderType">
 		<xsd:sequence>
+			<xsd:element name="From" type="xsd:string" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Please fill this with source of the message (Blueriq project name, App, XC, NPA etc.)	
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
 			<xsd:element name="HeaderFields" type="HeaderFieldType"/>
 		</xsd:sequence>
 	</xsd:complexType>
