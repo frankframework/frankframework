@@ -19,17 +19,26 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.log4j.Appender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -38,8 +47,10 @@ import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
 
@@ -177,5 +188,73 @@ public class ServerStatistics extends Base {
 		}
 
 		return Response.status(Response.Status.CREATED).entity(warnings).build();
+	}
+
+	@PUT
+	@RolesAllowed({"IbisAdmin", "IbisTester"})
+	@Path("/server")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response updateLogLevel(LinkedHashMap<String, Object> json) throws ApiException {
+		initBase(servletConfig);
+
+		Level loglevel = null;
+		Boolean logIntermediaryResults = true;
+		int maxMessageLength = -1;
+		StringBuilder msg = new StringBuilder();
+
+		Logger rootLogger = LogUtil.getRootLogger();
+
+		Appender appender = rootLogger.getAppender("appwrap");
+		IbisAppenderWrapper iaw = null;
+		if (appender!=null && appender instanceof IbisAppenderWrapper) {
+			iaw = (IbisAppenderWrapper) appender;
+		}
+
+		for (Entry<String, Object> entry : json.entrySet()) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			if(key.equalsIgnoreCase("loglevel")) {
+				loglevel = Level.toLevel(""+value);
+			}
+			else if(key.equalsIgnoreCase("logIntermediaryResults")) {
+				logIntermediaryResults = Boolean.parseBoolean(""+value);
+			}
+			else if(key.equalsIgnoreCase("maxMessageLength")) {
+				maxMessageLength = Integer.parseInt(""+value);
+			}
+		}
+
+		if(loglevel != null && rootLogger.getLevel() != loglevel) {
+			rootLogger.setLevel(loglevel);
+			msg.append("LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]");
+		}
+
+		boolean logIntermediary = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
+		if(logIntermediary != logIntermediaryResults) {
+			AppConstants.getInstance().put("log.logIntermediaryResults", "" + logIntermediaryResults);
+
+			if(msg.length() > 0)
+				msg.append(", logIntermediaryResults from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
+			else
+				msg.append("logIntermediaryResults changed from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
+		}
+
+		if (iaw != null) {
+			if(iaw.getMaxMessageLength() != maxMessageLength) {
+				if(msg.length() > 0)
+					msg.append(", logMaxMessageLength from [" + iaw.getMaxMessageLength() + "] to [" + maxMessageLength + "]");
+				else
+					msg.append("logMaxMessageLength changed from [" + iaw.getMaxMessageLength() + "] to [" + maxMessageLength + "]");
+				iaw.setMaxMessageLength(maxMessageLength);
+			}
+		}
+
+		if(msg.length() > 0) {
+			log.warn(msg.toString());
+			LogUtil.getLogger("SEC").info(msg.toString());
+		}
+
+		return Response.status(Response.Status.NO_CONTENT).build();
 	}
 }
