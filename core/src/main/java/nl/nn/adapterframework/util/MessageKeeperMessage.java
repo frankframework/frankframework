@@ -16,14 +16,11 @@
 package nl.nn.adapterframework.util;
 
 import java.util.Date;
-import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.MDC;
 
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlUtils;
 /**
  * A message for the MessageKeeper. <br/>
  * Although this could be an inner class of the MessageKeeper,
@@ -40,9 +37,6 @@ public class MessageKeeperMessage {
 	private Date messageDate=new Date();
 	private String messageText;
 	private String messageLevel;
-
-	private static Properties log4jProperties = null;
-	private static String hideRegex = null;
 	
 	/**
 	* Set the messagetext of this message. The text will be xml-encoded.
@@ -64,25 +58,16 @@ public class MessageKeeperMessage {
 
 	private String maskMessage(String message) {
 		if (StringUtils.isNotEmpty(message)) {
-			if (log4jProperties == null) {
-				log4jProperties = LogUtil.getLog4jProperties();
+			String hideRegex = LogUtil.getLog4jHideRegex();
+			if (StringUtils.isNotEmpty(hideRegex)) {
+				message = Misc.hideAll(message, hideRegex);
 			}
-			if (log4jProperties != null) {
-				if (hideRegex == null) {
-					hideRegex = log4jProperties.getProperty("log.hideRegex");
-					hideRegex = XmlUtils.decodeChars(hideRegex);
-				}
-				if (StringUtils.isNotEmpty(hideRegex)) {
-					message = Misc.hideAll(message, hideRegex);
-				}
+
+			String threadHideRegex = LogUtil.getThreadHideRegex();
+			if (StringUtils.isNotEmpty(threadHideRegex)) {
+				message = Misc.hideAll(message, threadHideRegex);
 			}
 		}
-
-		String chr = (String) MDC.get("composedHideRegex");
-		if (StringUtils.isNotEmpty(chr)) {
-			message = Misc.hideAll(message, chr);
-		}
-
 		return message;
 	}
 	

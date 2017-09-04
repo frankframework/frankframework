@@ -48,7 +48,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.log4j.MDC;
 import org.apache.log4j.NDC;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.core.task.TaskExecutor;
@@ -597,7 +596,7 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 
 		if (StringUtils.isNotEmpty(composedHideRegex)) {
-			MDC.put("composedHideRegex", composedHideRegex);
+			LogUtil.setThreadHideRegex(composedHideRegex);
 		}
 			
 		//if (isRequestReplyLogging()) {
@@ -681,7 +680,7 @@ public class Adapter implements IAdapter, NamedBean {
 			if (ndcChanged) {
 				NDC.pop();
 			}
-			MDC.remove("composedHideRegex");
+			LogUtil.removeThreadHideRegex();
 		}
 	}
 

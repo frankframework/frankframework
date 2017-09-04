@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.apache.log4j.Hierarchy;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.MDC;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.spi.RootLogger;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -50,8 +51,11 @@ public class LogUtil {
 	public static final String LOG4J_XML_FILE = "log4j4ibis.xml";
 	public static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 
+	private static final String THREAD_HIDE_REGEX = "thread.hideRegex";
+
 	private static Properties log4jProperties;
 	private static Hierarchy hierarchy=null;
+	private static String hideRegex;
 
 	static {
 		if (System.getProperty("log.dir") == null) {
@@ -157,6 +161,10 @@ public class LogUtil {
 				}
 			}
 		}
+		hideRegex = log4jProperties.getProperty("log.hideRegex");
+		if (hideRegex != null) {
+			hideRegex = XmlUtils.decodeChars(hideRegex);
+		}
 	}
 
 	public static Logger getRootLogger() {
@@ -230,5 +238,21 @@ public class LogUtil {
 			stringWriter.close();
 			stream.close();
 		}
+	}
+
+	public static String getLog4jHideRegex() {
+		return hideRegex;
+	}
+
+	public static void setThreadHideRegex(String hideRegex) {
+		MDC.put(THREAD_HIDE_REGEX, hideRegex);
+	}
+
+	public static String getThreadHideRegex() {
+		return (String) MDC.get(THREAD_HIDE_REGEX);
+	}
+
+	public static void removeThreadHideRegex() {
+		MDC.remove(THREAD_HIDE_REGEX);
 	}
 }

@@ -6,12 +6,12 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.MDC;
 import org.apache.log4j.spi.AppenderAttachable;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
@@ -65,13 +65,13 @@ public class IbisAppenderWrapper extends AppenderSkeleton implements
 			}
 		}
 
-		String chr = (String) MDC.get("composedHideRegex");
-		if (StringUtils.isNotEmpty(chr)) {
-			modifiedMessage = Misc.hideAll(modifiedMessage, chr);
+		String threadHideRegex = LogUtil.getThreadHideRegex();
+		if (StringUtils.isNotEmpty(threadHideRegex)) {
+			modifiedMessage = Misc.hideAll(modifiedMessage, threadHideRegex);
 
 			if (throwableStrReps!=null) {
 				for (int i=0; i<throwableStrReps.length; i++) {
-					throwableStrReps[i] = Misc.hideAll(throwableStrReps[i], chr);
+					throwableStrReps[i] = Misc.hideAll(throwableStrReps[i], threadHideRegex);
 				}
 			}
 		}
