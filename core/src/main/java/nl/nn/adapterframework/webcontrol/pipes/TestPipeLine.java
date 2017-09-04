@@ -220,7 +220,18 @@ public class TestPipeLine extends TimeoutGuardPipe {
 		if (writeSecLogMessage) {
 			secLog.info("message [" + message + "]");
 		}
-		return adapter.processMessage(messageId, message, pls);
+
+		// Temporarily change threadName so logging for pipeline to test will
+		// not be suppressed (see property 'log.thread.rejectRegex')
+		String ctName = Thread.currentThread().getName();
+		String ntName = StringUtils.replace(ctName, "WebControlTestPipeLine",
+				"WCTestPipeLine");
+		try {
+			Thread.currentThread().setName(ntName);
+			return adapter.processMessage(messageId, message, pls);
+		} finally {
+			Thread.currentThread().setName(ctName);
+		}
 	}
 
 	private String retrieveFormInput(IPipeLineSession session) {

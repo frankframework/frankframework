@@ -26,6 +26,7 @@ Upcoming
 - Fix UUIDGeneratorPipe when stubbed remove attribute type
 - Add httpRequest and httpResponse sessionkeys to WebServiceListener
 - Add facility to put outputValidator in inputValidator (to save memory)
+- Show "Test a PipeLine" pipeline logging (bugfix)
 
 
 
