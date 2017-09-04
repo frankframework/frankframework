@@ -27,6 +27,7 @@ Upcoming
 - Add httpRequest and httpResponse sessionkeys to WebServiceListener
 - Add facility to put outputValidator in inputValidator (to save memory)
 - Show "Test a PipeLine" pipeline logging (bugfix)
+- Hide strings in IBIS console messages too (same as in logging)
 
 
 
