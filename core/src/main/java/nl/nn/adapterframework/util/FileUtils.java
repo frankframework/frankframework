@@ -686,16 +686,16 @@ public class FileUtils {
 				if (canonicalFileName != null && canonicalPath != null) {
 					String role = parts.get(1);
 					String type = parts.get(2);
-					log.debug("check allow read file '" + canonicalFileName + "' with rule path '" + canonicalPath + "', role '" + role + "' and type '" + type + "'");
+					log.trace("check allow read file '" + canonicalFileName + "' with rule path '" + canonicalPath + "', role '" + role + "' and type '" + type + "'");
 					if ("*".equals(canonicalPath) || canonicalFileName.startsWith(canonicalPath)) {
-						log.debug("path match");
+						log.trace("path match");
 						if ("*".equals(role) || request.isUserInRole(role)) {
-							log.debug("role match");
+							log.trace("role match");
 							if ("allow".equals(type)) {
-								log.debug("allow");
+								log.trace("allow");
 								return true;
 							} else if ("deny".equals(type)) {
-								log.debug("deny");
+								log.trace("deny");
 								return false;
 							} else {
 								log.error("invalid rule type");

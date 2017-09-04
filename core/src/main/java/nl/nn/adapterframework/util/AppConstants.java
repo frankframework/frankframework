@@ -162,9 +162,9 @@ public final class AppConstants extends Properties implements Serializable{
 		if (value != null) {
 			try {
 				String result=StringResolver.substVars(value, this);
-				if (log.isDebugEnabled()) {
+				if (log.isTraceEnabled()) {
 					if (!value.equals(result)){
-						log.debug("resolved key ["+key+"], value ["+value+"] to ["+result+"]");
+						log.trace("resolved key ["+key+"], value ["+value+"] to ["+result+"]");
 					}
 
 				}
@@ -174,7 +174,7 @@ public final class AppConstants extends Properties implements Serializable{
 				return value;
 			}
 		} else {
-            if (log.isDebugEnabled()) log.debug("getResolvedProperty: key ["+key+"] resolved to value ["+value+"]");
+            if (log.isTraceEnabled()) log.trace("getResolvedProperty: key ["+key+"] resolved to value ["+value+"]");
             return null;
         }
 	}
