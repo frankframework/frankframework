@@ -192,7 +192,7 @@ public class RestServiceDispatcher  {
 					                // Process regular form field (input type="text|radio|checkbox|etc", select, etc).
 					                String fieldName = item.getFieldName();
 					                String fieldValue = item.getString();
-					    			log.debug("setting parameter ["+fieldName+"] to ["+fieldValue+"]");
+					    			log.trace("setting parameter ["+fieldName+"] to ["+fieldValue+"]");
 					    			context.put(fieldName, fieldValue);
 					            } else {
 					                // Process form file field (input type="file").
@@ -203,10 +203,10 @@ public class RestServiceDispatcher  {
 					    			context.put(fieldNameName, fileName);
 					                InputStream inputStream = item.getInputStream();
 					                if (inputStream.available() > 0) {
-					                	log.debug("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
+					                	log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
 						    			context.put(fieldName, inputStream);
 					                } else {
-						    			log.debug("setting parameter ["+fieldName+"] to ["+null+"]");
+						    			log.trace("setting parameter ["+fieldName+"] to ["+null+"]");
 						    			context.put(fieldName, null);
 					                }
 					            }
