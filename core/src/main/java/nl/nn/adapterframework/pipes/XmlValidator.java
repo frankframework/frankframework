@@ -177,6 +177,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				}
 			}
 			validator.setSchemasProvider(this);
+			//do initial schema check
+			if (getSchemasId()!=null) {
+				getSchemas(true);
+			}
 			if (isRecoverAdapter()) {
 				validator.reset();
 			}
@@ -570,10 +574,17 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	@Override
 	public List<Schema> getSchemas() throws ConfigurationException {
+		return getSchemas(false);
+	}
+
+	public List<Schema> getSchemas(boolean check) throws ConfigurationException {
 		Set<XSD> xsds = getXsds();
 		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
 			xsds = SchemaUtils.getXsdsRecursive(xsds);
-			checkRootValidations(xsds);
+			if (check) {
+				checkRootValidations(xsds);
+				checkOutputRootValidations(xsds);
+			}
 			try {
 				Map<String, Set<XSD>> xsdsGroupedByNamespace =
 						SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
@@ -599,7 +610,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			// noNamespaceSchemaLocation the WSDL generator doesn't use
 			// XmlValidator.getXsds(). See comment in Wsdl.getXsds() too.
 			Set<XSD> xsds_temp = SchemaUtils.getXsdsRecursive(xsds, false);
-			checkRootValidations(xsds_temp);
+			if (check) {
+				checkRootValidations(xsds_temp);
+				checkOutputRootValidations(xsds_temp);
+			}
 		}
 		List<Schema> schemas = new ArrayList<Schema>();
 		SchemaUtils.sortByDependencies(xsds, schemas);
@@ -607,30 +621,41 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	private void checkRootValidations(Set<XSD> xsds) throws ConfigurationException {
-		Set<List<String>> rootValidations=validator.getRootValidations();
-		if (rootValidations != null) {
-			for (List<String> path: rootValidations) {
-				boolean found = false;
-				String validElements = path.get(path.size() - 1);
-				List<String> validElementsAsList = Arrays.asList(validElements.split(","));
-				for (String validElement : validElementsAsList) {
-					if (StringUtils.isNotEmpty(validElement)) {
-						List<String> allRootTags = new ArrayList<String>();
-						for (XSD xsd : xsds) {
-							for (String rootTag : xsd.getRootTags()) {
-								allRootTags.add(rootTag);
-								if (validElement.equals(rootTag)) {
-									found = true;
-								}
-							}
-						}
-						if (!found) {
-							ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-							String msg = getLogPrefix(null) + "Element '" + validElement +
-							"' not in list of available root elements " + allRootTags;
-							configWarnings.add(log, msg);
+		if (validator.getRootValidations() != null) {
+			for (List<String> path: validator.getRootValidations()) {
+				checkRootValidation(path, xsds);
+			}
+		}
+	}
+
+	private void checkOutputRootValidations(Set<XSD> xsds) throws ConfigurationException {
+		if (validator.getOutputRootValidations() != null) {
+			for (List<String> path: validator.getOutputRootValidations()) {
+				checkRootValidation(path, xsds);
+			}
+		}
+	}
+
+	private void checkRootValidation(List<String> path, Set<XSD> xsds) throws ConfigurationException {
+		boolean found = false;
+		String validElements = path.get(path.size() - 1);
+		List<String> validElementsAsList = Arrays.asList(validElements.split(","));
+		for (String validElement : validElementsAsList) {
+			if (StringUtils.isNotEmpty(validElement)) {
+				List<String> allRootTags = new ArrayList<String>();
+				for (XSD xsd : xsds) {
+					for (String rootTag : xsd.getRootTags()) {
+						allRootTags.add(rootTag);
+						if (validElement.equals(rootTag)) {
+							found = true;
 						}
 					}
+				}
+				if (!found) {
+					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+					String msg = getLogPrefix(null) + "Element '" + validElement +
+					"' not in list of available root elements " + allRootTags;
+					configWarnings.add(log, msg);
 				}
 			}
 		}
