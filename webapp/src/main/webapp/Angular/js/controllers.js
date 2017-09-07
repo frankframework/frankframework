@@ -700,11 +700,39 @@ angular.module('iaf.beheerconsole')
 	getConfiguration();
 }])
 
-.controller('EnvironmentVariablesCtrl', ['$scope', 'Api', 'appConstants', function($scope, Api, appConstants) {
+.controller('EnvironmentVariablesCtrl', ['$scope', 'Api', 'appConstants', '$timeout', function($scope, Api, appConstants, $timeout) {
+	$scope.state = [];
 	$scope.variables = [];
 	Api.Get("environmentvariables", function(data) {
 		$scope.variables = data;
 	});
+	Api.Get("server/log", function(data) {
+		$scope.form = data;
+	});
+
+	$scope.form = {
+		loglevel: "DEBUG",
+		logIntermediaryResults: true,
+		maxMessageLength: -1,
+		errorLevels: ["DEBUG", "INFO", "WARN", "ERROR"],
+	};
+
+	$scope.changeLoglevel = function(name) {
+		$scope.form.loglevel = name;
+	};
+
+	$scope.submit = function(formData) {
+		$scope.state = [{type:"info", message: "Updating log configuration..."}];
+		Api.Put("server/log", formData, function() {
+			Api.Get("server/log", function(data) {
+				$scope.form = data;
+				$scope.state = [{type:"success", message: "Successfully updated log configuration!"}];
+			});
+		});
+		$timeout(function(){
+			$scope.state = [];
+		}, 5000);
+	};
 }])
 
 .controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', function($scope, Api, $stateParams, SweetAlert) {

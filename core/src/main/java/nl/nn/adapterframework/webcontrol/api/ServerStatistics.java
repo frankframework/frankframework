@@ -16,6 +16,7 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,6 +40,7 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.lf5.LogLevel;
 
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -190,12 +192,45 @@ public class ServerStatistics extends Base {
 		return Response.status(Response.Status.CREATED).entity(warnings).build();
 	}
 
+	@GET
+	@PermitAll
+	@Path("/server/log")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getLogConfiguration() throws ApiException {
+
+		Map<String, Object> logSettings = new HashMap<String, Object>(3);
+		Logger rootLogger = LogUtil.getRootLogger();
+
+		Appender appender = rootLogger.getAppender("appwrap");
+		IbisAppenderWrapper iaw = null;
+		if (appender!=null && appender instanceof IbisAppenderWrapper) {
+			iaw = (IbisAppenderWrapper) appender;
+			logSettings.put("maxMessageLength", iaw.getMaxMessageLength());
+		}
+		else {
+			logSettings.put("maxMessageLength", -1);
+		}
+
+		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
+		logSettings.put("errorLevels", errorLevels);
+
+		for (Iterator<String> iterator = errorLevels.iterator(); iterator.hasNext();) {
+			String level = iterator.next();
+			if(rootLogger.getLevel() == Level.toLevel(level))
+				logSettings.put("loglevel", level);
+		}
+
+		logSettings.put("logIntermediaryResults", AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true));
+
+		return Response.status(Response.Status.CREATED).entity(logSettings).build();
+	}
+
 	@PUT
 	@RolesAllowed({"IbisAdmin", "IbisTester"})
-	@Path("/server")
+	@Path("/server/log")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateLogLevel(LinkedHashMap<String, Object> json) throws ApiException {
+	public Response updateLogConfiguration(LinkedHashMap<String, Object> json) throws ApiException {
 		initBase(servletConfig);
 
 		Level loglevel = null;

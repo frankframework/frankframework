@@ -3802,7 +3802,8 @@ code {
   border-image: none;
   border-style: solid solid none;
   border-width: 1px 0;
-  overflow: visible;
+  clear: both;
+  overflow: overlay;
 }
 .ibox-footer {
   color: inherit;
@@ -3836,10 +3837,6 @@ table.table-mail tr td {
 }
 .unread td {
   background-color: #f9f8f8;
-}
-.ibox-content {
-  clear: both;
-  overflow: overlay;
 }
 .ibox-heading {
   background-color: #f3f6fb;
@@ -4110,6 +4107,9 @@ a.close-canvas-menu:hover {
 }
 .lh22 {
   line-height: 22px;
+}
+.lh32 {
+  line-height: 32px;
 }
 /* MARGINS & PADDINGS */
 .p-xxs {
