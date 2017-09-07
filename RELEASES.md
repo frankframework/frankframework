@@ -28,6 +28,7 @@ Upcoming
 - Add facility to put outputValidator in inputValidator (to save memory)
 - Show "Test a PipeLine" pipeline logging (bugfix)
 - Hide strings in IBIS console messages too (same as in logging)
+- Move config warning "Element not in list of available root elements" to startup
 
 
 
