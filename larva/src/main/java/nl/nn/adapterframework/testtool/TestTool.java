@@ -164,6 +164,10 @@ public class TestTool {
 					}
 				}
 			}
+			String windiffCmd = appConstants.getResolvedProperty("larva.windiff.command");
+			if (windiffCmd != null) {
+				windiffCommand = windiffCmd;
+			}
 			debugMessage("Read scenarios from directory '" + currentScenariosRootDirectory + "'", writers);
 			List allScenarioFiles = readScenarioFiles(appConstants, currentScenariosRootDirectory, writers);
 			debugMessage("Read execute parameter", writers);
@@ -2843,7 +2847,6 @@ public class TestTool {
 		File tempFileResult = writeTempFile(expectedFileName, result);
 		File tempFileExpected = writeTempFile(expectedFileName, expected);
 		String command = currentScenariosRootDirectory + windiffCommand + " " + tempFileResult + " " + tempFileExpected;
-		System.out.println(command);
 		ProcessUtil.executeCommand(command);
 	}
 
