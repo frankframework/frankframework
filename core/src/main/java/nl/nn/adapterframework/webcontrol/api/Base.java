@@ -51,6 +51,7 @@ public abstract class Base {
 	protected Logger log = LogUtil.getLogger(this);
 	protected IbisContext ibisContext = null;
 	protected IbisManager ibisManager = null;
+	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "hal");
 
 	/**
 	 * Retrieves ibisContext and ibisManager from <code>servletConfig</code>.

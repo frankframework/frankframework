@@ -51,14 +51,18 @@ import nl.nn.adapterframework.util.AppConstants;
 @Path("/")
 public class Init extends Base {
 
+	private static String ResourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
+
 	@Context Dispatcher dispatcher;
 	@Context HttpServletRequest httpServletRequest;
 	@GET
 	@PermitAll
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAllResources(@QueryParam("allowedRoles") boolean displayAllowedRoles){
-		List<Object> resources = new ArrayList<Object>();
+	public Response getAllResources(@QueryParam("allowedRoles") boolean displayAllowedRoles) {
+		List<Object> JSONresources = new ArrayList<Object>();
+		Map<String, Object> HALresources = new HashMap<String, Object>();
+		Map<String, Object> resources = new HashMap<String, Object>(1);
 
 		ResourceMethodRegistry registry = (ResourceMethodRegistry) dispatcher.getRegistry();
 
@@ -69,6 +73,7 @@ public class Init extends Base {
 		for (Map.Entry<String, List<ResourceInvoker>> entry : registry.getBounded().entrySet()) {
 			for (ResourceInvoker invoker : entry.getValue()) {
 				Method method = invoker.getMethod();
+				String relation = null;
 
 				if(method.getDeclaringClass() == getClass()) {
 					continue;
@@ -89,9 +94,6 @@ public class Init extends Base {
 				else if(method.isAnnotationPresent(DELETE.class))
 					resource.put("type", "DELETE");
 
-				if(method.isAnnotationPresent(Relation.class))
-					resource.put("rel", method.getAnnotation(Relation.class).value());
-
 				Path path = method.getAnnotation(Path.class);
 				if(path != null) {
 					String p = path.value();
@@ -104,12 +106,42 @@ public class Init extends Base {
 					resource.put("allowed", rolesAllowed.value());
 				}
 
-				resources.add(resource);
+
+				if((HATEOASImplementation.equalsIgnoreCase("hal"))) {
+					if(method.isAnnotationPresent(Relation.class))
+						relation = method.getAnnotation(Relation.class).value();
+
+					if(relation != null) {
+						if(HALresources.containsKey(relation)) {
+							Object prevRelation = HALresources.get(relation);
+							List<Object> tmpList = null;
+							if(prevRelation instanceof List)
+								tmpList = (List) prevRelation;
+							else {
+								tmpList = new ArrayList<Object>();
+								tmpList.add(prevRelation);
+							}
+
+							tmpList.add(resource);
+							HALresources.put(relation, tmpList);
+						}
+						else
+							HALresources.put(relation, resource);
+					}
+				}
+				else {
+					if(method.isAnnotationPresent(Relation.class))
+						resource.put("rel", method.getAnnotation(Relation.class).value());
+
+					JSONresources.add(resource);
+				}
 			}
 		}
-		Map<String, Object> ret = new HashMap<String, Object>(1);
-		ret.put("links", resources);
+		if((HATEOASImplementation.equalsIgnoreCase("hal")))
+			resources.put(ResourceKey, HALresources);
+		else
+			resources.put(ResourceKey, JSONresources);
 
-		return Response.status(Response.Status.CREATED).entity(ret).build();
+		return Response.status(Response.Status.CREATED).entity(resources).build();
 	}
 }
