@@ -39,10 +39,10 @@ import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
 public class ServletDispatcher extends HttpServletDispatcher {
 
 	private Logger secLog = LogUtil.getLogger("SEC");
-	private boolean consoleActive = AppConstants.getInstance().getBoolean("console.active", false);
+	private boolean iafApiEnabled = AppConstants.getInstance().getBoolean("iaf-api.enabled", false);
 
 	public void init(ServletConfig servletConfig) throws ServletException {
-		if(consoleActive) {
+		if(iafApiEnabled) {
 			super.init(servletConfig);
 		}
 	}
@@ -50,7 +50,7 @@ public class ServletDispatcher extends HttpServletDispatcher {
 	@Override
 	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-		if(!consoleActive) {
+		if(!iafApiEnabled) {
 			return;
 		}
 
