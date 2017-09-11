@@ -30,6 +30,7 @@ Upcoming
 - Hide strings in IBIS console messages too (same as in logging)
 - Move config warning "Element not in list of available root elements" to startup
 - Larva: add possibility to overwrite windiff command 
+- Add IbisWebService constraint to /rest/* endpoint
 
 
 
