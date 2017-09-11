@@ -98,6 +98,8 @@ public class IbisContext {
 				System.setProperty(APPLICATION_SERVER_TYPE_PROPERTY, "TOMCAT");
 			}
 		}
+		if(!Boolean.parseBoolean(AppConstants.getInstance().getProperty("jdbc.convertFieldnamesToUppercase")))
+			ConfigurationWarnings.getInstance().add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
 	}
 	private ApplicationContext applicationContext;
 	private IbisManager ibisManager;
