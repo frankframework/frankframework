@@ -24,10 +24,12 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.http.IRestEtagCache;
-import nl.nn.adapterframework.http.RestEtagEhcache;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
+import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
+import nl.nn.adapterframework.http.rest.EtagCacheManager;
+import nl.nn.adapterframework.http.rest.IRestEtagCache;
+import nl.nn.adapterframework.http.rest.RestEtagEhcache;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -69,7 +71,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			throw new ConfigurationException(getLogPrefix(null)+"no uriPattern found!");
 		}
 
-		cache = RestServiceDispatcher.getCache();
+		cache = EtagCacheManager.getInstance();
 	}
 
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {

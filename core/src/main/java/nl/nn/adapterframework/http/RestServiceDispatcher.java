@@ -34,6 +34,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.http.rest.EtagCacheManager;
+import nl.nn.adapterframework.http.rest.IRestEtagCache;
+import nl.nn.adapterframework.http.rest.RestEtagEhcache;
+import nl.nn.adapterframework.http.rest.RestEtagMemcached;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -68,24 +72,13 @@ public class RestServiceDispatcher  {
 	private SortedMap patternClients=new TreeMap(new RestUriComparator());
 
 	private static RestServiceDispatcher self = null;
-	private static IRestEtagCache cache = null;
+	private static IRestEtagCache cache = EtagCacheManager.getInstance();
 
 	public static synchronized RestServiceDispatcher getInstance() {
 		if( self == null ) {
 			self = new RestServiceDispatcher();
 		}
 		return self;
-	}
-
-	public static synchronized IRestEtagCache getCache() {
-		if( cache == null ) {
-			if(etagCacheType.equalsIgnoreCase("ehcache"))
-				cache = new RestEtagEhcache();
-			else if(etagCacheType.equalsIgnoreCase("memcached")) {
-				cache = new RestEtagMemcached();
-			}
-		}
-		return cache;
 	}
 
 	public String findMatchingPattern(String uri) {
@@ -261,10 +254,7 @@ public class RestServiceDispatcher  {
 			}
 			String etagCacheKey = restPath+"_"+uri;
 
-			cache = getCache();
-			if(cache == null)
-				log.warn("failed to initialize IRestEtagCache, skipping");
-			else if(cache.containsKey(etagCacheKey)) {
+			if(cache.containsKey(etagCacheKey)) {
 				String cachedEtag = (String) cache.get(etagCacheKey);
 
 				if(ifNoneMatch != null && ifNoneMatch.equalsIgnoreCase(cachedEtag) && method.equalsIgnoreCase("GET")) {
