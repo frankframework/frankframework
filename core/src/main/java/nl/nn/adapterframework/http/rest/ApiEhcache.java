@@ -26,7 +26,7 @@ import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class RestEtagEhcache implements IRestEtagCache {
+public class ApiEhcache implements IApiCache {
 	private Logger log = LogUtil.getLogger(this);
 
 	private final String KEY_CACHE_NAME="etagCacheReceiver";
@@ -50,7 +50,7 @@ public class RestEtagEhcache implements IRestEtagCache {
 	private Ehcache cache=null;
 	private IbisCacheManager cacheManager=null;
 
-	public RestEtagEhcache() {
+	public ApiEhcache() {
 		cacheManager = IbisCacheManager.getInstance();
 
 		AppConstants ac = AppConstants.getInstance();

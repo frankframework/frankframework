@@ -23,7 +23,7 @@ package nl.nn.adapterframework.http.rest;
  * @since	7.0-B2
  *
  */
-public interface IRestEtagCache {
+public interface IApiCache {
 
 	/**
 	 * Retrieve an object from the cache

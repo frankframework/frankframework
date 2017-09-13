@@ -24,7 +24,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -40,14 +39,14 @@ public class ApiListenerServlet extends HttpServlet {
 	protected static String apiServletContextKey  = "apiServletContext";
 
 	private ApiServiceDispatcher dispatcher = null;
-	private IRestEtagCache cache = null;
+	private IApiCache cache = null;
 
 	public void init() throws ServletException {
 		if (dispatcher == null) {
 			dispatcher = ApiServiceDispatcher.getInstance();
 		}
 		if (cache == null) {
-			cache = EtagCacheManager.getInstance();
+			cache = ApiCacheManager.getInstance();
 		}
 		super.init();
 	}
@@ -106,23 +105,63 @@ public class ApiListenerServlet extends HttpServlet {
 			/**
 			 * Check authentication
 			 */
+			ApiAuthentication authentication = null;
+			ApiPrincipal userPrincipal = null;
+
 			if(listener.getAuthenticationMethod() != null) {
-				String authenticationMethod = listener.getAuthenticationMethod();
-				String auth = request.getHeader("Authorization");
-				if(auth.startsWith("BASIC") && authenticationMethod.equals("basic")) {
-					String basicAuth = auth.substring(auth.indexOf("BASIC") + 6);
-					System.out.println("Found basicAuth: " +basicAuth);
-					//TODO Basic auth impl.
+				authentication = new ApiAuthentication(listener);
+				String authorizationHeader = request.getHeader("Authorization");
+
+				userPrincipal = authentication.findUser(authorizationHeader);
+				if(authentication == null || userPrincipal == null || !userPrincipal.isLoggedIn()) {
+					response.setStatus(401);
+					log.trace("Aborting request with status [401], no (valid) credentials supplied");
+					return;
 				}
-				else if(auth.startsWith("token") && authenticationMethod.equals("token")) {
-					String token = auth.substring(auth.indexOf("token") +6);
-					System.out.println("Found token: " +token);
-					//TODO token auth impl.
+
+//				config.getPermittedRoles?(principal)
+			}
+
+			/**
+			 * Evaluate preconditions
+			 */
+			String accept = request.getHeader("Accept");
+			if(accept != null && !accept.isEmpty()) {
+				if(!listener.getConsumes().equalsIgnoreCase("any") && !accept.equalsIgnoreCase(listener.getConsumes())) {
+					response.setStatus(415);
+					log.trace("Aborting request with status [415], did not match accept ["+listener.getConsumes()+"] got ["+accept+"] instead");
+					return;
 				}
 			}
 
+			String etagCacheKey = ApiCacheManager.buildCacheKey(config.getEtagKey());
+			//TODO cache unique per user? how to when multiple users use the same endpoint!?
+			if(cache.containsKey(etagCacheKey)) {
+				String cachedEtag = (String) cache.get(etagCacheKey);
+
+				if(method.equalsIgnoreCase("GET")) {
+					String ifNoneMatch = request.getHeader("If-None-Match");
+					if(ifNoneMatch != null && ifNoneMatch.equalsIgnoreCase(cachedEtag)) {
+						response.setStatus(304);
+						log.trace("Aborting request with status [304], matched if-none-match ["+ifNoneMatch+"]");
+						return;
+					}
+				}
+				else {
+					String ifMatch = request.getHeader("If-Match");
+					if(ifMatch != null && !ifMatch.equalsIgnoreCase(cachedEtag)) {
+						response.setStatus(412);
+						log.trace("Aborting request with status [412], matched if-match ["+ifMatch+"] method ["+method+"]");
+						return;
+					}
+				}
+			}
+
+			/**
+			 * Check authorization
+			 */
 			//TODO: authentication implementation
-			if(false) {
+			if(userPrincipal != null && !authentication.isMethodAllowed(method)) {
 				response.setStatus(405);
 				log.trace("Aborting request with status [405], method ["+method+"] not allowed");
 				return;
@@ -161,41 +200,6 @@ public class ApiListenerServlet extends HttpServlet {
 			}
 
 			/**
-			 * Evaluate preconditions
-			 */
-			String accept = request.getHeader("Accept");
-			if(accept != null && !accept.isEmpty()) {
-				if(!listener.getConsumes().equalsIgnoreCase("any") && !accept.equalsIgnoreCase(listener.getConsumes())) {
-					response.setStatus(415);
-					log.trace("Aborting request with status [415], did not match accept ["+listener.getConsumes()+"] got ["+accept+"] instead");
-					return;
-				}
-			}
-
-			String etagCacheKey = EtagCacheManager.buildCacheKey(config.getEtagKey());
-			//TODO cache unique per user? how to when multiple users use the same endpoint!?
-			if(cache.containsKey(etagCacheKey)) {
-				String cachedEtag = (String) cache.get(etagCacheKey);
-
-				if(method.equalsIgnoreCase("GET")) {
-					String ifNoneMatch = request.getHeader("If-None-Match");
-					if(ifNoneMatch != null && ifNoneMatch.equalsIgnoreCase(cachedEtag)) {
-						response.setStatus(304);
-						log.trace("Aborting request with status [304], matched if-none-match ["+ifNoneMatch+"]");
-						return;
-					}
-				}
-				else {
-					String ifMatch = request.getHeader("If-Match");
-					if(ifMatch != null && !ifMatch.equalsIgnoreCase(cachedEtag)) {
-						response.setStatus(412);
-						log.trace("Aborting request with status [412], matched if-match ["+ifMatch+"] method ["+method+"]");
-						return;
-					}
-				}
-			}
-
-			/**
 			 * Process the request through the pipeline
 			 */
 			String result = listener.processRequest(null, body, messageContext);
@@ -214,7 +218,8 @@ public class ApiListenerServlet extends HttpServlet {
 			StringBuilder methods = new StringBuilder();
 			for (String mtd : config.getMethods()) {
 				//TODO Add check to determine of a user is allowed to use a method @CRUD
-				methods.append(mtd + ", ");
+				if(userPrincipal != null && authentication.isMethodAllowed(mtd))
+					methods.append(mtd + ", ");
 			}
 			response.addHeader("Allow", methods.substring(0, methods.length()-2));
 

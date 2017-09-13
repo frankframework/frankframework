@@ -36,7 +36,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class RestEtagMemcached implements IRestEtagCache {
+public class ApiMemcached implements IApiCache {
 
 	protected Logger log = LogUtil.getLogger(this);
 	private MemcachedClient client = null;
@@ -55,7 +55,7 @@ public class RestEtagMemcached implements IRestEtagCache {
 		}
 	};
 
-	public RestEtagMemcached() {
+	public ApiMemcached() {
 		AppConstants ac = AppConstants.getInstance();
 		String address = ac.getProperty("etag.cache.server", "localhost:11211");
 		String username = ac.getProperty("etag.cache.username", "");

@@ -34,10 +34,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.http.rest.EtagCacheManager;
-import nl.nn.adapterframework.http.rest.IRestEtagCache;
-import nl.nn.adapterframework.http.rest.RestEtagEhcache;
-import nl.nn.adapterframework.http.rest.RestEtagMemcached;
+import nl.nn.adapterframework.http.rest.ApiCacheManager;
+import nl.nn.adapterframework.http.rest.IApiCache;
+import nl.nn.adapterframework.http.rest.ApiEhcache;
+import nl.nn.adapterframework.http.rest.ApiMemcached;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -72,7 +72,7 @@ public class RestServiceDispatcher  {
 	private SortedMap patternClients=new TreeMap(new RestUriComparator());
 
 	private static RestServiceDispatcher self = null;
-	private static IRestEtagCache cache = EtagCacheManager.getInstance();
+	private static IApiCache cache = ApiCacheManager.getInstance();
 
 	public static synchronized RestServiceDispatcher getInstance() {
 		if( self == null ) {

@@ -59,6 +59,10 @@ public class ApiDispatchConfig {
 		return methods.containsKey(method);
 	}
 
+	public String getUriPattern() {
+		return uriPattern;
+	}
+
 	public String getEtagKey() {
 		return uriPattern.hashCode()+"";
 	}

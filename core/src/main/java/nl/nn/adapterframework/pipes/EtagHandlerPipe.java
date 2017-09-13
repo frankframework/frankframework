@@ -27,9 +27,9 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
-import nl.nn.adapterframework.http.rest.EtagCacheManager;
-import nl.nn.adapterframework.http.rest.IRestEtagCache;
-import nl.nn.adapterframework.http.rest.RestEtagEhcache;
+import nl.nn.adapterframework.http.rest.ApiCacheManager;
+import nl.nn.adapterframework.http.rest.IApiCache;
+import nl.nn.adapterframework.http.rest.ApiEhcache;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -47,7 +47,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 	List<String> actions = Arrays.asList("generate", "get", "set", "delete", "flush", "clear");
 	private String restPath = "/rest";
 	private String uriPattern = null;
-	private IRestEtagCache cache = null;
+	private IApiCache cache = null;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -71,7 +71,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			throw new ConfigurationException(getLogPrefix(null)+"no uriPattern found!");
 		}
 
-		cache = EtagCacheManager.getInstance();
+		cache = ApiCacheManager.getInstance();
 	}
 
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
@@ -125,8 +125,8 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 				returnCode = cache.remove(cacheKey);
 			}
 			else if(getAction().equalsIgnoreCase("flush")) {
-				if(cache instanceof RestEtagEhcache) {
-					((RestEtagEhcache) cache).flush();
+				if(cache instanceof ApiEhcache) {
+					((ApiEhcache) cache).flush();
 					returnCode = true;
 				}
 			}
