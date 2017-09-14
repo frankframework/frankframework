@@ -100,10 +100,14 @@ public class TestTool {
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
 	protected static final String TESTTOOL_DUMMY_MESSAGE = "<TestTool>Dummy message</TestTool>";
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
+	private static final int RESULT_ERROR = 0;
+	private static final int RESULT_OK = 1;
+	private static final int RESULT_AUTOSAVED = 2;
 	// dirty solution by Marco de Reus:
 	private static String zeefVijlNeem = "";
 	private static String windiffCommand = "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
 	private static Writer silentOut = null;
+	private static boolean autoSaveDiffs = false;
 	
 	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
 		runScenarios(application, request, out, false);
@@ -143,6 +147,10 @@ public class TestTool {
 		AppConstants appConstants = AppConstants.getInstance();
 		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
 		IbisContext ibisContext = (IbisContext)application.getAttribute(ibisContextKey);
+		String asd = appConstants.getResolvedProperty("larva.diffs.autosave");
+		if (asd!=null) {
+			autoSaveDiffs = Boolean.parseBoolean(asd);
+		}
 		debugMessage("Initialize scenarios root directories", writers);
 		List scenariosRootDirectories = new ArrayList();
 		List scenariosRootDescriptions = new ArrayList();
@@ -219,12 +227,13 @@ public class TestTool {
 					boolean evenStep = false;
 					debugMessage("Initialize statistics variables", writers);
 					int scenariosPassed = 0;
+					int scenariosAutosaved = 0;
 					int scenariosFailed = 0;
 					long startTime = System.currentTimeMillis();
 					debugMessage("Execute scenario('s)", writers);
 					Iterator scenarioFilesIterator = scenarioFiles.iterator();
 					while (scenarioFilesIterator.hasNext()) {
-						boolean scenarioPassed = false;
+						int scenarioPassed = RESULT_ERROR;
 						File scenarioFile = (File)scenarioFilesIterator.next();
 				
 						String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
@@ -252,6 +261,7 @@ public class TestTool {
 									if (queues != null) {
 										debugMessage("Execute steps", writers);
 										boolean allStepsPassed = true;
+										boolean autoSaved = false;
 										Iterator iterator = steps.iterator();
 										while (allStepsPassed && iterator.hasNext()) {
 											if (evenStep) {
@@ -264,9 +274,12 @@ public class TestTool {
 											String step = (String)iterator.next();
 											String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
 											debugMessage("Execute step '" + stepDisplayName + "'", writers);
-											boolean stepPassed = executeStep(step, properties, stepDisplayName, queues, writers);
-											if (stepPassed) {
+											int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers);
+											if (stepPassed==RESULT_OK) {
 												stepPassedMessage("Step '" + stepDisplayName + "' passed", writers);
+											} else if (stepPassed==RESULT_AUTOSAVED) {
+												stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave", writers);
+												autoSaved = true;
 											} else {
 												stepFailedMessage("Step '" + stepDisplayName + "' failed", writers);
 												allStepsPassed = false;
@@ -274,7 +287,11 @@ public class TestTool {
 											writeHtml("</div>", writers, false);
 										}
 										if (allStepsPassed) {
-											scenarioPassed = true;
+											if (autoSaved) {
+												scenarioPassed = RESULT_AUTOSAVED;
+											} else {
+												scenarioPassed = RESULT_OK;
+											}
 										}
 										debugMessage("Wait " + waitBeforeCleanUp + " ms before clean up", writers);
 										try {
@@ -285,14 +302,14 @@ public class TestTool {
 										boolean remainingMessagesFound = closeQueues(queues, properties, writers);
 										if (remainingMessagesFound) {
 											stepFailedMessage("Found one or more messages on queues or in database after scenario executed", writers);
-											scenarioPassed = false;
+											scenarioPassed = RESULT_ERROR;
 										}
 									}
 								}
 							}
 						}
 	
-						if (scenarioPassed) {
+						if (scenarioPassed==RESULT_OK) {
 							scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed", writers);
 							if (silent) {
 								try {
@@ -301,6 +318,15 @@ public class TestTool {
 								}
 							}
 							scenariosPassed++;
+						} else if (scenarioPassed==RESULT_AUTOSAVED) {
+							scenarioAutosavedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave", writers);
+							if (silent) {
+								try {
+									out.write("[***PASSED***]");
+								} catch (IOException e) {
+								}
+							}
+							scenariosAutosaved++;
 						} else {
 							scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed", writers);
 							scenariosFailed++;
@@ -310,7 +336,7 @@ public class TestTool {
 					}
 					long executeTime = System.currentTimeMillis() - startTime;
 					debugMessage("Print statistics information", writers);
-					int scenariosTotal = scenariosPassed + scenariosFailed;
+					int scenariosTotal = scenariosPassed + scenariosAutosaved + scenariosFailed;
 					if (scenariosTotal == 0) {
 						scenariosTotalMessage("No scenarios found", writers);
 					} else {
@@ -343,6 +369,11 @@ public class TestTool {
 								scenariosPassedTotalMessage("1 scenario passed", writers);
 							} else {
 								scenariosPassedTotalMessage(scenariosPassed + " scenarios passed", writers);
+							}
+							if (scenariosAutosaved == 1) {
+								scenariosAutosavedTotalMessage("1 scenario passed after autosave", writers);
+							} else {
+								scenariosAutosavedTotalMessage(scenariosAutosaved + " scenarios passed after autosave", writers);
 							}
 							if (scenariosFailed == 1) {
 								scenariosFailedTotalMessage("1 scenario failed", writers);
@@ -774,6 +805,11 @@ public class TestTool {
 		writeLog("<h3 class='passed'>" + XmlUtils.encodeChars(message) + "</h3>", method, writers, true);
 	}
 
+	public static void stepAutosavedMessage(String message, Map writers) {
+		String method = "step passed/failed";
+		writeLog("<h3 class='autosaved'>" + XmlUtils.encodeChars(message) + "</h3>", method, writers, true);
+	}
+
 	public static void stepFailedMessage(String message, Map writers) {
 		String method = "step passed/failed";
 		writeLog("<h3 class='failed'>" + XmlUtils.encodeChars(message) + "</h3>", method, writers, true);
@@ -782,6 +818,11 @@ public class TestTool {
 	public static void scenarioPassedMessage(String message, Map writers) {
 		String method = "scenario passed/failed";
 		writeLog("<h2 class='passed'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
+	}
+
+	public static void scenarioAutosavedMessage(String message, Map writers) {
+		String method = "scenario passed/failed";
+		writeLog("<h2 class='autosaved'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
 	}
 
 	public static void scenarioFailedMessage(String message, Map writers) {
@@ -797,6 +838,11 @@ public class TestTool {
 	public static void scenariosPassedTotalMessage(String message, Map writers) {
 		String method = "totals";
 		writeLog("<h1 class='passed'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+	}
+
+	public static void scenariosAutosavedTotalMessage(String message, Map writers) {
+		String method = "totals";
+		writeLog("<h1 class='autosaved'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
 	}
 
 	public static void scenariosFailedTotalMessage(String message, Map writers) {
@@ -2316,8 +2362,8 @@ public class TestTool {
 		return remainingMessagesFound;
 	}
 	
-	private static boolean executeJmsSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
-		boolean result = false;
+	private static int executeJmsSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
+		int result = RESULT_ERROR;
 		
 		Map jmsSenderInfo = (Map)queues.get(queueName);
 		JmsSender jmsSender = (JmsSender)jmsSenderInfo.get("jmsSender");
@@ -2343,7 +2389,7 @@ public class TestTool {
 			}
 			jmsSender.sendMessage(correlationId, fileContent);
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
-			result = true;
+			result = RESULT_OK;
 		} catch(TimeOutException e) {
 			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e, writers);
 		} catch(SenderException e) {
@@ -2353,8 +2399,8 @@ public class TestTool {
 		return result;
 	}
 
-	private static boolean executeSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String senderType, String fileContent) {
-		boolean result = false;
+	private static int executeSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String senderType, String fileContent) {
+		int result = RESULT_ERROR;
 		Map senderInfo = (Map)queues.get(queueName);
 		ISender sender = (ISender)senderInfo.get(senderType + "Sender");
 		Boolean convertExceptionToMessage = (Boolean)senderInfo.get("convertExceptionToMessage");
@@ -2369,12 +2415,12 @@ public class TestTool {
 		senderInfo.put(senderType + "SenderThread", senderThread);
 		debugPipelineMessage(stepDisplayName, "Successfully started thread writing to '" + queueName + "':", fileContent, writers);
 		logger.debug("Successfully started thread writing to '" + queueName + "'");
-		result = true;
+		result = RESULT_OK;
 		return result;
 	}
 	
-	private static boolean executeJavaOrWebServiceListenerWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
-		boolean result = false;
+	private static int executeJavaOrWebServiceListenerWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
+		int result = RESULT_ERROR;
 
 		Map listenerInfo = (Map)queues.get(queueName);
 		ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)listenerInfo.get("listenerMessageHandler");
@@ -2392,61 +2438,59 @@ public class TestTool {
 			listenerMessageHandler.putResponseMessage(listenerMessage);
 			debugPipelineMessage(stepDisplayName, "Successfully put message on '" + queueName + "':", fileContent, writers);
 			logger.debug("Successfully put message on '" + queueName + "'");
-			result = true;
+			result = RESULT_OK;
 		}
 
 		return result;
 	}
 	
-	private static boolean executeFileSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
-		boolean result = false;
+	private static int executeFileSenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
+		int result = RESULT_ERROR;
 		Map fileSenderInfo = (Map)queues.get(queueName);
 		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
 		try {
 			fileSender.sendMessage(fileContent);
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
-			result = true;
+			result = RESULT_OK;
 		} catch(Exception e) {
 			errorMessage("Exception writing to file: " + e.getMessage(), e, writers);
 		}
 		return result;
 	}
 
-	private static boolean executeDelaySenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
-		boolean result = false;
+	private static int executeDelaySenderWrite(String stepDisplayName, Map queues, Map writers, String queueName, String fileContent) {
+		int result = RESULT_ERROR;
 		Map delaySenderInfo = (Map)queues.get(queueName);
 		DelaySender delaySender = (DelaySender)delaySenderInfo.get("delaySender");
 		try {
 			delaySender.sendMessage(null, fileContent);
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
-			result = true;
+			result = RESULT_OK;
 		} catch(Exception e) {
 			errorMessage("Exception writing to file: " + e.getMessage(), e, writers);
 		}
 		return result;
 	}
 
-	private static boolean executeXsltProviderListenerWrite(String step, String stepDisplayName, Map queues, Map writers, String queueName, String fileName, String fileContent, Properties properties) {
-		boolean result = false;
+	private static int executeXsltProviderListenerWrite(String step, String stepDisplayName, Map queues, Map writers, String queueName, String fileName, String fileContent, Properties properties) {
+		int result = RESULT_ERROR;
 		Map xsltProviderListenerInfo = (Map)queues.get(queueName);
 		XsltProviderListener xsltProviderListener = (XsltProviderListener)xsltProviderListenerInfo.get("xsltProviderListener");
 		String message = xsltProviderListener.getResult();
 		if (message == null) {
 			if ("".equals(fileName)) {
-				result = true;
+				result = RESULT_OK;
 			} else {
 				errorMessage("Could not read result (null returned)", writers);
 			}
 		} else {
-			if (compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
-				result = true;
-			}
+			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
 		}
 		return result;
 	}
 	
-	private static boolean executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
-		boolean result = false;
+	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+		int result = RESULT_ERROR;
 
 		Map jmsListenerInfo = (Map)queues.get(queueName);
 		PullingJmsListener pullingJmsListener = (PullingJmsListener)jmsListenerInfo.get("jmsListener");
@@ -2476,21 +2520,19 @@ public class TestTool {
 		
 		if (message == null) {
 			if ("".equals(fileName)) {
-				result = true;
+				result = RESULT_OK;
 			} else {
 				errorMessage("Could not read jms message (null returned)", writers);
 			}
 		} else {
-			if (compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
-				result = true;
-			}
+			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
 		}
 
 		return result;	
 	}
 
-	private static boolean executeSenderRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String senderType, String fileName, String fileContent) {
-		boolean result = false;
+	private static int executeSenderRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String senderType, String fileName, String fileContent) {
+		int result = RESULT_ERROR;
 	
 		Map senderInfo = (Map)queues.get(queueName);
 		SenderThread senderThread = (SenderThread)senderInfo.remove(senderType + "SenderThread");
@@ -2504,7 +2546,7 @@ public class TestTool {
 					String message = senderThread.getResponse();
 					if (message == null) {
 						if ("".equals(fileName)) {
-							result = true;
+							result = RESULT_OK;
 						} else {
 							errorMessage("Could not read " + senderType + "Sender message (null returned)", writers);
 						}
@@ -2512,9 +2554,7 @@ public class TestTool {
 						if ("".equals(fileName)) {
 							debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
 						} else {
-							if (compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
-								result = true;
-							}
+							result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
 						}
 					}
 				} else {
@@ -2528,8 +2568,8 @@ public class TestTool {
 		return result;
 	}
 
-	private static boolean executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
-		boolean result = false;
+	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+		int result = RESULT_ERROR;
 
 		Map listenerInfo = (Map)queues.get(queueName);
 		ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)listenerInfo.get("listenerMessageHandler");
@@ -2544,7 +2584,7 @@ public class TestTool {
 			}
 			if (message == null) {
 				if ("".equals(fileName)) {
-					result = true;
+					result = RESULT_OK;
 				} else {
 					errorMessage("Could not read listenerMessageHandler message (null returned)", writers);
 				}
@@ -2552,9 +2592,8 @@ public class TestTool {
 				if ("".equals(fileName)) {
 					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
 				} else {
-					if (compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
-						result = true;
-					} else {
+					result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
+					if (result!=RESULT_OK) {
 						// Send a clean up reply because there is probably a
 						// thread waiting for a reply
 						String correlationId = null;
@@ -2569,8 +2608,8 @@ public class TestTool {
 		return result;
 	}
 
-	private static boolean executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
-		boolean result = false;
+	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+		int result = RESULT_ERROR;
 		
 		Map querySendersInfo = (Map)queues.get(queueName);
 		Integer waitBeforeRead = (Integer)querySendersInfo.get("readQueryWaitBeforeRead");
@@ -2615,7 +2654,7 @@ public class TestTool {
 		}
 		if (message == null) {
 			if ("".equals(fileName)) {
-				result = true;
+				result = RESULT_OK;
 			} else {
 				errorMessage("Could not read jdbc message (null returned) or no new message found (pre result equals post result)", writers);
 			}
@@ -2623,17 +2662,15 @@ public class TestTool {
 			if ("".equals(fileName)) {
 				debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
 			} else {
-				if (compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
-					result = true;
-				}
+				result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
 			}
 		}
 
 		return result;
 	}
 
-	private static boolean executeFileListenerRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
-		boolean result = false;
+	private static int executeFileListenerRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+		int result = RESULT_ERROR;
 		Map fileListenerInfo = (Map)queues.get(queueName);
 		FileListener fileListener = (FileListener)fileListenerInfo.get("fileListener");
 		String message = null;
@@ -2646,20 +2683,18 @@ public class TestTool {
 		}
 		if (message == null) {
 			if ("".equals(fileName)) {
-				result = true;
+				result = RESULT_OK;
 			} else {
 				errorMessage("Could not read file (null returned)", writers);
 			}
 		} else {
-			if (compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
-				result = true;
-			}
+			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
 		}
 		return result;	
 	}
 
-	private static boolean executeFileSenderRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
-		boolean result = false;
+	private static int executeFileSenderRead(String step, String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileName, String fileContent) {
+		int result = RESULT_ERROR;
 		Map fileSenderInfo = (Map)queues.get(queueName);
 		FileSender fileSender = (FileSender)fileSenderInfo.get("fileSender");
 		String message = null;
@@ -2672,20 +2707,18 @@ public class TestTool {
 		}
 		if (message == null) {
 			if ("".equals(fileName)) {
-				result = true;
+				result = RESULT_OK;
 			} else {
 				errorMessage("Could not read file (null returned)", writers);
 			}
 		} else {
-			if (compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName)) {
-				result = true;
-			}
+			result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
 		}
 		return result;	
 	}
 
-	private static boolean executeXsltProviderListenerRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileContent, Map xsltParameters) {
-		boolean result = false;
+	private static int executeXsltProviderListenerRead(String stepDisplayName, Properties properties, Map queues, Map writers, String queueName, String fileContent, Map xsltParameters) {
+		int result = RESULT_ERROR;
 		Map xsltProviderListenerInfo = (Map)queues.get(queueName);
 		if (xsltProviderListenerInfo == null) {
 			errorMessage("No info found for xslt provider listener '" + queueName + "'", writers);
@@ -2696,7 +2729,7 @@ public class TestTool {
 			} else {
 				try {
 					xsltProviderListener.processRequest(fileContent, xsltParameters);
-					result = true;
+					result = RESULT_OK;
 				} catch(ListenerException e) {
 					errorMessage("Could not transform xml: " + e.getMessage(), e, writers);
 				}
@@ -2706,8 +2739,8 @@ public class TestTool {
 		return result;	
 	}
 
-	public static boolean executeStep(String step, Properties properties, String stepDisplayName, Map queues, Map writers) {
-		boolean stepPassed = false;
+	public static int executeStep(String step, Properties properties, String stepDisplayName, Map queues, Map writers) {
+		int stepPassed = RESULT_ERROR;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
 		int i = step.indexOf('.');
@@ -2916,8 +2949,8 @@ public class TestTool {
 		return encoding;
 	}
 
-	public static boolean compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, Map writers, String queueName) {
-		boolean ok = false;
+	public static int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, Map writers, String queueName) {
+		int ok = RESULT_ERROR;
 		String printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
 		String printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
 		String preparedExpectedResult = printableExpectedResult;
@@ -3159,7 +3192,7 @@ public class TestTool {
 				diffException = e;
 			}
 			if (identical) {
-				ok = true;
+				ok = RESULT_OK;
 				debugMessage("Strings are identical", writers);
 				debugPipelineMessage(stepDisplayName, "Result", printableActualResult, writers);
 				debugPipelineMessagePreparedForDiff(stepDisplayName, "Result as prepared for diff", preparedActualResult, writers);
@@ -3174,13 +3207,22 @@ public class TestTool {
 				}
 				wrongPipelineMessage(stepDisplayName, message, printableActualResult, printableExpectedResult, writers);
 				wrongPipelineMessagePreparedForDiff(stepDisplayName, preparedActualResult, preparedExpectedResult, writers);
+				if (autoSaveDiffs) {
+					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
+					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]", writers);
+					try {
+						org.apache.commons.io.FileUtils.writeStringToFile(new File(filenameAbsolutePath), actualResult);
+					} catch (IOException e) {
+					}
+					ok = RESULT_AUTOSAVED;
+				}
 			}
 		} else {
 			// txt diff
 			String formattedPreparedExpectedResult = formatString(preparedExpectedResult, writers);
 			String formattedPreparedActualResult = formatString(preparedActualResult, writers);
 			if (formattedPreparedExpectedResult.equals(formattedPreparedActualResult)) {
-				ok = true;
+				ok = RESULT_OK;
 				debugMessage("Strings are identical", writers);
 				debugPipelineMessage(stepDisplayName, "Result", printableActualResult, writers);
 				debugPipelineMessagePreparedForDiff(stepDisplayName, "Result as prepared for diff", preparedActualResult, writers);
@@ -3218,6 +3260,15 @@ public class TestTool {
 				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
 				wrongPipelineMessage(stepDisplayName, message, printableActualResult, printableExpectedResult, writers);
 				wrongPipelineMessagePreparedForDiff(stepDisplayName, preparedActualResult, preparedExpectedResult, writers);
+				if (autoSaveDiffs) {
+					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
+					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]", writers);
+					try {
+						org.apache.commons.io.FileUtils.writeStringToFile(new File(filenameAbsolutePath), actualResult);
+					} catch (IOException e) {
+					}
+					ok = RESULT_AUTOSAVED;
+				}
 			}
 		}
 		return ok;

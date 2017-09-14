@@ -32,6 +32,7 @@ Upcoming
 - Larva: add possibility to overwrite windiff command 
 - Add IbisWebService constraint to /rest/* endpoint
 - Remove "webContent.dir" bean from spring configuration
+- Larva: add possiblity to autosave TestTool differences
 
 
 
