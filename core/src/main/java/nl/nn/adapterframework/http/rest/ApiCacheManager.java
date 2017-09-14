@@ -30,7 +30,11 @@ public class ApiCacheManager {
 	 * Creates an IBIS independent cachePrefix so multiple IBIS can connect to the same cache
 	 * @return cachePrefix 'instanceName_otapStage_'
 	 */
-	public static String buildCacheKey(String etag) {
-		return instanceName + "_" + otapStage.toUpperCase() + "_" + etag;
+	public static String buildCacheKey(String uriPattern) {
+		return instanceName + "_" + otapStage.toUpperCase() + "_" + uriPattern;
+	}
+
+	public static String buildEtag(String uriPattern, int hash) {
+		return Integer.toOctalString(instanceName.hashCode()) + "_" +Integer.toHexString(uriPattern.hashCode()) + "_" + hash;
 	}
 }

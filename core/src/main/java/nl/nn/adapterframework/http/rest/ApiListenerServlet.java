@@ -24,6 +24,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -40,6 +41,7 @@ public class ApiListenerServlet extends HttpServlet {
 
 	private ApiServiceDispatcher dispatcher = null;
 	private IApiCache cache = null;
+	private ApiAuthorization authorizationManager = null;
 
 	public void init() throws ServletException {
 		if (dispatcher == null) {
@@ -105,15 +107,14 @@ public class ApiListenerServlet extends HttpServlet {
 			/**
 			 * Check authentication
 			 */
-			ApiAuthentication authentication = null;
 			ApiPrincipal userPrincipal = null;
 
 			if(listener.getAuthenticationMethod() != null) {
-				authentication = new ApiAuthentication(listener);
-				String authorizationHeader = request.getHeader("Authorization");
+				String authorizationToken = request.getHeader("Authorization");
+				if(cache.containsKey(authorizationToken))
+					userPrincipal = (ApiPrincipal) cache.get(authorizationToken);
 
-				userPrincipal = authentication.findUser(authorizationHeader);
-				if(authentication == null || userPrincipal == null || !userPrincipal.isLoggedIn()) {
+				if(userPrincipal == null) {
 					response.setStatus(401);
 					log.trace("Aborting request with status [401], no (valid) credentials supplied");
 					return;
@@ -134,7 +135,7 @@ public class ApiListenerServlet extends HttpServlet {
 				}
 			}
 
-			String etagCacheKey = ApiCacheManager.buildCacheKey(config.getEtagKey());
+			String etagCacheKey = ApiCacheManager.buildCacheKey(config.getUriPattern());
 			//TODO cache unique per user? how to when multiple users use the same endpoint!?
 			if(cache.containsKey(etagCacheKey)) {
 				String cachedEtag = (String) cache.get(etagCacheKey);
@@ -161,7 +162,8 @@ public class ApiListenerServlet extends HttpServlet {
 			 * Check authorization
 			 */
 			//TODO: authentication implementation
-			if(userPrincipal != null && !authentication.isMethodAllowed(method)) {
+			Map<String, Boolean> CRUD = authorizationManager.getCRUDPermissions(config.getUriPattern(), userPrincipal);
+			if(userPrincipal != null && (CRUD == null || !CRUD.get(method))) {
 				response.setStatus(405);
 				log.trace("Aborting request with status [405], method ["+method+"] not allowed");
 				return;
@@ -208,17 +210,17 @@ public class ApiListenerServlet extends HttpServlet {
 			 * Calculate an etag over the processed result and store in cache
 			 */
 			if(result != null && listener.getGenerateEtag()) {
-				String eTag = Integer.toOctalString(result.hashCode()) + "_" + Integer.toHexString(listener.getUriPattern().hashCode());
+				String eTag = ApiCacheManager.buildEtag(listener.getUriPattern(), result.hashCode());
 				cache.put(etagCacheKey, eTag);
 			}
 
 			/**
 			 * Add headers
 			 */
+			//TODO optional: add injected headers from pipeline?
 			StringBuilder methods = new StringBuilder();
 			for (String mtd : config.getMethods()) {
-				//TODO Add check to determine of a user is allowed to use a method @CRUD
-				if(userPrincipal != null && authentication.isMethodAllowed(mtd))
+				if(userPrincipal != null && CRUD.get(mtd))
 					methods.append(mtd + ", ");
 			}
 			response.addHeader("Allow", methods.substring(0, methods.length()-2));
@@ -231,8 +233,6 @@ public class ApiListenerServlet extends HttpServlet {
 					response.setHeader("Content-Type", contentType);
 				}
 			}
-
-			//TODO optional: add injected headers from pipeline?
 
 			/**
 			 * Check if an exitcode has been defined or if a statuscode has been added to the messageContext.

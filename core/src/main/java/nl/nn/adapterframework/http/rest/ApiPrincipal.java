@@ -16,4 +16,8 @@ public class ApiPrincipal implements Principal, Serializable {
 		return false;
 	}
 
+	public int getID() {
+		// TODO Auto-generated method stub
+		return 5;
+	}
 }
