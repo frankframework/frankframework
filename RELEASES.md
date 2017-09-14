@@ -31,6 +31,7 @@ Upcoming
 - Move config warning "Element not in list of available root elements" to startup
 - Larva: add possibility to overwrite windiff command 
 - Add IbisWebService constraint to /rest/* endpoint
+- Remove "webContent.dir" bean from spring configuration
 
 
 
