@@ -101,6 +101,8 @@ public abstract class ValidatorTestBase extends TestCase {
     			if (e==null) {
     				assertEquals("Invalid XML", event);
     			}
+    			if(failureReason.indexOf("No child element is expected at this point.") >= 0)
+    				failureReason = MSG_INVALID_CONTENT;
 	    		if (failureReason.indexOf(expectedFailureReason)<0) {
 	    			fail("expected ["+expectedFailureReason+"] in failure reason ["+failureReason+"]");
 	    		} 
