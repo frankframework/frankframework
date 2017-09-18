@@ -43,7 +43,7 @@ public class ApiAuthorization {
 	private Logger log = LogUtil.getLogger(this);
 	private static ApiAuthorization self = null;
 
-	public static synchronized ApiAuthorization getInstance(IbisContext ibisContext, String jmsRealm) throws ConfigurationException {
+	public static ApiAuthorization getInstance(IbisContext ibisContext, String jmsRealm) throws ConfigurationException {
 		if( self == null ) {
 			self = new ApiAuthorization(ibisContext, jmsRealm);
 		}
@@ -63,7 +63,10 @@ public class ApiAuthorization {
 		bar.put("POST", true);
 		bar.put("GET", true);
 		bar.put("PUT", true);
+		bar.put("PATCH", true);
 		bar.put("DELETE", true);
+
+		bar.put("OPTIONS", true);
 		return bar;
 	}
 

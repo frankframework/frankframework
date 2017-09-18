@@ -15,6 +15,8 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -28,6 +30,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private String uriPattern;
 	private String method;
 	private String authenticationMethod = null;
+	private String consumes = "ANY";
+	private String produces = "ANY";
+	private List<String> mediaTypes = Arrays.asList("XML", "JSON", "TEXT");
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -94,13 +99,24 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return this.authenticationMethod;
 	}
 
+	public void setConsumes(String consumes) throws ConfigurationException {
+		if(mediaTypes.contains(consumes))
+			this.consumes = consumes;
+		else
+			throw new ConfigurationException("Unknown mediatype ["+consumes+"]");
+	}
 	public String getConsumes() {
-		// TODO FIX THIS
-		return "any"; //application/json
+		return consumes;
 	}
 
+	public void setProduces(String produces) throws ConfigurationException {
+		if(mediaTypes.contains(produces))
+			this.produces = produces;
+		else
+			throw new ConfigurationException("Unknown mediatype ["+produces+"]");
+	}
 	public String getProduces() {
-		return "application/xml";
+		return produces;
 	}
 
 	public boolean getGenerateEtag() {

@@ -186,7 +186,7 @@ public class ApiListenerServlet extends HttpServlet {
 			 * Check authorization
 			 */
 			//TODO: authentication implementation
-			Map<String, Boolean> CRUD = authorizationManager.getAllowedMethods(listener.getCleanPattern(), userPrincipal);;
+			Map<String, Boolean> CRUD = authorizationManager.getAllowedMethods(listener.getCleanPattern(), userPrincipal);
 			if(userPrincipal != null && (CRUD == null || !CRUD.get(method))) {
 				response.setStatus(405);
 				log.trace("Aborting request with status [405], method ["+method+"] not allowed");
@@ -251,13 +251,22 @@ public class ApiListenerServlet extends HttpServlet {
 			if(methods.length() > 0)
 				response.addHeader("Allow", methods.substring(0, methods.length()-2));
 
-			if(!listener.getProduces().isEmpty())
-				response.addHeader("Content-Type", listener.getProduces() + "; charset=utf-8");
+			String contentType = "";
+			if(!listener.getProduces().equalsIgnoreCase("ANY")) {
+				if(listener.getProduces().equalsIgnoreCase("XML"))
+					contentType = "application/xml";
+				else if(listener.getProduces().equalsIgnoreCase("JSON"))
+					contentType = "application/json";
+				else if(listener.getProduces().equalsIgnoreCase("TEXT"))
+					contentType = "text/plain";
+
+				contentType += "; charset=utf-8";
+			}
 			else {
-				String contentType = (String) messageContext.get("contentType");
-				if (contentType != "") {
-					response.setHeader("Content-Type", contentType);
-				}
+				contentType = (String) messageContext.get("contentType");
+			}
+			if (contentType != "") {
+				response.setHeader("Content-Type", contentType);
 			}
 
 			/**
