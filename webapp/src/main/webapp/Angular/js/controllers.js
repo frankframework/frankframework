@@ -438,14 +438,6 @@ angular.module('iaf.beheerconsole')
 	$scope.reload = false;
 	$scope.selectedConfiguration = "All";
 
-	function applyConfigFilter() {
-		for(adapterName in $scope.adapters) {
-			var adapter = $scope.adapters[adapterName];
-			if($scope.hideAdapter[adapter.name] === true) continue;
-			$scope.hideAdapter[adapter.name] = (adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") ? false : true;
-		}
-	}
-
 	$scope.collapseAll = function() {
 		$(".adapters").each(function(i,e) {
 			var ibox = $(e);
@@ -504,7 +496,11 @@ angular.module('iaf.beheerconsole')
 
 	$scope.changeConfiguration = function(name) {
 		$scope.selectedConfiguration = name;
-		applyConfigFilter();
+
+		for(adapterName in $scope.adapters) {
+			var adapter = $scope.adapters[adapterName];
+			$scope.hideAdapter[adapter.name] = (adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") ? false : true;
+		}
 	};
 
 	Hooks.register("adapterUpdated:1", function(adapter) {
