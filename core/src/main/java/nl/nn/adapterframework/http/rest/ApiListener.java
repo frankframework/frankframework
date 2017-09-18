@@ -33,19 +33,19 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
 	public void configure() throws ConfigurationException {
-		ApiServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod());
+		ApiServiceDispatcher.getInstance().registerServiceClient(this, getCleanPattern(), getMethod());
 	}
 
 	public void close() {
-		ApiServiceDispatcher.getInstance().unregisterServiceClient(getUriPattern(), getMethod());
+		ApiServiceDispatcher.getInstance().unregisterServiceClient(getCleanPattern(), getMethod());
 		super.close();
 	}
 
 	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException {
 		String response = super.processRequest(correlationId, message, requestContext);
 
-		System.out.println("message: " + message);
-		System.out.println("response: " + response);
+//		System.out.println("message: " + message);
+//		System.out.println("response: " + response);
 
 		return response;
 	}
@@ -58,11 +58,21 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return "uriPattern: "+getUriPattern()+"; method: "+getMethod();
 	}
 
+	public void setUriPattern(String uriPattern) {
+		this.uriPattern = uriPattern;
+	}
 	public String getUriPattern() {
 		return uriPattern;
 	}
-	public void setUriPattern(String uriPattern) {
-		this.uriPattern = uriPattern;
+	public String getCleanPattern() {
+		String pattern = uriPattern;
+		if(pattern.startsWith("/"))
+			pattern = pattern.substring(1);
+
+		if(pattern.endsWith("/"))
+			pattern = pattern.substring(0, pattern.length()-1);
+
+		return pattern.replaceAll("\\{.*?}", "*");
 	}
 
 	public String getMethod() {

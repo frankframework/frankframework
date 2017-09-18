@@ -25,9 +25,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.Logger;
@@ -35,9 +40,11 @@ import org.apache.log4j.Logger;
 public class ApiListenerServlet extends HttpServlet {
 	protected Logger log = LogUtil.getLogger(this);
 
-	protected static String apiServletRequestKey  = "apiServletRequest";
-	protected static String apiServletResponseKey = "apiServletResponse";
-	protected static String apiServletContextKey  = "apiServletContext";
+	protected static final String HTTPREQUESTKEY  = "apiServletRequest";
+	protected static final String HTTPRESPONSEKEY = "apiServletResponse";
+	protected static final String HTTPCONTEXTKEY  = "apiServletContext";
+
+	private final String CONFIGURATIONKEY_CONTEXT = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
 
 	private ApiServiceDispatcher dispatcher = null;
 	private IApiCache cache = null;
@@ -50,15 +57,24 @@ public class ApiListenerServlet extends HttpServlet {
 		if (cache == null) {
 			cache = ApiCacheManager.getInstance();
 		}
+		if (authorizationManager == null) {
+			IbisContext ibisContext = (IbisContext) getServletContext().getAttribute(CONFIGURATIONKEY_CONTEXT);
+			String jmsRealm = AppConstants.getInstance().getString("jmsRealm", JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm());
+			try {
+				authorizationManager = ApiAuthorization.getInstance(ibisContext, jmsRealm);
+			} catch (ConfigurationException e) {
+				throw new ServletException("failed to initialize api authorizationManager", e);
+			}
+		}
 		super.init();
 	}
 
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 		Map<String, Object> messageContext = new HashMap<String, Object>();
-		messageContext.put(apiServletRequestKey, request);
-		messageContext.put(apiServletResponseKey, response);
-		messageContext.put(apiServletContextKey, getServletContext());
+		messageContext.put(HTTPREQUESTKEY, request);
+		messageContext.put(HTTPRESPONSEKEY, response);
+		messageContext.put(HTTPCONTEXTKEY, getServletContext());
 		String body = "";
 
 		if (!ServletFileUpload.isMultipartContent(request)) {
@@ -67,7 +83,7 @@ public class ApiListenerServlet extends HttpServlet {
 
 		try {
 			String uri = request.getPathInfo();
-			String method = request.getMethod();
+			String method = request.getMethod().toUpperCase();
 			log.trace("ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]");
 
 			if(uri.startsWith("/"))
@@ -82,6 +98,11 @@ public class ApiListenerServlet extends HttpServlet {
 			}
 
 			ApiListener listener = config.getApiListener(method);
+			if(listener == null) {
+				response.sendError(404, "no ApiListener configured for ["+uri+"] with method ["+method+"]");
+				return;
+			}
+
 			log.trace("RestListenerServlet calling service ["+listener.getName()+"]");
 
 			/**
@@ -108,6 +129,9 @@ public class ApiListenerServlet extends HttpServlet {
 			 * Check authentication
 			 */
 			ApiPrincipal userPrincipal = null;
+
+			if(request.getHeader("test") != null)
+				cache.put(request.getHeader("test"), new ApiPrincipal());
 
 			if(listener.getAuthenticationMethod() != null) {
 				String authorizationToken = request.getHeader("Authorization");
@@ -142,7 +166,7 @@ public class ApiListenerServlet extends HttpServlet {
 
 				if(method.equalsIgnoreCase("GET")) {
 					String ifNoneMatch = request.getHeader("If-None-Match");
-					if(ifNoneMatch != null && ifNoneMatch.equalsIgnoreCase(cachedEtag)) {
+					if(ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
 						response.setStatus(304);
 						log.trace("Aborting request with status [304], matched if-none-match ["+ifNoneMatch+"]");
 						return;
@@ -150,7 +174,7 @@ public class ApiListenerServlet extends HttpServlet {
 				}
 				else {
 					String ifMatch = request.getHeader("If-Match");
-					if(ifMatch != null && !ifMatch.equalsIgnoreCase(cachedEtag)) {
+					if(ifMatch != null && !ifMatch.equals(cachedEtag)) {
 						response.setStatus(412);
 						log.trace("Aborting request with status [412], matched if-match ["+ifMatch+"] method ["+method+"]");
 						return;
@@ -162,7 +186,7 @@ public class ApiListenerServlet extends HttpServlet {
 			 * Check authorization
 			 */
 			//TODO: authentication implementation
-			Map<String, Boolean> CRUD = authorizationManager.getCRUDPermissions(config.getUriPattern(), userPrincipal);
+			Map<String, Boolean> CRUD = authorizationManager.getAllowedMethods(listener.getCleanPattern(), userPrincipal);;
 			if(userPrincipal != null && (CRUD == null || !CRUD.get(method))) {
 				response.setStatus(405);
 				log.trace("Aborting request with status [405], method ["+method+"] not allowed");
@@ -212,6 +236,7 @@ public class ApiListenerServlet extends HttpServlet {
 			if(result != null && listener.getGenerateEtag()) {
 				String eTag = ApiCacheManager.buildEtag(listener.getUriPattern(), result.hashCode());
 				cache.put(etagCacheKey, eTag);
+				response.addHeader("etag", eTag);
 			}
 
 			/**
@@ -223,7 +248,8 @@ public class ApiListenerServlet extends HttpServlet {
 				if(userPrincipal != null && CRUD.get(mtd))
 					methods.append(mtd + ", ");
 			}
-			response.addHeader("Allow", methods.substring(0, methods.length()-2));
+			if(methods.length() > 0)
+				response.addHeader("Allow", methods.substring(0, methods.length()-2));
 
 			if(!listener.getProduces().isEmpty())
 				response.addHeader("Content-Type", listener.getProduces() + "; charset=utf-8");

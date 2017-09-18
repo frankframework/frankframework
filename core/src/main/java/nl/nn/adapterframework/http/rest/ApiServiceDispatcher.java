@@ -77,42 +77,31 @@ public class ApiServiceDispatcher {
 	}
 
 	public void registerServiceClient(ServiceClient listener, String uriPattern, String method) throws ConfigurationException {
-		String cleanPattern = cleanUriPattern(uriPattern);
 
 		if (!(listener instanceof ApiListener))
-			throw new ConfigurationException("ApiServiceDispatcher tried to register serviceClient ["+listener.getClass().toString()+"] expecting [" + nl.nn.adapterframework.http.rest.ApiListener.class.toString() + "]");
+			throw new ConfigurationException("ApiServiceDispatcher tried to register serviceClient ["+listener.getClass().toString()+"] expecting [" + ApiListener.class.getCanonicalName() + "]");
 		ApiListener apiListener = (ApiListener) listener;
 
 		ApiDispatchConfig dispatchConfig = null;
-		if(patternClients.containsKey(cleanPattern))
-			dispatchConfig = patternClients.get(cleanPattern);
+		if(patternClients.containsKey(uriPattern))
+			dispatchConfig = patternClients.get(uriPattern);
 		else
-			dispatchConfig = new ApiDispatchConfig(cleanPattern);
+			dispatchConfig = new ApiDispatchConfig(uriPattern);
 
 		dispatchConfig.register(method, apiListener);
 
-		patternClients.put(cleanPattern, dispatchConfig);
-		log.trace("ApiServiceDispatcher successfully registered uriPattern ["+cleanPattern+"] method ["+method+"]");
+		patternClients.put(uriPattern, dispatchConfig);
+		log.trace("ApiServiceDispatcher successfully registered uriPattern ["+uriPattern+"] method ["+method+"]");
 	}
 
 	public void unregisterServiceClient(String uriPattern, String method) {
-		String cleanPattern = cleanUriPattern(uriPattern);
 
-		ApiDispatchConfig dispatchConfig = patternClients.get(cleanPattern);
+		ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
 		dispatchConfig.destroy(method);
 
 		if(dispatchConfig.getMethods().size() == 0)
-			patternClients.remove(cleanPattern);
-		log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+cleanPattern+"] method ["+method+"]");
+			patternClients.remove(uriPattern);
+		log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
 	}
 
-	private String cleanUriPattern(String uriPattern) {
-		if(uriPattern.startsWith("/"))
-			uriPattern = uriPattern.substring(1);
-
-		if(uriPattern.endsWith("/"))
-			uriPattern = uriPattern.substring(0, uriPattern.length()-1);
-
-		return uriPattern.replaceAll("\\{.*?}", "*");
-	}
 }

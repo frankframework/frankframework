@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ListenerException;
 
 public class ApiDispatchConfig {
 	private String uriPattern;
@@ -37,10 +36,10 @@ public class ApiDispatchConfig {
 		methods.put(method, listener);
 	}
 
-	public ApiListener getApiListener(String method) throws ListenerException {
+	public ApiListener getApiListener(String method) {
 		method = method.toUpperCase();
 		if(!methods.containsKey(method))
-			throw new ListenerException("Failed to fetch ApiListener uriPattern ["+uriPattern+"] method ["+method+"]");
+			return null;
 
 		return methods.get(method);
 	}

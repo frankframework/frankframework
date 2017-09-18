@@ -23,16 +23,16 @@ public class ApiPrincipal implements Principal, Serializable {
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return null;
+		return "Niels Meijer";
 	}
 
 	public boolean isLoggedIn() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	public int getID() {
 		// TODO Auto-generated method stub
-		return 5;
+		return 1;
 	}
 }

@@ -39,8 +39,16 @@ import nl.nn.adapterframework.util.LogUtil;
 public class ApiAuthorization {
 
 	private FixedQuerySender querySender = null;
-	private final String query = "SELECT C,R,U,D FROM IBISAUTH WHERE USER_ID=? AND URIPATTERN=?";
+	private final String query = "SELECT A.C, A.R, A.U, A.D FROM IBISAUTHENTICATION A, IBISUSERS_GROUPS UG WHERE A.URIPATTERN=? AND (A.USER_ID=? OR (A.GROUP_ID=UG.GROUP_ID AND UG.USER_ID=?))";
 	private Logger log = LogUtil.getLogger(this);
+	private static ApiAuthorization self = null;
+
+	public static synchronized ApiAuthorization getInstance(IbisContext ibisContext, String jmsRealm) throws ConfigurationException {
+		if( self == null ) {
+			self = new ApiAuthorization(ibisContext, jmsRealm);
+		}
+		return self;
+	}
 
 	ApiAuthorization(IbisContext ibisContext, String jmsRealm) throws ConfigurationException {
 		querySender = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
@@ -49,7 +57,17 @@ public class ApiAuthorization {
 		querySender.configure();
 	}
 
-	public Map<String, Boolean> getCRUDPermissions(String uriPattern, ApiPrincipal principal) throws SenderException {
+	public Map<String, Boolean> getAllowedMethods(String uriPattern, ApiPrincipal userPrincipal) {
+		// TODO Auto-generated method stub
+		HashMap<String, Boolean> bar = new HashMap<String, Boolean>();
+		bar.put("POST", true);
+		bar.put("GET", true);
+		bar.put("PUT", true);
+		bar.put("DELETE", true);
+		return bar;
+	}
+
+	public Map<String, Boolean> getAllowedMethods2(String uriPattern, ApiPrincipal principal) throws SenderException {
 		Map<String, Boolean> CRUD = null;
 		Connection conn = null;
 		PreparedStatement stmt = null;
