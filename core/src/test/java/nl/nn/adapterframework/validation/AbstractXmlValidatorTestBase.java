@@ -46,7 +46,7 @@ public abstract class AbstractXmlValidatorTestBase extends XmlValidatorTestBase 
 
         try {
 	        instance.configure("init");
-	        String result=instance.validate(testXml, session, "test");
+	        String result=instance.validate(testXml, session, "test", null, null, false);
 	        evaluateResult(result, session, null, expectedFailureReason);
 	        return result;
         } catch (Exception e) {

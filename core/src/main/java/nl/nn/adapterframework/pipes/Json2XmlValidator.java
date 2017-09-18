@@ -163,7 +163,7 @@ public class Json2XmlValidator extends XmlValidator {
 	protected PipeRunResult alignXml2Json(String messageToValidate, IPipeLineSession session)
 			throws XmlValidatorException, PipeRunException, ConfigurationException {
 
-		ValidationContext context = validator.createValidationContext(session);
+		ValidationContext context = validator.createValidationContext(session, getRootValidations(session), getInvalidRootNamespaces());
 		XMLReader parser = validator.getValidatingParser(session,context);
 		XmlAligner aligner = new XmlAligner((PSVIProvider)parser);
 		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays());	
@@ -183,7 +183,7 @@ public class Json2XmlValidator extends XmlValidator {
 		ValidationContext context;
 		ValidatorHandler validatorHandler;
 		try {
-			context = validator.createValidationContext(session);
+			context = validator.createValidationContext(session, getRootValidations(session), getInvalidRootNamespaces());
 			validatorHandler = validator.getValidatorHandler(session, context);
 		} catch (ConfigurationException e) {
 			throw new PipeRunException(this,"Cannot create ValidationContext",e);

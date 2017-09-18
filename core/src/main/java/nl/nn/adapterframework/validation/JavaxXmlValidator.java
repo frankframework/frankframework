@@ -89,9 +89,9 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public JavaxValidationContext createValidationContext(IPipeLineSession session) throws ConfigurationException, PipeRunException {
+	public JavaxValidationContext createValidationContext(IPipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
-		super.createValidationContext(session);
+		super.createValidationContext(session, rootValidations, invalidRootNamespaces);
 	
 		String schemasId;
 		Schema schema;
@@ -125,12 +125,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		}
 
 		JavaxValidationContext result= new JavaxValidationContext(schemasId, schema, namespaceSet, xsModels);
-		XmlValidatorContentHandler xmlValidatorContentHandler =
-				new XmlValidatorContentHandler(namespaceSet, rootValidations, invalidRootNamespaces, getIgnoreUnknownNamespaces());
-		XmlValidatorErrorHandler xmlValidatorErrorHandler = new XmlValidatorErrorHandler(xmlValidatorContentHandler, mainFailureMessage);
-		xmlValidatorContentHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
-		result.setContentHandler(xmlValidatorContentHandler);
-		result.setErrorHandler(xmlValidatorErrorHandler);
+		result.init(schemasProvider, schemasId, namespaceSet, rootValidations, invalidRootNamespaces, ignoreUnknownNamespaces);
 		return result;
 	}
 
