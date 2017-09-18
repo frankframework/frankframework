@@ -25,14 +25,21 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 
+/**
+ * The new and improved RESTful Listener now available for use!
+ * 
+ * @author Niels Meijer
+ *
+ */
 public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
 
 	private String uriPattern;
 	private String method;
 	private String authenticationMethod = null;
+	private boolean generateEtag = true;
 	private String consumes = "ANY";
 	private String produces = "ANY";
-	private List<String> mediaTypes = Arrays.asList("XML", "JSON", "TEXT");
+	private List<String> mediaTypes = Arrays.asList("ANY", "XML", "JSON", "TEXT");
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -60,7 +67,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	public String getPhysicalDestinationName() {
-		return "uriPattern: "+getUriPattern()+"; method: "+getMethod();
+		String destinationName = "uriPattern: "+getUriPattern()+"; method: "+getMethod();
+		if(!getConsumes().equalsIgnoreCase("ANY"))
+			destinationName += "; consumes: "+getConsumes();
+		if(!getProduces().equalsIgnoreCase("ANY"))
+			destinationName += "; produces: "+getProduces();
+		return destinationName;
 	}
 
 	public void setUriPattern(String uriPattern) {
@@ -100,6 +112,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	public void setConsumes(String consumes) throws ConfigurationException {
+		consumes = consumes.toUpperCase();
 		if(mediaTypes.contains(consumes))
 			this.consumes = consumes;
 		else
@@ -110,6 +123,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	public void setProduces(String produces) throws ConfigurationException {
+		produces = produces.toUpperCase();
 		if(mediaTypes.contains(produces))
 			this.produces = produces;
 		else
@@ -119,7 +133,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return produces;
 	}
 
+	public void setGenerateEtag(boolean generateEtag) {
+		this.generateEtag = generateEtag;
+	}
 	public boolean getGenerateEtag() {
-		return true;
+		return generateEtag;
 	}
 }
