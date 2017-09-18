@@ -45,6 +45,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
 	public void configure() throws ConfigurationException {
+		if(!getConsumes().equals("ANY") && getMethod().equals("GET"))
+			throw new ConfigurationException("cannot set consumes attribute when using method [GET]");
+
 		ApiServiceDispatcher.getInstance().registerServiceClient(this, getCleanPattern(), getMethod());
 	}
 
@@ -68,9 +71,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	public String getPhysicalDestinationName() {
 		String destinationName = "uriPattern: "+getUriPattern()+"; method: "+getMethod();
-		if(!getConsumes().equalsIgnoreCase("ANY"))
+		if(!getConsumes().equals("ANY"))
 			destinationName += "; consumes: "+getConsumes();
-		if(!getProduces().equalsIgnoreCase("ANY"))
+		if(!getProduces().equals("ANY"))
 			destinationName += "; produces: "+getProduces();
 		return destinationName;
 	}
@@ -96,7 +99,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return method;
 	}
 	public void setMethod(String method) {
-		this.method = method;
+		this.method = method.toUpperCase();
 	}
 
 	//TODO add authenticationType
