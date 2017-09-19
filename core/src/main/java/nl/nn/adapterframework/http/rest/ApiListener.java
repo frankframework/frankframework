@@ -124,6 +124,16 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	public String getConsumes() {
 		return consumes;
 	}
+	public boolean isConsumable(String contentType) {
+		String mediaType = "text/plain";
+
+		if(getConsumes().equals("XML"))
+			mediaType = "application/xml";
+		else if(getConsumes().equals("JSON"))
+			mediaType = "application/json";
+
+		return contentType.contains(mediaType);
+	}
 
 	public void setProduces(String produces) throws ConfigurationException {
 		produces = produces.toUpperCase();
@@ -134,6 +144,16 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 	public String getProduces() {
 		return produces;
+	}
+	public String getContentType() {
+		String contentType = "*/*";
+		if(getProduces().equals("XML"))
+			contentType = "application/xml";
+		else if(getProduces().equals("JSON"))
+			contentType = "application/json";
+		else if(getProduces().equals("TEXT"))
+			contentType = "text/plain";
+		return contentType;
 	}
 
 	public void setGenerateEtag(boolean generateEtag) {

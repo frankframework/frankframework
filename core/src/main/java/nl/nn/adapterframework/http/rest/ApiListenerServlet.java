@@ -93,13 +93,17 @@ public class ApiListenerServlet extends HttpServlet {
 
 			ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
 			if(config == null) {
-				response.sendError(404, "no ApiListener configured for ["+uri+"]");
+				//TODO maybe leave this in for debugging?
+//				response.sendError(404, "no ApiListener configured for ["+uri+"]");
+				response.setStatus(404);
+				log.trace("Aborting request with status [404], no ApiListener configured for ["+uri+"]");
 				return;
 			}
 
 			ApiListener listener = config.getApiListener(method);
 			if(listener == null) {
-				response.sendError(404, "no ApiListener configured for ["+uri+"] with method ["+method+"]");
+				response.setStatus(405);
+				log.trace("Aborting request with status [405], method ["+method+"] not allowed");
 				return;
 			}
 
@@ -151,12 +155,19 @@ public class ApiListenerServlet extends HttpServlet {
 			 * Evaluate preconditions
 			 */
 			String accept = request.getHeader("Accept");
-			if(accept != null && !accept.isEmpty()) {
-				if(!listener.getConsumes().equalsIgnoreCase("any") && !accept.equalsIgnoreCase(listener.getConsumes())) {
-					response.setStatus(415);
-					log.trace("Aborting request with status [415], did not match accept ["+listener.getConsumes()+"] got ["+accept+"] instead");
+			if(accept != null && !accept.isEmpty() && !accept.equals("*/*")) {
+				if(!listener.getProduces().equals("ANY") && !accept.contains(listener.getContentType())) {
+					response.setStatus(406);
+					response.getWriter().print("It appears you expected the MediaType ["+accept+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
+					log.trace("Aborting request with status [406], client expects ["+accept+"] got ["+listener.getContentType()+"] instead");
 					return;
 				}
+			}
+
+			if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
+				response.setStatus(415);
+				log.trace("Aborting request with status [415], did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
+				return;
 			}
 
 			String etagCacheKey = ApiCacheManager.buildCacheKey(config.getUriPattern());
@@ -251,23 +262,11 @@ public class ApiListenerServlet extends HttpServlet {
 			if(methods.length() > 0)
 				response.addHeader("Allow", methods.substring(0, methods.length()-2));
 
-			String contentType = "";
-			if(!listener.getProduces().equalsIgnoreCase("ANY")) {
-				if(listener.getProduces().equalsIgnoreCase("XML"))
-					contentType = "application/xml";
-				else if(listener.getProduces().equalsIgnoreCase("JSON"))
-					contentType = "application/json";
-				else if(listener.getProduces().equalsIgnoreCase("TEXT"))
-					contentType = "text/plain";
-
-				contentType += "; charset=utf-8";
-			}
-			else {
+			String contentType = listener.getContentType() + "; charset=utf-8";
+			if(listener.getProduces().equals("ANY")) {
 				contentType = (String) messageContext.get("contentType");
 			}
-			if (contentType != "") {
-				response.setHeader("Content-Type", contentType);
-			}
+			response.setHeader("Content-Type", contentType);
 
 			/**
 			 * Check if an exitcode has been defined or if a statuscode has been added to the messageContext.
