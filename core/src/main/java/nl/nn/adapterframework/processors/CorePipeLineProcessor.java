@@ -219,19 +219,14 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 					if (!outputWrapError) {
 						IPipe outputValidator = pipeLine.getOutputValidator();
-						boolean isMixedValidator = WsdlUtils.isMixedValidator(inputValidator, outputValidator); 
-						if ((outputValidator !=null || isMixedValidator) && !outputValidated) {
+						if (inputValidator instanceof XmlValidator) {
+							outputValidator = ((XmlValidator)inputValidator).selectOutputValidator(outputValidator);
+						}
+						if ((outputValidator !=null) && !outputValidated) {
 							outputValidated=true;
 							log.debug("validating PipeLineResult");
 							PipeRunResult validationResult;
-							if (outputValidator !=null) {
-								validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, messageId, object, pipeLineSession);
-							} else {
-								XmlValidator mixedValidator = (XmlValidator) inputValidator;
-								mixedValidator.enableOutputMode(pipeLineSession);
-								validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, messageId, object, pipeLineSession);
-								mixedValidator.disableOutputMode(pipeLineSession);
-							}
+							validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, messageId, object, pipeLineSession);
 							if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
 								PipeForward validationForward=validationResult.getPipeForward();
 								if (validationForward.getPath()==null) {

@@ -21,19 +21,17 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import javanet.staxutils.IndentingXMLStreamWriter;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.xerces.util.XMLChar;
+
+import javanet.staxutils.IndentingXMLStreamWriter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.xerces.util.XMLChar;
 
 /**
  * @author Michiel Meeuwissen
@@ -118,20 +116,4 @@ public abstract class WsdlUtils {
         return uri == null ? null : uri.replaceAll(" ", "_");
     }
 
-	public static boolean isMixedValidator(Object inputValidator) {
-		return isMixedValidator(inputValidator, null);
-	}
-
-	public static boolean isMixedValidator(Object inputValidator,
-			Object outputValidator) {
-		if (outputValidator == null && inputValidator != null) {
-			if (inputValidator instanceof SoapValidator) {
-				SoapValidator soapValidator = (SoapValidator) inputValidator;
-				if (StringUtils.isNotEmpty(soapValidator.getOutputSoapBody())) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
 }

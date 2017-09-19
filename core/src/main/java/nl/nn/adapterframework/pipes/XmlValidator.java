@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
+import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -97,10 +98,7 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
 * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
 */
-public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues {
-
-	public static final String XML_VALIDATOR_MODE = "xmlValidatorMode";
-	public static final String XML_VALIDATOR_MODE_OUTPUT = "OUTPUT";
+public class XmlValidator extends DualModePipe implements SchemasProvider, HasSpecialDefaultValues {
 
 	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
     private boolean forwardFailureToSuccess = false;
@@ -330,18 +328,17 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
     	 return inputStr;
      }
 
-	public void enableOutputMode(IPipeLineSession session) {
-		session.put(XML_VALIDATOR_MODE, XML_VALIDATOR_MODE_OUTPUT);
+	protected boolean isConfiguredForMixedValidation() {
+		return outputRootValidations!=null && !outputRootValidations.isEmpty();
 	}
 	
-	public void disableOutputMode(IPipeLineSession session) {
-		session.remove(XML_VALIDATOR_MODE);
+	public IPipe selectOutputValidator(IPipe outputValidator) {
+		if (outputValidator == null && isConfiguredForMixedValidation()) {
+			return this;
+		}
+		return outputValidator;
 	}
-	
-	public boolean isOutputModeEnabled(IPipeLineSession session) {
-		String xmlValidatorMode = (String) session.get(XML_VALIDATOR_MODE);
-		return XML_VALIDATOR_MODE_OUTPUT.equals(xmlValidatorMode);
-	}
+
 
     /**
      * Enable full schema grammar constraint checking, including

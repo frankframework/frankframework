@@ -77,6 +77,10 @@ public class DomTreeAligner extends Tree2Xml<Node> {
 		}
 		return children;
 	}
+	@Override
+	public boolean isNil(Node node) {
+		return "true".equals(node.getAttributes().getNamedItemNS(XML_SCHEMA_INSTANCE_NAMESPACE, XML_SCHEMA_NIL_ATTRIBUTE));
+	}
 
 
 }
