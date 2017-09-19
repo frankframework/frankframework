@@ -106,6 +106,9 @@ textarea
 .passed
 { color: green; }
 
+.autosaved
+{ color: orange; }
+
 .total
 { margin-top: 5px; }
 

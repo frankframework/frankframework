@@ -16,10 +16,14 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
@@ -53,36 +57,53 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.soap.util.mime.ByteArrayDataSource;
 import org.apache.xerces.impl.dv.util.Base64;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
- * {@link nl.nn.adapterframework.core.ISender sender} that sends a mail specified by an XML message. <br/>
- *
- * Sample email.xml:<br/><code><pre>
- *	&lt;email&gt;
- *	    &lt;recipients&gt;
- *		    &lt;recipient type="to"&gt;***@nn.nl&lt;/recipient&gt;
- *	        &lt;recipient type="cc"&gt;***@nn.nl&lt;/recipient&gt;
- *	    &lt;/recipients&gt;
- *	    &lt;from&gt;***@nn.nl&lt;/from&gt;
- *	    &lt;subject&gt;this is the subject&lt;/subject&gt;
- *	    &lt;threadTopic&gt;subject&lt;/threadTopic&gt;
- *	    &lt;message&gt;dit is de message&lt;/message&gt;
- *	    &lt;messageType&gt;text/plain&lt;/messageType&gt;&lt;!-- Optional --&gt;
- *	    &lt;messageBase64&gt;false&lt;/messageBase64&gt;&lt;!-- Optional --&gt;
- *	    &lt;charset&gt;UTF-8&lt;/charset&gt;&lt;!-- Optional --&gt;
- *	    &lt;attachments&gt;
- *	        &lt;attachment name="filename1.txt" type="text"&gt;<i>contents of first attachment</i>&lt;/attachment&gt;
- *	        &lt;attachment name="filename2.txt" type="text" url="url-to-resource" base64="false"&gt;<i>this is an attachment with a resource</i>&lt;/attachment&gt;
- *	    &lt;/attachments&gt;&lt;!-- Optional --&gt;
- *	&lt;/email&gt;
- * </pre></code> <br/>
- * Notice: it must be valid XML. Therefore, especially the message element
- * must be plain text or be wrapped as CDATA.<br/><br/>
- * example:<br/><code><pre>
- * &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
- * </pre></code><br/>
- *
- * <p><b>Configuration:</b>
+ * {@link nl.nn.adapterframework.core.ISender sender} that sends a mail specified by an XML message.
+ * <p>
+ * Sample email.xml:
+ * <code><pre>
+ *    &lt;email&gt;
+ *       &lt;recipients&gt;
+ *          &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
+ *          &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
+ *       &lt;/recipients&gt;
+ *       &lt;from&gt;***@yahoo.com&lt;/from&gt;
+ *       &lt;subject&gt;This is the subject&lt;/subject&gt;
+ *       &lt;threadTopic&gt;subject&lt;/threadTopic&gt;
+ *       &lt;message&gt;This is the message&lt;/message&gt;
+ *       &lt;messageType&gt;text/plain&lt;/messageType&gt;&lt;!-- Optional --&gt;
+ *       &lt;messageBase64&gt;false&lt;/messageBase64&gt;&lt;!-- Optional --&gt;
+ *       &lt;charset&gt;UTF-8&lt;/charset&gt;&lt;!-- Optional --&gt;
+ *       &lt;attachments&gt;
+ *          &lt;attachment name="filename1.txt"&gt;This is the first attachment&lt;/attachment&gt;
+ *          &lt;attachment name="filename2.pdf" base64="true"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;
+ *          &lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&gt;
+ *          &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
+ *       &lt;/attachments&gt;&lt;!-- Optional --&gt;
+ *   &lt;/email&gt;
+ * </pre></code>
+ * <p>
+ * Notice: the XML message must be valid XML. Therefore, especially the message element
+ * must be plain text or be wrapped as CDATA. Example:
+ * <code><pre>
+ *    &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
+ * </pre></code>
+ * <p>
+ * The <code>sessionKey</code> attribute for attachment can contain an inputstream or a string. Other types are not supported at this moment.
+ * <p>
+ * The attribute order for attachments is as follows:
+ * <ol>
+ *    <li>sessionKey</li>
+ *    <li>url</li>
+ *    <li><i>value of the attachment element</i></li>
+ * </ol>
+ * <p>
+ * The <code>base64</code> attribute is only used when the value of the PipeLineSession variable <code>sessionKey</code> is a String object
+ * or when the value of the attachment element is used. If <code>base64=true</code> then the value will be decoded before it's used.
+ * <p>
+ * <b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setSmtpHost(String) smtpHost}</td><td>name of the host by which the messages are to be send</td><td>&nbsp;</td></tr>
@@ -91,12 +112,12 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setSmtpPassword(String) smtpPassword}</td><td>password of userid on the smtpHost</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefaultFrom(String) defaultFrom}</td><td>value of the From: header if not specified in message itself</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefaultSubject(String) defaultSubject}</td><td>value of the Subject: header if not specified in message itself</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultAttachmentType(String) defaultAttachmentType}</td><td>&nbsp;</td><td>text</td></tr>
- * <tr><td>{@link #setDefaultAttachmentName(String) defaultAttachmentName}</td><td>&nbsp;</td><td>attachment</td></tr>
+ * <tr><td>{@link #setDefaultAttachmentName(String) defaultAttachmentName}</td><td>When this name is used, it will be followed by a number which is equal to the node's position</td><td>attachment</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout (in milliseconds). Used for socket connection timeout and socket I/O timeout</td><td>20000</td></tr>
  * </table>
+ * <p>
  * <table border="1">
- * <p><b>Parameters:</b>
+ * <b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>from</td><td>string</td><td>email address of the sender</td></tr>
  * <tr><td>subject</td><td>string</td><td>subject field of the message</td></tr>
@@ -106,18 +127,19 @@ import org.w3c.dom.Element;
  * <tr><td>messageBase64</td><td>boolean</td><td>indicates whether the message content is base64 encoded (default: false)</td></tr>
  * <tr><td>charset</td><td>string</td><td>the character encoding (e.g. ISO-8859-1 or UTF-8) used to send the email (default: value of system property mail.mime.charset, when not present the value of system property file.encoding)</td></tr>
  * <tr><td>recipients</td><td>xml</td><td>recipients of the message. must result in a structure like: <code><pre>
- *	        &lt;recipient type="to"&gt;***@natned&lt;/recipient&gt;
- *	        &lt;recipient type="cc"&gt;***@nn.nl&lt;/recipient&gt;
-* </pre></code></td></tr>
+ *       &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
+ *       &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
+ * </pre></code></td></tr>
  * <tr><td>attachments</td><td>xml</td><td>attachments to the message. must result in a structure like: <code><pre>
- *	        &lt;attachment name="filename1.txt" type="text"&gt;<i>contents of first attachment</i>&lt;/attachment&gt;
- *	        &lt;attachment name="filename2.txt" type="text" url="url-to-resource" base64="false"&gt;<i>this is an attachment with a resource</i>&lt;/attachment&gt;
+ *       &lt;attachment name="filename1.txt"&gt;This is the first attachment&lt;/attachment&gt;
+ *       &lt;attachment name="filename2.pdf" base64="true"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;
+ *       &lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&gt;
+ *       &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
  * </pre></code></td></tr>
  * </table>
- * </p>
- * NB Compilation and Deployment Note: mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar
- * Otherwise errors like the following might occur:
- *   NoClassDefFoundException: com/sun/mail/util/MailDateFormat 
+ * <p>
+ * <b>Compilation and Deployment Note:</b> mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar.
+ * Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code> 
  * 
  * @author Johan Verrips/Gerrit van Brakel
  */
@@ -128,7 +150,6 @@ public class MailSender extends SenderWithParametersBase {
 	private String smtpAuthAlias;
 	private String smtpUserid;
 	private String smtpPassword;
-	private String defaultAttachmentType = "text";
 	private String defaultAttachmentName = "attachment";
 	private String defaultMessageType = "text/plain";
 	private String defaultMessageBase64 = "false";
@@ -142,6 +163,50 @@ public class MailSender extends SenderWithParametersBase {
 	private Session session;
 	private Properties properties;
 
+	private class Recipient {
+		String value;
+		String type;
+
+		Recipient(String value, String type) {
+			this.value = value;
+			this.type = type;
+		}
+		
+		public String toString() {
+			return "type ["+type+"] value ["+value+"]";
+		}
+		
+		public String getValue() {
+			return value;
+		}
+
+		public String getType() {
+			return type;
+		}
+	}
+
+	private class Attachment {
+		Object value;
+		String name;
+
+		Attachment(Object value, String name) {
+			this.value = value;
+			this.name = name;
+		}
+
+		public String toString() {
+			return "name ["+name+"] value ["+value+"]";
+		}
+
+		public Object getValue() {
+			return value;
+		}
+
+		public String getName() {
+			return name;
+		}
+}
+	
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getSmtpHost())) {
 			throw new ConfigurationException("MailSender ["+getName()+"] has no smtpHost configured");
@@ -211,14 +276,14 @@ public class MailSender extends SenderWithParametersBase {
 		String messageType=null;
 		String messageBase64=null;
 		String charset=null;
-		Collection recipients=null;
-		Collection attachments=null;
+		Collection<Recipient> recipients=null;
+		Collection<Attachment> attachments=null;
 		ParameterValueList pvl;
 		ParameterValue pv;
 		
 		String messageInMailSafeForm;
 		if (paramList==null) {
-			messageInMailSafeForm = sendEmail(message);
+			messageInMailSafeForm = sendEmail(message, prc);
 		} else {
 			try {
 				pvl = prc.getValues(paramList);
@@ -259,11 +324,13 @@ public class MailSender extends SenderWithParametersBase {
 				}
 				pv = pvl.getParameterValue("recipients");
 				if (pv != null) {
-					recipients = pv.asCollection();  
+					recipients = retrieveRecipients(pv.asCollection());
+					log.debug("MailSender ["+getName()+"] retrieved recipients-parameter ["+recipients+"]");
 				}
 				pv = pvl.getParameterValue("attachments");
 				if (pv != null) {
-					attachments = pv.asCollection();  
+					attachments = retrieveAttachments(pv.asCollection(), prc);
+					log.debug("MailSender ["+getName()+"] retrieved attachments-parameter ["+attachments+"]");
 				}
 			} catch (ParameterException e) {
 				throw new SenderException("MailSender ["+getName()+"] got exception determining parametervalues",e);
@@ -275,15 +342,91 @@ public class MailSender extends SenderWithParametersBase {
 	}
 	
 	public String sendMessage(String correlationID, String input) throws SenderException {
-		sendEmail(input);
+		sendEmail(input, null);
 		return correlationID;
 	}
 	
+	private Collection<Recipient> retrieveRecipients(Collection<Node> recipientsNode) {
+		Collection<Recipient> recipients=null;
+		Iterator iter = recipientsNode.iterator();
+		if (iter.hasNext()) {
+			recipients = new LinkedList<Recipient>();
+			while (iter.hasNext()) {
+				Element recipientElement = (Element) iter.next();
+				String value = XmlUtils.getStringValue(recipientElement);
+				if (StringUtils.isNotEmpty(value)) {
+					String type = recipientElement.getAttribute("type");
+					Recipient recipient = new Recipient(value, type);
+					recipients.add(recipient);
+				} else {
+					log.debug("empty recipient found, ignoring");
+				}
+			}
+		}
+		return recipients;
+	}
+
+	private Collection<Attachment> retrieveAttachments(Collection<Node> attachmentsNode, ParameterResolutionContext prc) throws SenderException {
+		Collection<Attachment> attachments=null;
+		Iterator iter = attachmentsNode.iterator();
+		if (iter.hasNext()) {
+			attachments = new LinkedList<Attachment>();
+			while (iter.hasNext()) {
+				Element attachmentElement = (Element) iter.next();
+				String name = attachmentElement.getAttribute("name");
+				String sessionKey = attachmentElement.getAttribute("sessionKey");
+				String url = attachmentElement.getAttribute("url");
+				boolean base64 = Boolean.parseBoolean(attachmentElement.getAttribute("base64"));
+				Object value = null;
+				if (StringUtils.isNotEmpty(sessionKey)) {
+					Object object = prc.getSession().get(sessionKey);
+					if (object instanceof InputStream) {
+						DataSource attachmentDataSource;
+						try {
+							attachmentDataSource = new ByteArrayDataSource((InputStream)object, "application/octet-stream");
+						} catch (IOException e) {
+							throw new SenderException("error retrieving attachment from sessionkey", e);
+						}
+						value = new DataHandler(attachmentDataSource);
+					} else if (object instanceof String) {
+						String skValue = (String) object;
+						if (base64) {
+							value = decodeBase64(skValue);
+						} else {
+							value = skValue;
+						}
+					} else {
+						throw new SenderException("MailSender ["+getName()+"] received unknown attachment type ["+object.getClass().getName()+"] in sessionkey");
+					}
+				} else {
+					if (StringUtils.isNotEmpty(url)) {
+						DataSource attachmentDataSource;
+						try {
+							attachmentDataSource = new URLDataSource(new URL(url));
+						} catch (MalformedURLException e) {
+							throw new SenderException("error retrieving attachment from url", e);
+						}
+						value = new DataHandler(attachmentDataSource);
+					} else {
+						String nodeValue = XmlUtils.getStringValue(attachmentElement);
+						if (base64) {
+							value = decodeBase64(nodeValue);
+						} else {
+							value = nodeValue;
+						}
+					}
+				}
+				Attachment attachment = new Attachment(value, name);
+				attachments.add(attachment);
+			}
+		}
+		return attachments;
+	}
 
 	/**
 	 * Send a mail conforming to the XML input
 	 */
-	protected String sendEmail(String input) throws SenderException {
+	protected String sendEmail(String input, ParameterResolutionContext prc) throws SenderException {
 		// initialize this request
 		String from;
 		String subject;
@@ -292,8 +435,8 @@ public class MailSender extends SenderWithParametersBase {
 		String messageType;
 		String messageBase64;
 		String charset;
-		Collection recipients;
-		Collection attachments;
+		Collection<Recipient> recipients;
+		Collection<Attachment> attachments;
 		
 		Element emailElement;
 		try {
@@ -308,10 +451,10 @@ public class MailSender extends SenderWithParametersBase {
 			charset = XmlUtils.getChildTagAsString(emailElement, "charset");
 
 			Element recipientsElement = XmlUtils.getFirstChildTag(emailElement, "recipients");
-			recipients = XmlUtils.getChildTags(recipientsElement, "recipient");
+			recipients = retrieveRecipients(XmlUtils.getChildTags(recipientsElement, "recipient"));
 
 			Element attachmentsElement = XmlUtils.getFirstChildTag(emailElement, "attachments");
-			attachments = attachmentsElement==null ? null :XmlUtils.getChildTags(attachmentsElement, "attachment");
+			attachments = retrieveAttachments(attachmentsElement==null ? null :XmlUtils.getChildTags(attachmentsElement, "attachment"), prc);
 
 		} catch (DomBuilderException e) {
 			throw new SenderException("exception parsing [" + input + "]", e);
@@ -322,7 +465,7 @@ public class MailSender extends SenderWithParametersBase {
 
 	protected String sendEmail(String from, String subject, String threadTopic, String message,
 			String messageType, String messageBase64, String charset,
-			Collection recipients, Collection attachments) throws SenderException {
+			Collection<Recipient> recipients, Collection<Attachment> attachments) throws SenderException {
 
 		StringBuffer sb = new StringBuffer();
 
@@ -371,24 +514,21 @@ public class MailSender extends SenderWithParametersBase {
 			Iterator iter = recipients.iterator();
 			boolean recipientsFound=false;
 			while (iter.hasNext()) {
-				Element recipientElement = (Element) iter.next();
-				String recipient = XmlUtils.getStringValue(recipientElement);
-				if (StringUtils.isNotEmpty(recipient)) {
-					String typeAttr = recipientElement.getAttribute("type");
-					Message.RecipientType recipientType = Message.RecipientType.TO;
-					if ("cc".equalsIgnoreCase(typeAttr)) {
-						recipientType = Message.RecipientType.CC;
-					}
-					if ("bcc".equalsIgnoreCase(typeAttr)) {
-						recipientType = Message.RecipientType.BCC;
-					}
-					msg.addRecipient(recipientType, new InternetAddress(recipient));
-					recipientsFound = true;
-					if (log.isDebugEnabled()) {
-						sb.append("[recipient("+typeAttr+")=" + recipient + "]");
-					}
+				Recipient recipient = (Recipient) iter.next();
+				String value = recipient.value;
+				String type = recipient.type;
+				Message.RecipientType recipientType;
+				if ("cc".equalsIgnoreCase(type)) {
+					recipientType = Message.RecipientType.CC;
+				} else if ("bcc".equalsIgnoreCase(type)) {
+					recipientType = Message.RecipientType.BCC;
 				} else {
-					log.debug("empty recipient found, ignoring");
+					recipientType = Message.RecipientType.TO;
+				}
+				msg.addRecipient(recipientType, new InternetAddress(value));
+				recipientsFound = true;
+				if (log.isDebugEnabled()) {
+					sb.append("[recipient [" + recipient + "]]");
 				}
 			}
 			if (!recipientsFound) {
@@ -419,38 +559,26 @@ public class MailSender extends SenderWithParametersBase {
 				messageBodyPart.setContent(message, messageTypeWithCharset);
 				multipart.addBodyPart(messageBodyPart);
 				
+				int counter = 0;
 				iter = attachments.iterator();
 				while (iter.hasNext()) {
-					Element attachmentElement = (Element) iter.next();
-					String attachmentText = XmlUtils.getStringValue(attachmentElement);
-					String attachmentName = attachmentElement.getAttribute("name");
-					String attachmentUrl = attachmentElement.getAttribute("url");
-					String attachmentType = attachmentElement.getAttribute("type");
-					String attachmentBase64 = attachmentElement.getAttribute("base64");
-					if (StringUtils.isEmpty(attachmentType)) {
-						attachmentType = getDefaultAttachmentType();
+					counter++;
+					Attachment attachment = (Attachment) iter.next();
+					Object value = attachment.getValue();
+					String name = attachment.getName();
+					if (StringUtils.isEmpty(name)) {
+						name = getDefaultAttachmentName() + counter;
 					}
-					if (StringUtils.isEmpty(attachmentName)) {
-						attachmentName = getDefaultAttachmentName();
-					}
-					log.debug("found attachment ["+attachmentName+"] type ["+attachmentType+"] url ["+attachmentUrl+"]contents ["+attachmentText+"]");
+					log.debug("found attachment ["+attachment+"]");
 					
 					messageBodyPart = new MimeBodyPart();
-					
-					DataSource attachmentDataSource;
-					if (!StringUtils.isEmpty(attachmentUrl)) {
-						attachmentDataSource = new URLDataSource(new URL(attachmentUrl));
-						messageBodyPart.setDataHandler(new DataHandler(attachmentDataSource));
-					}
-				    
-					messageBodyPart.setFileName(attachmentName);
+					messageBodyPart.setFileName(name);
 
-					if ("true".equalsIgnoreCase(attachmentBase64)) {
-						messageBodyPart.setDataHandler(decodeBase64(attachmentText));
+					if (value instanceof DataHandler) {
+						messageBodyPart.setDataHandler((DataHandler) value);
+					} else {
+						messageBodyPart.setText((String) value);
 					}
-					else {
-						messageBodyPart.setText(attachmentText);
-					}					
 
 					multipart.addBodyPart(messageBodyPart);
 				}
@@ -560,13 +688,6 @@ public class MailSender extends SenderWithParametersBase {
 	}
 	public String getDefaultAttachmentName() {
 		return defaultAttachmentName;
-	}
-
-	public void setDefaultAttachmentType(String string) {
-		defaultAttachmentType = string;
-	}
-	public String getDefaultAttachmentType() {
-		return defaultAttachmentType;
 	}
 
 	public int getTimeout() {

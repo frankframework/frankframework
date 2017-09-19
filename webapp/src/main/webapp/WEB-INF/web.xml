@@ -485,9 +485,10 @@
 		<web-resource-collection>
 			<web-resource-name>WebServiceAccessResourceCollection</web-resource-name>
 			<description>collection of url's for webservice access</description>
-			 <url-pattern>/servlet/rpcrouter/*</url-pattern>
-			 <url-pattern>/servlet/messagerouter</url-pattern>
-			 <url-pattern>/HttpListener</url-pattern>
+			<url-pattern>/servlet/rpcrouter/*</url-pattern>
+			<url-pattern>/servlet/messagerouter</url-pattern>
+			<url-pattern>/HttpListener</url-pattern>
+			<url-pattern>/rest/*</url-pattern>
 		</web-resource-collection>
 		<auth-constraint>
 			<description></description>
