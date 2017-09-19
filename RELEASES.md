@@ -34,6 +34,7 @@ Upcoming
 - Remove "webContent.dir" bean from spring configuration
 - Larva: add possiblity to autosave TestTool differences
 - Fix stackoverflow on regex validation with Xerces parser
+- Add attachment sessionKey attribute to MailSender
 
 
 
