@@ -16,16 +16,14 @@
 package nl.nn.adapterframework.align;
 
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.PSVIProvider;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -35,6 +33,7 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.xs.XSWildcard;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -48,20 +47,32 @@ import org.xml.sax.helpers.XMLFilterImpl;
 public class XmlAligner extends XMLFilterImpl {
 	protected Logger log = Logger.getLogger(this.getClass());
 
+	private final int CHILD_OCCURRENCE_EMPTY=0;
+	private final int CHILD_OCCURRENCE_ONE_SINGLE_OCCURRING_ELEMENT=1;
+	private final int CHILD_OCCURRENCE_ONE_MULTIPLE_OCCURRING_ELEMENT=2;
+	private final int CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING=3;
+
+	private final String[] CHILD_OCCURRENCE_DESCRIPTION={"Empty","OneSingle","OneMultiOcc","Mixed"};
+	
 	private PSVIProvider psviProvider;
 	private boolean indent=true;
 	private final boolean DEBUG=false; 
 
 	private int indentLevel;
-	protected List<XSParticle> childElementDeclarations=null;
-	protected Stack<Set<String>> multipleOccurringElements=new Stack<Set<String>>();
-	protected Set<String> multipleOccurringChildElements=null;
-	protected Stack<Boolean> parentOfSingleMultipleOccuringChildElements=new Stack<Boolean>();
-	protected boolean parentOfSingleMultipleOccuringChildElement=false;
+	public XSTypeDefinition typeDefintion;
+
+
+	private Stack<Set<String>> multipleOccurringElements=new Stack<Set<String>>();
+	private Set<String> multipleOccurringChildElements=null;
+	private Stack<Boolean> parentOfSingleMultipleOccurringChildElements=new Stack<Boolean>();
+	private boolean parentOfSingleMultipleOccurringChildElement=false;
 
 	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
 	private final int MAX_INDENT=INDENTOR.length/2;
-	
+
+	public String XML_SCHEMA_INSTANCE_NAMESPACE="http://www.w3.org/2001/XMLSchema-instance";
+	public String XML_SCHEMA_NIL_ATTRIBUTE="nil";
+
 	
 	public XmlAligner() {
 		super();
@@ -94,139 +105,232 @@ public class XmlAligner extends XMLFilterImpl {
 		}
 	}
 	
+	public boolean isNil(Attributes attributes) {
+		return "true".equals(attributes.getValue(XML_SCHEMA_INSTANCE_NAMESPACE, XML_SCHEMA_NIL_ATTRIBUTE));
+	}
+	
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attributes) throws SAXException {
-		if (DEBUG && log.isDebugEnabled()) log.debug("startElement() uri ["+namespaceUri+"] localName ["+localName+"] qName ["+qName+"]");
+		if (DEBUG) log.debug("startElement() uri ["+namespaceUri+"] localName ["+localName+"] qName ["+qName+"]");
 		// call getChildElementDeclarations with in startElement, to obtain all child elements of the current node
-		childElementDeclarations=getChildElementDeclarations(psviProvider);
+		typeDefintion=getTypeDefinition(psviProvider);
 		multipleOccurringElements.push(multipleOccurringChildElements);
+		parentOfSingleMultipleOccurringChildElements.push(parentOfSingleMultipleOccurringChildElement);
 		// call findMultipleOccurringChildElements, to obtain all child elements that could be part of an array
-		multipleOccurringChildElements=findMultipleOccurringChildElements();
-		parentOfSingleMultipleOccuringChildElements.push(parentOfSingleMultipleOccuringChildElement);
-		parentOfSingleMultipleOccuringChildElement=isParentOfSingleMultipleOccurringChildElement();
+		if (typeDefintion instanceof XSComplexTypeDefinition) {
+			XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition)typeDefintion;
+			multipleOccurringChildElements=findMultipleOccurringChildElements(complexTypeDefinition.getParticle());
+			parentOfSingleMultipleOccurringChildElement=(CHILD_OCCURRENCE_ONE_MULTIPLE_OCCURRING_ELEMENT==determineIsParentOfSingleMultipleOccurringChildElement(complexTypeDefinition.getParticle()));
+			if (DEBUG) log.debug("element ["+localName+"] is parentOfSingleMultipleOccurringChildElement ["+parentOfSingleMultipleOccurringChildElement+"]");
+		} else {
+			multipleOccurringChildElements=null;
+			parentOfSingleMultipleOccurringChildElement=false;
+			if (DEBUG) log.debug("element ["+localName+"] is a SimpleType, and therefor not multiple");
+		}
 		super.startElement(namespaceUri, localName, qName, attributes);
 		indentLevel++;
 	}
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (DEBUG && log.isDebugEnabled()) log.debug("endElement() uri ["+uri+"] localName ["+localName+"] qName ["+qName+"]");
+		if (DEBUG) log.debug("endElement() uri ["+uri+"] localName ["+localName+"] qName ["+qName+"]");
 		indentLevel--;
 		super.endElement(uri, localName, qName);
 		multipleOccurringChildElements=multipleOccurringElements.pop();
-		parentOfSingleMultipleOccuringChildElement=parentOfSingleMultipleOccuringChildElements.pop();
+		parentOfSingleMultipleOccurringChildElement=parentOfSingleMultipleOccurringChildElements.pop();
 	}
 
 
 	public boolean isPresentInSet(Set<String> set, String name) {
 		return set!=null && set.contains(name);
 	}
-	public boolean isMultipleOccuringOnlyChildElement(String name) {
-		return isPresentInSet(multipleOccurringChildElements,name);
-	}
-	public boolean isMultipleOccuringChildInParentElement(String name) {
+	
+	public boolean isMultipleOccurringChildInParentElement(String name) {
 		return isPresentInSet(multipleOccurringElements.peek(),name);
 	}
 
+	public boolean isMultipleOccurringChildElement(String name) {
+		return isPresentInSet(multipleOccurringChildElements,name);
+	}
 
-	protected boolean isSingleMultipleOccurringChildElement() {
-		return parentOfSingleMultipleOccuringChildElements.peek();
+	public Set<String> getMultipleOccurringChildElements() {
+		return multipleOccurringChildElements;
+	}
+
+
+	protected boolean isParentOfSingleMultipleOccurringChildElement() {
+		return parentOfSingleMultipleOccurringChildElement;
 	}
 	
-	protected boolean isParentOfSingleMultipleOccurringChildElement() {
-		if (childElementDeclarations==null || childElementDeclarations.isEmpty()) {
-			if (DEBUG && log.isDebugEnabled()) log.debug("isParentOfSingleMultipleOccurringChildElement() no childElementDeclarations");
-			return false;
-		}
-		if (childElementDeclarations.size()>1) {
-			if (DEBUG && log.isDebugEnabled()) log.debug("isParentOfSingleMultipleOccurringChildElement() multiple childElementDeclarations");
-			return false;
-		}
-		XSParticle particle=childElementDeclarations.get(0);
+	
+	protected int determineIsParentOfSingleMultipleOccurringChildElement(XSParticle particle) {
+		if (particle==null) {
+			log.warn("Particle is null, is this a problem? Appearantly not");
+			return CHILD_OCCURRENCE_EMPTY;
+		} 
 		XSTerm term = particle.getTerm();
-		if (DEBUG && log.isDebugEnabled()) log.debug("isParentOfSingleMultipleOccurringChildElement() single child element ["+term.getName()+"] occurring unbounded ["+particle.getMaxOccursUnbounded()+"] max occur ["+particle.getMaxOccurs()+"]");
-		return particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1;
+		if (term==null) {
+			throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement particle.term is null");
+		} 
+		if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() term name ["+term.getName()+"] occurring unbounded ["+particle.getMaxOccursUnbounded()+"] max occur ["+particle.getMaxOccurs()+"] term ["+ToStringBuilder.reflectionToString(term)+"]");
+		if (term instanceof XSModelGroup) {
+			XSModelGroup modelGroup = (XSModelGroup)term;
+			short compositor = modelGroup.getCompositor();			
+			XSObjectList particles = modelGroup.getParticles();
+			switch (compositor) {
+			case XSModelGroup.COMPOSITOR_SEQUENCE:
+			case XSModelGroup.COMPOSITOR_ALL: {
+				if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() sequence or all particles ["+ToStringBuilder.reflectionToString(particles)+"]");
+				int result=CHILD_OCCURRENCE_EMPTY;
+				for (int i=0;i<particles.getLength();i++) {
+					XSParticle childParticle = (XSParticle)particles.item(i);
+					int current=determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
+					if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() sequence or all, particle ["+i+"] current result ["+CHILD_OCCURRENCE_DESCRIPTION[current]+"]");
+					switch (current) {
+					case CHILD_OCCURRENCE_EMPTY:
+						break;
+					case CHILD_OCCURRENCE_ONE_SINGLE_OCCURRING_ELEMENT:
+					case CHILD_OCCURRENCE_ONE_MULTIPLE_OCCURRING_ELEMENT:
+						if (result>CHILD_OCCURRENCE_EMPTY) {
+							if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() sequence or all, result ["+CHILD_OCCURRENCE_DESCRIPTION[result]+"] current ["+CHILD_OCCURRENCE_DESCRIPTION[current]+"]");
+							return CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+						}
+						result=current;
+						break;
+					case CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING:
+						return CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+					default:
+						throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement child occurrence ["+CHILD_OCCURRENCE_DESCRIPTION[current]+"]");
+					}
+				}
+				if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() end of sequence or all, returning ["+CHILD_OCCURRENCE_DESCRIPTION[result]+"]");
+				return result;
+			}
+			case XSModelGroup.COMPOSITOR_CHOICE: {
+				if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() choice particles ["+ToStringBuilder.reflectionToString(particles)+"]");
+				if (particles.getLength()==0) {
+					if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() choice length 0, returning ["+CHILD_OCCURRENCE_DESCRIPTION[CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING]+"]");
+					return CHILD_OCCURRENCE_EMPTY;
+				}
+				int result=determineIsParentOfSingleMultipleOccurringChildElement((XSParticle)particles.item(0));
+				if (result==CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING) {
+					if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() choice single mixed, returning ["+CHILD_OCCURRENCE_DESCRIPTION[CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING]+"]");
+					return CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+				}
+				for (int i=1;i<particles.getLength();i++) {
+					XSParticle childParticle = (XSParticle)particles.item(i);
+					int current=determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
+					if (current!=result) {
+						if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() break out of choice, returning ["+CHILD_OCCURRENCE_DESCRIPTION[CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING]+"]");
+						return CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+					}
+				}
+				if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() end of choice, returning ["+CHILD_OCCURRENCE_DESCRIPTION[result]+"]");
+				return result;
+			}
+			default:
+				throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement modelGroup.compositor is not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE, but ["+compositor+"]");
+			} 
+		} 
+		if (term instanceof XSElementDeclaration) {
+			XSElementDeclaration elementDeclaration=(XSElementDeclaration)term;
+			String elementName=elementDeclaration.getName();
+			if (DEBUG) log.debug("determineIsParentOfSingleMultipleOccurringChildElement() ElementDeclaration name ["+elementName+"] unbounded ["+particle.getMaxOccursUnbounded()+"] maxOccurs ["+particle.getMaxOccurs()+"]");
+			if (particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1) {
+				return CHILD_OCCURRENCE_ONE_MULTIPLE_OCCURRING_ELEMENT;
+			}
+			if (particle.getMaxOccurs()==1) {
+				return CHILD_OCCURRENCE_ONE_SINGLE_OCCURRING_ELEMENT;
+			} 
+			return CHILD_OCCURRENCE_EMPTY;
+		}
+		if (term instanceof XSWildcard) {
+			return CHILD_OCCURRENCE_MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+		} 
+		throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement unknown Term type ["+term.getClass().getName()+"]");
 	}
 
-	protected Set<String> findMultipleOccurringChildElements() {
-		if (childElementDeclarations==null) {
-			if (DEBUG && log.isDebugEnabled()) log.debug("findMultipleOccurringChildElements() no childElementDeclarations");
-			return null;
+
+	protected void collectChildElements(XSParticle particle, Set<String> elementNames) {
+		if (particle==null) {
+			log.warn("collectChildElements() particle is null, is this a problem?");	
+			return;
 		}
-		Set<String> result=new HashSet<String>();
-		for (XSParticle particle:childElementDeclarations) {
-			XSTerm term = particle.getTerm();
-			String name=term.getName();
-			if (DEBUG && log.isDebugEnabled()) log.debug("findMultipleOccurringChildElements() child element ["+name+"] occurring unbounded ["+particle.getMaxOccursUnbounded()+"] max occur ["+particle.getMaxOccurs()+"]");
-			if (particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1) {
-				if (DEBUG && log.isDebugEnabled()) log.debug("findMultipleOccurringChildElements() multiple occurring child element ["+name+"]");
-				result.add(name);
+		XSTerm term = particle.getTerm();
+		if (term==null) {
+			throw new IllegalStateException("collectChildElements particle.term is null");
+		} 
+		if (term instanceof XSModelGroup) {
+			XSModelGroup modelGroup = (XSModelGroup)term;
+			XSObjectList particles = modelGroup.getParticles();
+			for (int i=0;i<particles.getLength();i++) {
+				XSParticle childParticle = (XSParticle)particles.item(i);
+				collectChildElements(childParticle, elementNames);
 			}
+			return;
+		} 
+		if (term instanceof XSElementDeclaration) {
+			XSElementDeclaration elementDeclaration=(XSElementDeclaration)term;
+			String elementName=elementDeclaration.getName();
+			if (DEBUG) log.debug("collectChildElements() ElementDeclaration name ["+elementName+"]");
+			elementNames.add(elementName);
 		}
+		return;
+	}
+	
+	protected Set<String> findMultipleOccurringChildElements(XSParticle particle) {
+		Set<String> result=new HashSet<String>();
+		if (particle==null) {
+			log.warn("findMultipleOccurringChildElements() typeDefinition particle is null, is this a problem?");	
+			return result;
+		}
+		XSTerm term = particle.getTerm();
+		if (term==null) {
+			throw new IllegalStateException("findMultipleOccurringChildElements particle.term is null");
+		} 
+		if (DEBUG) log.debug("findMultipleOccurringChildElements() term name ["+term.getName()+"] occurring unbounded ["+particle.getMaxOccursUnbounded()+"] max occur ["+particle.getMaxOccurs()+"] term ["+ToStringBuilder.reflectionToString(term)+"]");
+		if (particle.getMaxOccursUnbounded()||particle.getMaxOccurs()>1) {
+			collectChildElements(particle,result);
+			return result;
+		} 
+		if (term instanceof XSModelGroup) {
+			XSModelGroup modelGroup = (XSModelGroup)term;
+			XSObjectList particles = modelGroup.getParticles();
+				if (DEBUG) log.debug("findMultipleOccurringChildElements() modelGroup particles ["+ToStringBuilder.reflectionToString(particles)+"]");
+				for (int i=0;i<particles.getLength();i++) {
+					XSParticle childParticle = (XSParticle)particles.item(i);
+					result.addAll(findMultipleOccurringChildElements(childParticle));
+				}
+		} 
 		return result;
 	}
-	public List<XSParticle> getChildElementDeclarations(PSVIProvider psviProvider) {
+
+	public XSTypeDefinition getTypeDefinition(PSVIProvider psviProvider) {
 		ElementPSVI elementPSVI = psviProvider.getElementPSVI();
-		if (DEBUG && log.isDebugEnabled()) log.debug("elementPSVI ["+ToStringBuilder.reflectionToString(elementPSVI)+"]");
+		if (DEBUG) log.debug("getTypeDefinition() elementPSVI ["+ToStringBuilder.reflectionToString(elementPSVI)+"]");
 		XSElementDeclaration elementDeclaration = elementPSVI.getElementDeclaration();
-		if (DEBUG && log.isDebugEnabled()) log.debug("elementPSVI element declaration ["+ToStringBuilder.reflectionToString(elementDeclaration)+"]");
+		if (DEBUG) log.debug("getTypeDefinition() elementPSVI element declaration ["+ToStringBuilder.reflectionToString(elementDeclaration)+"]");
 		if (elementDeclaration==null) {
 			return null;
 		}
 		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
-		if (DEBUG && log.isDebugEnabled()) log.debug("elementDeclaration typeDefinition ["+ToStringBuilder.reflectionToString(typeDefinition)+"]");
-		
-		if (typeDefinition instanceof XSComplexTypeDefinition) {
-			XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition)typeDefinition;
-			XSParticle particle = complexTypeDefinition.getParticle();
-			if (particle==null) {
-				log.warn("typeDefinition particle is null, is this a problem?");					
-			} else {
-				if (DEBUG && log.isDebugEnabled()) log.debug("typeDefinition particle ["+ToStringBuilder.reflectionToString(particle,ToStringStyle.MULTI_LINE_STYLE)+"]");
-				XSTerm term = particle.getTerm();
-				if (DEBUG && log.isDebugEnabled()) log.debug("particle term ["+ToStringBuilder.reflectionToString(term,ToStringStyle.MULTI_LINE_STYLE)+"]");
-				
-				if (term instanceof XSModelGroup) {
-					XSModelGroup modelGroup = (XSModelGroup)term;
-					short compositor = modelGroup.getCompositor();
-					if (compositor==XSModelGroup.COMPOSITOR_SEQUENCE || compositor==XSModelGroup.COMPOSITOR_ALL) {
-						XSObjectList particles = modelGroup.getParticles();
-						if (DEBUG && log.isDebugEnabled()) log.debug("modelGroup particles ["+ToStringBuilder.reflectionToString(particles,ToStringStyle.MULTI_LINE_STYLE)+"]");
-						List<XSParticle> result = new LinkedList<XSParticle>();
-
-						for (int i=0;i<particles.getLength();i++) {
-							XSParticle childParticle = (XSParticle)particles.item(i);
-							XSTerm childTerm = childParticle.getTerm();
-							if (childTerm instanceof XSElementDeclaration) {
-								XSElementDeclaration childElementDeclaration=(XSElementDeclaration)childTerm;
-//								if (DEBUG && log.isDebugEnabled()) log.debug("childElementDeclaration ["+ToStringBuilder.reflectionToString(childElementDeclaration,ToStringStyle.MULTI_LINE_STYLE)+"]");
-								if (DEBUG && log.isDebugEnabled()) log.debug("childElementDeclaration name ["+childElementDeclaration.getName()+"]");
-								result.add(childParticle);
-							} else {
-								log.warn("IGNORING childTerm because it is not a XSElementDeclaration, but is ["+childTerm.getClass().getName()+"]");
-								if (DEBUG && log.isDebugEnabled()) log.debug("childTerm ["+ToStringBuilder.reflectionToString(childTerm,ToStringStyle.MULTI_LINE_STYLE)+"]");
-							}
-						}
-						childElementDeclarations=result;
-						return result;
-					} 
-					if (compositor==XSModelGroup.COMPOSITOR_CHOICE) {
-						log.warn("SHOULD HANDLE properly: modelGroup compositor is a COMPOSITOR_CHOICE");
-					} else {
-						log.warn("UNKNOWN compositor in modelGroup ["+compositor+"], not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE");
-					}
-				} else {
-					log.warn("IGNORING particle term because it is not a XSModelGroup but a ["+term.getClass().getName()+"]");
-				}
-			}
-		} else {
-			if (DEBUG && log.isDebugEnabled()) log.debug("simple type, no children");
-		}
-		return null;
+		if (DEBUG) log.debug("getTypeDefinition() elementDeclaration typeDefinition ["+ToStringBuilder.reflectionToString(typeDefinition)+"]");
+		return typeDefinition;
 	}
-
 	
+
 	public void setPsviProvider(PSVIProvider psviProvider) {
 		this.psviProvider=psviProvider;
+	}
+
+	public XSTypeDefinition getTypeDefintion() {
+		return typeDefintion;
+	}
+
+	public XSSimpleType getElementType() {
+		if (typeDefintion instanceof XSSimpleType) {
+			return (XSSimpleType)typeDefintion;
+		}
+		return null;
 	}
 	
 }

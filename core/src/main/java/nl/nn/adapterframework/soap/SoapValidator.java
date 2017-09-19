@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.util.LogUtil;
@@ -92,6 +93,11 @@ public class SoapValidator extends Json2XmlValidator {
         super.configure();
     }
 
+	@Override
+	protected boolean isConfiguredForMixedValidation() {
+		return StringUtils.isNotEmpty(getOutputSoapBody());
+	}
+
     @Override
     public void setSchema(String schema) {
         throw new IllegalArgumentException("The schema attribute isn't supported");
@@ -101,6 +107,12 @@ public class SoapValidator extends Json2XmlValidator {
     public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
         throw new IllegalArgumentException("The noNamespaceSchemaLocation attribute isn't supported");
     }
+
+	@Override
+	protected String getJsonRootElement(IPipeLineSession session) {
+		return getSoapBody();
+	}
+
 
     @Override
     public String getRoot() {
