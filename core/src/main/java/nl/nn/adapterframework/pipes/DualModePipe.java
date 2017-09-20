@@ -5,10 +5,10 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 /**
-*<code>Pipe</code> that validates the input message against a XML-Schema.
-*
-* @author Peter Leeuwenburgh / Gerrit van Brakel
-*/
+ *<code>Pipe</code> that validates the input message against a XML-Schema.
+ *
+ * @author Peter Leeuwenburgh / Gerrit van Brakel
+ */
 
 public class DualModePipe extends FixedForwardPipe {
 
