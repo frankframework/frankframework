@@ -35,6 +35,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
+import nl.nn.adapterframework.pipes.DualModePipe;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.soap.WsdlUtils;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -226,7 +227,16 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 							outputValidated=true;
 							log.debug("validating PipeLineResult");
 							PipeRunResult validationResult;
-							validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, messageId, object, pipeLineSession);
+							if (outputValidator instanceof DualModePipe) {
+								((DualModePipe) outputValidator).enableResponseMode(pipeLineSession);
+							} 
+							try {
+								validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, messageId, object, pipeLineSession);
+							} finally {
+								if (outputValidator instanceof DualModePipe) {
+									((DualModePipe) outputValidator).disableResponseMode(pipeLineSession);
+								} 
+							}
 							if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
 								PipeForward validationForward=validationResult.getPipeForward();
 								if (validationForward.getPath()==null) {

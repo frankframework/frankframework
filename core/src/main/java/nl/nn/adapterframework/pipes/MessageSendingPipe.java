@@ -696,7 +696,16 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		if (outputValidator!=null) {
 			log.debug(getLogPrefix(session)+"validating response");
 			PipeRunResult validationResult;
-			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, correlationID, result,session);
+			if (outputValidator instanceof DualModePipe) {
+				((DualModePipe) outputValidator).enableResponseMode(session);
+			} 
+			try {
+				validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, correlationID, result,session);
+			} finally {
+				if (outputValidator instanceof DualModePipe) {
+					((DualModePipe) outputValidator).disableResponseMode(session);
+				} 
+			}
 			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
 				return validationResult;
 			}
