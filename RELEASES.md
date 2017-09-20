@@ -9,8 +9,17 @@ Upcoming
 --------
 
 [JavaDocs](http://maven.ibissource.org/iaf/apidocs/index.html)
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-B2...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.0-B3...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+
+
+
+7.0-B3
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.0-B2...v7.0-B3)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-B3)](https://travis-ci.org/ibissource/iaf)
 
 - Add json to xml and xml to json conversion as well as json validation to xmlvalidators
 - Prevent XML Entity Expansion (XEE) injection

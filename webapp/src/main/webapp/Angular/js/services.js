@@ -829,7 +829,7 @@ angular.module('iaf.beheerconsole')
 		$httpProvider.interceptors.push(['$rootScope', 'appConstants', '$q', '$location', 'Alert', 'Misc', function($rootScope, appConstants, $q, $location, Alert, Misc) {
 			return {
 				responseError: function(rejection) {
-					if(rejection.config && rejection.config.url && !rejection.config.url.includes(Misc.getServerPath())) return;
+					if(rejection.config && rejection.config.url && rejection.config.url.indexOf(Misc.getServerPath()) < 0) return;
 					switch (rejection.status) {
 						case -1:
 							console.log(appConstants.init, rejection);
