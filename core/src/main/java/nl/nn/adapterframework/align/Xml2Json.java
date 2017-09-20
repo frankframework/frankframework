@@ -25,11 +25,16 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.parsers.SAXParser;
+import org.apache.xerces.xs.XSAttributeDeclaration;
+import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -45,6 +50,8 @@ public class Xml2Json extends XMLFilterImpl {
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private boolean skipArrayElementContainers;
+	private boolean writeAttributes=true;
+	private String attributePrefix="@";
 	private boolean DEBUG=false; 
 
 	private XmlAligner aligner;
@@ -63,10 +70,41 @@ public class Xml2Json extends XMLFilterImpl {
 		if (DEBUG) log.debug("startElement ["+localName+"] xml array container ["+aligner.isParentOfSingleMultipleOccurringChildElement()+"] repeated element ["+aligner.isMultipleOccurringChildInParentElement(localName)+"]");
 		elementStack.push(contentContainer);
 		contentContainer=new JsonContentContainer(localName, aligner.isParentOfSingleMultipleOccurringChildElement(),aligner.isMultipleOccurringChildInParentElement(localName), skipArrayElementContainers);
+		super.startElement(uri, localName, qName, atts);
 		if (aligner.isNil(atts)) {
 			contentContainer.setContent(null);
+		} else {
+			if (writeAttributes) {
+				XSObjectList attributeUses=aligner.getAttributeUses();
+				if (attributeUses==null) {
+					if (atts.getLength()>0) {
+						log.warn("found ["+atts.getLength()+"] attributes, but no declared AttributeUses");
+					}
+				} else {
+					for (int i=0;i<attributeUses.getLength(); i++) {
+						XSAttributeUse attributeUse=(XSAttributeUse)attributeUses.item(i);
+						XSAttributeDeclaration attributeDeclaration=attributeUse.getAttrDeclaration();
+						XSSimpleTypeDefinition attTypeDefinition=attributeDeclaration.getTypeDefinition();
+						String attName=attributeDeclaration.getName();
+						String attNS=attributeDeclaration.getNamespace();
+						if (DEBUG) log.debug("startElement ["+localName+"] searching attribute ["+attNS+":"+attName+"]");
+						int attIndex=attNS!=null? atts.getIndex(attNS, attName):atts.getIndex(attName);
+						if (attIndex>=0) {
+							String value=atts.getValue(attIndex);
+							if (DEBUG) log.debug("startElement ["+localName+"] attribute ["+attNS+":"+attName+"] value ["+value+"]");
+							if (StringUtils.isNotEmpty(value)) {
+								JsonContentContainer attributeContainer = new JsonContentContainer(attributePrefix+attName, false, false, false);
+								if (attTypeDefinition.getNumeric()) {
+									attributeContainer.setQuoted(false);
+								}
+								attributeContainer.setContent(value);
+								contentContainer.addContent(attributeContainer);
+							}
+						}
+					}
+				}
+			}
 		}
-		super.startElement(uri, localName, qName, atts);
 	}
 
 	@Override
@@ -94,12 +132,6 @@ public class Xml2Json extends XMLFilterImpl {
 		//log.debug("characters() content is now ["+contentContainer+"]");
 		super.characters(ch, start, length);
 	}
-
-//	@Override
-//	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-//		log.debug("ignorable whitespace");
-//	}
-
 
 	public static String translate(String xml, URL schemaURL, boolean compactJsonArrays, boolean skipRootElement) throws SAXException, IOException {
 
@@ -130,5 +162,20 @@ public class Xml2Json extends XMLFilterImpl {
 
 	public String toString(boolean indent) {
 		return contentContainer.toString(indent);
+	}
+
+
+	public boolean isWriteAttributes() {
+		return writeAttributes;
+	}
+	public void setWriteAttributes(boolean writeAttributes) {
+		this.writeAttributes = writeAttributes;
+	}
+
+	public String getAttributePrefix() {
+		return attributePrefix;
+	}
+	public void setAttributePrefix(String attributePrefix) {
+		this.attributePrefix = attributePrefix;
 	}
 }

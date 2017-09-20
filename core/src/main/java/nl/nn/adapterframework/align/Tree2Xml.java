@@ -33,15 +33,17 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.xerces.xs.PSVIProvider;
+import org.apache.xerces.xs.XSAttributeDeclaration;
+import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroup;
 import org.apache.xerces.xs.XSNamedMap;
-import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
@@ -56,7 +58,7 @@ import org.xml.sax.helpers.AttributesImpl;
  * 
  * @author Gerrit van Brakel
  *
- * @param <N> tree node type
+ * @param <N>
  */
 public abstract class Tree2Xml<N> extends XmlAligner {
 
@@ -68,6 +70,8 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 	private boolean mustProcessAllElements=true;
 	protected ValidatorHandler validatorHandler;
 	protected List<XSModel> schemaInformation; 
+	
+	protected XSTypeDefinition upcomingTypeDefinition=null;
 	
 	private String prefixPrefix="ns";
 	private int prefixPrefixCounter=1;
@@ -100,7 +104,8 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 	}
 	
 	public abstract Iterable<N> getChildrenByName(N node, String name) throws SAXException; // returns null when no children present
-	public abstract Set<String> getAllChildNames(N node) throws SAXException; // returns null when no children present
+	public abstract Set<String> getAllChildNames(N node) throws SAXException; // returns null when no children present, otherwise a _copy_ of the Set (it will be modified)
+	public abstract Map<String,String> getAttributes(N node) throws SAXException; // returns null when no attributes present, otherwise a _copy_ of the Map (it will be modified)
 	public abstract String getText(N node); // returns null when no text present
 	public abstract boolean isNil(N node); // returns true when the node is a nil
 
@@ -129,7 +134,7 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 		if (input!=null && (input instanceof Tree2Xml.XmlAlignerInputSource)) {
 			root= ((XmlAlignerInputSource)input).root;
 		}
-		if (log.isDebugEnabled()) log.debug("parse(InputSource) root ["+root+"]");
+		if (DEBUG) log.debug("parse(InputSource) root ["+root+"]");
 		startParse(root);
 	}
 
@@ -137,7 +142,7 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 	 * Align the XML according to the schema. 
 	 */
 	public void startParse(N node) throws SAXException {
-		//if (log.isDebugEnabled()) log.debug("startParse() rootNode ["+node.toString()+"]"); // result of node.toString() is confusing. Do not log this.
+		//if (DEBUG) log.debug("startParse() rootNode ["+node.toString()+"]"); // result of node.toString() is confusing. Do not log this.
 		validatorHandler.startDocument();
 		handleNode(node);
 		validatorHandler.endDocument();
@@ -169,7 +174,6 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 	}
 	public void handleNode(N node, String name, String nodeNamespace) throws SAXException {
 		if (DEBUG) log.debug("handleNode() name ["+name+"] namespace ["+nodeNamespace+"] isNil ["+isNil(node)+"]");
-		AttributesImpl attributes=new AttributesImpl();
 		// TODO: handle attributes
 		if (nodeNamespace==null) {
 			nodeNamespace=getNodeNamespaceURI(node);
@@ -178,30 +182,49 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 			nodeNamespace=findNamespaceForName(name);
 		}
 		if (nodeNamespace==null) {
-			if (log.isDebugEnabled()) log.debug("node ["+name+"] did not find namespace, assigning targetNamespace ["+getTargetNamespace()+"]");
+			if (DEBUG) log.debug("node ["+name+"] did not find namespace, assigning targetNamespace ["+getTargetNamespace()+"]");
 			nodeNamespace=getTargetNamespace();
 		}
 		
 		String nodeLocalname=name;
 		String elementNamespace=StringUtils.isNotEmpty(nodeNamespace)?nodeNamespace:StringUtils.isNotEmpty(targetNamespace)?targetNamespace:"";
-		String nodePrefix=null;
-		String createdPrefix=null;
-		String qname=null;
-		if (StringUtils.isNotEmpty(elementNamespace)) {
-			nodePrefix=prefixMap.get(elementNamespace);
-			if (nodePrefix==null) {
-				createdPrefix=createPrefix();
-				nodePrefix=createdPrefix;
-				prefixMap.put(elementNamespace, createdPrefix);
-				validatorHandler.startPrefixMapping(nodePrefix, elementNamespace);
-				//attributes.addAttribute(null, createdPrefix, "xmlns:"+createdPrefix, "string", elementNamespace);
-			}
-			qname=nodePrefix+":"+nodeLocalname;
-		} else {
-			qname=nodeLocalname;
-		}
+		String qname=getQName(elementNamespace, nodeLocalname);
+
 		newLine();
 		if (DEBUG) if (!elementNamespace.equals(nodeNamespace)) log.debug("switched namespace to ["+elementNamespace+"]");
+		AttributesImpl attributes=new AttributesImpl();
+		Map<String,String> nodeAttributes = getAttributes(node);
+		if (DEBUG) log.debug("node ["+name+"] search for attributeDeclaration");
+		XSObjectList attributeUses=getAttributeUses(upcomingTypeDefinition);
+		if (attributeUses==null || attributeUses.getLength()==0) {
+			if (nodeAttributes!=null && nodeAttributes.size()>0) {
+				log.warn("node ["+name+"] found ["+nodeAttributes.size()+"] attributes, but no declared AttributeUses");
+			} else {
+				if (DEBUG) log.debug("node ["+name+"] no attributeUses, no attributes");
+			}
+		} else {
+			if (nodeAttributes==null || nodeAttributes.isEmpty()) {
+				log.warn("node ["+name+"] declared ["+attributeUses.getLength()+"] attributes, but no attributes found");
+			} else {
+				for (int i=0;i<attributeUses.getLength(); i++) {
+					XSAttributeUse attributeUse=(XSAttributeUse)attributeUses.item(i);
+					//if (DEBUG) log.debug("startElement ["+localName+"] attributeUse ["+ToStringBuilder.reflectionToString(attributeUse)+"]");
+					XSAttributeDeclaration attributeDeclaration=attributeUse.getAttrDeclaration();
+					if (DEBUG) log.debug("node ["+name+"] attributeDeclaration ["+ToStringBuilder.reflectionToString(attributeDeclaration)+"]");
+					XSSimpleTypeDefinition attTypeDefinition=attributeDeclaration.getTypeDefinition();
+					if (DEBUG) log.debug("node ["+name+"] attTypeDefinition ["+ToStringBuilder.reflectionToString(attTypeDefinition)+"]");
+					String attName=attributeDeclaration.getName();
+					if (nodeAttributes.containsKey(attName)) {
+						String value=nodeAttributes.remove(attName);
+						String uri=attributeDeclaration.getNamespace();
+						String attqname=getQName(uri,attName);
+						String type=null;
+						if (DEBUG) log.debug("node ["+name+"] adding attribute ["+attName+"] value ["+value+"]");
+						attributes.addAttribute(uri, attName, attqname, type, value);
+					}
+				}
+			}
+		}
 		if (isNil(node)) {
 			validatorHandler.startPrefixMapping(XSI_PREFIX_MAPPING, XML_SCHEMA_INSTANCE_NAMESPACE);
 			attributes.addAttribute(XML_SCHEMA_INSTANCE_NAMESPACE, XML_SCHEMA_NIL_ATTRIBUTE, XSI_PREFIX_MAPPING+":"+XML_SCHEMA_NIL_ATTRIBUTE, "xs:boolean", "true");
@@ -215,7 +238,7 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 			Set<String> availableChildren = getAllChildNames(node);
 			Set<String> unProcessedChildren = availableChildren==null?null:new HashSet<String>(availableChildren);
 			if (DEBUG) log.debug("handleNode() search for best path for available children of element ["+name+"]"); 
-			List<XSParticle> childParticles = getBestChildElementPath(typeDefintion, availableChildren);
+			List<XSParticle> childParticles = getBestChildElementPath(getTypeDefinition(), availableChildren);
 			Set<String> processedChildren = new HashSet<String>();
 			
 			if (childParticles!=null) {
@@ -224,6 +247,7 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 					XSElementDeclaration childElementDeclaration = (XSElementDeclaration)childParticle.getTerm();
 					String childElementName=childElementDeclaration.getName();
 					String childElementNameSpace=childElementDeclaration.getNamespace();
+					upcomingTypeDefinition=childElementDeclaration.getTypeDefinition();
 					processChildElement(node, name, childElementName, childElementNameSpace, childParticle.getMinOccurs()>0, unProcessedChildren, processedChildren);
 				}
 			}
@@ -232,7 +256,15 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 				log.warn("processing ["+unProcessedChildren.size()+"] unprocessed child elements"+(unProcessedChildren.size()>0?", first ["+unProcessedChildren.iterator().next()+"]":""));
 				for (String childName:unProcessedChildrenWorkingCopy) {
 					log.warn("processing unprocessed child element ["+childName+"]");
-					String namespace = findNamespaceForName(childName);
+					String namespace=null;
+					upcomingTypeDefinition=null;
+					XSElementDeclaration childElementDeclaration = findElementDeclarationForName(childName);
+					if (childElementDeclaration==null) {
+						log.warn("Could not find ElementDeclaration for ["+childName+"]");
+					} else {
+						namespace = childElementDeclaration.getNamespace();
+						upcomingTypeDefinition=childElementDeclaration.getTypeDefinition();
+					}
 					processChildElement(node, namespace, childName, namespace, false, unProcessedChildren, processedChildren);
 				}
 				if (!unProcessedChildren.isEmpty()) {
@@ -264,11 +296,29 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 			//if (elementType==null) newLine();
 			validatorHandler.endElement(elementNamespace, name, qname);
 		}
-		if (createdPrefix!=null) {
-			validatorHandler.endPrefixMapping(createdPrefix);
-		}
+//		if (createdPrefix!=null) {
+//			validatorHandler.endPrefixMapping(createdPrefix);
+//		}
 	}
 
+	public String getQName(String namespace, String name) throws SAXException {
+		if (StringUtils.isNotEmpty(namespace)) {
+			String prefix=getNamespacePrefix(namespace);
+			return prefix+":"+name;
+		} 
+		return name;
+	}
+	
+	public String getNamespacePrefix(String uri) throws SAXException {
+		String prefix=prefixMap.get(uri);
+		if (prefix==null) {
+			prefix=prefixPrefix+prefixPrefixCounter++;
+			prefixMap.put(uri, prefix);
+			validatorHandler.startPrefixMapping(prefix, uri);
+		}
+		return prefix;
+	}
+	
 	/**
 	 * 
 	 * @param modelGroup
@@ -355,6 +405,10 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 	
 
 	public List<XSParticle> getBestChildElementPath(XSTypeDefinition typeDefintion, Set<String> availableElements) throws SAXException {
+		if (typeDefintion==null) {
+			log.warn("getBestChildElementPath typeDefinition is null");
+			return null;
+		}
 		switch (typeDefintion.getTypeCategory()) {
 		case XSTypeDefinition.SIMPLE_TYPE:
 			if (DEBUG) log.debug("getBestChildElementPath typeDefinition.typeCategory is SimpleType, no child elements");
@@ -430,22 +484,30 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 	}
 
 	public String findNamespaceForName(String name) throws SAXException {
-		Set<String> namespaces=findNamespacesForName(name);
-		if (namespaces==null) {
-			log.warn("No namespaces found for ["+name+"]");
+		XSElementDeclaration elementDeclaration=findElementDeclarationForName(name);
+		if (elementDeclaration==null) {
 			return null;
 		}
-		if (namespaces.size()>1) {
-			String[] namespacesArray=(String[])namespaces.toArray();
-			throw new SAXException("multiple ["+namespaces.size()+"] namespaces found for ["+name+"]: first two ["+namespacesArray[0]+"]["+namespacesArray[1]+"]");
+		return elementDeclaration.getNamespace();
+	}
+
+	public XSElementDeclaration findElementDeclarationForName(String name) throws SAXException {
+		Set<XSElementDeclaration> elementDeclarations=findElementDeclarationsForName(name);
+		if (elementDeclarations==null) {
+			log.warn("No element declarations found for ["+name+"]");
+			return null;
 		}
-		if (namespaces.size()==1) {
-			return (String)namespaces.toArray()[0];
+		if (elementDeclarations.size()>1) {
+			XSElementDeclaration[] XSElementDeclarationArray=(XSElementDeclaration[])elementDeclarations.toArray();
+			throw new SAXException("multiple ["+elementDeclarations.size()+"] namespaces found for ["+name+"]: first two ["+XSElementDeclarationArray[0].getNamespace()+"]["+XSElementDeclarationArray[1].getNamespace()+"]");
+		}
+		if (elementDeclarations.size()==1) {
+			return (XSElementDeclaration)elementDeclarations.toArray()[0];
 		}
 		return null;
 	}
-	public Set<String> findNamespacesForName(String name) {
-		Set<String> result=new LinkedHashSet<String>();
+	public Set<XSElementDeclaration> findElementDeclarationsForName(String name) {
+		Set<XSElementDeclaration> result=new LinkedHashSet<XSElementDeclaration>();
 		if (schemaInformation==null) {
 			log.warn("No SchemaInformation specified, cannot find namespaces for ["+name+"]");
 			return null;
@@ -453,20 +515,16 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 		for (XSModel model:schemaInformation) {
 			XSNamedMap components = model.getComponents(XSConstants.ELEMENT_DECLARATION);
 			for (int i=0;i<components.getLength();i++) {
-				XSObject item=components.item(i);
+				XSElementDeclaration item=(XSElementDeclaration)components.item(i);
 				if (item.getName().equals(name)) {
 					if (DEBUG) log.debug("name ["+name+"] found in namespace ["+item.getNamespace()+"]");
-					result.add(item.getNamespace());
+					result.add(item);
 				}
 			}
 		}
 		return result;
 	}
-	
-	public String createPrefix() {
-		return prefixPrefix+prefixPrefixCounter++;
-	}
-	
+
 	public String getRootElement() {
 		return rootElement;
 	}

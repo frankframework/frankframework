@@ -59,7 +59,7 @@ public class XmlAligner extends XMLFilterImpl {
 	private final boolean DEBUG=false; 
 
 	private int indentLevel;
-	public XSTypeDefinition typeDefintion;
+	private XSTypeDefinition typeDefinition;
 
 
 	private Stack<Set<String>> multipleOccurringElements=new Stack<Set<String>>();
@@ -113,12 +113,12 @@ public class XmlAligner extends XMLFilterImpl {
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attributes) throws SAXException {
 		if (DEBUG) log.debug("startElement() uri ["+namespaceUri+"] localName ["+localName+"] qName ["+qName+"]");
 		// call getChildElementDeclarations with in startElement, to obtain all child elements of the current node
-		typeDefintion=getTypeDefinition(psviProvider);
+		typeDefinition=getTypeDefinition(psviProvider);
 		multipleOccurringElements.push(multipleOccurringChildElements);
 		parentOfSingleMultipleOccurringChildElements.push(parentOfSingleMultipleOccurringChildElement);
 		// call findMultipleOccurringChildElements, to obtain all child elements that could be part of an array
-		if (typeDefintion instanceof XSComplexTypeDefinition) {
-			XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition)typeDefintion;
+		if (typeDefinition instanceof XSComplexTypeDefinition) {
+			XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition)typeDefinition;
 			multipleOccurringChildElements=findMultipleOccurringChildElements(complexTypeDefinition.getParticle());
 			parentOfSingleMultipleOccurringChildElement=(CHILD_OCCURRENCE_ONE_MULTIPLE_OCCURRING_ELEMENT==determineIsParentOfSingleMultipleOccurringChildElement(complexTypeDefinition.getParticle()));
 			if (DEBUG) log.debug("element ["+localName+"] is parentOfSingleMultipleOccurringChildElement ["+parentOfSingleMultipleOccurringChildElement+"]");
@@ -304,6 +304,23 @@ public class XmlAligner extends XMLFilterImpl {
 		return result;
 	}
 
+	public XSObjectList getAttributeUses() {
+		return getAttributeUses(typeDefinition);
+	}
+	
+	public XSObjectList getAttributeUses(XSTypeDefinition typeDefinition) {
+		if (typeDefinition==null) {
+			if (DEBUG) log.debug("getAttributeUses typeDefinition is null");
+			return null;
+		}
+		if (typeDefinition instanceof XSComplexTypeDefinition) {
+			XSComplexTypeDefinition complexTypeDefinition=(XSComplexTypeDefinition)typeDefinition;
+			return complexTypeDefinition.getAttributeUses();
+		} 
+		if (DEBUG) log.debug("typeDefinition ["+typeDefinition.getClass().getSimpleName()+"] SimpleType, no attributes");
+		return null;
+	}
+
 	public XSTypeDefinition getTypeDefinition(PSVIProvider psviProvider) {
 		ElementPSVI elementPSVI = psviProvider.getElementPSVI();
 		if (DEBUG) log.debug("getTypeDefinition() elementPSVI ["+ToStringBuilder.reflectionToString(elementPSVI)+"]");
@@ -322,13 +339,13 @@ public class XmlAligner extends XMLFilterImpl {
 		this.psviProvider=psviProvider;
 	}
 
-	public XSTypeDefinition getTypeDefintion() {
-		return typeDefintion;
+	public XSTypeDefinition getTypeDefinition() {
+		return typeDefinition;
 	}
 
 	public XSSimpleType getElementType() {
-		if (typeDefintion instanceof XSSimpleType) {
-			return (XSSimpleType)typeDefintion;
+		if (typeDefinition instanceof XSSimpleType) {
+			return (XSSimpleType)typeDefinition;
 		}
 		return null;
 	}

@@ -18,9 +18,11 @@ package nl.nn.adapterframework.align;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.XMLConstants;
@@ -53,6 +55,8 @@ public class Json2Xml extends Tree2Xml<Object> {
 	
 	private boolean insertElementContainerElements;
 	private boolean strictSyntax;
+	private boolean readAttributes=true;
+	private String attributePrefix="@";
 
 	public Json2Xml(ValidatorHandler validatorHandler, boolean insertElementContainerElements, String rootElement) {
 		this(validatorHandler, insertElementContainerElements, rootElement, false);
@@ -179,6 +183,39 @@ public class Json2Xml extends Tree2Xml<Object> {
 		}
 	}
 	
+
+	@Override
+	public Map<String, String> getAttributes(Object node) throws SAXException {
+		if (!readAttributes) {
+			return null;
+		}
+		if (!(node instanceof JSONObject)) {
+			if (DEBUG) log.debug("getAllChildNames() parent node is not a JSONObject, but a ["+node.getClass().getName()+"] isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"]  value ["+node+"], returning null");				
+			return null;
+		} 
+		JSONObject o = (JSONObject)node;
+		JSONArray names= o.names();
+		if (names==null) {
+			if (DEBUG) log.debug("getAttributes() no children");
+			return null;
+		}
+		try {
+			Map<String, String> result=new HashMap<String,String>();
+			for (int i=0;i<names.length();i++) {
+				String name=(String)names.get(i);
+				if (name.startsWith(attributePrefix)) {
+					String attributeName=name.substring(attributePrefix.length());
+					String value=o.getString(name);
+					if (DEBUG) log.debug("getAttributes() attribute ["+attributeName+"] = ["+value+"]");
+					result.put(attributeName, value);
+				}
+			}
+			return result;
+		} catch (JSONException e) {
+			throw new SAXException(e);
+		}
+	}
+	
 	@Override
 	public Set<String> getAllChildNames(Object node) throws SAXException {
 		if (DEBUG) log.debug("getAllChildNames() node isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"] ["+node.getClass().getName()+"]["+node+"]");
@@ -201,8 +238,10 @@ public class Json2Xml extends Tree2Xml<Object> {
 			Set<String> result = new HashSet<String>(); 
 			for (int i=0;i<names.length();i++) {
 				String name=(String)names.get(i);
-				result.add(name);
-				if (DEBUG) log.debug("getAllChildNames() name ["+name+"] added to set");
+				if (!readAttributes || !name.startsWith(attributePrefix)) {
+					result.add(name);
+					if (DEBUG) log.debug("getAllChildNames() name ["+name+"] added to set");
+				}
 			}
 			return result;
 		} catch (JSONException e) {
@@ -320,5 +359,19 @@ public class Json2Xml extends Tree2Xml<Object> {
 		}
     	return xml;
  	}
+
+	public boolean isReadAttributes() {
+		return readAttributes;
+	}
+	public void setReadAttributes(boolean readAttributes) {
+		this.readAttributes = readAttributes;
+	}
+
+	public String getAttributePrefix() {
+		return attributePrefix;
+	}
+	public void setAttributePrefix(String attributePrefix) {
+		this.attributePrefix = attributePrefix;
+	}
 
 }
