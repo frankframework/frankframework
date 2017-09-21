@@ -907,9 +907,14 @@ public class Misc {
 					if (file2.exists() && file2.isAbsolute()) {
 						wcDirectory = file2.getPath();
 					} else {
-						file = file.getParentFile();
-						if (file == null) {
-							return null;
+						file2 = new File(file, "src/main/webapp");
+						if (file2.exists() && file2.isAbsolute()) {
+							wcDirectory = file2.getPath();
+						} else {
+							file = file.getParentFile();
+							if (file == null) {
+								return null;
+							}
 						}
 					}
 				} catch(AccessControlException e) {
