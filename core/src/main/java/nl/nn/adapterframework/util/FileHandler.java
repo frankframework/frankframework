@@ -98,7 +98,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>(only used when actions=delete) when set to <code>true</code>, the directory from which a file is deleted is also deleted when it contains no other files</td><td>false</td></tr>
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code>, <code>bytes</code>, <code>stream</code> or <code>base64</code></td><td>"string"</td></tr>
  * <tr><td>{@link #setFileSource(String) fileSource}</td><td>either <code>filesystem</code> or <code>classpath</code> (only for actions "read" and "info" and currently only for resources available as a file on the classpath (i.e. doesn't work for resources in jar files and war files which are deployed without being extracted)</td><td>"filesystem"</td></tr>
- * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>(only used when outputType=stream) if set, the result is streamed to the HttpServletResponse object which is stored in session key "restListenerServletResponse"</td><td>false</td></tr>
+ * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>(only used when outputType=stream) if set, the result is streamed to the HttpServletResponse object</td><td>false</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -225,7 +225,7 @@ public class FileHandler {
 		if (output == null || "bytes".equals(outputType) || "base64".equals(outputType) || "stream".equals(outputType)) {
 			if ("stream".equals(outputType) && isStreamResultToServlet()) {
 				InputStream inputStream = (InputStream) output;
-				HttpServletResponse response = (HttpServletResponse) session.get("restListenerServletResponse");
+				HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTPRESPONSEKEY);
 				String contentType = (String) session.get("contentType");
 				String contentDisposition = (String) session.get("contentDisposition");
 				if (StringUtils.isNotEmpty(contentType)) {

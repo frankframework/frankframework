@@ -162,10 +162,8 @@ public class CreateRestViewPipe extends XsltPipe {
 		super.configure();
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
-		HttpServletRequest httpServletRequest = (HttpServletRequest) session
-				.get("restListenerServletRequest");
+	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(IPipeLineSession.HTTPREQUESTKEY);
 		String requestURL = httpServletRequest.getRequestURL().toString();
 		String servletPath = httpServletRequest.getServletPath();
 		String uri = StringUtils.substringAfter(requestURL, servletPath);
@@ -181,8 +179,8 @@ public class CreateRestViewPipe extends XsltPipe {
 		log.debug("transforming page [" + result + "] to view");
 
 		String newResult = null;
-		ServletContext servletContext = (ServletContext) session
-				.get("restListenerServletContext");
+		ServletContext servletContext = (ServletContext) session.get(IPipeLineSession.SERVLETCONTEXTKEY);
+
 		try {
 			Map parameters = retrieveParameters(httpServletRequest,
 					servletContext, srcPrefix);

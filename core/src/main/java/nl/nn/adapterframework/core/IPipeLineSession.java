@@ -42,6 +42,10 @@ public interface IPipeLineSession<K, V> extends Map<K, V> {
 	public static final String tsSentKey="tsSent";
 	public static final String securityHandlerKey="securityHandler";
 
+	public static final String HTTPREQUESTKEY  = "HttpServletRequest";
+	public static final String HTTPRESPONSEKEY = "HttpServletResponse";
+	public static final String SERVLETCONTEXTKEY  = "HttpServletContext";
+
 	/**
 	 * @return the messageId that was passed to the <code>PipeLine</code> which
 	 *         should be stored under <code>originalMessageKey</code>

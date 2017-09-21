@@ -27,6 +27,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
@@ -39,10 +41,6 @@ import org.apache.log4j.Logger;
 
 public class ApiListenerServlet extends HttpServlet {
 	protected Logger log = LogUtil.getLogger(this);
-
-	protected static final String HTTPREQUESTKEY  = "apiServletRequest";
-	protected static final String HTTPRESPONSEKEY = "apiServletResponse";
-	protected static final String HTTPCONTEXTKEY  = "apiServletContext";
 
 	private final String CONFIGURATIONKEY_CONTEXT = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
 
@@ -72,9 +70,9 @@ public class ApiListenerServlet extends HttpServlet {
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 		Map<String, Object> messageContext = new HashMap<String, Object>();
-		messageContext.put(HTTPREQUESTKEY, request);
-		messageContext.put(HTTPRESPONSEKEY, response);
-		messageContext.put(HTTPCONTEXTKEY, getServletContext());
+		messageContext.put(IPipeLineSession.HTTPREQUESTKEY, request);
+		messageContext.put(IPipeLineSession.HTTPRESPONSEKEY, response);
+		messageContext.put(IPipeLineSession.SERVLETCONTEXTKEY, getServletContext());
 		String body = "";
 
 		if (!ServletFileUpload.isMultipartContent(request)) {
@@ -107,7 +105,7 @@ public class ApiListenerServlet extends HttpServlet {
 				return;
 			}
 
-			log.trace("RestListenerServlet calling service ["+listener.getName()+"]");
+			log.trace("ApiListenerServlet calling service ["+listener.getName()+"]");
 
 			/**
 			 * Handle Cross-Origin Resource Sharing

@@ -36,12 +36,9 @@ import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
  * @author Peter Leeuwenburgh
  */
 public class RestListenerUtils {
-	public static final String REST_LISTENER_SERVLET_REQUEST = "restListenerServletRequest";
-	public static final String REST_LISTENER_SERVLET_RESPONSE = "restListenerServletResponse";
-	public static final String REST_LISTENER_SERVLET_CONTEXT = "restListenerServletContext";
 
 	public static IbisManager retrieveIbisManager(IPipeLineSession session) {
-		ServletContext servletContext = (ServletContext) session.get(REST_LISTENER_SERVLET_CONTEXT);
+		ServletContext servletContext = (ServletContext) session.get(IPipeLineSession.SERVLETCONTEXTKEY);
 		if (servletContext != null) {
 			String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
 			IbisContext ibisContext = (IbisContext) servletContext.getAttribute(attributeKey);
@@ -53,7 +50,7 @@ public class RestListenerUtils {
 	}
 
 	public static ServletOutputStream retrieveServletOutputStream(IPipeLineSession session) throws IOException {
-		HttpServletResponse response = (HttpServletResponse) session.get(REST_LISTENER_SERVLET_RESPONSE);
+		HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTPRESPONSEKEY);
 		if (response != null) {
 			return response.getOutputStream();
 		}
@@ -61,7 +58,7 @@ public class RestListenerUtils {
 	}
 
 	public static String retrieveRequestURL(IPipeLineSession session) throws IOException {
-		HttpServletRequest request = (HttpServletRequest) session.get(REST_LISTENER_SERVLET_REQUEST);
+		HttpServletRequest request = (HttpServletRequest) session.get(IPipeLineSession.HTTPREQUESTKEY);
 		if (request != null) {
 			return request.getRequestURL().toString();
 		}
@@ -69,7 +66,7 @@ public class RestListenerUtils {
 	}
 
 	public static String retrieveSOAPRequestURL(IPipeLineSession session) throws IOException {
-		HttpServletRequest request = (HttpServletRequest) session.get(REST_LISTENER_SERVLET_REQUEST);
+		HttpServletRequest request = (HttpServletRequest) session.get(IPipeLineSession.HTTPREQUESTKEY);
 		if (request != null) {
 			String url = request.getScheme() + "://" + request.getServerName();
 			if(!(request.getScheme().equalsIgnoreCase("http") && request.getServerPort() == 80) && !(request.getScheme().equalsIgnoreCase("https") && request.getServerPort() == 443))
@@ -85,14 +82,14 @@ public class RestListenerUtils {
 	}
 
 	public static void setResponseContentType(IPipeLineSession session, String contentType) throws IOException {
-		HttpServletResponse response = (HttpServletResponse) session.get(REST_LISTENER_SERVLET_RESPONSE);
+		HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTPRESPONSEKEY);
 		if (response != null) {
 			response.setContentType(contentType);
 		}
 	}
 
 	public static String retrieveRequestRemoteUser(IPipeLineSession session) throws IOException {
-		HttpServletRequest request = (HttpServletRequest) session.get(REST_LISTENER_SERVLET_REQUEST);
+		HttpServletRequest request = (HttpServletRequest) session.get(IPipeLineSession.HTTPREQUESTKEY);
 		if (request != null) {
 			Principal principal = request.getUserPrincipal();
 			if (principal != null) {
