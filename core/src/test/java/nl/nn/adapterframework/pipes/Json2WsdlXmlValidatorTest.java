@@ -71,7 +71,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 		}
 	}
 	
-	public void wsdlValidate(String wsdl, String soapBody, String testXml, String testJsonStraight, String testJsonCompact, String targetContent1, String targetContent2) throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+	public void wsdlValidate(String wsdl, String soapBody, String testSoap, String testXml, String testJsonStraight, String testJsonCompact, String targetContent1, String targetContent2) throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(wsdl);
 //        val.setSoapBody("TradePriceRequest");
@@ -82,15 +82,15 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 
         boolean compactJsonArrays=false;
         
-        validate("Validate XML", val, getTestXml(testXml), null, compactJsonArrays, targetContent1, targetContent2);
-        validate("XML to JSON",  val, getTestXml(testXml), "json", compactJsonArrays, targetContent1, targetContent2);
+        validate("Validate XML", val, getTestXml(testSoap), null, compactJsonArrays, targetContent1, targetContent2);
+        validate("XML to JSON",  val, getTestXml(testSoap), "json", compactJsonArrays, targetContent1, targetContent2);
         validate("JSON to XML",  val, getTestXml(testJsonStraight), "xml", compactJsonArrays, targetContent1, targetContent2);
         validate("JSON to JSON", val, getTestXml(testJsonStraight), "json", compactJsonArrays, targetContent1, targetContent2);
 
         compactJsonArrays=true;
         
-        validate("Validate XML", val, getTestXml(testXml), null, compactJsonArrays, targetContent1, targetContent2);
-        validate("XML to JSON",  val, getTestXml(testXml), "json", compactJsonArrays, targetContent1, targetContent2);
+        validate("Validate XML", val, getTestXml(testSoap), null, compactJsonArrays, targetContent1, targetContent2);
+        validate("XML to JSON",  val, getTestXml(testSoap), "json", compactJsonArrays, targetContent1, targetContent2);
         
         // basic json Parsing compactJsonArrays=true
         validate("JSON to XML",  val, getTestXml(testJsonCompact), "xml", compactJsonArrays, targetContent1, targetContent2);
@@ -105,16 +105,17 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
     public void wsdlValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
     	String wsdl="/GetPolicyDetailsTravel/wsdl/GetPolicyDetailsTravel.wsdl";
     	String soapBody="GetPolicyDetailsTravel_Response";
-    	String xmlFile="/GetPolicyDetailsTravel/response1.xml";
+    	String soapFile="/GetPolicyDetailsTravel/response1soap.xml";
+    	String xmlFile="/GetPolicyDetailsTravel/response1body.xml";
     	String targetContent1="childDateOfBirth";
     	//String targetContent2="€ 19,82"; // The Euro sign is somehow escaped, sometimes. Disabled it, because it breaks the build.
     	String targetContent2="";
     	
     	
-    	String jsonFileStraight="/GetPolicyDetailsTravel/response1jsonarrays.json";
-    	String jsonFileCompact="/GetPolicyDetailsTravel/response1xmlarrays.json";
+    	String jsonFileStraight="/GetPolicyDetailsTravel/response1full.json";
+    	String jsonFileCompact="/GetPolicyDetailsTravel/response1compact.json";
     	    	
-    	wsdlValidate(wsdl,soapBody,xmlFile,jsonFileStraight, jsonFileCompact, targetContent1, targetContent2);
+    	wsdlValidate(wsdl,soapBody,soapFile,xmlFile,jsonFileStraight, jsonFileCompact, targetContent1, targetContent2);
     }
 	
 	

@@ -35,6 +35,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
+import nl.nn.adapterframework.pipes.DualModePipe;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.soap.WsdlUtils;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -219,18 +220,22 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 					if (!outputWrapError) {
 						IPipe outputValidator = pipeLine.getOutputValidator();
-						boolean isMixedValidator = WsdlUtils.isMixedValidator(inputValidator, outputValidator); 
-						if ((outputValidator !=null || isMixedValidator) && !outputValidated) {
+						if (inputValidator instanceof XmlValidator) {
+							outputValidator = ((XmlValidator)inputValidator).selectOutputValidator(outputValidator);
+						}
+						if ((outputValidator !=null) && !outputValidated) {
 							outputValidated=true;
 							log.debug("validating PipeLineResult");
 							PipeRunResult validationResult;
-							if (outputValidator !=null) {
+							if (outputValidator instanceof DualModePipe) {
+								((DualModePipe) outputValidator).enableResponseMode(pipeLineSession);
+							} 
+							try {
 								validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, messageId, object, pipeLineSession);
-							} else {
-								XmlValidator mixedValidator = (XmlValidator) inputValidator;
-								mixedValidator.enableOutputMode(pipeLineSession);
-								validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, messageId, object, pipeLineSession);
-								mixedValidator.disableOutputMode(pipeLineSession);
+							} finally {
+								if (outputValidator instanceof DualModePipe) {
+									((DualModePipe) outputValidator).disableResponseMode(pipeLineSession);
+								} 
 							}
 							if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
 								PipeForward validationForward=validationResult.getPipeForward();

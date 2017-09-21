@@ -15,14 +15,17 @@
 */
 package nl.nn.adapterframework.align;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.xerces.xs.XSModel;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -76,6 +79,20 @@ public class DomTreeAligner extends Tree2Xml<Node> {
 			}
 		}
 		return children;
+	}
+	@Override
+	public boolean isNil(Node node) {
+		return "true".equals(node.getAttributes().getNamedItemNS(XML_SCHEMA_INSTANCE_NAMESPACE, XML_SCHEMA_NIL_ATTRIBUTE));
+	}
+	@Override
+	public Map<String, String> getAttributes(Node node) throws SAXException {
+		Map<String, String> result=new HashMap<String, String>();
+		NamedNodeMap attributes=node.getAttributes();
+		for (int i=0;i<attributes.getLength();i++) {
+			Node item=attributes.item(i);
+			result.put(item.getLocalName(), item.getNodeValue());
+		}
+		return null;
 	}
 
 

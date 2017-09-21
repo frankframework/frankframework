@@ -19,6 +19,7 @@ package nl.nn.adapterframework.pipes;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
+import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -96,10 +98,15 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
 * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
 */
-public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues {
+public class XmlValidator extends DualModePipe implements SchemasProvider, HasSpecialDefaultValues {
 
 	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
     private boolean forwardFailureToSuccess = false;
+
+	private String root;
+	private Set<List<String>> inputRootValidations;
+	private Set<List<String>> outputRootValidations;
+	private Map<List<String>, List<String>> invalidRootNamespaces;
 
 	protected AbstractXmlValidator validator = new XercesXmlValidator();
 
@@ -111,7 +118,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected String noNamespaceSchemaLocation;
 	protected String schemaSessionKey;
 
-	protected ConfigurationException configurationException;
+	private ConfigurationException configurationException;
 
 	/**
 	 * Configure the XmlValidator
@@ -238,7 +245,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
      
      
     protected PipeForward validate(String messageToValidate, IPipeLineSession session) throws XmlValidatorException, PipeRunException, ConfigurationException {
-        String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session));
+        String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), getRootValidations(session), getInvalidRootNamespaces(), false);
         return determineForward(resultEvent, session);
     }
 
@@ -321,17 +328,17 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
     	 return inputStr;
      }
 
-	public void enableOutputMode(IPipeLineSession session) {
-		validator.enableOutputMode(session);
+	protected boolean isConfiguredForMixedValidation() {
+		return outputRootValidations!=null && !outputRootValidations.isEmpty();
+	}
+	
+	public IPipe selectOutputValidator(IPipe outputValidator) {
+		if (outputValidator == null && isConfiguredForMixedValidation()) {
+			return this;
+		}
+		return outputValidator;
 	}
 
-	public void disableOutputMode(IPipeLineSession session) {
-		validator.disableOutputMode(session);
-	}
-
-	public boolean isOutputModeEnabled(IPipeLineSession session) {
-    	return validator.isOutputModeEnabled(session);
-	}
 
     /**
      * Enable full schema grammar constraint checking, including
@@ -448,10 +455,11 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	public void setRoot(String root) {
-		validator.setRoot(root);
+		this.root = root;
+		addRootValidation(Arrays.asList(root));
 	}
 	public String getRoot() {
-		return validator.getRoot();
+		return root;
 	}
 
     /**
@@ -582,7 +590,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
 			xsds = SchemaUtils.getXsdsRecursive(xsds);
 			if (check) {
-				checkRootValidations(xsds);
+				checkInputRootValidations(xsds);
 				checkOutputRootValidations(xsds);
 			}
 			try {
@@ -611,7 +619,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			// XmlValidator.getXsds(). See comment in Wsdl.getXsds() too.
 			Set<XSD> xsds_temp = SchemaUtils.getXsdsRecursive(xsds, false);
 			if (check) {
-				checkRootValidations(xsds_temp);
+				checkInputRootValidations(xsds_temp);
 				checkOutputRootValidations(xsds_temp);
 			}
 		}
@@ -620,17 +628,22 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return schemas;
 	}
 
-	private void checkRootValidations(Set<XSD> xsds) throws ConfigurationException {
-		if (validator.getRootValidations() != null) {
-			for (List<String> path: validator.getRootValidations()) {
+	public Set<List<String>> getRootValidations(IPipeLineSession session) {
+		return isOutputModeEnabled(session) ? outputRootValidations : inputRootValidations;
+	} 
+
+
+	private void checkInputRootValidations(Set<XSD> xsds) throws ConfigurationException {
+		if (getInputRootValidations() != null) {
+			for (List<String> path: getInputRootValidations()) {
 				checkRootValidation(path, xsds);
 			}
 		}
 	}
 
 	private void checkOutputRootValidations(Set<XSD> xsds) throws ConfigurationException {
-		if (validator.getOutputRootValidations() != null) {
-			for (List<String> path: validator.getOutputRootValidations()) {
+		if (getOutputRootValidations() != null) {
+			for (List<String> path: getOutputRootValidations()) {
 				checkRootValidation(path, xsds);
 			}
 		}
@@ -714,11 +727,45 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			if (StringUtils.isNotEmpty(attributes.get("schema"))
 					|| StringUtils.isNotEmpty(attributes.get("noNamespaceSchemaLocation"))) {
 				return true;
-			} else {
-				return false;
-			}
+			} 
+			return false;
 		}
 		return defaultValue;
+	}
+
+
+	@Deprecated
+	public void addRootValidation(List<String> path) {
+		addInputRootValidation(path);
+	}
+	
+	public void addInputRootValidation(List<String> path) {
+		if (inputRootValidations == null) {
+			inputRootValidations = new HashSet<List<String>>();
+		}
+		inputRootValidations.add(path);
+	}
+
+	public Set<List<String>> getInputRootValidations() {
+		return inputRootValidations;
+	}
+
+	public void addOutputRootValidation(List<String> path) {
+		if (outputRootValidations == null) {
+			outputRootValidations = new HashSet<List<String>>();
+		}
+		outputRootValidations.add(path);
+	}
+
+	public Set<List<String>> getOutputRootValidations() {
+		return outputRootValidations;
+	}
+
+	public void addInvalidRootNamespaces(List<String> path, List<String> invalidRootNamespaces) {
+		if (this.invalidRootNamespaces == null) {
+			this.invalidRootNamespaces = new HashMap<List<String>, List<String>>();
+		}
+		this.invalidRootNamespaces.put(path, invalidRootNamespaces);
 	}
 
 	public void setIgnoreCaching(boolean ignoreCaching) {
@@ -728,4 +775,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
     public void setLazyInit(boolean lazyInit) {
     	validator.setLazyInit(lazyInit);
     }
+
+	public Map<List<String>, List<String>> getInvalidRootNamespaces() {
+		return invalidRootNamespaces;
+	}
 }
