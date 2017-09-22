@@ -907,9 +907,9 @@ public class Misc {
 					if (file2.exists() && file2.isAbsolute()) {
 						wcDirectory = file2.getPath();
 					} else {
-						file2 = new File(file, "src/main/webapp");
+						file2 = new File(file, "src/main");
 						if (file2.exists() && file2.isAbsolute()) {
-							wcDirectory = file2.getPath();
+							wcDirectory = new File(file2, "webapp").getPath();
 						} else {
 							file = file.getParentFile();
 							if (file == null) {
