@@ -688,23 +688,17 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			PipeForward illegalResultForward = findForward(ILLEGAL_RESULT_FORWARD);
 			return new PipeRunResult(illegalResultForward, result);
 		}
-		IPipe inputValidator = getInputValidator();
-		IPipe outputValidator = getOutputValidator();
-		if (inputValidator!=null && inputValidator instanceof XmlValidator) {
-			outputValidator = ((XmlValidator)inputValidator).selectOutputValidator(outputValidator);
-		}
-		if (outputValidator!=null) {
+		boolean isMixedValidator = WsdlUtils.isMixedValidator(getInputValidator(), getOutputValidator());
+		if (getOutputValidator()!=null || isMixedValidator) {
 			log.debug(getLogPrefix(session)+"validating response");
 			PipeRunResult validationResult;
-			if (outputValidator instanceof DualModePipe) {
-				((DualModePipe) outputValidator).enableResponseMode(session);
-			} 
-			try {
+			if (getOutputValidator()!=null) {
 				validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, correlationID, result,session);
-			} finally {
-				if (outputValidator instanceof DualModePipe) {
-					((DualModePipe) outputValidator).disableResponseMode(session);
-				} 
+			} else {
+				XmlValidator mixedValidator = (XmlValidator) inputValidator;
+				mixedValidator.enableOutputMode(session);
+				validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, correlationID, result,session);
+				mixedValidator.disableOutputMode(session);
 			}
 			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
 				return validationResult;

@@ -107,7 +107,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         	}
         	evaluateResult(event, session, null, expectedFailureReason);
             try {
-    	        String validationResult=validator.validate(result, session, "check result", null, null, false);
+    	        String validationResult=validator.validate(result, session, "check result");
     	        evaluateResult(validationResult, session, null, expectedFailureReason);
     	        return result;
             } catch (Exception e) {

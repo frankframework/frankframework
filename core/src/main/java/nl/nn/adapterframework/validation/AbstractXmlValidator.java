@@ -74,13 +74,18 @@ public abstract class AbstractXmlValidator {
 	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
 	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
 
+	public static final String XML_VALIDATOR_MODE = "xmlValidatorMode";
+	public static final String XML_VALIDATOR_MODE_OUTPUT = "OUTPUT";
 
 	protected SchemasProvider schemasProvider;
     private boolean throwException = false;
     private boolean fullSchemaChecking = false;
 	private String reasonSessionKey = "failureReason";
 	private String xmlReasonSessionKey = "xmlFailureReason";
-
+	private String root;
+	protected Set<List<String>> rootValidations;
+	protected Set<List<String>> outputRootValidations;
+	protected Map<List<String>, List<String>> invalidRootNamespaces;
 	private boolean validateFile=false;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	protected boolean warn = AppConstants.getInstance().getBoolean("xmlValidator.warn", true);
@@ -180,7 +185,7 @@ public abstract class AbstractXmlValidator {
 		return event;
 	}
 
-	public ValidationContext createValidationContext(IPipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
+	public ValidationContext createValidationContext(IPipeLineSession session) throws ConfigurationException, PipeRunException {
 		
 		// clear session variables
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
@@ -218,12 +223,12 @@ public abstract class AbstractXmlValidator {
 	 * @throws PipeRunException
 	 * @throws ConfigurationException
 	 */
-//	public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException {
-//		return validate(input, session, logPrefix, rootValidations, invalidRootNamespaces, false);
-//	}
+	public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException {
+		return validate(input, session, logPrefix, false);
+	}
 	
-	public String validate(Object input, IPipeLineSession session, String logPrefix, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, boolean resolveExternalEntities) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
+	public String validate(Object input, IPipeLineSession session, String logPrefix, boolean resolveExternalEntities) throws XmlValidatorException, PipeRunException, ConfigurationException {
+		ValidationContext context = createValidationContext(session);
 		XMLReader parser = getValidatingParser(session, context, resolveExternalEntities);
 		return validate(input, session, logPrefix, parser, null, context);
 	}
@@ -265,6 +270,19 @@ public abstract class AbstractXmlValidator {
 			return handleFailures(context.getErrorHandler(), session, XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
 		}
 		return XML_VALIDATOR_VALID_MONITOR_EVENT;
+	}
+
+	public void enableOutputMode(IPipeLineSession session) {
+		session.put(XML_VALIDATOR_MODE, XML_VALIDATOR_MODE_OUTPUT);
+	}
+
+	public void disableOutputMode(IPipeLineSession session) {
+		session.remove(XML_VALIDATOR_MODE);
+	}
+
+	public boolean isOutputModeEnabled(IPipeLineSession session) {
+		String xmlValidatorMode = (String) session.get(XML_VALIDATOR_MODE);
+    	return XML_VALIDATOR_MODE_OUTPUT.equals(xmlValidatorMode);
 	}
 
     /**
@@ -330,6 +348,14 @@ public abstract class AbstractXmlValidator {
 		return xmlReasonSessionKey;
 	}
 
+	public void setRoot(String root) {
+		this.root = root;
+		addRootValidation(Arrays.asList(root));
+	}
+	public String getRoot() {
+		return root;
+	}
+
 	public void setValidateFile(boolean b) {
 		validateFile = b;
 	}
@@ -364,6 +390,35 @@ public abstract class AbstractXmlValidator {
         }
         return is;
     }
+
+	public void addRootValidation(List<String> path) {
+		if (rootValidations == null) {
+			rootValidations = new HashSet<List<String>>();
+		}
+		rootValidations.add(path);
+	}
+
+	public Set<List<String>> getRootValidations() {
+		return rootValidations;
+	}
+
+	public void addOutputRootValidation(List<String> path) {
+		if (outputRootValidations == null) {
+			outputRootValidations = new HashSet<List<String>>();
+		}
+		outputRootValidations.add(path);
+	}
+
+	public Set<List<String>> getOutputRootValidations() {
+		return outputRootValidations;
+	}
+
+	public void addInvalidRootNamespaces(List<String> path, List<String> invalidRootNamespaces) {
+		if (this.invalidRootNamespaces == null) {
+			this.invalidRootNamespaces = new HashMap<List<String>, List<String>>();
+		}
+		this.invalidRootNamespaces.put(path, invalidRootNamespaces);
+	}
 
 	public void setIgnoreUnknownNamespaces(boolean b) {
 		this.ignoreUnknownNamespaces = b;

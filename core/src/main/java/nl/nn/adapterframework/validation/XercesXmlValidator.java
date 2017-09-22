@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -31,7 +30,6 @@ import javax.xml.validation.ValidatorHandler;
 import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
-//import org.apache.xerces.jaxp.validation.XMLSchemaFactory;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.XMLGrammarPreparser;
 import org.apache.xerces.util.ShadowedSymbolTable;
@@ -240,15 +238,24 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return preparseResult;
 	}
 
-	@Override
-	public XercesValidationContext createValidationContext(IPipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
+	public XercesValidationContext createValidationContext(IPipeLineSession session) throws ConfigurationException, PipeRunException {
 		// clear session variables
-		super.createValidationContext(session, rootValidations, invalidRootNamespaces);
+		super.createValidationContext(session);
 
 		PreparseResult preparseResult = getPreparseResult(session);
 		XercesValidationContext result = new XercesValidationContext(preparseResult);
+		
 
-		result.init(schemasProvider, preparseResult.getSchemasId(), preparseResult.getNamespaceSet(), rootValidations, invalidRootNamespaces, ignoreUnknownNamespaces);
+		String schemasId = preparseResult.getSchemasId();
+		String mainFailureMessage = "Validation using " + schemasProvider.getClass().getSimpleName() + " with '" + schemasId + "' failed";
+		XmlValidatorContentHandler xmlValidatorContentHandler = 
+				new XmlValidatorContentHandler(preparseResult.getNamespaceSet(),
+				(isOutputModeEnabled(session) ? outputRootValidations : rootValidations),
+				invalidRootNamespaces, getIgnoreUnknownNamespaces());
+		XmlValidatorErrorHandler xmlValidatorErrorHandler = new XmlValidatorErrorHandler(xmlValidatorContentHandler, mainFailureMessage);
+		xmlValidatorContentHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
+		result.setContentHandler(xmlValidatorContentHandler);
+		result.setErrorHandler(xmlValidatorErrorHandler);
 		return result;
 	}
 	

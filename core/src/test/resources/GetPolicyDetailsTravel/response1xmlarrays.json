@@ -1,4 +1,4 @@
-{
+{"GetPolicyDetailsTravel_Response": {
   "Result": {"Status": "OK"},
   "children": [{"childDateOfBirth": "2016-01-05"}],
   "clauses": {},
@@ -80,4 +80,4 @@
   "productPlanRef": "P100",
   "productTermPremiumAndPaymentFrequency": "€ 19,82 / maand",
   "sequenceNumber": "1"
-}
+}}

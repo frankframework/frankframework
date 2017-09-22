@@ -55,33 +55,27 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 
 	private String name;
 	
-	@Override
 	public void configure() throws ConfigurationException {
 		configure(getLogPrefix());
 	}
 	
-	@Override
 	public void close() throws SenderException {
 	}
-	@Override
 	public void open() throws SenderException {
 	}
 
-	@Override
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
 		return sendMessage(correlationID,message,null);
 	}
-	@Override
 	public void addParameter(Parameter p) {
 	}
 
 
-	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		IPipeLineSession session=prc.getSession();
 		String fullReasons="tja";
 		try {
-			String resultEvent = validate(message, session, getLogPrefix(),null,null,false);
+			String resultEvent = validate(message, session, getLogPrefix());
 			
 			if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
 				return message;
@@ -101,7 +95,6 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 		}
 	}
 
-	@Override
 	public boolean isSynchronous() {
 		return true;
 	}
@@ -110,11 +103,9 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 	
-	@Override
 	public String getName() {
 		return name;
 	}
-	@Override
 	public void setName(String name) {
 		this.name=name;
 	}

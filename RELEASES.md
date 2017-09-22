@@ -12,7 +12,7 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.0-B3...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
-- support for attributes in json to xml and xml to json
+
 
 
 7.0-B3

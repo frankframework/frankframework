@@ -35,12 +35,9 @@ public class JsonContentContainer {
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
-	private boolean xmlArrayContainer;
+	private boolean xmlArrayElement;
 	private boolean repeatedElement;
 	private boolean skipArrayElementContainers;
-	private boolean skipRootElement;
-	private boolean nil=false;
-	private boolean quoted=true;
 
 	public StringBuffer stringContent;
 	private Map<String,Object> contentMap;
@@ -51,9 +48,9 @@ public class JsonContentContainer {
 	
 	private final boolean DEBUG=false; 	
 	
-	public JsonContentContainer(String name, boolean xmlArrayContainer, boolean repeatedElement, boolean skipArrayElementContainers) {
+	public JsonContentContainer(String name, boolean xmlArrayElement, boolean repeatedElement, boolean skipArrayElementContainers) {
 		this.name=name;
-		this.xmlArrayContainer=xmlArrayContainer;
+		this.xmlArrayElement=xmlArrayElement;
 		this.repeatedElement=repeatedElement;
 		this.skipArrayElementContainers=skipArrayElementContainers;
 	}
@@ -62,21 +59,19 @@ public class JsonContentContainer {
 	public String getName() {
 		return name;
 	}
-	public boolean isXmlArrayContainer() {
-		return xmlArrayContainer;
+	public boolean isXmlArrayElement() {
+		return xmlArrayElement;
 	}
 	public boolean isRepeatedElement() {
 		return repeatedElement;
 	}
 
 	public void setContent(String content) {
-		if (DEBUG) log.debug("setContent name ["+getName()+"] content ["+content+"]");
-		if (content!=null) {
-			content=content.trim();
-			if (content.isEmpty()) {
-				if (DEBUG) log.debug("setContent ignoring empty content for name ["+getName()+"]");
-				return;
-			}
+		if (DEBUG && log.isDebugEnabled()) log.debug("setContent name ["+getName()+"] content ["+content+"]");
+		content=content.trim();
+		if (content.isEmpty()) {
+			if (DEBUG && log.isDebugEnabled()) log.debug("setContent ignoring empty content for name ["+getName()+"]");
+			return;
 		}
 		if (contentMap!=null) {
 			throw new IllegalStateException("already created map for element ["+name+"]");
@@ -84,34 +79,21 @@ public class JsonContentContainer {
 		if (array!=null) {
 			throw new IllegalStateException("already created array for element ["+name+"]");
 		}
-		if (nil) {
-			throw new IllegalStateException("already set nil for element ["+name+"]");
-		}
-		if (content==null) {
-			if (stringContent!=null) {
-				throw new IllegalStateException("already set non-null content for element ["+name+"]");
-			}
-			nil=true;
-			stringContent=new StringBuffer("null");
-			quoted=false;
+		if (stringContent==null) {
+			stringContent=new StringBuffer(content);
 		} else {
-			if (stringContent==null) {
-				stringContent=new StringBuffer(content);
-			} else {
-				stringContent.append(content);
-			}
+			stringContent.append(content);
 		}
 	}
 	public void addContent(JsonContentContainer content) {
 		String childName=content.getName();
-		if (DEBUG) log.debug("addContent for parent ["+getName()+"] name ["+childName+"] array container ["+isXmlArrayContainer()+"] content.isRepeatedElement ["+content.isRepeatedElement()+"] skipArrayElementContainers ["+skipArrayElementContainers+"] content ["+content+"]");
+		if (DEBUG && log.isDebugEnabled()) log.debug("addContent for parent ["+getName()+"] name ["+childName+"] content ["+content+"]");
 		if (stringContent!=null) {
 			throw new IllegalStateException("content already set as String for element ["+getName()+"]");
 		}
-		if (isXmlArrayContainer() && content.isRepeatedElement() && skipArrayElementContainers) {
+		if (content.isXmlArrayElement() && skipArrayElementContainers) {
 			if (array==null) {
 				array=new LinkedList<Object>();
-				setQuoted(content.isQuoted());
 			} 
 			array.add(content.getContent());
 			return;
@@ -135,22 +117,14 @@ public class JsonContentContainer {
 			((List)current).add(content.getContent());
 		} else {
 			if (current!=null) {
-				throw new IllegalStateException("element ["+childName+"] content already set to ["+current+"]");
+				throw new IllegalStateException("content already set for element ["+childName+"]");
 			}
 			contentMap.put(childName, content.getContent());
 		}
 	}
 
 	public Object getContent() {
-		if (nil) {
-			return null;
-		}
 		if (stringContent!=null) {
-			if (quoted) {
-				stringContent.append('"');
-				stringContent.insert(0,'"');
-				quoted=false;
-			}
 			return stringContent;
 		}
 		if (array!=null) {
@@ -165,7 +139,7 @@ public class JsonContentContainer {
 	public JSONObject toJson() {
 		Object content=getContent();
 		if (content==null) {
-			return null;
+			return new JSONObject();
 		}
 		if (content instanceof JSONObject) {
 			return (JSONObject)content;
@@ -183,10 +157,6 @@ public class JsonContentContainer {
 		if (content==null) {
 			return null;
 		}
-		if (skipRootElement && content instanceof Map) {
-			Map map=(Map)content;
-			content=map.values().toArray()[0];
-		}
 //		if (content instanceof JSONObject) {
 //			try {
 //				String result=((JSONObject)content).toString(2);
@@ -197,18 +167,15 @@ public class JsonContentContainer {
 //			}
 //		}
 		StringBuffer sb = new StringBuffer();
-		toString(sb,skipRootElement?content:this,indent?0:-1);
+		toString(sb,this,indent?0:-1);
 		return sb.toString();
 //		return content.toString();
 	}
 	
-	protected void toString(StringBuffer sb, Object item, int indentLevel) {
-		if (item==null) {
-			sb.append("null");
-		} else
+	public void toString(StringBuffer sb, Object item, int indentLevel) {
 		if (item instanceof JsonContentContainer) {
 				if (name!=null) {
-					sb.append(name).append(": ");
+					sb.append('"').append(name).append("\": ");
 				}
 				if (stringContent!=null) {
 					toString(sb,contentMap, indentLevel);
@@ -220,9 +187,7 @@ public class JsonContentContainer {
 					toString(sb,array, indentLevel);
 				}
 		} else if (item instanceof StringBuffer) {
-//			if (quoted) sb.append('"');
-			sb.append(item);
-//			if (quoted) sb.append('"');
+			sb.append('"').append(item).append("\"");
 		} else if (item instanceof Map) {
 			sb.append("{");
 			if (indentLevel>=0) indentLevel++;
@@ -265,21 +230,5 @@ public class JsonContentContainer {
 		}
 	}
 
-	public boolean isSkipRootElement() {
-		return skipRootElement;
-	}
-	public void setSkipRootElement(boolean skipRootElement) {
-		this.skipRootElement = skipRootElement;
-	}
-
-
-	public boolean isQuoted() {
-		return quoted;
-	}
-
-
-	public void setQuoted(boolean quoted) {
-		this.quoted = quoted;
-	}
 	
 }
