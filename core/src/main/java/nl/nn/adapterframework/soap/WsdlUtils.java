@@ -21,19 +21,17 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import javanet.staxutils.IndentingXMLStreamWriter;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.xerces.util.XMLChar;
+
+import javanet.staxutils.IndentingXMLStreamWriter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.xerces.util.XMLChar;
 
 /**
  * @author Michiel Meeuwissen
