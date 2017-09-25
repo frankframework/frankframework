@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.validation;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.xerces.xs.XSModel;
@@ -28,6 +29,13 @@ public abstract class ValidationContext {
 	public abstract String getSchemasId();
 	public abstract Set<String> getNamespaceSet();
 	public abstract List<XSModel> getXsModels();
+	
+	public void init(SchemasProvider schemasProvider, String schemasId, Set<String> validNamespaces, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, Boolean ignoreUnknownNamespaces) {
+		String mainFailureMessage = "Validation using " + schemasProvider.getClass().getSimpleName() + " with '" + schemasId + "' failed";
+		contentHandler = new XmlValidatorContentHandler(validNamespaces,rootValidations, invalidRootNamespaces, ignoreUnknownNamespaces);
+		errorHandler = new XmlValidatorErrorHandler(contentHandler, mainFailureMessage);
+		contentHandler.setXmlValidatorErrorHandler(errorHandler);
+	}
 	
 	public XmlValidatorContentHandler getContentHandler() {
 		return contentHandler;

@@ -54,7 +54,7 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
         instance.configure("init");
 
         PipeLineSessionBase session = new PipeLineSessionBase();
-        ValidationContext context = instance.createValidationContext(session);
+        ValidationContext context = instance.createValidationContext(session, null, null);
         XMLReader reader = instance.getValidatingParser(session, context, false);
         StringReader sr = new StringReader(xmlIn);
     	InputSource is = new InputSource(sr);
