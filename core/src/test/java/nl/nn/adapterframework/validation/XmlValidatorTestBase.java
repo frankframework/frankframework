@@ -64,7 +64,7 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 				SCHEMA_LOCATION_GPBDB_REQUEST+" "+
 				SCHEMA_LOCATION_GPBDB_RESPONSE+" "+
 				SCHEMA_LOCATION_GPBDB_GPBDB,
-				INPUT_FILE_GPBDB_OK,null);
+				INPUT_FILE_GPBDB_OK);
     }
 
     @Test(expected = XmlValidatorException.class)
@@ -87,7 +87,7 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 				SCHEMA_LOCATION_GPBDB_REQUEST+" "+
         		SCHEMA_LOCATION_GPBDB_AFDTYPES+" "+
 				SCHEMA_LOCATION_GPBDB_RESPONSE,
-				INPUT_FILE_GPBDB_OK,null);
+				INPUT_FILE_GPBDB_OK);
     }
 
     @Test
@@ -122,13 +122,14 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 
     @Test
     public void step5ValidationErrorUnknownTag() throws Exception {
+    	String expectedFailureReasons[]={MSG_CANNOT_FIND_DECLARATION,MSG_INVALID_CONTENT};
         validate(ROOT_NAMESPACE_GPBDB,
         		SCHEMA_LOCATION_SOAP_ENVELOPE+" "+
            		SCHEMA_LOCATION_GPBDB_MESSAGE+" "+
 				SCHEMA_LOCATION_GPBDB_GPBDB+" "+
 				SCHEMA_LOCATION_GPBDB_REQUEST+" "+
 				SCHEMA_LOCATION_GPBDB_RESPONSE, 
-				INPUT_FILE_GPBDB_ERR2,MSG_INVALID_CONTENT);
+				INPUT_FILE_GPBDB_ERR2,expectedFailureReasons);
     }
 
     @Test

@@ -27,7 +27,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	
 	@Override
 	public String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
-			boolean ignoreUnknownNamespaces, String inputFile, String expectedFailureReason)
+			boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons)
 			throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException,
 			PipeRunException, IOException {
 		// TODO Auto-generated method stub

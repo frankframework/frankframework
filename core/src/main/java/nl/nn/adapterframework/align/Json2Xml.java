@@ -38,6 +38,7 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
+import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -253,7 +254,8 @@ public class Json2Xml extends Tree2Xml<Object> {
 
 
 	@Override
-	protected void processChildElement(Object node, String name, String childElementName, String childElementNameSpace, boolean mandatory, Set<String> unProcessedChildren, Set<String> processedChildren) throws SAXException {
+	protected void processChildElement(Object node, String name, XSElementDeclaration childElementDeclaration, boolean mandatory, Set<String> unProcessedChildren, Set<String> processedChildren) throws SAXException {
+		String childElementName=childElementDeclaration.getName();
 		if (DEBUG) log.debug("processChildElement() nodeName ["+name+"] childElementName ["+childElementName+"], node ["+node+"]");
 		if (isParentOfSingleMultipleOccurringChildElement() && (insertElementContainerElements || !strictSyntax)) {
 			if  (node instanceof JSONArray) {
@@ -263,7 +265,7 @@ public class Json2Xml extends Tree2Xml<Object> {
 				try {
 					JSONArray ja=(JSONArray)node;
 					for (int i=0;i<ja.length();i++) {
-						handleNode(ja.get(i), childElementName, childElementNameSpace);
+						handleNode(ja.get(i), childElementDeclaration);
 					}
 					// mark that we have processed the arrayElement containers
 					processedChildren.add(childElementName);
@@ -289,13 +291,13 @@ public class Json2Xml extends Tree2Xml<Object> {
 					} else {
 						helper.add(childObject);
 					}
-					super.processChildElement(helper, name, childElementName, childElementNameSpace, mandatory, unProcessedChildren, processedChildren);
+					super.processChildElement(helper, name, childElementDeclaration, mandatory, unProcessedChildren, processedChildren);
 				} catch (JSONException e) {
 					throw new SAXException(e);
 				}
 			}
 		} else {
-			super.processChildElement(node, name, childElementName, childElementNameSpace, mandatory, unProcessedChildren, processedChildren);
+			super.processChildElement(node, name, childElementDeclaration, mandatory, unProcessedChildren, processedChildren);
 		}
 	}
 	
