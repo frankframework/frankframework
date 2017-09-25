@@ -13,6 +13,7 @@ Upcoming
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 - Add support for integer and boolean parameters when using QuerySenders
+- Fix broken "Show configuration warnings only at relevant configuration"
 
 
 

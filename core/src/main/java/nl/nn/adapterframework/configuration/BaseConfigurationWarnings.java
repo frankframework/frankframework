@@ -28,19 +28,7 @@ import org.apache.log4j.Logger;
 public class BaseConfigurationWarnings extends LinkedList {
 	protected Vector defaultValueExceptions = new Vector();
 
-	public boolean add(Logger log, String msg) {
-		return add(log, msg, null, false);
-	}
-
-	public boolean add(Logger log, String msg, Throwable t) {
-		return add(log, msg, t, false);
-	}
-
-	public boolean add(Logger log, String msg, boolean onlyOnce) {
-		return add(log, msg, null, onlyOnce);
-	}
-
-	public boolean add(Logger log, String msg, Throwable t, boolean onlyOnce) {
+	protected boolean add(Logger log, String msg, Throwable t, boolean onlyOnce) {
 		if (t == null) {
 			log.warn(msg);
 		} else {

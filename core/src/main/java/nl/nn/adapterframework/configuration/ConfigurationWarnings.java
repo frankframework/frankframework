@@ -33,11 +33,23 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 		return self;
 	}
 
+	public boolean add(Logger log, String msg) {
+		return add(log, msg, null, false);
+	}
+	
+	public boolean add(Logger log, String msg, Throwable t) {
+		return add(log, msg, t, false);
+	}
+	
 	public boolean add(Logger log, String msg, boolean onlyOnce) {
+		return add(log, msg, null, onlyOnce);
+	}
+
+	public boolean add(Logger log, String msg, Throwable t, boolean onlyOnce) {
 		if (activeConfiguration!=null) {
-			return activeConfiguration.getConfigurationWarnings().add(log, msg, onlyOnce);
+			return activeConfiguration.getConfigurationWarnings().add(log, msg, t, onlyOnce);
 		} else {
-			return super.add(log, msg, onlyOnce);
+			return super.add(log, msg, t, onlyOnce);
 		}
 	}
 
