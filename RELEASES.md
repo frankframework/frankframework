@@ -12,6 +12,7 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.0-B3...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
+- Add support for integer and boolean parameters when using QuerySenders
 
 
 
