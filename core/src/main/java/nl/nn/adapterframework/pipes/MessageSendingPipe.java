@@ -688,7 +688,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			PipeForward illegalResultForward = findForward(ILLEGAL_RESULT_FORWARD);
 			return new PipeRunResult(illegalResultForward, result);
 		}
-		boolean isMixedValidator = WsdlUtils.isMixedValidator(getInputValidator(), getOutputValidator());
+		boolean isMixedValidator = XmlValidator.isMixedValidator(getInputValidator(), getOutputValidator());
 		if (getOutputValidator()!=null || isMixedValidator) {
 			log.debug(getLogPrefix(session)+"validating response");
 			PipeRunResult validationResult;

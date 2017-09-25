@@ -118,20 +118,4 @@ public abstract class WsdlUtils {
         return uri == null ? null : uri.replaceAll(" ", "_");
     }
 
-	public static boolean isMixedValidator(Object inputValidator) {
-		return isMixedValidator(inputValidator, null);
-	}
-
-	public static boolean isMixedValidator(Object inputValidator,
-			Object outputValidator) {
-		if (outputValidator == null && inputValidator != null) {
-			if (inputValidator instanceof SoapValidator) {
-				SoapValidator soapValidator = (SoapValidator) inputValidator;
-				if (StringUtils.isNotEmpty(soapValidator.getOutputSoapBody())) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
 }

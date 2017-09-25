@@ -36,7 +36,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.XmlValidator;
-import nl.nn.adapterframework.soap.WsdlUtils;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -219,7 +218,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 					if (!outputWrapError) {
 						IPipe outputValidator = pipeLine.getOutputValidator();
-						boolean isMixedValidator = WsdlUtils.isMixedValidator(inputValidator, outputValidator); 
+						boolean isMixedValidator = XmlValidator.isMixedValidator(inputValidator, outputValidator); 
 						if ((outputValidator !=null || isMixedValidator) && !outputValidated) {
 							outputValidated=true;
 							log.debug("validating PipeLineResult");

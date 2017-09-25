@@ -77,9 +77,11 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * <tr><td>{@link #setLazyInit(boolean) lazyInit}</td><td>when set, the value in AppConstants is overwritten (for this validator only)</td><td><code>application default (false)</code></td></tr>
 * <tr><td>{@link #setCompactJsonArrays(boolean) compactJsonArrays}</td><td>when true assume arrays in json do not have the element containers like in XML</td><td>true</td></tr>
 * <tr><td>{@link #setStrictJsonArraySyntax(boolean) strictJsonArraySyntax}</td><td>when true check that incoming json adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from json to xml</td><td>false</td></tr>
-* <tr><td>{@link #setOutputFormat(String) outputFormat}</td><td>format of the result. Either 'xml' or 'json'</td><td>xml</td></tr>
+* <tr><td>{@link #setJsonWithRootElements(boolean) jsonWithRootElements}</td><td>when true, assume that JSON contains/must contain a root element</td><td>false</td></tr>
+* <tr><td>{@link #setTargetNamespace(String) targetNamespace}</td><td>Ony for JSON input: namespace of the resulting XML</td><td>&nbsp;</td></tr>
+* <tr><td>{@link #setOutputFormat(String) outputFormat}</td><td>default format of the result. Either 'xml' or 'json'</td><td>xml</td></tr>
+* <tr><td>{@link #setAutoFormat(boolean) autoFormat}</td><td>when true, the format on 'output' is set to the same as on 'input'</td><td>true</td></tr>
 * <tr><td>{@link #setOutputFormatSessionKey(String) outputFormatSessionKey}</td><td>session key to retrieve outputFormat from.</td><td>outputFormat</td></tr>
-* <tr><td>{@link #setStoreInputFormatSessionKey(String) storeInputFormatSessionKey}</td><td>session key to store the input format that was detected.</td><td>inputFormat</td></tr>
 * </table>
 * <p><b>Exits:</b>
 * <table border="1">
@@ -92,20 +94,22 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * </table>
 * <br>
 * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
-* @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl) / Gerit van Brakel
+* @author Gerrit van Brakel
 */
 public class Json2XmlValidator extends XmlValidator {
 
+	public static final String JSON_XML_VALIDATOR_VALID_MONITOR_EVENT = "valid JSON";
+	public static final String INPUT_FORMAT_PREFIX_SESSION_KEY = "Json2XmlValidator.inputformat ";
+	
 	private boolean compactJsonArrays=true;
 	private boolean strictJsonArraySyntax=false;
+	private boolean jsonWithRootElements=false;
 	private String targetNamespace;
 	private String outputFormat="xml";
+	private boolean autoFormat=true;
 	protected String outputFormatSessionKey="outputFormat";
-	protected String storeInputFormatSessionKey="inputFormat";
 
 
-	public static final String JSON_XML_VALIDATOR_VALID_MONITOR_EVENT = "valid JSON";
-	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -114,14 +118,28 @@ public class Json2XmlValidator extends XmlValidator {
 		}
 	}
 	
+	public String getOutputFormat(IPipeLineSession session) {
+		String format=null;
+		if (StringUtils.isNotEmpty(getOutputFormatSessionKey())) {
+			format=(String)session.get(getOutputFormatSessionKey());
+		}
+		if (StringUtils.isEmpty(format) && isAutoFormat() && isOutputModeEnabled(session)) {
+			format=(String)session.get(INPUT_FORMAT_PREFIX_SESSION_KEY+getName());
+		}	
+		if (StringUtils.isEmpty(format)) {
+			format=getOutputFormat();
+		}	
+		return format;
+	}
+	
 	protected void storeInputFormat(String format, IPipeLineSession session) {
-		if (StringUtils.isNotEmpty(getStoreInputFormatSessionKey())) {
-			session.put(getStoreInputFormatSessionKey(), format);
+		if (!isOutputModeEnabled(session)) {
+			session.put(INPUT_FORMAT_PREFIX_SESSION_KEY+getName(), format);
 		}
 	}
 	
     /**
-     * Validate the XML string
+     * Validate the XML or JSON string. The format is automatically detected.
      * @param input a String
      * @param session a {@link nl.nn.adapterframework.core.IPipeLineSession Pipelinesession}
 
@@ -163,10 +181,10 @@ public class Json2XmlValidator extends XmlValidator {
 	protected PipeRunResult alignXml2Json(String messageToValidate, IPipeLineSession session)
 			throws XmlValidatorException, PipeRunException, ConfigurationException {
 
-		ValidationContext context = validator.createValidationContext(session);
+		ValidationContext context = validator.createValidationContext(session, getRootValidations(session), getInvalidRootNamespaces());
 		XMLReader parser = validator.getValidatingParser(session,context);
 		XmlAligner aligner = new XmlAligner((PSVIProvider)parser);
-		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays());	
+		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());	
 		parser.setContentHandler(aligner);
 		aligner.setContentHandler(xml2json);
 		aligner.setErrorHandler(context.getErrorHandler());
@@ -178,12 +196,16 @@ public class Json2XmlValidator extends XmlValidator {
 		return result;
 	}
 	
+	protected String getJsonRootElement(IPipeLineSession session) {
+		return getRoot();
+	}
+	
 	protected PipeRunResult alignJson(String messageToValidate, IPipeLineSession session) throws PipeRunException, XmlValidatorException {
 
 		ValidationContext context;
 		ValidatorHandler validatorHandler;
 		try {
-			context = validator.createValidationContext(session);
+			context = validator.createValidationContext(session, getRootValidations(session), getInvalidRootNamespaces());
 			validatorHandler = validator.getValidatorHandler(session, context);
 		} catch (ConfigurationException e) {
 			throw new PipeRunException(this,"Cannot create ValidationContext",e);
@@ -191,7 +213,7 @@ public class Json2XmlValidator extends XmlValidator {
 		String resultEvent;
 		String out=null;
 		try {
-			Json2Xml aligner = new Json2Xml(validatorHandler, context.getXsModels(), isCompactJsonArrays(), isStrictJsonArraySyntax());
+			Json2Xml aligner = new Json2Xml(validatorHandler, context.getXsModels(), isCompactJsonArrays(), getJsonRootElement(session), isStrictJsonArraySyntax());
 			if (StringUtils.isNotEmpty(getTargetNamespace())) {
 				aligner.setTargetNamespace(getTargetNamespace());
 			}
@@ -200,7 +222,7 @@ public class Json2XmlValidator extends XmlValidator {
 			JSONObject json = new JSONObject(jsonTokener);
 			
 			if (getOutputFormat(session).equalsIgnoreCase("json")) {
-				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays());
+				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 				aligner.setContentHandler(xml2json);
 				aligner.startParse(json);
 				out=xml2json.toString();
@@ -227,16 +249,6 @@ public class Json2XmlValidator extends XmlValidator {
 		return writer.toString();
 	}
 
-	public String getOutputFormat(IPipeLineSession session) {
-		String format=null;
-		if (StringUtils.isNotEmpty(getOutputFormatSessionKey())) {
-			format=(String)session.get(getOutputFormatSessionKey());
-		}
-		if (StringUtils.isEmpty(format)) {
-			format=getOutputFormat();
-		}	
-		return format;
-	}
 	
 	
 	public String getTargetNamespace() {
@@ -260,13 +272,6 @@ public class Json2XmlValidator extends XmlValidator {
 		this.outputFormatSessionKey = outputFormatSessionKey;
 	}
 	
-	public String getStoreInputFormatSessionKey() {
-		return storeInputFormatSessionKey;
-	}
-	public void setStoreInputFormatSessionKey(String storeInputFormatSessionKey) {
-		this.storeInputFormatSessionKey = storeInputFormatSessionKey;
-	}
-
 	public boolean isCompactJsonArrays() {
 		return compactJsonArrays;
 	}
@@ -279,6 +284,21 @@ public class Json2XmlValidator extends XmlValidator {
 	}
 	public void setStrictJsonArraySyntax(boolean strictJsonArraySyntax) {
 		this.strictJsonArraySyntax = strictJsonArraySyntax;
+	}
+
+	public boolean isJsonWithRootElements() {
+		return jsonWithRootElements;
+	}
+	public void setJsonWithRootElements(boolean jsonWithRootElements) {
+		this.jsonWithRootElements = jsonWithRootElements;
+	}
+
+	public boolean isAutoFormat() {
+		return autoFormat;
+	}
+
+	public void setAutoFormat(boolean autoFormat) {
+		this.autoFormat = autoFormat;
 	}
 
 }

@@ -156,7 +156,7 @@ public class Wsdl {
                 throw new IllegalStateException(outputValidator.getConfigurationException().toString());
             }
         }
-		isMixedValidator = WsdlUtils.isMixedValidator(inputValidator, outputValidator);
+		isMixedValidator = XmlValidator.isMixedValidator(inputValidator, outputValidator);
         String fileName = getName();
         AppConstants appConstants = AppConstants.getInstance();
         String tns = appConstants.getResolvedProperty("wsdl." + getName() + ".targetNamespace");
