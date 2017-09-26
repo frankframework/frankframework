@@ -78,12 +78,12 @@
 		<property name="maxPoolSize" value="100" />
 		<property name="allowLocalTransactions" value="true"/>
 		<property name="resource">
-			<ref bean="activeMQConnectionFactory"/>
+			<ref bean="defaultConnectionFactory"/>
 		</property>
 	</bean>
 
 	<bean
-		name="activeMQConnectionFactory"
+		name="defaultConnectionFactory"
 		class="org.apache.activemq.ActiveMQXAConnectionFactory"
 		scope="singleton"
 		>
