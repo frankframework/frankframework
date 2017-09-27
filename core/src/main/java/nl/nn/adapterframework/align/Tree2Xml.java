@@ -65,8 +65,6 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 	public final String XSI_PREFIX_MAPPING="xsi";
 
 	public static final String MSG_EXPECTED_ELEMENT="expected element";
-	public static final String MSG_INVALID_CONTENT="Invalid content";
-	public static final String MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION="Cannot find the declaration of element";
 
 	private String rootElement;
 	private String targetNamespace;
@@ -74,6 +72,8 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 	private boolean mustProcessAllElements=true;
 	protected ValidatorHandler validatorHandler;
 	protected List<XSModel> schemaInformation; 
+	
+	protected XSTypeDefinition upcomingTypeDefinition=null;
 	
 	private String prefixPrefix="ns";
 	private int prefixPrefixCounter=1;
@@ -173,29 +173,27 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 	 */
 	public void handleNode(N node, String name, String nodeNamespace) throws SAXException {
 		if (DEBUG) log.debug("handleNode() name ["+name+"] namespace ["+nodeNamespace+"] isNil ["+isNil(node)+"]");
-		if (StringUtils.isEmpty(nodeNamespace)) {
+		if (nodeNamespace==null) {
 			nodeNamespace=getNodeNamespaceURI(node);
 		}
-		XSElementDeclaration elementDeclaration=findElementDeclarationForName(nodeNamespace,name);
-		if (elementDeclaration==null) {
-			throw new SAXException(MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION+" for ["+name+"] in namespace["+name+"]");
-//			if (DEBUG) log.debug("node ["+name+"] did not find elementDeclaration, assigning targetNamespace ["+getTargetNamespace()+"]");
-//			nodeNamespace=getTargetNamespace();
+		if (nodeNamespace==null) {
+			nodeNamespace=findNamespaceForName(name);
 		}
-		handleNode(node,elementDeclaration);
-	}
-	
-	public void handleNode(N node, XSElementDeclaration elementDeclaration) throws SAXException {
-		String name = elementDeclaration.getName();
-		String elementNamespace=elementDeclaration.getNamespace();
-		String qname=getQName(elementNamespace, name);
-		if (DEBUG) log.debug("handleNode() name ["+name+"] elementNamespace ["+elementNamespace+"]");
+		if (nodeNamespace==null) {
+			if (DEBUG) log.debug("node ["+name+"] did not find namespace, assigning targetNamespace ["+getTargetNamespace()+"]");
+			nodeNamespace=getTargetNamespace();
+		}
+		
+		String nodeLocalname=name;
+		String elementNamespace=StringUtils.isNotEmpty(nodeNamespace)?nodeNamespace:StringUtils.isNotEmpty(targetNamespace)?targetNamespace:"";
+		String qname=getQName(elementNamespace, nodeLocalname);
+
 		newLine();
+		if (DEBUG) if (!elementNamespace.equals(nodeNamespace)) log.debug("switched namespace to ["+elementNamespace+"]");
 		AttributesImpl attributes=new AttributesImpl();
 		Map<String,String> nodeAttributes = getAttributes(node);
 		if (DEBUG) log.debug("node ["+name+"] search for attributeDeclaration");
-		XSTypeDefinition typeDefinition=elementDeclaration.getTypeDefinition();
-		XSObjectList attributeUses=getAttributeUses(typeDefinition);
+		XSObjectList attributeUses=getAttributeUses(upcomingTypeDefinition);
 		if (attributeUses==null || attributeUses.getLength()==0) {
 			if (nodeAttributes!=null && nodeAttributes.size()>0) {
 				log.warn("node ["+name+"] found ["+nodeAttributes.size()+"] attributes, but no declared AttributeUses");
@@ -245,7 +243,10 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 				for (int i=0;i<childParticles.size();i++) {
 					XSParticle childParticle=childParticles.get(i);
 					XSElementDeclaration childElementDeclaration = (XSElementDeclaration)childParticle.getTerm();
-					processChildElement(node, name, childElementDeclaration, childParticle.getMinOccurs()>0, unProcessedChildren, processedChildren);
+					String childElementName=childElementDeclaration.getName();
+					String childElementNameSpace=childElementDeclaration.getNamespace();
+					upcomingTypeDefinition=childElementDeclaration.getTypeDefinition();
+					processChildElement(node, name, childElementName, childElementNameSpace, childParticle.getMinOccurs()>0, unProcessedChildren, processedChildren);
 				}
 			}
 			if (unProcessedChildren!=null && !unProcessedChildren.isEmpty()) {
@@ -253,11 +254,16 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 				log.warn("processing ["+unProcessedChildren.size()+"] unprocessed child elements"+(unProcessedChildren.size()>0?", first ["+unProcessedChildren.iterator().next()+"]":""));
 				for (String childName:unProcessedChildrenWorkingCopy) {
 					log.warn("processing unprocessed child element ["+childName+"]");
-					XSElementDeclaration childElementDeclaration = findElementDeclarationForName(null,childName);
+					String namespace=null;
+					upcomingTypeDefinition=null;
+					XSElementDeclaration childElementDeclaration = findElementDeclarationForName(childName);
 					if (childElementDeclaration==null) {
-						throw new SAXException(MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION+" ["+childName+"]");
+						log.warn("Could not find ElementDeclaration for ["+childName+"]");
+					} else {
+						namespace = childElementDeclaration.getNamespace();
+						upcomingTypeDefinition=childElementDeclaration.getTypeDefinition();
 					}
-					processChildElement(node, name, childElementDeclaration, false, unProcessedChildren, processedChildren);
+					processChildElement(node, namespace, childName, namespace, false, unProcessedChildren, processedChildren);
 				}
 				if (!unProcessedChildren.isEmpty()) {
 					String elementList=null;
@@ -270,7 +276,7 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 							elementList+=","+childName;
 						}
 					}
-					String msg=MSG_INVALID_CONTENT+" was found in node ["+name+"] that has ["+count+"] unprocessed children ["+elementList+"]";
+					String msg="Invalid content was found in node ["+name+"] that has ["+count+"] unprocessed children ["+elementList+"]";
 					if (mustProcessAllElements) {
 						handleError(msg);
 					} else {
@@ -443,16 +449,14 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 	}
 	
 	
-	protected void processChildElement(N node, String name, XSElementDeclaration childElementDeclaration, boolean mandatory, Set<String> unProcessedChildren, Set<String> processedChildren) throws SAXException {
-		String childElementName = childElementDeclaration.getName(); 
-		if (DEBUG) log.debug("Tree2Xml.processChildElement() parent name ["+name+"] childElementName ["+childElementName+"]");
+	protected void processChildElement(N node, String name, String childElementName, String childElementNameSpace, boolean mandatory, Set<String> unProcessedChildren, Set<String> processedChildren) throws SAXException {
 		Iterable<N> childNodes = getChildrenByName(node,childElementName);
 		boolean childSeen=false;
 		if (childNodes!=null) {
 			int i=0;
 			for (N childNode:childNodes) {
 				i++;
-				handleNode(childNode,childElementDeclaration);
+				handleNode(childNode,childElementName,childElementNameSpace);
 				childSeen=true;
 			}
 			if (DEBUG) log.debug("processed ["+i+"] children found by name ["+childElementName+"] in ["+name+"]");
@@ -473,45 +477,45 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 		}
 		if (!childSeen && mandatory && isAutoInsertMandatory()) {
 			if (log.isDebugEnabled()) log.debug("inserting mandatory element ["+childElementName+"]");
-			handleNode(node,childElementDeclaration); // insert node when minOccurs > 0, and no node is present
+			handleNode(node,childElementName,childElementNameSpace); // insert node when minOccurs > 0, and no node is present
 		}
 	}
 
 	public String findNamespaceForName(String name) throws SAXException {
-		XSElementDeclaration elementDeclaration=findElementDeclarationForName(null,name);
+		XSElementDeclaration elementDeclaration=findElementDeclarationForName(name);
 		if (elementDeclaration==null) {
 			return null;
 		}
 		return elementDeclaration.getNamespace();
 	}
 
-	public XSElementDeclaration findElementDeclarationForName(String namespace, String name) throws SAXException {
-		Set<XSElementDeclaration> elementDeclarations=findElementDeclarationsForName(namespace, name);
+	public XSElementDeclaration findElementDeclarationForName(String name) throws SAXException {
+		Set<XSElementDeclaration> elementDeclarations=findElementDeclarationsForName(name);
 		if (elementDeclarations==null) {
-			log.warn("No element declarations found for ["+namespace+"]:["+name+"]");
+			log.warn("No element declarations found for ["+name+"]");
 			return null;
 		}
 		if (elementDeclarations.size()>1) {
 			XSElementDeclaration[] XSElementDeclarationArray=(XSElementDeclaration[])elementDeclarations.toArray();
-			throw new SAXException("multiple ["+elementDeclarations.size()+"] elementDeclarations found for ["+namespace+"]:["+name+"]: first two ["+XSElementDeclarationArray[0].getNamespace()+":"+XSElementDeclarationArray[0].getName()+"]["+XSElementDeclarationArray[1].getNamespace()+":"+XSElementDeclarationArray[1].getName()+"]");
+			throw new SAXException("multiple ["+elementDeclarations.size()+"] namespaces found for ["+name+"]: first two ["+XSElementDeclarationArray[0].getNamespace()+"]["+XSElementDeclarationArray[1].getNamespace()+"]");
 		}
 		if (elementDeclarations.size()==1) {
 			return (XSElementDeclaration)elementDeclarations.toArray()[0];
 		}
 		return null;
 	}
-	public Set<XSElementDeclaration> findElementDeclarationsForName(String namespace, String name) {
+	public Set<XSElementDeclaration> findElementDeclarationsForName(String name) {
 		Set<XSElementDeclaration> result=new LinkedHashSet<XSElementDeclaration>();
 		if (schemaInformation==null) {
-			log.warn("No SchemaInformation specified, cannot find namespaces for ["+namespace+"]:["+name+"]");
+			log.warn("No SchemaInformation specified, cannot find namespaces for ["+name+"]");
 			return null;
 		}
 		for (XSModel model:schemaInformation) {
 			XSNamedMap components = model.getComponents(XSConstants.ELEMENT_DECLARATION);
 			for (int i=0;i<components.getLength();i++) {
 				XSElementDeclaration item=(XSElementDeclaration)components.item(i);
-				if ((namespace==null || namespace.equals(item.getNamespace())) && (name==null || name.equals(item.getName()))) {
-					if (DEBUG) log.debug("name ["+item.getName()+"] found in namespace ["+item.getNamespace()+"]");
+				if (item.getName().equals(name)) {
+					if (DEBUG) log.debug("name ["+name+"] found in namespace ["+item.getNamespace()+"]");
 					result.add(item);
 				}
 			}

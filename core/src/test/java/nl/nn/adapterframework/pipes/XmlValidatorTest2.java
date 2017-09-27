@@ -77,7 +77,7 @@ public class XmlValidatorTest2 extends XmlValidatorTestBase {
     
     @Override
 	public String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
-			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws ConfigurationException, InstantiationException,
+			boolean ignoreUnknownNamespaces, String inputfile, String expectedFailureReason) throws ConfigurationException, InstantiationException,
 			IllegalAccessException, XmlValidatorException, PipeRunException, IOException {
         String testXml=inputfile!=null?getTestXml(inputfile+".xml"):null;
    		IPipeLineSession session=new PipeLineSessionBase();
@@ -85,9 +85,9 @@ public class XmlValidatorTest2 extends XmlValidatorTestBase {
         	XmlValidator validator =getValidator(schemaLocation, addNamespaceToSchema, implementation);
        		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
        		PipeForward forward=validator.validate(testXml, session);
-	        evaluateResult(forward.getName(), session, null, expectedFailureReasons);
+	        evaluateResult(forward.getName(), session, null, expectedFailureReason);
         } catch (Exception e) {
-	        evaluateResult(null, session, e, expectedFailureReasons);
+	        evaluateResult(null, session, e, expectedFailureReason);
 	    	return "Invalid XML";
         }
         return null;
