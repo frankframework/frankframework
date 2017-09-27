@@ -34,11 +34,14 @@ import org.apache.commons.lang.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
+import nl.nn.adapterframework.core.IDualModeValidator;
+import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.soap.SoapValidator;
+import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -98,7 +101,7 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
 * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
 */
-public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues {
+public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues, IDualModeValidator, IXmlValidator {
 
 	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
     private boolean forwardFailureToSuccess = false;
@@ -636,12 +639,84 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return schemas;
 	}
 
-	public static boolean isMixedValidator(Object inputValidator, Object outputValidator) {
+	@Override
+	public IPipe getResponseValidator(IPipe externalResponseValidator) {
+		if (externalResponseValidator==null && isConfiguredForMixedValidation()) {
+			return new ResponseValidatorWrapper(this);
+		}
+		return externalResponseValidator;
+	}
+	
+	public class ResponseValidatorWrapper implements IPipe {
+
+		protected XmlValidator owner;
+		public ResponseValidatorWrapper(XmlValidator owner) {
+			super();
+			this.owner=owner;
+		}
+		
+		@Override
+		public String getName() {
+			return "responseValidator of "+owner.getName();
+		}
+
+		@Override
+		public void setName(String name) {
+			throw new IllegalStateException("Cannot setName of ResponseValidatorWrapper");
+		}
+
+		@Override
+		public void configure() throws ConfigurationException {
+			throw new ConfigurationException("Must not call configure() of ResponseValidatorWrapper");
+		}
+
+		@Override
+		public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+			PipeRunResult result;
+			owner.enableOutputMode(session);
+			result=owner.doPipe(input, session);
+			owner.disableOutputMode(session);
+			return result;
+		}
+
+		@Override
+		public int getMaxThreads() {
+			return 0;
+		}
+
+		@Override
+		public Map<String, PipeForward> getForwards() {
+			return owner.getForwards();
+		}
+
+		@Override
+		public String getType() {
+			return owner.getType();
+		}
+
+		@Override
+		public void registerForward(PipeForward forward) {
+			throw new IllegalStateException("Cannot registerForward of ResponseValidatorWrapper");
+		}
+
+		@Override
+		public void start() throws PipeStartException {
+			throw new PipeStartException("Must not call start() of ResponseValidatorWrapper");
+		}
+
+		@Override
+		public void stop() {
+		}
+		
+	}
+	
+	public static boolean isMixedValidator(IPipe inputValidator, IPipe outputValidator) {
 		if (inputValidator!=null && inputValidator instanceof XmlValidator) {
 			return ((XmlValidator)inputValidator).isMixedValidator(outputValidator);
 		}
 		return false;
 	}
+	
 	
 	public boolean isMixedValidator(Object outputValidator) {
 		return outputValidator==null && isConfiguredForMixedValidation();

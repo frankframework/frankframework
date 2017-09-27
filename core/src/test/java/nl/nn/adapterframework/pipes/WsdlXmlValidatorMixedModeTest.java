@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IDualModeValidator;
+import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
@@ -78,10 +80,10 @@ public class WsdlXmlValidatorMixedModeTest {
     }
 
     
-    protected void validate(XmlValidator val, String msg, String failureReason) throws IOException {
+    protected void validate(IPipe val, String msg, String failureReason) throws IOException {
         String messageToValidate = getTestXml(msg);
         try {
-        	val.validate(messageToValidate, session);
+        	val.doPipe(messageToValidate, session);
         	if (failureReason!=null) {
         		fail("expected failure, reason ["+failureReason+"]");
         	}
@@ -98,22 +100,35 @@ public class WsdlXmlValidatorMixedModeTest {
     
     
 
+    public final boolean ooMode=true;
 
-    public void testPipeLineProcessorProcessOutputValidation(XmlValidator inputValidator, XmlValidator outputValidator, String msg, String failureReason) throws IOException {
-		boolean isMixedValidator = XmlValidator.isMixedValidator(inputValidator, outputValidator); 
-		if ((outputValidator !=null || isMixedValidator)) {
-			PipeRunResult validationResult;
-			if (outputValidator !=null) {
-				validate(outputValidator,msg,failureReason);
-			} else {
-				XmlValidator mixedValidator = (XmlValidator) inputValidator;
-				mixedValidator.enableOutputMode(session);
-				validate(inputValidator,msg,failureReason);
-				mixedValidator.disableOutputMode(session);
-			}
-		}
+    public void testPipeLineProcessorProcessOutputValidation(IPipe inputValidator, IPipe outputValidator, String msg, String failureReason) throws IOException {
+    	if (ooMode) {
+    		IPipe responseValidator;
+    		if (inputValidator!=null && inputValidator instanceof IDualModeValidator) {
+    			responseValidator=((IDualModeValidator)inputValidator).getResponseValidator(outputValidator);
+    		} else {
+    			responseValidator=outputValidator;
+    		}
+    		if ((responseValidator !=null)) {
+    			validate(responseValidator,msg,failureReason);
+    		}
+    	} else {
+//			boolean isMixedValidator = XmlValidator.isMixedValidator(inputValidator, outputValidator); 
+//			if ((outputValidator !=null || isMixedValidator)) {
+//				PipeRunResult validationResult;
+//				if (outputValidator !=null) {
+//					validate(outputValidator,msg,failureReason);
+//				} else {
+//					XmlValidator mixedValidator = (XmlValidator) inputValidator;
+//					mixedValidator.enableOutputMode(session);
+//					validate(inputValidator,msg,failureReason);
+//					mixedValidator.disableOutputMode(session);
+//				}
+//			}
+    	}
     }
-    
+
     @Test
     public void testInputValidator() throws Exception {
         WsdlXmlValidator val = getInputValidator();
