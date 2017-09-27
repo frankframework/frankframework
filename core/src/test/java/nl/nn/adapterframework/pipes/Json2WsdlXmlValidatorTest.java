@@ -27,7 +27,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	
 	@Override
 	public String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
-			boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons)
+			boolean ignoreUnknownNamespaces, String inputFile, String expectedFailureReason)
 			throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException,
 			PipeRunException, IOException {
 		// TODO Auto-generated method stub
@@ -102,7 +102,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	}
 	
     @Test
-    public void wsdlJsonValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+    public void wsdlValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
     	String wsdl="/GetPolicyDetailsTravel/wsdl/GetPolicyDetailsTravel.wsdl";
     	String soapBody="GetPolicyDetailsTravel_Response";
     	String soapFile="/GetPolicyDetailsTravel/response1soap.xml";
@@ -117,7 +117,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
     	    	
     	wsdlValidate(wsdl,soapBody,soapFile,xmlFile,jsonFileStraight, jsonFileCompact, targetContent1, targetContent2);
     }
-
+	
 	
 
 }

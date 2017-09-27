@@ -21,7 +21,7 @@ import nl.nn.adapterframework.pipes.XmlValidator;
  */
 public abstract class ValidatorTestBase extends TestCase {
 
-	public String MSG_INVALID_CONTENT="Invalid content"; 
+	public String MSG_INVALID_CONTENT="is expected"; 
 	public String MSG_CANNOT_FIND_DECLARATION="Cannot find the declaration of element";
 	public String MSG_UNKNOWN_NAMESPACE="Unknown namespace";
 	public String MSG_SCHEMA_NOT_FOUND="Cannot find";
@@ -55,41 +55,27 @@ public abstract class ValidatorTestBase extends TestCase {
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON		="/Arrays/arrays-compact";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_FULL_JSON			="/Arrays/arrays-full";
 
-    public void validate(String rootNamespace, String schemaLocation, String inputFile) throws Exception {
-    	validate(rootNamespace,schemaLocation, false, inputFile, null);
-    }
     public void validate(String rootNamespace, String schemaLocation, String inputFile, String expectedFailureReason) throws Exception {
     	validate(rootNamespace,schemaLocation, false, inputFile, expectedFailureReason);
     }
-    public void validate(String rootNamespace, String schemaLocation, String inputFile, String[] expectedFailureReasons) throws Exception {
-    	validate(rootNamespace, schemaLocation, false, false, inputFile, expectedFailureReasons);
-    }
 
     protected void validation(String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
-    	String expected[]={ expectedFailureReason };
-    	if (expectedFailureReason==null) expected=null;
-    	validate(rootNamespace,schemaLocation,addNamespaceToSchema,false,inputfile, expected);
+    	validate(rootNamespace,schemaLocation,addNamespaceToSchema,false,inputfile, expectedFailureReason);
     }
 
     public void validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, String inputFile, String expectedFailureReason) throws Exception {
-    	String expected[]={ expectedFailureReason };
-    	if (expectedFailureReason==null) expected=null;
-    	validate(rootNamespace, schemaLocation, addNamespaceToSchema, false, inputFile, expected);
+    	validate(rootNamespace, schemaLocation, addNamespaceToSchema, false, inputFile, expectedFailureReason);
     }
 	public void validateIgnoreUnknownNamespacesOn(String rootNamespace, String schemaLocation, String inputFile, String expectedFailureReason) throws Exception {
-    	String expected[]={ expectedFailureReason };
-    	if (expectedFailureReason==null) expected=null;
-    	validate(rootNamespace, schemaLocation, false, true, inputFile, expected);
+    	validate(rootNamespace, schemaLocation, false, true, inputFile, expectedFailureReason);
 	}
     public void validateIgnoreUnknownNamespacesOff(String rootNamespace, String schemaLocation, String inputFile, String expectedFailureReason) throws Exception {
-    	String expected[]={ expectedFailureReason };
-    	if (expectedFailureReason==null) expected=null;
-    	validate(rootNamespace, schemaLocation, false, false, inputFile, expected );
+    	validate(rootNamespace, schemaLocation, false, false, inputFile, expectedFailureReason);
     }
 
-    public abstract String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException, PipeRunException, IOException;
+    public abstract String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String expectedFailureReason) throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException, PipeRunException, IOException;
 
-    public void evaluateResult(String event, IPipeLineSession session, Exception e, String[] expectedFailureReasons) {
+    public void evaluateResult(String event, IPipeLineSession session, Exception e, String expectedFailureReason) {
         String failureReason=(String)(session.get("failureReason"));
         if (failureReason!=null) {
         	System.out.println("no failure reason");
@@ -100,7 +86,7 @@ public abstract class ValidatorTestBase extends TestCase {
         	System.out.println("exception ("+e.getClass().getName()+"): "+e.getMessage());
         }
 
-    	if (expectedFailureReasons==null) {
+    	if (expectedFailureReason==null) {
     		// expected valid XML
     		if (e!=null) {
     			e.printStackTrace();
@@ -115,40 +101,23 @@ public abstract class ValidatorTestBase extends TestCase {
     			if (e==null) {
     				assertEquals("Invalid XML", event);
     			}
-    			checkFailureReasons(failureReason, "failure reason", expectedFailureReasons);
+	    		if (failureReason.indexOf(expectedFailureReason)<0) {
+	    			fail("expected ["+expectedFailureReason+"] in failure reason ["+failureReason+"]");
+	    		} 
     		} else {
     			if (e!=null) {
-        			checkFailureReasons(e.getMessage(), "exception message", expectedFailureReasons);
+		    		if (e.getMessage().indexOf(expectedFailureReason)<0) {
+		    			e.printStackTrace();
+		    			fail("expected ["+expectedFailureReason+"] in exception message ["+e.getMessage()+"]");
+		    		} 
     			} else {
     	       		assertEquals("Invalid XML", event);
-        			checkFailureReasons("", "failure reason", expectedFailureReasons);
+    	       		assertEquals("expected failure reason", "", expectedFailureReason);
     			}
 	    	}
     	}
     }
  
-    public void checkFailureReasons(String errorMessage, String messagetype, String[] expectedFailureReasons) {
-    	String msg=null;
-    	if (expectedFailureReasons==null || expectedFailureReasons.length==0) {
-    		return;
-    	}
-    	if (errorMessage==null) {
-    		fail("errorMessage is null");
-    	}
-    	for (String expected:expectedFailureReasons) {
-    		if (errorMessage.toLowerCase().contains(expected.toLowerCase())) {
-    			return;
-    		}
-    		if (msg==null) {
-    			msg="expected ["+expected+"]";
-    		} else {
-    			msg+=" or ["+expected+"]";
-    		}
-    	}
-    	msg+=" in "+messagetype+" ["+errorMessage+"]";
-    	fail(msg);
-    }
-    
     protected String getTestXml(String testxml) throws IOException {
         BufferedReader buf = new BufferedReader(new InputStreamReader(XmlValidator.class.getResourceAsStream(testxml)));
         StringBuilder string = new StringBuilder();

@@ -66,7 +66,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
 	@Override
 	public String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
-			boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws IOException, ConfigurationException, PipeRunException {
+			boolean ignoreUnknownNamespaces, String inputFile, String expectedFailureReason) throws IOException, ConfigurationException, PipeRunException {
 		init();
         PipeLineSessionBase session = new PipeLineSessionBase();
         //instance.setSchemasProvider(getSchemasProvider(schemaLocation, addNamespaceToSchema));
@@ -105,10 +105,10 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 	        		event=prr.getPipeForward().getName();
 	        	}
         	}
-        	evaluateResult(event, session, null, expectedFailureReasons);
+        	evaluateResult(event, session, null, expectedFailureReason);
             try {
     	        String validationResult=validator.validate(result, session, "check result", null, null, false);
-    	        evaluateResult(validationResult, session, null, expectedFailureReasons);
+    	        evaluateResult(validationResult, session, null, expectedFailureReason);
     	        return result;
             } catch (Exception e) {
             	fail("result XML must be valid");
@@ -116,7 +116,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
     		return result;
         } catch (PipeRunException pre) {
-        	evaluateResult("Invalid XML", session, pre, expectedFailureReasons);
+        	evaluateResult("Invalid XML", session, pre, expectedFailureReason);
         }
 		return null;
 	}

@@ -33,7 +33,7 @@ public abstract class AbstractXmlValidatorTestBase extends XmlValidatorTestBase 
 
    
 	@Override
-	public String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException, PipeRunException, IOException {
+	public String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputfile, String expectedFailureReason) throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException, PipeRunException, IOException {
         AbstractXmlValidator instance = implementation.newInstance();
         instance.setSchemasProvider(getSchemasProvider(schemaLocation, addNamespaceToSchema));
     	instance.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
@@ -47,10 +47,10 @@ public abstract class AbstractXmlValidatorTestBase extends XmlValidatorTestBase 
         try {
 	        instance.configure("init");
 	        String result=instance.validate(testXml, session, "test", null, null, false);
-	        evaluateResult(result, session, null, expectedFailureReasons);
+	        evaluateResult(result, session, null, expectedFailureReason);
 	        return result;
         } catch (Exception e) {
-	        evaluateResult(null, session, e, expectedFailureReasons);
+	        evaluateResult(null, session, e, expectedFailureReason);
 	    	return "Invalid XML";
         }
 	}

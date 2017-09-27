@@ -27,13 +27,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.xml.sax.InputSource;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -47,6 +47,10 @@ import nl.nn.javax.wsdl.factory.WSDLFactory;
 import nl.nn.javax.wsdl.xml.WSDLLocator;
 import nl.nn.javax.wsdl.xml.WSDLReader;
 import nl.nn.javax.xml.namespace.QName;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.xml.sax.InputSource;
 
 /**
  * XmlValidator that will read the XSD's to use from a WSDL. As it extends the
@@ -165,6 +169,15 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 	}
 
+//	@Override
+//	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+//		try {
+//			PipeForward forward = validate(input.toString(), session);
+//			return new PipeRunResult(forward, input);
+//		} catch (Exception e) {
+//			throw new PipeRunException(this, getLogPrefix(session), e);
+//		}
+//	}
 
 	protected static void addNamespaces(Schema schema, Map<String, String> namespaces) {
 		for (Map.Entry<String,String> e : namespaces.entrySet()) {

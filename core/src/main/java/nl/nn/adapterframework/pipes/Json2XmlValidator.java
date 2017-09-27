@@ -78,9 +78,9 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * <tr><td>{@link #setCompactJsonArrays(boolean) compactJsonArrays}</td><td>when true assume arrays in json do not have the element containers like in XML</td><td>true</td></tr>
 * <tr><td>{@link #setStrictJsonArraySyntax(boolean) strictJsonArraySyntax}</td><td>when true check that incoming json adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from json to xml</td><td>false</td></tr>
 * <tr><td>{@link #setJsonWithRootElements(boolean) jsonWithRootElements}</td><td>when true, assume that JSON contains/must contain a root element</td><td>false</td></tr>
-* <tr><td>{@link #setTargetNamespace(String) targetNamespace}</td><td>Ony for JSON input: namespace of the resulting XML. Need only be specified when the namespace of root name is ambiguous in the Schema</td><td>&nbsp;</td></tr>
+* <tr><td>{@link #setTargetNamespace(String) targetNamespace}</td><td>Ony for JSON input: namespace of the resulting XML</td><td>&nbsp;</td></tr>
 * <tr><td>{@link #setOutputFormat(String) outputFormat}</td><td>default format of the result. Either 'xml' or 'json'</td><td>xml</td></tr>
-* <tr><td>{@link #setAutoFormat(boolean) autoFormat}</td><td>when true, the format on 'output' is set to the same as the format of the input message on 'input'</td><td>true</td></tr>
+* <tr><td>{@link #setAutoFormat(boolean) autoFormat}</td><td>when true, the format on 'output' is set to the same as on 'input'</td><td>true</td></tr>
 * <tr><td>{@link #setOutputFormatSessionKey(String) outputFormatSessionKey}</td><td>session key to retrieve outputFormat from.</td><td>outputFormat</td></tr>
 * </table>
 * <p><b>Exits:</b>
@@ -93,11 +93,13 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
 * </table>
 * <br>
+* N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
 * @author Gerrit van Brakel
 */
 public class Json2XmlValidator extends XmlValidator {
 
-	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputformat ";
+	public static final String JSON_XML_VALIDATOR_VALID_MONITOR_EVENT = "valid JSON";
+	public static final String INPUT_FORMAT_PREFIX_SESSION_KEY = "Json2XmlValidator.inputformat ";
 	
 	private boolean compactJsonArrays=true;
 	private boolean strictJsonArraySyntax=false;
@@ -105,7 +107,7 @@ public class Json2XmlValidator extends XmlValidator {
 	private String targetNamespace;
 	private String outputFormat="xml";
 	private boolean autoFormat=true;
-	private String outputFormatSessionKey="outputFormat";
+	protected String outputFormatSessionKey="outputFormat";
 
 
 	@Override
@@ -122,7 +124,7 @@ public class Json2XmlValidator extends XmlValidator {
 			format=(String)session.get(getOutputFormatSessionKey());
 		}
 		if (StringUtils.isEmpty(format) && isAutoFormat() && isOutputModeEnabled(session)) {
-			format=(String)session.get(INPUT_FORMAT_SESSION_KEY_PREFIX+getName());
+			format=(String)session.get(INPUT_FORMAT_PREFIX_SESSION_KEY+getName());
 		}	
 		if (StringUtils.isEmpty(format)) {
 			format=getOutputFormat();
@@ -132,7 +134,7 @@ public class Json2XmlValidator extends XmlValidator {
 	
 	protected void storeInputFormat(String format, IPipeLineSession session) {
 		if (!isOutputModeEnabled(session)) {
-			session.put(INPUT_FORMAT_SESSION_KEY_PREFIX+getName(), format);
+			session.put(INPUT_FORMAT_PREFIX_SESSION_KEY+getName(), format);
 		}
 	}
 	
@@ -166,7 +168,7 @@ public class Json2XmlValidator extends XmlValidator {
 			}
 		}
 		if (firstChar!='{' && firstChar!='[') {
-			throw new PipeRunException(this,"message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{  or ''['");
+			throw new PipeRunException(this,"message is not XML or JSON, because it statrts with ["+firstChar+"] and not with '<', '{  or ''['");
 		}
 		storeInputFormat("json",session);
 		try {
