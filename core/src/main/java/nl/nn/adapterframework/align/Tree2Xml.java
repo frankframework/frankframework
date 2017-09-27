@@ -189,6 +189,7 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 		String name = elementDeclaration.getName();
 		String elementNamespace=elementDeclaration.getNamespace();
 		String qname=getQName(elementNamespace, name);
+		if (DEBUG) log.debug("handleNode() name ["+name+"] elementNamespace ["+elementNamespace+"]");
 		newLine();
 		AttributesImpl attributes=new AttributesImpl();
 		Map<String,String> nodeAttributes = getAttributes(node);
@@ -444,6 +445,7 @@ public abstract class Tree2Xml<N> extends XmlAligner {
 	
 	protected void processChildElement(N node, String name, XSElementDeclaration childElementDeclaration, boolean mandatory, Set<String> unProcessedChildren, Set<String> processedChildren) throws SAXException {
 		String childElementName = childElementDeclaration.getName(); 
+		if (DEBUG) log.debug("Tree2Xml.processChildElement() parent name ["+name+"] childElementName ["+childElementName+"]");
 		Iterable<N> childNodes = getChildrenByName(node,childElementName);
 		boolean childSeen=false;
 		if (childNodes!=null) {

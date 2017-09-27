@@ -102,7 +102,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	}
 	
     @Test
-    public void wsdlValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+    public void wsdlJsonValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
     	String wsdl="/GetPolicyDetailsTravel/wsdl/GetPolicyDetailsTravel.wsdl";
     	String soapBody="GetPolicyDetailsTravel_Response";
     	String soapFile="/GetPolicyDetailsTravel/response1soap.xml";
@@ -117,7 +117,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
     	    	
     	wsdlValidate(wsdl,soapBody,soapFile,xmlFile,jsonFileStraight, jsonFileCompact, targetContent1, targetContent2);
     }
-	
+
 	
 
 }
