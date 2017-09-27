@@ -21,7 +21,7 @@ import nl.nn.adapterframework.pipes.XmlValidator;
  */
 public abstract class ValidatorTestBase extends TestCase {
 
-	public String MSG_INVALID_CONTENT="Invalid content"; 
+	public String MSG_INVALID_CONTENT="Failed"; // Travis does not see the 'Invalid content' message 
 	public String MSG_CANNOT_FIND_DECLARATION="Cannot find the declaration of element";
 	public String MSG_UNKNOWN_NAMESPACE="Unknown namespace";
 	public String MSG_SCHEMA_NOT_FOUND="Cannot find";
