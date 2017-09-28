@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+	<Header/>
+	<Body>
+		<GetPolicyDetails_Request xmlns="http://api.ibissource.org/GetPolicyDetails">
+			<PolicyNumber>LV07206304</PolicyNumber>
+			<VTAId>LCPM</VTAId>
+			<SAPBPId>123</SAPBPId>
+			<AccountIdUser>456</AccountIdUser>
+		</GetPolicyDetails_Request>
+	</Body>
+</Envelope>

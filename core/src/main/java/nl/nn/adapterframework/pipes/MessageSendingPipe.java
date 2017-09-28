@@ -27,6 +27,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
+import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
@@ -688,18 +689,15 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			PipeForward illegalResultForward = findForward(ILLEGAL_RESULT_FORWARD);
 			return new PipeRunResult(illegalResultForward, result);
 		}
-		boolean isMixedValidator = XmlValidator.isMixedValidator(getInputValidator(), getOutputValidator());
-		if (getOutputValidator()!=null || isMixedValidator) {
+		IPipe inputValidator = getInputValidator();
+		IPipe outputValidator = getOutputValidator();
+		if (inputValidator!=null && inputValidator instanceof IDualModeValidator) {
+			outputValidator=((IDualModeValidator)inputValidator).getResponseValidator(outputValidator);
+		}
+		if (outputValidator!=null) {
 			log.debug(getLogPrefix(session)+"validating response");
 			PipeRunResult validationResult;
-			if (getOutputValidator()!=null) {
-				validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, correlationID, result,session);
-			} else {
-				XmlValidator mixedValidator = (XmlValidator) inputValidator;
-				mixedValidator.enableOutputMode(session);
-				validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, correlationID, result,session);
-				mixedValidator.disableOutputMode(session);
-			}
+			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, correlationID, result,session);
 			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
 				return validationResult;
 			}
