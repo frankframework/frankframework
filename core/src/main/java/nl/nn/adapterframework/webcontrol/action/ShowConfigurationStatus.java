@@ -73,6 +73,16 @@ public final class ShowConfigurationStatus extends ActionBase {
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
 	private boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
 
+	private class ErrorStoreCounter {
+		String config;
+		int counter;
+
+		public ErrorStoreCounter(String config, int counter) {
+			this.config = config;
+			this.counter = counter;
+		}
+	}
+	
 	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
 		// Initialize action
@@ -161,37 +171,72 @@ public final class ShowConfigurationStatus extends ActionBase {
 			}
 		}
 		adapters.addSubElement(configurationMessages);
-
-		long esr = 0;
+		
+		List<ErrorStoreCounter> esrs =new ArrayList<ErrorStoreCounter>();
 		if (showCountErrorStore) {
-			for(Iterator adapterIt=registeredAdapters.iterator(); adapterIt.hasNext();) {
-				Adapter adapter = (Adapter)adapterIt.next();
-				for(Iterator receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
-					ReceiverBase receiver=(ReceiverBase)receiverIt.next();
-					ITransactionalStorage errorStorage=receiver.getErrorStorage();
-					if (errorStorage!=null) {
-						try {
-							esr += errorStorage.getMessageCount();
-						} catch (Exception e) {
-							error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
-							log.warn("assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+			esrs = new ArrayList<ErrorStoreCounter>();
+			if (configurationSelected!=null) {
+				String config = configurationSelected.getName();
+				int counter = 0;
+				for(Iterator adapterIt=configurationSelected.getRegisteredAdapters().iterator(); adapterIt.hasNext();) {
+					Adapter adapter = (Adapter)adapterIt.next();
+					for(Iterator receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
+						ReceiverBase receiver=(ReceiverBase)receiverIt.next();
+						ITransactionalStorage errorStorage=receiver.getErrorStorage();
+						if (errorStorage!=null) {
+							try {
+								counter += errorStorage.getMessageCount();
+							} catch (Exception e) {
+								error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
+								log.warn("assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+							}
 						}
 					}
 				}
+				if (counter>0) {
+					esrs.add(new ErrorStoreCounter(config, counter));
+				}
+			} else {
+				for (Configuration configuration : configurations) {
+					String config = configuration.getName();
+					int counter = 0;
+					for(Iterator adapterIt=configuration.getRegisteredAdapters().iterator(); adapterIt.hasNext();) {
+						Adapter adapter = (Adapter)adapterIt.next();
+						for(Iterator receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
+							ReceiverBase receiver=(ReceiverBase)receiverIt.next();
+							ITransactionalStorage errorStorage=receiver.getErrorStorage();
+							if (errorStorage!=null) {
+								try {
+									counter += errorStorage.getMessageCount();
+								} catch (Exception e) {
+									error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
+									log.warn("assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+								}
+							}
+						}
+					}
+					if (counter>0) {
+						esrs.add(new ErrorStoreCounter(config, counter));
+					}
+				}
 			}
-		} else {
-			esr = -1;
 		}
 
-		List<String> ce = new ArrayList<String>();
+		List<String[]> ce = new ArrayList<String[]>();
 		if (configurationSelected!=null) {
 			if (configurationSelected.getConfigurationException()!=null) {
-				ce.add(configurationSelected.getConfigurationException().getMessage());
+				String[] item = new String[2];
+				item[0]=configurationSelected.getName();
+				item[1]=configurationSelected.getConfigurationException().getMessage();
+				ce.add(item);
 			}
 		} else {
 			for (Configuration configuration : configurations) {
 				if (configuration.getConfigurationException()!=null) {
-					ce.add(configuration.getConfigurationException().getMessage());
+					String[] item = new String[2];
+					item[0]=configuration.getName();
+					item[1]=configuration.getConfigurationException().getMessage();
+					ce.add(item);
 				}
 			}
 		}
@@ -199,53 +244,64 @@ public final class ShowConfigurationStatus extends ActionBase {
 			XmlBuilder exceptionsXML=new XmlBuilder("exceptions");
 			for (int j=0; j<ce.size(); j++) {
 				XmlBuilder exceptionXML=new XmlBuilder("exception");
-				exceptionXML.setValue(ce.get(j));
+				exceptionXML.addAttribute("config",ce.get(j)[0]);
+				exceptionXML.setValue(ce.get(j)[1]);
 				exceptionsXML.addSubElement(exceptionXML);
 			}
 			adapters.addSubElement(exceptionsXML);
 		}
 		
-		List<String> cw = new ArrayList<String>();
+		List<String[]> cw = new ArrayList<String[]>();
 		if (configurationSelected != null) {
 			BaseConfigurationWarnings configWarns = configurationSelected
 					.getConfigurationWarnings();
 			for (int j = 0; j < configWarns.size(); j++) {
-				cw.add((String) configWarns.get(j));
+				String[] item = new String[2];
+				item[0]=configurationSelected.getName();
+				item[1]=(String) configWarns.get(j);
+				cw.add(item);
 			}
 		} else {
 			for (Configuration configuration : configurations) {
 				BaseConfigurationWarnings configWarns = configuration
 						.getConfigurationWarnings();
 				for (int j = 0; j < configWarns.size(); j++) {
-					cw.add((String) configWarns.get(j));
+					String[] item = new String[2];
+					item[0]=configuration.getName();
+					item[1]=(String) configWarns.get(j);
+					cw.add(item);
 				}
 			}
 		}
-		if (configWarnings.size()>0 || esr!=0 || cw.size()>0) {
+		if (configWarnings.size()>0 || esrs.size()>0 || !showCountErrorStore || cw.size()>0) {
 			XmlBuilder warningsXML=new XmlBuilder("warnings");
-			if (esr!=0) {
-				XmlBuilder warningXML=new XmlBuilder("warnings");
-				warningXML=new XmlBuilder("warning");
-				if (esr==-1) {
-					warningXML.setValue("Errorlog might contain records. This is unknown because errorStore.count.show is not set to true");
-				} else if (esr==1) {
+			if (!showCountErrorStore) {
+				XmlBuilder warningXML=new XmlBuilder("warning");
+				warningXML.setValue("Errorlog might contain records. This is unknown because errorStore.count.show is not set to true");
+				warningXML.addAttribute("severe", true);
+				warningsXML.addSubElement(warningXML);
+			}
+			for (int j=0; j<esrs.size(); j++) {
+				ErrorStoreCounter esr = esrs.get(j);
+				XmlBuilder warningXML=new XmlBuilder("warning");
+				warningXML.addAttribute("config", esr.config);
+				if (esr.counter==1) {
 					warningXML.setValue("Errorlog contains 1 record. Service management should check whether this record has to be resent or deleted");
 				} else {
-					warningXML.setValue("Errorlog contains "+esr+" records. Service Management should check whether these records have to be resent or deleted");
+					warningXML.setValue("Errorlog contains "+esr.counter+" records. Service Management should check whether these records have to be resent or deleted");
 				}
 				warningXML.addAttribute("severe", true);
 				warningsXML.addSubElement(warningXML);
 			}
 			for (int j=0; j<configWarnings.size(); j++) {
-				XmlBuilder warningXML=new XmlBuilder("warnings");
-				warningXML=new XmlBuilder("warning");
+				XmlBuilder warningXML=new XmlBuilder("warning");
 				warningXML.setValue((String)configWarnings.get(j));
 				warningsXML.addSubElement(warningXML);
 			}
 			for (int j=0; j<cw.size(); j++) {
-				XmlBuilder warningXML=new XmlBuilder("warnings");
-				warningXML=new XmlBuilder("warning");
-				warningXML.setValue((String)cw.get(j));
+				XmlBuilder warningXML=new XmlBuilder("warning");
+				warningXML.addAttribute("config",cw.get(j)[0]);
+				warningXML.setValue((String)cw.get(j)[1]);
 				warningsXML.addSubElement(warningXML);
 			}
 			adapters.addSubElement(warningsXML);

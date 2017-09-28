@@ -41,47 +41,77 @@ refresh="showConfigurationStatus.do">
 		</xtags:parse>
 	
 		<xtags:forEach select="//registeredAdapters">
-			<xtags:forEach select="exceptions">
+			<xtags:if test="count(exceptions/exception)!=0 or count(warnings/warning)!=0">
 				<contentTable width="100%">
 					<tbody>
-						<tr>
-							<subHeader align="center"><h7>Exceptions</h7></subHeader>
-						</tr>
-						<xtags:forEach select="exception">
-							<tr>
-								<td><font color="red"><xtags:valueOf select="."/></font></td>
-							</tr>
+						<xtags:forEach select="exceptions">
+							<xtags:choose>
+								<xtags:when test="//registeredAdapters/@all='true'">
+									<tr>
+										<subHeader colspan="2" align="center"><h7>Exceptions</h7></subHeader>
+									</tr>
+									<xtags:forEach select="exception">
+										<tr>
+											<td><font color="red"><xtags:valueOf select="@config"/></font></td>
+											<td><font color="red"><xtags:valueOf select="."/></font></td>
+										</tr>
+									</xtags:forEach>
+								</xtags:when>
+								<xtags:otherwise>
+									<tr>
+										<subHeader align="center"><h7>Exceptions</h7></subHeader>
+									</tr>
+									<xtags:forEach select="exception">
+										<tr>
+											<td><font color="red"><xtags:valueOf select="."/></font></td>
+										</tr>
+									</xtags:forEach>
+								</xtags:otherwise>
+							</xtags:choose>
+						</xtags:forEach>
+						<xtags:forEach select="warnings">
+							<xtags:choose>
+								<xtags:when test="//registeredAdapters/@all='true'">
+									<tr>
+										<subHeader colspan="2" align="center"><h7>Warnings</h7></subHeader>
+									</tr>
+									<xtags:forEach select="warning">
+										<tr>
+											<xtags:choose>
+												<xtags:when test="@severe='true'">
+													<td><font color="red"><xtags:valueOf select="@config"/></font></td>
+													<td><font color="red"><xtags:valueOf select="."/></font></td>
+												</xtags:when>
+												<xtags:otherwise>
+													<td><xtags:valueOf select="@config"/></td>
+													<td><xtags:valueOf select="."/></td>
+												</xtags:otherwise>
+											</xtags:choose>
+										</tr>
+									</xtags:forEach>
+								</xtags:when>
+								<xtags:otherwise>
+									<tr>
+										<subHeader align="center"><h7>Warnings</h7></subHeader>
+									</tr>
+									<xtags:forEach select="warning">
+										<tr>
+											<xtags:choose>
+												<xtags:when test="@severe='true'">
+													<td><font color="red"><xtags:valueOf select="."/></font></td>
+												</xtags:when>
+												<xtags:otherwise>
+													<td><xtags:valueOf select="."/></td>
+												</xtags:otherwise>
+											</xtags:choose>
+										</tr>
+									</xtags:forEach>
+								</xtags:otherwise>
+							</xtags:choose>
 						</xtags:forEach>
 					</tbody>
 				</contentTable>
-				<br/>
-			</xtags:forEach>
-			<xtags:forEach select="warnings">
-				<contentTable width="100%">
-					<tbody>
-						<tr>
-							<subHeader align="center"><h7>Warnings</h7></subHeader>
-						</tr>
-						<xtags:forEach select="warning">
-							<tr>
-								<td>
-									<xtags:choose>
-										<xtags:when test="@severe='true'">
-											<font color="red">
-												<xtags:valueOf select="."/>
-											</font>
-										</xtags:when>
-										<xtags:otherwise>
-											<xtags:valueOf select="."/>
-										</xtags:otherwise>
-									</xtags:choose>
-								</td>
-							</tr>
-						</xtags:forEach>
-					</tbody>
-				</contentTable>
-				<br/>
-			</xtags:forEach>
+			</xtags:if>
 		</xtags:forEach>
 	
 		<contentTable width="100%">
