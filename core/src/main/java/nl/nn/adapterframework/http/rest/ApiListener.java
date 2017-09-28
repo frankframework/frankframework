@@ -104,10 +104,15 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	//TODO add authenticationType
 
-	public void setAuthenticationMethod(String method) {
-		if(method.equalsIgnoreCase("token")) {
-			this.authenticationMethod = "token";
+	public void setAuthenticationMethod(String method) throws ConfigurationException {
+		if(method.equalsIgnoreCase("header")) {
+			this.authenticationMethod = "header";
 		}
+		else if(method.equalsIgnoreCase("cookie")) {
+			this.authenticationMethod = "cookie";
+		}
+		else
+			throw new ConfigurationException("Authentication method not implemented");
 	}
 
 	public String getAuthenticationMethod() {

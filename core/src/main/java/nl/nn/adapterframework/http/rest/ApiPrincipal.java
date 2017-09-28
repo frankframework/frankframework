@@ -16,23 +16,27 @@ limitations under the License.
 package nl.nn.adapterframework.http.rest;
 
 import java.io.Serializable;
-import java.security.Principal;
+import java.util.Date;
 
-public class ApiPrincipal implements Principal, Serializable {
+public class ApiPrincipal implements Serializable {
 
-	@Override
-	public String getName() {
-		// TODO Auto-generated method stub
-		return "Niels Meijer";
+	public long init = (new Date()).getTime();
+	public long ttl = 60*60*24*1000;
+	public long expires = 0;
+
+	public ApiPrincipal() {
+		updateExpiry();
+	}
+	public ApiPrincipal(int ttl) {
+		this.ttl = ttl*1000;
+		updateExpiry();
 	}
 
 	public boolean isLoggedIn() {
-		// TODO Auto-generated method stub
-		return true;
+		return (expires - (new Date()).getTime() >= 0);
 	}
 
-	public int getID() {
-		// TODO Auto-generated method stub
-		return 1;
+	public void updateExpiry() {
+		this.expires = (new Date()).getTime() + this.ttl;
 	}
 }

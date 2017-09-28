@@ -21,32 +21,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.Logger;
 
 public class ApiListenerServlet extends HttpServlet {
+
 	protected Logger log = LogUtil.getLogger(this);
-
-	private final String CONFIGURATIONKEY_CONTEXT = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
-
 	private ApiServiceDispatcher dispatcher = null;
 	private IApiCache cache = null;
-	private ApiAuthorization authorizationManager = null;
+	private int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 
 	public void init() throws ServletException {
 		if (dispatcher == null) {
@@ -54,15 +48,6 @@ public class ApiListenerServlet extends HttpServlet {
 		}
 		if (cache == null) {
 			cache = ApiCacheManager.getInstance();
-		}
-		if (authorizationManager == null) {
-			IbisContext ibisContext = (IbisContext) getServletContext().getAttribute(CONFIGURATIONKEY_CONTEXT);
-			String jmsRealm = AppConstants.getInstance().getString("jmsRealm", JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm());
-			try {
-				authorizationManager = ApiAuthorization.getInstance(ibisContext, jmsRealm);
-			} catch (ConfigurationException e) {
-				throw new ServletException("failed to initialize api authorizationManager", e);
-			}
 		}
 		super.init();
 	}
@@ -91,21 +76,10 @@ public class ApiListenerServlet extends HttpServlet {
 
 			ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
 			if(config == null) {
-				//TODO maybe leave this in for debugging?
-//				response.sendError(404, "no ApiListener configured for ["+uri+"]");
 				response.setStatus(404);
 				log.trace("Aborting request with status [404], no ApiListener configured for ["+uri+"]");
 				return;
 			}
-
-			ApiListener listener = config.getApiListener(method);
-			if(listener == null) {
-				response.setStatus(405);
-				log.trace("Aborting request with status [405], method ["+method+"] not allowed");
-				return;
-			}
-
-			log.trace("ApiListenerServlet calling service ["+listener.getName()+"]");
 
 			/**
 			 * Handle Cross-Origin Resource Sharing
@@ -128,26 +102,75 @@ public class ApiListenerServlet extends HttpServlet {
 			}
 
 			/**
+			 * Get serviceClient
+			 */
+			ApiListener listener = config.getApiListener(method);
+			if(listener == null) {
+				response.setStatus(405);
+				log.trace("Aborting request with status [405], method ["+method+"] not allowed");
+				return;
+			}
+
+			log.trace("ApiListenerServlet calling service ["+listener.getName()+"]");
+
+			/**
 			 * Check authentication
 			 */
 			ApiPrincipal userPrincipal = null;
 
-			if(request.getHeader("test") != null)
-				cache.put(request.getHeader("test"), new ApiPrincipal());
+			if(request.getHeader("test") != null) {
+				cache.put(request.getHeader("test"), new ApiPrincipal(authTTL));
+				Cookie cookie = new Cookie("authenticationToken", request.getHeader("test"));
+				cookie.setPath("/");
+				cookie.setMaxAge(authTTL);
+				response.addCookie(cookie);
+				response.setStatus(201);
+				return;
+			}
 
 			if(listener.getAuthenticationMethod() != null) {
-				String authorizationToken = request.getHeader("Authorization");
-				if(cache.containsKey(authorizationToken))
+
+				String authorizationToken = null;
+				Cookie authorizationCookie = null;
+				if(listener.getAuthenticationMethod().equals("cookie")) {
+
+					Cookie[] cookies = request.getCookies();
+					for (Cookie cookie : cookies) {
+						if(cookie.getName().equals("authenticationToken")) {
+							authorizationToken = cookie.getValue();
+							authorizationCookie = cookie;
+							authorizationCookie.setPath("/");
+						}
+					}
+				}
+				else if(listener.getAuthenticationMethod().equals("header")) {
+					authorizationToken = request.getHeader("Authorization");
+				}
+
+				if(authorizationToken != null && cache.containsKey(authorizationToken))
 					userPrincipal = (ApiPrincipal) cache.get(authorizationToken);
 
-				if(userPrincipal == null) {
+				if(userPrincipal == null || !userPrincipal.isLoggedIn()) {
+					cache.remove(authorizationToken);
+					if(authorizationCookie != null) {
+						authorizationCookie.setMaxAge(0);
+						response.addCookie(authorizationCookie);
+					}
+
 					response.setStatus(401);
 					log.trace("Aborting request with status [401], no (valid) credentials supplied");
 					return;
 				}
 
-//				config.getPermittedRoles?(principal)
+				if(authorizationCookie != null) {
+					authorizationCookie.setMaxAge(authTTL);
+					response.addCookie(authorizationCookie);
+				}
+				userPrincipal.updateExpiry();
+				cache.put(authorizationToken, userPrincipal);
+				messageContext.put("authorizationToken", authorizationToken);
 			}
+			messageContext.put("remoteAddr", request.getRemoteAddr());
 
 			/**
 			 * Evaluate preconditions
@@ -169,7 +192,6 @@ public class ApiListenerServlet extends HttpServlet {
 			}
 
 			String etagCacheKey = ApiCacheManager.buildCacheKey(config.getUriPattern());
-			//TODO cache unique per user? how to when multiple users use the same endpoint!?
 			if(cache.containsKey(etagCacheKey)) {
 				String cachedEtag = (String) cache.get(etagCacheKey);
 
@@ -195,12 +217,6 @@ public class ApiListenerServlet extends HttpServlet {
 			 * Check authorization
 			 */
 			//TODO: authentication implementation
-			Map<String, Boolean> CRUD = authorizationManager.getAllowedMethods(listener.getCleanPattern(), userPrincipal);
-			if(userPrincipal != null && (CRUD == null || !CRUD.get(method))) {
-				response.setStatus(405);
-				log.trace("Aborting request with status [405], method ["+method+"] not allowed");
-				return;
-			}
 
 			/**
 			 * Map uriIdentifiers into messageContext 
@@ -211,12 +227,13 @@ public class ApiListenerServlet extends HttpServlet {
 			for (int i = 0; i < patternSegments.length; i++) {
 				String segment = patternSegments[i];
 				if(segment.startsWith("{") && segment.endsWith("}")) {
-					String name = "uriIdentifier:";
+					String name;
 					if(segment.equals("*"))
-						name += uriIdentifier;
+						name = "uriIdentifier_"+uriIdentifier;
 					else
-						name += segment.substring(1, segment.length()-1);
+						name = segment.substring(1, segment.length()-1);
 
+					uriIdentifier++;
 					log.trace("setting uriSegment ["+name+"] to ["+uriSegments[i]+"]");
 					messageContext.put(name, uriSegments[i]);
 				}
@@ -231,7 +248,7 @@ public class ApiListenerServlet extends HttpServlet {
 				String paramvalue = request.getParameter(paramname);
 
 				log.trace("setting parameter ["+paramname+"] to ["+paramvalue+"]");
-				messageContext.put("queryParameter:" + paramname, paramvalue);
+				messageContext.put(paramname, paramvalue);
 			}
 
 			/**
@@ -251,14 +268,16 @@ public class ApiListenerServlet extends HttpServlet {
 			/**
 			 * Add headers
 			 */
-			//TODO optional: add injected headers from pipeline?
-			StringBuilder methods = new StringBuilder();
-			for (String mtd : config.getMethods()) {
-				if(userPrincipal != null && CRUD.get(mtd))
+			if(messageContext.containsKey("allowedMethods"))
+				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
+			else {
+				StringBuilder methods = new StringBuilder();
+				methods.append("OPTIONS, ");
+				for (String mtd : config.getMethods()) {
 					methods.append(mtd + ", ");
-			}
-			if(methods.length() > 0)
+				}
 				response.addHeader("Allow", methods.substring(0, methods.length()-2));
+			}
 
 			String contentType = listener.getContentType() + "; charset=utf-8";
 			if(listener.getProduces().equals("ANY")) {
