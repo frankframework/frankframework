@@ -91,7 +91,11 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 			long pipeEndTime = System.currentTimeMillis();
 			pipeDuration = pipeEndTime - pipeStartTime;
 			StatisticsKeeper sk = pipeLine.getPipeStatistics(pipe);
-			sk.addValue(pipeDuration);
+			if (sk==null) {
+				log.warn("Could not get statistics for pipe [+"+pipe.getName()+"]");
+			} else {
+				sk.addValue(pipeDuration);
+			}
 
 			if (pe!=null) {
 				if (pe.getDurationThreshold() >= 0 && pipeDuration > pe.getDurationThreshold()) {
