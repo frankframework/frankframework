@@ -50,6 +50,10 @@ refresh="showConfigurationStatus.do">
 									<tr>
 										<subHeader colspan="2" align="center"><h7>Exceptions</h7></subHeader>
 									</tr>
+									<tr>
+										<subHeader>Configuration</subHeader>
+										<subHeader>Exception</subHeader>
+									</tr>
 									<xtags:forEach select="exception">
 										<tr>
 											<td><font color="red"><xtags:valueOf select="@config"/></font></td>
@@ -74,6 +78,10 @@ refresh="showConfigurationStatus.do">
 								<xtags:when test="//registeredAdapters/@all='true'">
 									<tr>
 										<subHeader colspan="2" align="center"><h7>Warnings</h7></subHeader>
+									</tr>
+									<tr>
+										<subHeader>Configuration</subHeader>
+										<subHeader>Warning</subHeader>
 									</tr>
 									<xtags:forEach select="warning">
 										<tr>

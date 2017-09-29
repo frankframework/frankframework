@@ -15,7 +15,7 @@ Upcoming
 - Add support for integer and boolean parameters when using QuerySenders
 - Fix broken "Show configuration warnings only at relevant configuration"
 - Show config name for configuration errors and warnings
-
+- Add possibility to skip configuration when not found in database (instead of error)
 
 
 7.0-B3

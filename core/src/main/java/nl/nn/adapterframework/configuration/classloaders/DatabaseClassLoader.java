@@ -19,12 +19,20 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.util.AppConstants;
 
 public class DatabaseClassLoader extends JarBytesClassLoader {
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private static final boolean DBCL_CONFIG_NOT_FOUND_THROW_EXCEPTION = APP_CONSTANTS.getBoolean("databaseClassLoader.configNotFound.throwException", true);
+
 	private IbisContext ibisContext;
 	private String configurationName;
 	private Map<String, Object> configuration;
+	private boolean skipConfig = false;
+
+	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
 	public DatabaseClassLoader(IbisContext ibisContext, String configurationName) throws ConfigurationException {
 		super(DatabaseClassLoader.class.getClassLoader());
@@ -39,7 +47,13 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 		Map<String, Object> configuration = null;
 		configuration = ConfigurationUtils.getConfigFromDatabase(ibisContext, configurationName, null);
 		if (configuration == null) {
-			throw new ConfigurationException("Could not get config '" + configurationName + "' from database");
+			String msg = "Could not get config '" + configurationName + "' from database";
+			if (DBCL_CONFIG_NOT_FOUND_THROW_EXCEPTION) {
+				throw new ConfigurationException(msg);
+			} else {
+				configWarnings.add(log, msg + ", skipping");
+				skipConfig = true;
+			}
 		} else {
 			byte[] jarBytes = (byte[]) configuration.get("CONFIG");
 			configuration.remove("CONFIG");
@@ -62,5 +76,9 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 
 	public String getCreationDate() {
 		return (String) configuration.get("CREATED");
+	}
+
+	public boolean isSkipConfig() {
+		return skipConfig;
 	}
 }

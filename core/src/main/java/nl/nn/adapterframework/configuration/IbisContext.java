@@ -293,6 +293,9 @@ public class IbisContext {
 							classLoader = new ServiceClassLoader(ibisManager, adapterName, currentConfigurationName);
 						} else if ("DatabaseClassLoader".equals(classLoaderType)) {
 							classLoader = new DatabaseClassLoader(this, currentConfigurationName);
+							if (((DatabaseClassLoader)classLoader).isSkipConfig()) {
+								continue;
+							}
 						} else if (classLoaderType != null) {
 							throw new ConfigurationException("Invalid classLoaderType: " + classLoaderType);
 						}
