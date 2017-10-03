@@ -53,6 +53,7 @@ import org.xml.sax.SAXException;
 public class Json2Xml extends Tree2Xml<Object> {
 
 	public static final String MSG_FULL_INPUT_IN_STRICT_COMPACTING_MODE="straight json found while expecting compact arrays and strict syntax checking";
+	public static final String MSG_EXPECTED_SINGLE_ELEMENT="did not expect array, but single element";
 	
 	private final boolean DEBUG=false; 
 	
@@ -145,7 +146,7 @@ public class Json2Xml extends Tree2Xml<Object> {
 			return null;
 		}
 		if (!(node instanceof JSONObject)) {
-			if (DEBUG) log.debug("getAllChildNames() parent node is not a JSONObject, but a ["+node.getClass().getName()+"] isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"]  value ["+node+"], returning null");				
+			if (DEBUG) log.debug("getAttributes() parent node is not a JSONObject, but a ["+node.getClass().getName()+"] isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"]  value ["+node+"], returning null");				
 			return null;
 		} 
 		JSONObject o = (JSONObject)node;
@@ -216,7 +217,7 @@ public class Json2Xml extends Tree2Xml<Object> {
 		if (DEBUG) log.debug("getChildrenByName() childname ["+name+"] isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"] isMultipleOccuringChildElement ["+isMultipleOccurringChildElement(name)+"] node ["+node+"]");
 		List<Object> result = new LinkedList<Object>(); 
 		if (isParentOfSingleMultipleOccurringChildElement() && (insertElementContainerElements || !strictSyntax) && node instanceof JSONArray) {
-			result.add(node);
+			result.add(node); // wrap JSONArray in list, Tree2XML.processChildElement will call handleNode with the JSONArray
 			return result;
 		}
 		try {
@@ -232,11 +233,15 @@ public class Json2Xml extends Tree2Xml<Object> {
 			} 
 			if (child instanceof JSONArray) {
 				if (DEBUG) log.debug("getChildrenByName() child named ["+name+"] is a JSONArray, current node insertElementContainerElements ["+insertElementContainerElements+"]");
-				// if it could be necessary to insert elementContainers, we cannot return the individual elements now, because then the containing element would be duplicated
+				// if it could be necessary to insert elementContainers, we cannot return them as a list of individual elements now, because then the containing element would be duplicated
 				// we also cannot use the isSingleMultipleOccurringChildElement, because it is not valid yet
-				if ((insertElementContainerElements || !strictSyntax) && !isMultipleOccurringChildElement(name)) {
-					result.add(child);
-					if (DEBUG) log.debug("getChildrenByName() singleMultipleOccurringChildElement ["+name+"] returning array node (insertElementContainerElements=true)");
+				if (!isMultipleOccurringChildElement(name)) {
+					if (insertElementContainerElements || !strictSyntax) { 
+						result.add(child);
+						if (DEBUG) log.debug("getChildrenByName() singleMultipleOccurringChildElement ["+name+"] returning array node (insertElementContainerElements=true)");
+					} else {
+						throw new SAXException(MSG_EXPECTED_SINGLE_ELEMENT+" ["+name+"]");
+					}
 				} else {
 					if (DEBUG) log.debug("getChildrenByName() childname ["+name+"] returning elements of array node (insertElementContainerElements=false or not singleMultipleOccurringChildElement)");
 					JSONArray ja = (JSONArray)child;
