@@ -159,7 +159,10 @@ public class JsonContentContainer {
 		if (contentMap!=null) {
 			return contentMap;
 		}
-		return new JSONObject();
+		if (isXmlArrayContainer() && skipArrayElementContainers) {
+			return new StringBuffer("[]");
+		}
+		return new StringBuffer("{}");
 	}
 
 	public JSONObject toJson() {
@@ -207,6 +210,7 @@ public class JsonContentContainer {
 			sb.append("null");
 		} else
 		if (item instanceof JsonContentContainer) {
+			// handle top level
 				if (name!=null) {
 					sb.append(name).append(": ");
 				}
@@ -220,9 +224,7 @@ public class JsonContentContainer {
 					toString(sb,array, indentLevel);
 				}
 		} else if (item instanceof StringBuffer) {
-//			if (quoted) sb.append('"');
 			sb.append(item);
-//			if (quoted) sb.append('"');
 		} else if (item instanceof Map) {
 			sb.append("{");
 			if (indentLevel>=0) indentLevel++;
@@ -248,7 +250,7 @@ public class JsonContentContainer {
 			if (indentLevel>=0) indentLevel--;
 			newLine(sb, indentLevel);
 			sb.append("]");
-		} else if (item instanceof JSONObject) {
+		} else if (item instanceof JSONObject) {// JSONOBject can be returned from getContent()
 			try {
 				sb.append(((JSONObject)item).toString(2));
 			} catch (JSONException e) {
