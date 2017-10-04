@@ -55,6 +55,7 @@ import org.json.XML;
  * <td>Version of the jsonpipe. Either 1 or 2.</td>
  * <td>1</td>
  * </tr>
+ * <tr><td>{@link #setAddXmlRootElement(boolean) addXmlRootElement}</td><td>when true, and direction is json2xml, it wraps a root element around the converted message</td><td>true</td></tr>
  * </table>
  * </p>
  * <p>
@@ -83,6 +84,7 @@ import org.json.XML;
 public class JsonPipe extends FixedForwardPipe {
 	private String direction = "json2xml";
 	private String version = "1";
+	private boolean addXmlRootElement=true;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -123,11 +125,13 @@ public class JsonPipe extends FixedForwardPipe {
 					JSONArray jsonArray = new JSONArray(jsonTokener);
 					stringResult = XML.toString(jsonArray);
 				}
-			}
-			
-			boolean isWellFormed = XmlUtils.isWellFormed(stringResult);
-			if (!isWellFormed) {
-				stringResult = "<root>" + stringResult + "</root>";
+
+				if(addXmlRootElement()) {
+					boolean isWellFormed = XmlUtils.isWellFormed(stringResult);
+					if (!isWellFormed) {
+						stringResult = "<root>" + stringResult + "</root>";
+					}
+				}
 			}
 
 			if ("xml2json".equalsIgnoreCase(actualDirection)) {
@@ -162,5 +166,12 @@ public class JsonPipe extends FixedForwardPipe {
 
 	public String getVersion() {
 		return version;
+	}
+
+	public boolean addXmlRootElement() {
+		return addXmlRootElement;
+	}
+	public void setAddXmlRootElement(boolean addXmlRootElement) {
+		this.addXmlRootElement = addXmlRootElement;
 	}
 }
