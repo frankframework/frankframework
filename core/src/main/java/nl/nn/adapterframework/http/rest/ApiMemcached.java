@@ -102,6 +102,10 @@ public class ApiMemcached implements IApiCache {
 		client.set(key, 0, value);
 	}
 
+	public void put(String key, Object value, int ttl) {
+		client.set(key, ttl, value);
+	}
+
 	public boolean remove(String key) {
 		client.delete(key);
 		return true;

@@ -127,6 +127,12 @@ public class ApiEhcache implements IApiCache {
 		cache.put(element);
 	}
 
+	public void put(String key, Object value, int ttl) {
+		Element element = new Element(key,value);
+		element.setTimeToLive(ttl);
+		cache.put(element);
+	}
+
 	public boolean remove(String key) {
 		return cache.remove(key);
 	}

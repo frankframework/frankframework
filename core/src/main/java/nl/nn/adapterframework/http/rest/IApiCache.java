@@ -42,6 +42,15 @@ public interface IApiCache {
 	public void put(String key, Object value);
 
 	/**
+	 * Place an object in the cache
+	 * 
+	 * @param key		name of the object to store
+	 * @param value		value of the object
+	 * @param ttl		time to live, when the object expires
+	 */
+	public void put(String key, Object value, int ttl);
+
+	/**
 	 * Remove an object from the cache
 	 * 
 	 * @param key		name of the object to remove
