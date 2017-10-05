@@ -12,7 +12,11 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.0-B3...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
-
+- Add support for integer and boolean parameters when using QuerySenders
+- Fix broken "Show configuration warnings only at relevant configuration"
+- Show config name for configuration errors and warnings
+- Add possibility to skip configuration when not found in database (instead of error)
+- Fix jsonpipe adding root elements when direction is xml2json
 
 
 7.0-B3

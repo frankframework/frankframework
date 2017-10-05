@@ -370,10 +370,12 @@ public class TestTool {
 							} else {
 								scenariosPassedTotalMessage(scenariosPassed + " scenarios passed", writers);
 							}
-							if (scenariosAutosaved == 1) {
-								scenariosAutosavedTotalMessage("1 scenario passed after autosave", writers);
-							} else {
-								scenariosAutosavedTotalMessage(scenariosAutosaved + " scenarios passed after autosave", writers);
+							if (autoSaveDiffs) {
+								if (scenariosAutosaved == 1) {
+									scenariosAutosavedTotalMessage("1 scenario passed after autosave", writers);
+								} else {
+									scenariosAutosavedTotalMessage(scenariosAutosaved + " scenarios passed after autosave", writers);
+								}
 							}
 							if (scenariosFailed == 1) {
 								scenariosFailedTotalMessage("1 scenario failed", writers);

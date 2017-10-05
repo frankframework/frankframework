@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -98,8 +98,10 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 
 	public static final String TYPE_STRING = "string";
 	public static final String TYPE_NUMBER = "number";
+	public static final String TYPE_INTEGER = "integer";
 	public static final String TYPE_BLOB = "blob";
 	public static final String TYPE_CLOB = "clob";
+	public static final String TYPE_BOOLEAN = "boolean";
 	public static final String TYPE_FUNCTION = "function";
 	public static final String TYPE_DATETIME = "datetime";
 	public static final String TYPE_DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
@@ -146,6 +148,19 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 
 		private void fillParameter() throws SenderException {
+			if (type.equalsIgnoreCase(TYPE_INTEGER)) {
+				DecimalFormat df = new DecimalFormat();
+				Number n;
+				try {
+					n = df.parse(value);
+				} catch (ParseException e) {
+					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Integer", e);
+				}
+				parameter = new Integer(n.intValue());
+			} else 
+			if (type.equalsIgnoreCase(TYPE_BOOLEAN)) {
+				parameter = new Boolean(value);
+			} else 
 			if (type.equalsIgnoreCase(TYPE_NUMBER)) {
 				DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
 				if (StringUtils.isNotEmpty(decimalSeparator)) {
@@ -569,6 +584,11 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 				if (column.getParameter() instanceof Integer) {
 					log.debug("parm [" + var + "] is an Integer with value [" + column.getParameter().toString() + "]");
 					statement.setInt(var, Integer.parseInt(column.getParameter().toString()));
+					var++;
+				}
+				if (column.getParameter() instanceof Boolean) {
+					log.debug("parm [" + var + "] is an Boolean with value [" + column.getParameter().toString() + "]");
+					statement.setBoolean(var, new Boolean(column.getParameter().toString()));
 					var++;
 				}
 				if (column.getParameter() instanceof Float) {

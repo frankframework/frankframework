@@ -73,7 +73,7 @@ In some cases you might want/need to:
 - Change newlines in .classpath and org.eclipse.wst.common.component files
   back to Unix newlines.
 - Rightclick pom.xml (in iaf), Run As, Maven build..., JRE, make sure a JDK
-  (not a JRE) is used (use Java 5 to compile with the minimal Java version for
+  (not a JRE) is used (use Java 1.6 to compile with the minimal Java version for
   the IAF project), Refresh, Refresh resources upon completion,
   Specific resources, Specify Resources..., iaf (Using "The project containing
   the selected resource" doesn't seem to work), Finish, Run.

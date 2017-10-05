@@ -25,7 +25,32 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Extension to SoapWrapperPipe for API Management.
- *
+ * <p>
+ * <b>Configuration </b><i>(where deviating from SoapWrapperPipe)</i><b>:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td><td>if direction=<code>wrap</code>: </td><td>soapHeader</td></tr>
+ * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>if direction=<code>wrap</code>: </td><td>/xml/xsl/api/soapHeader.xsl</td></tr>
+ * </table>
+ * <p>
+ * <b>/xml/xsl/api/soapHeader.xsl:</b>
+ * <table border="1">
+ * <tr><th>element</th><th>level</th><th>value</th></tr>
+ * <tr><td>MessageHeader</td><td>0</td><td><code>MessageHeader</code> is only created when $conversationId is filled (otherwise skipped)</td></tr>
+ * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns=$namespace</td></tr>
+ * <tr><td>From</td><td>1</td><td><code>From</code> is only created when $from_in is filled (otherwise skipped) and it's created with the value of $from_out</td></tr>
+ * <tr><td>HeaderFields</td><td>1</td><td>&nbsp;</td></tr>
+ * <tr><td>ConversationId</td><td>2</td><td>$conversationId</td></tr>
+ * </table>
+ * <b>Parameters:</b>
+ * <table border="1">
+ * <tr><th>name</th><th>default</th></tr>
+ * <tr><td>namespace</td><td>"http://api.nn.nl/MessageHeader"</td></tr>
+ * <tr><td>from_in</td><td>if applicable, copied from the original (received) SOAP Header</td></tr>
+ * <tr><td>from_out</td><td>property 'instance.name'</td></tr>
+ * <tr><td>conversationId</td><td>if applicable, copied from the original (received) SOAP Header</td></tr>
+ * </table>
+ * <p>
  * @author Peter Leeuwenburgh
  */
 

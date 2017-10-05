@@ -20,9 +20,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,7 +55,6 @@ import nl.nn.adapterframework.util.XmlExternalEntityResolver;
  * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>Should the XmlValidator throw a PipeRunException on a validation error (if not, a forward with name "failure" should be defined.</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setReasonSessionKey(String) reasonSessionKey}</td><td>if set: key of session variable to store reasons of mis-validation in</td><td>failureReason</td></tr>
  * <tr><td>{@link #setXmlReasonSessionKey(String) xmlReasonSessionKey}</td><td>like <code>reasonSessionKey</code> but stores reasons in xml format and more extensive</td><td>xmlFailureReason</td></tr>
- * <tr><td>{@link #setRoot(String) root}</td><td>name of the root element</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValidateFile(boolean) validateFile}</td><td>when set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code></td><td>UTF-8</td></tr>
  * </table>
@@ -74,18 +70,13 @@ public abstract class AbstractXmlValidator {
 	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
 	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
 
-	public static final String XML_VALIDATOR_MODE = "xmlValidatorMode";
-	public static final String XML_VALIDATOR_MODE_OUTPUT = "OUTPUT";
 
 	protected SchemasProvider schemasProvider;
     private boolean throwException = false;
     private boolean fullSchemaChecking = false;
 	private String reasonSessionKey = "failureReason";
 	private String xmlReasonSessionKey = "xmlFailureReason";
-	private String root;
-	protected Set<List<String>> rootValidations;
-	protected Set<List<String>> outputRootValidations;
-	protected Map<List<String>, List<String>> invalidRootNamespaces;
+
 	private boolean validateFile=false;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	protected boolean warn = AppConstants.getInstance().getBoolean("xmlValidator.warn", true);
@@ -185,7 +176,7 @@ public abstract class AbstractXmlValidator {
 		return event;
 	}
 
-	public ValidationContext createValidationContext(IPipeLineSession session) throws ConfigurationException, PipeRunException {
+	public ValidationContext createValidationContext(IPipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		
 		// clear session variables
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
@@ -223,12 +214,12 @@ public abstract class AbstractXmlValidator {
 	 * @throws PipeRunException
 	 * @throws ConfigurationException
 	 */
-	public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		return validate(input, session, logPrefix, false);
-	}
+//	public String validate(Object input, IPipeLineSession session, String logPrefix) throws XmlValidatorException, PipeRunException, ConfigurationException {
+//		return validate(input, session, logPrefix, rootValidations, invalidRootNamespaces, false);
+//	}
 	
-	public String validate(Object input, IPipeLineSession session, String logPrefix, boolean resolveExternalEntities) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		ValidationContext context = createValidationContext(session);
+	public String validate(Object input, IPipeLineSession session, String logPrefix, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, boolean resolveExternalEntities) throws XmlValidatorException, PipeRunException, ConfigurationException {
+		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		XMLReader parser = getValidatingParser(session, context, resolveExternalEntities);
 		return validate(input, session, logPrefix, parser, null, context);
 	}
@@ -270,19 +261,6 @@ public abstract class AbstractXmlValidator {
 			return handleFailures(context.getErrorHandler(), session, XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
 		}
 		return XML_VALIDATOR_VALID_MONITOR_EVENT;
-	}
-
-	public void enableOutputMode(IPipeLineSession session) {
-		session.put(XML_VALIDATOR_MODE, XML_VALIDATOR_MODE_OUTPUT);
-	}
-
-	public void disableOutputMode(IPipeLineSession session) {
-		session.remove(XML_VALIDATOR_MODE);
-	}
-
-	public boolean isOutputModeEnabled(IPipeLineSession session) {
-		String xmlValidatorMode = (String) session.get(XML_VALIDATOR_MODE);
-    	return XML_VALIDATOR_MODE_OUTPUT.equals(xmlValidatorMode);
 	}
 
     /**
@@ -348,14 +326,6 @@ public abstract class AbstractXmlValidator {
 		return xmlReasonSessionKey;
 	}
 
-	public void setRoot(String root) {
-		this.root = root;
-		addRootValidation(Arrays.asList(root));
-	}
-	public String getRoot() {
-		return root;
-	}
-
 	public void setValidateFile(boolean b) {
 		validateFile = b;
 	}
@@ -390,35 +360,6 @@ public abstract class AbstractXmlValidator {
         }
         return is;
     }
-
-	public void addRootValidation(List<String> path) {
-		if (rootValidations == null) {
-			rootValidations = new HashSet<List<String>>();
-		}
-		rootValidations.add(path);
-	}
-
-	public Set<List<String>> getRootValidations() {
-		return rootValidations;
-	}
-
-	public void addOutputRootValidation(List<String> path) {
-		if (outputRootValidations == null) {
-			outputRootValidations = new HashSet<List<String>>();
-		}
-		outputRootValidations.add(path);
-	}
-
-	public Set<List<String>> getOutputRootValidations() {
-		return outputRootValidations;
-	}
-
-	public void addInvalidRootNamespaces(List<String> path, List<String> invalidRootNamespaces) {
-		if (this.invalidRootNamespaces == null) {
-			this.invalidRootNamespaces = new HashMap<List<String>, List<String>>();
-		}
-		this.invalidRootNamespaces.put(path, invalidRootNamespaces);
-	}
 
 	public void setIgnoreUnknownNamespaces(boolean b) {
 		this.ignoreUnknownNamespaces = b;

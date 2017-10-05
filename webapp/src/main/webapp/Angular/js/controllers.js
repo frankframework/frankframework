@@ -417,7 +417,8 @@ angular.module('iaf.beheerconsole')
 		var r = {};
 		for(adapterName in $scope.adapters) {
 			var adapter = $scope.adapters[adapterName];
-			if($scope.filter[adapter.status])
+
+			if((adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") && $scope.filter[adapter.status])
 				r[adapterName] = adapter;
 		}
 		return r;
@@ -496,11 +497,6 @@ angular.module('iaf.beheerconsole')
 
 	$scope.changeConfiguration = function(name) {
 		$scope.selectedConfiguration = name;
-
-		for(adapterName in $scope.adapters) {
-			var adapter = $scope.adapters[adapterName];
-			$scope.hideAdapter[adapter.name] = (adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") ? false : true;
-		}
 	};
 
 	Hooks.register("adapterUpdated:1", function(adapter) {

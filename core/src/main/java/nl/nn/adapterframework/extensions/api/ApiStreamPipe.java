@@ -39,9 +39,16 @@ import nl.nn.adapterframework.util.XmlUtils;
  * In {@link nl.nn.adapterframework.pipes.StreamPipe} for parameter <code>httpRequest</code> and attribute 
  * <code>extractFirstStringPart=true</code> the first part is returned to the pipeline.
  * In this class the first part is checked. If it contains a 'MessageID' with namespace "http://www.w3.org/2005/08/addressing",
- * then the message to return to the pipeline is retrieved from the MessageStore. 
- * </p>
- * 
+ * then the message to return to the pipeline is retrieved from the MessageStore.
+ * <p>
+ * This class is created for applications which can not perform one multipart call with a business request in the first (string) part
+ * and one or more filestreams in the next (file) parts. Instead of one multipart call, two calls are performed:
+ * <ol>
+ *    <li>text/xml call with the business request. The API Management application returns on this call an unique messageId (which is
+ *     saved in the MessageStore together with the business request)</li>
+ *    <li>multipart call with in the first (string) part the unique messageId and in the following (file) parts the filestreams</li>
+ * </ol>
+ * <p>
  * @author Peter Leeuwenburgh
  */
 
