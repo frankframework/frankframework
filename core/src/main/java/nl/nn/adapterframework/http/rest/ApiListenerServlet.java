@@ -118,16 +118,6 @@ public class ApiListenerServlet extends HttpServlet {
 			 */
 			ApiPrincipal userPrincipal = null;
 
-			if(request.getHeader("test") != null) {
-				cache.put(request.getHeader("test"), new ApiPrincipal(authTTL));
-				Cookie cookie = new Cookie("authenticationToken", request.getHeader("test"));
-				cookie.setPath("/");
-				cookie.setMaxAge(authTTL);
-				response.addCookie(cookie);
-				response.setStatus(201);
-				return;
-			}
-
 			if(listener.getAuthenticationMethod() != null) {
 
 				String authorizationToken = null;
@@ -167,10 +157,12 @@ public class ApiListenerServlet extends HttpServlet {
 					response.addCookie(authorizationCookie);
 				}
 				userPrincipal.updateExpiry();
+				userPrincipal.setToken(authorizationToken);
 				cache.put(authorizationToken, userPrincipal);
 				messageContext.put("authorizationToken", authorizationToken);
 			}
 			messageContext.put("remoteAddr", request.getRemoteAddr());
+			messageContext.put(IPipeLineSession.ApiPrincipalKey, userPrincipal);
 
 			/**
 			 * Evaluate preconditions

@@ -24,6 +24,9 @@ public class ApiPrincipal implements Serializable {
 	public long ttl = 60*60*24*1000;
 	public long expires = 0;
 
+	public String data = null;
+	public String authorizationToken = null;
+
 	public ApiPrincipal() {
 		updateExpiry();
 	}
@@ -38,5 +41,21 @@ public class ApiPrincipal implements Serializable {
 
 	public void updateExpiry() {
 		this.expires = (new Date()).getTime() + this.ttl;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
+
+	public String getData() {
+		return data;
+	}
+
+	public void setToken(String authorizationToken) {
+		this.authorizationToken = authorizationToken;
+	}
+
+	public String getToken() {
+		return authorizationToken;
 	}
 }
