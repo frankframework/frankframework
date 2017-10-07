@@ -103,5 +103,9 @@ public class ApiServiceDispatcher {
 			patternClients.remove(uriPattern);
 		log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
 	}
+	
+	public SortedMap<String, ApiDispatchConfig> getPatternClients() {
+		return patternClients;
+	}
 
 }
