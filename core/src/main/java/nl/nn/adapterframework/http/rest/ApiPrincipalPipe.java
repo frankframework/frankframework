@@ -46,6 +46,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+
 		String action = getAction();
 		if (action==null) {
 			throw new ConfigurationException(getLogPrefix(null)+"action must be set");
@@ -121,9 +122,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 	}
 
 	public String getAction() {
-		if(action != null)
-			return action;
-		return null;
+		return action;
 	}
 
 	public void setAuthenticationMethod(String method) throws ConfigurationException {
@@ -138,6 +137,6 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 	}
 
 	public String getAuthenticationMethod() {
-		return this.authenticationMethod;
+		return authenticationMethod;
 	}
 }

@@ -36,7 +36,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private String uriPattern;
 	private String method;
 	private String authenticationMethod = null;
-	private boolean generateEtag = true;
+	private boolean updateEtag = true;
 	private String consumes = "ANY";
 	private String produces = "ANY";
 	private List<String> mediaTypes = Arrays.asList("ANY", "XML", "JSON", "TEXT");
@@ -161,10 +161,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return contentType;
 	}
 
-	public void setGenerateEtag(boolean generateEtag) {
-		this.generateEtag = generateEtag;
+	public void setUpdateEtag(boolean updateEtag) {
+		this.updateEtag = updateEtag;
 	}
-	public boolean getGenerateEtag() {
-		return generateEtag;
+	public boolean getUpdateEtag() {
+		return updateEtag;
 	}
 }

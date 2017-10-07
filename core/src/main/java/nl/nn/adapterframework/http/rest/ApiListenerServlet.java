@@ -84,7 +84,7 @@ public class ApiListenerServlet extends HttpServlet {
 			/**
 			 * Handle Cross-Origin Resource Sharing
 			 */
-			if(method.equalsIgnoreCase("OPTIONS")) {
+			if(method.equals("OPTIONS")) {
 				response.setHeader("Access-Control-Allow-Origin", "*");
 				String headers = request.getHeader("Access-Control-Request-Headers");
 				if (headers != null)
@@ -158,7 +158,7 @@ public class ApiListenerServlet extends HttpServlet {
 				}
 				userPrincipal.updateExpiry();
 				userPrincipal.setToken(authorizationToken);
-				cache.put(authorizationToken, userPrincipal);
+				cache.put(authorizationToken, userPrincipal, authTTL);
 				messageContext.put("authorizationToken", authorizationToken);
 			}
 			messageContext.put("remoteAddr", request.getRemoteAddr());
@@ -187,7 +187,7 @@ public class ApiListenerServlet extends HttpServlet {
 			if(cache.containsKey(etagCacheKey)) {
 				String cachedEtag = (String) cache.get(etagCacheKey);
 
-				if(method.equalsIgnoreCase("GET")) {
+				if(method.equals("GET")) {
 					String ifNoneMatch = request.getHeader("If-None-Match");
 					if(ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
 						response.setStatus(304);
@@ -251,10 +251,15 @@ public class ApiListenerServlet extends HttpServlet {
 			/**
 			 * Calculate an etag over the processed result and store in cache
 			 */
-			if(result != null && listener.getGenerateEtag()) {
-				String eTag = ApiCacheManager.buildEtag(listener.getUriPattern(), result.hashCode());
-				cache.put(etagCacheKey, eTag);
-				response.addHeader("etag", eTag);
+			if(result != null && listener.getUpdateEtag()) {
+				if(method.equals("GET")) {
+					String eTag = ApiCacheManager.buildEtag(listener.getCleanPattern(), result.hashCode());
+					cache.put(etagCacheKey, eTag);
+					response.addHeader("etag", eTag);
+				}
+				else {
+					cache.remove(etagCacheKey);
+				}
 			}
 
 			/**
