@@ -649,20 +649,24 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	
 	public class ResponseValidatorWrapper implements IPipe {
 
+		private String name;
+		private Map<String, PipeForward> forwards=new HashMap<String, PipeForward>();
+		
 		protected XmlValidator owner;
 		public ResponseValidatorWrapper(XmlValidator owner) {
 			super();
 			this.owner=owner;
+			name="ResponseValidator of "+owner.getName();
 		}
 		
 		@Override
 		public String getName() {
-			return "responseValidator of "+owner.getName();
+			return name;
 		}
 
 		@Override
 		public void setName(String name) {
-			throw new IllegalStateException("Cannot setName of ResponseValidatorWrapper");
+			this.name=name;
 		}
 
 		@Override
@@ -686,7 +690,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 		@Override
 		public Map<String, PipeForward> getForwards() {
-			return owner.getForwards();
+			return forwards;
 		}
 
 		@Override
@@ -696,12 +700,11 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 		@Override
 		public void registerForward(PipeForward forward) {
-			throw new IllegalStateException("Cannot registerForward of ResponseValidatorWrapper");
+			forwards.put(forward.getName(), forward);
 		}
 
 		@Override
 		public void start() throws PipeStartException {
-			throw new PipeStartException("Must not call start() of ResponseValidatorWrapper");
 		}
 
 		@Override

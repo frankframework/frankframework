@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -147,9 +147,7 @@ public class JsonContentContainer {
 		}
 		if (stringContent!=null) {
 			if (quoted) {
-				stringContent.append('"');
-				stringContent.insert(0,'"');
-				quoted=false;
+				return '"'+StringEscapeUtils.escapeJson(stringContent.toString())+'"';
 			}
 			return stringContent;
 		}
@@ -160,9 +158,9 @@ public class JsonContentContainer {
 			return contentMap;
 		}
 		if (isXmlArrayContainer() && skipArrayElementContainers) {
-			return new StringBuffer("[]");
+			return "[]";
 		}
-		return new StringBuffer("{}");
+		return "{}";
 	}
 
 	public JSONObject toJson() {
@@ -214,17 +212,11 @@ public class JsonContentContainer {
 				if (name!=null) {
 					sb.append(name).append(": ");
 				}
-				if (stringContent!=null) {
-					toString(sb,contentMap, indentLevel);
-				}
-				if (contentMap!=null) {
-					toString(sb,contentMap, indentLevel);
-				}
-				if (array!=null) {
-					toString(sb,array, indentLevel);
-				}
+				toString(sb,getContent(),indentLevel);
 		} else if (item instanceof StringBuffer) {
 			sb.append(item);
+		} else if (item instanceof String) {
+			sb.append((String)item);
 		} else if (item instanceof Map) {
 			sb.append("{");
 			if (indentLevel>=0) indentLevel++;
@@ -250,12 +242,13 @@ public class JsonContentContainer {
 			if (indentLevel>=0) indentLevel--;
 			newLine(sb, indentLevel);
 			sb.append("]");
-		} else if (item instanceof JSONObject) {// JSONOBject can be returned from getContent()
-			try {
-				sb.append(((JSONObject)item).toString(2));
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
+//		} else if (item instanceof JSONObject) {// JSONOBject can be returned from getContent()
+//			try {
+//				log.warn("-->item is JSONOBject ["+item+"]");
+//				sb.append(((JSONObject)item).toString(2));
+//			} catch (JSONException e) {
+//				e.printStackTrace();
+//			}
 		} else {
 			throw new NotImplementedException("cannot handle class ["+item.getClass().getName()+"]");
 		}
