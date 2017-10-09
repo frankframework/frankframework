@@ -83,8 +83,6 @@ public abstract class ActionBase extends Action {
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
 		throws IOException, ServletException {
 		if (isWriteToSecLog()) {
-			System.out.println(secLogMessage);
-			System.out.println(isWriteSecLogMessage());
 			if (secLogMessage && isWriteSecLogMessage()) {
 				DynaActionForm dynaActionForm = (DynaActionForm) form;
 				String form_message = null;
