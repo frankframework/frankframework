@@ -60,6 +60,7 @@ public final class SendJmsMessageExecute extends ActionBase {
 
 	public SendJmsMessageExecute() {
 		setWriteToSecLog(true);
+		setWriteSecLogMessage(true);
 		addSecLogParamName("jmsRealm");
 		addSecLogParamName("destinationName");
 	}
