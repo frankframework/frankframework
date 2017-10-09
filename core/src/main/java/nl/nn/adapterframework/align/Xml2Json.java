@@ -120,7 +120,7 @@ public class Xml2Json extends XMLFilterImpl {
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		XSSimpleType simpleType=aligner.getElementType();
 		if (simpleType!=null) {
-			if (DEBUG) log.debug("characters simpleType ["+ToStringBuilder.reflectionToString(simpleType)+"]");
+			if (DEBUG) log.debug("characters ["+new String(ch,start,length)+"]");
 			if (simpleType.getNumeric()) {
 				contentContainer.setQuoted(false);
 			}
