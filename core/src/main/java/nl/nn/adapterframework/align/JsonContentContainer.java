@@ -22,7 +22,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.text.translate.AggregateTranslator;
+import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
+import org.apache.commons.lang3.text.translate.EntityArrays;
+import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
@@ -42,7 +45,7 @@ public class JsonContentContainer {
 	private boolean nil=false;
 	private boolean quoted=true;
 
-	public StringBuffer stringContent;
+	public String stringContent;
 	private Map<String,Object> contentMap;
 	private List<Object> array;
 	
@@ -58,6 +61,9 @@ public class JsonContentContainer {
 		this.skipArrayElementContainers=skipArrayElementContainers;
 	}
 	
+	public static final CharSequenceTranslator ESCAPE_JSON = new AggregateTranslator(new CharSequenceTranslator[] {
+			new LookupTranslator(new String[][] { { "\"", "\\\"" }, { "\\", "\\\\" }, { "/", "\\/" } }),
+			new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE())});
 
 	public String getName() {
 		return name;
@@ -72,8 +78,8 @@ public class JsonContentContainer {
 	public void setContent(String content) {
 		if (DEBUG) log.debug("setContent name ["+getName()+"] content ["+content+"]");
 		if (content!=null) {
-			content=content.trim();
-			if (content.isEmpty()) {
+			boolean whitespace=content.trim().isEmpty();
+			if (whitespace && stringContent==null) {
 				if (DEBUG) log.debug("setContent ignoring empty content for name ["+getName()+"]");
 				return;
 			}
@@ -92,16 +98,18 @@ public class JsonContentContainer {
 				throw new IllegalStateException("already set non-null content for element ["+name+"]");
 			}
 			nil=true;
-			stringContent=new StringBuffer("null");
+			stringContent="null";
 			quoted=false;
 		} else {
 			if (stringContent==null) {
-				stringContent=new StringBuffer(content);
+				stringContent=content;
 			} else {
-				stringContent.append(content);
+				stringContent+=content;
 			}
+			if (DEBUG) log.debug("resulting stringContent ["+stringContent+"] stringContent.toString ["+stringContent.toString()+"] toString ["+toString()+"]");
 		}
 	}
+	
 	public void addContent(JsonContentContainer content) {
 		String childName=content.getName();
 		if (DEBUG) log.debug("addContent for parent ["+getName()+"] name ["+childName+"] array container ["+isXmlArrayContainer()+"] content.isRepeatedElement ["+content.isRepeatedElement()+"] skipArrayElementContainers ["+skipArrayElementContainers+"] content ["+content+"]");
@@ -147,7 +155,10 @@ public class JsonContentContainer {
 		}
 		if (stringContent!=null) {
 			if (quoted) {
-				return '"'+StringEscapeUtils.escapeJson(stringContent.toString())+'"';
+				if (DEBUG) log.debug("getContent quoted stringContent ["+stringContent+"]");
+//				String result=StringEscapeUtils.escapeJson(stringContent.toString()); // this also converts diacritics into unicode escape sequences
+				String result=ESCAPE_JSON.translate(stringContent.toString()); 
+				return '"'+result+'"';
 			}
 			return stringContent;
 		}
@@ -216,7 +227,7 @@ public class JsonContentContainer {
 		} else if (item instanceof StringBuffer) {
 			sb.append(item);
 		} else if (item instanceof String) {
-			sb.append((String)item);
+			sb.append((String)item); 
 		} else if (item instanceof Map) {
 			sb.append("{");
 			if (indentLevel>=0) indentLevel++;
