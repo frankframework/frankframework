@@ -1116,7 +1116,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 				}
 				HttpServletResponse response = null;
 				if (isStreamResultToServlet()) {
-					response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTPRESPONSEKEY);
+					response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
 				}
 				String fileName = null;
 				if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {

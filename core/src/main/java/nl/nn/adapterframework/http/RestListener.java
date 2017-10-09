@@ -111,7 +111,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 
 	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException {
-		HttpServletRequest httpServletRequest = (HttpServletRequest) requestContext.get(IPipeLineSession.HTTPREQUESTKEY);
+		HttpServletRequest httpServletRequest = (HttpServletRequest) requestContext.get(IPipeLineSession.HTTP_REQUEST_KEY);
 		String response;
 		String contentType = (String) requestContext.get("contentType");
 

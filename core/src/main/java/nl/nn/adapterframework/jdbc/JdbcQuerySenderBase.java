@@ -256,7 +256,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					clobSessionVar=prc.getSession().get(getClobSessionKey());
 				}
 				if (isStreamResultToServlet()) {
-					HttpServletResponse response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTPRESPONSEKEY);
+					HttpServletResponse response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
 					String contentType = (String) prc.getSession().get("contentType");
 					String contentDisposition = (String) prc.getSession().get("contentDisposition");
 					return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition);

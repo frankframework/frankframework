@@ -225,7 +225,7 @@ public class FileHandler {
 		if (output == null || "bytes".equals(outputType) || "base64".equals(outputType) || "stream".equals(outputType)) {
 			if ("stream".equals(outputType) && isStreamResultToServlet()) {
 				InputStream inputStream = (InputStream) output;
-				HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTPRESPONSEKEY);
+				HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
 				String contentType = (String) session.get("contentType");
 				String contentDisposition = (String) session.get("contentDisposition");
 				if (StringUtils.isNotEmpty(contentType)) {

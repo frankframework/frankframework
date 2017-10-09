@@ -67,14 +67,14 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 		}
 
 		if(getAction().equals("get")) {
-			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(IPipeLineSession.ApiPrincipalKey);
+			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(IPipeLineSession.API_PRINCIPAL_KEY);
 			if(userPrincipal == null)
 				throw new PipeRunException(this, getLogPrefix(session) + "unable to locate ApiPrincipal");
 
 			return new PipeRunResult(getForward(), userPrincipal.getData());
 		}
 		if(getAction().equals("set")) {
-			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(IPipeLineSession.ApiPrincipalKey);
+			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(IPipeLineSession.API_PRINCIPAL_KEY);
 			if(userPrincipal == null)
 				throw new PipeRunException(this, getLogPrefix(session) + "unable to locate ApiPrincipal");
 
@@ -97,7 +97,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 				Cookie cookie = new Cookie("authenticationToken", token);
 				cookie.setPath("/");
 				cookie.setMaxAge(authTTL);
-				HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTPRESPONSEKEY);
+				HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
 				response.addCookie(cookie);
 			}
 
@@ -106,7 +106,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			return new PipeRunResult(getForward(), token);
 		}
 		if(getAction().equals("remove")) {
-			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(IPipeLineSession.ApiPrincipalKey);
+			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(IPipeLineSession.API_PRINCIPAL_KEY);
 			if(userPrincipal == null)
 				throw new PipeRunException(this, getLogPrefix(session) + "unable to locate ApiPrincipal");
 

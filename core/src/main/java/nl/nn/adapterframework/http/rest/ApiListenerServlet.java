@@ -27,6 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ISecurityHandler;
+import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -54,10 +56,16 @@ public class ApiListenerServlet extends HttpServlet {
 
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
+		/**
+		 * Initiate and populate messageContext
+		 */
 		Map<String, Object> messageContext = new HashMap<String, Object>();
-		messageContext.put(IPipeLineSession.HTTPREQUESTKEY, request);
-		messageContext.put(IPipeLineSession.HTTPRESPONSEKEY, response);
-		messageContext.put(IPipeLineSession.SERVLETCONTEXTKEY, getServletContext());
+		messageContext.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
+		messageContext.put(IPipeLineSession.HTTP_RESPONSE_KEY, response);
+		messageContext.put(IPipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
+		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
+		messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
+
 		String body = "";
 
 		if (!ServletFileUpload.isMultipartContent(request)) {
@@ -162,7 +170,7 @@ public class ApiListenerServlet extends HttpServlet {
 				messageContext.put("authorizationToken", authorizationToken);
 			}
 			messageContext.put("remoteAddr", request.getRemoteAddr());
-			messageContext.put(IPipeLineSession.ApiPrincipalKey, userPrincipal);
+			messageContext.put(IPipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
 
 			/**
 			 * Evaluate preconditions

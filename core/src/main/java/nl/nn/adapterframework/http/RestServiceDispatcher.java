@@ -240,9 +240,9 @@ public class RestServiceDispatcher  {
 			if (etagKey!=null) context.put(etagKey,etag);
 			if (contentTypeKey!=null) context.put(contentTypeKey,contentType);
 			if (log.isTraceEnabled()) log.trace("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
-			if (httpServletRequest!=null) context.put(IPipeLineSession.HTTPREQUESTKEY, httpServletRequest);
-			if (httpServletResponse!=null) context.put(IPipeLineSession.HTTPRESPONSEKEY, httpServletResponse);
-			if (servletContext!=null) context.put(IPipeLineSession.SERVLETCONTEXTKEY, servletContext);
+			if (httpServletRequest!=null) context.put(IPipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
+			if (httpServletResponse!=null) context.put(IPipeLineSession.HTTP_RESPONSE_KEY, httpServletResponse);
+			if (servletContext!=null) context.put(IPipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
 
 			if (writeToSecLog) {
 				secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));

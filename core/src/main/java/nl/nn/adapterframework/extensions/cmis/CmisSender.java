@@ -402,7 +402,7 @@ public class CmisSender extends SenderWithParametersBase {
 			InputStream inputStream = contentStream.getStream();
 			if (isStreamResultToServlet()) {
 				HttpServletResponse response = (HttpServletResponse) prc
-						.getSession().get(IPipeLineSession.HTTPRESPONSEKEY);
+						.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
 				String contentType = contentStream.getMimeType();
 				if (StringUtils.isNotEmpty(contentType)) {
 					log.debug(getLogPrefix()
