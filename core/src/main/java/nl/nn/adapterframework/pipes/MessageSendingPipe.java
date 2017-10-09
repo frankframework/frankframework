@@ -255,11 +255,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 	}
 
+	@Override
 	public void setName(String name) {
 		super.setName(name);
 		propagateName();
 	}
 
+	@Override
 	public void addParameter(Parameter p){
 		if (getSender() instanceof ISenderWithParameters && getParameterList()!=null) {
 			if (p.getName().equals(STUBFILENAME)) {
@@ -273,6 +275,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	/**
 	 * Checks whether a sender is defined for this pipe.
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isNotEmpty(getStubFileName())) {
@@ -398,15 +401,23 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		if (StringUtils.isNotEmpty(getRetryXPath())) {
 			retryTp = TransformerPool.configureTransformer(getLogPrefix(null), classLoader, getRetryNamespaceDefs(), getRetryXPath(), null,"text",false,null);
 		}
-		if (getInputValidator()!=null) {
-			PipeForward pf = new PipeForward();
-			pf.setName(SUCCESS_FORWARD);
-			getInputValidator().registerForward(pf);
+		IPipe inputValidator = getInputValidator();
+		IPipe outputValidator = getOutputValidator();
+		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {
+			outputValidator=((IDualModeValidator)inputValidator).getResponseValidator(outputValidator);
+			setOutputValidator(outputValidator);
 		}
-		if (getOutputValidator()!=null) {
+		if (inputValidator!=null) {
 			PipeForward pf = new PipeForward();
 			pf.setName(SUCCESS_FORWARD);
-			getOutputValidator().registerForward(pf);
+			inputValidator.registerForward(pf);
+			//inputValidator.configure(); // configure is handled in PipeLine.configure()
+		}
+		if (outputValidator!=null) {
+			PipeForward pf = new PipeForward();
+			pf.setName(SUCCESS_FORWARD);
+			outputValidator.registerForward(pf);
+			//outputValidator.configure(); // configure is handled in PipeLine.configure()
 		}
 		if (getInputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
@@ -689,11 +700,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			PipeForward illegalResultForward = findForward(ILLEGAL_RESULT_FORWARD);
 			return new PipeRunResult(illegalResultForward, result);
 		}
-		IPipe inputValidator = getInputValidator();
 		IPipe outputValidator = getOutputValidator();
-		if (inputValidator!=null && inputValidator instanceof IDualModeValidator) {
-			outputValidator=((IDualModeValidator)inputValidator).getResponseValidator(outputValidator);
-		}
 		if (outputValidator!=null) {
 			log.debug(getLogPrefix(session)+"validating response");
 			PipeRunResult validationResult;
@@ -707,9 +714,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, correlationID, result, session);
 			if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
 				return wrapResult;
-			} else {
-				result = wrapResult.getResult().toString();
-			}
+			} 
+			result = wrapResult.getResult().toString();
 			log.debug(getLogPrefix(session)+"response after wrapping [" + result + "]");
 		}
 

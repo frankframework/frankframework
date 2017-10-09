@@ -108,6 +108,10 @@ public class Json2XmlValidator extends XmlValidator {
 	private String outputFormatSessionKey="outputFormat";
 
 
+	{
+		setSoapNamespace("");
+	}
+	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
