@@ -26,7 +26,6 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.parsers.SAXParser;
@@ -120,7 +119,7 @@ public class Xml2Json extends XMLFilterImpl {
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		XSSimpleType simpleType=aligner.getElementType();
 		if (simpleType!=null) {
-			if (DEBUG) log.debug("characters simpleType ["+ToStringBuilder.reflectionToString(simpleType)+"]");
+			if (DEBUG) log.debug("characters ["+new String(ch,start,length)+"]");
 			if (simpleType.getNumeric()) {
 				contentContainer.setQuoted(false);
 			}
@@ -178,4 +177,5 @@ public class Xml2Json extends XMLFilterImpl {
 	public void setAttributePrefix(String attributePrefix) {
 		this.attributePrefix = attributePrefix;
 	}
+
 }

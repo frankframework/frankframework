@@ -292,21 +292,27 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		    throw new ConfigurationException("no pipe found for firstPipe [" + firstPipe + "]");
 	    }
 
-		if (getInputValidator() != null) {
+		IPipe inputValidator = getInputValidator();
+		IPipe outputValidator = getOutputValidator();
+		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {
+			outputValidator=((IDualModeValidator)inputValidator).getResponseValidator(outputValidator);
+			setOutputValidator(outputValidator);
+		}
+		if (inputValidator != null) {
 			log.debug("Pipeline of [" + owner.getName() + "] configuring InputValidator");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
-			getInputValidator().registerForward(pf);
-			getInputValidator().setName(INPUT_VALIDATOR_NAME);
-			configure(getInputValidator());
+			inputValidator.registerForward(pf);
+			inputValidator.setName(INPUT_VALIDATOR_NAME);
+			configure(inputValidator);
 		}
-		if (getOutputValidator()!=null) {
+		if (outputValidator!=null) {
 			log.debug("Pipeline of [" + owner.getName() + "] configuring OutputValidator");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
-			getOutputValidator().registerForward(pf);
-			getOutputValidator().setName(OUTPUT_VALIDATOR_NAME);
-			configure(getOutputValidator());
+			outputValidator.registerForward(pf);
+			outputValidator.setName(OUTPUT_VALIDATOR_NAME);
+			configure(outputValidator);
 		}
 
 		if (getInputWrapper()!=null) {
