@@ -146,12 +146,11 @@ public class WsdlXmlValidatorMixedModeTest {
     @Test
     public void testMixedValidator() throws Exception {
         WsdlXmlValidator val = getMixedValidator();
+        IPipe outputValidator =val.getResponseValidator(null);
         validate(val,REQUEST,null);
         validate(val,RESPONSE,"Illegal element");
-        val.enableOutputMode(session);
-        validate(val,RESPONSE,null);
-        validate(val,REQUEST,"Illegal element");
-        val.disableOutputMode(session);
+        validate(outputValidator,RESPONSE,null);
+        validate(outputValidator,REQUEST,"Illegal element");
         validate(val,REQUEST,null);
         validate(val,RESPONSE,"Illegal element");
     }

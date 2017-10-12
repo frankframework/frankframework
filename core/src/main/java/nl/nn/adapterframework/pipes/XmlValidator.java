@@ -338,15 +338,15 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return outputRootValidations!=null && !outputRootValidations.isEmpty();
 	}
 
-	public void enableOutputMode(IPipeLineSession session) {             
+	private void enableOutputMode(IPipeLineSession session) {             
     	session.put(XML_VALIDATOR_MODE, XML_VALIDATOR_MODE_OUTPUT);        
     }                                                                    
                                                                      
-    public void disableOutputMode(IPipeLineSession session) {            
+	private void disableOutputMode(IPipeLineSession session) {            
     	session.remove(XML_VALIDATOR_MODE);                                
     }                                                                    
                                                                      
-    public boolean isOutputModeEnabled(IPipeLineSession session) {       
+    protected boolean isOutputModeEnabled(IPipeLineSession session) {       
     	String xmlValidatorMode = (String) session.get(XML_VALIDATOR_MODE);
       	return XML_VALIDATOR_MODE_OUTPUT.equals(xmlValidatorMode);       
     }  
@@ -678,8 +678,11 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 			PipeRunResult result;
 			owner.enableOutputMode(session);
-			result=owner.doPipe(input, session);
-			owner.disableOutputMode(session);
+			try {
+				result=owner.doPipe(input, session);
+			} finally {
+				owner.disableOutputMode(session);
+			}
 			return result;
 		}
 
@@ -713,14 +716,14 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		
 	}
 	
-	public static boolean isMixedValidator(IPipe inputValidator, IPipe outputValidator) {
-		if (inputValidator!=null && inputValidator instanceof XmlValidator) {
-			return ((XmlValidator)inputValidator).isMixedValidator(outputValidator);
-		}
-		return false;
-	}
-	
-	
+//	public static boolean isMixedValidator(IPipe inputValidator, IPipe outputValidator) {
+//		if (inputValidator!=null && inputValidator instanceof XmlValidator) {
+//			return ((XmlValidator)inputValidator).isMixedValidator(outputValidator);
+//		}
+//		return false;
+//	}
+//	
+//	
 	public boolean isMixedValidator(Object outputValidator) {
 		return outputValidator==null && isConfiguredForMixedValidation();
 	}

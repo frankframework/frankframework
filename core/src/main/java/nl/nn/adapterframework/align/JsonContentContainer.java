@@ -65,16 +65,9 @@ public class JsonContentContainer {
 			new LookupTranslator(new String[][] { { "\"", "\\\"" }, { "\\", "\\\\" }, { "/", "\\/" } }),
 			new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE())});
 
-	public String getName() {
-		return name;
-	}
-	public boolean isXmlArrayContainer() {
-		return xmlArrayContainer;
-	}
-	public boolean isRepeatedElement() {
-		return repeatedElement;
-	}
-
+	/*
+	 * Sets the Text content of the current object
+	 */
 	public void setContent(String content) {
 		if (DEBUG) log.debug("setContent name ["+getName()+"] content ["+content+"]");
 		if (content!=null) {
@@ -110,6 +103,9 @@ public class JsonContentContainer {
 		}
 	}
 	
+	/*
+	 * connects child to parent
+	 */
 	public void addContent(JsonContentContainer content) {
 		String childName=content.getName();
 		if (DEBUG) log.debug("addContent for parent ["+getName()+"] name ["+childName+"] array container ["+isXmlArrayContainer()+"] content.isRepeatedElement ["+content.isRepeatedElement()+"] skipArrayElementContainers ["+skipArrayElementContainers+"] content ["+content+"]");
@@ -199,19 +195,9 @@ public class JsonContentContainer {
 			Map map=(Map)content;
 			content=map.values().toArray()[0];
 		}
-//		if (content instanceof JSONObject) {
-//			try {
-//				String result=((JSONObject)content).toString(2);
-//				// result.replaceAll("\\\\u20ac", "€"); // TODO: Do something structural for diacritics! This is a hack for cosmetics!
-//				return result;
-//			} catch (JSONException e) {
-//				log.warn(e);
-//			}
-//		}
 		StringBuffer sb = new StringBuffer();
 		toString(sb,skipRootElement?content:this,indent?0:-1);
 		return sb.toString();
-//		return content.toString();
 	}
 	
 	protected void toString(StringBuffer sb, Object item, int indentLevel) {
@@ -224,10 +210,8 @@ public class JsonContentContainer {
 					sb.append(name).append(": ");
 				}
 				toString(sb,getContent(),indentLevel);
-		} else if (item instanceof StringBuffer) {
-			sb.append(item);
 		} else if (item instanceof String) {
-			sb.append((String)item); 
+			sb.append(item); 
 		} else if (item instanceof Map) {
 			sb.append("{");
 			if (indentLevel>=0) indentLevel++;
@@ -253,22 +237,25 @@ public class JsonContentContainer {
 			if (indentLevel>=0) indentLevel--;
 			newLine(sb, indentLevel);
 			sb.append("]");
-//		} else if (item instanceof JSONObject) {// JSONOBject can be returned from getContent()
-//			try {
-//				log.warn("-->item is JSONOBject ["+item+"]");
-//				sb.append(((JSONObject)item).toString(2));
-//			} catch (JSONException e) {
-//				e.printStackTrace();
-//			}
 		} else {
 			throw new NotImplementedException("cannot handle class ["+item.getClass().getName()+"]");
 		}
 	}
 	
-	public void newLine(StringBuffer sb, int indentLevel) {
+	private void newLine(StringBuffer sb, int indentLevel) {
 		if (indentLevel>=0)  {
 			sb.append(INDENTOR, 0, (indentLevel<MAX_INDENT?indentLevel:MAX_INDENT)*2+1);
 		}
+	}
+
+	public String getName() {
+		return name;
+	}
+	public boolean isXmlArrayContainer() {
+		return xmlArrayContainer;
+	}
+	public boolean isRepeatedElement() {
+		return repeatedElement;
 	}
 
 	public boolean isSkipRootElement() {
@@ -282,8 +269,6 @@ public class JsonContentContainer {
 	public boolean isQuoted() {
 		return quoted;
 	}
-
-
 	public void setQuoted(boolean quoted) {
 		this.quoted = quoted;
 	}
