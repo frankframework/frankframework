@@ -41,7 +41,12 @@ import org.apache.struts.upload.FormFile;
  * @author Johan Verrips
  */
 public class TestServiceExecute extends ActionBase {
-	
+
+	public TestServiceExecute() {
+		setWriteToSecLog(true);
+		setWriteSecLogMessage(true);
+	}
+
     public ActionForward executeSub(
         ActionMapping mapping,
         ActionForm form,

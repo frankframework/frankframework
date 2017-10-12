@@ -80,20 +80,32 @@ public abstract class ActionBase extends Action {
      * This proc should start with <code>initAction(request)</code>
      * @see Action
      */
-    public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
-        throws IOException, ServletException {
-    	if (isWriteToSecLog()) {
-        	if (secLogMessage && isWriteSecLogMessage()) {
-        		DynaActionForm dynaActionForm = (DynaActionForm) form;
-        		String form_message = (String) dynaActionForm.get("message");
-        		secLog.info(HttpUtils.getExtendedCommandIssuedBy(request, secLogParamNames, form_message));
-    		}
-        	else {
-        		secLog.info(HttpUtils.getExtendedCommandIssuedBy(request, secLogParamNames));
-        	}
+	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
+		throws IOException, ServletException {
+		if (isWriteToSecLog()) {
+			if (secLogMessage && isWriteSecLogMessage()) {
+				DynaActionForm dynaActionForm = (DynaActionForm) form;
+				String form_message = null;
+				try {
+					form_message = (String) dynaActionForm.get("message");
+				}
+				catch(IllegalArgumentException e) {
+					try {
+						form_message = (String) dynaActionForm.get("query");
+					}
+					catch(IllegalArgumentException e2) {
+						form_message = "could not derive message or query from DynaForm";
+					}
+				}
+
+				secLog.info(HttpUtils.getExtendedCommandIssuedBy(request, secLogParamNames, form_message));
+			}
+			else {
+				secLog.info(HttpUtils.getExtendedCommandIssuedBy(request, secLogParamNames));
+			}
 		}
 		return executeSub(mapping, form, request, response);
-    }
+	}
 
     public abstract ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException;

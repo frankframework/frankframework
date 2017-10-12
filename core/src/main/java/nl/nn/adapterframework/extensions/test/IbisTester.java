@@ -1,0 +1,340 @@
+package nl.nn.adapterframework.extensions.test;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockServletContext;
+
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.testtool.TestTool;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.ProcessMetrics;
+import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
+
+public class IbisTester {
+	private AppConstants appConstants;
+	String webAppPath;
+	IbisContext ibisContext;
+	MockServletContext application;
+
+	private class Result {
+		private String resultString;
+		private long duration;
+
+		public Result(String resultString, long duration) {
+			this.resultString = resultString;
+			this.duration = duration;
+		}
+	}
+
+	public class ScenarioRunner implements Callable<String> {
+		private boolean firstCall;
+		private String scenario;
+
+		public ScenarioRunner(boolean firstCall) {
+			this(firstCall, null);
+		}
+
+		public ScenarioRunner(boolean firstCall, String scenario) {
+			this.firstCall = firstCall;
+			this.scenario = scenario;
+		}
+
+		public String call() throws Exception {
+			MockHttpServletRequest request = new MockHttpServletRequest();
+			request.setServletPath("/larva/index.jsp");
+			boolean silent;
+			if (firstCall) {
+				String ibisContextKey = appConstants
+						.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
+				application = new MockServletContext("file:" + webAppPath,
+						null);
+				application.setAttribute(ibisContextKey, ibisContext);
+				silent = false;
+			} else {
+				request.setParameter("loglevel", "scenario passed/failed");
+				request.setParameter("execute", scenario);
+				silent = true;
+			}
+			Writer writer = new StringWriter();
+			TestTool.runScenarios(application, request, writer, silent);
+			if (firstCall) {
+				String htmlString = "<html><head/><body>" + writer.toString()
+						+ "</body></html>";
+				return XmlUtils.toXhtml(htmlString);
+			} else {
+				return writer.toString();
+			}
+		}
+	}
+
+	public boolean doTest() {
+		try {
+			// fix for GitLab Runner
+			File file = new File("target/log");
+			String canonicalPath = file.getCanonicalPath();
+			canonicalPath = canonicalPath.replace("\\", "/");
+			System.setProperty("log.dir", canonicalPath);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.setProperty("log.dir", "target/log");
+		}
+		System.setProperty("log.level", "INFO");
+		System.setProperty("otap.stage", "LOC");
+		System.setProperty("application.server.type", "IBISTEST");
+		debug("***start***");
+		BasicConfigurator.configure();
+		Logger.getRootLogger().setLevel(Level.INFO);
+		// remove AppConstants because it can be present from another JUnit test
+		AppConstants.removeInstance();
+		appConstants = AppConstants.getInstance();
+		webAppPath = Misc.getWebContentDirectory();
+		appConstants.put("webapp.realpath", webAppPath);
+		debug("***set property with name [webapp.realpath] and value ["
+				+ webAppPath + "]***");
+		appConstants.put("create.dbscript.location", "create_database_h2.sql");
+		// appConstants.put("validators.disabled", "true");
+		// appConstants.put("xmlValidator.lazyInit", "true");
+		// appConstants.put("xmlValidator.maxInitialised", "200");
+
+		ibisContext = new IbisContext();
+		long configLoadStartTime = System.currentTimeMillis();
+		ibisContext.init();
+		long configLoadEndTime = System.currentTimeMillis();
+		debug("***configuration loaded in ["
+				+ (configLoadEndTime - configLoadStartTime) + "] msec***");
+
+		int adaptersStarted = 0;
+		int adaptersCount = 0;
+		List<IAdapter> registeredAdapters = ibisContext.getIbisManager()
+				.getRegisteredAdapters();
+		for (IAdapter adapter : registeredAdapters) {
+			adaptersCount++;
+			RunStateEnum runState = adapter.getRunState();
+			if (!(RunStateEnum.STARTED).equals(runState)) {
+				debug("adapter [" + adapter.getName() + "] has state ["
+						+ runState + "], will retry...");
+				int count = 30;
+				while (count-- > 0
+						&& !(RunStateEnum.STARTED).equals(runState)) {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					runState = adapter.getRunState();
+					if (!(RunStateEnum.STARTED).equals(runState)) {
+						debug("adapter [" + adapter.getName() + "] has state ["
+								+ runState + "], retries left [" + count + "]");
+					} else {
+						debug("adapter [" + adapter.getName() + "] has state ["
+								+ runState + "]");
+					}
+				}
+			} else {
+				debug("adapter [" + adapter.getName() + "] has state ["
+						+ runState + "]");
+			}
+			if ((RunStateEnum.STARTED).equals(runState)) {
+				adaptersStarted++;
+			} else {
+				error("adapter [" + adapter.getName() + "] has state ["
+						+ runState + "]");
+			}
+		}
+		String msg = "adapters started [" + adaptersStarted + "] from ["
+				+ adaptersStarted + "]";
+		if (adaptersCount == adaptersStarted) {
+			debug(msg);
+		} else {
+			error(msg);
+			return false;
+		}
+
+		boolean larvaFull = appConstants.getBoolean("larva.full", false);
+		debug("***start larva [" + larvaFull + "]***");
+
+		Result result;
+		try {
+			result = runScenario(true, null, null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = null;
+		}
+
+		if (result == null) {
+			error("First call to get scenarios failed");
+			return false;
+		} else {
+			String scenariosRootDir = evaluateXPathFirst(result.resultString,
+					"(html/body//select[@name='scenariosrootdirectory'])[1]/option/@value");
+
+			String xpath;
+			if (larvaFull) {
+				xpath = "(html/body//select[@name='execute'])[1]/option/@value[ends-with(.,'.properties')]";
+			} else {
+				xpath = "(html/body//select[@name='execute'])[1]/option/@value[ends-with(.,'.properties') and (contains(.,'/XSL/') or contains(.,'\\XSL\\'))]";
+			}
+			Collection<String> scenarios = evaluateXPath(result.resultString,
+					xpath);
+			if (scenarios == null || scenarios.size() == 0) {
+				error("No scenarios found");
+				return false;
+			} else {
+				debug("Found " + scenarios.size() + " scenarios");
+				int scenariosTotal = scenarios.size();
+				int scenariosPassed = 0;
+				int scenariosCount = 0;
+				for (String scenario : scenarios) {
+					scenariosCount++;
+
+					String scenarioShortName;
+					if (StringUtils.isNotEmpty(scenario)
+							&& StringUtils.isNotEmpty(scenariosRootDir)) {
+						if (scenario.startsWith(scenariosRootDir)) {
+							scenarioShortName = scenario
+									.substring(scenariosRootDir.length());
+						} else {
+							scenarioShortName = scenario;
+						}
+					} else {
+						scenarioShortName = scenario;
+					}
+					String scenarioInfo = "scenario [" + scenariosCount + "/"
+							+ scenariosTotal + "] [" + scenarioShortName + "]";
+
+					try {
+						result = runScenario(false, scenario, scenarioInfo);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						result = null;
+					}
+
+					if (result == null) {
+						error(scenarioInfo + " failed");
+					} else {
+						if (("[***PASSED***]").equals(result.resultString)) {
+							debug(scenarioInfo + " passed in ["
+									+ result.duration + "] msec");
+							scenariosPassed++;
+						} else {
+							error(scenarioInfo + " failed in ["
+									+ result.duration + "] msec");
+							error(result.resultString);
+						}
+					}
+				}
+				msg = "scenarios passed [" + scenariosPassed + "] from ["
+						+ scenariosCount + "]";
+
+				if (scenariosCount == scenariosPassed) {
+					debug(msg);
+				} else {
+					error(msg);
+					return false;
+				}
+			}
+		}
+
+		ibisContext.destroy();
+		debug("***end***");
+		return true;
+	}
+
+	private Result runScenario(boolean firstCall, String scenario,
+			String scenarioInfo) {
+		int count = 2;
+		String resultString = null;
+		long startTime = 0;
+		while (count-- > 0 && resultString == null) {
+			startTime = System.currentTimeMillis();
+			ScenarioRunner scenarioRunner = new ScenarioRunner(firstCall,
+					scenario);
+			ExecutorService service = Executors.newSingleThreadExecutor();
+			Future future = service.submit(scenarioRunner);
+			long timeout = 60;
+			try {
+				try {
+					resultString = (String) future.get(timeout,
+							TimeUnit.SECONDS);
+				} catch (TimeoutException e) {
+					debug(scenarioInfo + " timed out, retries left [" + count
+							+ "]");
+				} catch (Exception e) {
+					debug(scenarioInfo + " got error, retries left [" + count
+							+ "]");
+				}
+			} finally {
+				service.shutdown();
+			}
+		}
+
+		long endTime = System.currentTimeMillis();
+		return new Result(resultString, endTime - startTime);
+	}
+
+	private static void debug(String string) {
+		System.out.println(
+				getIsoTimeStamp() + " " + getMemoryInfo() + " " + string);
+	}
+
+	private static void error(String string) {
+		System.err.println(
+				getIsoTimeStamp() + " " + getMemoryInfo() + " " + string);
+	}
+
+	private static String getIsoTimeStamp() {
+		return DateUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss.SSS");
+	}
+
+	private static String getMemoryInfo() {
+		long freeMem = Runtime.getRuntime().freeMemory();
+		long totalMem = Runtime.getRuntime().totalMemory();
+		return "[" + ProcessMetrics.normalizedNotation(totalMem - freeMem) + "/"
+				+ ProcessMetrics.normalizedNotation(totalMem) + "]";
+	}
+
+	private static String evaluateXPathFirst(String xhtml, String xpath) {
+		try {
+			return XmlUtils.evaluateXPathNodeSetFirstElement(xhtml, xpath);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	private static Collection<String> evaluateXPath(String xhtml,
+			String xpath) {
+		try {
+			return XmlUtils.evaluateXPathNodeSet(xhtml, xpath);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+}

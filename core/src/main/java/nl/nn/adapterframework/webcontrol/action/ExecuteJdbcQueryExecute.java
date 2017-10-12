@@ -47,6 +47,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 
 	public ExecuteJdbcQueryExecute() {
 		setWriteToSecLog(true);
+		setWriteSecLogMessage(true);
 		addSecLogParamName("jmsRealm");
 		addSecLogParamName("queryType");
 	}
