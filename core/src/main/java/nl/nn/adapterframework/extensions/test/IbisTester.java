@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -14,6 +15,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
@@ -23,7 +27,7 @@ import org.springframework.mock.web.MockServletContext;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.testtool.TestTool;
+//import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
@@ -68,8 +72,7 @@ public class IbisTester {
 			if (firstCall) {
 				String ibisContextKey = appConstants
 						.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
-				application = new MockServletContext("file:" + webAppPath,
-						null);
+				application = new MockServletContext("file:" + webAppPath, null);
 				application.setAttribute(ibisContextKey, ibisContext);
 				silent = false;
 			} else {
@@ -78,7 +81,7 @@ public class IbisTester {
 				silent = true;
 			}
 			Writer writer = new StringWriter();
-			TestTool.runScenarios(application, request, writer, silent);
+			runScenarios(application, request, writer, silent);
 			if (firstCall) {
 				String htmlString = "<html><head/><body>" + writer.toString()
 						+ "</body></html>";
@@ -86,6 +89,26 @@ public class IbisTester {
 			} else {
 				return writer.toString();
 			}
+		}
+
+		public void runScenarios(ServletContext application,
+				HttpServletRequest request, Writer out, boolean silent)
+				throws IllegalArgumentException, SecurityException,
+				IllegalAccessException, InvocationTargetException,
+				NoSuchMethodException, ClassNotFoundException {
+
+			Class<?>[] args_types = new Class<?>[4];
+			args_types[0] = ServletContext.class;
+			args_types[1] = HttpServletRequest.class;
+			args_types[2] = Writer.class;
+			args_types[3] = boolean.class;
+			Object[] args = new Object[4];
+			args[0] = application;
+			args[1] = request;
+			args[2] = out;
+			args[3] = silent;
+			Class.forName("nl.nn.adapterframework.testtool.TestTool")
+					.getMethod("runScenarios", args_types).invoke(null, args);
 		}
 	}
 
@@ -136,8 +159,7 @@ public class IbisTester {
 				debug("adapter [" + adapter.getName() + "] has state ["
 						+ runState + "], will retry...");
 				int count = 30;
-				while (count-- > 0
-						&& !(RunStateEnum.STARTED).equals(runState)) {
+				while (count-- > 0 && !(RunStateEnum.STARTED).equals(runState)) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
@@ -296,13 +318,13 @@ public class IbisTester {
 	}
 
 	private static void debug(String string) {
-		System.out.println(
-				getIsoTimeStamp() + " " + getMemoryInfo() + " " + string);
+		System.out.println(getIsoTimeStamp() + " " + getMemoryInfo() + " "
+				+ string);
 	}
 
 	private static void error(String string) {
-		System.err.println(
-				getIsoTimeStamp() + " " + getMemoryInfo() + " " + string);
+		System.err.println(getIsoTimeStamp() + " " + getMemoryInfo() + " "
+				+ string);
 	}
 
 	private static String getIsoTimeStamp() {
@@ -312,8 +334,8 @@ public class IbisTester {
 	private static String getMemoryInfo() {
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();
-		return "[" + ProcessMetrics.normalizedNotation(totalMem - freeMem) + "/"
-				+ ProcessMetrics.normalizedNotation(totalMem) + "]";
+		return "[" + ProcessMetrics.normalizedNotation(totalMem - freeMem)
+				+ "/" + ProcessMetrics.normalizedNotation(totalMem) + "]";
 	}
 
 	private static String evaluateXPathFirst(String xhtml, String xpath) {
@@ -326,8 +348,7 @@ public class IbisTester {
 		}
 	}
 
-	private static Collection<String> evaluateXPath(String xhtml,
-			String xpath) {
+	private static Collection<String> evaluateXPath(String xhtml, String xpath) {
 		try {
 			return XmlUtils.evaluateXPathNodeSet(xhtml, xpath);
 		} catch (Exception e) {
