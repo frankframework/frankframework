@@ -38,6 +38,5 @@
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/iaf-larva/target/classes"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
