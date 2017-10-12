@@ -671,7 +671,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 		@Override
 		public void configure() throws ConfigurationException {
-			throw new ConfigurationException("Must not call configure() of ResponseValidatorWrapper");
 		}
 
 		@Override

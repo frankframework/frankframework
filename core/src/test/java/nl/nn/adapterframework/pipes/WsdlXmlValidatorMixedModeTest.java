@@ -65,6 +65,7 @@ public class WsdlXmlValidatorMixedModeTest {
         val.setSchemaLocation("http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://api.ibissource.org/GetPolicyDetails schema2");
         val.registerForward(new PipeForward("success", null));
         val.configure();
+        val.getResponseValidator(null).configure();
         return val;
     }
 
