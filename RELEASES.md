@@ -18,6 +18,8 @@ Upcoming
 - Add possibility to skip configuration when not found in database (instead of error)
 - Fix jsonpipe adding root elements when direction is xml2json
 - Fix JdbcQuery, TestService and SendJmsMessage pages to log messages when sec.log.includeMessage=true
+- First steps towards unit testing without application server
+- Add attribute soapBodyNamespace to WsdlXmlValidator 
 
 
 

@@ -1047,7 +1047,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	public void setOutputValidator(IPipe outputValidator) {
 //		if (outputValidator.isActive()) {
-			outputValidator.setName(OUTPUT_VALIDATOR_NAME_PREFIX+getName()+OUTPUT_VALIDATOR_NAME_SUFFIX);
+			if (outputValidator!=null) {
+				outputValidator.setName(OUTPUT_VALIDATOR_NAME_PREFIX+getName()+OUTPUT_VALIDATOR_NAME_SUFFIX);
+			}
 			this.outputValidator = outputValidator;
 //		}
 	}
