@@ -53,7 +53,7 @@ public class CorsFilter implements Filter {
             resp.setHeader("Access-Control-Allow-Origin", origin);
             resp.setHeader("Access-Control-Allow-Methods", VALID_METHODS);
             //resp.setHeader("Access-Control-Allow-Headers", "X-PINGOTHER, Origin, X-Requested-With, Content-Type, Accept, Authorization, If-None-Match");
-            resp.setHeader("Access-Control-Expose-Headers", "ETag, Content-Disposition");
+            resp.setHeader("Access-Control-Expose-Headers", "ETag, Content-Disposition, Allow");
 
             String headers = req.getHeader("Access-Control-Request-Headers");
             if (headers != null)
