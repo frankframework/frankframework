@@ -295,7 +295,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		IPipe inputValidator = getInputValidator();
 		IPipe outputValidator = getOutputValidator();
 		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {
-			outputValidator=((IDualModeValidator)inputValidator).getResponseValidator(outputValidator);
+			outputValidator=((IDualModeValidator)inputValidator).getResponseValidator();
 			setOutputValidator(outputValidator);
 		}
 		if (inputValidator != null) {

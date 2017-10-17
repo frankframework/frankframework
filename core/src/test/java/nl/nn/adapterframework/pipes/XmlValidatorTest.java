@@ -225,10 +225,16 @@ public class XmlValidatorTest {
         return getValidator(schemaLocation, addNamespaceToSchema, implementation);
     }
 
-    public static XmlValidator getValidator(String schemaLocation, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
-        return getValidator(schemaLocation, false, implementation);
+    public static XmlValidator getUnconfiguredValidator(String schemaLocation, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
+        return getUnconfiguredValidator(schemaLocation, false, implementation);
     }
+
     public static XmlValidator getValidator(String schemaLocation, boolean addNamespaceToSchema, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
+    	XmlValidator validator=getUnconfiguredValidator(schemaLocation, addNamespaceToSchema, implementation);
+    	validator.configure();
+    	return validator;
+    }
+    public static XmlValidator getUnconfiguredValidator(String schemaLocation, boolean addNamespaceToSchema, Class<AbstractXmlValidator> implementation) {
         XmlValidator validator = new XmlValidator();
         try {
             validator.setImplementation(implementation);
@@ -241,7 +247,6 @@ public class XmlValidatorTest {
         }
         validator.registerForward(getSuccess());
         validator.setThrowException(true);
-        validator.configure();
         validator.setFullSchemaChecking(true);
         return validator;
     }

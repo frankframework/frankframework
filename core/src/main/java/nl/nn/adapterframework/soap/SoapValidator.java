@@ -85,11 +85,11 @@ public class SoapValidator extends Json2XmlValidator {
                     .getInstance();
             configWarnings.add(log, "soapBody not specified");
         }
-        addInputRootValidation(Arrays.asList("Envelope", "Body", soapBody));
+        addRequestRootValidation(Arrays.asList("Envelope", "Body", soapBody));
         if (StringUtils.isNotEmpty(outputSoapBody)) {
-            addOutputRootValidation(Arrays.asList("Envelope", "Body", outputSoapBody));
+            addResponseRootValidation(Arrays.asList("Envelope", "Body", outputSoapBody));
         }
-        addInputRootValidation(Arrays.asList("Envelope", "Header", soapHeader));
+        addRequestRootValidation(Arrays.asList("Envelope", "Header", soapHeader));
         List<String> invalidRootNamespaces = new ArrayList<String>();
         for (SoapVersion version : versions) {
             invalidRootNamespaces.add(version.getNamespace());
@@ -114,9 +114,13 @@ public class SoapValidator extends Json2XmlValidator {
         throw new IllegalArgumentException("The noNamespaceSchemaLocation attribute isn't supported");
     }
 
-    @Override
-	protected String getJsonRootElement(IPipeLineSession session) {
-		return isOutputModeEnabled(session)?getOutputSoapBody():getSoapBody();
+	@Override
+	public String getMessageRoot() {
+		return getSoapBody();
+	}
+	@Override
+	public String getResponseRoot() {
+		return getOutputSoapBody();
 	}
 
 

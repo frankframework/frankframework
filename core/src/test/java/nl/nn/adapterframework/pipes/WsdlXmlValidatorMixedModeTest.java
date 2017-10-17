@@ -65,7 +65,7 @@ public class WsdlXmlValidatorMixedModeTest {
         val.setSchemaLocation("http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://api.ibissource.org/GetPolicyDetails schema2");
         val.registerForward(new PipeForward("success", null));
         val.configure();
-        val.getResponseValidator(null).configure();
+        val.getResponseValidator().configure();
         return val;
     }
 
@@ -106,8 +106,8 @@ public class WsdlXmlValidatorMixedModeTest {
     public void testPipeLineProcessorProcessOutputValidation(IPipe inputValidator, IPipe outputValidator, String msg, String failureReason) throws IOException {
     	if (ooMode) {
     		IPipe responseValidator;
-    		if (inputValidator!=null && inputValidator instanceof IDualModeValidator) {
-    			responseValidator=((IDualModeValidator)inputValidator).getResponseValidator(outputValidator);
+    		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {
+    			responseValidator=((IDualModeValidator)inputValidator).getResponseValidator();
     		} else {
     			responseValidator=outputValidator;
     		}
@@ -147,7 +147,7 @@ public class WsdlXmlValidatorMixedModeTest {
     @Test
     public void testMixedValidator() throws Exception {
         WsdlXmlValidator val = getMixedValidator();
-        IPipe outputValidator =val.getResponseValidator(null);
+        IPipe outputValidator =val.getResponseValidator();
         validate(val,REQUEST,null);
         validate(val,RESPONSE,"Illegal element");
         validate(outputValidator,RESPONSE,null);

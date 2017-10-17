@@ -34,22 +34,22 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.extensions.esb.EsbSoapValidator;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.jms.JmsListener;
-import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.XSD;
-
-import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -91,9 +91,9 @@ public class Wsdl {
     private final String name;
     private final String fileName;
     private final PipeLine pipeLine;
-    private final XmlValidator inputValidator;
-    private final XmlValidator outputValidator;
-    private final boolean isMixedValidator; 
+    private final IXmlValidator inputValidator;
+    private final IXmlValidator outputValidator;
+    private final boolean isMixedValidator=false; 
     private String webServiceListenerNamespace;
     private Set<XSD> inputXsds;
     private Set<XSD> outputXsds;
@@ -137,7 +137,7 @@ public class Wsdl {
         if (this.name == null) {
             throw new IllegalArgumentException("Adapter has no name");
         }
-        inputValidator = (XmlValidator)pipeLine.getInputValidator();
+        inputValidator = (IXmlValidator)pipeLine.getInputValidator();
         if (inputValidator == null) {
             throw new IllegalStateException("Adapter has no input validator");
         }
@@ -148,7 +148,7 @@ public class Wsdl {
                 throw new IllegalStateException(inputValidator.getConfigurationException().toString());
             }
         }
-        outputValidator = (XmlValidator)pipeLine.getOutputValidator();
+        outputValidator = (IXmlValidator)pipeLine.getOutputValidator();
         if (outputValidator != null && outputValidator.getConfigurationException() != null) {
             if (outputValidator.getConfigurationException().getMessage() != null) {
                 throw new IllegalStateException(outputValidator.getConfigurationException().getMessage());
@@ -156,7 +156,7 @@ public class Wsdl {
                 throw new IllegalStateException(outputValidator.getConfigurationException().toString());
             }
         }
-		isMixedValidator = inputValidator.isMixedValidator(outputValidator);
+		//isMixedValidator = inputValidator.isMixedValidator(outputValidator);
         String fileName = getName();
         AppConstants appConstants = AppConstants.getInstance();
         String tns = appConstants.getResolvedProperty("wsdl." + getName() + ".targetNamespace");
@@ -250,13 +250,9 @@ public class Wsdl {
                     } else {
                         warn("Could not extract paradigm from soapBody attribute of inputValidator (should end with _Action, _Event, _Request or _Solicit)");
                     }
-                    if (outputValidator != null || isMixedValidator) {
-                        String outputParadigm;
-                        if (outputValidator != null) {
-                            outputParadigm = WsdlUtils.getEsbSoapParadigm(outputValidator);
-                        } else {
-                            outputParadigm = WsdlUtils.getEsbSoapParadigm(inputValidator, true);
-                        }
+//                    if (outputValidator != null || isMixedValidator) {
+                      if (outputValidator != null) {
+                        String outputParadigm = WsdlUtils.getEsbSoapParadigm(outputValidator);
                         if (outputParadigm != null) {
                             if (!"Response".equals(outputParadigm)) {
                                 warn("Paradigm for output message which was extracted from soapBody should be Response instead of '"
@@ -428,7 +424,7 @@ public class Wsdl {
         }
     }
 
-	protected boolean isHeaderOptional(XmlValidator xmlValidator) {
+	protected boolean isHeaderOptional(IXmlValidator xmlValidator) {
 		if (xmlValidator instanceof SoapValidator) {
 			String root = ((SoapValidator) xmlValidator).getSoapHeader();
 			if (StringUtils.isNotEmpty(root)) {
@@ -443,7 +439,7 @@ public class Wsdl {
 		return false;
 	}
 
-    public Set<XSD> getXsds(XmlValidator xmlValidator)
+    public Set<XSD> getXsds(IXmlValidator xmlValidator)
             throws IOException, XMLStreamException, ConfigurationException {
         Set<XSD> xsds = new HashSet<XSD>();
         String inputSchema = xmlValidator.getSchema();
@@ -923,20 +919,21 @@ public class Wsdl {
         return pipeLine;
     }
 
-    protected String getRoot(XmlValidator xmlValidator) {
+    protected String getRoot(IXmlValidator xmlValidator) {
         return getRoot(xmlValidator, false);
     }
 
-    protected String getRoot(XmlValidator xmlValidator, boolean outputMode) {
-        if (xmlValidator instanceof SoapValidator) {
-        	if (outputMode) {
-            	return ((SoapValidator)xmlValidator).getOutputSoapBody();
-        	} else {
-            	return ((SoapValidator)xmlValidator).getSoapBody();
-        	}
-        } else {
-            return xmlValidator.getRoot();
-        }
+    protected String getRoot(IXmlValidator xmlValidator, boolean outputMode) {
+    	return xmlValidator.getMessageRoot();
+//        if (xmlValidator instanceof SoapValidator) {
+//        	if (outputMode) {
+//            	return ((SoapValidator)xmlValidator).getOutputSoapBody();
+//        	} else {
+//            	return ((SoapValidator)xmlValidator).getSoapBody();
+//        	}
+//        } else {
+//            return xmlValidator.getRoot();
+//        }
     }
 
     protected QName getRootElement(Set<XSD> xsds, String root) {
@@ -967,7 +964,7 @@ public class Wsdl {
         return null;
     }
 
-    protected QName getHeaderElement(XmlValidator xmlValidator, Set<XSD> xsds) {
+    protected QName getHeaderElement(IXmlValidator xmlValidator, Set<XSD> xsds) {
         if (xmlValidator instanceof SoapValidator) {
             String root = ((SoapValidator)xmlValidator).getSoapHeader();
             String namespace = ((SoapValidator)xmlValidator).getSoapHeaderNamespace();
@@ -978,27 +975,28 @@ public class Wsdl {
         return null;
     }
 
-    protected QName getBodyElement(XmlValidator xmlValidator, Set<XSD> xsds, String type) {
+    protected QName getBodyElement(IXmlValidator xmlValidator, Set<XSD> xsds, String type) {
         return getBodyElement(xmlValidator, xsds, type, false);
     }
 
-    protected QName getBodyElement(XmlValidator xmlValidator, Set<XSD> xsds, String type, boolean outputMode) {
+    protected QName getBodyElement(IXmlValidator xmlValidator, Set<XSD> xsds, String type, boolean outputMode) {
         String root;
-        if (xmlValidator instanceof SoapValidator) {
-        	if (outputMode) {
-            	root = ((SoapValidator)xmlValidator).getOutputSoapBody();
-        	} else {
-            	root = ((SoapValidator)xmlValidator).getSoapBody();
-        	}
-            if (StringUtils.isEmpty(root)) {
-                warn("Attribute soapBody for " + type + " not found or empty");
-            }
-        } else {
-            root = xmlValidator.getRoot();
-            if (StringUtils.isEmpty(root)) {
+//        if (xmlValidator instanceof SoapValidator) {
+//        	if (outputMode) {
+//            	root = ((SoapValidator)xmlValidator).getOutputSoapBody();
+//        	} else {
+//            	root = ((SoapValidator)xmlValidator).getSoapBody();
+//        	}
+//            if (StringUtils.isEmpty(root)) {
+//                warn("Attribute soapBody for " + type + " not found or empty");
+//            }
+//        } else {
+//            root = xmlValidator.getRoot();
+        root = xmlValidator.getMessageRoot();
+                  if (StringUtils.isEmpty(root)) {
                 warn("Attribute root for " + type + " not found or empty");
             }
-        }
+//        }
         if (StringUtils.isNotEmpty(root)) {
             return getRootElement(xsds, root);
         }

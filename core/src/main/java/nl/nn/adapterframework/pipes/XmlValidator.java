@@ -110,8 +110,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
     public static final String XML_VALIDATOR_MODE_OUTPUT = "OUTPUT";   
 
 	private String root;
-	private Set<List<String>> inputRootValidations;
-	private Set<List<String>> outputRootValidations;
+	private String responseRoot;
+	private Set<List<String>> requestRootValidations;
+	private Set<List<String>> responseRootValidations;
 	private Map<List<String>, List<String>> invalidRootNamespaces;
 
 	protected AbstractXmlValidator validator = new XercesXmlValidator();
@@ -335,7 +336,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
      }
 
 	protected boolean isConfiguredForMixedValidation() {
-		return outputRootValidations!=null && !outputRootValidations.isEmpty();
+		return responseRootValidations!=null && !responseRootValidations.isEmpty();
 	}
 
 	private void enableOutputMode(IPipeLineSession session) {             
@@ -346,7 +347,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
     	session.remove(XML_VALIDATOR_MODE);                                
     }                                                                    
                                                                      
-    protected boolean isOutputModeEnabled(IPipeLineSession session) {       
+    protected boolean isOutputModeEnabled(IPipeLineSession session) {  
     	String xmlValidatorMode = (String) session.get(XML_VALIDATOR_MODE);
       	return XML_VALIDATOR_MODE_OUTPUT.equals(xmlValidatorMode);       
     }  
@@ -467,12 +468,27 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	public void setRoot(String root) {
 		this.root = root;
-		addRootValidation(Arrays.asList(root));
+		addRequestRootValidation(Arrays.asList(root));
 	}
 	public String getRoot() {
 		return root;
 	}
+	public void setResponseRoot(String responseRoot) {
+		this.responseRoot = responseRoot;
+		addResponseRootValidation(Arrays.asList(responseRoot));
+	}
+	protected String getResponseRoot() {
+		return responseRoot;
+	}
 
+	@Override
+	public String getMessageRoot() {
+		return getRoot();
+	}
+	
+	public String getMessageRoot(IPipeLineSession session) {
+		return isOutputModeEnabled(session)?getResponseRoot():getMessageRoot();
+	}
     /**
      * Not ready yet (namespace not yet correctly parsed)
      *
@@ -640,14 +656,14 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	@Override
-	public IPipe getResponseValidator(IPipe externalResponseValidator) {
-		if (externalResponseValidator==null && isConfiguredForMixedValidation()) {
+	public IPipe getResponseValidator() {
+		if (isConfiguredForMixedValidation()) {
 			return new ResponseValidatorWrapper(this);
 		}
-		return externalResponseValidator;
+		return null;
 	}
 	
-	public class ResponseValidatorWrapper implements IPipe {
+	public class ResponseValidatorWrapper implements IPipe,IXmlValidator {
 
 		private String name;
 		private Map<String, PipeForward> forwards=new HashMap<String, PipeForward>();
@@ -674,6 +690,11 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 
 		@Override
+		public ConfigurationException getConfigurationException() {
+			return null;
+		}
+
+		@Override
 		public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 			PipeRunResult result;
 			owner.enableOutputMode(session);
@@ -685,6 +706,11 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			return result;
 		}
 
+		@Override
+		public String getMessageRoot() {
+			return owner.getResponseRoot();
+		}
+		
 		@Override
 		public int getMaxThreads() {
 			return 0;
@@ -712,36 +738,44 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		@Override
 		public void stop() {
 		}
+
+		@Override
+		public String getSchemaLocation() {
+			return owner.getSchemaLocation();
+		}
+
+		@Override
+		public String getSchema() {
+			return owner.getSchema();
+		}
+
+		@Override
+		public Set<XSD> getXsds() throws ConfigurationException {
+			return owner.getXsds();
+		}
+
 		
 	}
 	
-//	public static boolean isMixedValidator(IPipe inputValidator, IPipe outputValidator) {
-//		if (inputValidator!=null && inputValidator instanceof XmlValidator) {
-//			return ((XmlValidator)inputValidator).isMixedValidator(outputValidator);
-//		}
-//		return false;
-//	}
-//	
-//	
 	public boolean isMixedValidator(Object outputValidator) {
 		return outputValidator==null && isConfiguredForMixedValidation();
 	}
 
 	public Set<List<String>> getRootValidations(IPipeLineSession session) {
-		return isOutputModeEnabled(session) ? outputRootValidations : inputRootValidations;
+		return isOutputModeEnabled(session) ? responseRootValidations : requestRootValidations;
 	} 
 
 	private void checkInputRootValidations(Set<XSD> xsds) throws ConfigurationException {
-		if (getInputRootValidations() != null) {
-			for (List<String> path: getInputRootValidations()) {
+		if (getRequestRootValidations() != null) {
+			for (List<String> path: getRequestRootValidations()) {
 				checkRootValidation(path, xsds);
 			}
 		}
 	}
 
 	private void checkOutputRootValidations(Set<XSD> xsds) throws ConfigurationException {
-		if (getOutputRootValidations() != null) {
-			for (List<String> path: getOutputRootValidations()) {
+		if (getResponseRootValidations() != null) {
+			for (List<String> path: getResponseRootValidations()) {
 				checkRootValidation(path, xsds);
 			}
 		}
@@ -831,30 +865,30 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return defaultValue;
 	}
 	@Deprecated
-	public void addRootValidation(List<String> path) {
-		addInputRootValidation(path);
+	protected void addRootValidation(List<String> path) {
+		addRequestRootValidation(path);
 	}
 	
-	public void addInputRootValidation(List<String> path) {
-		if (inputRootValidations == null) {
-			inputRootValidations = new HashSet<List<String>>();
+	protected void addRequestRootValidation(List<String> path) {
+		if (requestRootValidations == null) {
+			requestRootValidations = new HashSet<List<String>>();
 		}
-		inputRootValidations.add(path);
+		requestRootValidations.add(path);
 	}
 
-	public Set<List<String>> getInputRootValidations() {
-		return inputRootValidations;
+	protected Set<List<String>> getRequestRootValidations() {
+		return requestRootValidations;
 	}
 
-	public void addOutputRootValidation(List<String> path) {
-		if (outputRootValidations == null) {
-			outputRootValidations = new HashSet<List<String>>();
+	protected void addResponseRootValidation(List<String> path) {
+		if (responseRootValidations == null) {
+			responseRootValidations = new HashSet<List<String>>();
 		}
-		outputRootValidations.add(path);
+		responseRootValidations.add(path);
 	}
 
-	public Set<List<String>> getOutputRootValidations() {
-		return outputRootValidations;
+	protected Set<List<String>> getResponseRootValidations() {
+		return responseRootValidations;
 	}
 
 	public void addInvalidRootNamespaces(List<String> path, List<String> invalidRootNamespaces) {
