@@ -186,7 +186,7 @@ public class IbisTester {
 			}
 		}
 		String msg = "adapters started [" + adaptersStarted + "] from ["
-				+ adaptersStarted + "]";
+				+ adaptersCount + "]";
 		if (adaptersCount == adaptersStarted) {
 			debug(msg);
 		} else {
