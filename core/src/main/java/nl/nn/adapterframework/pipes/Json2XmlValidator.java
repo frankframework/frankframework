@@ -198,10 +198,6 @@ public class Json2XmlValidator extends XmlValidator {
 		return result;
 	}
 	
-	protected String getJsonRootElement(IPipeLineSession session) {
-		return getRoot();
-	}
-	
 	protected PipeRunResult alignJson(String messageToValidate, IPipeLineSession session) throws PipeRunException, XmlValidatorException {
 
 		ValidationContext context;
@@ -215,7 +211,7 @@ public class Json2XmlValidator extends XmlValidator {
 		String resultEvent;
 		String out=null;
 		try {
-			Json2Xml aligner = new Json2Xml(validatorHandler, context.getXsModels(), isCompactJsonArrays(), getJsonRootElement(session), isStrictJsonArraySyntax());
+			Json2Xml aligner = new Json2Xml(validatorHandler, context.getXsModels(), isCompactJsonArrays(), getMessageRoot(session), isStrictJsonArraySyntax());
 			if (StringUtils.isNotEmpty(getTargetNamespace())) {
 				aligner.setTargetNamespace(getTargetNamespace());
 			}

@@ -29,7 +29,7 @@ import org.apache.xerces.util.XMLChar;
 import javanet.staxutils.IndentingXMLStreamWriter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.pipes.XmlValidator;
+import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -56,29 +56,39 @@ public abstract class WsdlUtils {
         return result;
     }
 
-    public static String getEsbSoapParadigm(XmlValidator xmlValidator) {
-        return getEsbSoapParadigm(xmlValidator, false);
-    }
-
-    public static String getEsbSoapParadigm(XmlValidator xmlValidator, boolean outputMode) {
-        if (xmlValidator instanceof SoapValidator) {
-        	String soapBody;
-        	if (outputMode) {
-            	soapBody = ((SoapValidator)xmlValidator).getOutputSoapBody();
-        	} else {
-            	soapBody = ((SoapValidator)xmlValidator).getSoapBody();
-        	}
-            if (soapBody != null) {
-                int i = soapBody.lastIndexOf('_');
-                if (i != -1) {
-                    return soapBody.substring(i + 1);
-                }
+      // 2017-10-17 Previous version, before 
+//    public static String getEsbSoapParadigm(XmlValidator xmlValidator, boolean outputMode) {
+//        if (xmlValidator instanceof SoapValidator) {
+//        	String soapBody;
+//        	if (outputMode) {
+//            	soapBody = ((SoapValidator)xmlValidator).getOutputSoapBody();
+//        	} else {
+//            	soapBody = ((SoapValidator)xmlValidator).getSoapBody();
+//        	}
+//            if (soapBody != null) {
+//                int i = soapBody.lastIndexOf('_');
+//                if (i != -1) {
+//                    return soapBody.substring(i + 1);
+//                }
+//            }
+//        }
+//        return null;
+//    }
+    
+    
+    
+    public static String getEsbSoapParadigm(IXmlValidator xmlValidator) {
+    	String soapBody = xmlValidator.getMessageRoot();
+        if (soapBody != null) {
+            int i = soapBody.lastIndexOf('_');
+            if (i != -1) {
+                return soapBody.substring(i + 1);
             }
         }
         return null;
     }
 
-    public static String getFirstNamespaceFromSchemaLocation(XmlValidator inputValidator) {
+    public static String getFirstNamespaceFromSchemaLocation(IXmlValidator inputValidator) {
         String schemaLocation = inputValidator.getSchemaLocation();
         if (schemaLocation != null) {
             String[] split =  schemaLocation.trim().split("\\s+");
