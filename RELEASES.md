@@ -20,6 +20,7 @@ Upcoming
 - Fix JdbcQuery, TestService and SendJmsMessage pages to log messages when sec.log.includeMessage=true
 - First steps towards unit testing without application server
 - Add attribute soapBodyNamespace to WsdlXmlValidator 
+- Add Akamai Sender module
 
 
 
