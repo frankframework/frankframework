@@ -97,6 +97,7 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 	private SignType signVersion = SignType.HMACSHA256;
 	private int actionVersion = 1;
 	private String hashAlgorithm = null;
+	private String rootDir = null;
 
 	private String authAlias;
 	private String cpCode = null;
@@ -152,7 +153,10 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 	private URL buildUri(String path) throws SenderException {
 		if (!path.startsWith("/")) path = "/" + path;
 		try {
-			return new URL(getUrl() + getCpCode() + path);
+			if(getRootDir() == null)
+				return new URL(getUrl() + getCpCode() + path);
+			else
+				return new URL(getUrl() + getCpCode() + getRootDir() + path);
 		} catch (MalformedURLException e) {
 			throw new SenderException(e);
 		}
@@ -328,6 +332,16 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 
 	public String getPhysicalDestinationName() {
 		return "URL ["+getUrl()+"] cpCode ["+getCpCode()+"] action ["+getAction()+"]";
+	}
+
+	public String getRootDir() {
+		return rootDir;
+	}
+	public void setRootDir(String rootDir) {
+		if(!rootDir.startsWith("/")) rootDir = "/" + rootDir;
+		if(rootDir.endsWith("/"))
+			rootDir = rootDir.substring(0, rootDir.length()-1);
+		this.rootDir = rootDir;
 	}
 
 	public String getAuthAlias() {
