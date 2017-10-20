@@ -21,6 +21,7 @@ Upcoming
 - First steps towards unit testing without application server
 - Add attribute soapBodyNamespace to WsdlXmlValidator 
 - Add Akamai Sender module
+- Support multiple configuration directories for DirectoryClassLoader
 
 
 
