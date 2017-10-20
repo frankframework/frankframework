@@ -22,6 +22,7 @@ Upcoming
 - Add attribute soapBodyNamespace to WsdlXmlValidator 
 - Add Akamai Sender module
 - Support multiple configuration directories for DirectoryClassLoader
+- Add rootDir property to AkamaiSender
 
 
 
