@@ -1080,10 +1080,11 @@ public class TestTool {
 		} else {
 			result = new File(parent, child);
 		}
+		String absPath = FilenameUtils.normalize(result.getAbsolutePath());
 		if (addFileSeparator) {
-			return result.getAbsolutePath() + File.separator;
+			return absPath + File.separator;
 		} else {
-			return result.getAbsolutePath();
+			return absPath;
 		}
 	}
 
