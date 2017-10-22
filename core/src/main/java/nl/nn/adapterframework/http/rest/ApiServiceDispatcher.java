@@ -20,7 +20,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -76,11 +75,9 @@ public class ApiServiceDispatcher {
 		return config;
 	}
 
-	public void registerServiceClient(ServiceClient listener, String uriPattern, String method) throws ConfigurationException {
-
-		if (!(listener instanceof ApiListener))
-			throw new ConfigurationException("ApiServiceDispatcher tried to register serviceClient ["+listener.getClass().toString()+"] expecting [" + ApiListener.class.getCanonicalName() + "]");
-		ApiListener apiListener = (ApiListener) listener;
+	public void registerServiceClient(ApiListener listener) throws ConfigurationException {
+		String uriPattern = listener.getCleanPattern();
+		String method = listener.getMethod();
 
 		ApiDispatchConfig dispatchConfig = null;
 		if(patternClients.containsKey(uriPattern))
@@ -88,19 +85,19 @@ public class ApiServiceDispatcher {
 		else
 			dispatchConfig = new ApiDispatchConfig(uriPattern);
 
-		dispatchConfig.register(method, apiListener);
+		dispatchConfig.register(method, listener);
 
 		patternClients.put(uriPattern, dispatchConfig);
 		log.trace("ApiServiceDispatcher successfully registered uriPattern ["+uriPattern+"] method ["+method+"]");
 	}
 
-	public void unregisterServiceClient(String uriPattern, String method) {
+	public void unregisterServiceClient(ApiListener listener) {
+		String method = listener.getMethod();
+		String uriPattern = listener.getCleanPattern();
 
 		ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
 		dispatchConfig.destroy(method);
 
-		if(dispatchConfig.getMethods().size() == 0)
-			patternClients.remove(uriPattern);
 		log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
 	}
 	

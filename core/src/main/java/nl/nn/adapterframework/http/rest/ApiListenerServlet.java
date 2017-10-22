@@ -43,6 +43,8 @@ public class ApiListenerServlet extends HttpServlet {
 	private ApiServiceDispatcher dispatcher = null;
 	private IApiCache cache = null;
 	private int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
+	private String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
+	private String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "ETag, Content-Disposition");
 
 	public void init() throws ServletException {
 		if (dispatcher == null) {
@@ -93,11 +95,11 @@ public class ApiListenerServlet extends HttpServlet {
 			 * Handle Cross-Origin Resource Sharing
 			 */
 			if(method.equals("OPTIONS")) {
-				response.setHeader("Access-Control-Allow-Origin", "*");
+				response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
 				String headers = request.getHeader("Access-Control-Request-Headers");
 				if (headers != null)
 					response.setHeader("Access-Control-Allow-Headers", headers);
-				response.setHeader("Access-Control-Expose-Headers", "ETag, Content-Disposition");
+				response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
 	
 				StringBuilder methods = new StringBuilder();
 				for (String mtd : config.getMethods()) {
@@ -130,7 +132,7 @@ public class ApiListenerServlet extends HttpServlet {
 
 				String authorizationToken = null;
 				Cookie authorizationCookie = null;
-				if(listener.getAuthenticationMethod().equals("cookie")) {
+				if(listener.getAuthenticationMethod().equals("COOKIE")) {
 
 					Cookie[] cookies = request.getCookies();
 					for (Cookie cookie : cookies) {
@@ -141,7 +143,7 @@ public class ApiListenerServlet extends HttpServlet {
 						}
 					}
 				}
-				else if(listener.getAuthenticationMethod().equals("header")) {
+				else if(listener.getAuthenticationMethod().equals("HEADER")) {
 					authorizationToken = request.getHeader("Authorization");
 				}
 
@@ -252,6 +254,16 @@ public class ApiListenerServlet extends HttpServlet {
 			}
 
 			/**
+			 * Compile Allow header
+			 */
+			StringBuilder methods = new StringBuilder();
+			methods.append("OPTIONS, ");
+			for (String mtd : config.getMethods()) {
+				methods.append(mtd + ", ");
+			}
+			messageContext.put("allowedMethods", methods.substring(0, methods.length()-2));
+
+			/**
 			 * Process the request through the pipeline
 			 */
 			String result = listener.processRequest(null, body, messageContext);
@@ -273,16 +285,7 @@ public class ApiListenerServlet extends HttpServlet {
 			/**
 			 * Add headers
 			 */
-			if(messageContext.containsKey("allowedMethods"))
-				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
-			else {
-				StringBuilder methods = new StringBuilder();
-				methods.append("OPTIONS, ");
-				for (String mtd : config.getMethods()) {
-					methods.append(mtd + ", ");
-				}
-				response.addHeader("Allow", methods.substring(0, methods.length()-2));
-			}
+			response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
 			String contentType = listener.getContentType() + "; charset=utf-8";
 			if(listener.getProduces().equals("ANY")) {

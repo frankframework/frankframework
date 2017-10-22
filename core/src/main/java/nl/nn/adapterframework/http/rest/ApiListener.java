@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
@@ -31,12 +30,17 @@ import nl.nn.adapterframework.http.PushingListenerAdapter;
  * @author Niels Meijer
  *
  */
-public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
+public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
 	private String uriPattern;
-	private String method;
-	private String authenticationMethod = null;
 	private boolean updateEtag = true;
+
+	private String method;
+	private List<String> methods = Arrays.asList("GET", "PUT", "POST", "DELETE");
+
+	private String authenticationMethod = null;
+	private List<String> authenticationMethods = Arrays.asList("COOKIE", "HEADER");
+
 	private String consumes = "ANY";
 	private String produces = "ANY";
 	private List<String> mediaTypes = Arrays.asList("ANY", "XML", "JSON", "TEXT");
@@ -45,32 +49,39 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
 	public void configure() throws ConfigurationException {
-		if(!getConsumes().equals("ANY") && getMethod().equals("GET"))
-			throw new ConfigurationException("cannot set consumes attribute when using method [GET]");
+		if(!getConsumes().equals("ANY")) {
+			if(getMethod().equals("GET"))
+				throw new ConfigurationException("cannot set consumes attribute when using method [GET]");
+			if(getMethod().equals("DELETE"))
+				throw new ConfigurationException("cannot set consumes attribute when using method [DELETE]");
+		}
+		if(!methods.contains(getMethod()))
+			throw new ConfigurationException("Method ["+method+"] not yet implemented, supported methods are "+methods.toString()+"");
 
-		ApiServiceDispatcher.getInstance().registerServiceClient(this, getCleanPattern(), getMethod());
+		if(!mediaTypes.contains(getProduces()))
+			throw new ConfigurationException("Unknown mediatype ["+produces+"]");
+
+		if(!mediaTypes.contains(getConsumes()))
+			throw new ConfigurationException("Unknown mediatype ["+consumes+"]");
+
+		if(getAuthenticationMethod() != null && !authenticationMethods.contains(getAuthenticationMethod()))
+			throw new ConfigurationException("Unknown authenticationMethod ["+authenticationMethod+"]");
+
+		ApiServiceDispatcher.getInstance().registerServiceClient(this);
 	}
 
 	public void close() {
-		ApiServiceDispatcher.getInstance().unregisterServiceClient(getCleanPattern(), getMethod());
 		super.close();
+		ApiServiceDispatcher.getInstance().unregisterServiceClient(this);
 	}
 
+	@Override
 	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException {
-		String response = super.processRequest(correlationId, message, requestContext);
-
-//		System.out.println("message: " + message);
-//		System.out.println("response: " + response);
-
-		return response;
-	}
-
-	public Object getSpecialDefaultValue(String attributeName, Object defaultValue, Map<String, String> attributes) {
-		return defaultValue;
+		return super.processRequest(correlationId, message, requestContext);
 	}
 
 	public String getPhysicalDestinationName() {
-		String destinationName = "uriPattern: "+getUriPattern()+"; method: "+getMethod();
+		String destinationName = "uriPattern: "+getCleanPattern()+"; method: "+getMethod();
 		if(!getConsumes().equals("ANY"))
 			destinationName += "; consumes: "+getConsumes();
 		if(!getProduces().equals("ANY"))
@@ -104,27 +115,15 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	//TODO add authenticationType
 
-	public void setAuthenticationMethod(String method) throws ConfigurationException {
-		if(method.equalsIgnoreCase("header")) {
-			this.authenticationMethod = "header";
-		}
-		else if(method.equalsIgnoreCase("cookie")) {
-			this.authenticationMethod = "cookie";
-		}
-		else
-			throw new ConfigurationException("Authentication method not implemented");
+	public void setAuthenticationMethod(String authenticationMethod) {
+		this.authenticationMethod = authenticationMethod.toUpperCase();
 	}
-
 	public String getAuthenticationMethod() {
 		return this.authenticationMethod;
 	}
 
-	public void setConsumes(String consumes) throws ConfigurationException {
-		consumes = consumes.toUpperCase();
-		if(mediaTypes.contains(consumes))
-			this.consumes = consumes;
-		else
-			throw new ConfigurationException("Unknown mediatype ["+consumes+"]");
+	public void setConsumes(String consumes) {
+		this.consumes = consumes.toUpperCase();
 	}
 	public String getConsumes() {
 		return consumes;
@@ -140,12 +139,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return contentType.contains(mediaType);
 	}
 
-	public void setProduces(String produces) throws ConfigurationException {
-		produces = produces.toUpperCase();
-		if(mediaTypes.contains(produces))
-			this.produces = produces;
-		else
-			throw new ConfigurationException("Unknown mediatype ["+produces+"]");
+	public void setProduces(String produces) {
+		this.produces = produces.toUpperCase();
 	}
 	public String getProduces() {
 		return produces;
