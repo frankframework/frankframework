@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.extensions.akamai;
 
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -155,7 +154,7 @@ public class NetStorageCmsSigner {
 				url.getPath(),
 				NetStorageCmsSigner.ACTION_HEADER.toLowerCase(),
 				action);
-		byte[] hash = NetStorageUtils.computeKeyedHash(signData.getBytes(StandardCharsets.UTF_8), accessToken, this.getSignVersion().getAlgorithm());
+		byte[] hash = NetStorageUtils.computeKeyedHash(signData.getBytes(), accessToken, this.getSignVersion().getAlgorithm());
 
 		return NetStorageUtils.encodeBase64(hash);
 	}

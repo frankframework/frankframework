@@ -21,13 +21,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.TreeSet;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * General utility functions needed to implement the HTTP SDK.  Many of these functions are also
@@ -164,7 +166,7 @@ public class NetStorageUtils {
 
 		try {
 			Mac mac = Mac.getInstance(hashType.getAlgorithm());
-			mac.init(new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), hashType.getAlgorithm()));
+			mac.init(new SecretKeySpec(key.getBytes(), hashType.getAlgorithm()));
 			return mac.doFinal(data);
 		} catch (Exception e) {
 			throw new IllegalArgumentException("This should never happen!", e);
@@ -239,8 +241,8 @@ public class NetStorageUtils {
 			for (String entry : new TreeSet<String>(data.keySet()))
 				result.append(String.format("%s%s=%s",
 						result.length() > 0 ? "&" : "",
-						URLEncoder.encode(entry, StandardCharsets.UTF_8.name()),
-						URLEncoder.encode(data.get(entry), StandardCharsets.UTF_8.name())));
+						URLEncoder.encode(entry, Misc.DEFAULT_INPUT_STREAM_ENCODING),
+						URLEncoder.encode(data.get(entry), Misc.DEFAULT_INPUT_STREAM_ENCODING)));
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalArgumentException("This should never happen! StandardCharsets.UTF_8 is an enum!", e);
 		}
