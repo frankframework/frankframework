@@ -57,6 +57,7 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>{@link #setActionVersion(int) actionVersion}</td><td>Akamai currently only supports action version 1!</td><td>1</td></tr>
  * 
  * <tr><td>{@link #setCpCode(String) cpCode}</td><td>the CP Code to be used</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRootDir(String) rootDir}</td><td><i>optional</i> root directory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>The destination, aka Akamai host. Only the hostname is allowed; eq. xyz-nsu.akamaihd.net</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSignVersion(int) signVersion}</td><td>the version used to sign the authentication headers. Possible values: 3 (MD5), 4 (SHA1), 5 (SHA256)</td><td>5</td></tr>
  * <tr><td>{@link #setHashAlgorithm(String) hashAlgorithm}</td><td>only works in combination with the <code>upload</code> action. If set, and not specified as parameter, the sender will sign the file to be uploaded. Possible values: md5, sha1, sha256. <br/>NOTE: if the file input is a Stream this will put the file in memory!</td><td>&nbsp;</td></tr>
@@ -94,9 +95,10 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 	private List<String> actions = Arrays.asList("du", "dir", "delete", "upload", "mkdir", "rmdir", "rename", "mtime", "download");
 	private String url = null;
 	private String nonce = null;
-	private SignType signVersion = SignType.HMACSHA256;
+	private int signVersion = 5;
 	private int actionVersion = 1;
 	private String hashAlgorithm = null;
+	private List<String> hashAlgorithms = Arrays.asList("MD5", "SHA1", "SHA256");
 	private String rootDir = null;
 
 	private String authAlias;
@@ -118,10 +120,20 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 		//Safety checks
 		if(getAction() == null)
 			throw new ConfigurationException(getLogPrefix()+"action must be specified");
+		if(!actions.contains(getAction()))
+			throw new ConfigurationException(getLogPrefix()+"unknown or invalid action ["+getAction()+"] supported actions are "+actions.toString()+"");
+
 		if(getCpCode() == null)
 			throw new ConfigurationException(getLogPrefix()+"cpCode must be specified");
 		if(!getUrl().startsWith("http"))
 			throw new ConfigurationException(getLogPrefix()+"url must be start with http(s)");
+
+		if(hashAlgorithm != null && !hashAlgorithms.contains(hashAlgorithm))
+			throw new ConfigurationException(getLogPrefix()+"unknown authenticationMethod ["+hashAlgorithm+"] supported methods are "+hashAlgorithms.toString()+"");
+
+		if(getSignVersion() < 3 || getSignVersion() > 5)
+			throw new ConfigurationException(getLogPrefix()+"signVersion must be either 3, 4 or 5");
+
 
 		ParameterList<Parameter> parameterList = getParameterList();
 		if(getAction().equals("upload") && parameterList.findParameter("file") == null)
@@ -153,10 +165,17 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 	private URL buildUri(String path) throws SenderException {
 		if (!path.startsWith("/")) path = "/" + path;
 		try {
-			if(getRootDir() == null)
-				return new URL(getUrl() + getCpCode() + path);
-			else
-				return new URL(getUrl() + getCpCode() + getRootDir() + path);
+			String url = getUrl() + getCpCode();
+
+			if(getRootDir() != null)
+				url += getRootDir();
+
+			url += path;
+
+			if(url.endsWith("/")) //The path should never end with a '/'
+				url = url.substring(0, url.length() -1);
+
+			return new URL(url);
 		} catch (MalformedURLException e) {
 			throw new SenderException(e);
 		}
@@ -180,7 +199,7 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 		URL url = buildUri(path);
 		log.debug("opening ["+netStorageAction.getMethod()+"] connection to ["+url+"] with action ["+getAction()+"]");
 
-		NetStorageCmsSigner signer = new NetStorageCmsSigner(url, accessTokenCf.getUsername(), accessTokenCf.getPassword(), netStorageAction, getSignVersion());
+		NetStorageCmsSigner signer = new NetStorageCmsSigner(url, accessTokenCf.getUsername(), accessTokenCf.getPassword(), netStorageAction, getSignType());
 		Map<String, String> headers = signer.computeHeaders();
 
 		//SEND THE MESSAGE!
@@ -254,24 +273,12 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 		return response;
 	}
 
-	public void setHashAlgorithm(String hashAlgorithm) throws ConfigurationException {
-		hashAlgorithm = hashAlgorithm.toUpperCase();
-		if(hashAlgorithm.equals("MD5"))
-			this.hashAlgorithm = hashAlgorithm;
-		else if(hashAlgorithm.equals("SHA1"))
-			this.hashAlgorithm = hashAlgorithm;
-		else if(hashAlgorithm.equals("SHA256"))
-			this.hashAlgorithm = hashAlgorithm;
-		else
-			throw new ConfigurationException(getLogPrefix()+"unknown or invalid hashAlgorithm ["+hashAlgorithm+"]");
+	public void setHashAlgorithm(String hashAlgorithm) {
+		this.hashAlgorithm = hashAlgorithm.toUpperCase();
 	}
 
-	public void setAction(String action) throws ConfigurationException {
-		action = action.toLowerCase();
-		if(actions.contains(action))
-			this.action = action;
-		else
-			throw new ConfigurationException(getLogPrefix()+"unknown or invalid action ["+action+"]");
+	public void setAction(String action) {
+		this.action = action.toLowerCase();
 	}
 
 	public String getAction() {
@@ -307,19 +314,20 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 		return nonce;
 	}
 
-	public void setSignVersion(int signVersion) throws ConfigurationException {
-		if(signVersion == 3)
-			this.signVersion = SignType.HMACMD5;
-		else if(signVersion == 4)
-			this.signVersion = SignType.HMACSHA1;
-		else if(signVersion == 5)
-			this.signVersion = SignType.HMACSHA256;
-		else
-			throw new ConfigurationException(getLogPrefix()+"signVersion must be either 3, 4 or 5");
+	public void setSignVersion(int signVersion) {
+		this.signVersion = signVersion;
 	}
 
-	public SignType getSignVersion() {
+	public int getSignVersion() {
 		return signVersion;
+	}
+	public SignType getSignType() {
+		if(getSignVersion() == 3)
+			return SignType.HMACMD5;
+		else if(getSignVersion() == 4)
+			return SignType.HMACSHA1;
+		else
+			return SignType.HMACSHA256;
 	}
 
 	public void setAccessToken(String accessToken) {
