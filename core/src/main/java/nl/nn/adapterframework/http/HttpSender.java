@@ -87,6 +87,7 @@ import org.w3c.dom.Element;
 import jcifs.util.Base64;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -1115,7 +1116,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 				}
 				HttpServletResponse response = null;
 				if (isStreamResultToServlet()) {
-					response = (HttpServletResponse) prc.getSession().get("restListenerServletResponse");
+					response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
 				}
 				String fileName = null;
 				if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {

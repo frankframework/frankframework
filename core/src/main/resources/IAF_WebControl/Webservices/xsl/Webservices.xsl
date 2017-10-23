@@ -99,6 +99,63 @@
 							</xsl:otherwise>
 						</xsl:choose>
 					</table>
+					<br />
+					<br />
+					<table>
+						<caption class="caption">Available API services</caption>
+						<xsl:choose>
+							<xsl:when test="count(webservices/apiListeners/apiListener)=0">
+								<tr>
+									<td class="filterRow">No ApiListeners found</td>
+								</tr>
+							</xsl:when>
+							<xsl:otherwise>
+								<thead>
+									<tr>
+										<td class="filterRow">#</td>
+										<td class="filterRow">endpoint</td>
+										<td class="filterRow">GET</td>
+										<td class="filterRow">POST</td>
+										<td class="filterRow">PUT</td>
+										<td class="filterRow">DELETE</td>
+									</tr>
+								</thead>
+								<tbody>
+									<xsl:for-each select="webservices/apiListeners/apiListener">
+										<tr>
+											<td class="filterRow">
+												<xsl:value-of select="position()" />
+											</td>
+											<td class="filterRow">
+												<xsl:value-of select="@uriPattern" />
+											</td>
+											<td class="filterRow">
+												<xsl:if test="count(GET) &gt; 0">
+													<xsl:value-of select="GET/@name" />
+													<xsl:text></xsl:text>
+												</xsl:if>
+											</td>
+											<td class="filterRow">
+												<xsl:if test="count(POST) &gt; 0">
+													<xsl:value-of select="POST/@name" />
+												</xsl:if>
+											</td>
+											<td class="filterRow">
+												<xsl:if test="count(PUT) &gt; 0">
+													<xsl:value-of select="PUT/@name" />
+												</xsl:if>
+											</td>
+											<td class="filterRow">
+												<xsl:if test="count(DELETE) &gt; 0">
+													<xsl:value-of select="DELETE/@name" />
+												</xsl:if>
+											</td>
+										</tr>
+									</xsl:for-each>
+								</tbody>
+							</xsl:otherwise>
+						</xsl:choose>
+					</table>
 				</xsl:otherwise>
 			</xsl:choose>
 		</page>

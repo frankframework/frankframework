@@ -40,6 +40,7 @@ import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -255,7 +256,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					clobSessionVar=prc.getSession().get(getClobSessionKey());
 				}
 				if (isStreamResultToServlet()) {
-					HttpServletResponse response = (HttpServletResponse) prc.getSession().get("restListenerServletResponse");
+					HttpServletResponse response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
 					String contentType = (String) prc.getSession().get("contentType");
 					String contentDisposition = (String) prc.getSession().get("contentDisposition");
 					return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition);

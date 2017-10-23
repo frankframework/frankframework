@@ -13,16 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package nl.nn.adapterframework.http;
+package nl.nn.adapterframework.http.rest;
+
 
 /**
- * Etag (key-value) Cache interface, allows {@link nl.nn.adapterframework.http.RestListener RestListeners} to save and retrieve etags.
+ * Etag (key-value) Cache interface, allows {@link nl.nn.adapterframework.http.RestListener RestListeners} and {@link nl.nn.adapterframework.http.rest.ApiListener ApiListeners} to save and retrieve etags.
  * 
  * @author	Niels Meijer
  * @since	7.0-B2
  *
  */
-public interface IRestEtagCache {
+public interface IApiCache {
 
 	/**
 	 * Retrieve an object from the cache
@@ -39,6 +40,15 @@ public interface IRestEtagCache {
 	 * @param value		value of the object
 	 */
 	public void put(String key, Object value);
+
+	/**
+	 * Place an object in the cache
+	 * 
+	 * @param key		name of the object to store
+	 * @param value		value of the object
+	 * @param ttl		time to live, when the object expires
+	 */
+	public void put(String key, Object value, int ttl);
 
 	/**
 	 * Remove an object from the cache
