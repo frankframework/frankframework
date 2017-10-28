@@ -31,6 +31,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.htmlcleaner.CleanerProperties;
+import org.htmlcleaner.HtmlCleaner;
+import org.htmlcleaner.SimpleXmlSerializer;
+import org.htmlcleaner.TagNode;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -46,6 +50,8 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender for Akamai NetStorage (HTTP based).
@@ -147,18 +153,20 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 		proxyCf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
 
 		//TODO probably when we introduce httpcomponents4 we should adapt to that instead of url.openconnection
-		Authenticator.setDefault(
-			new Authenticator() {
-				@Override
-				public PasswordAuthentication getPasswordAuthentication() {
-					return new PasswordAuthentication(proxyCf.getUsername(), proxyCf.getPassword().toCharArray());
+		if(proxyCf.getUsername() != null && !proxyCf.getUsername().isEmpty()) {
+			Authenticator.setDefault(
+				new Authenticator() {
+					@Override
+					public PasswordAuthentication getPasswordAuthentication() {
+						return new PasswordAuthentication(proxyCf.getUsername(), proxyCf.getPassword().toCharArray());
+					}
 				}
-			}
-		);
+			);
+		}
 
 		if(getProxyHost() != null) {
 			proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(getProxyHost(), getProxyPort()));
-			log.debug("add proxy settings ["+getProxyHost() + getProxyPort() +"]");
+			log.debug("add proxy settings ["+getProxyHost() + ":" + getProxyPort() +"]");
 		}
 	}
 
@@ -204,7 +212,7 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 
 		//SEND THE MESSAGE!
 		HttpURLConnection request = null;
-		String response = "UNKNOWN ERROR";
+		XmlBuilder result = new XmlBuilder("result");
 		try {
 			if(proxy != null)
 				request = (HttpURLConnection) url.openConnection(proxy);
@@ -243,14 +251,25 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 			else
 				request.connect();
 
+			XmlBuilder statuscode = new XmlBuilder("statuscode");
+			statuscode.setValue(request.getResponseCode() + "");
+			result.addSubElement(statuscode);
+
 			if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
 				InputStream responseStream = request.getInputStream();
 				if(getAction().equals("download")) {
 					prc.getSession().put("fileStream", responseStream);
-					response = "success";
 				}
-				else
-					response = Misc.streamToString(responseStream);
+				else {
+					XmlBuilder message = new XmlBuilder("message");
+					String responseString = Misc.streamToString(responseStream);
+
+					responseString = XmlUtils.skipDocTypeDeclaration(responseString.trim());
+					responseString = XmlUtils.skipXmlDeclaration(responseString);
+
+					message.setValue(responseString, false);
+					result.addSubElement(message);
+				}
 			}
 			else {
 				// Validate Server-Time drift
@@ -258,19 +277,26 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 				long responseDate = request.getHeaderFieldDate("Date", 0);
 				if (responseDate != 0 && currentDate.getTime() - responseDate > 30*1000)
 					throw new SenderException("Local server Date is more than 30s out of sync with Remote server");
-				else
-					throw new SenderException(String.format("Unexpected Response from Server: %d %s\n%s",
+				else {
+					XmlBuilder message = new XmlBuilder("error");
+					message.setValue(request.getResponseMessage());
+					result.addSubElement(message);
+
+					log.warn(String.format("Unexpected Response from Server: %d %s\n%s",
 						request.getResponseCode(), request.getResponseMessage(), request.getHeaderFields()));
+				}
 			}
+
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception opening the connection to url [" + url + "]",e);
 		}
 		finally {
 			request.disconnect();
-			Authenticator.setDefault(null);
+			if(proxyCf.getUsername() != null && !proxyCf.getUsername().isEmpty())
+				Authenticator.setDefault(null);
 		}
 
-		return response;
+		return result.toXML();
 	}
 
 	public void setHashAlgorithm(String hashAlgorithm) {
