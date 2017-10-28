@@ -46,6 +46,9 @@
 					<xsl:when test="listener[@className='nl.nn.adapterframework.jdbc.MessageStoreListener']">
 						<xsl:call-template name="copy" />
 					</xsl:when>
+					<xsl:when test="listener[@className='nl.nn.adapterframework.http.rest.ApiListener']">
+						<xsl:call-template name="copy" />
+					</xsl:when>
 					<xsl:otherwise>
 						<xsl:call-template name="disable" />
 					</xsl:otherwise>
