@@ -682,7 +682,9 @@ angular.module('iaf.beheerconsole')
 			if(!absolutePath) {
 				absolutePath = window.location.origin;
 				var path = window.location.pathname;
-				absolutePath += path.substr(0, path.indexOf("Angular"));
+				if(path.indexOf("Angular") >= 0)
+					path = path.substr(0, path.indexOf("Angular"));
+				absolutePath += path
 			}
 			if(absolutePath && absolutePath.slice(-1) != "/") absolutePath += "/";
 			return absolutePath;
