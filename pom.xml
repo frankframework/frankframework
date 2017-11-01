@@ -55,6 +55,11 @@
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
+        <artifactId>ibis-adapterframework-akamai</artifactId>
+        <version>7.0-B4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-webapp</artifactId>
         <version>7.0-B4-SNAPSHOT</version>
         <type>war</type>
@@ -240,6 +245,7 @@
         <module>core</module>
         <module>example</module>
         <module>larva</module>
+        <module>akamai</module>
         <module>webapp</module>
       </modules>
     </profile>
@@ -257,6 +263,7 @@
         <module>ibm</module>
         <module>ifsa</module>
         <module>larva</module>
+        <module>akamai</module>
         <module>sap</module>
         <module>tibco</module>
         <module>webapp</module>

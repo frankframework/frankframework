@@ -415,8 +415,8 @@ angular.module('iaf.beheerconsole')
 	return function(adapters, $scope) {
 		if(!adapters || adapters.length < 1) return [];
 		var r = {};
-		for(adapterName in $scope.adapters) {
-			var adapter = $scope.adapters[adapterName];
+		for(adapterName in adapters) {
+			var adapter = adapters[adapterName];
 
 			if((adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") && $scope.filter[adapter.status])
 				r[adapterName] = adapter;
@@ -425,14 +425,13 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
-.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', function($scope, Hooks, Api, SweetAlert, Poller) {
+.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', function($scope, Hooks, Api, SweetAlert, Poller, $filter) {
 	this.filter = {
 		"started": true,
 		"stopped": true,
 		"warning": true
 	};
 	$scope.filter = this.filter;
-	$scope.hideAdapter = {};
 	$scope.applyFilter = function(filter) {
 		$scope.filter = filter;
 	};
@@ -459,16 +458,14 @@ angular.module('iaf.beheerconsole')
 	};
 	$scope.stopAll = function() {
 		var adapters = Array();
-		for(adapter in $scope.adapters) {
-			if($scope.hideAdapter[adapter] === true) continue;
+		for(adapter in $filter('adapterFilter')($scope.adapters, $scope)) {
 			adapters.push(adapter);
 		}
 		Api.Put("adapters", {"action": "stop", "adapters": adapters});
 	};
 	$scope.startAll = function() {
 		var adapters = Array();
-		for(adapter in $scope.adapters) {
-			if($scope.hideAdapter[adapter] === true) continue;
+		for(adapter in $filter('adapterFilter')($scope.adapters, $scope)) {
 			adapters.push(adapter);
 		}
 		Api.Put("adapters", {"action": "start", "adapters": adapters});
@@ -498,15 +495,6 @@ angular.module('iaf.beheerconsole')
 	$scope.changeConfiguration = function(name) {
 		$scope.selectedConfiguration = name;
 	};
-
-	Hooks.register("adapterUpdated:1", function(adapter) {
-		$scope.hideAdapter[adapter.name] = false;
-		for(x in $scope.filter) {
-			if($scope.filter[x] == false && adapter.status == x) {
-				$scope.hideAdapter[adapter.name] = true;
-			}
-		}
-	});
 
 	$scope.startAdapter = function(adapter) {
 		adapter.state = 'starting';

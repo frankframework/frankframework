@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package nl.nn.adapterframework.http;
+package nl.nn.adapterframework.http.rest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -21,15 +21,12 @@ import org.apache.log4j.Logger;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration;
-import net.sf.ehcache.config.Configuration;
-import net.sf.ehcache.config.DiskStoreConfiguration;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class RestEtagEhcache implements IRestEtagCache {
+public class ApiEhcache implements IApiCache {
 	private Logger log = LogUtil.getLogger(this);
 
 	private final String KEY_CACHE_NAME="etagCacheReceiver";
@@ -53,7 +50,7 @@ public class RestEtagEhcache implements IRestEtagCache {
 	private Ehcache cache=null;
 	private IbisCacheManager cacheManager=null;
 
-	public RestEtagEhcache() {
+	public ApiEhcache() {
 		cacheManager = IbisCacheManager.getInstance();
 
 		AppConstants ac = AppConstants.getInstance();
@@ -127,6 +124,12 @@ public class RestEtagEhcache implements IRestEtagCache {
 
 	public void put(String key, Object value) {
 		Element element = new Element(key,value);
+		cache.put(element);
+	}
+
+	public void put(String key, Object value, int ttl) {
+		Element element = new Element(key,value);
+		element.setTimeToLive(ttl);
 		cache.put(element);
 	}
 

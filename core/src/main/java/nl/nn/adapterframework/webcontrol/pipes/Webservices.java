@@ -17,6 +17,9 @@ package nl.nn.adapterframework.webcontrol.pipes;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedMap;
 
 import javax.naming.NamingException;
 import javax.xml.stream.XMLStreamException;
@@ -31,6 +34,9 @@ import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.RestListenerUtils;
+import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
+import nl.nn.adapterframework.http.rest.ApiListener;
+import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.soap.Wsdl;
@@ -100,6 +106,7 @@ public class Webservices extends TimeoutGuardPipe {
 	private String list(IbisManager ibisManager) {
 		XmlBuilder webservicesXML = new XmlBuilder("webservices");
 
+		//RestListeners
 		XmlBuilder restsXML = new XmlBuilder("rests");
 		for (IAdapter a : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter) a;
@@ -124,6 +131,7 @@ public class Webservices extends TimeoutGuardPipe {
 		}
 		webservicesXML.addSubElement(restsXML);
 
+		//WSDL's
 		XmlBuilder wsdlsXML = new XmlBuilder("wsdls");
 		for (IAdapter a : ibisManager.getRegisteredAdapters()) {
 			XmlBuilder wsdlXML = new XmlBuilder("wsdl");
@@ -145,6 +153,31 @@ public class Webservices extends TimeoutGuardPipe {
 			wsdlsXML.addSubElement(wsdlXML);
 		}
 		webservicesXML.addSubElement(wsdlsXML);
+
+		//ApiListeners
+		XmlBuilder apiListenerXML = new XmlBuilder("apiListeners");
+		SortedMap<String, ApiDispatchConfig> patternClients = ApiServiceDispatcher.getInstance().getPatternClients();
+		for (Entry<String, ApiDispatchConfig> client : patternClients.entrySet()) {
+			XmlBuilder apiXML = new XmlBuilder("apiListener");
+			ApiDispatchConfig config = client.getValue();
+
+			Set<String> methods = config.getMethods();
+			for (String method : methods) {
+				ApiListener listener = config.getApiListener(method);
+				XmlBuilder methodXML = new XmlBuilder(method);
+				String name = listener.getName();
+				if(name.contains("listener of ["))
+					name = name.substring(13, name.length()-1);
+				methodXML.addAttribute("name", name);
+				methodXML.addAttribute("updateEtag", listener.getUpdateEtag());
+				methodXML.addAttribute("isRunning", listener.isRunning());
+				apiXML.addSubElement(methodXML);
+			}
+
+			apiXML.addAttribute("uriPattern", config.getUriPattern());
+			apiListenerXML.addSubElement(apiXML);
+		}
+		webservicesXML.addSubElement(apiListenerXML);
 
 		return webservicesXML.toXML();
 	}

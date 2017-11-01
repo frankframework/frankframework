@@ -33,7 +33,9 @@ Eclipse
 =======
 
 - Download and unzip
-  [Eclipse Kepler SR2](http://eclipse.org/downloads/packages/eclipse-ide-java-ee-developers/keplersr2).
+  [Eclipse Kepler SR2](http://eclipse.org/downloads/packages/eclipse-ide-java-ee-developers/keplersr2)
+  (64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any
+  message)).
 - Start Eclipse with Java 7. You might want to
   [use -vm in eclipse.ini](http://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM).
 - Close Welcome.

@@ -126,7 +126,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setRetryXPath(String) retryXPath}</td><td>xpath expression evaluated on each technical successful reply. Retry is done if condition returns true</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRetryNamespaceDefs(String) retryNamespaceDefs}</td><td>namespace defintions for retryXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUseInputForExtract(boolean) useInputForExtract}</td><td>when set <code>true</code>, the input of a pipe is used to extract audit trail, correlationID and label (instead of the wrapped input)</td><td>true</td></tr>
- * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is first base64 decoded and then streamed to the HttpServletResponse object which is stored in session key "restListenerServletResponse"</td><td>false</td></tr>
+ * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is first base64 decoded and then streamed to the HttpServletResponse object</td><td>false</td></tr>
  * <tr><td>{@link #setPresumedTimeOutInterval(int) presumedTimeOutInterval}</td><td>when the previous call was a timeout, the maximum time (in seconds) after this timeout to presume the current call is also a timeout. A value of -1 indicates to never presume timeouts</td><td>10 s</td></tr> 
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>

@@ -113,6 +113,10 @@ public class IbisTester {
 	}
 
 	public boolean doTest() {
+		return doTest(false);
+	}
+
+	public boolean doTest(boolean larvaFullDefault) {
 		try {
 			// fix for GitLab Runner
 			File file = new File("target/log");
@@ -126,6 +130,7 @@ public class IbisTester {
 		System.setProperty("log.level", "INFO");
 		System.setProperty("otap.stage", "LOC");
 		System.setProperty("application.server.type", "IBISTEST");
+		System.setProperty("flow.create.url", "");
 		debug("***start***");
 		BasicConfigurator.configure();
 		Logger.getRootLogger().setLevel(Level.INFO);
@@ -194,7 +199,8 @@ public class IbisTester {
 			return false;
 		}
 
-		boolean larvaFull = appConstants.getBoolean("larva.full", false);
+		boolean larvaFull = appConstants.getBoolean("larva.full",
+				larvaFullDefault);
 		debug("***start larva [" + larvaFull + "]***");
 
 		Result result;

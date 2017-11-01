@@ -33,7 +33,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.http.rest.ApiCacheManager;
+import nl.nn.adapterframework.http.rest.IApiCache;
+import nl.nn.adapterframework.http.rest.ApiEhcache;
+import nl.nn.adapterframework.http.rest.ApiMemcached;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -68,24 +73,13 @@ public class RestServiceDispatcher  {
 	private SortedMap patternClients=new TreeMap(new RestUriComparator());
 
 	private static RestServiceDispatcher self = null;
-	private static IRestEtagCache cache = null;
+	private static IApiCache cache = ApiCacheManager.getInstance();
 
 	public static synchronized RestServiceDispatcher getInstance() {
 		if( self == null ) {
 			self = new RestServiceDispatcher();
 		}
 		return self;
-	}
-
-	public static synchronized IRestEtagCache getCache() {
-		if( cache == null ) {
-			if(etagCacheType.equalsIgnoreCase("ehcache"))
-				cache = new RestEtagEhcache();
-			else if(etagCacheType.equalsIgnoreCase("memcached")) {
-				cache = new RestEtagMemcached();
-			}
-		}
-		return cache;
 	}
 
 	public String findMatchingPattern(String uri) {
@@ -246,9 +240,9 @@ public class RestServiceDispatcher  {
 			if (etagKey!=null) context.put(etagKey,etag);
 			if (contentTypeKey!=null) context.put(contentTypeKey,contentType);
 			if (log.isTraceEnabled()) log.trace("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
-			if (httpServletRequest!=null) context.put("restListenerServletRequest", httpServletRequest);
-			if (httpServletResponse!=null) context.put("restListenerServletResponse", httpServletResponse);
-			if (servletContext!=null) context.put("restListenerServletContext", servletContext);
+			if (httpServletRequest!=null) context.put(IPipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
+			if (httpServletResponse!=null) context.put(IPipeLineSession.HTTP_RESPONSE_KEY, httpServletResponse);
+			if (servletContext!=null) context.put(IPipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
 
 			if (writeToSecLog) {
 				secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
@@ -261,10 +255,7 @@ public class RestServiceDispatcher  {
 			}
 			String etagCacheKey = restPath+"_"+uri;
 
-			cache = getCache();
-			if(cache == null)
-				log.warn("failed to initialize IRestEtagCache, skipping");
-			else if(cache.containsKey(etagCacheKey)) {
+			if(cache.containsKey(etagCacheKey)) {
 				String cachedEtag = (String) cache.get(etagCacheKey);
 
 				if(ifNoneMatch != null && ifNoneMatch.equalsIgnoreCase(cachedEtag) && method.equalsIgnoreCase("GET")) {

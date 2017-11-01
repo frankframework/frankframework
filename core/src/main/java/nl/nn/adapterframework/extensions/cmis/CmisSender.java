@@ -34,6 +34,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
@@ -401,7 +402,7 @@ public class CmisSender extends SenderWithParametersBase {
 			InputStream inputStream = contentStream.getStream();
 			if (isStreamResultToServlet()) {
 				HttpServletResponse response = (HttpServletResponse) prc
-						.getSession().get("restListenerServletResponse");
+						.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
 				String contentType = contentStream.getMimeType();
 				if (StringUtils.isNotEmpty(contentType)) {
 					log.debug(getLogPrefix()

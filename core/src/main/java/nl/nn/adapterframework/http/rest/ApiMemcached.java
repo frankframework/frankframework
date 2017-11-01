@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package nl.nn.adapterframework.http;
+package nl.nn.adapterframework.http.rest;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -36,7 +36,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class RestEtagMemcached implements IRestEtagCache {
+public class ApiMemcached implements IApiCache {
 
 	protected Logger log = LogUtil.getLogger(this);
 	private MemcachedClient client = null;
@@ -55,7 +55,7 @@ public class RestEtagMemcached implements IRestEtagCache {
 		}
 	};
 
-	public RestEtagMemcached() {
+	public ApiMemcached() {
 		AppConstants ac = AppConstants.getInstance();
 		String address = ac.getProperty("etag.cache.server", "localhost:11211");
 		String username = ac.getProperty("etag.cache.username", "");
@@ -100,6 +100,10 @@ public class RestEtagMemcached implements IRestEtagCache {
 
 	public void put(String key, Object value) {
 		client.set(key, 0, value);
+	}
+
+	public void put(String key, Object value, int ttl) {
+		client.set(key, ttl, value);
 	}
 
 	public boolean remove(String key) {

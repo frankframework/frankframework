@@ -18,6 +18,9 @@ package nl.nn.adapterframework.configuration.classloaders;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.AppConstants;
@@ -27,7 +30,7 @@ import org.apache.log4j.Logger;
 
 public class DirectoryClassLoader extends ClassLoader {
 	private Logger log = LogUtil.getLogger(this);
-	private File directory;
+	private List<File> directories;
 
 	public DirectoryClassLoader(String directory) throws ConfigurationException {
 		super(DirectoryClassLoader.class.getClassLoader());
@@ -37,23 +40,34 @@ public class DirectoryClassLoader extends ClassLoader {
 			if (configurationsDirectory == null) {
 				throw new ConfigurationException("Could not find property configurations.directory");
 			}
-			this.directory = new File(configurationsDirectory);
+			retrieveDirectories(configurationsDirectory);
 		} else {
-			this.directory = new File(directory);
-		}
-		if (!this.directory.isDirectory()) {
-			throw new ConfigurationException("Could not find directory to load configuration from: " + this.directory);
+			retrieveDirectories(directory);
 		}
 	}
 
+	private void retrieveDirectories(String directoriesString) throws ConfigurationException {
+		directories = new ArrayList<File>();
+		List<String> directoriesStringAsList = Arrays.asList(directoriesString.split(","));
+		for (String directoryString : directoriesStringAsList) {
+			File directory = new File(directoryString);
+			if (!directory.isDirectory()) {
+				throw new ConfigurationException("Could not find directory to load configuration from: " + directoryString);
+			}
+			directories.add(directory);
+		}
+	}
+	
 	@Override
 	public URL getResource(String name) {
-		File file = new File(directory, name);
-		if (file.exists()) {
-			try {
-				return file.toURI().toURL();
-			} catch (MalformedURLException e) {
-				log.error("Could not create url for '" + name + "'", e);
+		for (File directory: directories) {
+			File file = new File(directory, name);
+			if (file.exists()) {
+				try {
+					return file.toURI().toURL();
+				} catch (MalformedURLException e) {
+					log.error("Could not create url for '" + name + "'", e);
+				}
 			}
 		}
 		return super.getResource(name);
