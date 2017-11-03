@@ -36,4 +36,5 @@
 		"timeOffset": 0,
 		"init": 0,
 	});
+	console.timeEnd("startup");
 })();
