@@ -1,3 +1,7 @@
+if(location.hostname != "localhost") {
+	window.console.log("%cThis is a browser feature intended for developers. Do not paste any code here given to you by someone else. It may compromise your account or have other negative side effects.","font-weight: bold; font-size: 14px;");
+}
+
 console.time("startup");
 console.time("documentReady");
 
@@ -37,6 +41,11 @@ $(document).ready(function () {
 		}, time);
 	}
 });
+
+//Foist: To force upon or impose fraudulently or unjustifiably
+function foist(callback) {
+	angular.element(document.body).scope().foist(callback);
+}
 
 // Automatically minimalize menu when screen is less than 768px
 $(function() {
