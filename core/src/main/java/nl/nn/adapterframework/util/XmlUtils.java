@@ -1742,7 +1742,7 @@ public class XmlUtils {
 	public static Collection<String> evaluateXPathNodeSet(String input,
 			String xpathExpr) throws DomBuilderException,
 			XPathExpressionException {
-		return evaluateXPathNodeSet(input, xpathExpr, false);
+		return evaluateXPathNodeSet(input, xpathExpr, true);
 	}
 
 	public static Collection<String> evaluateXPathNodeSet(String input,
@@ -1773,7 +1773,7 @@ public class XmlUtils {
 	public static String evaluateXPathNodeSetFirstElement(String input,
 			String xpathExpr) throws DomBuilderException,
 			XPathExpressionException {
-		return evaluateXPathNodeSetFirstElement(input, xpathExpr, false);
+		return evaluateXPathNodeSetFirstElement(input, xpathExpr, true);
 	}
 
 	public static String evaluateXPathNodeSetFirstElement(String input,
@@ -1868,7 +1868,7 @@ public class XmlUtils {
 	}
 
 	public static synchronized XPathFactory getXPathFactory() {
-		return getXPathFactory(false);
+		return getXPathFactory(true);
 	}
 
 	public static synchronized XPathFactory getXPathFactory(boolean xslt2) {
