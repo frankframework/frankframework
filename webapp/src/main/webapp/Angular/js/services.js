@@ -361,6 +361,7 @@ angular.module('iaf.beheerconsole')
 		};
 		this.setLevel = function(l) {
 			l = Math.min(3, Math.max(0, l));
+			if(l == level) return;
 			console.info(this.head() + " Setting DEBUG level to ["+l+"]");
 			level = l;
 		};
@@ -684,7 +685,7 @@ angular.module('iaf.beheerconsole')
 				var path = window.location.pathname;
 				if(path.indexOf("Angular") >= 0)
 					path = path.substr(0, path.indexOf("Angular"));
-				absolutePath += path
+				absolutePath += path;
 			}
 			if(absolutePath && absolutePath.slice(-1) != "/") absolutePath += "/";
 			return absolutePath;
@@ -859,7 +860,6 @@ angular.module('iaf.beheerconsole')
 							//return deferred.promise;
 							break;
 						case 403:
-							//Not modefied
 							//$rootScope.$broadcast('event:auth-forbidden', rejection);
 							break;
 					}

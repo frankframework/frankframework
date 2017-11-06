@@ -1742,11 +1742,17 @@ public class XmlUtils {
 	public static Collection<String> evaluateXPathNodeSet(String input,
 			String xpathExpr) throws DomBuilderException,
 			XPathExpressionException {
+		return evaluateXPathNodeSet(input, xpathExpr, true);
+	}
+
+	public static Collection<String> evaluateXPathNodeSet(String input,
+			String xpathExpr, boolean xslt2) throws DomBuilderException,
+			XPathExpressionException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		Collection<String> c = new LinkedList<String>();
 		Document doc = buildDomDocument(msg, true, true);
-		XPath xPath = XPathFactory.newInstance().newXPath();
+		XPath xPath = getXPathFactory(xslt2).newXPath();
 		XPathExpression xPathExpression = xPath.compile(xpathExpr);
 		Object result = xPathExpression.evaluate(doc, XPathConstants.NODESET);
 		NodeList nodes = (NodeList) result;
@@ -1767,7 +1773,13 @@ public class XmlUtils {
 	public static String evaluateXPathNodeSetFirstElement(String input,
 			String xpathExpr) throws DomBuilderException,
 			XPathExpressionException {
-		Collection<String> c = evaluateXPathNodeSet(input, xpathExpr);
+		return evaluateXPathNodeSetFirstElement(input, xpathExpr, true);
+	}
+
+	public static String evaluateXPathNodeSetFirstElement(String input,
+			String xpathExpr, boolean xslt2) throws DomBuilderException,
+			XPathExpressionException {
+		Collection<String> c = evaluateXPathNodeSet(input, xpathExpr, xslt2);
 		if (c != null && c.size() > 0) {
 			return c.iterator().next();
 		}
@@ -1780,7 +1792,7 @@ public class XmlUtils {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		Document doc = buildDomDocument(msg, true, true);
-		XPath xPath = XPathFactory.newInstance().newXPath();
+		XPath xPath = getXPathFactory().newXPath();
 		XPathExpression xPathExpression = xPath.compile(xpathExpr);
 		Object result = xPathExpression.evaluate(doc, XPathConstants.NUMBER);
 		return (Double) result;
@@ -1793,7 +1805,7 @@ public class XmlUtils {
 
 		Map<String, String> m = new HashMap<String, String>();
 		Document doc = buildDomDocument(msg, true, true);
-		XPath xPath = XPathFactory.newInstance().newXPath();
+		XPath xPath = getXPathFactory().newXPath();
 		XPathExpression xPathExpression = xPath.compile(xpathExpr);
 		Object result = xPathExpression.evaluate(doc, XPathConstants.NODESET);
 		NodeList nodes = (NodeList) result;
@@ -1819,7 +1831,7 @@ public class XmlUtils {
 
 		Collection<String> c = new LinkedList<String>();
 		Document doc = buildDomDocument(msg, true, true);
-		XPath xPath = XPathFactory.newInstance().newXPath();
+		XPath xPath = getXPathFactory().newXPath();
 		XPathExpression xPathExpression = xPath.compile(xpathExpr);
 		Object result = xPathExpression.evaluate(doc, XPathConstants.NODESET);
 		NodeList nodes = (NodeList) result;
@@ -1853,5 +1865,17 @@ public class XmlUtils {
 			}
 		}
 		return xhtmlString;
+	}
+
+	public static synchronized XPathFactory getXPathFactory() {
+		return getXPathFactory(true);
+	}
+
+	public static synchronized XPathFactory getXPathFactory(boolean xslt2) {
+		if (xslt2) {
+			return new net.sf.saxon.xpath.XPathFactoryImpl();
+		} else {
+			return new org.apache.xpath.jaxp.XPathFactoryImpl();
+		}
 	}
 }
