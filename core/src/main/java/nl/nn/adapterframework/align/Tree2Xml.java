@@ -57,11 +57,11 @@ public abstract class Tree2Xml<N> extends ToXml<N,N> {
 		Iterable<N> childNodes = getChildrenByName(node,childElementName);
 		boolean childSeen=false;
 		if (childNodes!=null) {
+			childSeen=true;
 			int i=0;
 			for (N childNode:childNodes) {
 				i++;
 				handleNode(childNode,childElementDeclaration);
-				childSeen=true;
 			}
 			if (DEBUG) log.debug("processed ["+i+"] children found by name ["+childElementName+"] in ["+name+"]");
 		} else {
