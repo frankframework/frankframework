@@ -120,12 +120,12 @@ public class Json2XmlValidator extends XmlValidator {
 		}
 	}
 	
-	public String getOutputFormat(IPipeLineSession session) {
+	public String getOutputFormat(IPipeLineSession session, boolean responseMode) {
 		String format=null;
 		if (StringUtils.isNotEmpty(getOutputFormatSessionKey())) {
 			format=(String)session.get(getOutputFormatSessionKey());
 		}
-		if (StringUtils.isEmpty(format) && isAutoFormat() && isOutputModeEnabled(session)) {
+		if (StringUtils.isEmpty(format) && isAutoFormat() && responseMode) {
 			format=(String)session.get(INPUT_FORMAT_SESSION_KEY_PREFIX+getName());
 		}	
 		if (StringUtils.isEmpty(format)) {
@@ -134,8 +134,8 @@ public class Json2XmlValidator extends XmlValidator {
 		return format;
 	}
 	
-	protected void storeInputFormat(String format, IPipeLineSession session) {
-		if (!isOutputModeEnabled(session)) {
+	protected void storeInputFormat(String format, IPipeLineSession session, boolean responseMode) {
+		if (!responseMode) {
 			session.put(INPUT_FORMAT_SESSION_KEY_PREFIX+getName(), format);
 		}
 	}
@@ -148,7 +148,7 @@ public class Json2XmlValidator extends XmlValidator {
      * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
      */
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Object input, IPipeLineSession session, boolean responseMode) throws PipeRunException {
 		String messageToValidate;
 		messageToValidate = input.toString();
 		int i=0;
@@ -159,12 +159,12 @@ public class Json2XmlValidator extends XmlValidator {
 		char firstChar=messageToValidate.charAt(i);
 		if (firstChar=='<') {
 			// message is XML
-			storeInputFormat("xml",session);
-			if (!getOutputFormat(session).equalsIgnoreCase("json")) {
-				return super.doPipe(input,session);
+			storeInputFormat("xml",session, responseMode);
+			if (!getOutputFormat(session,responseMode).equalsIgnoreCase("json")) {
+				return super.doPipe(input,session, responseMode);
 			}
 			try {
-				return alignXml2Json(messageToValidate, session);
+				return alignXml2Json(messageToValidate, session, responseMode);
 			} catch (Exception e) {
 				throw new PipeRunException(this, "Alignment of XML to JSON failed",e);
 			}
@@ -172,18 +172,18 @@ public class Json2XmlValidator extends XmlValidator {
 		if (firstChar!='{' && firstChar!='[') {
 			throw new PipeRunException(this,"message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{  or ''['");
 		}
-		storeInputFormat("json",session);
+		storeInputFormat("json",session, responseMode);
 		try {
-			return alignJson(messageToValidate, session);
+			return alignJson(messageToValidate, session, responseMode);
 		} catch (XmlValidatorException e) {
 			throw new PipeRunException(this, "Cannot align JSON", e);
 		}
 	}
 	
-	protected PipeRunResult alignXml2Json(String messageToValidate, IPipeLineSession session)
+	protected PipeRunResult alignXml2Json(String messageToValidate, IPipeLineSession session, boolean responseMode)
 			throws XmlValidatorException, PipeRunException, ConfigurationException {
 
-		ValidationContext context = validator.createValidationContext(session, getRootValidations(session), getInvalidRootNamespaces());
+		ValidationContext context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
 		XMLReader parser = validator.getValidatingParser(session,context);
 		XmlAligner aligner = new XmlAligner((PSVIProvider)parser);
 		Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());	
@@ -193,17 +193,17 @@ public class Json2XmlValidator extends XmlValidator {
 		
 		String resultEvent= validator.validate(messageToValidate, session, getLogPrefix(session), parser, xml2json, context);
 		String out=xml2json.toString();
-		PipeForward forward=determineForward(resultEvent, session);
+		PipeForward forward=determineForward(resultEvent, session, responseMode);
 		PipeRunResult result=new PipeRunResult(forward,out);
 		return result;
 	}
 	
-	protected PipeRunResult alignJson(String messageToValidate, IPipeLineSession session) throws PipeRunException, XmlValidatorException {
+	protected PipeRunResult alignJson(String messageToValidate, IPipeLineSession session, boolean responseMode) throws PipeRunException, XmlValidatorException {
 
 		ValidationContext context;
 		ValidatorHandler validatorHandler;
 		try {
-			context = validator.createValidationContext(session, getRootValidations(session), getInvalidRootNamespaces());
+			context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
 			validatorHandler = validator.getValidatorHandler(session, context);
 		} catch (ConfigurationException e) {
 			throw new PipeRunException(this,"Cannot create ValidationContext",e);
@@ -211,7 +211,7 @@ public class Json2XmlValidator extends XmlValidator {
 		String resultEvent;
 		String out=null;
 		try {
-			Json2Xml aligner = new Json2Xml(validatorHandler, context.getXsModels(), isCompactJsonArrays(), getMessageRoot(session), isStrictJsonArraySyntax());
+			Json2Xml aligner = new Json2Xml(validatorHandler, context.getXsModels(), isCompactJsonArrays(), getMessageRoot(responseMode), isStrictJsonArraySyntax());
 			if (StringUtils.isNotEmpty(getTargetNamespace())) {
 				aligner.setTargetNamespace(getTargetNamespace());
 			}
@@ -219,7 +219,7 @@ public class Json2XmlValidator extends XmlValidator {
 			JSONTokener jsonTokener = new JSONTokener(messageToValidate);
 			JSONObject json = new JSONObject(jsonTokener);
 			
-			if (getOutputFormat(session).equalsIgnoreCase("json")) {
+			if (getOutputFormat(session,responseMode).equalsIgnoreCase("json")) {
 				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 				aligner.setContentHandler(xml2json);
 				aligner.startParse(json);
@@ -232,7 +232,7 @@ public class Json2XmlValidator extends XmlValidator {
 			resultEvent= validator.finalizeValidation(context, session, e);
 		}
 		resultEvent= validator.finalizeValidation(context, session, null);
-		PipeForward forward=determineForward(resultEvent, session);
+		PipeForward forward=determineForward(resultEvent, session, responseMode);
 		PipeRunResult result=new PipeRunResult(forward,out);
 		return result;
 	}
