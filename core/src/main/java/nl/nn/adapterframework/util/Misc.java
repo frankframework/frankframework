@@ -888,45 +888,6 @@ public class Misc {
 		return result.toString();
 	}
 
-	public static String getWebContentDirectory() {
-		String path = new File(AppConstants.class.getClassLoader()
-				.getResource("").getPath()).getPath();
-		String fullPath;
-		try {
-			fullPath = URLDecoder.decode(path, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			log.warn("Error decoding path [" + path + "]", e);
-			return null;
-		}
-		if (fullPath.endsWith("classes")) {
-			String wcDirectory = null;
-			File file = new File(fullPath);
-			while (wcDirectory == null) {
-				try {
-					File file2 = new File(file, "WebContent");
-					if (file2.exists() && file2.isAbsolute()) {
-						wcDirectory = file2.getPath();
-					} else {
-						file2 = new File(file, "src/main");
-						if (file2.exists() && file2.isAbsolute()) {
-							wcDirectory = new File(file2, "webapp").getPath();
-						} else {
-							file = file.getParentFile();
-							if (file == null) {
-								return null;
-							}
-						}
-					}
-				} catch(AccessControlException e) {
-					return null;
-				}
-			}
-			return wcDirectory;
-		} else {
-			return null;
-		}
-	}
-	
 	public static String toSortName(String name) {
 		// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter 
 		return StringUtils.upperCase(StringUtils.replace(name,"_", "*"));

@@ -3,8 +3,11 @@ package nl.nn.adapterframework.extensions.test;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URLDecoder;
+import java.security.AccessControlException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -113,10 +116,6 @@ public class IbisTester {
 	}
 
 	public boolean doTest() {
-		return doTest(false);
-	}
-
-	public boolean doTest(boolean larvaFullDefault) {
 		try {
 			// fix for GitLab Runner
 			File file = new File("target/log");
@@ -137,7 +136,7 @@ public class IbisTester {
 		// remove AppConstants because it can be present from another JUnit test
 		AppConstants.removeInstance();
 		appConstants = AppConstants.getInstance();
-		webAppPath = Misc.getWebContentDirectory();
+		webAppPath = getWebContentDirectory();
 		appConstants.put("webapp.realpath", webAppPath);
 		debug("***set property with name [webapp.realpath] and value ["
 				+ webAppPath + "]***");
@@ -199,9 +198,7 @@ public class IbisTester {
 			return false;
 		}
 
-		boolean larvaFull = appConstants.getBoolean("larva.full",
-				larvaFullDefault);
-		debug("***start larva [" + larvaFull + "]***");
+		debug("***start larva***");
 
 		Result result;
 		try {
@@ -218,12 +215,7 @@ public class IbisTester {
 			String scenariosRootDir = evaluateXPathFirst(result.resultString,
 					"(html/body//select[@name='scenariosrootdirectory'])[1]/option/@value");
 
-			String xpath;
-			if (larvaFull) {
-				xpath = "(html/body//select[@name='execute'])[1]/option/@value[ends-with(.,'.properties')]";
-			} else {
-				xpath = "(html/body//select[@name='execute'])[1]/option/@value[ends-with(.,'.properties') and (contains(.,'/XSL/') or contains(.,'\\XSL\\'))]";
-			}
+			String xpath = "(html/body//select[@name='execute'])[1]/option/@value[ends-with(.,'.properties')]";
 			Collection<String> scenarios = evaluateXPath(result.resultString,
 					xpath);
 			if (scenarios == null || scenarios.size() == 0) {
@@ -364,4 +356,43 @@ public class IbisTester {
 		}
 	}
 
+	private static String getWebContentDirectory() {
+		String path = new File(AppConstants.class.getClassLoader()
+				.getResource("").getPath()).getPath();
+		String fullPath;
+		try {
+			fullPath = URLDecoder.decode(path, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		if (fullPath.endsWith("classes")) {
+			String wcDirectory = null;
+			File file = new File(fullPath);
+			while (wcDirectory == null) {
+				try {
+					File file2 = new File(file, "WebContent");
+					if (file2.exists() && file2.isAbsolute()) {
+						wcDirectory = file2.getPath();
+					} else {
+						file2 = new File(file, "src/main");
+						if (file2.exists() && file2.isAbsolute()) {
+							wcDirectory = new File(file2, "webapp").getPath();
+						} else {
+							file = file.getParentFile();
+							if (file == null) {
+								return null;
+							}
+						}
+					}
+				} catch(AccessControlException e) {
+					return null;
+				}
+			}
+			return wcDirectory;
+		} else {
+			return null;
+		}
+	}
 }
