@@ -49,12 +49,16 @@ public class DirectoryClassLoader extends ClassLoader {
 	private void retrieveDirectories(String directoriesString) throws ConfigurationException {
 		directories = new ArrayList<File>();
 		List<String> directoriesStringAsList = Arrays.asList(directoriesString.split(","));
+		boolean existingDir = false;
 		for (String directoryString : directoriesStringAsList) {
 			File directory = new File(directoryString);
-			if (!directory.isDirectory()) {
-				throw new ConfigurationException("Could not find directory to load configuration from: " + directoryString);
+			if (directory.isDirectory()) {
+				existingDir = true;
 			}
 			directories.add(directory);
+		}
+		if (!existingDir) {
+			throw new ConfigurationException("Could not find directory to load configuration from: " + directoriesString);
 		}
 	}
 	
