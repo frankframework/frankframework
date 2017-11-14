@@ -24,6 +24,7 @@ Upcoming
 - Support multiple configuration directories for DirectoryClassLoader
 - Add rootDir property to AkamaiSender
 - Introduction of DummyClassLoader
+- Add support for SNAPSHOT versions in Upload Configuration
 
 
 

@@ -127,6 +127,13 @@ public class UploadConfig extends TimeoutGuardPipe {
 					if (j != -1) {
 						name = fileName.substring(0, j);
 						version = fileName.substring(j + 1, i);
+						if (version.startsWith("SNAPSHOT")) {
+							j = name.lastIndexOf('-');
+							if (j != -1) {
+								name = fileName.substring(0, j);
+								version = fileName.substring(j + 1, i);
+							}
+						}
 					}
 				}
 			}
