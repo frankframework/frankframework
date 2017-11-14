@@ -25,6 +25,7 @@ Upcoming
 - Add rootDir property to AkamaiSender
 - Introduction of DummyClassLoader
 - Add support for SNAPSHOT versions in Upload Configuration
+- IbisTest: support for multiple scenarios root directories, use of project.basedir property
 
 
 

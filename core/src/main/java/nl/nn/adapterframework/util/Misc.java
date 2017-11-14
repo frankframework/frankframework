@@ -888,6 +888,37 @@ public class Misc {
 		return result.toString();
 	}
 
+	public static String getBuildOutputDirectory() {
+		String path = new File(
+				AppConstants.class.getClassLoader().getResource("").getPath())
+						.getPath();
+		try {
+			return URLDecoder.decode(path, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			log.warn("Error decoding path [" + path + "]", e);
+			return null;
+		}
+	}
+
+	public static String getProjectBaseDir() {
+		String buildOutputDirectory = getBuildOutputDirectory();
+		if (buildOutputDirectory != null) {
+			// classic java project: {project.basedir}/WebContent/WEB-INF/classes
+			// maven project: {project.basedir}/target/classes
+			File dir = new File(buildOutputDirectory);
+			while (dir != null) {
+				String name = dir.getName();
+				if ("WebContent".equalsIgnoreCase(name)
+						|| "target".equalsIgnoreCase(name)) {
+					return dir.getParent();
+				} else {
+					dir = dir.getParentFile();
+				}
+			}
+		}
+		return null;
+	}
+
 	public static String toSortName(String name) {
 		// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter 
 		return StringUtils.upperCase(StringUtils.replace(name,"_", "*"));
