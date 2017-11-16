@@ -27,6 +27,7 @@ Upcoming
 - Add support for SNAPSHOT versions in Upload Configuration
 - IbisTest: support for multiple scenarios root directories, use of project.basedir property
 - Improved possibility to use a wildcard in sessionkeys parameters
+- IsUserInRolePipe: add possibility to use pipe input as role
 
 
 
