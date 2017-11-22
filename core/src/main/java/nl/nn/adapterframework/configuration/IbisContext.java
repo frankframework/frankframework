@@ -38,6 +38,7 @@ import org.springframework.core.env.StandardEnvironment;
 import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.DummyClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
 import nl.nn.adapterframework.configuration.classloaders.ServiceClassLoader;
@@ -305,6 +306,8 @@ public class IbisContext {
 							if (((DatabaseClassLoader)classLoader).isSkipConfig()) {
 								continue;
 							}
+						} else if ("DummyClassLoader".equals(classLoaderType)) {
+							classLoader = new DummyClassLoader(currentConfigurationName, configurationFile);
 						} else if (classLoaderType != null) {
 							throw new ConfigurationException("Invalid classLoaderType: " + classLoaderType);
 						}

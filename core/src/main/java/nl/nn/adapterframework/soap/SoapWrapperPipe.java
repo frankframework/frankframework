@@ -63,6 +63,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setOutputNamespace(String) outputNamespace}</td><td>(only used when <code>direction=wrap</code>) when not empty, this namespace is added to the root element in the SOAP Body</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>(only used when <code>direction=wrap</code>) namespace of the SOAP Envelope</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
  * <tr><td>{@link #setRoot(String) root}</td><td>when not empty, the root element in the SOAP Body is changed to this value</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setIgnoreSoapFault(boolean) ignoreSoapFault}</td><td>(only used when <code>direction=unwrap</code>) when <code>false</code> and the SOAP Body contains a SOAP Fault, a PipeRunException is thrown</td><td>false</td></tr>
  * <table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -92,6 +93,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	private String outputNamespace = null;
 	private String soapNamespace = null;
 	private String root = null;
+	private boolean ignoreSoapFault = false;
 
 	private SoapWrapper soapWrapper = null;
 
@@ -245,7 +247,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 				if (StringUtils.isEmpty(result)) {
 					throw new PipeRunException(this, getLogPrefix(session) + "SOAP Body is empty or message is not a SOAP Message");
 				}
-				if (soapWrapper.getFaultCount(input.toString()) > 0) {
+				if (!isIgnoreSoapFault() && soapWrapper.getFaultCount(input.toString()) > 0) {
 					throw new PipeRunException(this, getLogPrefix(session) + "SOAP Body contains SOAP Fault");
 				}
 				if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
@@ -351,5 +353,12 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	}
 	public String getRoot() {
 		return root;
+	}
+
+	public void setIgnoreSoapFault(boolean b) {
+		ignoreSoapFault = b;
+	}
+	public boolean isIgnoreSoapFault() {
+		return ignoreSoapFault;
 	}
 }

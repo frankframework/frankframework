@@ -52,6 +52,13 @@
 									if (j != -1) {
 										name_new = filename.substring(0, j);
 										version_new = filename.substring(j + 1, i);
+										if (version_new.startsWith("SNAPSHOT")) {
+											j = name_new.lastIndexOf("-");
+											if (j != -1) {
+												name_new = filename.substring(0, j);
+												version_new = filename.substring(j + 1, i);
+											}
+										}
 									}
 								}
 							}

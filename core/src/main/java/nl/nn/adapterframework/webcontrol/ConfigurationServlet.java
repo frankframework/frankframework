@@ -31,6 +31,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -63,6 +64,12 @@ public class ConfigurationServlet extends HttpServlet {
 			appConstants.put("webapp.realpath", realPath);
 		} else {
 			log.warn("Could not determine webapp.realpath");
+		}
+		String projectBaseDir = Misc.getProjectBaseDir();
+		if (projectBaseDir != null) {
+			appConstants.put("project.basedir", projectBaseDir);
+		} else {
+			log.info("Could not determine project.basedir");
 		}
 		ibisContext.init();
 		log.debug("Servlet init finished");

@@ -105,7 +105,7 @@ public class TestTool {
 	private static final int RESULT_AUTOSAVED = 2;
 	// dirty solution by Marco de Reus:
 	private static String zeefVijlNeem = "";
-	private static String windiffCommand = "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
+	private static String windiffCommand;
 	private static Writer silentOut = null;
 	private static boolean autoSaveDiffs = false;
 	
@@ -175,6 +175,8 @@ public class TestTool {
 			String windiffCmd = appConstants.getResolvedProperty("larva.windiff.command");
 			if (windiffCmd != null) {
 				windiffCommand = windiffCmd;
+			} else {
+				windiffCommand = currentScenariosRootDirectory + "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
 			}
 			debugMessage("Read scenarios from directory '" + currentScenariosRootDirectory + "'", writers);
 			List allScenarioFiles = readScenarioFiles(appConstants, currentScenariosRootDirectory, writers);
@@ -2882,7 +2884,7 @@ public class TestTool {
 		String currentScenariosRootDirectory = initScenariosRootDirectories(appConstants, application, request, scenariosRootDirectories, scenariosRootDescriptions, null);
 		File tempFileResult = writeTempFile(expectedFileName, result);
 		File tempFileExpected = writeTempFile(expectedFileName, expected);
-		String command = currentScenariosRootDirectory + windiffCommand + " " + tempFileResult + " " + tempFileExpected;
+		String command = windiffCommand + " " + tempFileResult + " " + tempFileExpected;
 		ProcessUtil.executeCommand(command);
 	}
 
@@ -3599,11 +3601,17 @@ public class TestTool {
 										+ ".param" + i + ".part" + j + ".filename.absolutepath");
 								String partType = properties.getProperty(property
 										+ ".param" + i + ".part" + j + ".type");
+								String partName = properties.getProperty(property
+										+ ".param" + i + ".part" + j + ".name");
 								if ("file".equalsIgnoreCase(partType)) {
 									File file = new File(partFile);
 									try {
-										FilePart filePart = new FilePart("file" + j,
-												file.getName(), file);
+										FilePart filePart = new FilePart(
+												"file" + j,
+												(partName == null
+														? file.getName()
+														: partName),
+												file);
 										parts.add(filePart);
 									} catch (FileNotFoundException e) {
 										errorMessage(
@@ -3614,7 +3622,9 @@ public class TestTool {
 								} else {
 									String string = readFile(partFile, writers);
 									StringPart stringPart = new StringPart(
-											"string" + j, string);
+											(partName == null ? "string" + j
+													: partName),
+											string);
 									parts.add(stringPart);
 								}
 								j++;
