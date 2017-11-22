@@ -3601,11 +3601,17 @@ public class TestTool {
 										+ ".param" + i + ".part" + j + ".filename.absolutepath");
 								String partType = properties.getProperty(property
 										+ ".param" + i + ".part" + j + ".type");
+								String partName = properties.getProperty(property
+										+ ".param" + i + ".part" + j + ".name");
 								if ("file".equalsIgnoreCase(partType)) {
 									File file = new File(partFile);
 									try {
-										FilePart filePart = new FilePart("file" + j,
-												file.getName(), file);
+										FilePart filePart = new FilePart(
+												"file" + j,
+												(partName == null
+														? file.getName()
+														: partName),
+												file);
 										parts.add(filePart);
 									} catch (FileNotFoundException e) {
 										errorMessage(
@@ -3616,7 +3622,9 @@ public class TestTool {
 								} else {
 									String string = readFile(partFile, writers);
 									StringPart stringPart = new StringPart(
-											"string" + j, string);
+											(partName == null ? "string" + j
+													: partName),
+											string);
 									parts.add(stringPart);
 								}
 								j++;
