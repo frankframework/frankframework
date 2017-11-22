@@ -50,6 +50,15 @@
 	</bean>
 
 	<bean
+		name="jdbcMigrator"
+		class="nl.nn.adapterframework.jdbc.migration.Migrator"
+		autowire="byName"
+		scope="prototype"
+		>
+		<property name="jndiContextPrefix" value="${jndiContextPrefix}"/>
+	</bean>
+
+	<bean
 		name="listenerContainer"
 		class="nl.nn.adapterframework.receivers.PullingListenerContainer"
 		autowire="byName"

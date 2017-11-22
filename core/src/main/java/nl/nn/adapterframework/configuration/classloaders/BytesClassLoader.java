@@ -30,12 +30,16 @@ public abstract class BytesClassLoader extends ClassLoader implements ReloadAwar
 	protected Logger log = LogUtil.getLogger(this);
 	protected Map<String, byte[]> resources = new HashMap<String, byte[]>();
 
-	BytesClassLoader(ClassLoader classLoader) {
+	public BytesClassLoader(ClassLoader classLoader) {
 		super(classLoader);
 	}
 
 	@Override
 	public URL getResource(String name) {
+		return getResource(name, true);
+	}
+
+	public URL getResource(String name, boolean useParent) {
 		byte[] bytes = resources.get(name);
 		if (bytes != null) {
 			URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(bytes);
@@ -45,7 +49,10 @@ public abstract class BytesClassLoader extends ClassLoader implements ReloadAwar
 				log.error("Could not create url", e);
 			}
 		}
-		return super.getResource(name);
+		if(useParent)
+			return super.getResource(name);
+		else
+			return null;
 	}
 
 	public void reload() throws ConfigurationException {
