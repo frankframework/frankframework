@@ -77,7 +77,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	@Override
 	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException {
-		return super.processRequest(correlationId, message, requestContext);
+		String result = super.processRequest(correlationId, message, requestContext);
+		if(result != null && result.isEmpty())
+			return null;
+		else
+			return result;
 	}
 
 	public String getPhysicalDestinationName() {
