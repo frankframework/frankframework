@@ -1,4 +1,14 @@
 (function () {
+	var server; //Try and see if serverurl has been defined, if not try to deduct from local url;
+	try {
+		server = serverurl;
+	}
+	catch(e) {
+		var path = window.location.pathname;
+		if(path.indexOf("/", 1) >= 0)
+			path = path.substr(0, path.indexOf("/", 1)+1);
+		server = path;
+	}
 	angular.module('iaf.beheerconsole', [
 		'ui.router',                    // Routing
 		'oc.lazyLoad',                  // ocLazyLoad
@@ -9,13 +19,9 @@
 	]).constant("appConstants", {
 		//Configure these in the server AppConstants!!!
 		//The settings here are defaults and will be overwritten upon set in any .properties file.
-		
-
-
-
 
 		//Server to connect to, defaults to local server.
-		//"server": "http://"+window.location.host+"/iaf-example/",
+		"server": server,
 
 		//How often the interactive frontend should poll the IAF API for new data
 		"console.pollerInterval": 30000,

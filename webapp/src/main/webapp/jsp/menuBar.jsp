@@ -115,7 +115,7 @@
 
 			<% if (AppConstants.getInstance().getBoolean("console.active", false)) { %>
 				<imagelink
-					href="Angular"
+					href="iaf/gui"
 					type="theme"
 					alt="GUI 3.0">
 				</imagelink>
