@@ -30,6 +30,7 @@ Upcoming
 - IsUserInRolePipe: add possibility to use pipe input as role
 - Add attribute ignoreSoapFault to SoapWrapperPipe
 - Add Liquibase migration support
+- Add support for Antivirus scan parts in StreamPipe
 
 
 
