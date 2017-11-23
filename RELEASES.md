@@ -32,6 +32,7 @@ Upcoming
 - Add Liquibase migration support
 - Add support for Antivirus scan parts in StreamPipe
 - Add webapp index redirectproxy
+- Add skipBOM support when outputType is stream in FileSender and FilePipe
 
 
 
