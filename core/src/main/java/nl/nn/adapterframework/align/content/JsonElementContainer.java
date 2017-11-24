@@ -13,58 +13,78 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.align;
+package nl.nn.adapterframework.align.content;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.text.translate.AggregateTranslator;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.EntityArrays;
 import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
 
 /**
  * Helper class to construct JSON from XML events.
  * 
  * @author Gerrit van Brakel
  */
-public class JsonContentContainer {
+public class JsonElementContainer implements ElementContainer {
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
 	private boolean xmlArrayContainer;
 	private boolean repeatedElement;
 	private boolean skipArrayElementContainers;
-	private boolean skipRootElement;
 	private boolean nil=false;
 	private boolean quoted=true;
+	private String attributePrefix;
 
 	public String stringContent;
 	private Map<String,Object> contentMap;
 	private List<Object> array;
 	
-	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
-	private final int MAX_INDENT=INDENTOR.length/2;
-	
 	private final boolean DEBUG=false; 	
 	
-	public JsonContentContainer(String name, boolean xmlArrayContainer, boolean repeatedElement, boolean skipArrayElementContainers) {
+	public JsonElementContainer(String name, boolean xmlArrayContainer, boolean repeatedElement, boolean skipArrayElementContainers, String attributePrefix) {
 		this.name=name;
 		this.xmlArrayContainer=xmlArrayContainer;
 		this.repeatedElement=repeatedElement;
 		this.skipArrayElementContainers=skipArrayElementContainers;
+		this.attributePrefix=attributePrefix;
 	}
 	
 	public static final CharSequenceTranslator ESCAPE_JSON = new AggregateTranslator(new CharSequenceTranslator[] {
 			new LookupTranslator(new String[][] { { "\"", "\\\"" }, { "\\", "\\\\" }, { "/", "\\/" } }),
 			new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE())});
 
+	@Override
+	public void setNull() {
+		setContent(null);
+	}
+
+	@Override
+	public void setAttribute(String name, String value, XSSimpleTypeDefinition attTypeDefinition) {
+		JsonElementContainer attributeContainer = new JsonElementContainer(attributePrefix+name, false, false, false, attributePrefix);
+		if (attTypeDefinition.getNumeric()) {
+			attributeContainer.setQuoted(false);
+		}
+		attributeContainer.setContent(value);
+		addContent(attributeContainer);
+	}
+
+	@Override
+	public void characters(char[] ch, int start, int length, boolean numericType, boolean booleanType) {
+		if (numericType || booleanType) {
+			setQuoted(false);
+		}
+		setContent(new String(ch,start,length));
+	}
+
+	
 	/*
 	 * Sets the Text content of the current object
 	 */
@@ -106,7 +126,7 @@ public class JsonContentContainer {
 	/*
 	 * connects child to parent
 	 */
-	public void addContent(JsonContentContainer content) {
+	public void addContent(JsonElementContainer content) {
 		String childName=content.getName();
 		if (DEBUG) log.debug("addContent for parent ["+getName()+"] name ["+childName+"] array container ["+isXmlArrayContainer()+"] content.isRepeatedElement ["+content.isRepeatedElement()+"] skipArrayElementContainers ["+skipArrayElementContainers+"] content ["+content+"]");
 		if (stringContent!=null) {
@@ -170,83 +190,6 @@ public class JsonContentContainer {
 		return "{}";
 	}
 
-	public JSONObject toJson() {
-		Object content=getContent();
-		if (content==null) {
-			return null;
-		}
-		if (content instanceof JSONObject) {
-			return (JSONObject)content;
-		}
-		return new JSONObject(content);
-	}
-	
-	@Override
-	public String toString() {
-		return toString(true);
-	}
-	
-	public String toString(boolean indent) {
-		Object content=getContent();
-		if (content==null) {
-			return null;
-		}
-		if (skipRootElement && content instanceof Map) {
-			Map map=(Map)content;
-			content=map.values().toArray()[0];
-		}
-		StringBuffer sb = new StringBuffer();
-		toString(sb,skipRootElement?content:this,indent?0:-1);
-		return sb.toString();
-	}
-	
-	protected void toString(StringBuffer sb, Object item, int indentLevel) {
-		if (item==null) {
-			sb.append("null");
-		} else
-		if (item instanceof JsonContentContainer) {
-			// handle top level
-				if (name!=null) {
-					sb.append(name).append(": ");
-				}
-				toString(sb,getContent(),indentLevel);
-		} else if (item instanceof String) {
-			sb.append(item); 
-		} else if (item instanceof Map) {
-			sb.append("{");
-			if (indentLevel>=0) indentLevel++;
-			for (Entry<String,Object> entry:((Map<String,Object>)item).entrySet()) {
-				newLine(sb, indentLevel);
-				sb.append('"').append(entry.getKey()).append("\": ");
-				toString(sb,entry.getValue(), indentLevel);
-				sb.append(",");
-			}
-			sb.deleteCharAt(sb.length()-1);
-			if (indentLevel>=0) indentLevel--;
-			newLine(sb, indentLevel);
-			sb.append("}");
-		} else if (item instanceof List) {
-			sb.append("[");
-			if (indentLevel>=0) indentLevel++;
-			for (Object subitem:(List)item) {
-				newLine(sb, indentLevel);
-				toString(sb,subitem, indentLevel);
-				sb.append(",");
-			}
-			sb.deleteCharAt(sb.length()-1);
-			if (indentLevel>=0) indentLevel--;
-			newLine(sb, indentLevel);
-			sb.append("]");
-		} else {
-			throw new NotImplementedException("cannot handle class ["+item.getClass().getName()+"]");
-		}
-	}
-	
-	private void newLine(StringBuffer sb, int indentLevel) {
-		if (indentLevel>=0)  {
-			sb.append(INDENTOR, 0, (indentLevel<MAX_INDENT?indentLevel:MAX_INDENT)*2+1);
-		}
-	}
 
 	public String getName() {
 		return name;
@@ -258,19 +201,12 @@ public class JsonContentContainer {
 		return repeatedElement;
 	}
 
-	public boolean isSkipRootElement() {
-		return skipRootElement;
-	}
-	public void setSkipRootElement(boolean skipRootElement) {
-		this.skipRootElement = skipRootElement;
-	}
-
-
 	public boolean isQuoted() {
 		return quoted;
 	}
 	public void setQuoted(boolean quoted) {
 		this.quoted = quoted;
 	}
+
 	
 }

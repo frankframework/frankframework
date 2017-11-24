@@ -106,9 +106,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
     private boolean forwardFailureToSuccess = false;
  
-    public static final String XML_VALIDATOR_MODE = "xmlValidatorMode";
-    public static final String XML_VALIDATOR_MODE_OUTPUT = "OUTPUT";   
-
 	private String root;
 	private String responseRoot;
 	private Set<List<String>> requestRootValidations;
@@ -117,9 +114,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	protected AbstractXmlValidator validator = new XercesXmlValidator();
 
-	private TransformerPool transformerPoolExtractSoapBody;
-	private TransformerPool transformerPoolGetRootNamespace;
-	private TransformerPool transformerPoolRemoveNamespaces;
+	private TransformerPool transformerPoolExtractSoapBody;  // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
+	private TransformerPool transformerPoolGetRootNamespace; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
+	private TransformerPool transformerPoolRemoveNamespaces; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
 
 	protected String schemaLocation;
 	protected String noNamespaceSchemaLocation;
@@ -159,20 +156,20 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				} catch (TransformerConfigurationException te) {
 					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getSoapBody", te);
 				}
-			}
 	
-			String getRootNamespace_xslt = XmlUtils.makeGetRootNamespaceXslt();
-			try {
-				transformerPoolGetRootNamespace = new TransformerPool(getRootNamespace_xslt, true);
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getRootNamespace", te);
-			}
-	
-			String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
-			try {
-				transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
+				String getRootNamespace_xslt = XmlUtils.makeGetRootNamespaceXslt();
+				try {
+					transformerPoolGetRootNamespace = new TransformerPool(getRootNamespace_xslt, true);
+				} catch (TransformerConfigurationException te) {
+					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getRootNamespace", te);
+				}
+		
+				String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
+				try {
+					transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
+				} catch (TransformerConfigurationException te) {
+					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
+				}
 			}
 	
 			if (!isForwardFailureToSuccess() && !isThrowException()){
@@ -234,7 +231,11 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
       * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
       */
      @Override
-    public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+     public final PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+    	 return doPipe(input, session, false);
+     }
+     
+     public PipeRunResult doPipe(Object input, IPipeLineSession session, boolean responseMode) throws PipeRunException {
          String messageToValidate;
          if (StringUtils.isNotEmpty(getSoapNamespace())) {
              messageToValidate = getMessageToValidate(input, session);
@@ -242,7 +243,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
              messageToValidate = input.toString();
          }
          try {
-            PipeForward forward = validate(messageToValidate, session);
+            PipeForward forward = validate(messageToValidate, session, responseMode);
 			return new PipeRunResult(forward, input);
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session), e);
@@ -250,20 +251,24 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
      }
      
-     
-    protected PipeForward validate(String messageToValidate, IPipeLineSession session) throws XmlValidatorException, PipeRunException, ConfigurationException {
-        String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), getRootValidations(session), getInvalidRootNamespaces(), false);
-        return determineForward(resultEvent, session);
+
+     protected final PipeForward validate(String messageToValidate, IPipeLineSession session) throws XmlValidatorException, PipeRunException, ConfigurationException {
+    	 return validate(messageToValidate,session,false);
+     }
+
+    protected PipeForward validate(String messageToValidate, IPipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
+        String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), getRootValidations(responseMode), getInvalidRootNamespaces(), false);
+        return determineForward(resultEvent, session, responseMode);
     }
 
-    protected PipeForward determineForward(String resultEvent, IPipeLineSession session) throws PipeRunException {
+    protected PipeForward determineForward(String resultEvent, IPipeLineSession session, boolean responseMode) throws PipeRunException {
         throwEvent(resultEvent);
         if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
             return getForward();
         }
         PipeForward forward = null;
         if (AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT.equals(resultEvent)) {
-        	if (isOutputModeEnabled(session)) {
+        	if (responseMode) {
             	forward = findForward("outputParserError");
         	}
             if (forward == null) {
@@ -271,7 +276,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
             }
         }
         if (forward == null) {
-        	if (isOutputModeEnabled(session)) {
+        	if (responseMode) {
                 forward = findForward("outputFailure");
         	}
             if (forward == null) {
@@ -339,18 +344,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return responseRootValidations!=null && !responseRootValidations.isEmpty();
 	}
 
-	private void enableOutputMode(IPipeLineSession session) {             
-    	session.put(XML_VALIDATOR_MODE, XML_VALIDATOR_MODE_OUTPUT);        
-    }                                                                    
-                                                                     
-	private void disableOutputMode(IPipeLineSession session) {            
-    	session.remove(XML_VALIDATOR_MODE);                                
-    }                                                                    
-                                                                     
-    protected boolean isOutputModeEnabled(IPipeLineSession session) {  
-    	String xmlValidatorMode = (String) session.get(XML_VALIDATOR_MODE);
-      	return XML_VALIDATOR_MODE_OUTPUT.equals(xmlValidatorMode);       
-    }  
 
     /**
      * Enable full schema grammar constraint checking, including
@@ -486,8 +479,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return getRoot();
 	}
 	
-	public String getMessageRoot(IPipeLineSession session) {
-		return isOutputModeEnabled(session)?getResponseRoot():getMessageRoot();
+	public String getMessageRoot(boolean responseMode) {
+		return responseMode?getResponseRoot():getMessageRoot();
 	}
     /**
      * Not ready yet (namespace not yet correctly parsed)
@@ -696,14 +689,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 		@Override
 		public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-			PipeRunResult result;
-			owner.enableOutputMode(session);
-			try {
-				result=owner.doPipe(input, session);
-			} finally {
-				owner.disableOutputMode(session);
-			}
-			return result;
+			return owner.doPipe(input, session, true);
 		}
 
 		@Override
@@ -761,8 +747,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return outputValidator==null && isConfiguredForMixedValidation();
 	}
 
-	public Set<List<String>> getRootValidations(IPipeLineSession session) {
-		return isOutputModeEnabled(session) ? responseRootValidations : requestRootValidations;
+	public Set<List<String>> getRootValidations(boolean responseMode) {
+		return responseMode ? responseRootValidations : requestRootValidations;
 	} 
 
 	private void checkInputRootValidations(Set<XSD> xsds) throws ConfigurationException {

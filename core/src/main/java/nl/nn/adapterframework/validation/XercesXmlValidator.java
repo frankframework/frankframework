@@ -120,6 +120,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	protected static final String SECURITY_MANAGER_PROPERTY_ID = Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
 
 	private static final int maxInitialised = AppConstants.getInstance().getInt("xmlValidator.maxInitialised", -1);
+	private static final boolean sharedSymbolTable = AppConstants.getInstance().getBoolean("xmlValidator.sharedSymbolTable", false);
+	private static final int sharedSymbolTableSize = AppConstants.getInstance().getInt("xmlValidator.sharedSymbolTable.size", BIG_PRIME);
 	private int entityExpansionLimit = AppConstants.getInstance().getInt("xmlValidator.entityExpansionLimit", 100000);
 
 	private static EhCache cache;
@@ -165,8 +167,23 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		}
 	}
 
+    private static class SymbolTableSingletonHelper{
+        private static final SymbolTable INSTANCE = new SymbolTable(sharedSymbolTableSize);
+    }
+
+    public static SymbolTable getSymbolTableInstance() {
+    	return SymbolTableSingletonHelper.INSTANCE;
+	}
+
+	private SymbolTable getSymbolTable() {
+		if (sharedSymbolTable) {
+			return getSymbolTableInstance();
+		} 
+		return new SymbolTable(BIG_PRIME);
+	}
+	
 	private synchronized PreparseResult preparse(String schemasId, List<Schema> schemas) throws ConfigurationException {
-		SymbolTable symbolTable = new SymbolTable(BIG_PRIME);
+		SymbolTable symbolTable = getSymbolTable();
 		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
 		Set<String> namespaceSet = new HashSet<String>();
 		XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
