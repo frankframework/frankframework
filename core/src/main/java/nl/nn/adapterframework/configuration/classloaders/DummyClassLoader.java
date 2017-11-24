@@ -24,6 +24,18 @@ import org.apache.log4j.Logger;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
+/**
+ * Classloader which loads an empty Configuration.
+ * <p>
+ * Ordinarily only used for local testing. When head IBIS application and
+ * Configuration(s) to load are stored in separate projects, the
+ * DummyClassLoader can be used in the head IBIS application to prevent a
+ * "could not find config" exception.
+ * </p>
+ * 
+ * @author Peter Leeuwenburgh
+ */
+
 public class DummyClassLoader extends ClassLoader {
 	protected Logger log = LogUtil.getLogger(this);
 
