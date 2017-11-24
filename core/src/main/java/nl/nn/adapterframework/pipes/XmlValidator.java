@@ -114,9 +114,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	protected AbstractXmlValidator validator = new XercesXmlValidator();
 
-	private TransformerPool transformerPoolExtractSoapBody;
-	private TransformerPool transformerPoolGetRootNamespace;
-	private TransformerPool transformerPoolRemoveNamespaces;
+	private TransformerPool transformerPoolExtractSoapBody;  // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
+	private TransformerPool transformerPoolGetRootNamespace; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
+	private TransformerPool transformerPoolRemoveNamespaces; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
 
 	protected String schemaLocation;
 	protected String noNamespaceSchemaLocation;
@@ -156,20 +156,20 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				} catch (TransformerConfigurationException te) {
 					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getSoapBody", te);
 				}
-			}
 	
-			String getRootNamespace_xslt = XmlUtils.makeGetRootNamespaceXslt();
-			try {
-				transformerPoolGetRootNamespace = new TransformerPool(getRootNamespace_xslt, true);
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getRootNamespace", te);
-			}
-	
-			String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
-			try {
-				transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
+				String getRootNamespace_xslt = XmlUtils.makeGetRootNamespaceXslt();
+				try {
+					transformerPoolGetRootNamespace = new TransformerPool(getRootNamespace_xslt, true);
+				} catch (TransformerConfigurationException te) {
+					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getRootNamespace", te);
+				}
+		
+				String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
+				try {
+					transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
+				} catch (TransformerConfigurationException te) {
+					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
+				}
 			}
 	
 			if (!isForwardFailureToSuccess() && !isThrowException()){
