@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -470,33 +471,20 @@ public class FileHandler {
 			}
 		}
 		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
-			File file = getFile(in, session);
-			FileInputStream fis = new FileInputStream(file);
+			InputStream inputStream = new SkipBomAndDeleteFileAfterReadInputStream(
+					getFile(in, session), deleteAfterRead, session);
 			try {
-				byte[] result = new byte[fis.available()];
-				fis.read(result);
-				if (isSkipBOM()) {
-					if ((result[0] == BOM_UTF_8[0]) && (result[1] == BOM_UTF_8[1]) && (result[2] == BOM_UTF_8[2])) {
-					    byte[] resultWithoutBOM = new byte[result.length-3];
-					    for(int i = 3; i < result.length; ++i)
-					    	resultWithoutBOM[i-3]=result[i];
-					    log.debug(getLogPrefix(session) + "removed UTF-8 BOM");
-					    return resultWithoutBOM;
-					} else {
-						return result;
-					}
-				} else {
-					return result;
-				}
+				byte[] result = new byte[inputStream.available()];
+				inputStream.read(result);
+				return result;
 			} finally {
-				fis.close();
-				if (deleteAfterRead)
-					file.delete();
+				inputStream.close();
 			}
 		}
 		public InputStream go(byte[] in, IPipeLineSession session, ParameterList paramList,
 				String outputType) throws Exception {
-			return new FileDeleteAfterReadInputStream(getFile(in, session), deleteAfterRead);
+			return new SkipBomAndDeleteFileAfterReadInputStream(
+					getFile(in, session), deleteAfterRead, session);
 		}
 		private File getFile(byte[] in, IPipeLineSession session) {
 			return getEffectiveFile(in, session, !deleteAfterRead);
@@ -758,14 +746,19 @@ public class FileHandler {
 		return streamResultToServlet;
 	}
 
-	private class FileDeleteAfterReadInputStream extends FileInputStream {
-		File file;
-		boolean deleteAfterRead;
+	private class SkipBomAndDeleteFileAfterReadInputStream extends BufferedInputStream {
+		private File file;
+		private boolean deleteAfterRead;
+		private IPipeLineSession session;
+		private boolean firstByteRead = false;
 
-		public FileDeleteAfterReadInputStream(File file, boolean deleteAfterRead) throws FileNotFoundException {
-			super(file);
+		public SkipBomAndDeleteFileAfterReadInputStream(File file,
+				boolean deleteAfterRead, IPipeLineSession session)
+				throws FileNotFoundException {
+			super(new FileInputStream(file));
 			this.file = file;
 			this.deleteAfterRead = deleteAfterRead;
+			this.session = session;
 			if (deleteAfterRead) {
 				file.deleteOnExit();
 			}
@@ -773,6 +766,7 @@ public class FileHandler {
 
 		@Override
 		public int read() throws IOException {
+			skipBOM();
 			int i = super.read();
 			if (i == -1 && deleteAfterRead) {
 				file.delete();
@@ -782,6 +776,7 @@ public class FileHandler {
 
 		@Override
 		public int read(byte[] b) throws IOException {
+			skipBOM();
 			int i = super.read(b);
 			if (i == -1 && deleteAfterRead) {
 				file.delete();
@@ -791,6 +786,7 @@ public class FileHandler {
 
 		@Override
 		public int read(byte[] b, int off, int len) throws IOException {
+			skipBOM();
 			int i = super.read(b, off, len);
 			if (i == -1 && deleteAfterRead) {
 				file.delete();
@@ -803,6 +799,25 @@ public class FileHandler {
 			super.close();
 			if (deleteAfterRead) {
 				file.delete();
+			}
+		}
+
+		private void skipBOM() throws IOException {
+			if (!firstByteRead && isSkipBOM()) {
+				firstByteRead = true;
+				super.mark(3);
+				byte i = (byte)super.read();
+				if (i == BOM_UTF_8[0]) {
+					i = (byte)super.read();
+					if (i == BOM_UTF_8[1]) {
+						i = (byte)super.read();
+						if (i == BOM_UTF_8[2]) {
+							log.debug(getLogPrefix(session) + "removed UTF-8 BOM");
+							return;
+						}
+					}
+				}
+				super.reset();
 			}
 		}
 	}

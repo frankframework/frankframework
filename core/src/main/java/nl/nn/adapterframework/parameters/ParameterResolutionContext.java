@@ -24,17 +24,17 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 
+import org.apache.log4j.Logger;
+import org.xml.sax.SAXException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.xml.sax.SAXException;
  
 /**
  * Determines the parameter values of the specified parameter during runtime
@@ -100,24 +100,25 @@ public class ParameterResolutionContext {
 			return null;
 		
 		ParameterValueList result = new ParameterValueList();
-		for (Iterator<Parameter> it= parameters.iterator(); it.hasNext(); ) {
-			Parameter parm = it.next();
+		for (Iterator<Parameter> parmIterator= parameters.iterator(); parmIterator.hasNext(); ) {
+			Parameter parm = parmIterator.next();
 			String parmSessionKey = parm.getSessionKey();
-			if (StringUtils.isNotEmpty(parmSessionKey) && parmSessionKey.equals("*")) {
-				String sessionKeyName = parm.getName();
-				for (Iterator<String> it2 = session.keySet().iterator(); it2.hasNext();) {
-					String key = it2.next();
-					if (key.startsWith(sessionKeyName)) {
-						Object value = session.get(key);
-						Parameter newParm = new Parameter();
-						newParm.setName(key);
-						newParm.setSessionKey(key);
-						try {
-							newParm.configure();
-						} catch (ConfigurationException e) {
-							throw new ParameterException(e);
+			if ("*".equals(parmSessionKey)) {
+				String parmName = parm.getName();
+				for (Iterator<String> keyIterator = session.keySet().iterator(); keyIterator.hasNext();) {
+					String key = keyIterator.next();
+					if (!PipeLineSessionBase.tsReceivedKey.equals(key)) {
+						if ((key.startsWith(parmName) || "*".equals(parmName))) {
+							Parameter newParm = new Parameter();
+							newParm.setName(key);
+							newParm.setSessionKey(key);
+							try {
+								newParm.configure();
+							} catch (ConfigurationException e) {
+								throw new ParameterException(e);
+							}
+							result.add(getValue(result, newParm));
 						}
-						result.add(getValue(result, newParm));
 					}
 				}
 			} else {

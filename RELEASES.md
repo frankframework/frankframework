@@ -23,6 +23,16 @@ Upcoming
 - Add Akamai Sender module
 - Support multiple configuration directories for DirectoryClassLoader
 - Add rootDir property to AkamaiSender
+- Introduction of DummyClassLoader
+- Add support for SNAPSHOT versions in Upload Configuration
+- IbisTest: support for multiple scenarios root directories, use of project.basedir property
+- Improved possibility to use a wildcard in sessionkeys parameters
+- IsUserInRolePipe: add possibility to use pipe input as role
+- Add attribute ignoreSoapFault to SoapWrapperPipe
+- Add Liquibase migration support
+- Add support for Antivirus scan parts in StreamPipe
+- Add webapp index redirectproxy
+- Add skipBOM support when outputType is stream in FileSender and FilePipe
 
 
 

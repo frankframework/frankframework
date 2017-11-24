@@ -285,7 +285,7 @@ public class CreateRestViewPipe extends XsltPipe {
 				"javascript:void(0)", "info", "Information"));
 		if (appConstants.getBoolean("console.active", false)) {
 			imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-					"Angular", "theme", "GUI 3.0"));
+					"iaf/gui", "theme", "GUI 3.0"));
 		}
 		menuBar.addSubElement(imagelinkMenu);
 		return menuBar.toXML();

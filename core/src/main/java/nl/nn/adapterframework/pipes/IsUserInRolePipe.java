@@ -26,7 +26,10 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Pipe that checks if the calling user has a specified role. 
  * Uses the PipeLineSessions methods.
- *
+ * <p>
+ * If the role is not specified by the role attribute, the input of
+ * the pipe is used as role.
+ * </p>
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -58,26 +61,31 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(getRole())) {
-			throw new ConfigurationException("must specify attribute role");
-		}
 		if (StringUtils.isNotEmpty(getNotInRoleForwardName())) {
 			notInRoleForward = findForward(getNotInRoleForwardName());
-			if  (notInRoleForward==null) {
+			if (notInRoleForward==null) {
 				throw new ConfigurationException("notInRoleForwardName ["+getNotInRoleForwardName()+"] not found");
 			}
 		}
 	}
 	
-	protected void assertUserIsInRole(IPipeLineSession session) throws SecurityException {
-		if (!session.isUserInRole(getRole())) {
-			throw new SecurityException(getLogPrefix(session)+"user is not in role ["+getRole()+"]");
+	protected void assertUserIsInRole(IPipeLineSession session, String role) throws SecurityException {
+		if (!session.isUserInRole(role)) {
+			throw new SecurityException(getLogPrefix(session)+"user is not in role ["+role+"]");
 		}
 	}
 	
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		try {
-			assertUserIsInRole(session);
+			if (StringUtils.isEmpty(getRole())) {
+				String inputString = (String) input;
+				if (StringUtils.isEmpty(inputString)) {
+					throw new PipeRunException(this, "role cannot be empty");
+				}
+				assertUserIsInRole(session, inputString);
+			} else {
+				assertUserIsInRole(session, getRole());
+			}
 		} catch (SecurityException e) {
 			if (notInRoleForward!=null) {
 				return new PipeRunResult(notInRoleForward, input);

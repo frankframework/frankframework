@@ -1,7 +1,7 @@
 angular.module('iaf.beheerconsole')
 	.service('Api', ['$http', 'appConstants', 'Misc', 'Session', 'Debug', function($http, appConstants, Misc, Session, Debug) {
 		var absolutePath = Misc.getServerPath();
-		absolutePath += "iaf-api/";
+		absolutePath += "iaf/api/";
 		var etags = {};
 		var allowed = {};
 
@@ -680,13 +680,6 @@ angular.module('iaf.beheerconsole')
 	}).service('Misc', ['appConstants', function(appConstants) {
 		this.getServerPath = function() {
 			var absolutePath = appConstants.server;
-			if(!absolutePath) {
-				absolutePath = window.location.origin;
-				var path = window.location.pathname;
-				if(path.indexOf("Angular") >= 0)
-					path = path.substr(0, path.indexOf("Angular"));
-				absolutePath += path;
-			}
 			if(absolutePath && absolutePath.slice(-1) != "/") absolutePath += "/";
 			return absolutePath;
 		};

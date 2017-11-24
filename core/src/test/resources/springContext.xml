@@ -21,6 +21,15 @@
         autowire="byName" scope="prototype">
   </bean>
 
+	<bean
+		name="jdbcMigrator"
+		class="nl.nn.adapterframework.jdbc.migration.Migrator"
+		autowire="byName"
+		scope="prototype"
+		>
+		<property name="jndiContextPrefix" value="${jndiContextPrefix}"/>
+	</bean>
+
   <bean  name="ibisManager" class="org.mockito.Mockito" factory-method="mock">
     <constructor-arg value="nl.nn.adapterframework.configuration.IbisManager"/>
   </bean>

@@ -295,45 +295,4 @@ public class TransformerPool {
 		}
 		return null;
 	}
-
-	private class TransformerErrorListener implements ErrorListener {
-		private TransformerException fatalTransformerException;
-		private IOException fatalIOException;
-
-		TransformerErrorListener() {
-		}
-
-		public void error(TransformerException transformerException)
-				throws TransformerException {
-			log.warn("Nonfatal transformation error: " + transformerException.getMessage());
-		}
-
-		public void fatalError(TransformerException transformerException)
-				throws TransformerException {
-			this.setFatalTransformerException(transformerException);
-		}
-
-		public void warning(TransformerException transformerException)
-				throws TransformerException {
-			log.warn("Nonfatal transformation warning: " + transformerException.getMessage());
-		}
-
-		public void setFatalTransformerException(
-				TransformerException fatalTransformerException) {
-			this.fatalTransformerException = fatalTransformerException;
-		}
-
-		public TransformerException getFatalTransformerException() {
-			return fatalTransformerException;
-		}
-
-		public void setFatalIOException(IOException fatalIOException) {
-			this.fatalIOException = fatalIOException;
-		}
-
-		public IOException getFatalIOException() {
-			return fatalIOException;
-		}
-	}
-
 }

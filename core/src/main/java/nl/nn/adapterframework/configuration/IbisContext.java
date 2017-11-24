@@ -38,12 +38,14 @@ import org.springframework.core.env.StandardEnvironment;
 import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.DummyClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
 import nl.nn.adapterframework.configuration.classloaders.ServiceClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
+import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -142,14 +144,22 @@ public class IbisContext {
 	 */
 	public synchronized void init() {
 		long start = System.currentTimeMillis();
+
+		MessageKeeper messageKeeper = new MessageKeeper();
+		messageKeepers.put("*ALL*", messageKeeper);
+
 		if (StringUtils.isNotEmpty(FLOW_CREATE_DIAGRAM_URL)) {
 			flowDiagram = new FlowDiagram(FLOW_CREATE_DIAGRAM_URL);
 		}
+
 		applicationContext = createApplicationContext();
 		ibisManager = (IbisManager)applicationContext.getBean("ibisManager");
 		ibisManager.setIbisContext(this);
+
 		AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 		load(null);
+		getMessageKeeper().setMaxSize(Math.max(messageKeeperSize, getMessageKeeper().size()));
+
 		log("startup in " + (System.currentTimeMillis() - start) + " ms");
 	}
 
@@ -296,28 +306,26 @@ public class IbisContext {
 							if (((DatabaseClassLoader)classLoader).isSkipConfig()) {
 								continue;
 							}
+						} else if ("DummyClassLoader".equals(classLoaderType)) {
+							classLoader = new DummyClassLoader(currentConfigurationName, configurationFile);
 						} else if (classLoaderType != null) {
 							throw new ConfigurationException("Invalid classLoaderType: " + classLoaderType);
 						}
 					} catch (ConfigurationException e) {
 						customClassLoaderConfigurationException = e;
 					}
-					String basePath = null;
+					String basePath = "";
 					int i = configurationFile.lastIndexOf('/');
 					if (i != -1) {
 						basePath = configurationFile.substring(0, i + 1);
 					}
-					if (basePath != null) {
-						if (classLoader != null) {
-							classLoader = new BasePathClassLoader(classLoader, basePath);
-						} else {
-							classLoader = new BasePathClassLoader(
-									Thread.currentThread().getContextClassLoader(),
-									basePath);
-						}
+					if (classLoader == null) {
+						classLoader = Thread.currentThread().getContextClassLoader();
 					}
+					classLoader = new BasePathClassLoader(classLoader, basePath);
 					classLoaders.put(currentConfigurationName, classLoader);
 				}
+
 				String currentConfigurationVersion =
 						getConfigurationVersion(AppConstants.getInstance(classLoader));
 				Configuration configuration = null;
@@ -326,6 +334,19 @@ public class IbisContext {
 					Thread.currentThread().setContextClassLoader(classLoader);
 				}
 				try {
+
+					if(APP_CONSTANTS.getBoolean("jdbc.migrator.active", false)) {
+						try {
+							Migrator databaseMigrator = (Migrator) getBean("jdbcMigrator");
+							databaseMigrator.setIbisContext(this);
+							databaseMigrator.configure(currentConfigurationName, classLoader);
+							databaseMigrator.update();
+						}
+						catch (Exception e) {
+							log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperMessage.ERROR_LEVEL);
+						}
+					}
+
 					configuration = new Configuration(new BasicAdapterServiceImpl());
 					configuration.setName(currentConfigurationName);
 					configuration.setVersion(currentConfigurationVersion);
@@ -423,15 +444,15 @@ public class IbisContext {
 		}
 	}
 
-	private void log(String message) {
+	public void log(String message) {
 		log(null, null, message, MessageKeeperMessage.INFO_LEVEL, null, true);
 	}
 
-	private void log(String message, String level) {
+	public void log(String message, String level) {
 		log(null, null, message, level, null, true);
 	}
 
-	private void log(String configurationName, String configurationVersion, String message) {
+	public void log(String configurationName, String configurationVersion, String message) {
 		log(configurationName, configurationVersion, message, MessageKeeperMessage.INFO_LEVEL);
 	}
 
@@ -489,6 +510,9 @@ public class IbisContext {
 	 * stored at the Configuration object instance to prevent messages being
 	 * lost after configuration reload.
 	 */
+	public MessageKeeper getMessageKeeper() {
+		return getMessageKeeper("*ALL*");
+	}
 	public MessageKeeper getMessageKeeper(String configurationName) {
 		return messageKeepers.get(configurationName);
 	}

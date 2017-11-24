@@ -39,6 +39,8 @@ import org.apache.log4j.Logger;
 
 public class ApiListenerServlet extends HttpServlet {
 
+	private static final long serialVersionUID = 1L;
+
 	protected Logger log = LogUtil.getLogger(this);
 	private ApiServiceDispatcher dispatcher = null;
 	private IApiCache cache = null;
@@ -173,6 +175,7 @@ public class ApiListenerServlet extends HttpServlet {
 			}
 			messageContext.put("remoteAddr", request.getRemoteAddr());
 			messageContext.put(IPipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
+			messageContext.put("uri", uri);
 
 			/**
 			 * Evaluate preconditions
@@ -271,8 +274,8 @@ public class ApiListenerServlet extends HttpServlet {
 			/**
 			 * Calculate an etag over the processed result and store in cache
 			 */
-			if(result != null && listener.getUpdateEtag()) {
-				if(method.equals("GET")) {
+			if(listener.getUpdateEtag()) {
+				if(result != null && method.equals("GET")) {
 					String eTag = ApiCacheManager.buildEtag(listener.getCleanPattern(), result.hashCode());
 					cache.put(etagCacheKey, eTag);
 					response.addHeader("etag", eTag);
@@ -311,6 +314,7 @@ public class ApiListenerServlet extends HttpServlet {
 		}
 		catch (Exception e) {
 			log.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
+			response.flushBuffer();
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 		}
 	}

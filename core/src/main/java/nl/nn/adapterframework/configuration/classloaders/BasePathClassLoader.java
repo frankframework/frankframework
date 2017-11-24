@@ -29,11 +29,18 @@ public class BasePathClassLoader extends ClassLoader implements ReloadAware {
 
 	@Override
 	public URL getResource(String name) {
+		return getResource(name, true);
+	}
+
+	public URL getResource(String name, boolean useWithoutBasePath) {
 		URL url = getParent().getResource(basePath + name);
 		if (url != null) {
 			return url;
 		} else {
-			return getParent().getResource(name);
+			if(useWithoutBasePath)
+				return getParent().getResource(name);
+			else
+				return null;
 		}
 	}
 
