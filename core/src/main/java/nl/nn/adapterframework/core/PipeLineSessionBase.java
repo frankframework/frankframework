@@ -31,7 +31,7 @@ import org.apache.commons.lang.NotImplementedException;
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */
-public class PipeLineSessionBase extends HashMap implements IPipeLineSession {
+public class PipeLineSessionBase extends HashMap<String,Object> implements IPipeLineSession {
 
 	private ISecurityHandler securityHandler = null;
 

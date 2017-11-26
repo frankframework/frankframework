@@ -69,7 +69,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		}
 	}
 
-	private String doGet(IPipeLineSession<String, String> session) throws PipeRunException {
+	private String doGet(IPipeLineSession session) throws PipeRunException {
 		String otapStage = AppConstants.getInstance().getResolvedProperty("otap.stage");
 		session.put(ACTIVE_CONFIG, "on");
 		if ("DEV".equalsIgnoreCase(otapStage) || "TEST".equalsIgnoreCase(otapStage)) { 
@@ -80,11 +80,11 @@ public class UploadConfig extends TimeoutGuardPipe {
 		return retrieveFormInput();
 	}
 	
-	private String doPost(IPipeLineSession<String, String> session) throws PipeRunException {
-		String multipleConfigs = session.get("multipleConfigs");
-		String fileName = session.get("fileName");
-		String name = session.get("name");
-		String version = session.get("version");
+	private String doPost(IPipeLineSession session) throws PipeRunException {
+		String multipleConfigs = (String)session.get("multipleConfigs");
+		String fileName = (String)session.get("fileName");
+		String name = (String)session.get("name");
+		String version = (String)session.get("version");
 		ConfigData configData = new ConfigData(multipleConfigs, fileName, name, version);
 		String result;
 		
@@ -196,7 +196,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		return result.toString();
 	}
 	
-	private String selectConfigQuery(IPipeLineSession<?, ?> session, String name) throws PipeRunException {
+	private String selectConfigQuery(IPipeLineSession session, String name) throws PipeRunException {
 		String formJmsRealm = (String) session.get("jmsRealm");
 		String result = "";
 		FixedQuerySender qs = (FixedQuerySender) ibisContext
@@ -225,7 +225,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		return result;
 	}
 	
-	private String deleteConfigQuery(IPipeLineSession<?, ?> session, String name, String formJmsRealm, String version) throws PipeRunException {
+	private String deleteConfigQuery(IPipeLineSession session, String name, String formJmsRealm, String version) throws PipeRunException {
 		FixedQuerySender qs = (FixedQuerySender) ibisContext
 				.createBeanAutowireByName(FixedQuerySender.class);
 		String result = "";
@@ -256,7 +256,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		return result;
 	}
 	
-	private String activeConfigQuery(IPipeLineSession<?, ?> session, String name, String formJmsRealm, String result) throws PipeRunException {
+	private String activeConfigQuery(IPipeLineSession session, String name, String formJmsRealm, String result) throws PipeRunException {
 		FixedQuerySender qs = (FixedQuerySender) ibisContext
 				.createBeanAutowireByName(FixedQuerySender.class);
 		try {
@@ -283,7 +283,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		return result;
 	}
 	
-	private ConfigData processMultipleConfigs(ConfigData configData, IPipeLineSession<String, String> session) throws PipeRunException {
+	private ConfigData processMultipleConfigs(ConfigData configData, IPipeLineSession session) throws PipeRunException {
 			if (StringUtils.isEmpty(configData.getName()) && StringUtils.isEmpty(configData.getVersion())) {
 				String[] fnArray = splitFilename(configData.getFileName());
 				if (fnArray[0] != null) {
@@ -330,7 +330,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		return qs;
 	}
 	
-	private String processJarFile(IPipeLineSession<?, ?> session, String name,
+	private String processJarFile(IPipeLineSession session, String name,
 			String version, String fileName, String fileNameSessionKey)
 			throws PipeRunException {
 		String formJmsRealm = (String) session.get("jmsRealm");

@@ -18,7 +18,7 @@ import org.junit.Rule;
 
 public class JsonPipeTest {
 	@Mock
-	private IPipeLineSession<?, ?> session;
+	private IPipeLineSession session;
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();

@@ -33,7 +33,7 @@ import java.util.Map;
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */
-public interface IPipeLineSession<K, V> extends Map<K, V> {
+public interface IPipeLineSession extends Map<String,Object> {
 	public static final String originalMessageKey="originalMessage";
 	public static final String messageIdKey="messageId";
 	public static final String businessCorrelationIdKey="cid";

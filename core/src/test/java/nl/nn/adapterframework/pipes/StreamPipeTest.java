@@ -25,7 +25,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 
 public class StreamPipeTest {
 
-	private IPipeLineSession<String, Object> session = new PipeLineSessionBase();
+	private IPipeLineSession session = new PipeLineSessionBase();
 
 	@Test
 	public void doPipeHttpRequestTest() throws Exception {
@@ -120,7 +120,7 @@ public class StreamPipeTest {
 
 	private Parameter createHttpRequestParameter(
 			MockMultipartHttpServletRequest request,
-			IPipeLineSession<String, Object> session) {
+			IPipeLineSession session) {
 		session.put("httpRequest", request);
 		Parameter parameter = new Parameter();
 		parameter.setName("httpRequest");
