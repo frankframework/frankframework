@@ -5,8 +5,12 @@
 	}
 	catch(e) {
 		var path = window.location.pathname;
-		if(path.indexOf("/", 1) >= 0)
-			path = path.substr(0, path.indexOf("/", 1)+1);
+
+		if(path.indexOf("/iaf/gui") >= 0)
+			path = path.substr(0, path.indexOf("/iaf/gui")+1);
+		else
+			if(path.indexOf("/", 1) >= 0)
+				path = path.substr(0, path.indexOf("/", 1)+1);
 		server = path;
 	}
 	angular.module('iaf.beheerconsole', [
