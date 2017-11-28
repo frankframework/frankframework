@@ -252,7 +252,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		}
 	}
 
-	public Connection getConnection(int timeout) throws JdbcException, TimeOutException {
+	public Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeOutException {
 		if (timeout<=0) {
 			return getConnection();
 		}

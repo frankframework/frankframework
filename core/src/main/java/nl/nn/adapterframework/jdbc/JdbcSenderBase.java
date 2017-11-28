@@ -120,7 +120,7 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 		if (isConnectionsArePooled()) {
 			Connection c = null;
 			try {
-				c = getConnection(getTimeout());
+				c = getConnectionWithTimeout(getTimeout());
 				String result = sendMessage(c, correlationID, message, prc);
 				return result;
 			} catch (JdbcException e) {
