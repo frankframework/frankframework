@@ -17,7 +17,6 @@ package nl.nn.adapterframework.parameters;
 
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -132,14 +131,14 @@ public class ParameterResolutionContext {
 	 * @param parameters
 	 * @return map of value objects
 	 */
-	public HashMap<String, Object> getValueMap(ParameterList<Parameter> parameters) throws ParameterException {
+	public IPipeLineSession getValueMap(ParameterList<Parameter> parameters) throws ParameterException {
 		if (parameters==null) {
 			return null;
 		}
 		Map<String, ParameterValue> paramValuesMap = getValues(parameters).getParameterValueMap();
 
 		// convert map with parameterValue to map with value		
-		HashMap<String, Object> result = new HashMap<String, Object>(paramValuesMap.size());
+		IPipeLineSession result = new PipeLineSessionBase(paramValuesMap.size());
 		for (Iterator<ParameterValue> it= paramValuesMap.values().iterator(); it.hasNext(); ) {
 			ParameterValue pv = (ParameterValue)it.next();
 			result.put(pv.getDefinition().getName(), pv.getValue());

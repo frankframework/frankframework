@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.http.rest.ApiEhcache;
@@ -124,7 +125,7 @@ public class RestServiceDispatcher  {
 	 * @param request the <code>String</code> with the request/input
 	 * @return String with the result of processing the <code>request</code> through the <code>serviceName</code>
 	 */
-	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, Map context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
+	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, IPipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
 		String method = httpServletRequest.getMethod();
 		if (log.isTraceEnabled()) log.trace("searching listener for uri ["+uri+"] method ["+method+"]");
 		
@@ -139,7 +140,7 @@ public class RestServiceDispatcher  {
 			throw new ListenerException("No RestListeners specified for uri ["+uri+"] method ["+method+"]");
 		}
 		if (context==null) {
-			context=new HashMap();
+			context=new PipeLineSessionBase();
 		}
 		context.put("restPath", restPath);
 		context.put("uri", uri);

@@ -110,7 +110,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		RestServiceDispatcher.getInstance().unregisterServiceClient(getUriPattern());
 	}
 
-	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException {
+	public String processRequest(String correlationId, String message, IPipeLineSession requestContext) throws ListenerException {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) requestContext.get(IPipeLineSession.HTTP_REQUEST_KEY);
 		String response;
 		String contentType = (String) requestContext.get("contentType");

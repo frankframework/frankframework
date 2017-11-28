@@ -17,9 +17,6 @@ package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
@@ -28,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.util.AppConstants;
@@ -63,7 +61,7 @@ public class ApiListenerServlet extends HttpServlet {
 		/**
 		 * Initiate and populate messageContext
 		 */
-		Map<String, Object> messageContext = new HashMap<String, Object>();
+		IPipeLineSession messageContext = new PipeLineSessionBase();
 		messageContext.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
 		messageContext.put(IPipeLineSession.HTTP_RESPONSE_KEY, response);
 		messageContext.put(IPipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());

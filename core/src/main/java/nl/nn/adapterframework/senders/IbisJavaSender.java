@@ -99,7 +99,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		HashMap context = null;
 		try {
 			if (paramList!=null) {
-				context = prc.getValueMap(paramList);
+				context = (HashMap) prc.getValueMap(paramList);
 			} else {
 				context=new HashMap();
 			}

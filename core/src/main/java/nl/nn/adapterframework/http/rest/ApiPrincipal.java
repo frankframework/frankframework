@@ -20,6 +20,7 @@ import java.util.Date;
 
 public class ApiPrincipal implements Serializable {
 
+	private static final long serialVersionUID = 1L;
 	public long init = (new Date()).getTime();
 	public long ttl = 60*60*24*1000;
 	public long expires = 0;

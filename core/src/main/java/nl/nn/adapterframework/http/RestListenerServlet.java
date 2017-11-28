@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
@@ -94,7 +95,7 @@ public class RestListenerServlet extends HttpServlet {
 		if (log.isTraceEnabled()) log.trace("path ["+path+"] If-Match ["+ifMatch+"] If-None-Match ["+ifNoneMatch+"] contentType ["+contentType+"]");
 		
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
-		Map messageContext= new HashMap();
+		IPipeLineSession messageContext= new PipeLineSessionBase();
 		messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
 
 		Enumeration paramnames=request.getParameterNames();
