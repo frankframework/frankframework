@@ -171,4 +171,12 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	public String getRowNumberShortName() {
 		return "rn";
 	}
+
+	public String getBooleanFieldType() {
+		return "NUMBER(1)";
+	}
+
+	public String getBooleanValue(boolean value) {
+		return (value) ? "1" : "0";
+	}
 }

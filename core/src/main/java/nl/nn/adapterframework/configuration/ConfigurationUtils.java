@@ -134,7 +134,7 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			conn = qs.getConnection();
-			String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG='TRUE'";
+			String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
 			PreparedStatement stmt = conn.prepareStatement(query);
 			stmt.setString(1, name);
 			rs = stmt.executeQuery();
@@ -196,7 +196,7 @@ public class ConfigurationUtils {
 			int updated = 0;
 
 			if (activate_config) {
-				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG = 'FALSE' WHERE NAME=?");
+				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG = '"+(qs.getDbmsSupport().getBooleanValue(false))+"' WHERE NAME=?");
 				PreparedStatement stmt = conn.prepareStatement(query);
 				stmt.setString(1, name);
 				updated = stmt.executeUpdate();
@@ -216,8 +216,9 @@ public class ConfigurationUtils {
 			stmt.setString(3, fileName);
 			stmt.setBinaryStream(4, file);
 			stmt.setString(5, ruser);
-			stmt.setBoolean(6, activate_config);
-			stmt.setBoolean(7, automatic_reload);
+			stmt.setObject(6, qs.getDbmsSupport().getBooleanValue(activate_config));
+			stmt.setObject(7, qs.getDbmsSupport().getBooleanValue(automatic_reload));
+
 			return stmt.execute();
 		} catch (SenderException e) {
 			throw new ConfigurationException(e);

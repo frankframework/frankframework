@@ -79,9 +79,8 @@ public interface IDbmsSupport {
 	void updateBlob(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException;
 	void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException;
 
-	
 	String getTextFieldType();
-	
+
 	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws JdbcException;
 	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException;
 	String getFirstRecordQuery(String tableName) throws JdbcException;
@@ -96,11 +95,14 @@ public interface IDbmsSupport {
 	boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException;
 
 	boolean isUniqueConstraintViolation(SQLException e);
-	
+
 	String getRowNumber(String order, String sort);
 	String getRowNumberShortName();
 
 	String getLength(String column);
 
 	String getIbisStoreSummaryQuery();
+
+	String getBooleanFieldType();
+	String getBooleanValue(boolean value);
 }

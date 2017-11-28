@@ -33,6 +33,7 @@ Upcoming
 - Add support for Antivirus scan parts in StreamPipe
 - Add webapp index redirectproxy
 - Add skipBOM support when outputType is stream in FileSender and FilePipe
+- Fix databaseClassloading now use DbmsSupport to support other databases
 
 
 
