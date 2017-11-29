@@ -35,6 +35,8 @@ Upcoming
 - Add skipBOM support when outputType is stream in FileSender and FilePipe
 - Fix databaseClassloading now use DbmsSupport to support other databases
 - Fix Spring IntrospectionException when loading a databaseconfig which contains a FixedQuerySender
+- Add flow diagram to Google Chrome, this was disabled due to preformance issues
+- Bugfix UploadConfig - method 'startsWith' not supported in IE
 - Fix unexpected value 'bodycontent' encountered' on Jboss
 
 
