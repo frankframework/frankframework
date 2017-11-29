@@ -36,6 +36,7 @@ Upcoming
 - Fix databaseClassloading now use DbmsSupport to support other databases
 - Fix Spring IntrospectionException when loading a databaseconfig which contains a FixedQuerySender
 - Add flow diagram to Google Chrome, this was disabled due to preformance issues
+- Bugfix UploadConfig - method 'startsWith' not supported in IE
 
 
 7.0-B3
