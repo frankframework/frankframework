@@ -572,7 +572,7 @@ angular.module('iaf.beheerconsole')
 		$scope.versions = data;
 	});
 	$scope.download = function(config) {
-		window.open(Misc.getServerPath() + "api/configurations/download/"+$state.params.name);
+		window.open(Misc.getServerPath() + "iaf/api/configurations/download/"+$state.params.name);
 	};
 }])
 
