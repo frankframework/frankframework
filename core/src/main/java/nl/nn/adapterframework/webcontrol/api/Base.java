@@ -69,7 +69,7 @@ public abstract class Base {
 			log.warn("Could not retrieve ibisManager from context");
 			throw new ApiException("Config not found!");
 		} else {
-			log.debug("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context attribute ["+attributeKey+"]");
+			log.trace("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context attribute ["+attributeKey+"]");
 		}
 	}
 

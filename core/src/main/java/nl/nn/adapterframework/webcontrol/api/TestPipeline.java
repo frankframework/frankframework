@@ -219,7 +219,7 @@ public final class TestPipeline extends TimeoutGuardPipe {
 			if (ibisManager==null) {
 				log.warn("Could not retrieve ibisManager from context");
 			} else {
-				log.debug("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context attribute ["+attributeKey+"]");
+				log.trace("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context attribute ["+attributeKey+"]");
 				return ibisManager;
 			}
 		}
