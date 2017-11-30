@@ -5659,6 +5659,54 @@ body.body-small .vote-icon {
   -webkit-transition-property: height, visibility;
   transition-property: height, visibility;
 }
+.metismenu .fa-dashboard {
+  color: #8bc34a;
+}
+.metismenu .fa-cogs {
+  color: #00abff;
+}
+.metismenu .fa-life-ring {
+  color: #fe41ff;
+}
+.metismenu .fa-th-large {
+  color: #8bc34a;
+}
+.metismenu .fa-flask {
+  color: #00e5ff;
+}
+.metismenu .fa-paper-plane-o {
+  color: #fe41ff;
+}
+.metismenu .fa-calendar {
+  color: #ffc107;
+}
+.metismenu .fa-language {
+  color: #8bc34a;
+}
+.metismenu .fa-cubes {
+  color: #00abff;
+}
+.metismenu .fa-lock {
+  color: #ffc107;
+}
+.metismenu .fa-clone {
+  color: #fe41ff;
+}
+.metismenu .fa-bug {
+  color: #8bc34a;
+}
+.metismenu .fa-info-circle {
+  color: #fff;
+}
+.metismenu .fa-commenting-o {
+  color: #00e5ff;
+}
+.metismenu .fa-comments {
+  color: #ffc107;
+}
+.metismenu .fa-github {
+  color: #fff;
+}
 /*
  *  Usage:
  *

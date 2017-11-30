@@ -7,7 +7,7 @@
 			<div class="ibox float-e-margins">
 				<div class="ibox-title">
 					<div class="pull-right">
-						<button ui-sref="pages.manage_configurations" class="btn btn-xs pull-right" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
+						<button ui-sref="pages.manage_configurations" class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
 					</div>
 					<h4>Manage {{configuration}}</h4>
 				</div>
@@ -25,14 +25,14 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr ng-repeat="config in versions">
+							<tr ng-repeat="config in versions | orderBy:'-version'">
 								<td>{{config.version}}</td>
 								<td>{{config.filename}}</td>
 								<td>{{config.created}}</td>
 								<td>{{config.user}}</td>
 								<td>{{config.active}}</td>
 								<td>
-									<button ng-if="$first" ng-click="download(config)" class="btn btn-xs pull-right" type="button"><i class="fa fa-arrow-circle-o-down aria-hidden="true"></i> <span>Download</span></button>
+									<button ng-if="config.active" ng-click="download(config)" class="btn btn-xs btn-info pull-right" type="button"><i class="fa fa-arrow-circle-o-down aria-hidden="true"></i> <span>Download</span></button>
 								</td>
 							</tr>
 						</tbody>
