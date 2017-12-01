@@ -41,6 +41,7 @@ Upcoming
 - Fix JdbcFacade.applyParameters to allow all types of input streams (instead of only FileInputStream and ByteArrayInputStream)
 - Prevent string incompatible output types for file sender
 - Add GUI 3.0 Download and activate database configuration button
+- Enable action read for files on classpath and not available on the filesytem for FileSender and FilePipe
 
 
 

@@ -98,7 +98,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setSkipBOM(boolean) skipBOM}</td><td>when set to <code>true</code>, a possible Bytes Order Mark (BOM) at the start of the file is skipped (only used for the action read and encoding UFT-8)</td><td>false</td></tr>
  * <tr><td>{@link #setDeleteEmptyDirectory(boolean) deleteEmptyDirectory}</td><td>(only used when actions=delete) when set to <code>true</code>, the directory from which a file is deleted is also deleted when it contains no other files</td><td>false</td></tr>
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either <code>string</code>, <code>bytes</code>, <code>stream</code> or <code>base64</code></td><td>"string"</td></tr>
- * <tr><td>{@link #setFileSource(String) fileSource}</td><td>either <code>filesystem</code> or <code>classpath</code> (only for actions "read" and "info" and currently only for resources available as a file on the classpath (i.e. doesn't work for resources in jar files and war files which are deployed without being extracted)</td><td>"filesystem"</td></tr>
+ * <tr><td>{@link #setFileSource(String) fileSource}</td><td>either <code>filesystem</code> or <code>classpath</code> (classpath will only work for actions "read" and "info" and for "info" only when resources are available as a file (i.e. doesn't work for resources in jar files and war files which are deployed without being extracted by the application server))</td><td>"filesystem"</td></tr>
  * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>(only used when outputType=stream) if set, the result is streamed to the HttpServletResponse object</td><td>false</td></tr>
  * </table>
  * </p>
@@ -307,20 +307,18 @@ public class FileHandler {
 		return name;
 	}
 
-	private File getEffectiveFile(byte[] in, IPipeLineSession session, boolean allowClasspath) {
-		File file;
+	private Object getEffectiveFile(byte[] in, IPipeLineSession session)
+			throws IOException {
 		String name = getEffectiveFileName(in, session);
-		if (allowClasspath && fileSource.equals("classpath")) {
-			URL resource = ClassUtils.getResourceURL(classLoader, name);
-			file = new File(resource.getFile());
+		if (fileSource.equals("classpath")) {
+			return ClassUtils.getResourceURL(classLoader, name);
 		} else {
 			if (StringUtils.isNotEmpty(getDirectory())) {
-				file = new File(getDirectory(), name);
+				return new File(getDirectory(), name);
 			} else {
-				file = new File(name);
+				return new File(name);
 			}
 		}
-		return file;
 	}
 
 	private File createFile(byte[] in, IPipeLineSession session, ParameterList paramList) throws IOException, ParameterException {
@@ -447,13 +445,15 @@ public class FileHandler {
 	 */
 	private class FileReader implements TransformerActionWithOutputTypeStream {
 		private boolean deleteAfterRead;
-		
+
 		FileReader() {
 			deleteAfterRead = false;
 		}
+
 		FileReader(boolean deleteAfterRead) {
 			this.deleteAfterRead = deleteAfterRead;
 		}
+
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				File file = new File(getDirectory());
@@ -469,10 +469,14 @@ public class FileHandler {
 			if (!fileSource.equalsIgnoreCase("filesystem") && !fileSource.equalsIgnoreCase("classpath")) {
 				throw new ConfigurationException(getLogPrefix(null)+"illegal value for fileSource ["+outputType+"], must be 'filesystem' or 'classpath'");
 			}
+			if (deleteAfterRead && fileSource.equalsIgnoreCase("classpath")) {
+				throw new ConfigurationException(getLogPrefix(null)+"read_delete not allowed in combination with fileSource ["+outputType+"]");
+			}
 		}
+
 		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
-			InputStream inputStream = new SkipBomAndDeleteFileAfterReadInputStream(
-					getFile(in, session), deleteAfterRead, session);
+			InputStream inputStream =
+					getSkipBomAndDeleteFileAfterReadInputStream(in, session);
 			try {
 				byte[] result = new byte[inputStream.available()];
 				inputStream.read(result);
@@ -481,33 +485,50 @@ public class FileHandler {
 				inputStream.close();
 			}
 		}
+
 		public InputStream go(byte[] in, IPipeLineSession session, ParameterList paramList,
 				String outputType) throws Exception {
-			return new SkipBomAndDeleteFileAfterReadInputStream(
-					getFile(in, session), deleteAfterRead, session);
+			return getSkipBomAndDeleteFileAfterReadInputStream(in, session);
 		}
-		private File getFile(byte[] in, IPipeLineSession session) {
-			return getEffectiveFile(in, session, !deleteAfterRead);
+
+		private InputStream getSkipBomAndDeleteFileAfterReadInputStream(
+				byte[] in, IPipeLineSession session) throws IOException {
+			InputStream inputStream;
+			File file = null;
+			Object object = getEffectiveFile(in, session);
+			if (object instanceof File) {
+				file = (File)object;
+				inputStream = new FileInputStream(file);
+			} else {
+				inputStream = ((URL)object).openStream();
+			}
+			return new SkipBomAndDeleteFileAfterReadInputStream(inputStream,
+					file, deleteAfterRead, session);
 		}
+
 	}
 
 	/**
 	 * Delete the file.
 	 */
 	private class FileDeleter implements TransformerAction {
+
 		public void configure() throws ConfigurationException {
-															
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				File file = new File(getDirectory());
 				if (! (file.exists() && file.isDirectory())) {
 					throw new ConfigurationException(directory + " is not a directory");
 				}
 			}
-			
+			if (fileSource.equalsIgnoreCase("classpath")) {
+				throw new ConfigurationException(getLogPrefix(null)+"delete not allowed in combination with fileSource ["+outputType+"]");
+			}
 		}
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
-			File file = getEffectiveFile(in, session, false);
 
+		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+			// Can only return URL in case fileSource is classpath (which should
+			// have given a configuration warning before this method is called).
+			File file = (File)getEffectiveFile(in, session);
 			/* if file exists, delete the file */
 			if (file.exists()) {
 				boolean success = file.delete();
@@ -521,7 +542,6 @@ public class FileHandler {
 			else {
 				log.warn( getLogPrefix(session) + "file [" + file.toString() +"] does not exist");
 			}
-
 			/* if parent directory is empty, delete the directory */
 			if (isDeleteEmptyDirectory()) {
 				File directory = file.getParentFile();
@@ -537,12 +557,13 @@ public class FileHandler {
 						log.debug(getLogPrefix(session) + "directory [" + directory.toString() +"] doesn't exist or is not empty");
 				}
 			}
-
 			return in;
 		}
+
 	}
 
 	private class FileLister implements TransformerAction {
+
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				File file = new File(getDirectory());
@@ -573,9 +594,11 @@ public class FileHandler {
 			String listResult=dx.getDirList();
 			return listResult.getBytes();
 		}
+
 	}
 
 	private class FileInfoProvider implements TransformerAction {
+
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				File file = new File(getDirectory());
@@ -586,7 +609,17 @@ public class FileHandler {
 		}
 
 		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
-			File file = getEffectiveFile(in, session, true);
+			File file = null;
+			Object object = getEffectiveFile(in, session);
+			if (object instanceof File) {
+				file = (File)object;
+			} else {
+				URL url = (URL)object;
+				String fileName = url.getFile();
+				if (StringUtils.isEmpty(fileName)) {
+					throw new Exception("File not available on the filesystem");
+				}
+			}
 			XmlBuilder fileXml = new XmlBuilder("file");
 			XmlBuilder fullName = new XmlBuilder("fullName");
 			fullName.setValue(file.getCanonicalPath());
@@ -625,6 +658,7 @@ public class FileHandler {
 			fileXml.addSubElement(modificationTime);
 			return fileXml.toXML().getBytes();
 		}
+
 	}
 
 	protected String getLogPrefix(IPipeLineSession session){
@@ -752,15 +786,22 @@ public class FileHandler {
 		private IPipeLineSession session;
 		private boolean firstByteRead = false;
 
-		public SkipBomAndDeleteFileAfterReadInputStream(File file,
-				boolean deleteAfterRead, IPipeLineSession session)
+		public SkipBomAndDeleteFileAfterReadInputStream(InputStream inputStream,
+				File file, boolean deleteAfterRead, IPipeLineSession session)
 				throws FileNotFoundException {
-			super(new FileInputStream(file));
+			super(inputStream);
 			this.file = file;
 			this.deleteAfterRead = deleteAfterRead;
 			this.session = session;
 			if (deleteAfterRead) {
-				file.deleteOnExit();
+				if (file == null) {
+					// This should not happen. A configuration warning for
+					// read_delete in combination with classpath should have
+					// occurred already.
+					throw new FileNotFoundException("No file object provided");
+				} else {
+					file.deleteOnExit();
+				}
 			}
 		}
 
