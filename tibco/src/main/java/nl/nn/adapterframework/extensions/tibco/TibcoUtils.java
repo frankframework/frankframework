@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
  * Some utilities for working with TIBCO.
  * 
  * @author Peter Leeuwenburgh
+ * @author Jaco de Groot
  */
 public class TibcoUtils {
 	static Logger log = LogUtil.getLogger(TibcoUtils.class);
@@ -215,15 +216,34 @@ public class TibcoUtils {
 
 	protected static TibjmsAdmin getActiveServerAdmin(String url,
 			CredentialFactory cf) throws TibjmsAdminException {
+		TibjmsAdminException lastException = null;
 		TibjmsAdmin admin = null;
 		String[] uws = url.split(",");
 		String uw = null;
 		boolean uws_ok = false;
 		for (int i = 0; !uws_ok && i < uws.length; i++) {
 			uw = uws[i].trim();
-			admin = new TibjmsAdmin(uw, cf.getUsername(), cf.getPassword());
+			int state = ServerInfo.SERVER_ACTIVE * -1;
+			try {
+				// The next line of code has been reported to throw the
+				// following exception:
+				//   com.tibco.tibjms.admin.TibjmsAdminException: Unable to connect to server. Root cause:
+				//   javax.jms.ResourceAllocationException: too many open connections
+				admin = new TibjmsAdmin(uw, cf.getUsername(), cf.getPassword());
+				// The next line of code has been reported to throw the
+				// following exception:
+				//   com.tibco.tibjms.admin.TibjmsAdminSecurityException: Command unavailable on a server not in active state and using a JSON configuration file
+				state = admin.getInfo().getState();
+			} catch(TibjmsAdminException e) {
+				// In case a passive or broken server is tried before an active
+				// server this will result in an exception. Hence, ignore all
+				// exceptions unless all servers fail in which case the latest
+				// exception should be logged to give an indication of what is
+				// going wrong.
+				lastException = e;
+			}
 			if (admin != null) {
-				if (admin.getInfo().getState() == ServerInfo.SERVER_ACTIVE) {
+				if (state == ServerInfo.SERVER_ACTIVE) {
 					uws_ok = true;
 				} else {
 					log.debug("Server [" + uw + "] is not active, state ["
@@ -239,7 +259,7 @@ public class TibcoUtils {
 			}
 		}
 		if (!uws_ok) {
-			log.warn("Could not find an active server");
+			log.warn("Could not find an active server", lastException);
 			return null;
 		} else {
 			log.debug("Found active server [" + uw + "]");

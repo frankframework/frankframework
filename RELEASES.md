@@ -42,6 +42,7 @@ Upcoming
 - Prevent string incompatible output types for file sender
 - Add GUI 3.0 Download and activate database configuration button
 - Enable action read for files on classpath and not available on the filesytem for FileSender and FilePipe
+- Fix Show Tibco Queues: Skip exceptions from passive servers in server url
 
 
 
