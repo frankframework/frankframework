@@ -18,6 +18,7 @@ package nl.nn.adapterframework.jdbc;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -364,6 +365,8 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 					ByteArrayInputStream bais = (ByteArrayInputStream) value;
 					long len= bais.available();
 					statement.setBinaryStream(i+1, bais, (int) len);
+				} else if (value instanceof InputStream) {
+					statement.setBinaryStream(i+1, (InputStream)value);
 				} else {
 					throw new SenderException(getLogPrefix()+"unknown inputstream ["+value.getClass()+"] for parameter ["+pv.getDefinition().getName()+"]");
 				}
