@@ -39,6 +39,7 @@ Upcoming
 - Bugfix UploadConfig - method 'startsWith' not supported in IE
 - Fix unexpected value 'bodycontent' encountered' on Jboss
 - Fix JdbcFacade.applyParameters to allow all types of input streams (instead of only FileInputStream and ByteArrayInputStream)
+- Prevent string incompatible output types for file sender
 
 
 
