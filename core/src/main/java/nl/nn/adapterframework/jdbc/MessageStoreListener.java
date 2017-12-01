@@ -46,6 +46,12 @@ import org.apache.commons.lang.text.StrTokenizer;
 			jmsRealm="jdbc"
 			slotId="${instance.name}/ServiceName"
 		/>
+		&lt;!-- On error the message is moved to the errorStorage. And when moveToMessageLog="true" also to the messageLog (after manual resend the messageLog doesn't change). -->
+		&lt;errorStorage
+			className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+			jmsRealm="jdbc"
+			slotId="${instance.name}/ServiceName"
+		/>
  * </pre></code>
  * 
  * <p><b>Configuration:</b>
@@ -82,15 +88,6 @@ public class MessageStoreListener extends JdbcQueryListener {
 				// anymore and the condition is Oracle specific.
 				// + "AND SYSTIMESTAMP >= MESSAGEDATE + INTERVAL '" + delay + "' SECOND");
 		String query = "UPDATE IBISSTORE SET TYPE = '" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "', COMMENTS = '" + ReceiverBase.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = ({fn now()} + 30) WHERE MESSAGEKEY = ?";
-		
-//		Date date = new Date();
-//		Calendar cal = Calendar.getInstance();
-//		cal.setTime(date);
-//		cal.add(Calendar.DAY_OF_MONTH, getRetention());
-//		stmt.setTimestamp(++parPos, new Timestamp(cal.getTime().getTime()));
-
-		
-		
 		if (!isMoveToMessageLog()) {
 			query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY = ?";
 		}
