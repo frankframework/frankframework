@@ -34,15 +34,11 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.api.ApiException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -118,11 +114,18 @@ public class ConfigurationUtils {
 	}
 
 	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm) throws ConfigurationException {
+		return getConfigFromDatabase(ibisContext, name, jmsRealm, null);
+	}
+
+	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm, String version) throws ConfigurationException {
 		if (StringUtils.isEmpty(jmsRealm)) {
 			jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 			if (StringUtils.isEmpty(jmsRealm)) {
 				return null;
 			}
+		}
+		if (StringUtils.isEmpty(version)) {
+			version = null; //Make sure this is null when empty!
 		}
 
 		Connection conn = null;
@@ -134,10 +137,20 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			conn = qs.getConnection();
-			String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
-			PreparedStatement stmt = conn.prepareStatement(query);
-			stmt.setString(1, name);
-			rs = stmt.executeQuery();
+			String query;
+			if(version == null) {//Return active config
+				query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
+				PreparedStatement stmt = conn.prepareStatement(query);
+				stmt.setString(1, name);
+				rs = stmt.executeQuery();
+			}
+			else {
+				query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
+				PreparedStatement stmt = conn.prepareStatement(query);
+				stmt.setString(1, name);
+				stmt.setString(2, version);
+				rs = stmt.executeQuery();
+			}
 			if (rs.next()) {
 				Map<String, Object> configuration = new HashMap<String, Object>(5);
 				byte[] jarBytes = rs.getBytes(1);
@@ -243,5 +256,70 @@ public class ConfigurationUtils {
 				}
 			}
 		}
+	}
+
+	public static boolean makeConfigActive(IbisContext ibisContext, String name, String version, String jmsRealm) throws ConfigurationException {
+		if (StringUtils.isEmpty(jmsRealm)) {
+			jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
+			if (StringUtils.isEmpty(jmsRealm)) {
+				return false;
+			}
+		}
+
+		Connection conn = null;
+		ResultSet rs = null;
+		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		qs.setJmsRealm(jmsRealm);
+		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.configure();
+
+		try {
+			qs.open();
+			conn = qs.getConnection();
+			int updated = 0;
+
+			String selectQuery = "SELECT NAME FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
+			PreparedStatement selectStmt = conn.prepareStatement(selectQuery);
+			selectStmt.setString(1, name);
+			selectStmt.setString(2, version);
+			rs = selectStmt.executeQuery();
+			if(rs.next()) {
+				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG = '"+(qs.getDbmsSupport().getBooleanValue(false))+"' WHERE NAME=?");
+				PreparedStatement stmt = conn.prepareStatement(query);
+				stmt.setString(1, name);
+				updated = stmt.executeUpdate();
+	
+				if(updated > 0) {
+					String query2 = ("UPDATE IBISCONFIG SET ACTIVECONFIG = '"+(qs.getDbmsSupport().getBooleanValue(true))+"' WHERE NAME=? AND VERSION=?");
+					PreparedStatement stmt2 = conn.prepareStatement(query2);
+					stmt2.setString(1, name);
+					stmt2.setString(2, version);
+					return (stmt2.executeUpdate() > 0) ? true : false;
+				}
+			}
+		} catch (SenderException e) {
+			throw new ConfigurationException(e);
+		} catch (JdbcException e) {
+			throw new ConfigurationException(e);
+		} catch (SQLException e) {
+			throw new ConfigurationException(e);
+		} finally {
+			qs.close();
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					log.warn("Could not close resultset", e);
+				}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					log.warn("Could not close connection", e);
+				}
+			}
+		}
+		return false;
 	}
 }

@@ -2,6 +2,7 @@
 <div ui-view></div>
 
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="ManageConfigurationDetailsCtrl">
+	<uib-alert ng-repeat="alert in state" type="{{alert.type}}">{{alert.message}}</uib-alert>
 	<div class="row">
 		<div class="col-lg-12 table-responsive">
 			<div class="ibox float-e-margins">
@@ -21,18 +22,23 @@
 								<th>Created At</th>
 								<th>User</th>
 								<th>Active</th>
+								<th>Loaded</th>
 								<th></th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr ng-repeat="config in versions | orderBy:'-version'">
+							<tr ng-repeat="config in versions | orderBy:'-version'" class="hideBtn1170">
 								<td>{{config.version}}</td>
 								<td>{{config.filename}}</td>
 								<td>{{config.created}}</td>
 								<td>{{config.user}}</td>
-								<td>{{config.active}}</td>
+								<td ng-if="config.active"><i class="fa fa-check btn-xs" aria-hidden="true"></i></td>
+								<td ng-if="!config.active">
+									<button ng-click="activate(config)" class="btn btn-xs " type="button"><i class="fa fa-power-off aria-hidden="true"></i> <span>Activate</span></button>
+								</td>
+								<td><i ng-if="config.loaded" class="fa fa-check btn-xs" aria-hidden="true"></i></td>
 								<td>
-									<button ng-if="config.active" ng-click="download(config)" class="btn btn-xs btn-info pull-right" type="button"><i class="fa fa-arrow-circle-o-down aria-hidden="true"></i> <span>Download</span></button>
+									<button ng-click="download(config)" class="btn btn-xs btn-info pull-right" type="button"><i class="fa fa-cloud-download aria-hidden="true"></i> <span>Download</span></button>
 								</td>
 							</tr>
 						</tbody>

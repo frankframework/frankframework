@@ -40,6 +40,7 @@ Upcoming
 - Fix unexpected value 'bodycontent' encountered' on Jboss
 - Fix JdbcFacade.applyParameters to allow all types of input streams (instead of only FileInputStream and ByteArrayInputStream)
 - Prevent string incompatible output types for file sender
+- Add GUI 3.0 Download and activate database configuration button
 
 
 

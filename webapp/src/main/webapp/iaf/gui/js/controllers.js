@@ -567,12 +567,29 @@ angular.module('iaf.beheerconsole')
 //** Ctrls **//
 
 .controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api', 'Debug', 'Misc', function($scope, $state, Api, Debug, Misc) {
+	$scope.state = [];
+	$scope.addNote = function(type, message) {
+		$scope.state.push({type:type, message: message});
+	};
+
 	$scope.configuration = $state.params.name;
-	Api.Get("configurations/manage/"+$state.params.name, function(data) {
-		$scope.versions = data;
-	});
+	function update() {
+		Api.Get("configurations/manage/"+$state.params.name, function(data) {
+			$scope.versions = data;
+		});
+	};
+	update();
 	$scope.download = function(config) {
-		window.open(Misc.getServerPath() + "iaf/api/configurations/download/"+$state.params.name);
+		window.open(Misc.getServerPath() + "iaf/api/configurations/download/"+config.name+"?version="+config.version);
+	};
+	$scope.activate = function(config) {
+		$scope.state = [];
+		Api.Get("configurations/manage/"+config.name+"/activate/"+config.version, function(data) {
+			$scope.addNote("success", "Successfully changed version '"+config.version+"' to active.");
+			update();
+		}, function() {
+			$scope.addNote("danger", "An error occured while changing active configuration");
+		});
 	};
 }])
 
