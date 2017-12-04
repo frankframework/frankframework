@@ -132,6 +132,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			cache.setEternal(true);
 			try {
 				cache.configure("XercesXmlValidator");
+				cache.open();
 			} catch (ConfigurationException e) {
 				cache = null;
 				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
@@ -139,7 +140,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 						"Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)",
 						e);
 			}
-			cache.open();
 		}
 	}
 	private static AtomicLong counter = new AtomicLong();

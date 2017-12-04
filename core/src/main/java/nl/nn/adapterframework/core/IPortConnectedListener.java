@@ -15,9 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.util.Map;
-import javax.jms.Session;
-
 /**
  * Interface extending IPushingListener for listeners which connect to a
  * ListenerPort or other type of named endpoint, from which they receive

@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public interface IMessageWrapper {
 	
-	public Map getContext();
+	public Map<String,Object> getContext();
 	public String getId();
 	public String getText();
 }

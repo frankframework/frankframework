@@ -62,19 +62,19 @@ public interface IListener extends INamedObject {
 	 * 
 	 * @return Correlation ID string.
 	 */
-	String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException;
+	String getIdFromRawMessage(Object rawMessage, Map<String,Object> context) throws ListenerException;
 	
 	/**
 	 * Extracts string from message obtained from {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return input message for adapter.
 	 */
-	String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException;
+	String getStringFromRawMessage(Object rawMessage, Map<String,Object> context) throws ListenerException;
 	
 	/**
 	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the 
 	 * Pipeline. 
 	 */
-	void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException;
+	void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> context) throws ListenerException;
 
 }

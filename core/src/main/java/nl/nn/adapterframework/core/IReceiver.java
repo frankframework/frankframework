@@ -17,7 +17,6 @@ package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.statistics.HasStatistics;
-import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
  * The receiver is the trigger and central communicator for the framework.

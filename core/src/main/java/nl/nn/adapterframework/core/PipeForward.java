@@ -72,6 +72,7 @@ public class PipeForward {
  	/**
  	 * uses reflection to return the value
  	 */
+	@Override
 	public String toString(){
       return ToStringBuilder.reflectionToString(this);
     }
