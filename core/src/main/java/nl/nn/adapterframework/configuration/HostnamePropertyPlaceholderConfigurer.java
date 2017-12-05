@@ -43,7 +43,7 @@ public class HostnamePropertyPlaceholderConfigurer
 		String hostname = appConstants.getResolvedProperty(HOSTNAME_PROPERTY);
 		if (StringUtils.isEmpty(hostname)) {
 			hostname = Misc.getHostname();
-			appConstants.setPropertyPlaceholderConfigurerProperty(HOSTNAME_PROPERTY, hostname);
+			appConstants.putPropertyPlaceholderConfigurerProperty(HOSTNAME_PROPERTY, hostname);
 			props.put(HOSTNAME_PROPERTY, hostname);
 		}
 	}

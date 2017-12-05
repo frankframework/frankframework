@@ -280,7 +280,7 @@ public final class AppConstants extends Properties implements Serializable{
 	 * Spring as PropertiesPropertySource in the createApplicationContext method
 	 * of IbisContext.
 	 */
-	public void setPropertyPlaceholderConfigurerProperty(String name, String value) {
+	public void putPropertyPlaceholderConfigurerProperty(String name, String value) {
 		self.put(name, value);
 		propertyPlaceholderConfigurerProperties.put(name, value);
 	}
