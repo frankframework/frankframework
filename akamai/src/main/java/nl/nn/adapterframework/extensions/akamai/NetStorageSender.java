@@ -154,6 +154,7 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 
 		//TODO probably when we introduce httpcomponents4 we should adapt to that instead of url.openconnection
 		if(proxyCf.getUsername() != null && !proxyCf.getUsername().isEmpty()) {
+			log.debug("Found AuthAlias ["+proxyCf.getAlias()+"] for NetStorageSender ["+getName()+"] settings proxy credentials");
 			Authenticator.setDefault(
 				new Authenticator() {
 					@Override

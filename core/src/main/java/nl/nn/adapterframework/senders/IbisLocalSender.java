@@ -184,7 +184,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		HashMap context = null;
 		if (paramList!=null) {
 			try {
-				context = prc.getValueMap(paramList);
+				context = (HashMap) prc.getValueMap(paramList);
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 			}

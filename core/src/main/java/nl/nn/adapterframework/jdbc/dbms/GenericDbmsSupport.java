@@ -401,4 +401,12 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public String getIbisStoreSummaryQuery() {
 		return "select type, slotid, to_char(MESSAGEDATE,'YYYY-MM-DD') msgdate, count(*) msgcount from ibisstore group by slotid, type, to_char(MESSAGEDATE,'YYYY-MM-DD') order by type, slotid, to_char(MESSAGEDATE,'YYYY-MM-DD')";
 	}
+
+	public String getBooleanFieldType() {
+		return "BOOLEAN";
+	}
+
+	public String getBooleanValue(boolean value) {
+		return (""+value).toUpperCase();
+	}
 }

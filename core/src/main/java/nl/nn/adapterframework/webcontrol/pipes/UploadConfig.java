@@ -263,7 +263,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 			qs.setName("QuerySender");
 			qs.setJmsRealm(formJmsRealm);
 			qs.setQueryType("update");
-			qs.setQuery("UPDATE IBISCONFIG SET ACTIVECONFIG = 'FALSE' WHERE NAME=?");
+			qs.setQuery("UPDATE IBISCONFIG SET ACTIVECONFIG = '"+qs.getDbmsSupport().getBooleanValue(false)+"' WHERE NAME=?");
 			Parameter param = new Parameter();
 			param.setName("name");
 			param.setValue(name);
@@ -310,9 +310,9 @@ public class UploadConfig extends TimeoutGuardPipe {
 		Parameter param = new Parameter();
 		param.setName(AUTO_RELOAD);
 		if ("on".equals(autoReload)) {
-			param.setValue("true");	
+			param.setValue(qs.getDbmsSupport().getBooleanValue(true));
 		} else {
-			param.setValue("false");
+			param.setValue(qs.getDbmsSupport().getBooleanValue(false));
 		}
 		qs.addParameter(param);
 		return qs;
@@ -322,9 +322,9 @@ public class UploadConfig extends TimeoutGuardPipe {
 		Parameter param = new Parameter();
 		param.setName(ACTIVE_CONFIG);
 		if ("on".equals(activeConfig)) {
-			param.setValue("true");	
+			param.setValue(qs.getDbmsSupport().getBooleanValue(true));
 		} else {
-			param.setValue("false");
+			param.setValue(qs.getDbmsSupport().getBooleanValue(false));
 		}
 		qs.addParameter(param);
 		return qs;

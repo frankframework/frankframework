@@ -318,18 +318,18 @@ public class Parameter implements INamedObject, IWithParameters {
 						sourceString = itemsXml.toXML();
 					} else if (TYPE_MAP.equals(getType())
 								&& sourceObject instanceof Map) {
-							Map<String, String> items = (Map<String, String>) sourceObject;
-							XmlBuilder itemsXml = new XmlBuilder("items");
-							for (Iterator<String> it = items.keySet().iterator(); it.hasNext();) {
-								String item = it.next();
-								XmlBuilder itemXml = new XmlBuilder("item");
-								itemXml.addAttribute("name", item);
-								itemXml.setValue(items.get(item));
-								itemsXml.addSubElement(itemXml);
-							}
-							sourceString = itemsXml.toXML();
-						} else {
-							sourceString = (String) sourceObject;
+						Map<String, String> items = (Map<String, String>) sourceObject;
+						XmlBuilder itemsXml = new XmlBuilder("items");
+						for (Iterator<String> it = items.keySet().iterator(); it.hasNext();) {
+							String item = it.next();
+							XmlBuilder itemXml = new XmlBuilder("item");
+							itemXml.addAttribute("name", item);
+							itemXml.setValue(items.get(item));
+							itemsXml.addSubElement(itemXml);
+						}
+						sourceString = itemsXml.toXML();
+					} else {
+						sourceString = (String) sourceObject;
 					}
 					if (StringUtils.isNotEmpty(sourceString)) {
 						log.debug("Parameter ["+getName()+"] using sessionvariable ["+getSessionKey()+"] as source for transformation");

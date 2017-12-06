@@ -17,10 +17,12 @@ package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -32,6 +34,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setForceReload(String) forceReload}</td><td>reload the configuration regardless of the version</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -41,42 +44,58 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
- * @author  Lars Sinke
+ * <p>It is possible to set the name of the configuration with the parameter 'name'.</p>
+ * <p>You can dynamically set 'forceReload' attribute with the parameter 'forceReload'.</p>
+ * @author	Lars Sinke
+ * @author	Niels Meijer
  */
 public class ReloadSender extends SenderWithParametersBase implements PipeAware {
 
 	private AbstractPipe pipe;
+	private boolean forceReload = false;
 
 	@Override
-	public String sendMessage(String correlationID, String message,
-			ParameterResolutionContext prc) throws TimeOutException, SenderException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws TimeOutException, SenderException {
 
-		String configName;
-		String activeVersion;
+		String configName = null;
+		String activeVersion = null;
+
+		ParameterValueList pvl = null;
+		try {
+			if (prc != null && paramList != null) {
+				pvl = prc.getValues(paramList);
+				if(pvl.getParameterValue("name") != null)
+					configName = (String) pvl.getParameterValue("name").getValue();
+				if(pvl.getParameterValue("forceReload") != null)
+					setForceReload((Boolean) pvl.getParameterValue("forceReload").getValue());
+			}
+		} catch (ParameterException e) {
+			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
+		}
 
 		try {
-			configName = XmlUtils.evaluateXPathNodeSetFirstElement(message,
+			if(configName == null)
+				configName = XmlUtils.evaluateXPathNodeSetFirstElement(message,
 					"row/field[@name='NAME']");
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression configName", e);
-		} 
+		}
 
 		try {
-			activeVersion = XmlUtils.evaluateXPathNodeSetFirstElement(message,
+			if(!getForceReload())
+				activeVersion = XmlUtils.evaluateXPathNodeSetFirstElement(message,
 					"row/field[@name='VERSION']");
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression activeVersion", e);
 		}
-		
-		
+
 		Configuration configuration = getPipe().getAdapter().getConfiguration()
 				.getIbisManager().getConfiguration(configName);
 
 		if (configuration != null) {
 			String latestVersion = configuration.getVersion();
-			if (latestVersion != null && !activeVersion.equals(latestVersion)) {
-				IbisContext ibisContext = getPipe().getAdapter().getConfiguration()
-						.getIbisManager().getIbisContext();
+			if (getForceReload() || (latestVersion != null && !activeVersion.equals(latestVersion))) {
+				IbisContext ibisContext = configuration.getIbisManager().getIbisContext();
 				ibisContext.reload(configName);
 				return "Reload " + configName + " succeeded";
 			} else {
@@ -86,8 +105,6 @@ public class ReloadSender extends SenderWithParametersBase implements PipeAware 
 			log.warn("Configuration [" + configName + "] not loaded yet");
 			return "Reload " + configName + " skipped"; 
 		}
-		
-		
 	}
 
 	@Override
@@ -98,5 +115,12 @@ public class ReloadSender extends SenderWithParametersBase implements PipeAware 
 	@Override
 	public AbstractPipe getPipe() {
 		return pipe;
+	}
+
+	public void setForceReload(boolean forceReload) {
+		this.forceReload  = forceReload;
+	}
+	public boolean getForceReload() {
+		return this.forceReload;
 	}
 }

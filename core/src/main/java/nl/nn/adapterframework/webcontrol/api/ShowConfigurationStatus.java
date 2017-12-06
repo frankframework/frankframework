@@ -295,6 +295,8 @@ public final class ShowConfigurationStatus extends Base {
 		}
 
 		ArrayList<Object> adapterInfo = mapAdapterPipes(adapter);
+		if(adapterInfo == null)
+			throw new ApiException("Adapter not configured!");
 
 		return Response.status(Response.Status.CREATED).entity(adapterInfo).build();
 	}
@@ -438,6 +440,9 @@ public final class ShowConfigurationStatus extends Base {
 	}
 
 	private ArrayList<Object> mapAdapterPipes(Adapter adapter) {
+		if(!adapter.configurationSucceeded())
+			return null;
+
 		PipeLine pipeline = adapter.getPipeLine();
 		int totalPipes = pipeline.getPipes().size();
 		ArrayList<Object> pipes = new ArrayList<Object>(totalPipes);

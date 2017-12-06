@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -127,7 +128,7 @@ public class ShowConfig extends TimeoutGuardPipe {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(jr);
 				qs.setQueryType("select");
-				qs.setQuery("SELECT NAME, VERSION, FILENAME, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD FROM IBISCONFIG WHERE ACTIVECONFIG = 'TRUE' ORDER BY NAME");
+				qs.setQuery("SELECT NAME, VERSION, FILENAME, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD FROM IBISCONFIG WHERE ACTIVECONFIG = '"+qs.getDbmsSupport().getBooleanValue(true)+"' ORDER BY NAME");
 				qs.setBlobSmartGet(true);
 				qs.setIncludeFieldDefinition(false);
 				qs.configure();

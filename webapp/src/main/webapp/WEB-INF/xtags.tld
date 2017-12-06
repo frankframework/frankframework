@@ -513,7 +513,7 @@ All these tags are very similar to their XSLT equivalents, so anyone who's
   <tag>
     <name>add</name>
     <tagclass>org.apache.taglibs.xtags.xpath.AddTag</tagclass>
-    <bodycontent>jsp</bodycontent>
+    <bodycontent>JSP</bodycontent>
     <attribute>
       <name>before</name>
       <required>false</required>
@@ -528,28 +528,7 @@ All these tags are very similar to their XSLT equivalents, so anyone who's
   <tag>
     <name>replace</name>
     <tagclass>org.apache.taglibs.xtags.xpath.ReplaceTag</tagclass>
-    <bodycontent>jsp</bodycontent>
+    <bodycontent>JSP</bodycontent>
   </tag>
 </taglib>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

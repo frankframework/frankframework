@@ -567,12 +567,29 @@ angular.module('iaf.beheerconsole')
 //** Ctrls **//
 
 .controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api', 'Debug', 'Misc', function($scope, $state, Api, Debug, Misc) {
+	$scope.state = [];
+	$scope.addNote = function(type, message) {
+		$scope.state.push({type:type, message: message});
+	};
+
 	$scope.configuration = $state.params.name;
-	Api.Get("configurations/manage/"+$state.params.name, function(data) {
-		$scope.versions = data;
-	});
+	function update() {
+		Api.Get("configurations/manage/"+$state.params.name, function(data) {
+			$scope.versions = data;
+		});
+	};
+	update();
 	$scope.download = function(config) {
-		window.open(Misc.getServerPath() + "api/configurations/download/"+$state.params.name);
+		window.open(Misc.getServerPath() + "iaf/api/configurations/download/"+config.name+"?version="+config.version);
+	};
+	$scope.activate = function(config) {
+		$scope.state = [];
+		Api.Get("configurations/manage/"+config.name+"/activate/"+config.version, function(data) {
+			$scope.addNote("success", "Successfully changed version '"+config.version+"' to active.");
+			update();
+		}, function() {
+			$scope.addNote("danger", "An error occured while changing active configuration");
+		});
 	};
 }])
 
@@ -600,6 +617,18 @@ angular.module('iaf.beheerconsole')
 			$scope.file = null;
 			return;
 		}
+		var name = files[0].name.replace(/^.*[\\\/]/, '');
+		var i = name.lastIndexOf(".");
+		if(i > -1)
+			name = name.substring(0, i);
+
+		var nameL = name.split("-"); //Explode the name "Test_Configuration-001-SNAPSHOT_20171122-1414.jar"
+		var splitOn = nameL.length -3; //(4) ["Test_Configuration", "001", "SNAPSHOT_20171122", "1414"]
+		if((nameL[nameL.length -2]).indexOf("SNAPSHOT")) {
+			splitOn +=1;
+		}
+		$scope.form.name = nameL.splice(0, splitOn).join("-"); //split nameL on index SPLITON and join the values with "-"
+		$scope.form.version = nameL.join("-"); //Join the remaining array with "-"
 		$scope.file = files[0]; //Can only parse 1 file!
 	};
 

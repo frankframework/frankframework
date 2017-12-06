@@ -33,6 +33,18 @@ Upcoming
 - Add support for Antivirus scan parts in StreamPipe
 - Add webapp index redirectproxy
 - Add skipBOM support when outputType is stream in FileSender and FilePipe
+- Fix databaseClassloading now use DbmsSupport to support other databases
+- Fix Spring IntrospectionException when loading a databaseconfig which contains a FixedQuerySender
+- Add flow diagram to Google Chrome, this was disabled due to preformance issues
+- Bugfix UploadConfig - method 'startsWith' not supported in IE
+- Fix unexpected value 'bodycontent' encountered' on Jboss
+- Fix JdbcFacade.applyParameters to allow all types of input streams (instead of only FileInputStream and ByteArrayInputStream)
+- Prevent string incompatible output types for file sender
+- Add GUI 3.0 Download and activate database configuration button
+- Enable action read for files on classpath and not available on the filesytem for FileSender and FilePipe
+- Fix Show Tibco Queues: Skip exceptions from passive servers in server url
+- Fix ReloadSender so it can be used as a standalone sender
+- Init webapp.realpath and project.basedir earlier to make it possible to create a reference to it in the value of flow.create.url
 
 
 

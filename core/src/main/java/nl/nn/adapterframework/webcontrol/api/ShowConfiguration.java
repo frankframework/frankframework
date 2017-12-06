@@ -53,6 +53,7 @@ import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -182,10 +183,51 @@ public final class ShowConfiguration extends Base {
 		}
 
 		if(configuration.getClassLoader().getParent() instanceof DatabaseClassLoader) {
-			return Response.status(Response.Status.CREATED).entity(getConfigFromDatabase(configurationName, jmsRealm)).build();
+			List<Map<String, Object>> configs = getConfigsFromDatabase(configurationName, jmsRealm);
+			if(configs == null)
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+
+			for(Map<String, Object> config: configs) {
+				if(config.get("version").toString().equals(configuration.getVersion()))
+					config.put("loaded", true);
+				else
+					config.put("loaded", false);
+			}
+			return Response.status(Response.Status.CREATED).entity(configs).build();
 		}
 
 		return Response.status(Response.Status.NO_CONTENT).build();
+	}
+
+	@GET
+	@RolesAllowed({"IbisTester"})
+	@Path("/configurations/manage/{configuration}/activate/{version}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response makeConfigurationActive(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("realm") String jmsRealm) throws ApiException {
+		initBase(servletConfig);
+
+		Configuration configuration = ibisManager.getConfiguration(configurationName);
+		if(configuration == null) {
+			throw new ApiException("Configuration not found!");
+		}
+
+		if(version == null || version.isEmpty()) {
+			throw new ApiException("No version supplied!");
+		}
+
+		if (StringUtils.isEmpty(version))
+			version = null;
+		if (StringUtils.isEmpty(jmsRealm))
+			jmsRealm = null;
+
+		try {
+			if(ConfigurationUtils.makeConfigActive(ibisContext, configurationName, version, jmsRealm))
+				return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
+			else
+				return Response.status(Response.Status.BAD_REQUEST).build();
+		} catch (ConfigurationException e) {
+			return Response.status(Response.Status.BAD_REQUEST).build();
+		}
 	}
 
 	@POST
@@ -281,11 +323,16 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/download/{configuration}")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response downloadConfiguration(@PathParam("configuration") String configurationName) throws ApiException {
+	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @QueryParam("version") String version, @QueryParam("realm") String jmsRealm) throws ApiException {
 		initBase(servletConfig);
 
+		if (StringUtils.isEmpty(version))
+			version = null;
+		if (StringUtils.isEmpty(jmsRealm))
+			jmsRealm = null;
+
 		try {
-			Map<String, Object> configuration = ConfigurationUtils.getConfigFromDatabase(ibisContext, configurationName);
+			Map<String, Object> configuration = ConfigurationUtils.getConfigFromDatabase(ibisContext, configurationName, version, jmsRealm);
 			return Response
 					.status(Response.Status.OK)
 					.entity(configuration.get("CONFIG"))
@@ -296,7 +343,7 @@ public final class ShowConfiguration extends Base {
 		}
 	}
 
-	private List<Map<String, Object>> getConfigFromDatabase(String configurationName, String jmsRealm) {
+	private List<Map<String, Object>> getConfigsFromDatabase(String configurationName, String jmsRealm) {
 		List<Map<String, Object>> returnMap = new ArrayList<Map<String, Object>>();
 
 		if (StringUtils.isEmpty(jmsRealm)) {

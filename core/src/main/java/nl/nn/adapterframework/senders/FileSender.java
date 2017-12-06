@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.senders;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -30,11 +31,22 @@ import nl.nn.adapterframework.util.FileHandler;
 public class FileSender extends FileHandler implements ISenderWithParameters {
 	private String name;
 
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (!outputType.equalsIgnoreCase("string")
+				&& !outputType.equalsIgnoreCase("base64")) {
+			throw new ConfigurationException(getLogPrefix(null)
+					+ "sender doesn't support outputType ["
+					+ outputType + "], use file pipe instead");
+		}
+	}
+
 	public String sendMessage(String correlationID, String message,
 			ParameterResolutionContext prc) throws SenderException,
 			TimeOutException {
 		try {
-			return "" + handle(message, prc.getSession());
+			return (String)handle(message, prc.getSession());
 		} catch(Exception e) {
 			throw new SenderException(e);
 		}
