@@ -59,7 +59,8 @@ public class PipeRunResult {
     /**
      * uses reflection to create the ToString
      */
-    public String toString(){
+    @Override
+	public String toString(){
       return ToStringBuilder.reflectionToString(this);
     }
 }

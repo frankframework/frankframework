@@ -66,6 +66,7 @@ public class TimeoutGuardSenderWithParametersBase extends
 			this.threadNDC = threadNDC;
 		}
 
+		@Override
 		public String call() throws Exception {
 			String ctName = Thread.currentThread().getName();
 			try {
@@ -78,9 +79,8 @@ public class TimeoutGuardSenderWithParametersBase extends
 		}
 	}
 
-	public String sendMessage(String correlationID, String message,
-			ParameterResolutionContext prc) throws SenderException,
-			TimeOutException {
+	@Override
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		SendMessage sendMessage = new SendMessage(correlationID, message, prc,
 				Thread.currentThread().getName(), NDC.peek());
 		ExecutorService service = Executors.newSingleThreadExecutor();
@@ -89,7 +89,7 @@ public class TimeoutGuardSenderWithParametersBase extends
 		try {
 			log.debug(getLogPrefix() + "setting timeout of ["
 					+ retrieveTymeout() + "] s");
-			result = (String) future.get(retrieveTymeout(), TimeUnit.SECONDS);
+			result = future.get(retrieveTymeout(), TimeUnit.SECONDS);
 			if (StringUtils.isNotEmpty(getXmlTag())) {
 				result = "<" + getXmlTag() + "><![CDATA[" + result + "]]></"
 						+ getXmlTag() + ">";
@@ -131,9 +131,7 @@ public class TimeoutGuardSenderWithParametersBase extends
 		return result;
 	}
 
-	public String sendMessageWithTimeoutGuarded(String correlationID,
-			String message, ParameterResolutionContext prc)
-			throws SenderException, TimeOutException {
+	public String sendMessageWithTimeoutGuarded(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		return null;
 	}
 

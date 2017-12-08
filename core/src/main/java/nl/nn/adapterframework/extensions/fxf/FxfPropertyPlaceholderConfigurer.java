@@ -51,7 +51,7 @@ public class FxfPropertyPlaceholderConfigurer
 			}
 		}
 		if (fxfDir != null) {
-			appConstants.setPropertyPlaceholderConfigurerProperty("fxf.dir", fxfDir);
+			appConstants.putPropertyPlaceholderConfigurerProperty("fxf.dir", fxfDir);
 			props.put("fxf.dir", fxfDir);
 		}
 		log.debug("FxF directory: " + fxfDir);

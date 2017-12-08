@@ -62,7 +62,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  * 											      <tr><td>T1</td>  <td>error</td></tr>
  *  </table></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setSkipOnEmptyInput(String) skipOnEmptyInput}</td><td>when set, this pipe is skipped</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSkipOnEmptyInput(boolean) skipOnEmptyInput}</td><td>when set, this pipe is skipped</td><td>false</td></tr>
  * <tr><td>{@link #setIfParam(String) ifParam}</td><td>when set, this pipe is only executed when the value of parameter with name <code>ifParam</code> equals <code>ifValue</code> (otherwise this pipe is skipped)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIfValue(String) ifValue}</td><td>see <code>ifParam</code></td><td>&nbsp;</td></tr>
  * </table>

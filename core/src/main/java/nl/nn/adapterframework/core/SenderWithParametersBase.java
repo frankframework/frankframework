@@ -36,16 +36,19 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 	
 	protected ParameterList<Parameter> paramList = null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (paramList!=null) {
 			paramList.configure();
 		}
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException  {
 		return sendMessage(correlationID,message,null);
 	}
 
+	@Override
 	public void addParameter(Parameter p) {
 		if (paramList==null) {
 			paramList=new ParameterList<Parameter>();

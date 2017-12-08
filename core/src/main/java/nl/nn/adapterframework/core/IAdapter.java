@@ -46,16 +46,14 @@ public interface IAdapter extends IManagable {
  	 */
 	MessageKeeper getMessageKeeper();
 	IReceiver getReceiverByName(String receiverName);
-	Iterator getReceiverIterator();
+	Iterator<IReceiver> getReceiverIterator();
 	PipeLineResult processMessage(String messageId, String message, IPipeLineSession pipeLineSession);
 	PipeLineResult processMessageWithExceptions(String messageId, String message, IPipeLineSession pipeLineSession) throws ListenerException;
 
 	void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
-	void setName(String name);
 	void setConfiguration(Configuration configuration);
 	Configuration getConfiguration();
 	boolean isAutoStart();
-	String toString();
 
 	String formatErrorMessage(String errorMessage, Throwable t, String originalMessage, String messageID, INamedObject objectInError, long receivedTime);
 

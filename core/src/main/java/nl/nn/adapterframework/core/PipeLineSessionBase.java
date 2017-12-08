@@ -47,14 +47,16 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		super(initialCapacity, loadFactor);
 	}
 
-	public PipeLineSessionBase(Map t) {
+	public PipeLineSessionBase(Map<String, Object> t) {
 		super(t);
 	}
 
+	@Override
 	public String getMessageId() {
 		return (String) get(messageIdKey);
 	}
 
+	@Override
 	public String getOriginalMessage() {
 		return (String) get(originalMessageKey);
 	}
@@ -63,7 +65,7 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	 * Convenience method to set required parameters from listeners
 	 * @param map
 	 */
-	public static void setListenerParameters(Map map, String messageId, String technicalCorrelationId, Date tsReceived, Date tsSent) {
+	public static void setListenerParameters(Map<String,Object> map, String messageId, String technicalCorrelationId, Date tsReceived, Date tsSent) {
 		if (messageId!=null) {
 			map.put("id", messageId);
 		}
@@ -77,11 +79,13 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		}
 	}
 
+	@Override
 	public void setSecurityHandler(ISecurityHandler handler) {
 		securityHandler = handler;
 		put(securityHandlerKey,handler);
 	}
 
+	@Override
 	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
 		if (securityHandler==null) {
 			securityHandler=(ISecurityHandler)get(securityHandlerKey);
@@ -92,11 +96,13 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		return securityHandler;
 	}
 
+	@Override
 	public boolean isUserInRole(String role) throws NotImplementedException {
 		ISecurityHandler handler = getSecurityHandler();
 		return handler.isUserInRole(role,this);
 	}
 
+	@Override
 	public Principal getPrincipal() throws NotImplementedException {
 		ISecurityHandler handler = getSecurityHandler();
 		return handler.getPrincipal(this);

@@ -337,10 +337,10 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 			if (getOutputWrapper() instanceof EsbSoapWrapperPipe) {
 				EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe)getOutputWrapper();
 				boolean stop = false;
-				Iterator recIt = adapter.getReceiverIterator();
+				Iterator<IReceiver> recIt = adapter.getReceiverIterator();
 				if (recIt.hasNext()) {
 					while (recIt.hasNext() && !stop) {
-						IReceiver receiver = (IReceiver) recIt.next();
+						IReceiver receiver = recIt.next();
 						if (receiver instanceof ReceiverBase ) {
 							ReceiverBase rb = (ReceiverBase) receiver;
 							IListener listener = rb.getListener();
@@ -454,6 +454,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
         return pipesByName.size();
     }
 
+	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		Object pipeStatsData = hski.openGroup(data, null, "pipeStats");
 		handlePipeStat(getInputValidator(),pipeStatistics,pipeStatsData, hski, true, action);
@@ -662,7 +663,8 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
      * @see #setEndPath
      * @see #setFirstPipe
      */
-    public String toString(){
+    @Override
+	public String toString(){
         // TODO: Should use StringBuilder
         String result = "";
 		result+="[ownerName="+(owner==null ? "-none-" : owner.getName())+"]";
@@ -811,9 +813,11 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 		return exitHandlers;
 	}
 
+	@Override
 	public void registerCache(ICacheAdapter cache) {
 		this.cache=cache;
 	}
+	@Override
 	public ICacheAdapter getCache() {
 		return cache;
 	}

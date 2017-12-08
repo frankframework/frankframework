@@ -51,14 +51,8 @@ public class ConfigurationServlet extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		super.init();
-		setUploadPathInServletContext();
-		ibisContext = new IbisContext();
-		setDefaultApplicationServerType(ibisContext);
 		ServletContext servletContext = getServletContext();
 		AppConstants appConstants = AppConstants.getInstance();
-		String attributeKey = appConstants.getResolvedProperty(KEY_CONTEXT);
-		servletContext.setAttribute(attributeKey, ibisContext);
-		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey	+ "]");
 		String realPath = servletContext.getRealPath("/");
 		if (realPath != null) {
 			appConstants.put("webapp.realpath", realPath);
@@ -71,6 +65,12 @@ public class ConfigurationServlet extends HttpServlet {
 		} else {
 			log.info("Could not determine project.basedir");
 		}
+		setUploadPathInServletContext();
+		ibisContext = new IbisContext();
+		setDefaultApplicationServerType(ibisContext);
+		String attributeKey = appConstants.getResolvedProperty(KEY_CONTEXT);
+		servletContext.setAttribute(attributeKey, ibisContext);
+		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey	+ "]");
 		ibisContext.init();
 		if(ibisContext.getIbisManager() == null)
 			log.warn("Servlet init finished without successfully initializing the ibisContext");

@@ -30,6 +30,6 @@ public interface IBulkDataListener extends IListener {
 	 * It returns the handle to the file as a result, and uses that as the message for the pipeline.
 	 * @return input message for adapter.
 	 */
-	String retrieveBulkData(Object rawMessage, String message, Map context) throws ListenerException;
+	String retrieveBulkData(Object rawMessage, String message, Map<String,Object> context) throws ListenerException;
 
 }

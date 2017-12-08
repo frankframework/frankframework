@@ -27,10 +27,12 @@ import org.apache.commons.lang.NotImplementedException;
  */
 public class AllowAllSecurityHandler implements ISecurityHandler {
 
+	@Override
 	public boolean isUserInRole(String role, IPipeLineSession session) {
 		return true;
 	}
 
+	@Override
 	public Principal getPrincipal(IPipeLineSession session) throws NotImplementedException {
 		throw new NotImplementedException("no default user available");
 	}

@@ -53,7 +53,6 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 
     public boolean containsCorrelationId(String correlationId) throws ListenerException;
 
-	public void setName(String name);
 
 	/**
 	 *  slotId allows using component to define a kind of 'subsection'.
