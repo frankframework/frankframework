@@ -46,6 +46,7 @@ Upcoming
 - Fix ReloadSender so it can be used as a standalone sender
 - Add IBIS jdbc reconnect functionality on startup
 - Fix redundant Quartz scheduler + memoryleak when ibis is reconnecting
+- Add per config NotFoundException property instead of a global property
 
 
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 - 2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -340,9 +340,16 @@ public class IbisContext {
 									"configurations." + currentConfigurationName + ".adapterName");
 							classLoader = new ServiceClassLoader(ibisManager, adapterName, currentConfigurationName);
 						} else if ("DatabaseClassLoader".equals(classLoaderType)) {
-							classLoader = new DatabaseClassLoader(this, currentConfigurationName);
-							if (((DatabaseClassLoader)classLoader).isSkipConfig()) {
-								continue;
+							try {
+								classLoader = new DatabaseClassLoader(this, currentConfigurationName);
+							}
+							catch (ConfigurationException ce) {
+								boolean throwConfigNotFoundException = APP_CONSTANTS.getBoolean(
+										"configurations." + currentConfigurationName + ".throwConfigNotFoundException", true);
+								if(!throwConfigNotFoundException)
+									continue;
+								else
+									throw ce;
 							}
 						} else if ("DummyClassLoader".equals(classLoaderType)) {
 							classLoader = new DummyClassLoader(currentConfigurationName, configurationFile);
