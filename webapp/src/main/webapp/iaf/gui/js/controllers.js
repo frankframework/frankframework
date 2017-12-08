@@ -4,8 +4,8 @@
  *
  */
 angular.module('iaf.beheerconsole')
-.controller('MainCtrl', ['$scope', '$rootScope', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', 
-	function($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert) {
+.controller('MainCtrl', ['$scope', '$rootScope', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', '$timeout',
+	function($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert, $timeout) {
 	$scope.loading = true;
 	$rootScope.adapters = {};
 	Pace.on("done", function() {
@@ -41,6 +41,14 @@ angular.module('iaf.beheerconsole')
 					Idle.setTimeout(false);
 				}
 				Hooks.call("init", false);
+			}, function(message, statusCode, statusText) {
+				if(statusCode == 500) {
+					$timeout(function(){
+						angular.element(".main").show();
+						angular.element(".loading").hide();
+					}, 100);
+					$state.go("initError");
+				}
 			});
 			appConstants.init = 1;
 			Api.Get("environmentvariables", function(data) {
@@ -361,6 +369,25 @@ angular.module('iaf.beheerconsole')
 	$scope.close = function () {
 		$uibModalInstance.close();
 	};
+}])
+
+.controller('errorController', ['$scope', 'Api', 'Debug', '$http', 'Misc', '$state', '$timeout', function($scope, Api, Debug, $http, Misc, $state, $timeout) {
+	var timeout = null;
+	$scope.retry = function() {
+		$scope.retryInit = true;
+		angular.element('.retryInitBtn i').addClass('fa-spin');
+
+		$http.get(Misc.getServerPath()+"ConfigurationServlet").then(reload, reload);
+	};
+	function reload() {
+		window.location.reload();
+		$timeout.cancel(timeout);
+		$timeout(function() {
+			angular.element(".main").show();
+			angular.element(".loading").hide();
+		}, 100);
+	}
+	timeout = $timeout(function(){$scope.retry();}, 60000);
 }])
 
 .controller('FeedbackCtrl', ['$scope', '$uibModalInstance', '$http', 'rating', '$timeout', 'appConstants', 'SweetAlert', function($scope, $uibModalInstance, $http, rating, $timeout, appConstants, SweetAlert) {

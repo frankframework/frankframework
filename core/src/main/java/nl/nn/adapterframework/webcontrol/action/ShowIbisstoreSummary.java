@@ -64,6 +64,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 		IniDynaActionForm showIbisstoreSummaryForm = (IniDynaActionForm) form;
 		// Initialize action
 		initAction(request);
+		if(ibisManager==null)return (mapping.findForward("noIbisContext"));
 
 		String jmsRealm = (String) showIbisstoreSummaryForm.get("jmsRealm");
 		String cookieName=AppConstants.getInstance().getString(SHOWIBISSTORECOOKIE,SHOWIBISSTORECOOKIE);

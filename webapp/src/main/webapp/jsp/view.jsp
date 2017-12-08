@@ -137,6 +137,8 @@
 			<jsp:include page="/jsp/showConfiguration.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/noConfig.jsp")) {%> 
 			<jsp:include page="/jsp/noConfig.jsp" flush="true"/>
+		<%} else if (view.equals("/jsp/noIbisContext.jsp")) {%> 
+			<jsp:include page="/jsp/noIbisContext.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/showSchedulerStatus.jsp")) {%>
 			<jsp:include page="/jsp/showSchedulerStatus.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/showEnvironmentVariables.jsp")) {%>

@@ -82,6 +82,7 @@ public class ShowMonitors extends ActionBase {
 
 		// Initialize action
 		initAction(request);
+		if(ibisManager==null)return (mapping.findForward("noIbisContext"));
 
 		String forward=null;
 		DynaActionForm monitorForm = getPersistentForm(mapping, form, request);

@@ -290,6 +290,10 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			if($scope.release == undefined)
 				$location.path("status");
 		}
+	})
+	.state('initError', {
+		templateUrl: "views/initError.html",
+		data: { pageTitle: 'IBIS Startup Failed' }
 	});
 
 	$locationProvider.html5Mode(false);

@@ -28,7 +28,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
@@ -66,10 +65,9 @@ public abstract class Base {
 			ibisManager = ibisContext.getIbisManager();
 		}
 		if (ibisManager==null) {
-			log.warn("Could not retrieve ibisManager from context");
-			throw new ApiException("Config not found!");
-		} else {
-			log.trace("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context attribute ["+attributeKey+"]");
+			String msg = "Could not retrieve ibisManager from context";
+			log.warn(msg);
+			throw new ApiException(msg);
 		}
 	}
 
