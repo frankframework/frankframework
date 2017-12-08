@@ -171,14 +171,14 @@ public class SchedulerAdapter {
             xbRoot.addAttribute("schedulerName", smd.getSchedulerName());
             xbRoot.addAttribute("schedulerInstanceId", smd.getSchedulerInstanceId().toString());
             xbRoot.addAttribute("version", smd.getVersion());
-            xbRoot.addAttribute("isPaused", (smd.isPaused() ? "True" : "False"));
+            xbRoot.addAttribute("isPaused", (smd.isInStandbyMode() ? "True" : "False"));
             xbRoot.addAttribute("isSchedulerRemote", (smd.isSchedulerRemote() ? "True" : "False"));
             xbRoot.addAttribute("isShutdown", (smd.isShutdown() ? "True" : "False"));
             xbRoot.addAttribute("isStarted", (smd.isStarted() ? "True" : "False"));
             xbRoot.addAttribute("jobStoreSupportsPersistence", (smd.jobStoreSupportsPersistence() ? "True" : "False"));
-            xbRoot.addAttribute("numJobsExecuted", Integer.toString(smd.numJobsExecuted()));
+            xbRoot.addAttribute("numJobsExecuted", Integer.toString(smd.getNumberOfJobsExecuted()));
             try {
-                Date runningSince = smd.runningSince();
+                Date runningSince = smd.getRunningSince();
 
                 xbRoot.addAttribute("runningSince", (null == runningSince ? "unknown" : DateUtils.format(runningSince, DateUtils.FORMAT_GENERICDATETIME)));
             } catch (Exception e) {

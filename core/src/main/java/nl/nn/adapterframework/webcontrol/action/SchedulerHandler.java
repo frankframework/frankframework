@@ -77,7 +77,7 @@ public class SchedulerHandler extends ActionBase {
                 msg = "pause scheduler:" + new Date() + HttpUtils.getCommandIssuedBy(request);
     	        log.info(msg);
     	        secLog.info(msg);
-                scheduler.pause();
+                scheduler.standby();
             } else
             if (action.equalsIgnoreCase("deleteJob")) {
                 msg = "delete job jobName [" + jobName + "] groupName [" + groupName + "] " + HttpUtils.getCommandIssuedBy(request);

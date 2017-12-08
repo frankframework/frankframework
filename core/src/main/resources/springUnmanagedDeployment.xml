@@ -13,13 +13,15 @@
 	<!-- Scheduler (Quartz) -->
 	<bean
 		id="scheduler"
-		class="org.springframework.scheduling.quartz.SchedulerFactoryBean"
+		class="nl.nn.adapterframework.scheduler.SchedulerFactoryBean"
 		autowire="byName"
 		lazy-init="true"
 		>
 		<!-- Auto-wiring wires up bean named taskExecutor as threadpool implementation -->
+		<property name="configLocation" value="classpath:quartz.properties"/>
 		<property name="autoStartup" value="false"/>
 		<property name="transactionManager" ref="txManager"/>
+		<property name="waitForJobsToCompleteOnShutdown" value="true"/>
 		<!-- Prevent a dataSource bean being wired up when present (causing Quartz to look for table QRTZ_LOCKS) -->
 		<property name="dataSource"><null/></property>
 	</bean>

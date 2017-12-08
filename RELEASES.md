@@ -44,6 +44,8 @@ Upcoming
 - Enable action read for files on classpath and not available on the filesytem for FileSender and FilePipe
 - Fix Show Tibco Queues: Skip exceptions from passive servers in server url
 - Fix ReloadSender so it can be used as a standalone sender
+- Add IBIS jdbc reconnect functionality on startup
+- Fix redundant Quartz scheduler + memoryleak when ibis is reconnecting
 
 
 
