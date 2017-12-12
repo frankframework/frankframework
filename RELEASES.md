@@ -48,6 +48,8 @@ Upcoming
 - Add IBIS jdbc reconnect functionality on startup
 - Fix redundant Quartz scheduler + memoryleak when ibis is reconnecting
 - Add per config NotFoundException property instead of a global property
+- Add HttpSenderBase to send http messages via httpcomponents 4+
+- Fix NetStorageSender proxy authentication settings
 
 
 
