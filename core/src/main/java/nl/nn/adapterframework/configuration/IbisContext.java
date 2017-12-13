@@ -356,18 +356,19 @@ public class IbisContext {
 						} else if (classLoaderType != null) {
 							throw new ConfigurationException("Invalid classLoaderType: " + classLoaderType);
 						}
+
+						String basePath = "";
+						int i = configurationFile.lastIndexOf('/');
+						if (i != -1) {
+							basePath = configurationFile.substring(0, i + 1);
+						}
+						if (classLoader == null) {
+							classLoader = Thread.currentThread().getContextClassLoader();
+						}
+						classLoader = new BasePathClassLoader(classLoader, basePath);
 					} catch (ConfigurationException e) {
 						customClassLoaderConfigurationException = e;
 					}
-					String basePath = "";
-					int i = configurationFile.lastIndexOf('/');
-					if (i != -1) {
-						basePath = configurationFile.substring(0, i + 1);
-					}
-					if (classLoader == null) {
-						classLoader = Thread.currentThread().getContextClassLoader();
-					}
-					classLoader = new BasePathClassLoader(classLoader, basePath);
 					classLoaders.put(currentConfigurationName, classLoader);
 				}
 

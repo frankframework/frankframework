@@ -51,6 +51,7 @@ Upcoming
 - Add HttpSenderBase to send http messages via httpcomponents 4+
 - Fix NetStorageSender proxy authentication settings
 - Fix ApiListenerServlet not always able to throw a proper exception
+- Fix database classloader initiating as webapp classloader when no config can be found in the database
 
 
 
