@@ -50,6 +50,7 @@ Upcoming
 - Add per config NotFoundException property instead of a global property
 - Add HttpSenderBase to send http messages via httpcomponents 4+
 - Fix NetStorageSender proxy authentication settings
+- Fix ApiListenerServlet not always able to throw a proper exception
 
 
 
