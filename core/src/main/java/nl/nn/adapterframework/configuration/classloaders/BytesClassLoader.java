@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016-2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,9 +24,11 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 public abstract class BytesClassLoader extends ClassLoader implements ReloadAware {
+	public static String PROTOCOL = "bytesclassloader";
 	protected Logger log = LogUtil.getLogger(this);
 	protected Map<String, byte[]> resources = new HashMap<String, byte[]>();
 
@@ -40,11 +42,12 @@ public abstract class BytesClassLoader extends ClassLoader implements ReloadAwar
 	}
 
 	public URL getResource(String name, boolean useParent) {
+		name = FilenameUtils.normalize(name, true);
 		byte[] bytes = resources.get(name);
 		if (bytes != null) {
 			URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(bytes);
 			try {
-				return new URL(null, "bytesclassloader:" + name, urlStreamHandler);
+				return new URL(null, PROTOCOL + ":" + name, urlStreamHandler);
 			} catch (MalformedURLException e) {
 				log.error("Could not create url", e);
 			}
