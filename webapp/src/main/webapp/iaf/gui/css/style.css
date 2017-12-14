@@ -1,7 +1,6 @@
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700");
 @import url("https://fonts.googleapis.com/css?family=Roboto:400,300,500,700");
 
-
 h1,
 h2,
 h3,
@@ -609,6 +608,16 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
 .btn-danger.btn-outline {
   color: #ed5565;
 }
+.btn-gray {
+  border-color: #adadad;
+  background-color: #b7b7b7;
+}
+.btn-gray:hover {
+  background-color: #ec4758;
+  border-color: #ec4758;
+  color: #fff;
+}
+.btn-gray.btn-outline:hover
 .btn-primary.btn-outline:hover,
 .btn-success.btn-outline:hover,
 .btn-info.btn-outline:hover,
