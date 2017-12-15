@@ -3793,6 +3793,11 @@ code {
 }
 .adapters .ibox-title {
   cursor: pointer;
+  min-height: 40px;
+  padding: 10px 15px 7px;
+}
+.adapters .ibox {
+  margin-bottom: 15px;
 }
 .ibox-title.warning {
   border-color: #f7a54a;
