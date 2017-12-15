@@ -4,9 +4,17 @@
 <div class="wrapper wrapper-content animated fadeInRight">
     <uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.message}}</uib-alert>
     <div class="row">
+    	<div class="col-lg-12 tabs-container ">
+        	<ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+                <li ng-class="{active : selectedConfiguration == 'All'}"><a ng-click="changeConfiguration('All')">All</a></li>
+                <li ng-class="{active : selectedConfiguration == configuration.name}" ng-repeat="configuration in configurations">
+                    <a ng-click="changeConfiguration(configuration.name)">{{configuration.name}}</a>
+                </li>
+            </ul> 
+        </div>
         <div class="col-lg-12">
             <div class="float-e-margins">
-                <div class="ibox-title">
+                <div class="ibox-title" style="border:none">
                     <h4>Adapter summary</h4>
                 </div>
                 <div class="ibox-content">
@@ -98,21 +106,6 @@
                                 <label class="btn btn-primary btn-outline btn-xs" ng-model="status.filter.started" ng-click="applyFilter(status.filter)" uib-btn-checkbox>Started</label>
                                 <label class="btn btn-danger btn-outline btn-xs" ng-model="status.filter.stopped" ng-click="applyFilter(status.filter)" uib-btn-checkbox>Stopped</label>
                                 <label class="btn btn-warning btn-outline btn-xs" ng-model="status.filter.warning" ng-click="applyFilter(status.filter)" uib-btn-checkbox>Warning</label>
-                            </div>
-                        </div>
-                        <div class="col-lg-5">
-                            <span style="font-weight:700;margin-right:4px;">Configuration:</span>
-                            <div class="btn-group" uib-dropdown>
-                                <button type="button" class="btn btn-default" uib-dropdown-toggle>
-                                    {{selectedConfiguration}} <span class="caret"></span>
-                                </button>
-                                <ul role="menu" uib-dropdown-menu="">
-                                    <li><a ng-click="changeConfiguration('All')">All</a></li>
-                                    <li class="divider"></li>
-                                    <li ng-repeat="configuration in configurations">
-                                        <a ng-click="changeConfiguration(configuration.name)">{{configuration.name}}</a>
-                                    </li>
-                                </ul>
                             </div>
                         </div>
                     </div>
