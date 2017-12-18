@@ -3802,6 +3802,14 @@ code {
 .adapters:last-child .ibox {
   margin-bottom: 25px;
 }
+.ibox-title.summary {
+  border: none;
+}
+.ibox-content.summary {
+  overflow: visible;
+  padding-bottom: 10px;
+  padding-top:10px;
+}
 .ibox-title.warning {
   border-color: #f7a54a;
 }
