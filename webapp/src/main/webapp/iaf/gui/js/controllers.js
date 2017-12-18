@@ -452,7 +452,7 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
-.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', function($scope, Hooks, Api, SweetAlert, Poller, $filter) {
+.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', '$state', function($scope, Hooks, Api, SweetAlert, Poller, $filter, $state) {
 	this.filter = {
 		"started": true,
 		"stopped": true,
@@ -520,6 +520,8 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.changeConfiguration = function(name) {
+		$state.transitionTo('pages.status', {configuration: name}, { notify: false, reload: false });
+
 		// Create new receiverSummary
 		var receiverSummary = {
 			started 	: 0,
@@ -562,11 +564,14 @@ angular.module('iaf.beheerconsole')
 		};
 		
 		// Update the view
-		$scope.messageSummary = messageSummary
+		$scope.messageSummary = messageSummary;
 		$scope.adapterSummary = adapterSummary;
 		$scope.receiverSummary = receiverSummary;
 		$scope.selectedConfiguration = name;
 	};
+	if($state.params.configuration != "All")
+		$scope.changeConfiguration($state.params.configuration);
+
 
 	$scope.startAdapter = function(adapter) {
 		adapter.state = 'starting';

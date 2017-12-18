@@ -52,13 +52,16 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/common/content.html",
 	})
 	.state('pages.status', {
-		url: "/status",
+		url: "/status?configuration",
 		templateUrl: "views/ShowConfigurationStatus.html",
 		controller: 'StatusCtrl as status',
 		data: {
 			pageTitle: 'Adapter Status',
 			breadcrumbs: 'Adapter > Status',
-		}
+		},
+		params: {
+			configuration: { value: 'All', squash: true},
+		},
 		//parent: "pages"
 	})
 	.state('pages.adapter', {
