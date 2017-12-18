@@ -4,10 +4,18 @@
 <div class="wrapper wrapper-content animated fadeInRight">
     <uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.message}}</uib-alert>
     <div class="row">
+    	<div class="col-lg-12 tabs-container ">
+        	<ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+                <li ng-class="{active : selectedConfiguration == 'All'}"><a ng-click="changeConfiguration('All')">All</a></li>
+                <li ng-class="{active : selectedConfiguration == configuration.name}" ng-repeat="configuration in configurations">
+                    <a ng-click="changeConfiguration(configuration.name)">{{configuration.name}}</a>
+                </li>
+            </ul> 
+        </div>
         <div class="col-lg-12">
             <div class="float-e-margins">
-                <div class="ibox-title">
-                    <h4>Adapter summary</h4>
+                <div class="ibox-title" style="border:none">
+                    <h4>Configuration summary</h4>
                 </div>
                 <div class="ibox-content">
                     <div class="row">
@@ -100,21 +108,6 @@
                                 <label class="btn btn-warning btn-outline btn-xs" ng-model="status.filter.warning" ng-click="applyFilter(status.filter)" uib-btn-checkbox>Warning</label>
                             </div>
                         </div>
-                        <div class="col-lg-5">
-                            <span style="font-weight:700;margin-right:4px;">Configuration:</span>
-                            <div class="btn-group" uib-dropdown>
-                                <button type="button" class="btn btn-default" uib-dropdown-toggle>
-                                    {{selectedConfiguration}} <span class="caret"></span>
-                                </button>
-                                <ul role="menu" uib-dropdown-menu="">
-                                    <li><a ng-click="changeConfiguration('All')">All</a></li>
-                                    <li class="divider"></li>
-                                    <li ng-repeat="configuration in configurations">
-                                        <a ng-click="changeConfiguration(configuration.name)">{{configuration.name}}</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -146,7 +139,7 @@
                                         </td>
                                         <td class="col-md-6" ng-if="adapter.state =='started'">
                                             <span><i class="fa fa-check-square lh22 m-r-xs"></i> Started</span>
-                                            <button style="float:right;" title="Stop adapter" ng-click="stopAdapter(adapter)" class="btn btn-xs btn-danger" type="button"><i class="fa fa-warning m-r-xs"></i> Stop adapter</button>
+                                            <button style="float:right;" title="Stop adapter" ng-click="stopAdapter(adapter)" class="btn btn-xs btn-gray" type="button"><i class="fa fa-stop m-r-xs"></i> Stop adapter</button>
                                         </td>
                                         <td class="col-md-6" ng-if="adapter.state =='stopping'">
                                             <span><i class="fa fa-stop-circle-o lh22 m-r-xs"></i> Stopping</span>
@@ -223,7 +216,7 @@
                                             <td><span ng-show="{{receiver.hasErrorStorage}}">{{receiver.errorStorageCount}}</span></td>
                                             <td>
                                                 <span class="pull-right">
-                                                    <button title="Stop receiver" class="btn btn-danger btn-xs" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
+                                                    <button title="Stop receiver" class="btn btn-gray btn-xs" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
                                                     <button title="Start receiver" class="btn btn-primary btn-xs" ng-show="receiver.state =='stopped'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
                                                     <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state !='started' && receiver.state !='stopped'" type="button"><i class="fa fa-cog fa-spin"></i></button>
                                                 </span>

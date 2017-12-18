@@ -520,6 +520,51 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.changeConfiguration = function(name) {
+		// Create new receiverSummary
+		var receiverSummary = {
+			started 	: 0,
+			starting 	: 0,
+			stopped 	: 0,
+			stopping 	: 0,
+			error 		: 0
+		};
+		// Create new adapterSummary
+		var adapterSummary = {
+			started 	: 0,
+			starting 	: 0,
+			stopped 	: 0,
+			stopping 	: 0,
+			error 		: 0
+		};
+		// Create new messageSummary
+		var messageSummary = {
+			info:0,
+			warn:0,
+			error:0
+		};
+		// Loop trough adapters
+		for(x in $scope.adapters){
+			var adapter = $scope.adapters[x];
+			
+			// Only adapters for active config
+			if(adapter.configuration == name || name == 'All'){
+				adapterSummary[adapter.status]++;
+				
+				// Loop trough receivers of adapter
+				for(y in adapter.receivers){
+					receiverSummary[adapter.receivers[y].state]++;
+				}
+				// Loop trough messages of adapter
+				for(z in adapter.messages) {
+					messageSummary[adapter.messages[z].level.toLowerCase()]++;
+				}
+			};
+		};
+		
+		// Update the view
+		$scope.messageSummary = messageSummary
+		$scope.adapterSummary = adapterSummary;
+		$scope.receiverSummary = receiverSummary;
 		$scope.selectedConfiguration = name;
 	};
 
