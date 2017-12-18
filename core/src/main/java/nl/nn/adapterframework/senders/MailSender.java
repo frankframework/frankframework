@@ -436,7 +436,7 @@ public class MailSender extends SenderWithParametersBase {
 		String messageBase64;
 		String charset;
 		Collection<Recipient> recipients;
-		Collection<Attachment> attachments;
+		Collection<Attachment> attachments = null;
 		
 		Element emailElement;
 		try {
@@ -454,7 +454,8 @@ public class MailSender extends SenderWithParametersBase {
 			recipients = retrieveRecipients(XmlUtils.getChildTags(recipientsElement, "recipient"));
 
 			Element attachmentsElement = XmlUtils.getFirstChildTag(emailElement, "attachments");
-			attachments = retrieveAttachments(attachmentsElement==null ? null :XmlUtils.getChildTags(attachmentsElement, "attachment"), prc);
+			if(attachmentsElement != null)
+				attachments = retrieveAttachments(XmlUtils.getChildTags(attachmentsElement, "attachment"), prc);
 
 		} catch (DomBuilderException e) {
 			throw new SenderException("exception parsing [" + input + "]", e);
