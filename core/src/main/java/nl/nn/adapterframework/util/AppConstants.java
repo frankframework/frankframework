@@ -48,11 +48,12 @@ public final class AppConstants extends Properties implements Serializable{
 	private final static String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
 	private static AppConstants self = null;
 	private VariableExpander variableExpander;
+	private static Properties additionalPropertiesFilesSubstVarsProperties = new Properties();
 	private static Properties propertyPlaceholderConfigurerProperties = new Properties();
 	
 	private AppConstants() {
 		super();
-		load(null, null, APP_CONSTANTS_PROPERTIES_FILE);
+		load(null, null, APP_CONSTANTS_PROPERTIES_FILE, true);
 		if (JdbcUtil.retrieveJdbcPropertiesFromDatabase()!=null) {
 			putAll(JdbcUtil.retrieveJdbcPropertiesFromDatabase());
 		}
@@ -60,7 +61,7 @@ public final class AppConstants extends Properties implements Serializable{
 
 	private AppConstants(ClassLoader classLoader) {
 		super();
-		load(classLoader, null, APP_CONSTANTS_PROPERTIES_FILE);
+		load(classLoader, null, APP_CONSTANTS_PROPERTIES_FILE, true);
 		putAll(propertyPlaceholderConfigurerProperties);
 		if (JdbcUtil.retrieveJdbcPropertiesFromDatabase()!=null) {
 			putAll(JdbcUtil.retrieveJdbcPropertiesFromDatabase());
@@ -69,7 +70,7 @@ public final class AppConstants extends Properties implements Serializable{
 
 	private AppConstants(String directory) {
 		super();
-		load(null, directory, APP_CONSTANTS_PROPERTIES_FILE);
+		load(null, directory, APP_CONSTANTS_PROPERTIES_FILE, true);
 		putAll(propertyPlaceholderConfigurerProperties);
 		if (JdbcUtil.retrieveJdbcPropertiesFromDatabase()!=null) {
 			putAll(JdbcUtil.retrieveJdbcPropertiesFromDatabase());
@@ -206,19 +207,17 @@ public final class AppConstants extends Properties implements Serializable{
 	 * so you may also specify <code><pre>log4j.properties, deploymentspecifics.properties</pre></code>
 	 * </p>
 	 */
-	private synchronized void load(ClassLoader classLoader, String directory, String filename) {
-		load(classLoader, directory, filename, null);
+	private synchronized void load(ClassLoader classLoader, String directory,
+			String filename, boolean loadAdditionalPropertiesFiles) {
+		load(classLoader, directory, filename, null, loadAdditionalPropertiesFiles);
 	}
-	private synchronized void load(ClassLoader classLoader, String directory, String filename, String suffix) {
+	private synchronized void load(ClassLoader classLoader, String directory,
+			String filename, String suffix,
+			boolean loadAdditionalPropertiesFiles) {
 		StringTokenizer tokenizer = new StringTokenizer(filename, ",");
 		while (tokenizer.hasMoreTokens()) {
 			String theFilename= tokenizer.nextToken().trim();
 			try {
-				if (StringResolver.needsResolution(theFilename)) {
-					Properties props = Misc.getEnvironmentVariables();
-					props.putAll(System.getProperties());
-					theFilename = StringResolver.substVars(theFilename, props);
-				}
 				InputStream is = null;
 				if (directory != null) {
 					File file = new File(directory + "/" + theFilename);
@@ -244,15 +243,16 @@ public final class AppConstants extends Properties implements Serializable{
 					} else {
 						log.info("Application constants loaded from file [" + theFilename + "]");
 					}
-					if (getProperty(ADDITIONAL_PROPERTIES_FILE_KEY) != null) {
-						// prevent reloading of the same file over and over again
+					if (loadAdditionalPropertiesFiles) {
+						// Add properties after load(is) to prevent load(is)
+						// from overriding them
+						putAll(additionalPropertiesFilesSubstVarsProperties);
 						String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY);
-						this.remove(ADDITIONAL_PROPERTIES_FILE_KEY);
 						String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY + ".SUFFIX");
 						if (StringUtils.isNotEmpty(loadFileSuffix)){
-							load(classLoader, directory, loadFile, loadFileSuffix);
+							load(classLoader, directory, loadFile, loadFileSuffix, false);
 						} else {
-							load(classLoader, directory, loadFile);
+							load(classLoader, directory, loadFile, false);
 						}
 					}
 				}
@@ -264,12 +264,20 @@ public final class AppConstants extends Properties implements Serializable{
 							+ suffix
 							+ (StringUtils.isEmpty(extension) ? "" : "."
 									+ extension);
-					load(classLoader, directory, suffixedFilename);
+					load(classLoader, directory, suffixedFilename, false);
 				}
 			} catch (IOException e) {
 				log.error("error reading [" + APP_CONSTANTS_PROPERTIES_FILE + "]", e);
 			}
 		}
+	}
+
+	/**
+	 * Add property which can be used to substitute variables in the value of
+	 * the property ADDITIONAL.PROPERTIES.FILE.
+	 */
+	public void putAdditionalPropertiesFilesSubstVarsProperty(String name, String value) {
+		additionalPropertiesFilesSubstVarsProperties.put(name, value);
 	}
 
 	/**

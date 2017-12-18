@@ -53,6 +53,7 @@ Upcoming
 - Fix ApiListenerServlet not always able to throw a proper exception
 - Fix database classloader initiating as webapp classloader when no config can be found in the database
 - Support schema attribute with config in database and refactor ClassUtils.getResourceURL()
+- Add ServerSpecifics and CompanySpecifics properties
 
 
 
