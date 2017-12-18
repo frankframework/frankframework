@@ -121,7 +121,10 @@ public class IbisContext {
 					+ defaultApplicationServerType + "]";
 			configWarnings.add(LOG, msg);
 		} else if (StringUtils.isEmpty(getApplicationServerType())) {
-			APP_CONSTANTS.setProperty(APPLICATION_SERVER_TYPE_PROPERTY, defaultApplicationServerType);
+			// Resolve application.server.type in ServerSpecifics*.properties, SideSpecifics*.properties and StageSpecifics*.properties filenames
+			APP_CONSTANTS.putAdditionalPropertiesFilesSubstVarsProperty(APPLICATION_SERVER_TYPE_PROPERTY, defaultApplicationServerType);
+			// Resolve application.server.type in spring.xml filenames
+			APP_CONSTANTS.putPropertyPlaceholderConfigurerProperty(APPLICATION_SERVER_TYPE_PROPERTY, defaultApplicationServerType);
 		}
 	}
 
