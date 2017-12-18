@@ -3799,6 +3799,9 @@ code {
 .adapters .ibox {
   margin-bottom: 15px;
 }
+.adapters:last-child .ibox {
+  margin-bottom: 25px;
+}
 .ibox-title.warning {
   border-color: #f7a54a;
 }
