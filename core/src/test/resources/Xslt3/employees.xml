@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><map xmlns="http://www.w3.org/2013/XSL/json">
+<map key="employees">
+<map key="jd101">
+<string key="firstname">Jane</string>
+<string key="surname">Doe</string>
+<string key="department">IT</string>
+<string key="manager">kp102</string>
+</map>
+<map key="kp102">
+<string key="firstname">Kitty</string>
+<string key="surname">Pride</string>
+<string key="department">IT</string>
+<string key="manager">jh104</string>
+</map>
+<map key="cx103">
+<string key="firstname">Charles</string>
+<string key="surname">Xavier</string>
+<string key="department">Management</string>
+</map>
+<map key="jh104">
+<string key="firstname">James</string>
+<string key="surname">Howlett</string>
+<string key="department">Security</string>
+<string key="manager">cx103</string>
+</map>
+</map>
+</map>

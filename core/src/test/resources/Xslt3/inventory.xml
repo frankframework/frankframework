@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<array xmlns="http://www.w3.org/2013/XSL/json">
+<map>
+<number key="id">2</number>
+<string key="name">An ice sculpture</string>
+<number key="price">12.50</number>
+<array key="tags">
+<string>cold</string>
+<string>ice</string>
+</array>
+<map key="dimensions">
+<number key="length">7.0</number>
+<number key="width">12.0</number>
+<number key="height">9.5</number>
+</map>
+<map key="warehouseLocation">
+<number key="latitude">-78.75</number>
+<number key="longitude">20.4</number>
+</map>
+</map>
+<map>
+<number key="id">3</number>
+<string key="name">A blue mouse</string>
+<number key="price">25.50</number>
+<map key="dimensions">
+<number key="length">3.1</number>
+<number key="width">1.0</number>
+<number key="height">1.0</number>
+</map>
+<map key="warehouseLocation">
+<number key="latitude">54.4</number>
+<number key="longitude">-32.7</number>
+</map>
+</map>
+</array>

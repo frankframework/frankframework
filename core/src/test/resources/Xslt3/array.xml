@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<array xmlns="http://www.w3.org/2013/XSL/json">
+<null/>
+<boolean>true</boolean>
+<boolean>false</boolean>
+<string>stringvalue</string>
+<string>1</string>
+<number>1</number>
+<number>1.2</number>
+<number>0.02</number>
+<map>
+<string key="a">1</string>
+<string key="b">xyz</string>
+</map>
+<array>
+<string>x</string>
+<string>y</string>
+</array>
+</array>

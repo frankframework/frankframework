@@ -15,9 +15,14 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
 import java.util.Map;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -27,10 +32,9 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -101,6 +105,7 @@ public class XsltPipe extends FixedForwardPipe {
 	 * XSL. If the stylesheetname cannot be accessed, a ConfigurationException is thrown.
 	 * @throws ConfigurationException
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 	    super.configure();
 	
@@ -135,6 +140,7 @@ public class XsltPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Override
 	public void start() throws PipeStartException {
 		super.start();
 		if (transformerPoolRemoveNamespaces!=null) {
@@ -160,6 +166,7 @@ public class XsltPipe extends FixedForwardPipe {
 		}
 	}
 	
+	@Override
 	public void stop() {
 		super.stop();
 		if (transformerPoolRemoveNamespaces!=null) {
@@ -173,11 +180,25 @@ public class XsltPipe extends FixedForwardPipe {
 		}
 	}
 	
+	protected ParameterResolutionContext getInput(String input, IPipeLineSession session) throws PipeRunException, DomBuilderException, TransformerException, IOException {
+		if (isRemoveNamespaces()) {
+			log.debug(getLogPrefix(session)+ " removing namespaces from input message");
+			ParameterResolutionContext prc_RemoveNamespaces = new ParameterResolutionContext(input, session, isNamespaceAware()); 
+			input = transformerPoolRemoveNamespaces.transform(prc_RemoveNamespaces.getInputSource(), null); 
+			log.debug(getLogPrefix(session)+ " output message after removing namespaces [" + input + "]");
+		}
+		return new ParameterResolutionContext(input, session, isNamespaceAware(), isXslt2());
+	}
+
+	protected String transform(TransformerPool tp, Source source, Map parametervalues) throws TransformerException, IOException {
+		return tp.transform(source, parametervalues);
+	}
 	/**
 	 * Here the actual transforming is done. Under weblogic the transformer object becomes
 	 * corrupt when a not-well formed xml was handled. The transformer is then re-initialized
 	 * via the configure() and start() methods.
 	 */
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this,
@@ -188,27 +209,20 @@ public class XsltPipe extends FixedForwardPipe {
 	            getLogPrefix(session)+"got an invalid type as input, expected String, got "
 	                + input.getClass().getName());
 	    }
-	    
-		ParameterList parameterList = null;
+		String stringResult =(String) input;
+
 		//ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session, isNamespaceAware()); 
 	    try {
-			String stringResult = (String)input;
 
-			if (isRemoveNamespaces()) {
-				log.debug(getLogPrefix(session)+ " removing namespaces from input message");
-				ParameterResolutionContext prc_RemoveNamespaces = new ParameterResolutionContext(stringResult, session, isNamespaceAware()); 
-				stringResult = transformerPoolRemoveNamespaces.transform(prc_RemoveNamespaces.getInputSource(), null); 
-				log.debug(getLogPrefix(session)+ " output message after removing namespaces [" + stringResult + "]");
-			}
-
-			ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, isNamespaceAware(), isXslt2());
+			ParameterResolutionContext prc = getInput(stringResult, session);
 			Map parametervalues = null;
-			if (getParameterList()!=null) {
-				parameterList =  getParameterList();
+			ParameterList parameterList = getParameterList();
+			if (parameterList!=null) {
 				parametervalues = prc.getValueMap(parameterList);
 			}
 			
-	        stringResult = transformerPool.transform(prc.getInputSource(), parametervalues); 
+	        //stringResult = transformerPool.transform(prc.getInputSource(), parametervalues); 
+	        stringResult = transform(transformerPool,prc.getInputSource(), parametervalues);
 
 			if (isSkipEmptyTags()) {
 				log.debug(getLogPrefix(session)+ " skipping empty tags from result [" + stringResult + "]");

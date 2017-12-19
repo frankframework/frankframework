@@ -18,6 +18,7 @@ package nl.nn.adapterframework.parameters;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -69,13 +70,13 @@ public class ParameterResolutionContext {
 		this(input, session, XmlUtils.isNamespaceAwareByDefault());
 	}
 
-	public ParameterResolutionContext(Source xmlSource, IPipeLineSession session, boolean namespaceAware) {
-		this("", session, namespaceAware);
+	public ParameterResolutionContext(Source xmlSource, IPipeLineSession session, boolean namespaceAware, boolean xslt2) {
+		this("", session, namespaceAware,xslt2);
 		this.xmlSource=xmlSource;
 	}
 
 	public ParameterResolutionContext(Source xmlSource, IPipeLineSession session) {
-		this(xmlSource, session, XmlUtils.isNamespaceAwareByDefault());
+		this(xmlSource, session, XmlUtils.isNamespaceAwareByDefault(),false);
 	}
 
 	public ParameterResolutionContext() {
@@ -94,7 +95,7 @@ public class ParameterResolutionContext {
 	 * @param parameters
 	 * @return arraylist of <link>ParameterValue<link> objects
 	 */
-	public ParameterValueList getValues(ParameterList<Parameter> parameters) throws ParameterException {
+	public ParameterValueList getValues(ParameterList parameters) throws ParameterException {
 		if (parameters == null)
 			return null;
 		
@@ -131,23 +132,23 @@ public class ParameterResolutionContext {
 	 * @param parameters
 	 * @return map of value objects
 	 */
-	public IPipeLineSession getValueMap(ParameterList<Parameter> parameters) throws ParameterException {
+	public Map<String,Object> getValueMap(ParameterList parameters) throws ParameterException {
 		if (parameters==null) {
 			return null;
 		}
 		Map<String, ParameterValue> paramValuesMap = getValues(parameters).getParameterValueMap();
 
 		// convert map with parameterValue to map with value		
-		IPipeLineSession result = new PipeLineSessionBase(paramValuesMap.size());
+		Map<String,Object> result = new LinkedHashMap(paramValuesMap.size());
 		for (Iterator<ParameterValue> it= paramValuesMap.values().iterator(); it.hasNext(); ) {
-			ParameterValue pv = (ParameterValue)it.next();
+			ParameterValue pv = it.next();
 			result.put(pv.getDefinition().getName(), pv.getValue());
 		}
 		return result;
 	}
 	
 
-	public ParameterValueList forAllParameters(ParameterList<Parameter> parameters, IParameterHandler handler) throws ParameterException {
+	public ParameterValueList forAllParameters(ParameterList parameters, IParameterHandler handler) throws ParameterException {
 		ParameterValueList values = getValues(parameters);
 		if (values != null) {
 			values.forAllParameters(handler);

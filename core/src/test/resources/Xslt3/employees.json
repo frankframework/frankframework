@@ -1,0 +1,25 @@
+{"employees":{
+    "jd101":{
+        "firstname":"Jane",
+        "surname":"Doe",
+        "department":"IT",
+        "manager":"kp102"
+        },
+    "kp102":{
+        "firstname":"Kitty",
+        "surname":"Pride",
+        "department":"IT",
+        "manager":"jh104"
+        },
+    "cx103":{
+        "firstname":"Charles",
+        "surname":"Xavier",
+        "department":"Management"
+        },
+    "jh104":{
+        "firstname":"James",
+        "surname":"Howlett",
+        "department":"Security",
+        "manager":"cx103"
+        }        
+    }}
