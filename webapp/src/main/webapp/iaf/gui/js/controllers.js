@@ -461,7 +461,7 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
-.controller('StatusCtrl', ['$rootScope','$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', function($rootScope, $scope, Hooks, Api, SweetAlert, Poller, $filter) {
+.controller('StatusCtrl', ['$state','$rootScope','$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', function($state, $rootScope, $scope, Hooks, Api, SweetAlert, Poller, $filter) {
 	this.filter = {
 		"started": true,
 		"stopped": true,
