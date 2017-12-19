@@ -206,7 +206,7 @@ angular.module('iaf.beheerconsole')
 
 						$rootScope.adapters[data.name] = data;
 
-						updateAdapterSummary();
+						$scope.updateAdapterSummary(true);
 						Hooks.call("adapterUpdated", data);
 					}
 				}, true);
@@ -218,14 +218,14 @@ angular.module('iaf.beheerconsole')
 
 	var lastUpdated = 0;
 	var timeout = null;
-	function updateAdapterSummary() {
+	$scope.updateAdapterSummary = function(executeTimeout) {
 		var updated = (new Date().getTime());
-		if(updated - 3000 < lastUpdated) { //3 seconds
+		if(updated - 3000 < lastUpdated && executeTimeout) { //3 seconds
 			clearTimeout(timeout);
 			timeout = setTimeout(updateAdapterSummary, 1000);
 			return;
 		}
-
+		
 		var adapterSummary = {
 			started:0,
 			stopped:0,
@@ -245,19 +245,28 @@ angular.module('iaf.beheerconsole')
 			warn:0,
 			error:0
 		};
-
+		
 		var allAdapters = $rootScope.adapters;
-		for(adapterName in allAdapters) {
-			var adapter = allAdapters[adapterName];
-			adapterSummary[adapter.state]++;
-			for(i in adapter.receivers) {
-				receiverSummary[adapter.receivers[i].state.toLowerCase()]++;
-			}
-			for(i in adapter.messages) {
-				var level = adapter.messages[i].level.toLowerCase();
-				messageSummary[level]++;
-			}
-		}
+		var name = $rootScope.selectedConfiguration;
+		
+		// Loop trough adapters
+		for(x in allAdapters){
+			var adapter = allAdapters[x];
+			
+			// Only adapters for active config
+			if(adapter.configuration == name || name == 'All'){
+				adapterSummary[adapter.status]++;
+				
+				// Loop trough receivers of adapter
+				for(y in adapter.receivers){
+					receiverSummary[adapter.receivers[y].state]++;
+				}
+				// Loop trough messages of adapter
+				for(z in adapter.messages) {
+					messageSummary[adapter.messages[z].level.toLowerCase()]++;
+				}
+			};
+		};
 
 		$scope.adapterSummary = adapterSummary;
 		$scope.receiverSummary = receiverSummary;
@@ -452,7 +461,7 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
-.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', function($scope, Hooks, Api, SweetAlert, Poller, $filter) {
+.controller('StatusCtrl', ['$rootScope','$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', function($rootScope, $scope, Hooks, Api, SweetAlert, Poller, $filter) {
 	this.filter = {
 		"started": true,
 		"stopped": true,
@@ -463,7 +472,7 @@ angular.module('iaf.beheerconsole')
 		$scope.filter = filter;
 	};
 	$scope.reload = false;
-	$scope.selectedConfiguration = "All";
+	$rootScope.selectedConfiguration = "All";
 
 	$scope.collapseAll = function() {
 		$(".adapters").each(function(i,e) {
@@ -520,52 +529,8 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.changeConfiguration = function(name) {
-		// Create new receiverSummary
-		var receiverSummary = {
-			started 	: 0,
-			starting 	: 0,
-			stopped 	: 0,
-			stopping 	: 0,
-			error 		: 0
-		};
-		// Create new adapterSummary
-		var adapterSummary = {
-			started 	: 0,
-			starting 	: 0,
-			stopped 	: 0,
-			stopping 	: 0,
-			error 		: 0
-		};
-		// Create new messageSummary
-		var messageSummary = {
-			info:0,
-			warn:0,
-			error:0
-		};
-		// Loop trough adapters
-		for(x in $scope.adapters){
-			var adapter = $scope.adapters[x];
-			
-			// Only adapters for active config
-			if(adapter.configuration == name || name == 'All'){
-				adapterSummary[adapter.status]++;
-				
-				// Loop trough receivers of adapter
-				for(y in adapter.receivers){
-					receiverSummary[adapter.receivers[y].state]++;
-				}
-				// Loop trough messages of adapter
-				for(z in adapter.messages) {
-					messageSummary[adapter.messages[z].level.toLowerCase()]++;
-				}
-			};
-		};
-		
-		// Update the view
-		$scope.messageSummary = messageSummary
-		$scope.adapterSummary = adapterSummary;
-		$scope.receiverSummary = receiverSummary;
-		$scope.selectedConfiguration = name;
+		$rootScope.selectedConfiguration = name;
+		$scope.updateAdapterSummary(false);
 	};
 
 	$scope.startAdapter = function(adapter) {
