@@ -39,6 +39,9 @@ import java.util.StringTokenizer;
 import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -51,12 +54,8 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
@@ -171,6 +170,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	protected String[] columnsReturnedList=null;
 	private boolean streamResultToServlet=false;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		
@@ -227,9 +227,10 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return st.getGeneratedKeys();
 	}
 
+	@Override
 	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		PreparedStatement statement=null;
-		ParameterList<Parameter> newParamList = new ParameterList<Parameter>();
+		ParameterList newParamList = new ParameterList();
 		if (paramList != null) {
 			newParamList = (ParameterList) paramList.clone();
 		}
@@ -316,7 +317,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 
-	private String adjustParamList(ParameterList<Parameter> paramList, String message) throws SenderException {
+	private String adjustParamList(ParameterList paramList, String message) throws SenderException {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix() + "Adjusting list of parameters ["	+ paramListToString(paramList) + "]");
 		}
@@ -327,7 +328,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			return message;
 		char[] messageChars = message.toCharArray();
 		int copyFrom = 0;
-		ParameterList<Parameter> oldParamList = new ParameterList<Parameter>();
+		ParameterList oldParamList = new ParameterList();
 		oldParamList = (ParameterList) paramList.clone();
 		paramList.clear();
 		while (startPos != -1) {
@@ -370,7 +371,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return buffer.toString();
 	}
 
-	private String paramListToString(ParameterList<Parameter> paramList) {
+	private String paramListToString(ParameterList paramList) {
 		String paramListString = "";
 		for (int i = 0; i < paramList.size(); i++) {
 			String key = paramList.getParameter(i).getName();
@@ -692,7 +693,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 
-	protected String executeOtherQuery(Connection connection, String correlationID, PreparedStatement statement, String message, ParameterResolutionContext prc, ParameterList<Parameter> newParamList) throws SenderException{
+	protected String executeOtherQuery(Connection connection, String correlationID, PreparedStatement statement, String message, ParameterResolutionContext prc, ParameterList newParamList) throws SenderException{
 		ResultSet resultset=null;
 		try {
 			int numRowsAffected = 0;
@@ -805,7 +806,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 						if (element.startsWith("'")) {
 							int x = element.indexOf('\'');
 							int y = element.lastIndexOf('\'');
-							paramArray[idx] = (String) element.substring(x + 1, y);
+							paramArray[idx] = element.substring(x + 1, y);
 						} else {
 							if (element.indexOf('-') >= 0){
 								if (element.length() > 10) {
@@ -813,7 +814,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
 									java.util.Date nDate = (java.util.Date)sdf.parseObject(element.toString());
 									java.sql.Timestamp sqlTimestamp = new java.sql.Timestamp(nDate.getTime());
-									paramArray[idx] = (Timestamp) sqlTimestamp;
+									paramArray[idx] = sqlTimestamp;
 									 
 								} else {
 									String pattern = "yyyy-MM-dd";
@@ -821,7 +822,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 									java.util.Date nDate;
 									nDate = sdf.parse(element.toString());
 									java.sql.Date sDate = new java.sql.Date(nDate.getTime());
-									paramArray[idx] = (java.sql.Date) sDate;								
+									paramArray[idx] = sDate;								
 								}	
 							} else {
 								if (element.indexOf('.') >= 0) {					
@@ -937,6 +938,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	public void setSynchronous(boolean synchronous) {
 	   this.synchronous=synchronous;
 	}
+	@Override
 	public boolean isSynchronous() {
 	   return synchronous;
 	}

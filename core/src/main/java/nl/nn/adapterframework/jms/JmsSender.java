@@ -26,6 +26,9 @@ import javax.jms.Session;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPostboxSender;
@@ -40,9 +43,6 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.DomBuilderException;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
  * This class sends messages with JMS.
@@ -99,12 +99,13 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	private String soapHeaderParam="soapHeader";
 	private String linkMethod="MESSAGEID";
 	
-	protected ParameterList<Parameter> paramList = null;
+	protected ParameterList paramList = null;
 	private SoapWrapper soapWrapper=null;
 
 	/**
 	 * Configures the sender
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isNotEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
 			Parameter p = new Parameter();
@@ -127,6 +128,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	/**
 	 * Starts the sender 
 	 */
+	@Override
 	public void open() throws SenderException {
 		try {
 			super.open();
@@ -136,18 +138,21 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		}
 	}
 
+	@Override
 	public void addParameter(Parameter p) { 
 		if (paramList==null) {
-			paramList=new ParameterList<Parameter>();
+			paramList=new ParameterList();
 		}
 		paramList.add(p);
 	}
 
 
+	@Override
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
 		return sendMessage(correlationID, message, null);
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		return sendMessage(correlationID, message, prc, null);
 	}
@@ -328,6 +333,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		}
 	}
 	
+	@Override
 	public String toString() {
 		String result = super.toString();
 		ToStringBuilder ts = new ToStringBuilder(this);
@@ -342,6 +348,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	public void setSynchronous(boolean synchronous) {
 		this.synchronous=synchronous;
 	}
+	@Override
 	public boolean isSynchronous() {
 		return synchronous;
 	}

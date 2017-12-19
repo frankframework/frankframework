@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -34,16 +33,16 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.SoftReferenceObjectPool;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 
 /**
  * Pool of transformers. As of IBIS 4.2.e the Templates object is used to improve
@@ -60,6 +59,7 @@ public class TransformerPool {
 	private URL reloadURL=null;
 
 	private ObjectPool pool = new SoftReferenceObjectPool(new BasePoolableObjectFactory() {
+		@Override
 		public Object makeObject() throws Exception {
 			return createTransformer();			
 		}
@@ -263,13 +263,11 @@ public class TransformerPool {
 	public String transform(Source s, Result r, Map parameters) throws TransformerException, IOException {
 		Transformer transformer = getTransformer();
 		try {
+			XmlUtils.setTransformerParameters(transformer, parameters);
 			if (r == null) {
-				XmlUtils.setTransformerParameters(transformer, parameters);
 				return XmlUtils.transformXml(transformer, s);
-			} else {
-				XmlUtils.setTransformerParameters(transformer, parameters);
-				transformer.transform(s,r);
-			}
+			} 
+			transformer.transform(s,r);
 		} catch (TransformerException te) {
 			((TransformerErrorListener)transformer.getErrorListener()).setFatalTransformerException(te);
 		} catch (IOException ioe) {

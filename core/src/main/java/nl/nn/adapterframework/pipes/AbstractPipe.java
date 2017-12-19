@@ -20,6 +20,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.log4j.Logger;
+import org.springframework.transaction.TransactionDefinition;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
@@ -45,11 +50,6 @@ import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
-import org.springframework.transaction.TransactionDefinition;
 
 /**
  * Base class for {@link nl.nn.adapterframework.core.IPipe Pipe}.
@@ -137,7 +137,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 
 	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
 	private int maxThreads = 0;
-	private ParameterList<Parameter> parameterList = new ParameterList<Parameter>();
+	private ParameterList parameterList = new ParameterList();
 	private long durationThreshold = -1;
 	private String getInputFromSessionKey=null;
 	private String getInputFromFixedValue=null;
@@ -182,8 +182,9 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> method, to improve performance.
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
-		ParameterList<Parameter> params = getParameterList();
+		ParameterList params = getParameterList();
 		
 		if (params!=null) {
 			try {
@@ -231,6 +232,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * Extension for IExtendedPipe that calls configure(void) in its implementation.
 	 */
+	@Override
 	public void configure(PipeLine pipeline) throws ConfigurationException {
 		this.pipeline=pipeline;
 		configure();
@@ -242,6 +244,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * to be handled by the caller of this object.
 	 * @deprecated use {@link #doPipe(Object,IPipeLineSession)} instead
 	 */
+	@Deprecated
 	public PipeRunResult doPipe (Object input) throws PipeRunException {
 		throw new PipeRunException(this, "Pipe should implement method doPipe()");
 	}
@@ -250,6 +253,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * This is where the action takes place. Pipes may only throw a PipeRunException,
 	 * to be handled by the caller of this object.
 	 */
+	@Override
 	public PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunException {
 		return doPipe(input);
 	}
@@ -279,7 +283,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
         return pipeForwards.get(forward);
     }
 
-    public Map<String, PipeForward> getForwards(){
+    @Override
+	public Map<String, PipeForward> getForwards(){
         Map<String, PipeForward> forwards = new Hashtable<String, PipeForward>(pipeForwards);
         List<IPipe> pipes = getPipeLine().getPipes();
         for (int i=0; i<pipes.size(); i++) {
@@ -314,6 +319,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * @see nl.nn.adapterframework.core.PipeLine
 	 * @see PipeForward
 	 */
+	@Override
 	public void registerForward(PipeForward forward){
 		PipeForward current = pipeForwards.get(forward.getName());
 		if (current==null){
@@ -350,6 +356,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	  * after the {@link #configure()} method, for eacht start and stop command of the
 	  * adapter.
 	  */
+	@Override
 	public void start() throws PipeStartException{
 //		if (getTransactionAttributeNum()>0 && getTransactionAttributeNum()!=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS) {
 //			try {
@@ -364,7 +371,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	  * Perform necessary actions to stop the <code>Pipe</code>.<br/>
 	  * For instance, closing JMS connections, dbms connections etc.
 	  */
-	 public void stop() {}
+	 @Override
+	public void stop() {}
 
 	 /**
 	  * The <code>toString()</code> method retrieves its value
@@ -374,7 +382,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	  *
 	  **/
 
-    public String toString() {
+    @Override
+	public String toString() {
 		try {
 			return ToStringBuilder.reflectionToString(this);
 		} catch (Throwable t) {
@@ -395,18 +404,21 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * return the Parameters
 	 */
-	public ParameterList<Parameter> getParameterList() {
+	public ParameterList getParameterList() {
 		return parameterList;
 	}
 
+	@Override
 	public String getEventSourceName() {
 		return getLogPrefix(null).trim();
 	}
+	@Override
 	public void registerEvent(String description) {
 		if (eventHandler!=null) {
 			eventHandler.registerEvent(this,description);
 		}
 	}
+	@Override
 	public void throwEvent(String event) {
 		if (eventHandler!=null) {
 			eventHandler.fireEvent(this,event);
@@ -417,6 +429,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return pipeline;
 	}
 
+	@Override
 	public IAdapter getAdapter() {
 		if (getPipeLine()!=null) {
 			return getPipeLine().getAdapter();
@@ -424,7 +437,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return null;
 	}
 
-    public String getType(){
+    @Override
+	public String getType(){
         return this.getClass().getSimpleName();
     }
 
@@ -435,6 +449,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	public void setMaxThreads(int newMaxThreads) {
 	  maxThreads = newMaxThreads;
 	}
+	@Override
 	public int getMaxThreads() {
 		return maxThreads;
 	}
@@ -442,11 +457,13 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * The functional name of this pipe
 	 */
+	@Override
 	public void setName(String name) {
 		this.name=name;
 		inSizeStatDummyObject.setName(getName() + " (in)");
 		outSizeStatDummyObject.setName(getName() + " (out)");
 	}
+	@Override
 	public String getName() {
 	  return this.name;
 	}
@@ -455,84 +472,106 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * Sets a threshold for the duration of message execution;
 	 * If the threshold is exceeded, the message is logged to be analyzed.
 	 */
+	@Override
 	public void setDurationThreshold(long maxDuration) {
 		this.durationThreshold = maxDuration;
 	}
+	@Override
 	public long getDurationThreshold() {
 		return durationThreshold;
 	}
 
+	@Override
 	public void setGetInputFromSessionKey(String string) {
 		getInputFromSessionKey = string;
 	}
+	@Override
 	public String getGetInputFromSessionKey() {
 		return getInputFromSessionKey;
 	}
 
+	@Override
 	public void setGetInputFromFixedValue(String string) {
 		getInputFromFixedValue = string;
 	}
+	@Override
 	public String getGetInputFromFixedValue() {
 		return getInputFromFixedValue;
 	}
 
+	@Override
 	public void setStoreResultInSessionKey(String string) {
 		storeResultInSessionKey = string;
 	}
+	@Override
 	public String getStoreResultInSessionKey() {
 		return storeResultInSessionKey;
 	}
 
+	@Override
 	public void setPreserveInput(boolean preserveInput) {
 		this.preserveInput = preserveInput;
 	}
+	@Override
 	public boolean isPreserveInput() {
 		return preserveInput;
 	}
 
+	@Override
 	public void setChompCharSize(String string) {
 		chompCharSize = string;
 	}
 
+	@Override
 	public String getChompCharSize() {
 		return chompCharSize;
 	}
 
+	@Override
 	public void setElementToMove(String string) {
 		elementToMove = string;
 	}
 
+	@Override
 	public String getElementToMove() {
 		return elementToMove;
 	}
 
+	@Override
 	public void setElementToMoveSessionKey(String string) {
 		elementToMoveSessionKey = string;
 	}
 
+	@Override
 	public String getElementToMoveSessionKey() {
 		return elementToMoveSessionKey;
 	}
 
+	@Override
 	public void setElementToMoveChain(String string) {
 		elementToMoveChain = string;
 	}
 
+	@Override
 	public String getElementToMoveChain() {
 		return elementToMoveChain;
 	}
 
+	@Override
 	public void setRemoveCompactMsgNamespaces(boolean b) {
 		removeCompactMsgNamespaces = b;
 	}
 
+	@Override
 	public boolean isRemoveCompactMsgNamespaces() {
 		return removeCompactMsgNamespaces;
 	}
 	
+	@Override
 	public void setRestoreMovedElements(boolean restoreMovedElements) {
 		this.restoreMovedElements = restoreMovedElements;
 	}
+	@Override
 	public boolean isRestoreMovedElements() {
 		return restoreMovedElements;
 	}
@@ -550,6 +589,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
 		}
 	}
+	@Override
 	public String getTransactionAttribute() {
 		return JtaUtil.getTransactionAttributeString(transactionAttribute);
 	}
@@ -557,6 +597,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
 	}
+	@Override
 	public int getTransactionAttributeNum() {
 		return transactionAttribute;
 	}
@@ -564,6 +605,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	public void setActive(boolean b) {
 		active = b;
 	}
+	@Override
 	public boolean isActive() {
 		return active;
 	}
@@ -571,10 +613,12 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}
+	@Override
 	public int getTransactionTimeout() {
 		return transactionTimeout;
 	}
 
+	@Override
 	public boolean hasSizeStatistics() {
 		return sizeStatistics;
 	}
@@ -582,17 +626,21 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		this.sizeStatistics = sizeStatistics;
 	}
 
+	@Override
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 	}
+	@Override
 	public Locker getLocker() {
 		return locker;
 	}
 
+	@Override
 	public void setEmptyInputReplacement(String string) {
 		emptyInputReplacement = string;
 	}
 
+	@Override
 	public String getEmptyInputReplacement() {
 		return emptyInputReplacement;
 	}
@@ -605,16 +653,20 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return outSizeStatDummyObject;
 	}
 
+	@Override
 	public void setWriteToSecLog(boolean b) {
 		writeToSecLog = b;
 	}
+	@Override
 	public boolean isWriteToSecLog() {
 		return writeToSecLog;
 	}
 
+	@Override
 	public void setSecLogSessionKeys(String string) {
 		secLogSessionKeys = string;
 	}
+	@Override
 	public String getSecLogSessionKeys() {
 		return secLogSessionKeys;
 	}

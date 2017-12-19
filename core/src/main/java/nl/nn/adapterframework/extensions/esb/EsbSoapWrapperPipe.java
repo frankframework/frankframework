@@ -17,6 +17,8 @@ package nl.nn.adapterframework.extensions.esb;
 
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -27,8 +29,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
 import nl.nn.adapterframework.util.AppConstants;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Extension to SoapWrapperPipe for separate modes.
@@ -404,7 +404,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	}
 
 	private void stripDestination() throws ConfigurationException {
-		ParameterList<Parameter> parameterList = getParameterList();
+		ParameterList parameterList = getParameterList();
 		Parameter pd = parameterList.findParameter(DESTINATION);
 		Parameter ppd = parameterList.findParameter(PHYSICALDESTINATION);
 		String destination = null;
@@ -539,7 +539,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	}
 
 	private void addParameters() {
-		ParameterList<Parameter> parameterList = getParameterList();
+		ParameterList parameterList = getParameterList();
 		Parameter p;
 		String paradigm = null;
 		p = parameterList.findParameter(PARADIGM);
