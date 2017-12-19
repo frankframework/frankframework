@@ -52,13 +52,16 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/common/content.html",
 	})
 	.state('pages.status', {
-		url: "/status",
+		url: "/status?configuration",
 		templateUrl: "views/ShowConfigurationStatus.html",
 		controller: 'StatusCtrl as status',
 		data: {
 			pageTitle: 'Adapter Status',
 			breadcrumbs: 'Adapter > Status',
-		}
+		},
+		params: {
+			configuration: { value: 'All', squash: true},
+		},
 		//parent: "pages"
 	})
 	.state('pages.adapter', {
@@ -290,6 +293,10 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			if($scope.release == undefined)
 				$location.path("status");
 		}
+	})
+	.state('initError', {
+		templateUrl: "views/initError.html",
+		data: { pageTitle: 'IBIS Startup Failed' }
 	});
 
 	$locationProvider.html5Mode(false);
@@ -309,6 +316,13 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			$rootScope.$apply();
 		}
 	};
+	$rootScope.$on("$stateChangeStart", function(_, state) {
+		Debug.log("Triggered state change");
+		gtag('config', 'UA-111373008-1', {
+			'page_path': state.url,
+			'page_title': state.data.pageTitle
+		});
+	});
 
 	// Set this asap on localhost to capture all debug data
 	if(location.hostname == "localhost")

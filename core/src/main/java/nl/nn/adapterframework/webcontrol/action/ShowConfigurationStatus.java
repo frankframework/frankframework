@@ -87,6 +87,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 
 		// Initialize action
 		initAction(request);
+		if(ibisManager==null)return (mapping.findForward("noIbisContext"));
 
 		String countStr = request.getParameter("count");
 		boolean count = Boolean.valueOf(countStr);

@@ -4,8 +4,8 @@
  *
  */
 angular.module('iaf.beheerconsole')
-.controller('MainCtrl', ['$scope', '$rootScope', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', 
-	function($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert) {
+.controller('MainCtrl', ['$scope', '$rootScope', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', '$timeout',
+	function($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert, $timeout) {
 	$scope.loading = true;
 	$rootScope.adapters = {};
 	Pace.on("done", function() {
@@ -41,6 +41,14 @@ angular.module('iaf.beheerconsole')
 					Idle.setTimeout(false);
 				}
 				Hooks.call("init", false);
+			}, function(message, statusCode, statusText) {
+				if(statusCode == 500) {
+					$timeout(function(){
+						angular.element(".main").show();
+						angular.element(".loading").hide();
+					}, 100);
+					$state.go("initError");
+				}
 			});
 			appConstants.init = 1;
 			Api.Get("environmentvariables", function(data) {
@@ -109,41 +117,14 @@ angular.module('iaf.beheerconsole')
 
 	Hooks.register("init:once", function() {
 		/* Check IAF version */
-		var Xrate = Session.get("X-RateLimit");
-		if(Xrate == undefined || Xrate.reset < parseInt(new Date().getTime()/1000)) {
-			$http.get("https://api.github.com/rate_limit", {headers:{"Authorization": undefined}}).then(function(response) {
-				if(!response  || !response.data) return false;
-	
-				var GithubXrate = {
-					limit: parseInt(response.headers("X-RateLimit-Limit")) || 0,
-					remaining: parseInt(response.headers("X-RateLimit-Remaining")) || 0,
-					reset: parseInt(response.headers("X-RateLimit-Reset")) || 0,
-					time: parseInt(new Date().getTime()/1000),
-				};
-				console.log("Fetching X-RateLimit from api.GitHub.com...", GithubXrate);
-				Session.set("X-RateLimit", GithubXrate);
-			});
+		console.log("Checking IAF version with remote...");
+		$http.get("https://ibissource.org/iaf/releases/").then(function(response) {
+			if(!response  || !response.data) return false;
+			var release = response.data[0]; //Not sure what ID to pick, smallest or latest?
 
-			$http.get("https://api.github.com/repos/ibissource/iaf/releases", {headers:{"Authorization": undefined}}).then(function(response) {
-				if(!response  || !response.data) return false;
-
-				var release = response.data[0]; //Not sure what ID to pick, smallest or latest?
-				handleGitHubResponse(release);
-			});
-		}
-		else {
-			var release = Session.get("IAF-Release");
-			if(release != null) {
-				Notification.add('fa-exclamation-circle', "IAF update available!", false, function() {
-					$location.path("iaf-update");
-				});
-			}
-		}
-		function handleGitHubResponse(release) {
 			var newVersion = (release.tag_name.substr(0, 1) == "v") ? release.tag_name.substr(1) : release.tag_name;
 			var currentVersion = appConstants["application.version"];
 			var version = Misc.compare_version(newVersion, currentVersion);
-			console.log("Checking IAF version with remote...");
 			console.log("Comparing version: '"+currentVersion+"' with latest release: '"+newVersion+"'.");
 			Session.remove("IAF-Release");
 
@@ -153,7 +134,8 @@ angular.module('iaf.beheerconsole')
 					$location.path("iaf-update");
 				});
 			}
-		};
+		});
+		gtag('event', 'application.version', {'application.version': appConstants["application.version"]});
 
 		Api.Get("server/warnings", function(warnings) {
 			for(i in warnings) {
@@ -198,7 +180,7 @@ angular.module('iaf.beheerconsole')
 
 						$rootScope.adapters[data.name] = data;
 
-						updateAdapterSummary();
+						$scope.updateAdapterSummary();
 						Hooks.call("adapterUpdated", data);
 					}
 				}, true);
@@ -210,13 +192,15 @@ angular.module('iaf.beheerconsole')
 
 	var lastUpdated = 0;
 	var timeout = null;
-	function updateAdapterSummary() {
+	$scope.updateAdapterSummary = function(configurationName) {
 		var updated = (new Date().getTime());
-		if(updated - 3000 < lastUpdated) { //3 seconds
+		if(updated - 3000 < lastUpdated && !configurationName) { //3 seconds
 			clearTimeout(timeout);
-			timeout = setTimeout(updateAdapterSummary, 1000);
+			timeout = setTimeout($scope.updateAdapterSummary, 1000);
 			return;
 		}
+		if(configurationName == undefined)
+			configurationName = $state.params.configuration;
 
 		var adapterSummary = {
 			started:0,
@@ -241,13 +225,16 @@ angular.module('iaf.beheerconsole')
 		var allAdapters = $rootScope.adapters;
 		for(adapterName in allAdapters) {
 			var adapter = allAdapters[adapterName];
-			adapterSummary[adapter.state]++;
-			for(i in adapter.receivers) {
-				receiverSummary[adapter.receivers[i].state.toLowerCase()]++;
-			}
-			for(i in adapter.messages) {
-				var level = adapter.messages[i].level.toLowerCase();
-				messageSummary[level]++;
+
+			if(adapter.configuration == configurationName || configurationName == 'All') { // Only adapters for active config
+				adapterSummary[adapter.state]++;
+				for(i in adapter.receivers) {
+					receiverSummary[adapter.receivers[i].state.toLowerCase()]++;
+				}
+				for(i in adapter.messages) {
+					var level = adapter.messages[i].level.toLowerCase();
+					messageSummary[level]++;
+				}
 			}
 		}
 
@@ -256,7 +243,6 @@ angular.module('iaf.beheerconsole')
 		$scope.messageSummary = messageSummary;
 		lastUpdated = updated;
 	};
-	//$interval(updateAdapterSummary, 2000);
 
 	Hooks.register("adapterUpdated:once", function(adapter) {
 		if($location.hash()) {
@@ -363,6 +349,25 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
+.controller('errorController', ['$scope', 'Api', 'Debug', '$http', 'Misc', '$state', '$timeout', function($scope, Api, Debug, $http, Misc, $state, $timeout) {
+	var timeout = null;
+	$scope.retry = function() {
+		$scope.retryInit = true;
+		angular.element('.retryInitBtn i').addClass('fa-spin');
+
+		$http.get(Misc.getServerPath()+"ConfigurationServlet").then(reload, reload);
+	};
+	function reload() {
+		window.location.reload();
+		$timeout.cancel(timeout);
+		$timeout(function() {
+			angular.element(".main").show();
+			angular.element(".loading").hide();
+		}, 100);
+	}
+	timeout = $timeout(function(){$scope.retry();}, 60000);
+}])
+
 .controller('FeedbackCtrl', ['$scope', '$uibModalInstance', '$http', 'rating', '$timeout', 'appConstants', 'SweetAlert', function($scope, $uibModalInstance, $http, rating, $timeout, appConstants, SweetAlert) {
 	var URL = appConstants["console.feedbackURL"];
 	$scope.form = {rating: rating, name: "", feedback: ""};
@@ -425,7 +430,7 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
-.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', function($scope, Hooks, Api, SweetAlert, Poller, $filter) {
+.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', '$state', function($scope, Hooks, Api, SweetAlert, Poller, $filter, $state) {
 	this.filter = {
 		"started": true,
 		"stopped": true,
@@ -493,8 +498,13 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.changeConfiguration = function(name) {
+		$state.transitionTo('pages.status', {configuration: name}, { notify: false, reload: false });
 		$scope.selectedConfiguration = name;
+		$scope.updateAdapterSummary(name);
 	};
+	if($state.params.configuration != "All")
+		$scope.changeConfiguration($state.params.configuration);
+
 
 	$scope.startAdapter = function(adapter) {
 		adapter.state = 'starting';

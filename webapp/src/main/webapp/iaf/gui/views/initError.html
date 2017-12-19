@@ -1,0 +1,16 @@
+<div class="row">
+	<div class="col-lg-12">
+		<div class="wrapper wrapper-content" ng-controller="errorController">
+			<div class="text-center animated fadeInRightBig" style="margin-top: 140px;">
+				<h3 class="font-bold">IBIS Startup Failed</h3>
+
+				<p>For some reason, the IBIS application failed to start up.</p>
+
+				<p>Please examine the startup-log and try restarting the server.</p>
+
+				<p class="space-30 text-danger">NOTE: The IBIS application will automatically retry to startup every minute.</p>
+				<p><button ng-click="retry()" class="btn btn-primary retryInitBtn" ng-disabled="retryInit"><i class="fa fa-refresh" aria-hidden="true"></i> Manually retry</button></p>
+			</div>
+		</div>
+	</div>
+</div>

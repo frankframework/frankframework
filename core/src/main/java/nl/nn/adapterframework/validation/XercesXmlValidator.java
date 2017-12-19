@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2016 Nationale-Nederlanden
+   Copyright 2013-2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.validation.ValidatorHandler;
 
+import nl.nn.adapterframework.cache.EhCache;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.validation.xerces_2_11.XMLSchemaFactory;
+
 import org.apache.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -50,15 +59,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
-
-import nl.nn.adapterframework.cache.EhCache;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.validation.xerces_2_11.XMLSchemaFactory;
 
 
 /**
@@ -123,6 +123,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static final boolean sharedSymbolTable = AppConstants.getInstance().getBoolean("xmlValidator.sharedSymbolTable", false);
 	private static final int sharedSymbolTableSize = AppConstants.getInstance().getInt("xmlValidator.sharedSymbolTable.size", BIG_PRIME);
 	private int entityExpansionLimit = AppConstants.getInstance().getInt("xmlValidator.entityExpansionLimit", 100000);
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private static EhCache cache;
 	static {
@@ -132,7 +133,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			cache.setEternal(true);
 			try {
 				cache.configure("XercesXmlValidator");
-				cache.open();
 			} catch (ConfigurationException e) {
 				cache = null;
 				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
@@ -140,6 +140,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 						"Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)",
 						e);
 			}
+			cache.open();
 		}
 	}
 	private static AtomicLong counter = new AtomicLong();
@@ -187,6 +188,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
 		Set<String> namespaceSet = new HashSet<String>();
 		XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
+		preparser.setEntityResolver(new ClassLoaderXmlEntityResolver(classLoader));
 		preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
 		preparser.setProperty(GRAMMAR_POOL, grammarPool);
 		preparser.setFeature(NAMESPACES_FEATURE_ID, true);

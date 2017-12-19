@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden
+   Copyright 2013, 2015-2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,8 +29,6 @@ import java.util.StringTokenizer;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerConfigurationException;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
@@ -52,6 +50,8 @@ import nl.nn.adapterframework.validation.SchemasProvider;
 import nl.nn.adapterframework.validation.XSD;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
 import nl.nn.adapterframework.validation.XmlValidatorException;
+
+import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -98,8 +98,9 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
 * </table>
 * <br>
-* N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
-* @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
+* 
+* @author Johan Verrips IOS
+* @author Jaco de Groot
 */
 public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues, IDualModeValidator, IXmlValidator {
 
@@ -361,9 +362,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
     /**
-     * <p>The filename of the schema on the classpath. The filename (which e.g.
-     * can contain spaces) is translated to an URI with the
-     * ClassUtils.getResourceURL(Object,String) method (e.g. spaces are translated to %20).
+     * <p>The filename of the schema on the classpath.
      * It is not possible to specify a namespace using this attribute.
      * <p>An example value would be "xml/xsd/GetPartyDetail.xsd"</p>
      * <p>The value of the schema attribute is only used if the schemaLocation
@@ -605,11 +604,11 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return getSchemas(false);
 	}
 
-	public List<Schema> getSchemas(boolean check) throws ConfigurationException {
+	public List<Schema> getSchemas(boolean checkRootValidations) throws ConfigurationException {
 		Set<XSD> xsds = getXsds();
 		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
 			xsds = SchemaUtils.getXsdsRecursive(xsds);
-			if (check) {
+			if (checkRootValidations) {
 				checkInputRootValidations(xsds);
 				checkOutputRootValidations(xsds);
 			}
@@ -628,7 +627,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			// It's difficult to support redefine in
 			// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes so
 			// we only use getXsdsRecursive here for root validation. Xerces
-			// will need to resolving the imports, includes an redefines itself.
+			// will need to resolve the imports, includes an redefines itself.
 			// See comment in method XercesXmlValidator.stringToXMLInputSource()
 			// too. The latest specification also specifies override:
 			// http://www.w3.org/TR/xmlschema11-1/#override-schema
@@ -638,7 +637,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			// noNamespaceSchemaLocation the WSDL generator doesn't use
 			// XmlValidator.getXsds(). See comment in Wsdl.getXsds() too.
 			Set<XSD> xsds_temp = SchemaUtils.getXsdsRecursive(xsds, false);
-			if (check) {
+			if (checkRootValidations) {
 				checkInputRootValidations(xsds_temp);
 				checkOutputRootValidations(xsds_temp);
 			}

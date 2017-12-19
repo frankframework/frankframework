@@ -312,8 +312,14 @@ public class ApiListenerServlet extends HttpServlet {
 		}
 		catch (Exception e) {
 			log.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
-			response.flushBuffer();
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			try {
+				response.flushBuffer();
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			}
+			catch (IllegalStateException ex) {
+				//We're only informing the end user(s), no need to catch this error...
+				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			}
 		}
 	}
 }

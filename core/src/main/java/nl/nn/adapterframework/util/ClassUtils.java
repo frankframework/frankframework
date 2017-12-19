@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016-2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -116,8 +116,6 @@ public class ClassUtils {
 	}
 
 	static private URL getResourceURL(ClassLoader classLoader, Class klass, String resource) {
-		resource = Misc.replace(resource,"%20"," ");
-		URL url = null;
 		if (classLoader == null) {
 			if (klass == null) {
 				klass = ClassUtils.class;
@@ -129,42 +127,7 @@ public class ClassUtils {
 		if (resource.startsWith("/")) {
 			resource = resource.substring(1);
 		}
-		// first try to get the resource as a resource
-		url = classLoader.getResource(resource);
-		// then try to get it as a URL
-		if (url == null) {
-			try {
-				url = new URL(Misc.replace(resource," ","%20"));
-			} catch(MalformedURLException e) {
-				log.debug("Could not find resource as URL [" + resource + "]: "+e.getMessage());
-			}
-		}
-		if (url==null) {
-			log.warn("cannot find URL for resource ["+resource+"]");
-		} else {
-			// Spaces must be escaped to %20. But ClassLoader.getResource(String)
-			// has a bug in Java 1.3 and 1.4 and doesn't do this escaping.
-			// See also:
-			//
-			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4778185
-			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4785848
-			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4273532
-			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4496398
-			//
-			// Escaping spaces to %20 if spaces are found.
-			String urlString = url.toString();
-			if (urlString.indexOf(' ')>=0 && !urlString.startsWith("jar:")) {
-				urlString=Misc.replace(urlString," ","%20");
-				try {
-					URL escapedURL = new URL(urlString);
-					log.debug("resolved resource-string ["+resource+"] to URL ["+escapedURL.toString()+"]");
-					return escapedURL;
-				} catch(MalformedURLException e) {
-					log.warn("Could not find URL from space-escaped url ["+urlString+"], will use unescaped original version ["+url.toString()+"] ");
-				}
-			}
-		}
-		return url;
+		return classLoader.getResource(resource);
 	}
 
     /**

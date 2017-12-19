@@ -83,6 +83,7 @@ public class ShowEnvironmentVariables extends ActionBase {
 	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		// Initialize action
 		initAction(request);
+		if(ibisManager==null)return (mapping.findForward("noIbisContext"));
 		// Retrieve environment variables for browsing
 
 		XmlBuilder configurationsXml = new XmlBuilder("configurations");

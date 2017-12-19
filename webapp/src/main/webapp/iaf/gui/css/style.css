@@ -1,7 +1,6 @@
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700");
 @import url("https://fonts.googleapis.com/css?family=Roboto:400,300,500,700");
 
-
 h1,
 h2,
 h3,
@@ -609,6 +608,7 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
 .btn-danger.btn-outline {
   color: #ed5565;
 }
+.btn-gray.btn-outline:hover
 .btn-primary.btn-outline:hover,
 .btn-success.btn-outline:hover,
 .btn-info.btn-outline:hover,
@@ -629,7 +629,8 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
 .btn-primary:active:focus,
 .btn-primary:active:hover,
 .btn-primary.active:hover,
-.btn-primary.active:focus {
+.btn-primary.active:focus,
+.btn.primary-hover:hover {
   background-color: #18a689;
   border-color: #18a689;
   color: #FFFFFF;
@@ -832,7 +833,8 @@ fieldset[disabled] .btn-warning.active {
 .btn-danger:active:focus,
 .btn-danger:active:hover,
 .btn-danger.active:hover,
-.btn-danger.active:focus {
+.btn-danger.active:focus,
+.btn.danger-hover:hover {
   background-color: #ec4758;
   border-color: #ec4758;
   color: #FFFFFF;
@@ -949,6 +951,11 @@ fieldset[disabled] .btn-white.active {
 .progress,
 .progress-bar {
   box-shadow: none;
+}
+input[type=file].form-control {
+	height: initial;
+	position: relative;
+	margin-bottom: 0;
 }
 .btn-outline {
   color: inherit;
@@ -3784,6 +3791,22 @@ code {
 }
 .adapters .ibox-title {
   cursor: pointer;
+  min-height: 40px;
+  padding: 10px 15px 7px;
+}
+.adapters .ibox {
+  margin-bottom: 15px;
+}
+.adapters:last-child .ibox {
+  margin-bottom: 25px;
+}
+.ibox-title.summary {
+  border: none;
+}
+.ibox-content.summary {
+  overflow: visible;
+  padding-bottom: 10px;
+  padding-top:10px;
 }
 .ibox-title.warning {
   border-color: #f7a54a;
@@ -3803,7 +3826,7 @@ code {
   border-style: solid solid none;
   border-width: 1px 0;
   clear: both;
-  overflow: overlay;
+  overflow: auto;
 }
 .ibox-footer {
   color: inherit;

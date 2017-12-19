@@ -4,10 +4,18 @@
 <div class="wrapper wrapper-content animated fadeInRight">
     <uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.message}}</uib-alert>
     <div class="row">
+        <div class="col-lg-12 tabs-container ">
+            <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+                <li ng-class="{active : selectedConfiguration == 'All'}"><a ng-click="changeConfiguration('All')">All</a></li>
+                <li ng-class="{active : selectedConfiguration == configuration.name}" ng-repeat="configuration in configurations">
+                    <a ng-click="changeConfiguration(configuration.name)">{{configuration.name}}</a>
+                </li>
+            </ul> 
+        </div>
         <div class="col-lg-12">
             <div class="float-e-margins">
-                <div class="ibox-title">
-                    <h4>Adapter summary</h4>
+                <div class="ibox-title summary">
+                    <h4>Configuration summary</h4>
                 </div>
                 <div class="ibox-content">
                     <div class="row">
@@ -73,7 +81,7 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="ibox float-e-margins">
-                <div class="ibox-content" style="overflow: visible; padding-bottom: 10px; padding-top:10px;">
+                <div class="ibox-content summary">
                     <div class="row">
                         <div class="col-lg-3 pull-right m-t-xs m-b-xs" style="width:260px; z-index: 10;">
                             <div class="pull-left">
@@ -98,21 +106,6 @@
                                 <label class="btn btn-primary btn-outline btn-xs" ng-model="status.filter.started" ng-click="applyFilter(status.filter)" uib-btn-checkbox>Started</label>
                                 <label class="btn btn-danger btn-outline btn-xs" ng-model="status.filter.stopped" ng-click="applyFilter(status.filter)" uib-btn-checkbox>Stopped</label>
                                 <label class="btn btn-warning btn-outline btn-xs" ng-model="status.filter.warning" ng-click="applyFilter(status.filter)" uib-btn-checkbox>Warning</label>
-                            </div>
-                        </div>
-                        <div class="col-lg-5">
-                            <span style="font-weight:700;margin-right:4px;">Configuration:</span>
-                            <div class="btn-group" uib-dropdown>
-                                <button type="button" class="btn btn-default" uib-dropdown-toggle>
-                                    {{selectedConfiguration}} <span class="caret"></span>
-                                </button>
-                                <ul role="menu" uib-dropdown-menu="">
-                                    <li><a ng-click="changeConfiguration('All')">All</a></li>
-                                    <li class="divider"></li>
-                                    <li ng-repeat="configuration in configurations">
-                                        <a ng-click="changeConfiguration(configuration.name)">{{configuration.name}}</a>
-                                    </li>
-                                </ul>
                             </div>
                         </div>
                     </div>
@@ -142,19 +135,19 @@
                                         <td class="col-md-6">State</td>
                                         <td class="col-md-6" ng-if="adapter.state =='starting'">
                                             <span><i class="fa fa-check-square-o lh22 m-r-xs"></i> Starting</span>
-                                            <button style="float:right;" title="Starting adapter" class="btn btn-xs btn-warning" type="button"><i class="fa fa-cog fa-spin"></i> Starting adapter</button>
+                                            <button style="float:right;" title="Starting adapter" class="btn btn-xs btn-warning" type="button"><i class="fa fa-cog fa-spin"></i></button>
                                         </td>
                                         <td class="col-md-6" ng-if="adapter.state =='started'">
                                             <span><i class="fa fa-check-square lh22 m-r-xs"></i> Started</span>
-                                            <button style="float:right;" title="Stop adapter" ng-click="stopAdapter(adapter)" class="btn btn-xs btn-danger" type="button"><i class="fa fa-warning m-r-xs"></i> Stop adapter</button>
+                                            <button style="float:right;" title="Stop adapter" ng-click="stopAdapter(adapter)" class="btn btn-xs danger-hover" type="button"><i class="fa fa-stop"></i></button>
                                         </td>
                                         <td class="col-md-6" ng-if="adapter.state =='stopping'">
                                             <span><i class="fa fa-stop-circle-o lh22 m-r-xs"></i> Stopping</span>
-                                            <button style="float:right;" title="Stopping adapter" class="btn btn-xs btn-warning" type="button"><i class="fa fa-cog fa-spin"></i> Stopping adapter</button>
+                                            <button style="float:right;" title="Stopping adapter" class="btn btn-xs btn-warning" type="button"><i class="fa fa-cog fa-spin"></i></button>
                                         </td>
                                         <td class="col-md-6" ng-if="adapter.state =='stopped'">
                                             <span><i class="fa fa-stop-circle lh22 m-r-xs"></i> Stopped</span>
-                                            <button style="float:right;" title="Stop adapter" ng-click="startAdapter(adapter)" class="btn btn-xs btn-primary" type="button"><i class="fa fa-play m-r-xs"></i> Start adapter</button>
+                                            <button style="float:right;" title="Stop adapter" ng-click="startAdapter(adapter)" class="btn btn-xs primary-hover" type="button"><i class="fa fa-play"></i></button>
                                         </td>
                                     </tr>
                                     <tr>
@@ -223,8 +216,8 @@
                                             <td><span ng-show="{{receiver.hasErrorStorage}}">{{receiver.errorStorageCount}}</span></td>
                                             <td>
                                                 <span class="pull-right">
-                                                    <button title="Stop receiver" class="btn btn-danger btn-xs" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
-                                                    <button title="Start receiver" class="btn btn-primary btn-xs" ng-show="receiver.state =='stopped'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
+                                                    <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
+                                                    <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
                                                     <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state !='started' && receiver.state !='stopped'" type="button"><i class="fa fa-cog fa-spin"></i></button>
                                                 </span>
                                             </td>

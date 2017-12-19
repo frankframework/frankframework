@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 - 2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -77,6 +77,7 @@ public class IbisContext {
 	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	private static final String FLOW_CREATE_DIAGRAM_URL = APP_CONSTANTS.getResolvedProperty("flow.create.url");
 	private static final long UPTIME = System.currentTimeMillis();
+
 	static {
 		String applicationServerType = System.getProperty(
 				APPLICATION_SERVER_TYPE_PROPERTY);
@@ -120,7 +121,10 @@ public class IbisContext {
 					+ defaultApplicationServerType + "]";
 			configWarnings.add(LOG, msg);
 		} else if (StringUtils.isEmpty(getApplicationServerType())) {
-			APP_CONSTANTS.setProperty(APPLICATION_SERVER_TYPE_PROPERTY, defaultApplicationServerType);
+			// Resolve application.server.type in ServerSpecifics*.properties, SideSpecifics*.properties and StageSpecifics*.properties filenames
+			APP_CONSTANTS.putAdditionalPropertiesFilesSubstVarsProperty(APPLICATION_SERVER_TYPE_PROPERTY, defaultApplicationServerType);
+			// Resolve application.server.type in spring.xml filenames
+			APP_CONSTANTS.putPropertyPlaceholderConfigurerProperty(APPLICATION_SERVER_TYPE_PROPERTY, defaultApplicationServerType);
 		}
 	}
 
@@ -142,31 +146,68 @@ public class IbisContext {
 	 * @see ClassUtils#getResourceURL(ClassLoader, String)
 	 * @see AppConstants#getInstance(ClassLoader)
 	 */
-	public synchronized void init() {
-		long start = System.currentTimeMillis();
-
-		MessageKeeper messageKeeper = new MessageKeeper();
-		messageKeepers.put("*ALL*", messageKeeper);
-
-		if (StringUtils.isNotEmpty(FLOW_CREATE_DIAGRAM_URL)) {
-			flowDiagram = new FlowDiagram(FLOW_CREATE_DIAGRAM_URL);
-		}
-
-		applicationContext = createApplicationContext();
-		ibisManager = (IbisManager)applicationContext.getBean("ibisManager");
-		ibisManager.setIbisContext(this);
-
-		AbstractSpringPoweredDigesterFactory.setIbisContext(this);
-		load(null);
-		getMessageKeeper().setMaxSize(Math.max(messageKeeperSize, getMessageKeeper().size()));
-
-		log("startup in " + (System.currentTimeMillis() - start) + " ms");
+	public void init() {
+		init(true);
 	}
+
+	/**
+	 * Creates the Spring context, and load the configuration. Optionally  with
+	 * a specific ClassLoader which might for example override the getResource
+	 * method to load configuration and related resources from a different
+	 * location from the standard classpath. In case basePath is not null the
+	 * ClassLoader is wrapped in {@link BasePathClassLoader} to make it possible
+	 * to reference resources in the configuration relative to the configuration
+	 * file and have an extra resource override (resource is first resolved
+	 * relative to the configuration, when not found it is resolved by the
+	 * original ClassLoader.
+	 * 
+	 * @see ClassUtils#getResourceURL(ClassLoader, String)
+	 * @see AppConstants#getInstance(ClassLoader)
+	 *
+	 * @param reconnect automatically try to reconnect to a datasource
+	 */
+	public synchronized void init(boolean reconnect) {
+		try {
+			long start = System.currentTimeMillis();
+			LOG.info("Attempting to start IBIS application");
+
+			MessageKeeper messageKeeper = new MessageKeeper();
+			messageKeepers.put("*ALL*", messageKeeper);
+
+			if (StringUtils.isNotEmpty(FLOW_CREATE_DIAGRAM_URL)) {
+				flowDiagram = new FlowDiagram(FLOW_CREATE_DIAGRAM_URL);
+			}
+
+			applicationContext = createApplicationContext();
+			ibisManager = (IbisManager)applicationContext.getBean("ibisManager");
+			ibisManager.setIbisContext(this);
+
+			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
+			load(null);
+			getMessageKeeper().setMaxSize(Math.max(messageKeeperSize, getMessageKeeper().size()));
+
+			log("startup in " + (System.currentTimeMillis() - start) + " ms");
+		}
+		catch (Exception e) {
+			//Catch all exceptions, the IBIS failed to startup...
+			LOG.error("Failed to initialize IbisContext, retrying in 1 minute!", e);
+
+			if(reconnect) {
+				ibisContextReconnectThread = new Thread(new IbisContextRunnable(this));
+				ibisContextReconnectThread.setName("ibisContextReconnectThread");
+				ibisContextReconnectThread.start();
+			}
+		}
+	}
+
+	Thread ibisContextReconnectThread = null;
 
 	public synchronized void destroy() {
 		long start = System.currentTimeMillis();
-		ibisManager.shutdown();
-		destroyApplicationContext();
+		if(ibisManager != null)
+			ibisManager.shutdown();
+		if(ibisContextReconnectThread != null)
+			ibisContextReconnectThread.interrupt();
 		log("shutdown in " + (System.currentTimeMillis() - start) + " ms");
 	}
 
@@ -302,27 +343,35 @@ public class IbisContext {
 									"configurations." + currentConfigurationName + ".adapterName");
 							classLoader = new ServiceClassLoader(ibisManager, adapterName, currentConfigurationName);
 						} else if ("DatabaseClassLoader".equals(classLoaderType)) {
-							classLoader = new DatabaseClassLoader(this, currentConfigurationName);
-							if (((DatabaseClassLoader)classLoader).isSkipConfig()) {
-								continue;
+							try {
+								classLoader = new DatabaseClassLoader(this, currentConfigurationName);
+							}
+							catch (ConfigurationException ce) {
+								boolean throwConfigNotFoundException = APP_CONSTANTS.getBoolean(
+										"configurations." + currentConfigurationName + ".throwConfigNotFoundException", true);
+								if(!throwConfigNotFoundException)
+									continue;
+								else
+									throw ce;
 							}
 						} else if ("DummyClassLoader".equals(classLoaderType)) {
 							classLoader = new DummyClassLoader(currentConfigurationName, configurationFile);
 						} else if (classLoaderType != null) {
 							throw new ConfigurationException("Invalid classLoaderType: " + classLoaderType);
 						}
+
+						String basePath = "";
+						int i = configurationFile.lastIndexOf('/');
+						if (i != -1) {
+							basePath = configurationFile.substring(0, i + 1);
+						}
+						if (classLoader == null) {
+							classLoader = Thread.currentThread().getContextClassLoader();
+						}
+						classLoader = new BasePathClassLoader(classLoader, basePath);
 					} catch (ConfigurationException e) {
 						customClassLoaderConfigurationException = e;
 					}
-					String basePath = "";
-					int i = configurationFile.lastIndexOf('/');
-					if (i != -1) {
-						basePath = configurationFile.substring(0, i + 1);
-					}
-					if (classLoader == null) {
-						classLoader = Thread.currentThread().getContextClassLoader();
-					}
-					classLoader = new BasePathClassLoader(classLoader, basePath);
 					classLoaders.put(currentConfigurationName, classLoader);
 				}
 

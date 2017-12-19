@@ -15,39 +15,43 @@
 */
 package nl.nn.adapterframework.extensions.akamai;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Authenticator;
+import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.PasswordAuthentication;
-import java.net.Proxy;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.log4j.Logger;
-import org.htmlcleaner.CleanerProperties;
-import org.htmlcleaner.HtmlCleaner;
-import org.htmlcleaner.SimpleXmlSerializer;
-import org.htmlcleaner.TagNode;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.core.TimeoutGuardSenderWithParametersBase;
 import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
+import nl.nn.adapterframework.http.HttpResponseHandler;
+import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.FileHandler;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -72,13 +76,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setAccessToken(String) accessToken}</td><td>the api accesstoken</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for nonce (username) and accesstoken (password)</td><td>&nbsp;</td></tr>
  * 
- * <tr><td>{@link #setProxyHost(String) proxyHost}</td><td><b>in case a proxy is being used, the authentication will be globally set and thus can possibly affect other senders</b></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyPort(int) proxyPort}</td><td>&nbsp;</td><td>80</td></tr>
- * <tr><td>{@link #setProxyAuthAlias(String) proxyAuthAlias}</td><td>alias used to obtain credentials for authentication to proxy</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyUserName(String) proxyUserName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
+ * <p>See {@link nl.nn.adapterframework.http.HttpSenderBase} for more arguments and parameters!</p>
  * 
  * <p><b>Parameters:</b></p>
  * <p>Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.</p>
@@ -94,7 +94,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author	Niels Meijer
  * @since	7.0-B4
  */
-public class NetStorageSender extends TimeoutGuardSenderWithParametersBase implements HasPhysicalDestination {
+@SuppressWarnings("deprecation")
+public class NetStorageSender extends HttpSenderBase implements HasPhysicalDestination {
 	private Logger log = LogUtil.getLogger(NetStorageSender.class);
 
 	private String action = null;
@@ -111,14 +112,6 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 	private String cpCode = null;
 	private String accessToken = null;
 	private CredentialFactory accessTokenCf = null;
-	private CredentialFactory proxyCf = null;
-
-	private int proxyPort = 80;
-	private String proxyHost;
-	private String proxyPassword;
-	private String proxyAuthAlias;
-	private String proxyUserName;
-	private Proxy proxy = null;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -150,28 +143,9 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 			throw new ConfigurationException(getLogPrefix()+"the mtime action requires a mtime parameter to be present");
 
 		accessTokenCf = new CredentialFactory(getAuthAlias(), getNonce(), getAccessToken());
-		proxyCf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
-
-		//TODO probably when we introduce httpcomponents4 we should adapt to that instead of url.openconnection
-		if(proxyCf.getUsername() != null && !proxyCf.getUsername().isEmpty()) {
-			log.debug("Found AuthAlias ["+proxyCf.getAlias()+"] for NetStorageSender ["+getName()+"] settings proxy credentials");
-			Authenticator.setDefault(
-				new Authenticator() {
-					@Override
-					public PasswordAuthentication getPasswordAuthentication() {
-						return new PasswordAuthentication(proxyCf.getUsername(), proxyCf.getPassword().toCharArray());
-					}
-				}
-			);
-		}
-
-		if(getProxyHost() != null) {
-			proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(getProxyHost(), getProxyPort()));
-			log.debug("add proxy settings ["+getProxyHost() + ":" + getProxyPort() +"]");
-		}
 	}
 
-	private URL buildUri(String path) throws SenderException {
+	private URIBuilder buildUri(String path) throws SenderException {
 		if (!path.startsWith("/")) path = "/" + path;
 		try {
 			String url = getUrl() + getCpCode();
@@ -184,120 +158,180 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 			if(url.endsWith("/")) //The path should never end with a '/'
 				url = url.substring(0, url.length() -1);
 
-			return new URL(url);
-		} catch (MalformedURLException e) {
+			return new URIBuilder(url);
+		} catch (URISyntaxException e) {
 			throw new SenderException(e);
 		}
 	}
 
 	public String sendMessageWithTimeoutGuarded(String correlationID, String path, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+
+		//The input of this sender is the path where to send or retrieve info from.
+		staticUri = buildUri(path);
+
+		//We don't need to send any message to the HttpSenderBase
+		return super.sendMessageWithTimeoutGuarded(correlationID, "", prc);
+	}
+
+	@Override
+	public HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap) throws SenderException {
+
 		NetStorageAction netStorageAction = new NetStorageAction(getAction());
 		netStorageAction.setVersion(actionVersion);
 		netStorageAction.setHashAlgorithm(hashAlgorithm);
 
-		ParameterValueList pvl = null;
+		if(parameters != null)
+			netStorageAction.mapParameters(parameters);
+
 		try {
-			if (prc != null && paramList != null) {
-				pvl = prc.getValues(paramList);
-				netStorageAction.mapParameters(pvl);
+			URL url = uri.build().toURL();
+
+			setMethodType(netStorageAction.getMethod());
+			log.debug("opening ["+netStorageAction.getMethod()+"] connection to ["+url+"] with action ["+getAction()+"]");
+
+			NetStorageCmsSigner signer = new NetStorageCmsSigner(url, accessTokenCf.getUsername(), accessTokenCf.getPassword(), netStorageAction, getSignType());
+			Map<String, String> headers = signer.computeHeaders();
+
+			boolean queryParametersAppended = false;
+			StringBuffer path = new StringBuffer(uri.getPath());
+
+			if (getMethodType().equals("GET")) {
+				if (parameters!=null) {
+					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters,headersParamsMap);
+					log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
+				}
+				HttpGet method = new HttpGet(uri.build());
+				for (Map.Entry<String, String> entry : headers.entrySet()) {
+					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+
+					method.setHeader(entry.getKey(), entry.getValue());
+				}
+				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
+
+				return method;
 			}
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
+			else if (getMethodType().equals("PUT")) {
+				HttpPut method = new HttpPut(uri.build());
+
+				for (Map.Entry<String, String> entry : headers.entrySet()) {
+					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+
+					method.setHeader(entry.getKey(), entry.getValue());
+				}
+				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
+
+				if(netStorageAction.getFile() != null) {
+					HttpEntity entity = new InputStreamEntity(netStorageAction.getFile());
+					method.setEntity(entity);
+				}
+				return method;
+			}
+			else if (getMethodType().equals("POST")) {
+				HttpPost method = new HttpPost(uri.build());
+
+				for (Map.Entry<String, String> entry : headers.entrySet()) {
+					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+
+					method.setHeader(entry.getKey(), entry.getValue());
+				}
+				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
+
+				if(netStorageAction.getFile() != null) {
+					HttpEntity entity = new InputStreamEntity(netStorageAction.getFile());
+					method.setEntity(entity);
+				}
+				return method;
+			}
+
+		}
+		catch (Exception e) {
+			throw new SenderException(e);
+		}
+		return null;
+	}
+
+	@Override
+	public String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc, HttpServletResponse response) throws SenderException, IOException {
+		int statusCode = responseHandler.getStatus().getStatusCode();
+
+		boolean ok = false;
+		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
+			prc.getSession().put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
+			ok = true;
+		} else {
+			if (statusCode==HttpServletResponse.SC_OK) {
+				ok = true;
+			} else {
+				if (isIgnoreRedirects()) {
+					if (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT) {
+						ok = true;
+					}
+				}
+			}
 		}
 
-		URL url = buildUri(path);
-		log.debug("opening ["+netStorageAction.getMethod()+"] connection to ["+url+"] with action ["+getAction()+"]");
+		if (!ok) {
+			throw new SenderException(getLogPrefix() + "httpstatus "
+				+ statusCode + ": " + responseHandler.getStatus().getReasonPhrase()
+				+ " body: " + getResponseBodyAsString(responseHandler));
+		}
 
-		NetStorageCmsSigner signer = new NetStorageCmsSigner(url, accessTokenCf.getUsername(), accessTokenCf.getPassword(), netStorageAction, getSignType());
-		Map<String, String> headers = signer.computeHeaders();
-
-		//SEND THE MESSAGE!
-		HttpURLConnection request = null;
 		XmlBuilder result = new XmlBuilder("result");
-		try {
-			if(proxy != null)
-				request = (HttpURLConnection) url.openConnection(proxy);
-			else
-				request = (HttpURLConnection) url.openConnection();
 
-			request.setRequestMethod(netStorageAction.getMethod());
-			request.setConnectTimeout(10000);
-			request.setReadTimeout(10000);
-
-			for (Map.Entry<String, String> entry : headers.entrySet()) {
-				log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
-				request.setRequestProperty(entry.getKey(), entry.getValue());
-			}
-
-			if (netStorageAction.getMethod().equals("PUT") || netStorageAction.getMethod().equals("POST")) {
-				request.setDoOutput(true);
-				if (netStorageAction.getFile() == null) {
-					request.setFixedLengthStreamingMode(0);
-					request.connect();
-				}
-				else {
-					byte[] buffer = new byte[1024*1024];
-					request.setChunkedStreamingMode(buffer.length);
-					request.connect();
-	
-					BufferedInputStream input = new BufferedInputStream(netStorageAction.getFile());
-					OutputStream output = request.getOutputStream();
-					for (int length; (length = input.read(buffer)) > 0; ) {
-						output.write(buffer, 0, length);
-					}
-					output.flush();
-					input.close();
-				}
-			}
-			else
-				request.connect();
-
+		if(response == null) {
 			XmlBuilder statuscode = new XmlBuilder("statuscode");
-			statuscode.setValue(request.getResponseCode() + "");
+			statuscode.setValue(statusCode + "");
 			result.addSubElement(statuscode);
 
-			if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
-				InputStream responseStream = request.getInputStream();
-				if(getAction().equals("download")) {
-					prc.getSession().put("fileStream", responseStream);
-				}
-				else {
-					XmlBuilder message = new XmlBuilder("message");
-					String responseString = Misc.streamToString(responseStream);
+			String responseString = getResponseBodyAsString(responseHandler);
+			responseString = XmlUtils.skipDocTypeDeclaration(responseString.trim());
+			responseString = XmlUtils.skipXmlDeclaration(responseString);
 
-					responseString = XmlUtils.skipDocTypeDeclaration(responseString.trim());
-					responseString = XmlUtils.skipXmlDeclaration(responseString);
-
-					message.setValue(responseString, false);
-					result.addSubElement(message);
-				}
+			if (statusCode == HttpURLConnection.HTTP_OK) {
+				XmlBuilder message = new XmlBuilder("message");
+				message.setValue(responseString, false);
+				result.addSubElement(message);
 			}
 			else {
 				// Validate Server-Time drift
-				Date currentDate = new Date();
-				long responseDate = request.getHeaderFieldDate("Date", 0);
-				if (responseDate != 0 && currentDate.getTime() - responseDate > 30*1000)
-					throw new SenderException("Local server Date is more than 30s out of sync with Remote server");
-				else {
-					XmlBuilder message = new XmlBuilder("error");
-					message.setValue(request.getResponseMessage());
-					result.addSubElement(message);
+				String dateString = responseHandler.getHeader("Date");
+				if(!StringUtils.isEmpty(dateString)) {
+					Date currentDate = new Date();
+					DateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+					long responseDate = 0;
 
-					log.warn(String.format("Unexpected Response from Server: %d %s\n%s",
-						request.getResponseCode(), request.getResponseMessage(), request.getHeaderFields()));
+					try {
+						Date date = format.parse(dateString);
+						responseDate = date.getTime();
+					}
+					catch (Exception e) {}
+
+					if (responseDate != 0 && currentDate.getTime() - responseDate > 30*1000)
+						throw new SenderException("Local server Date is more than 30s out of sync with Remote server");
 				}
-			}
+				XmlBuilder message = new XmlBuilder("error");
+				message.setValue(responseString);
+				result.addSubElement(message);
 
-		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception opening the connection to url [" + url + "]",e);
-		}
-		finally {
-			request.disconnect();
-			if(proxyCf.getUsername() != null && !proxyCf.getUsername().isEmpty())
-				Authenticator.setDefault(null);
+				log.warn(String.format("Unexpected Response from Server: %d %s\n%s",
+					statusCode, responseString, responseHandler.getHeaderFields()));
+			}
 		}
 
 		return result.toXML();
+	}
+
+	public String getResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
+		String charset = responseHandler.getContentType();
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
+
+		String responseBody = responseHandler.getContentAsString(true);
+		int rbLength = responseBody.length();
+		long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
+		if (rbLength >= rbSizeWarn) {
+			log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
+		}
+		return responseBody;
 	}
 
 	public void setHashAlgorithm(String hashAlgorithm) {
@@ -384,40 +418,5 @@ public class NetStorageSender extends TimeoutGuardSenderWithParametersBase imple
 	}
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
-	}
-
-	public String getProxyHost() {
-		return proxyHost;
-	}
-	public void setProxyHost(String proxyHost) {
-		this.proxyHost = proxyHost;
-	}
-
-	public int getProxyPort() {
-		return proxyPort;
-	}
-	public void setProxyPort(int proxyPort) {
-		this.proxyPort = proxyPort;
-	}
-
-	public String getProxyAuthAlias() {
-		return proxyAuthAlias;
-	}
-	public void setProxyAuthAlias(String proxyAuthAlias) {
-		this.proxyAuthAlias = proxyAuthAlias;
-	}
-
-	public String getProxyUserName() {
-		return proxyUserName;
-	}
-	public void setProxyUserName(String proxyUserName) {
-		this.proxyUserName = proxyUserName;
-	}
-
-	public String getProxyPassword() {
-		return proxyPassword;
-	}
-	public void setProxyPassword(String proxyPassword) {
-		this.proxyPassword = proxyPassword;
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016 - 2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,20 +19,13 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.util.AppConstants;
 
 public class DatabaseClassLoader extends JarBytesClassLoader {
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private static final boolean DBCL_CONFIG_NOT_FOUND_THROW_EXCEPTION = APP_CONSTANTS.getBoolean("databaseClassLoader.configNotFound.throwException", true);
 
 	private IbisContext ibisContext;
 	private String configurationName;
 	private Map<String, Object> configuration;
-	private boolean skipConfig = false;
-
-	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
 	public DatabaseClassLoader(IbisContext ibisContext, String configurationName) throws ConfigurationException {
 		super(DatabaseClassLoader.class.getClassLoader());
@@ -47,13 +40,7 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 		Map<String, Object> configuration = null;
 		configuration = ConfigurationUtils.getConfigFromDatabase(ibisContext, configurationName, null);
 		if (configuration == null) {
-			String msg = "Could not get config '" + configurationName + "' from database";
-			if (DBCL_CONFIG_NOT_FOUND_THROW_EXCEPTION) {
-				throw new ConfigurationException(msg);
-			} else {
-				configWarnings.add(log, msg + ", skipping");
-				skipConfig = true;
-			}
+			throw new ConfigurationException("Could not get config '" + configurationName + "' from database");
 		} else {
 			byte[] jarBytes = (byte[]) configuration.get("CONFIG");
 			configuration.remove("CONFIG");
@@ -76,9 +63,5 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 
 	public String getCreationDate() {
 		return (String) configuration.get("CREATED");
-	}
-
-	public boolean isSkipConfig() {
-		return skipConfig;
 	}
 }

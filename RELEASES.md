@@ -45,6 +45,16 @@ Upcoming
 - Fix Show Tibco Queues: Skip exceptions from passive servers in server url
 - Fix ReloadSender so it can be used as a standalone sender
 - Init webapp.realpath and project.basedir earlier to make it possible to create a reference to it in the value of flow.create.url
+- Add IBIS jdbc reconnect functionality on startup
+- Fix redundant Quartz scheduler + memoryleak when ibis is reconnecting
+- Add per config NotFoundException property instead of a global property
+- Add HttpSenderBase to send http messages via httpcomponents 4+
+- Fix NetStorageSender proxy authentication settings
+- Fix ApiListenerServlet not always able to throw a proper exception
+- Fix database classloader initiating as webapp classloader when no config can be found in the database
+- Support schema attribute with config in database and refactor ClassUtils.getResourceURL()
+- Add ServerSpecifics and CompanySpecifics properties
+- Fix mailSender always trying to include attachments
 
 
 

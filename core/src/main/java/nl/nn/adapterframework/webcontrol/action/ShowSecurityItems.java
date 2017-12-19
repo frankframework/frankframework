@@ -78,6 +78,7 @@ public final class ShowSecurityItems extends ActionBase {
 
 		// Initialize action
 		initAction(request);
+		if(ibisManager==null)return (mapping.findForward("noIbisContext"));
 
 		XmlBuilder securityItems = new XmlBuilder("securityItems");
 		addRegisteredAdapters(securityItems);

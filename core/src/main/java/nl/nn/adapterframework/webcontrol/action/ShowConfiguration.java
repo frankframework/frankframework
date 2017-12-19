@@ -86,6 +86,7 @@ public final class ShowConfiguration extends ActionBase {
 	
 	    // Initialize action
 	    initAction(request);
+		if(ibisManager==null)return (mapping.findForward("noIbisContext"));
 		 
 	    DynaActionForm configurationPropertiesForm = getPersistentForm(mapping, form, request);
 	    Logger rl = LogUtil.getRootLogger();

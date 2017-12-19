@@ -45,6 +45,7 @@ public final class ShowSchedulerStatus extends ActionBase {
 
         // Initialize action
         initAction(request);
+		if(ibisManager==null)return (mapping.findForward("noIbisContext"));
 
 		if (ibisManager==null) {
 			error("Cannot find ibismanager",null);

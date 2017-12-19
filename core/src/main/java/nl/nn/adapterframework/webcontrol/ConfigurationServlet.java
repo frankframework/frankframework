@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016-2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -72,7 +72,10 @@ public class ConfigurationServlet extends HttpServlet {
 		servletContext.setAttribute(attributeKey, ibisContext);
 		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey	+ "]");
 		ibisContext.init();
-		log.debug("Servlet init finished");
+		if(ibisContext.getIbisManager() == null)
+			log.warn("Servlet init finished without successfully initializing the ibisContext");
+		else
+			log.debug("Servlet init finished");
 	}
 
 	@Override
@@ -132,11 +135,25 @@ public class ConfigurationServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		noCache(response);
 		PrintWriter out = response.getWriter();
-		out.println("<html>");
-		out.println("<body>");
-		out.println("Reload function moved to <a href=\"" + request.getContextPath() + "\">console</a>");
-		out.println("</body>");
-		out.println("</html>");
+		if(ibisContext.getIbisManager() != null) {
+			out.println("<html>");
+			out.println("<body>");
+			out.println("Reload function moved to <a href=\"" + request.getContextPath() + "\">console</a>");
+			out.println("</body>");
+			out.println("</html>");
+		}
+		else {
+			out.print("Attempting to start the IBIS Application... ");
+			ibisContext.init(false);
+			if(ibisContext.getIbisManager() == null) {
+				response.setStatus(500);
+				out.println("failed");
+			}
+			else {
+				response.setStatus(201);
+				out.println("success");
+			}
+		}
 	}
 
 	public static void noCache(HttpServletResponse response) {

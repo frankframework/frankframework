@@ -332,7 +332,7 @@ public final class ShowConfiguration extends Base {
 			jmsRealm = null;
 
 		try {
-			Map<String, Object> configuration = ConfigurationUtils.getConfigFromDatabase(ibisContext, configurationName, version, jmsRealm);
+			Map<String, Object> configuration = ConfigurationUtils.getConfigFromDatabase(ibisContext, configurationName, jmsRealm, version);
 			return Response
 					.status(Response.Status.OK)
 					.entity(configuration.get("CONFIG"))

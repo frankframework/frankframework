@@ -140,8 +140,8 @@
     </form-beans>
     <!-- ========== Global Forward Definitions ============================== -->
     <global-forwards type="org.apache.struts.action.ActionForward">
-        <forward name="noconfig" path="/jsp/view.jsp?view=/jsp/noConfig.jsp"/>   
-        
+        <forward name="noconfig" path="/jsp/view.jsp?view=/jsp/noConfig.jsp"/>
+        <forward name="noIbisContext" path="/jsp/view.jsp?view=/jsp/noIbisContext.jsp"/>
     </global-forwards>
     <!-- ========== Action Mapping Definitions ============================== -->
 
