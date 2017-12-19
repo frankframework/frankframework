@@ -134,7 +134,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 			throw new ConfigurationException(getLogPrefix()+"signVersion must be either 3, 4 or 5");
 
 
-		ParameterList<Parameter> parameterList = getParameterList();
+		ParameterList parameterList = getParameterList();
 		if(getAction().equals("upload") && parameterList.findParameter("file") == null)
 			throw new ConfigurationException(getLogPrefix()+"the upload action requires a file parameter to be present");
 		if(getAction().equals("rename") && parameterList.findParameter("destination") == null)
