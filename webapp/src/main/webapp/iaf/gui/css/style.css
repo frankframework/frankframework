@@ -959,6 +959,11 @@ fieldset[disabled] .btn-white.active {
 .progress-bar {
   box-shadow: none;
 }
+input[type=file].form-control {
+	height: initial;
+	position: relative;
+	margin-bottom: 0;
+}
 .btn-outline {
   color: inherit;
   background-color: transparent;
