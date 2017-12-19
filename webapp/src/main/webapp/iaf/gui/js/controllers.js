@@ -117,41 +117,14 @@ angular.module('iaf.beheerconsole')
 
 	Hooks.register("init:once", function() {
 		/* Check IAF version */
-		var Xrate = Session.get("X-RateLimit");
-		if(Xrate == undefined || Xrate.reset < parseInt(new Date().getTime()/1000)) {
-			$http.get("https://api.github.com/rate_limit", {headers:{"Authorization": undefined}}).then(function(response) {
-				if(!response  || !response.data) return false;
-	
-				var GithubXrate = {
-					limit: parseInt(response.headers("X-RateLimit-Limit")) || 0,
-					remaining: parseInt(response.headers("X-RateLimit-Remaining")) || 0,
-					reset: parseInt(response.headers("X-RateLimit-Reset")) || 0,
-					time: parseInt(new Date().getTime()/1000),
-				};
-				console.log("Fetching X-RateLimit from api.GitHub.com...", GithubXrate);
-				Session.set("X-RateLimit", GithubXrate);
-			});
+		console.log("Checking IAF version with remote...");
+		$http.get("https://ibissource.org/iaf/releases/").then(function(response) {
+			if(!response  || !response.data) return false;
+			var release = response.data[0]; //Not sure what ID to pick, smallest or latest?
 
-			$http.get("https://api.github.com/repos/ibissource/iaf/releases", {headers:{"Authorization": undefined}}).then(function(response) {
-				if(!response  || !response.data) return false;
-
-				var release = response.data[0]; //Not sure what ID to pick, smallest or latest?
-				handleGitHubResponse(release);
-			});
-		}
-		else {
-			var release = Session.get("IAF-Release");
-			if(release != null) {
-				Notification.add('fa-exclamation-circle', "IAF update available!", false, function() {
-					$location.path("iaf-update");
-				});
-			}
-		}
-		function handleGitHubResponse(release) {
 			var newVersion = (release.tag_name.substr(0, 1) == "v") ? release.tag_name.substr(1) : release.tag_name;
 			var currentVersion = appConstants["application.version"];
 			var version = Misc.compare_version(newVersion, currentVersion);
-			console.log("Checking IAF version with remote...");
 			console.log("Comparing version: '"+currentVersion+"' with latest release: '"+newVersion+"'.");
 			Session.remove("IAF-Release");
 
@@ -161,7 +134,8 @@ angular.module('iaf.beheerconsole')
 					$location.path("iaf-update");
 				});
 			}
-		};
+		});
+		gtag('event', 'application.version', {'application.version': appConstants["application.version"]});
 
 		Api.Get("server/warnings", function(warnings) {
 			for(i in warnings) {
