@@ -117,7 +117,7 @@
 				<imagelink
 					href="iaf/gui"
 					type="theme"
-					alt="GUI 3.0">
+					alt="Try our new GUI 3.0 and leave feedback!"> 
 				</imagelink>
 			<% } %>
 	</imagelinkMenu>
