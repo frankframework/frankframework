@@ -55,6 +55,7 @@ Upcoming
 - Support schema attribute with config in database and refactor ClassUtils.getResourceURL()
 - Add ServerSpecifics and CompanySpecifics properties
 - Fix mailSender always trying to include attachments
+- Add JsonXsltPipe
 
 
 
