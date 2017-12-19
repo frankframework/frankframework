@@ -218,11 +218,12 @@ angular.module('iaf.beheerconsole')
 
 	var lastUpdated = 0;
 	var timeout = null;
+	$rootScope.selectedConfiguration = 'All';
 	$scope.updateAdapterSummary = function(executeTimeout) {
 		var updated = (new Date().getTime());
 		if(updated - 3000 < lastUpdated && executeTimeout) { //3 seconds
 			clearTimeout(timeout);
-			timeout = setTimeout(updateAdapterSummary, 1000);
+			timeout = setTimeout(function(){$scope.updateAdapterSummary(executeTimeout)}, 1000);
 			return;
 		}
 		
