@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden
+   Copyright 2013, 2015-2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -186,6 +186,7 @@ public class XSD implements Schema, Comparable<XSD> {
 			toString = noNamespaceSchemaLocation;
 		} else {
 			if (resource != null) {
+				resource = Misc.replace(resource, "%20", " ");
 				url = ClassUtils.getResourceURL(classLoader, resource);
 				if (url == null) {
 					throw new ConfigurationException("Cannot find [" + resource + "]");

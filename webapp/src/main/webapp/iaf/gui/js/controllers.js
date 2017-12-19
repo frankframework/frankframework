@@ -531,7 +531,11 @@ angular.module('iaf.beheerconsole')
 	$scope.changeConfiguration = function(name) {
 		$rootScope.selectedConfiguration = name;
 		$scope.updateAdapterSummary(false);
+		$state.transitionTo('pages.status', {configuration: name}, { notify: false, reload: false });
 	};
+	if($state.params.configuration != "All")
+		$scope.changeConfiguration($state.params.configuration);
+
 
 	$scope.startAdapter = function(adapter) {
 		adapter.state = 'starting';

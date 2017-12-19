@@ -608,15 +608,6 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
 .btn-danger.btn-outline {
   color: #ed5565;
 }
-.btn-gray {
-  border-color: #adadad;
-  background-color: #b7b7b7;
-}
-.btn-gray:hover {
-  background-color: #ec4758;
-  border-color: #ec4758;
-  color: #fff;
-}
 .btn-gray.btn-outline:hover
 .btn-primary.btn-outline:hover,
 .btn-success.btn-outline:hover,
@@ -638,7 +629,8 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
 .btn-primary:active:focus,
 .btn-primary:active:hover,
 .btn-primary.active:hover,
-.btn-primary.active:focus {
+.btn-primary.active:focus,
+.btn.primary-hover:hover {
   background-color: #18a689;
   border-color: #18a689;
   color: #FFFFFF;
@@ -841,7 +833,8 @@ fieldset[disabled] .btn-warning.active {
 .btn-danger:active:focus,
 .btn-danger:active:hover,
 .btn-danger.active:hover,
-.btn-danger.active:focus {
+.btn-danger.active:focus,
+.btn.danger-hover:hover {
   background-color: #ec4758;
   border-color: #ec4758;
   color: #FFFFFF;
@@ -3798,6 +3791,17 @@ code {
 }
 .adapters .ibox {
   margin-bottom: 15px;
+}
+.adapters:last-child .ibox {
+  margin-bottom: 25px;
+}
+.ibox-title.summary {
+  border: none;
+}
+.ibox-content.summary {
+  overflow: visible;
+  padding-bottom: 10px;
+  padding-top:10px;
 }
 .ibox-title.warning {
   border-color: #f7a54a;
