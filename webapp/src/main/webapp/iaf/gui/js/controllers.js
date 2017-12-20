@@ -135,7 +135,7 @@ angular.module('iaf.beheerconsole')
 				});
 			}
 		});
-		gtag('event', 'application.version', {'application.version': appConstants["application.version"]});
+		dimension('application.version', appConstants["application.version"]);
 
 		Api.Get("server/warnings", function(warnings) {
 			for(i in warnings) {
