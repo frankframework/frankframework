@@ -39,4 +39,10 @@
 		<property name="url" value="jdbc:h2:${log.dir}/${instance.name.lc}"/>
 	</bean>
 
+	<!--
+	Overwrite jndiDataSource bean to prevent:
+	javax.naming.NameNotFoundException: Name ibis4example is not bound in this Context
+	-->
+	<bean name="jndiDataSource" class="java.lang.String"/>
+
 </beans>

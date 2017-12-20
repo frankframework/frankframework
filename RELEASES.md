@@ -56,6 +56,7 @@ Upcoming
 - Add ServerSpecifics and CompanySpecifics properties
 - Fix mailSender always trying to include attachments
 - Add JsonXsltPipe
+- Add Spring config for Tomcat in combination with Tibco
 
 
 
