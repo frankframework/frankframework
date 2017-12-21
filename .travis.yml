@@ -15,3 +15,4 @@ script: mvn install -B
 notifications:
   email:
     - ibistravis@meeuw.org
+    - travis@ibissource.org
