@@ -40,9 +40,8 @@ public class ClassLoaderXmlEntityResolver implements XMLEntityResolver {
 			return null;
 		}
 		if (systemId == null) {
-			String message = "Cannot resolve entity where systemId is null";
-			log.warn(message);
-			throw new IOException(message);
+			// Ignore import with namespace but without schemaLocation
+			return null;
 		}
 		if (systemId.length() == 0 || systemId.equals(BytesClassLoader.PROTOCOL + ":")) {
 			String message = "Cannot resolve entity with empty systemId";
