@@ -40,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
@@ -70,21 +71,19 @@ import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.dom4j.DocumentException;
-
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
-
-import org.springframework.mock.web.MockMultipartHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
 import com.sun.syndication.io.XmlReader;
 
@@ -1659,46 +1658,56 @@ public class TestTool {
 				queues = null;
 				errorMessage("Could not find url property for " + name, writers);
 			} else {
-				HttpSender httpSender = new HttpSender();
-				httpSender.setName("Test Tool HttpSender");
-				httpSender.setUrl(url);
-				httpSender.setUserName(userName);
-				httpSender.setPassword(password);
-				httpSender.setHeadersParams(headerParams);
-				if (StringUtils.isNotEmpty(xhtmlString)) {
-					httpSender.setXhtml(Boolean.valueOf(xhtmlString).booleanValue());
-				}
-				if (StringUtils.isNotEmpty(methodtype)) {
-					httpSender.setMethodType(methodtype);
-				}
-				if (StringUtils.isNotEmpty(paramsInUrlString)) {
-					httpSender.setParamsInUrl(Boolean.valueOf(paramsInUrlString).booleanValue());
-				}
-				if (StringUtils.isNotEmpty(inputMessageParam)) {
-					httpSender.setInputMessageParam(inputMessageParam);
-				}
-				if (StringUtils.isNotEmpty(multipartString)) {
-					httpSender.setMultipart(Boolean.valueOf(multipartString).booleanValue());
-				}
-				if (StringUtils.isNotEmpty(styleSheetName)) {
-					String ssn = "file:///" + getAbsolutePath(scenarioDirectory, styleSheetName);
-					httpSender.setStyleSheetName(ssn);
-				}
-				ParameterResolutionContext parameterResolutionContext = new ParameterResolutionContext();
-				parameterResolutionContext.setSession(new PipeLineSessionBase());
-				Map paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, parameterResolutionContext);
-				Iterator parameterNameIterator = paramPropertiesMap.keySet().iterator();
-				while (parameterNameIterator.hasNext()) {
-					String parameterName = (String)parameterNameIterator.next();
-					Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
-					httpSender.addParameter(parameter);
-				}
+				HttpSender httpSender = null;
+				ParameterResolutionContext parameterResolutionContext = null;
+				ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 				try {
+					// Use directoryClassLoader to make it possible to specify
+					// styleSheetName relative to the scenarioDirectory.
+					DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(scenarioDirectory);
+					Thread.currentThread().setContextClassLoader(directoryClassLoader);
+					httpSender = new HttpSender();
+					httpSender.setName("Test Tool HttpSender");
+					httpSender.setUrl(url);
+					httpSender.setUserName(userName);
+					httpSender.setPassword(password);
+					httpSender.setHeadersParams(headerParams);
+					if (StringUtils.isNotEmpty(xhtmlString)) {
+						httpSender.setXhtml(Boolean.valueOf(xhtmlString).booleanValue());
+					}
+					if (StringUtils.isNotEmpty(methodtype)) {
+						httpSender.setMethodType(methodtype);
+					}
+					if (StringUtils.isNotEmpty(paramsInUrlString)) {
+						httpSender.setParamsInUrl(Boolean.valueOf(paramsInUrlString).booleanValue());
+					}
+					if (StringUtils.isNotEmpty(inputMessageParam)) {
+						httpSender.setInputMessageParam(inputMessageParam);
+					}
+					if (StringUtils.isNotEmpty(multipartString)) {
+						httpSender.setMultipart(Boolean.valueOf(multipartString).booleanValue());
+					}
+					if (StringUtils.isNotEmpty(styleSheetName)) {
+						httpSender.setStyleSheetName(styleSheetName);
+					}
+					parameterResolutionContext = new ParameterResolutionContext();
+					parameterResolutionContext.setSession(new PipeLineSessionBase());
+					Map paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, parameterResolutionContext);
+					Iterator parameterNameIterator = paramPropertiesMap.keySet().iterator();
+					while (parameterNameIterator.hasNext()) {
+						String parameterName = (String)parameterNameIterator.next();
+						Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
+						httpSender.addParameter(parameter);
+					}
 					httpSender.configure();
 				} catch(ConfigurationException e) {
 					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
 					closeQueues(queues, properties, writers);
 					queues = null;
+				} finally {
+					if (originalClassLoader != null) {
+						Thread.currentThread().setContextClassLoader(originalClassLoader);
+					}
 				}
 				if (queues != null) {
 					try {

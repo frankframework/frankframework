@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -81,7 +82,10 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 		File propertiesFile = new File(tempDir, getPropertiesFileName());
 		PipeLine pipeLine;
+		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
+			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(tempDir.getPath());
+			Thread.currentThread().setContextClassLoader(directoryClassLoader);
 			if (propertiesFile.exists()) {
 				pipeLine = createPipeLineFromPropertiesFile(propertiesFile);
 			} else {
@@ -91,6 +95,10 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ " Exception on generating wsdl", e);
+		} finally {
+			if (originalClassLoader != null) {
+				Thread.currentThread().setContextClassLoader(originalClassLoader);
+			}
 		}
 
 		Object result = null;
@@ -263,15 +271,15 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 					throw new ConfigurationException(e);
 				}
 				if (StringUtils.isEmpty(xsdTargetNamespace)) {
-					esbSoapValidator.setSchema(xsdFile.toURI().toString());
+					esbSoapValidator.setSchema(xsdFile.getName());
 				} else {
 					esbSoapValidator.setSchemaLocation(xsdTargetNamespace
-							+ "\t" + xsdFile.toURI().toString());
+							+ "\t" + xsdFile.getName());
 					esbSoapValidator.setAddNamespaceToSchema(true);
 				}
 			} else {
 				esbSoapValidator.setSchemaLocation(namespace + "\t"
-						+ xsdFile.toURI().toString());
+						+ xsdFile.getName());
 				esbSoapValidator.setAddNamespaceToSchema(true);
 			}
 
