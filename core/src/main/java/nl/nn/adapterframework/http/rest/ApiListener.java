@@ -17,10 +17,10 @@ package nl.nn.adapterframework.http.rest;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 
@@ -76,7 +76,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	@Override
-	public String processRequest(String correlationId, String message, IPipeLineSession requestContext) throws ListenerException {
+	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException {
 		String result = super.processRequest(correlationId, message, requestContext);
 		if(result != null && result.isEmpty())
 			return null;
