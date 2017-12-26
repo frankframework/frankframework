@@ -16,6 +16,7 @@ Upcoming
 - Rewrite dependencies on removed URL fallback in ClassUtils.getResourceURL()
 - Make it possible to disable lastModifiedDelta in CleanupOldFilesPipe
 - Fix WebServiceListener.processRequest() not being called by ServiceDispatcher (fix on previous commit 'Refactor http package to use IPipeLineSession instead of Map...')
+- Fix cache not returning valueXPath transformed value in first call
 
 
 
