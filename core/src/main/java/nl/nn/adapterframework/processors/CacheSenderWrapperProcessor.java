@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,7 +51,8 @@ public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 				if (log.isDebugEnabled()) log.debug("transformed cache value is null, will not cache");
 				return result;
 			}
-			cache.putString(key, cacheValue);
+			result = cacheValue;
+			cache.putString(key, result);
 		} else {
 			if (log.isDebugEnabled()) log.debug("retrieved result from cache using key ["+key+"]");
 		}

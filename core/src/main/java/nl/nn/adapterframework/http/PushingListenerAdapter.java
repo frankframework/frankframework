@@ -83,10 +83,7 @@ public class PushingListenerAdapter implements IPushingListener, ServiceClient {
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map threadContext) throws ListenerException {
 	}
 
-	public String processRequest(String correlationId, String message, IPipeLineSession requestContext) throws ListenerException {
-		return processRequest(correlationId, message, (Map) requestContext);
-	}
-	//TODO: clean this up once Map in ServiceClient has been replaced with IPipeLineSession!
+	@Override
 	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException {
 		try {
 			log.debug("PushingListenerAdapter.processRequest() for correlationId ["+correlationId+"]");

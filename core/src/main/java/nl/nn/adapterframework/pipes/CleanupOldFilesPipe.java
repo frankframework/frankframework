@@ -40,11 +40,11 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setFilePattern(String) filePattern}</td><td>files that match this pattern will be deleted. Parameters of the pipe are applied to this pattern. If this attribute is not set, the input of the pipe is interpreted as the file to be removed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilePatternSessionKey(String) filePatternSessionKey}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSubdirectories(boolean) subdirectories}</td><td>when <code>true</code>, files  in subdirectories will be deleted, too</td><td>false</td></tr>
- * <tr><td>{@link #setLastModifiedDelta(long) lastModifiedDelta}</td><td>time in milliseconds that must have passed at least before a file will be deleted</td><td>0</td></tr>
+ * <tr><td>{@link #setLastModifiedDelta(long) lastModifiedDelta}</td><td>time in milliseconds after last modification that must have passed at least before a file will be deleted (set to negative value to disable)</td><td>0</td></tr>
  * <tr><td>{@link #setDeleteEmptySubdirectories(boolean) deleteEmptySubdirectories}</td><td>when <code>true</code>, empty subdirectories will be deleted, too</td><td>false</td></tr>
  * <tr><td>{@link #setWildcard(String) wildcard}</td><td>filter of files to delete. If not set and a directory is specified, all files in the directory are interpreted to be deleted</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setExcludeWildcard(String) excludeWildcard}</td><td>Filter of files to be excluded for deletion</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMinStableTime(long) minStableTime}</td><td>minimal age of file in milliseconds, to avoid deleting a file while it is still being written</td><td>1000 [ms]</td></tr>
+ * <tr><td>{@link #setMinStableTime(long) minStableTime}</td><td>minimal age of file in milliseconds, to avoid deleting a file while it is still being written (only used when wildcard is set) (set to 0 or negative value to disable)</td><td>1000 [ms]</td></tr>
  * </table>
  * </p>
  * 
@@ -136,7 +136,8 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 			//files = directory.listFiles(filter);
 			files=FileUtils.getFiles(directory.getPath(), getWildcard(), getExcludeWildcard(), getMinStableTime());
 			for (int i = 0; i < files.length; i++) {
-				if (FileUtils.getLastModifiedDelta(files[i]) > getLastModifiedDelta()) {
+				if (getLastModifiedDelta() < 0
+						|| FileUtils.getLastModifiedDelta(files[i]) > getLastModifiedDelta()) {
 					result.add(files[i]);
 				}
 			}
@@ -176,7 +177,8 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	private class _FileFilter implements FileFilter {
 		public boolean accept(File file) {
 			if (file.isFile()) {
-				if (FileUtils.getLastModifiedDelta(file) > getLastModifiedDelta()) {
+				if (getLastModifiedDelta() < 0
+						|| FileUtils.getLastModifiedDelta(file) > getLastModifiedDelta()) {
 					return true;
 				}
 			}
