@@ -132,11 +132,11 @@ public class TransformerPool {
 		}
 	}); 
 
-	public TransformerPool(Source source, String sysId) throws TransformerConfigurationException {
+	private TransformerPool(Source source, String sysId) throws TransformerConfigurationException {
 		this(source,sysId,false);
 	}	
 
-	public TransformerPool(Source source, String sysId, boolean xslt2) throws TransformerConfigurationException {
+	private TransformerPool(Source source, String sysId, boolean xslt2) throws TransformerConfigurationException {
 		super();
 		tFactory = XmlUtils.getTransformerFactory(xslt2);
 		initTransformerPool(source, sysId);
