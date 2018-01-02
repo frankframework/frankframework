@@ -260,19 +260,19 @@
                                             &nbsp;<i class="fa fa-info"></i>
                                         </td>
                                         <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-                                        <td ng-if-end>{{message.message}}</td>
+                                        <td ng-if-end>{{message.message|truncate:700}}</td>
 
                                         <td style="width:40px;" class="text-center" ng-if-start="message.level == 'WARN'">
                                             &nbsp;<i class="fa fa-warning"></i>
                                         </td>
                                         <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-                                        <td ng-if-end style="color:#f7a54a;">{{message.message}}</td>
+                                        <td ng-if-end style="color:#f7a54a;">{{message.message|truncate:700}}</td>
 
                                         <td style="width:40px;" class="text-center" ng-if-start="message.level == 'ERROR'">
                                             &nbsp;<i class="fa fa-times"></i>
                                         </td>
                                         <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-                                        <td ng-if-end style="color:#ea394c;">{{message.message}}</td>
+                                        <td ng-if-end style="color:#ea394c;">{{message.message|truncate:700}}</td>
                                     </tr>
                                 </tbody>
                             </table>

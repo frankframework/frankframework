@@ -196,21 +196,6 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
-.directive('truncate', ['$timeout', function($timeout) {
-	return {
-		restrict: 'A',
-		scope: {
-			truncateOptions: '='
-		},
-		link: function(scope, element) {
-			$timeout(function(){
-				element.dotdotdot(scope.truncateOptions);
-
-			});
-		}
-	};
-}])
-
 .directive('icheck', ['$timeout', function($timeout) {
 	return {
 		restrict: 'A',
