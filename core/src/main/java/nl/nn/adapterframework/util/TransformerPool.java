@@ -20,6 +20,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,7 +56,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	private static final boolean useCaching = AppConstants.getInstance().getBoolean("transformerPool.useCaching", false);
+	private static final boolean USE_CACHING = AppConstants.getInstance().getBoolean("transformerPool.useCaching", false);
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -167,7 +168,12 @@ public class TransformerPool {
 
 	public static TransformerPool getInstance(String xsltString, String sysId,
 			boolean xslt2) throws TransformerConfigurationException {
-		if (useCaching) {
+		return getInstance(xsltString, sysId, xslt2, USE_CACHING);
+	}
+
+	public static TransformerPool getInstance(String xsltString, String sysId,
+			boolean xslt2, boolean caching) throws TransformerConfigurationException {
+		if (caching) {
 			return retrieveInstance(xsltString, sysId, xslt2);
 		} else {
 			return new TransformerPool(xsltString, sysId, xslt2);
@@ -196,7 +202,7 @@ public class TransformerPool {
 
 	public static TransformerPool getInstance(URL url, boolean xslt2)
 			throws TransformerConfigurationException, IOException {
-		if (useCaching) {
+		if (USE_CACHING) {
 			return retrieveInstance(url, xslt2);
 		} else {
 			return new TransformerPool(url, xslt2);
@@ -398,5 +404,15 @@ public class TransformerPool {
 			}
 		}
 		return null;
+	}
+	
+	public static List<String> getTransformerPoolsKeys() {
+		List<String> transformerPoolsKeys = new LinkedList<String>();
+		for (Iterator<TransformerPoolKey> it = transformerPools.keySet()
+				.iterator(); it.hasNext();) {
+			TransformerPoolKey transformerPoolKey = it.next();
+			transformerPoolsKeys.add(transformerPoolKey.toString());
+		}
+		return transformerPoolsKeys;
 	}
 }
