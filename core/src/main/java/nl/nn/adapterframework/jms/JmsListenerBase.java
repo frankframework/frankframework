@@ -188,7 +188,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 		if(message != null && message.length() > 0) {
 			if(XmlUtils.isWellFormed(message)) {
 				try {
-					TransformerPool test = new TransformerPool(XmlUtils.createXPathEvaluatorSource("", xPathExpression, "text", false), true);
+					TransformerPool test = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, "text", false), true);
 					found = test.transform(message, null);
 					
 					//xPath not found and message length is 0 but not null nor ""

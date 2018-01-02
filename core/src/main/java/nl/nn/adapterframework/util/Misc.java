@@ -764,7 +764,7 @@ public class Misc {
 		}
 		confSrvString = XmlUtils.removeNamespaces(confSrvString);
 		String xPath = "Server/components/services/@totalTranLifetimeTimeout";
-		TransformerPool tp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(xPath));
+		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(xPath));
 		return tp.transform(confSrvString, null);
 	}
 
@@ -775,7 +775,7 @@ public class Misc {
 		}
 		confSrvString = XmlUtils.removeNamespaces(confSrvString);
 		String xPath = "Server/components/services/@propogatedOrBMTTranLifetimeTimeout";
-		TransformerPool tp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(xPath));
+		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(xPath));
 		return tp.transform(confSrvString, null);
 	}
 

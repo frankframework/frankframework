@@ -75,9 +75,9 @@ public class ForEachChildElementPipe extends IteratingPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		try {
-			identityTp=new TransformerPool(XmlUtils.IDENTITY_TRANSFORM);
+			identityTp=TransformerPool.getInstance(XmlUtils.IDENTITY_TRANSFORM);
 			if (StringUtils.isNotEmpty(getElementXPathExpression())) {
-				extractElementsTp=new TransformerPool(makeEncapsulatingXslt("root",getElementXPathExpression()), isXslt2());
+				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression()), isXslt2());
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);

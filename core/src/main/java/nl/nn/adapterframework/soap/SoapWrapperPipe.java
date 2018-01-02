@@ -122,19 +122,19 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		try {
 			if (isRemoveOutputNamespaces()) {
 				String removeOutputNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true, false);
-				removeOutputNamespacesTp = new TransformerPool(removeOutputNamespaces_xslt);
+				removeOutputNamespacesTp = TransformerPool.getInstance(removeOutputNamespaces_xslt);
 			}
 			if (isRemoveUnusedOutputNamespaces() && !isRemoveOutputNamespaces()) {
 				String removeUnusedOutputNamespaces_xslt = XmlUtils.makeRemoveUnusedNamespacesXslt2(true, false);
-				removeUnusedOutputNamespacesTp = new TransformerPool(removeUnusedOutputNamespaces_xslt, true);
+				removeUnusedOutputNamespacesTp = TransformerPool.getInstance(removeUnusedOutputNamespaces_xslt, true);
 			}
 			if (StringUtils.isNotEmpty(getOutputNamespace())) {
 				String outputNamespace_xslt = XmlUtils.makeAddRootNamespaceXslt(getOutputNamespace(), true, false);
-				outputNamespaceTp = new TransformerPool(outputNamespace_xslt);
+				outputNamespaceTp = TransformerPool.getInstance(outputNamespace_xslt);
 			}
 			if (StringUtils.isNotEmpty(getRoot())) {
 				String root_xslt = XmlUtils.makeChangeRootXslt(getRoot(), true, false);
-				rootTp = new TransformerPool(root_xslt);
+				rootTp = TransformerPool.getInstance(root_xslt);
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer", e);

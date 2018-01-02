@@ -82,7 +82,7 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 				throw new ConfigurationException(getLogPrefix()
 						+ "cannot find stylesheet [" + exceptionLogString + "]");
 			}
-			exceptionLogTp = new TransformerPool(exceptionLogURL, true);
+			exceptionLogTp = TransformerPool.getInstance(exceptionLogURL, true);
 		} catch (IOException e) {
 			throw new ConfigurationException(getLogPrefix()
 					+ "cannot retrieve [" + exceptionLogString + "]", e);
@@ -98,7 +98,7 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 				throw new ConfigurationException(getLogPrefix()
 						+ "cannot find stylesheet [" + auditLogString + "]");
 			}
-			auditLogTp = new TransformerPool(auditLogURL, true);
+			auditLogTp = TransformerPool.getInstance(auditLogURL, true);
 		} catch (IOException e) {
 			throw new ConfigurationException(getLogPrefix()
 					+ "cannot retrieve [" + auditLogString + "]", e);

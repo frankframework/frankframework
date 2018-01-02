@@ -212,7 +212,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		if (isRemoveNamespaces()) {
 			String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
 			try {
-				transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
+				transformerPoolRemoveNamespaces = TransformerPool.getInstance(removeNamespaces_xslt);
 			} catch (TransformerConfigurationException te) {
 				throw new ConfigurationException("Got error creating transformer from removeNamespaces", te);
 			}
