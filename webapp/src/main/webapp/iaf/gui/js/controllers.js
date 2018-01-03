@@ -159,7 +159,7 @@ angular.module('iaf.beheerconsole')
 					var oldAdapterData = $rootScope.adapters[data.name];
 					if(oldAdapterData != data) {
 						data.status = "started";
-
+						data.flow = Misc.getServerPath() + 'rest/showFlowDiagram/' + data.name;
 						for(x in data.receivers) {
 							if(data.receivers[x].started == false)
 								data.status = 'warning';
