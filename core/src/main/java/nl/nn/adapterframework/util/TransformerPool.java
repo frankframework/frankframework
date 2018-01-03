@@ -202,7 +202,12 @@ public class TransformerPool {
 
 	public static TransformerPool getInstance(URL url, boolean xslt2)
 			throws TransformerConfigurationException, IOException {
-		if (USE_CACHING) {
+		return getInstance(url, xslt2, USE_CACHING);
+	}
+
+	public static TransformerPool getInstance(URL url, boolean xslt2, boolean caching)
+			throws TransformerConfigurationException, IOException {
+		if (caching) {
 			return retrieveInstance(url, xslt2);
 		} else {
 			return new TransformerPool(url, xslt2);
@@ -414,5 +419,9 @@ public class TransformerPool {
 			transformerPoolsKeys.add(transformerPoolKey.toString());
 		}
 		return transformerPoolsKeys;
+	}
+
+	public static void clearTransformerPools() {
+		transformerPools.clear();
 	}
 }
