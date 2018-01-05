@@ -1139,6 +1139,7 @@ angular.module('iaf.beheerconsole')
 		$scope.state = [];
 		if(!formData) return;
 
+		angular.element('.btn-submit').addClass('loading');
 		var fd = new FormData();
 		if(formData.adapter && formData.adapter != "")
 			fd.append("adapter", formData.adapter);
@@ -1166,9 +1167,11 @@ angular.module('iaf.beheerconsole')
 			if(returnData.state == "ERROR") warnLevel = "danger";
 			$scope.addNote(warnLevel, returnData.state);
 			$scope.result = (returnData.result);
+			angular.element('.btn-submit').removeClass('loading');
 		}, function(returnData) {
 			$scope.addNote("danger", returnData.state);
 			$scope.result = (returnData.result);
+			angular.element('.btn-submit').removeClass('loading');
 		});
 	};
 }])

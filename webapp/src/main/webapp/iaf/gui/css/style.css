@@ -590,6 +590,12 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
 .btn {
   border-radius: 3px;
 }
+.btn .fa-spin {
+  display: none;
+}
+.btn.loading .fa-spin {
+  display: inline;
+}
 .btn-w-m {
   min-width: 120px;
 }
