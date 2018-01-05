@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -65,9 +65,23 @@ public class ParallelSenders extends SenderSeries {
 		Map executorMap = new HashMap();
 		for (Iterator it=getSenderIterator();it.hasNext();) {
 			ISender sender = (ISender)it.next();
+			// Create a new ParameterResolutionContext to be thread safe, see
+			// documentation on constructor of ParameterResolutionContext
+			// (parameter cacheXmlSource).
+			// Testing also showed that disabling caching is better for
+			// performance. At least when testing with a lot of large messages
+			// in parallel. This might be due to the fact that objects can be
+			// garbage collected earlier. OutOfMemoryErrors occur much
+			// faster when caching is enabled. Testing was done by sending 10
+			// messages of 1 MB concurrently to a pipeline which will process
+			// the message in parallel with 10 SenderWrappers (containing a
+			// XsltSender and IbisLocalSender).
+			ParameterResolutionContext newPrc = new ParameterResolutionContext(
+					prc.getInput(), prc.getSession(), prc.isNamespaceAware(),
+					prc.isXslt2(), false);
 			guard.addResource();
 			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender,
-					correlationID, message, prc, guard,
+					correlationID, message, newPrc, guard,
 					getStatisticsKeeper(sender));
 			executorMap.put(sender, pse);
 			getTaskExecutor().execute(pse);
