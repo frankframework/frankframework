@@ -139,7 +139,7 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 				if (tp==null) {
 					try {
 //						log.debug("creating evaluator for parameter ["+paramName+"]");
-						tp = new TransformerPool(XmlUtils.createXPathEvaluatorSource("/*/"+paramName,"xml"));
+						tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("/*/"+paramName,"xml"));
 						extractors.put(paramName,tp);
 					} catch (Exception e) {
 						throw new SapException("exception creating Extractor for  ["+paramName+"]", e);
@@ -165,7 +165,7 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 			if (tp==null) {
 				try {
 //					log.debug("creating evaluator for parameter ["+paramName+"]");
-					tp = new TransformerPool(XmlUtils.createXPathEvaluatorSource("/*/"+paramsName,"xml"));
+					tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("/*/"+paramsName,"xml"));
 					extractors.put(paramsName,tp);
 				} catch (Exception e) {
 					throw new SapException("exception creating Extractor for  ["+paramsName+"]", e);

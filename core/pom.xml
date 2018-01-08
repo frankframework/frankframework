@@ -506,5 +506,11 @@
 		<version>${spring.version}</version>
       <scope>test</scope>
 	</dependency>
+	<dependency>
+		<groupId>com.unboundid</groupId>
+		<artifactId>unboundid-ldapsdk</artifactId>
+		<version>2.3.5</version>
+		<scope>test</scope>
+	</dependency>
   </dependencies>
 </project>

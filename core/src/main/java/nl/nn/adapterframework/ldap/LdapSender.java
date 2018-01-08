@@ -584,6 +584,10 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 		
 		if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
+			if (attrs == null && !entryNameAfter.equals(entryName)) {
+				// it should be possible to only 'rename' the entry (without attribute change) 
+				return DEFAULT_RESULT;
+			}
 			NamingEnumeration na = attrs.getAll();
 			while(na.hasMoreElements()) {
 				Attribute a = (Attribute)na.nextElement();
