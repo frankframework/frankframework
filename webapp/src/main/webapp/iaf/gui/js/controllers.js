@@ -148,46 +148,39 @@ angular.module('iaf.beheerconsole')
 			}
 		});
 
-		Api.Get("adapters", function(allAdapters) {
-			Hooks.call("adaptersLoaded", allAdapters);
+		Poller.add("adapters?expanded=all", function(allAdapters) {
+			for(adapterName in allAdapters) {
+				var adapter = allAdapters[adapterName];
 
-			$rootScope.adapters = allAdapters;
-			$scope.displayAdapters = [];
-			for(adapter in allAdapters) {
-				$scope.adapterSummary[allAdapters[adapter].state] += 1;
-				Poller.add("adapters/" + adapter + "?expanded=all", function(data) {
-					var oldAdapterData = $rootScope.adapters[data.name];
-					if(oldAdapterData != data) {
-						data.status = "started";
+				var oldAdapterData = $rootScope.adapters[adapter.name];
+				if(JSON.stringify(oldAdapterData) != JSON.stringify(adapter)) {
+					adapter.status = "started";
 
-						for(x in data.receivers) {
-							if(data.receivers[x].started == false)
-								data.status = 'warning';
-						}
-						data.hasSender = false;
-						for(x in data.pipes) {
-							if(data.pipes[x].sender) {
-								data.hasSender = true;
-							}
-						}
-						for(i in data.messages) {
-							var level = data.messages[i].level;
-							if(level != "INFO")
-								data.status = 'warning';
-						}
-						if(!data.started)
-							data.status = "stopped";
-
-						$rootScope.adapters[data.name] = data;
-
-						$scope.updateAdapterSummary();
-						Hooks.call("adapterUpdated", data);
+					for(x in adapter.receivers) {
+						if(adapter.receivers[x].started == false)
+							adapter.status = 'warning';
 					}
-				}, true);
+					adapter.hasSender = false;
+					for(x in adapter.pipes) {
+						if(adapter.pipes[x].sender) {
+							adapter.hasSender = true;
+						}
+					}
+					for(i in adapter.messages) {
+						var level = adapter.messages[i].level;
+						if(level != "INFO")
+							adapter.status = 'warning';
+					}
+					if(!adapter.started)
+						adapter.status = "stopped";
+
+					$rootScope.adapters[adapter.name] = adapter;
+
+					$scope.updateAdapterSummary();
+					Hooks.call("adapterUpdated", adapter);
+				}
 			}
-		}, function() {
-			$scope.addAlert('danger', "An error occured while trying to load adapters!");
-		});
+		}, true);
 	});
 
 	var lastUpdated = 0;
@@ -244,11 +237,11 @@ angular.module('iaf.beheerconsole')
 		lastUpdated = updated;
 	};
 
-	Hooks.register("adapterUpdated:once", function(adapter) {
+	Hooks.register("adapterUpdated:once", function() {
 		if($location.hash()) {
 			angular.element("#"+$location.hash())[0].scrollIntoView();
 		}
-		$scope.loading = false;
+		$scope.$broadcast('loading', false);
 	});
 	Hooks.register("adapterUpdated", function(adapter) {
 		var name = adapter.name;
@@ -524,7 +517,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('LoadingCtrl', ['$scope', function($scope) {
+.controller('InfoBarCtrl', ['$scope', function($scope) {
 	$scope.$on('loading', function(event, loading) { $scope.loading = loading; });
 }])
 
@@ -1121,7 +1114,7 @@ angular.module('iaf.beheerconsole')
 	});
 }])
 
-.controller('TestPipelineCtrl', ['$scope', 'Api', 'Alert', '$interval', function($scope, Api, Alert, $interval) {
+.controller('TestPipelineCtrl', ['$scope', 'Api', 'Alert', function($scope, Api, Alert) {
 	$scope.state = [];
 	$scope.file = null;
 	$scope.addNote = function(type, message, removeQueue) {
@@ -1173,7 +1166,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('TestServiceListenerCtrl', ['$scope', 'Api', 'Alert', '$interval', function($scope, Api, Alert, $interval) {
+.controller('TestServiceListenerCtrl', ['$scope', 'Api', 'Alert', function($scope, Api, Alert) {
 	$scope.state = [];
 	$scope.file = null;
 	$scope.addNote = function(type, message, removeQueue) {

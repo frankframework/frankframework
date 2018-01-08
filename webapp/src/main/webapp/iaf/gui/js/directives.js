@@ -15,7 +15,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.directive('toDate', ['dateFilter', 'appConstants', 'Hooks', function(dateFilter, appConstants, Hooks) {
+.directive('toDate', ['dateFilter', 'appConstants', function(dateFilter, appConstants) {
 	return {
 		restrict: 'A',
 		scope: {
@@ -40,9 +40,7 @@ angular.module('iaf.beheerconsole')
 			time: '@'
 		},
 		link: function(scope, element, attributes) {
-			var timeout = $interval(updateTime, 5000);
 			function updateTime() {
-				var text = "";
 				var seconds = Math.round((new Date().getTime() - attributes.time + appConstants.timeOffset) / 1000);
 
 				var minutes = seconds / 60;
@@ -63,12 +61,12 @@ angular.module('iaf.beheerconsole')
 				days = Math.floor(days % 7);
 				return element.text( days + 'd');
 			}
+
+			var timeout = $interval(updateTime, 300000);
 			element.on('$destroy', function() {
 				$interval.cancel(timeout);
 			});
-			setTimeout(function(){
-				updateTime();
-			}, 50);
+			scope.$watch('time', updateTime);
 		}
 	};
 }])
