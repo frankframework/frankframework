@@ -122,7 +122,7 @@ public class LdapSenderTest {
 			ldapSender.addParameter(parameter2);
 			ldapSender.configure();
 			ldapSender.open();
-			result = ldapSender.sendMessage("dummy", "<attributes/>");
+			result = ldapSender.sendMessage("dummy", "<dummy/>");
 		} finally {
 			if (ldapSender != null) {
 				ldapSender.close();
