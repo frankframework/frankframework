@@ -19,6 +19,7 @@ Upcoming
 - Fix cache not returning valueXPath transformed value in first call
 - Add possibility to cache and share transformers (to save memory)
 - Make ParallelSenders (with XsltSender) thread safe
+- Add in memory Ldap server (for testing purpose)
 
 
 
