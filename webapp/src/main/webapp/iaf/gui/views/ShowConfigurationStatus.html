@@ -116,12 +116,16 @@
 
     <div class="row">
         <div ng-repeat="adapter in adapters | adapterFilter:this" class="col-lg-12 adapters">
-            <div ibox-expand class="ibox {{(adapter.status != 'stopped') ? 'collapsed' : ''}} float-e-margins" id="{{adapter.name}}">
+            <div ng-init="showContent = (adapter.status == 'stopped')" ibox-expand class="ibox float-e-margins" id="{{adapter.name}}">
                 <div class="ibox-title {{adapter.started ? ((adapter.status=='warning') ? 'warning' : 'primary') : 'danger'}}" title="Double-click to open">
                     <h5>{{adapter.name}} <small class="m-l-sm">&nbsp;{{adapter.description}}</small></h5>
-                    <div ibox-tools-toggle></div>
+                    <div>
+                        <div class="ibox-tools">
+                            <a ng-click="showContent = !showContent"> <i class="fa fa-chevron-{{(showContent) ? 'down' : 'left' }}"></i></a>
+                        </div>
+                    </div>
                 </div>
-                <div class="ibox-content p-md">
+                <div class="ibox-content p-md" ng-if="showContent">
                     <div class="row">
                         <div class="col-md-6">
                             <!-- adapter information -->

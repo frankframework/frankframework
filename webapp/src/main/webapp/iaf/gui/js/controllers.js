@@ -438,20 +438,16 @@ angular.module('iaf.beheerconsole')
 
 	$scope.collapseAll = function() {
 		$(".adapters").each(function(i,e) {
-			var ibox = $(e);
-			var icon = ibox.find(".ibox-tools").find('i:first');
-			var content = ibox.find('div.ibox-content');
-			content.slideUp(200);
-			icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+			var a = $(e).find("div.ibox-title");
+			angular.element(a).scope().showContent = false;
 		});
 	};
 	$scope.expandAll = function() {
 		$(".adapters").each(function(i,e) {
-			var ibox = $(e);
-			var icon = ibox.find(".ibox-tools").find('i:first');
-			var content = ibox.find('div.ibox-content');
-			content.slideDown(200);
-			icon.addClass('fa-chevron-down').removeClass('fa-chevron-up');
+			setTimeout(function() {
+				var a = $(e).find("div.ibox-title");
+				angular.element(a).scope().showContent = true;
+			}, i * 10);
 		});
 	};
 	$scope.stopAll = function() {

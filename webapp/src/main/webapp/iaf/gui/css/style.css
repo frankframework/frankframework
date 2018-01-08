@@ -3756,15 +3756,6 @@ code {
   margin-top: 0;
   padding: 0;
 }
-.ibox.collapsed .ibox-content {
-  display: none;
-}
-.ibox.collapsed .fa.fa-chevron-up:before {
-  content: "\f078";
-}
-.ibox.collapsed .fa.fa-chevron-down:before {
-  content: "\f077";
-}
 .ibox:after,
 .ibox:before {
   display: table;
