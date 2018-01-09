@@ -409,7 +409,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.filter('adapterFilter', function() {
+.filter('configurationFilter', function() {
 	return function(adapters, $scope) {
 		if(!adapters || adapters.length < 1) return [];
 		var r = {};
@@ -417,6 +417,24 @@ angular.module('iaf.beheerconsole')
 			var adapter = adapters[adapterName];
 
 			if((adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") && $scope.filter[adapter.status])
+				r[adapterName] = adapter;
+		}
+		return r;
+	};
+})
+
+.filter('searchFilter', function() {
+	return function(adapters, $scope) {
+		if(!adapters || adapters.length < 1) return [];
+
+		if(!$scope.searchText || $scope.searchText.length == 0) return adapters;
+		var searchText = $scope.searchText.toLowerCase();
+
+		var r = {};
+		for(adapterName in adapters) {
+			var adapter = adapters[adapterName];
+
+			if(JSON.stringify(adapter).replace(/"/g, '').toLowerCase().indexOf(searchText) > -1)
 				r[adapterName] = adapter;
 		}
 		return r;
