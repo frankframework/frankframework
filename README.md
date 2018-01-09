@@ -1,3 +1,8 @@
+Community website
+=================
+
+Visit our community website and become a member at: https://ibissource.org/
+
 Ibis AdapterFramework
 =====================
 
