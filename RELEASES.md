@@ -9,8 +9,17 @@ Upcoming
 --------
 
 [JavaDocs](http://maven.ibissource.org/iaf/apidocs/index.html)
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC1...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC2...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+
+
+
+7.0-RC2
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC1...v7.0-RC2)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-RC2)](https://travis-ci.org/ibissource/iaf)
 
 - Ignore import with namespace but without schemaLocation (fix on previous commit 'Support schema attribute with config in database and refactor ClassUtils.getResourceURL()')
 - Rewrite dependencies on removed URL fallback in ClassUtils.getResourceURL()
