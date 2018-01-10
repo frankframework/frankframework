@@ -21,6 +21,7 @@ Upcoming
 - Make ParallelSenders (with XsltSender) thread safe
 - Add in memory Ldap server (for testing purpose)
 - Drastically improved GUI 3.0 performance
+- Fix recursive scheduleworker thread name
 
 
 
