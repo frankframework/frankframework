@@ -49,22 +49,22 @@ public class ConfiguredJob extends BaseJob implements Job  {
 
 
 	public void execute(JobExecutionContext context) throws JobExecutionException {
+		String ctName = Thread.currentThread().getName();
 		try {
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
 			IbisManager ibisManager = (IbisManager)dataMap.get("manager");
 			JobDef jobDef = (JobDef)dataMap.get("jobdef");
-			String ctName = Thread.currentThread().getName();
-			try {
-				Thread.currentThread().setName(jobDef.getName()+"["+ctName+"]");
-				log.info(getLogPrefix(jobDef) + "executing");
-				jobDef.executeJob(ibisManager);
-				log.debug(getLogPrefix(jobDef) + "completed");
-			} finally {
-				Thread.currentThread().setName(ctName);
-			}
-		} catch (Exception e) {
+			Thread.currentThread().setName(jobDef.getName() + "["+ctName+"]");
+			log.info(getLogPrefix(jobDef) + "executing");
+			jobDef.executeJob(ibisManager);
+			log.debug(getLogPrefix(jobDef) + "completed");
+		}
+		catch (Exception e) {
 			log.error(e);
 			throw new JobExecutionException(e, false);
+		}
+		finally {
+			Thread.currentThread().setName(ctName);
 		}
 	}
 	

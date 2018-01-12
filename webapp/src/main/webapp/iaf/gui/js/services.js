@@ -554,6 +554,13 @@ angular.module('iaf.beheerconsole')
 		return function(input) {
 			return (angular.isString(s) && s.length > 0) ? s[0].toUpperCase() + s.substr(1).toLowerCase() : s;
 		};
+	}).filter('truncate', function() {
+		return function(input, length) {
+			if(input.length > length) {
+				return input.substring(0, length) + "... ("+(input.length - length)+" characters more)";
+			}
+			return input;
+		};
 	}).filter('markDown', function() {
 		return function(input) {
 			if(!input) return;

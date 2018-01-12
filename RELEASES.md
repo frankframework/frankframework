@@ -9,8 +9,19 @@ Upcoming
 --------
 
 [JavaDocs](http://maven.ibissource.org/iaf/apidocs/index.html)
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC1...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC2...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+- Move 'Dynamic parameters' from showConfiguration to showEnvironmentVariables
+- Show provided JmsDestinations with usage in showSecurityItems
+
+
+
+7.0-RC2
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC1...v7.0-RC2)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-RC2)](https://travis-ci.org/ibissource/iaf)
 
 - Ignore import with namespace but without schemaLocation (fix on previous commit 'Support schema attribute with config in database and refactor ClassUtils.getResourceURL()')
 - Rewrite dependencies on removed URL fallback in ClassUtils.getResourceURL()
@@ -20,9 +31,8 @@ Upcoming
 - Add possibility to cache and share transformers (to save memory)
 - Make ParallelSenders (with XsltSender) thread safe
 - Add in memory Ldap server (for testing purpose)
-- Move 'Dynamic parameters' from showConfiguration to showEnvironmentVariables
-- Show provided JmsDestinations with usage in showSecurityItems
-- Bugfix growing thread names for jobs (in logging)
+- Drastically improved GUI 3.0 performance
+- Fix recursive scheduleworker thread name
 
 
 
