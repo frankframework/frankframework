@@ -47,8 +47,7 @@ public class TransformerPoolTest {
 		URL url = ClassUtils.getResourceURL(this, "xml/xsl/active.xsl");
 		TransformerPool transformerPool = TransformerPool.getInstance(url);
 		String result = transformerPool.transform(xml, null);
-		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root/>"
-				+ System.getProperty("line.separator");
+		String expected = "<root/>" + System.getProperty("line.separator");
 		assertEquals(expected, result);
 		assertEquals(0, TransformerPool.getTransformerPoolsKeys().size());
 	}

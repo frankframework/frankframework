@@ -21,6 +21,7 @@ Upcoming
 - Make ParallelSenders (with XsltSender) thread safe
 - Add in memory Ldap server (for testing purpose)
 - Move 'Dynamic parameters' from showConfiguration to showEnvironmentVariables
+- Show provided JmsDestinations with usage in showSecurityItems
 
 
 

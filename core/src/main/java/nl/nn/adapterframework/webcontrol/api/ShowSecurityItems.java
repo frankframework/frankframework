@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2018 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +70,6 @@ import org.xml.sax.InputSource;
 @Path("/")
 public final class ShowSecurityItems extends Base {
 	public static final String AUTHALIAS_XSLT = "xml/xsl/authAlias.xsl";
-	public static final String GETCONNPOOLPROP_XSLT = "xml/xsl/getConnectionPoolProperties.xsl";
 	@Context ServletConfig servletConfig;
 	@Context HttpServletRequest httpServletRequest;
 
@@ -240,7 +238,7 @@ public final class ShowSecurityItems extends Base {
 				realm.put("info", dsInfo);
 
 				if (confResString!=null) {
-					String connectionPoolProperties = getConnectionPoolProperties(confResString, "JDBC", dsName);
+					String connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JDBC", dsName);
 					if (StringUtils.isNotEmpty(connectionPoolProperties)) {
 						realm.put("connectionPoolProperties", connectionPoolProperties);
 					}
@@ -261,7 +259,7 @@ public final class ShowSecurityItems extends Base {
 				realm.put("info", qcfInfo);
 
 				if (confResString!=null) {
-					String connectionPoolProperties = getConnectionPoolProperties(confResString, "JMS", qcfName);
+					String connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JMS", qcfName);
 					if (StringUtils.isNotEmpty(connectionPoolProperties)) {
 						realm.put("connectionPoolProperties", connectionPoolProperties);
 					}
@@ -276,24 +274,6 @@ public final class ShowSecurityItems extends Base {
 		}
 
 		return jmsRealmList;
-	}
-
-	private String getConnectionPoolProperties(String confResString, String providerType, String jndiName) {
-		String connectionPoolProperties = null;
-		try {
-			URL url = ClassUtils.getResourceURL(this, GETCONNPOOLPROP_XSLT);
-			if (url != null) {
-				Transformer t = XmlUtils.createTransformer(url, true);
-				Map<String, Object> parameters = new Hashtable<String, Object>();
-				parameters.put("providerType", providerType);
-				parameters.put("jndiName", jndiName);
-				XmlUtils.setTransformerParameters(t, parameters);
-				connectionPoolProperties = XmlUtils.transformXml(t, confResString);
-			}
-		} catch (Exception e) {
-			connectionPoolProperties = "*** ERROR ***";
-		}
-		return connectionPoolProperties;
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
