@@ -3840,7 +3840,6 @@ code {
   border-style: solid solid none;
   border-width: 1px 0;
   clear: both;
-  overflow: auto;
 }
 .ibox-footer {
   color: inherit;
