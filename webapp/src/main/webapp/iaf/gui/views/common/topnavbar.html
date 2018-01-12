@@ -22,6 +22,9 @@
                 </ul>
             </li>
 -->
+            <li>
+                <span class="m-r-sm stage">{{otapStage}}</span>
+            </li>
             <li uib-dropdown href ng-click="resetNotificationCount()">
                 <a class="count-info" href uib-dropdown-toggle>
                     <i class="fa fa-bell"></i> <span ng-hide="notificationCount < 1" class="label label-primary">{{(notificationCount > 5) ? "5+" : notificationCount}}</span>

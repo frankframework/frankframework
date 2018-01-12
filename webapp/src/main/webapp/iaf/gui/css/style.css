@@ -510,6 +510,14 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
 .navbar .dropdown-menu {
   margin-top: 0;
 }
+.navbar .stage {
+  color: #1ab394;
+  font-size: 25px;
+  font-weight: bold;
+}
+.navbar .navbar-right li {
+  vertical-align: middle;
+}
 .top-navigation .navbar-brand {
   background: #1ab394;
   color: #fff;

@@ -55,6 +55,7 @@ angular.module('iaf.beheerconsole')
 				if(data["Application Constants"]) {
 					appConstants = $.extend(appConstants, data["Application Constants"]);
 					Hooks.call("appConstants", appConstants);
+					$scope.otapStage = appConstants["otap.stage"];
 					var idleTime = (parseInt(appConstants["console.idle.time"]) > 0) ? parseInt(appConstants["console.idle.time"]) : false;
 					if(idleTime > 0) {
 						var idleTimeout = (parseInt(appConstants["console.idle.timeout"]) > 0) ? parseInt(appConstants["console.idle.timeout"]) : false;
