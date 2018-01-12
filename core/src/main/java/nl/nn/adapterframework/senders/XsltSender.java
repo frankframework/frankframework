@@ -78,7 +78,7 @@ public class XsltSender extends SenderWithParametersBase {
 			String skipEmptyTags_xslt = XmlUtils.makeSkipEmptyTagsXslt(isOmitXmlDeclaration(),isIndentXml());
 			log.debug("test [" + skipEmptyTags_xslt + "]");
 			try {
-				transformerPoolSkipEmptyTags = new TransformerPool(skipEmptyTags_xslt);
+				transformerPoolSkipEmptyTags = TransformerPool.getInstance(skipEmptyTags_xslt);
 			} catch (TransformerConfigurationException te) {
 				throw new ConfigurationException(getLogPrefix() + "got error creating transformer from skipEmptyTags", te);
 			}

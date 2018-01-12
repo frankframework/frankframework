@@ -1,3 +1,8 @@
+Community website
+=================
+
+Visit our community website and become a member at: https://ibissource.org/
+
 Ibis AdapterFramework
 =====================
 
@@ -125,8 +130,9 @@ Commits
 Add the current year, the name of the copyright owner and the copyright notice
 (when not already present) to adjusted and new files. See:
 
-- http://www.gnu.org/licenses/gpl-howto.html
-- http://stackoverflow.com/questions/3487007/when-to-update-the-year-in-open-source-copyright-notice
+- https://www.gnu.org/licenses/gpl-howto.html
+- https://www.gnu.org/prep/maintain/html_node/Copyright-Notices.html
+- https://opensource.stackexchange.com/questions/2367/how-do-i-properly-specify-the-years-of-copyright
 - http://www.apache.org/licenses/LICENSE-2.0#apply
 
 When relevant to the end-user first add a line to [release notes](RELEASES.md)

@@ -18,6 +18,9 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
@@ -25,9 +28,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
  * Base class for building JDBC-senders.
@@ -57,24 +57,26 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 	private int timeout = 0;
 
 	protected Connection connection=null;
-	protected ParameterList<Parameter> paramList = null;
+	protected ParameterList paramList = null;
 
 	public JdbcSenderBase() {
 		super();
 	}
 
 
+	@Override
 	public void addParameter(Parameter p) { 
 		if (paramList==null) {
-			paramList=new ParameterList<Parameter>();
+			paramList=new ParameterList();
 		}
 		paramList.add(p);
 	}
 
-	public void configure(ParameterList<Parameter> parameterList) throws ConfigurationException {
+	public void configure(ParameterList parameterList) throws ConfigurationException {
 		configure();		
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 //		try {
 			if (StringUtils.isEmpty(getDatasourceName())) {
@@ -88,6 +90,7 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 		}
 	}
 
+	@Override
 	public void open() throws SenderException {
 		if (!isConnectionsArePooled()) {
 			try {
@@ -112,10 +115,12 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 		}
 	}
 	
+	@Override
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
 		return sendMessage(correlationID, message, null);
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		if (isConnectionsArePooled()) {
 			Connection c = null;
@@ -143,6 +148,7 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 
 	protected abstract String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException;
 
+	@Override
 	public String toString() {
 		String result  = super.toString();
         ToStringBuilder ts=new ToStringBuilder(this);

@@ -170,7 +170,7 @@ public class Json2XmlValidator extends XmlValidator {
 			}
 		}
 		if (firstChar!='{' && firstChar!='[') {
-			throw new PipeRunException(this,"message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{  or ''['");
+			throw new PipeRunException(this,"message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['");
 		}
 		storeInputFormat("json",session, responseMode);
 		try {

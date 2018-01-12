@@ -1,0 +1,28 @@
+[
+	{
+		"key":"cx103"
+		,"firstname":"Charles"
+		,"surname":"Xavier"
+		,"team":[
+			{
+				"key":"jh104"
+				,"firstname":"James"
+				,"surname":"Howlett"
+				,"team":[
+					{
+						"key":"kp102"
+						,"firstname":"Kitty"
+						,"surname":"Pride"
+						,"team":[
+							{
+								"key":"jd101"
+								,"firstname":"Jane"
+								,"surname":"Doe"
+							}
+						]
+					}
+				]
+			}
+		]
+	}
+]

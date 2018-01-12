@@ -9,8 +9,27 @@ Upcoming
 --------
 
 [JavaDocs](http://maven.ibissource.org/iaf/apidocs/index.html)
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-B3...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+- Ignore import with namespace but without schemaLocation (fix on previous commit 'Support schema attribute with config in database and refactor ClassUtils.getResourceURL()')
+- Rewrite dependencies on removed URL fallback in ClassUtils.getResourceURL()
+- Make it possible to disable lastModifiedDelta in CleanupOldFilesPipe
+- Fix WebServiceListener.processRequest() not being called by ServiceDispatcher (fix on previous commit 'Refactor http package to use IPipeLineSession instead of Map...')
+- Fix cache not returning valueXPath transformed value in first call
+- Add possibility to cache and share transformers (to save memory)
+- Make ParallelSenders (with XsltSender) thread safe
+- Add in memory Ldap server (for testing purpose)
+- Move 'Dynamic parameters' from showConfiguration to showEnvironmentVariables
+- Show provided JmsDestinations with usage in showSecurityItems
+
+
+
+7.0-RC1
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.0-B3...v7.0-RC1)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-RC1)](https://travis-ci.org/ibissource/iaf)
 
 - Add support for integer and boolean parameters when using QuerySenders
 - Fix broken "Show configuration warnings only at relevant configuration"
@@ -55,6 +74,8 @@ Upcoming
 - Support schema attribute with config in database and refactor ClassUtils.getResourceURL()
 - Add ServerSpecifics and CompanySpecifics properties
 - Fix mailSender always trying to include attachments
+- Add JsonXsltPipe
+- Add Spring config for Tomcat in combination with Tibco
 
 
 

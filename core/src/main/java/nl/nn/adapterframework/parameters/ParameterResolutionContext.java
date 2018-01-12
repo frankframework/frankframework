@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016-2017 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.parameters;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -46,22 +47,45 @@ public class ParameterResolutionContext {
 	private String input;
 	private IPipeLineSession session;
 	private Source xmlSource;
+	private boolean cacheXmlSource;
 	private boolean namespaceAware;
 	private boolean xslt2;
 
 	/**
-	 * constructor
-	 * @param input contains the input (xml formatted) message
-	 * @param session 
-	 */		
-	public ParameterResolutionContext(String input, IPipeLineSession session, boolean namespaceAware, boolean xslt2) {
+	 * Construct ParameterResolutionContext with the specified parameters.
+	 * 
+	 * PLEASE NOTE thread safety, see the documentation of parameter
+	 * cacheXmlSource.
+	 *  
+	 * @param input          the (xml formatted) input message
+	 * @param session        the session object
+	 * @param namespaceAware whether to process xml namespace aware
+	 * @param xslt2          when true use xslt2
+	 * @param cacheXmlSource when true (and the input message is transformed to
+	 *                       a DOM object) the DOM object is cached for
+	 *                       subsequent usage. Please note that a DOM object is
+	 *                       not thread safe:
+	 *                         https://saxonica.plan.io/boards/3/topics/6147
+	 *                         https://www.saxonica.com/html/documentation/sourcedocs/thirdparty.html
+	 *                       Disable caching when the ParameterResolutionContext
+	 *                       is used by multiple threads.
+	 */
+	public ParameterResolutionContext(String input, IPipeLineSession session,
+			boolean namespaceAware, boolean xslt2, boolean cacheXmlSource) {
 		this.input = input;
 		this.session = session;
 		this.namespaceAware = namespaceAware;
 		this.xslt2 = xslt2;
+		this.cacheXmlSource = cacheXmlSource;
 	}
 
-	public ParameterResolutionContext(String input, IPipeLineSession session, boolean namespaceAware) {
+	public ParameterResolutionContext(String input, IPipeLineSession session,
+			boolean namespaceAware, boolean xslt2) {
+		this(input, session, namespaceAware, false, true);
+	}
+
+	public ParameterResolutionContext(String input, IPipeLineSession session,
+			boolean namespaceAware) {
 		this(input, session, namespaceAware, false);
 	}
 
@@ -69,18 +93,9 @@ public class ParameterResolutionContext {
 		this(input, session, XmlUtils.isNamespaceAwareByDefault());
 	}
 
-	public ParameterResolutionContext(Source xmlSource, IPipeLineSession session, boolean namespaceAware) {
-		this("", session, namespaceAware);
-		this.xmlSource=xmlSource;
-	}
-
-	public ParameterResolutionContext(Source xmlSource, IPipeLineSession session) {
-		this(xmlSource, session, XmlUtils.isNamespaceAwareByDefault());
-	}
-
 	public ParameterResolutionContext() {
 	}
-			
+
 	/**
 	 * @param p
 	 * @return value as a <link>ParameterValue<link> object
@@ -94,7 +109,7 @@ public class ParameterResolutionContext {
 	 * @param parameters
 	 * @return arraylist of <link>ParameterValue<link> objects
 	 */
-	public ParameterValueList getValues(ParameterList<Parameter> parameters) throws ParameterException {
+	public ParameterValueList getValues(ParameterList parameters) throws ParameterException {
 		if (parameters == null)
 			return null;
 		
@@ -131,23 +146,23 @@ public class ParameterResolutionContext {
 	 * @param parameters
 	 * @return map of value objects
 	 */
-	public IPipeLineSession getValueMap(ParameterList<Parameter> parameters) throws ParameterException {
+	public Map<String,Object> getValueMap(ParameterList parameters) throws ParameterException {
 		if (parameters==null) {
 			return null;
 		}
 		Map<String, ParameterValue> paramValuesMap = getValues(parameters).getParameterValueMap();
 
 		// convert map with parameterValue to map with value		
-		IPipeLineSession result = new PipeLineSessionBase(paramValuesMap.size());
+		Map<String,Object> result = new LinkedHashMap(paramValuesMap.size());
 		for (Iterator<ParameterValue> it= paramValuesMap.values().iterator(); it.hasNext(); ) {
-			ParameterValue pv = (ParameterValue)it.next();
+			ParameterValue pv = it.next();
 			result.put(pv.getDefinition().getName(), pv.getValue());
 		}
 		return result;
 	}
 	
 
-	public ParameterValueList forAllParameters(ParameterList<Parameter> parameters, IParameterHandler handler) throws ParameterException {
+	public ParameterValueList forAllParameters(ParameterList parameters, IParameterHandler handler) throws ParameterException {
 		ParameterValueList values = getValues(parameters);
 		if (values != null) {
 			values.forAllParameters(handler);
@@ -162,10 +177,13 @@ public class ParameterResolutionContext {
 	 * @throws IOException
 	 */
 	public Source getInputSource() throws DomBuilderException {
+		Source xmlSource = this.xmlSource;
 		if (xmlSource == null) {
 			log.debug("Constructing InputSource for ParameterResolutionContext");
 			xmlSource = XmlUtils.stringToSource(input,isNamespaceAware()); 
-
+			if (cacheXmlSource) {
+				this.xmlSource = xmlSource;
+			}
 		}
 		return xmlSource;
 	}

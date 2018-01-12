@@ -73,10 +73,11 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	private String fxfFileSessionKey = "fxfFile";
 
 
+	@Override
 	public void configure() throws ConfigurationException {
 		setRemoveOutputNamespaces(true);
 		if ("wrap".equalsIgnoreCase(getDirection())) {
-			ParameterList<Parameter> parameterList = getParameterList();
+			ParameterList parameterList = getParameterList();
 			Parameter parameter = parameterList.findParameter(DESTINATION);
 			if (parameter == null) {
 				parameter = new Parameter();
@@ -131,6 +132,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		}
 	}
 
+	@Override
 	public void start() throws PipeStartException {
 		super.start();
 		if (transferFlowIdTp != null) {
@@ -149,6 +151,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		}
 	}
 
+	@Override
 	public void stop() {
 		super.stop();
 		if (transferFlowIdTp != null) {
@@ -159,6 +162,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		}
 	}
 
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if ("wrap".equalsIgnoreCase(getDirection())) {
 			XmlBuilder xmlStartTransfer_Action = new XmlBuilder("StartTransfer_Action");

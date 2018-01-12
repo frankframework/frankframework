@@ -15,6 +15,10 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import org.apache.commons.lang.StringUtils;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -26,10 +30,6 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Pipe that compares lexicographically two strings.
@@ -84,6 +84,7 @@ public class CompareStringPipe extends AbstractPipe {
 	private String sessionKey2 = null;
 	private boolean xml = false;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -99,7 +100,7 @@ public class CompareStringPipe extends AbstractPipe {
 		if (StringUtils.isEmpty(sessionKey1) && StringUtils.isEmpty(sessionKey2)) {
 			boolean operand1Exists = false;
 			boolean operand2Exists = false;
-			ParameterList<Parameter> parameterList = getParameterList();
+			ParameterList parameterList = getParameterList();
 			for (int i = 0; i < parameterList.size(); i++) {
 				Parameter parameter = parameterList.getParameter(i);
 				if (parameter.getName().equalsIgnoreCase(OPERAND1)) {
@@ -116,6 +117,7 @@ public class CompareStringPipe extends AbstractPipe {
 		}
 	}
 
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
@@ -237,7 +239,7 @@ public class CompareStringPipe extends AbstractPipe {
 	}
 
 	private String getParameterValue(ParameterValueList pvl, String parameterName) {
-		ParameterList<Parameter> parameterList = getParameterList();
+		ParameterList parameterList = getParameterList();
 		if (pvl != null && parameterList != null) {
 			for (int i = 0; i < parameterList.size(); i++) {
 				Parameter parameter = parameterList.getParameter(i);

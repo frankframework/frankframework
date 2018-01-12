@@ -31,19 +31,18 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.apache.commons.lang.StringUtils;
+import org.w3c.dom.Element;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.w3c.dom.Element;
 
 /**
  * QuerySender that transforms the input message to a query.
@@ -261,6 +260,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 
+	@Override
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws SQLException, JdbcException {
 		String qry = message;
 		if (lockRows) {
@@ -269,6 +269,7 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		return prepareQuery(con, qry, updateable);
 	}
 
+	@Override
 	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		Element queryElement;
 		String tableName = null;
@@ -605,7 +606,8 @@ public class XmlQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 
-	public void configure(ParameterList<Parameter> parameterList) throws ConfigurationException {
+	@Override
+	public void configure(ParameterList parameterList) throws ConfigurationException {
 		super.configure(parameterList);
 		ConfigurationWarnings cw = ConfigurationWarnings.getInstance();
 		cw.add("The XmlSender is not released for production. The configuration options for this pipe will change in a non-backward compatible way");

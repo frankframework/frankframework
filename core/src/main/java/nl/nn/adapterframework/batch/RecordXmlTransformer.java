@@ -20,6 +20,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -28,8 +30,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Encapsulates a record in XML, optionally translates it using XSLT or XPath.
@@ -68,7 +68,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 	private String endOfRecord;
 
 	private TransformerPool transformerPool; 
-	private ParameterList<Parameter> parameterList = new ParameterList<Parameter>();
+	private ParameterList parameterList = new ParameterList();
 
 	private List outputFields; 
 
@@ -76,9 +76,10 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		outputFields = new LinkedList();
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		ParameterList<Parameter> params = getParameterList();
+		ParameterList params = getParameterList();
 		if (params!=null) {
 			try {
 				params.configure();
@@ -93,6 +94,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 
 
 
+	@Override
 	public Object handleRecord(IPipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
 		String xml = getXml(parsedRecord);
 		if (transformerPool!=null) {
@@ -140,10 +142,11 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		}
 	}
 
-	private ParameterList<Parameter> getParameterList() {
+	private ParameterList getParameterList() {
 		return parameterList;
 	}
 
+	@Override
 	public void addParameter(Parameter param) {
 		log.debug("added parameter ["+param.toString()+"]");
 		parameterList.add(param);

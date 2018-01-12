@@ -20,6 +20,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.text.StrBuilder;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
@@ -28,9 +31,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.text.StrBuilder;
 
 /**
  * Send messages to the ibisstore to have them processed exactly-once by another
@@ -87,7 +87,7 @@ import org.apache.commons.lang.text.StrBuilder;
  * @author Jaco de Groot
  */
 public class MessageStoreSender extends JdbcTransactionalStorage implements ISenderWithParameters {
-	private ParameterList<Parameter> paramList = null;
+	private ParameterList paramList = null;
 	private String sessionKeys = null;
 	private boolean onlyStoreWhenMessageIdUnique = true;
 
@@ -101,22 +101,26 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 		super.configure();
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		return false;
 	}
 
+	@Override
 	public void addParameter(Parameter p) {
 		if (paramList == null) {
-			paramList = new ParameterList<Parameter>();
+			paramList = new ParameterList();
 		}
 		paramList.add(p);
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message)
 			throws SenderException, TimeOutException {
 		return sendMessage(correlationID, message, null);
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message,
 			ParameterResolutionContext prc) throws SenderException,
 			TimeOutException {
@@ -152,10 +156,12 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 		return sessionKeys;
 	}
 
+	@Override
 	public void setOnlyStoreWhenMessageIdUnique(boolean onlyStoreWhenMessageIdUnique) {
 		this.onlyStoreWhenMessageIdUnique = onlyStoreWhenMessageIdUnique;
 	}
 
+	@Override
 	public boolean isOnlyStoreWhenMessageIdUnique() {
 		return onlyStoreWhenMessageIdUnique;
 	}

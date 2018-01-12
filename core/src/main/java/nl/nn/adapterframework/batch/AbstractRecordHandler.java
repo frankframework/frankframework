@@ -21,6 +21,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -30,9 +33,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 /**
  * Abstract class that contains functionality for parsing the field values from a 
@@ -63,8 +63,9 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	private List inputFields=new LinkedList(); 
 	private List recordIdentifyingFields=new LinkedList();
 	
-	protected ParameterList<Parameter> paramList = null;
+	protected ParameterList paramList = null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (paramList!=null) {
 			paramList.configure();
@@ -74,9 +75,11 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		}
 	}
 	
+	@Override
 	public void open() throws SenderException {
 		//nothing to do		
 	}
+	@Override
 	public void close() throws SenderException {
 		//nothing to do		
 	}
@@ -94,6 +97,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return inputFields.size();
 	}
 	
+	@Override
 	public List parse(IPipeLineSession session, String record) {
 		if (inputFields.size() > 0) {
 			return parseUsingInputFields(record);
@@ -164,6 +168,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return result;
 	}
 	
+	@Override
 	public String getRecordType(List record) {
 		String result=null;
 		
@@ -180,6 +185,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return result;
 	}
 	
+	@Override
 	public boolean isNewRecordType(IPipeLineSession session, boolean equalRecordHandlers, List prevRecord, List curRecord) {
 		if (getRecordIdentifyingFieldList().size() == 0) {
 			log.debug("isNewRecordType(): no RecordIdentifyingFields specified, so returning false");
@@ -242,17 +248,20 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 
 
+	@Override
 	public void addParameter(Parameter p) {
 		if (paramList==null) {
-			paramList=new ParameterList<Parameter>();
+			paramList=new ParameterList();
 		}
 		paramList.add(p);
 	}
 
 
+	@Override
 	public void setName(String string) {
 		name = string;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -270,6 +279,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	/**
 	 * @deprecated typo has been fixed: please use 'inputSeparator' instead of 'inputSeperator'
 	 */
+	@Deprecated
 	public void setInputSeperator(String string) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'inputSeparator' instead of 'inputSeperator'";

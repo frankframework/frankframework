@@ -16,10 +16,11 @@
 package nl.nn.adapterframework.http;
 
 import java.io.Serializable;
+import java.util.Map;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
 //import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
@@ -84,7 +85,8 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		}
 	}
 
-	public String processRequest(String correlationId, String message, IPipeLineSession requestContext) throws ListenerException {
+	@Override
+	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException {
 		if (isSoap()) {
 			try {
 				String request = soapWrapper.getBody(message);

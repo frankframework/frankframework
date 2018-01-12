@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -88,24 +88,6 @@ public final class ShowConfiguration extends ActionBase {
 	    initAction(request);
 		if(ibisManager==null)return (mapping.findForward("noIbisContext"));
 		 
-	    DynaActionForm configurationPropertiesForm = getPersistentForm(mapping, form, request);
-	    Logger rl = LogUtil.getRootLogger();
-	    configurationPropertiesForm.set("logLevel", rl.getLevel().toString());
-		configurationPropertiesForm.set("logIntermediaryResults", new Boolean(false));
-		if (AppConstants.getInstance().getResolvedProperty("log.logIntermediaryResults")!=null) {
-			if (AppConstants.getInstance().getResolvedProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
-				configurationPropertiesForm.set("logIntermediaryResults", new Boolean(true));
-			}
-		}
-		Appender appender = rl.getAppender("appwrap");
-        if (appender!=null && appender instanceof IbisAppenderWrapper) {
-        	IbisAppenderWrapper iaw = (IbisAppenderWrapper) appender;
-    		configurationPropertiesForm.set("lengthLogRecords", iaw.getMaxMessageLength());
-        } else {
-    		configurationPropertiesForm.set("lengthLogRecords", -1);
-        }
-        
-        
 		XmlBuilder configurationsXml = new XmlBuilder("configurations");
 		List<Configuration> configurations = ibisManager.getConfigurations();
 		XmlBuilder configurationAllXml = new XmlBuilder("configuration");

@@ -73,6 +73,55 @@
 		</contentTable>
 		<br/><br/>
 		<contentTable>
+			<caption>Provided JmsDestinations</caption>
+			<tbody>
+				<tr>
+					<subHeader>ConnectionFactory</subHeader>
+					<subHeader>Name</subHeader>
+					<subHeader>Value</subHeader>
+					<subHeader>Used</subHeader>
+				</tr>
+				<xtags:choose>
+					<xtags:when test="providedJmsDestinations/@error='true'">
+						<tr>
+							<td colspan="4"><font color="red"><xtags:valueOf select="concat('ERROR: ', providedJmsDestinations)"/></font></td>
+						</tr>				
+					</xtags:when>
+					<xtags:when test="providedJmsDestinations/@warn='true'">
+						<tr>
+							<td colspan="4"><font color="orange"><xtags:valueOf select="concat('WARN: ', providedJmsDestinations)"/></font></td>
+						</tr>				
+					</xtags:when>
+					<xtags:otherwise>
+						<xtags:forEach select="providedJmsDestinations/connectionFactory">
+							<xtags:variable id="cf" select="@jndiName"/>
+							<tr ref="spannedRow">
+								<xtags:variable id="count" select="count(destination)"/>
+								<td rowspan="<%=count%>"><xtags:valueOf select="$cf"/></td>
+								<td><xtags:valueOf select="destination[1]/@jndiName"/></td>
+								<td><xtags:valueOf select="destination[1]"/></td>
+								<td>
+									<xtags:variable id="used" select="destination[1]/@used"/>
+									<booleanImage value="<%=used%>"/>
+								</td>
+							</tr>
+							<xtags:forEach select="destination[position()>1]">
+								<tr>
+									<td><xtags:valueOf select="@jndiName"/></td>
+									<td><xtags:valueOf select="."/></td>
+								<td>
+									<xtags:variable id="used" select="@used"/>
+									<booleanImage value="<%=used%>"/>
+								</td>
+								</tr>
+							</xtags:forEach>
+						</xtags:forEach>
+					</xtags:otherwise>
+				</xtags:choose>
+			</tbody>
+		</contentTable>
+		<br/><br/>
+		<contentTable>
 			<caption>Used SapSystems</caption>
 			<tbody>
 				<tr>

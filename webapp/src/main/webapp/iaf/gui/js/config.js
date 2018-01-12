@@ -316,6 +316,17 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			$rootScope.$apply();
 		}
 	};
+	$rootScope.$on("$stateChangeStart", function(_, state) {
+		Debug.log("Triggered state change");
+		var url = state.url;
+		if(url.indexOf("?") > 0)
+			url = url.substring(0, url.indexOf("?"));
+
+		gtag('config', 'UA-111373008-1', {
+			'page_path': url,
+			'page_title': state.data.pageTitle
+		});
+	});
 
 	// Set this asap on localhost to capture all debug data
 	if(location.hostname == "localhost")

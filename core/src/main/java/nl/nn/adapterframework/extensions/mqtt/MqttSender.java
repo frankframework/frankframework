@@ -16,6 +16,8 @@
 
 package nl.nn.adapterframework.extensions.mqtt;
 
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
@@ -23,9 +25,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 /**
  * MQTT listener which will connect to a broker and subscribe to a topic.
@@ -51,8 +50,9 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  */
 
 public class MqttSender extends MqttFacade implements ISenderWithParameters {
-	protected ParameterList<Parameter> paramList = null;
+	protected ParameterList paramList = null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (paramList!=null) {
 			paramList.configure();
@@ -61,6 +61,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 		super.configure();
 	}
 
+	@Override
 	public void open() throws SenderException {
 //		try {
 //			super.open();
@@ -69,21 +70,25 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 //		}
 	}
 
+	@Override
 	public void close() {
 		super.close();
 	}
 
+	@Override
 	public void addParameter(Parameter p) { 
 		if (paramList==null) {
-			paramList = new ParameterList<Parameter>();
+			paramList = new ParameterList();
 		}
 		paramList.add(p);
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
 		return sendMessage(correlationID, message, null);
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		return sendMessage(correlationID, message, prc, null);
 	}
@@ -106,6 +111,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 		return message;
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		return false;
 	}

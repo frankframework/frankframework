@@ -15,13 +15,13 @@
  */
 package nl.nn.adapterframework.extensions.api;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
 import nl.nn.adapterframework.util.AppConstants;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Extension to SoapWrapperPipe for API Management.
@@ -74,7 +74,7 @@ public class ApiSoapWrapperPipe extends SoapWrapperPipe {
 	}
 
 	private void addParameters() {
-		ParameterList<Parameter> parameterList = getParameterList();
+		ParameterList parameterList = getParameterList();
 		Parameter p;
 		if (parameterList.findParameter(CONVERSATIONID) == null) {
 			p = new Parameter();

@@ -38,6 +38,9 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import org.apache.commons.digester.Digester;
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -50,9 +53,6 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.commons.digester.Digester;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Sender to obtain information from and write to an LDAP Directory.
@@ -321,7 +321,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	private boolean unicodePwd = false;
 	private boolean replyNotFound = false;
 
-	protected ParameterList<Parameter> paramList = null;
+	protected ParameterList paramList = null;
 	private boolean principalParameterFound = false;
 	private Hashtable jndiEnv=null;
 
@@ -330,6 +330,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		setInitialContextFactoryName(INITIAL_CONTEXT_FACTORY);
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (paramList == null ||
 				(paramList.findParameter(ENTRYNAME) == null && !getOperation().equals(OPERATION_CHALLENGE))) {
@@ -489,10 +490,12 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 
 
+	@Override
 	public void open() throws SenderException {
 	}
 
 
+	@Override
 	public boolean isSynchronous() {
 		return true;
 	}
@@ -581,6 +584,10 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 		
 		if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
+			if (attrs == null && !entryNameAfter.equals(entryName)) {
+				// it should be possible to only 'rename' the entry (without attribute change) 
+				return DEFAULT_RESULT;
+			}
 			NamingEnumeration na = attrs.getAll();
 			while(na.hasMoreElements()) {
 				Attribute a = (Attribute)na.nextElement();
@@ -923,10 +930,10 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		ModificationItem[] modificationItems = new ModificationItem[2];
 		modificationItems[0] = new ModificationItem(
 				DirContext.REMOVE_ATTRIBUTE,
-				new BasicAttribute("unicodePwd", encodeUnicodePwd((String)paramValueMap.get("oldPassword"))));
+				new BasicAttribute("unicodePwd", encodeUnicodePwd(paramValueMap.get("oldPassword"))));
 		modificationItems[1] = new ModificationItem(
 				DirContext.ADD_ATTRIBUTE,
-				new BasicAttribute("unicodePwd", encodeUnicodePwd((String)paramValueMap.get("newPassword"))));
+				new BasicAttribute("unicodePwd", encodeUnicodePwd(paramValueMap.get("newPassword"))));
 		DirContext dirContext = null;
 		try{
 			dirContext = getDirContext(paramValueMap);
@@ -1107,10 +1114,12 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message)	throws SenderException {
 		return sendMessage(correlationID, message, new ParameterResolutionContext(message,null));
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		try {
 			return performOperation(message, prc);
@@ -1189,12 +1198,12 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				newJndiEnv.put("com.sun.jndi.ldap.connect.pool", "false");
 			}
 			if (log.isDebugEnabled()) log.debug("created environment for LDAP provider URL [" + newJndiEnv.get("java.naming.provider.url") + "]");
-			dirContext = (DirContext) new InitialDirContext(newJndiEnv);
+			dirContext = new InitialDirContext(newJndiEnv);
 			if (!principalParameterFound) {
 				jndiEnv = newJndiEnv;
 			}
 		} else {
-			dirContext = (DirContext) new InitialDirContext(jndiEnv);
+			dirContext = new InitialDirContext(jndiEnv);
 		}
 		return dirContext;
 //		return (DirContext) dirContextTemplate.lookup(""); 	// return copy to be thread-safe
@@ -1310,16 +1319,19 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
+	@Override
 	public void addParameter(Parameter p) {
 		if (paramList == null) {
-			paramList = new ParameterList<Parameter>();
+			paramList = new ParameterList();
 		}
 		paramList.add(p);
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}

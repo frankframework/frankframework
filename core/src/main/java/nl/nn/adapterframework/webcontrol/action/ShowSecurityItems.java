@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,20 +25,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.Adapter;
@@ -54,11 +57,13 @@ import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsException;
+import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -72,8 +77,35 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public final class ShowSecurityItems extends ActionBase {
 	public static final String AUTHALIAS_XSLT = "xml/xsl/authAlias.xsl";
-	public static final String GETCONNPOOLPROP_XSLT = "xml/xsl/getConnectionPoolProperties.xsl";
 
+	private class JmsDestination {
+		String connectionFactoryJndiName;
+		String jndiName;
+
+		JmsDestination(String connectionFactoryJndiName, String jndiName) {
+			this.connectionFactoryJndiName = connectionFactoryJndiName;
+			this.jndiName = jndiName;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (o instanceof JmsDestination) {
+				JmsDestination other = (JmsDestination) o;
+				if (connectionFactoryJndiName
+						.equals(other.connectionFactoryJndiName)
+						&& jndiName.equals(other.jndiName)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public int hashCode() {
+			return (connectionFactoryJndiName + "|" + jndiName).hashCode();
+		}
+	}
+	
 	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
 		// Initialize action
@@ -84,7 +116,20 @@ public final class ShowSecurityItems extends ActionBase {
 		addRegisteredAdapters(securityItems);
 		addApplicationDeploymentDescriptor(securityItems);
 		addSecurityRoleBindings(securityItems);
-		addJmsRealms(securityItems);
+
+		String confResString;
+		try {
+			confResString = Misc.getConfigurationResources();
+			if (confResString!=null) {
+				confResString = XmlUtils.removeNamespaces(confResString);
+			}
+		} catch (IOException e) {
+			log.warn("error getting configuration resources ["+e+"]");
+			confResString = null;
+		}
+
+		addJmsRealms(securityItems, confResString);
+		addProvidedJmsDestinations(securityItems, confResString);
 		addSapSystems(securityItems);
 		addAuthEntries(securityItems);
 		addServerProps(securityItems);
@@ -290,22 +335,11 @@ public final class ShowSecurityItems extends ActionBase {
 		securityItems.addSubElement(appBnd);
 	}
 
-	private void addJmsRealms(XmlBuilder securityItems) {
+	private void addJmsRealms(XmlBuilder securityItems, String confResString) {
 		List jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		XmlBuilder jrs = new XmlBuilder("jmsRealms");
 		securityItems.addSubElement(jrs);
 
-		String confResString;
-		try {
-			confResString = Misc.getConfigurationResources();
-			if (confResString!=null) {
-				confResString = XmlUtils.removeNamespaces(confResString);
-			}
-		} catch (IOException e) {
-			log.warn("error getting configuration resources ["+e+"]");
-			confResString = null;
-		}
-		
 		for (int j = 0; j < jmsRealms.size(); j++) {
 			String jmsRealm = (String) jmsRealms.get(j);
 
@@ -332,7 +366,12 @@ public final class ShowSecurityItems extends ActionBase {
 				infoElem.setValue(dsInfo);
 				jr.addSubElement(infoElem);
 				if (confResString!=null) {
-					String connectionPoolProperties = getConnectionPoolProperties(confResString, "JDBC", dsName);
+					String connectionPoolProperties;
+					try {
+						connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JDBC", dsName);
+					} catch (Exception e) {
+						connectionPoolProperties = "*** ERROR ***";
+					}
 					if (StringUtils.isNotEmpty(connectionPoolProperties)) {
 						infoElem = new XmlBuilder("info");
 						infoElem.setValue(connectionPoolProperties);
@@ -358,7 +397,12 @@ public final class ShowSecurityItems extends ActionBase {
 				infoElem.setValue(qcfInfo);
 				jr.addSubElement(infoElem);
 				if (confResString!=null) {
-					String connectionPoolProperties = getConnectionPoolProperties(confResString, "JMS", qcfName);
+					String connectionPoolProperties;
+					try {
+						connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JMS", qcfName);
+					} catch (Exception e) {
+						connectionPoolProperties = "*** ERROR ***";
+					}
 					if (StringUtils.isNotEmpty(connectionPoolProperties)) {
 						infoElem = new XmlBuilder("info");
 						infoElem.setValue(connectionPoolProperties);
@@ -376,24 +420,118 @@ public final class ShowSecurityItems extends ActionBase {
 		}
 	}
 
-	private String getConnectionPoolProperties(String confResString, String providerType, String jndiName) {
-		String connectionPoolProperties = null;
-		try {
-			URL url = ClassUtils.getResourceURL(this, GETCONNPOOLPROP_XSLT);
-			if (url != null) {
-				Transformer t = XmlUtils.createTransformer(url, true);
-				Map parameters = new Hashtable();
-				parameters.put("providerType", providerType);
-				parameters.put("jndiName", jndiName);
-				XmlUtils.setTransformerParameters(t, parameters);
-				connectionPoolProperties = XmlUtils.transformXml(t, confResString);
+	private void addProvidedJmsDestinations(XmlBuilder securityItems,
+			String confResString) {
+		XmlBuilder providedJmsDestinationsXml;
+		if (confResString == null) {
+			providedJmsDestinationsXml = new XmlBuilder(
+					"providedJmsDestinations");
+			providedJmsDestinationsXml.addAttribute("warn", "true");
+			providedJmsDestinationsXml
+					.setCdataValue("Resources file not found or empty");
+		} else {
+			List<JmsDestination> usedJmsDestinations;
+			try {
+				usedJmsDestinations = retrieveUsedJmsDestinations();
+				providedJmsDestinationsXml = buildProvidedJmsDestinationsXml(
+						confResString, usedJmsDestinations);
+			} catch (Exception e) {
+				providedJmsDestinationsXml = new XmlBuilder(
+						"providedJmsDestinations");
+				providedJmsDestinationsXml.addAttribute("error", "true");
+				providedJmsDestinationsXml.setCdataValue(e.getMessage());
 			}
-		} catch (Exception e) {
-			connectionPoolProperties = "*** ERROR ***";
 		}
-		return connectionPoolProperties;
+		securityItems.addSubElement(providedJmsDestinationsXml);
 	}
 
+	private XmlBuilder buildProvidedJmsDestinationsXml(String confResString,
+			List<JmsDestination> usedJmsDestinations)
+			throws DomBuilderException, IOException, TransformerException {
+		XmlBuilder providedJmsDestinationsXml = new XmlBuilder(
+				"providedJmsDestinations");
+
+		String providedJmsDestinations = Misc.getJmsDestinations(confResString);
+		Element providedJmsDestinationsElement = XmlUtils
+				.buildElement(providedJmsDestinations);
+		Collection providedConnectionFactories = XmlUtils.getChildTags(
+				providedJmsDestinationsElement, "connectionFactory");
+		Iterator providedConnectionFactoriesIterator = providedConnectionFactories
+				.iterator();
+		while (providedConnectionFactoriesIterator.hasNext()) {
+			Element providedConnectionFactoryElement = (Element) providedConnectionFactoriesIterator
+					.next();
+			String providedConnectionFactoryJndiName = providedConnectionFactoryElement
+					.getAttribute("jndiName");
+			XmlBuilder providedConnectionFactoryXml = new XmlBuilder(
+					"connectionFactory");
+			providedConnectionFactoryXml.addAttribute("jndiName",
+					providedConnectionFactoryJndiName);
+			providedJmsDestinationsXml
+					.addSubElement(providedConnectionFactoryXml);
+			Collection providedDestinations = XmlUtils.getChildTags(
+					providedConnectionFactoryElement, "destination");
+			Iterator providedDestinationsIterator = providedDestinations
+					.iterator();
+			while (providedDestinationsIterator.hasNext()) {
+				Element providedDestinationElement = (Element) providedDestinationsIterator
+						.next();
+				String providedValue = XmlUtils
+						.getStringValue(providedDestinationElement);
+				String providedJndiName = providedDestinationElement
+						.getAttribute("jndiName");
+
+				XmlBuilder providedDestinationXml = new XmlBuilder(
+						"destination");
+				providedConnectionFactoryXml
+						.addSubElement(providedDestinationXml);
+				providedDestinationXml.setValue(providedValue);
+				providedDestinationXml.addAttribute("jndiName",
+						providedJndiName);
+				if (providedConnectionFactoryJndiName != null
+						&& !usedJmsDestinations.isEmpty()
+						&& usedJmsDestinations.contains(new JmsDestination(
+								providedConnectionFactoryJndiName,
+								providedJndiName))) {
+					providedDestinationXml.addAttribute("used", "true");
+				}
+			}
+		}
+		return providedJmsDestinationsXml;
+	}
+
+	private List<JmsDestination> retrieveUsedJmsDestinations()
+			throws DomBuilderException {
+		List<JmsDestination> usedJmsDestinations = new ArrayList<JmsDestination>();
+		StringBuilder config = new StringBuilder("<config>");
+		for (Configuration configuration : ibisManager.getConfigurations()) {
+			config.append(configuration.getLoadedConfiguration());
+		}
+		config.append("</config>");
+		Document document = XmlUtils.buildDomDocument(config.toString());
+		NodeList nodeList = document.getElementsByTagName("*");
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Node node = nodeList.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element element = (Element) node;
+				if (element.hasAttribute("destinationName")
+						&& !"false".equalsIgnoreCase(
+								element.getAttribute("lookupDestination"))) {
+					JmsRealm jmsRealm = JmsRealmFactory.getInstance()
+							.getJmsRealm(element.getAttribute("jmsRealm"));
+					if (jmsRealm != null) {
+						String connectionFactory = jmsRealm
+								.retrieveConnectionFactoryName();
+						usedJmsDestinations.add(new JmsDestination(
+								connectionFactory,
+								element.getAttribute("destinationName")));
+					}
+				}
+			}
+		}
+		return usedJmsDestinations;
+	}
+	
 	private void addSapSystems(XmlBuilder securityItems) {
 		List sapSystems = null;
 		Object sapSystemFactory = null;

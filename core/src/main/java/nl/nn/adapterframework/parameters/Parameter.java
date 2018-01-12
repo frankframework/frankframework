@@ -34,6 +34,11 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.log4j.Logger;
+import org.w3c.dom.Node;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.INamedObject;
@@ -48,11 +53,6 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
-import org.w3c.dom.Node;
 
 /**
  * Generic parameter definition.
@@ -181,12 +181,13 @@ public class Parameter implements INamedObject, IWithParameters {
 	private DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
 	private TransformerPool transformerPoolRemoveNamespaces;
-	protected ParameterList<Parameter> paramList = null;
+	protected ParameterList paramList = null;
 	private boolean configured = false;
 
+	@Override
 	public void addParameter(Parameter p) { 
 		if (paramList==null) {
-			paramList=new ParameterList<Parameter>();
+			paramList=new ParameterList();
 		}
 		paramList.add(p);
 	}
@@ -211,7 +212,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		if (isRemoveNamespaces()) {
 			String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
 			try {
-				transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
+				transformerPoolRemoveNamespaces = TransformerPool.getInstance(removeNamespaces_xslt);
 			} catch (TransformerConfigurationException te) {
 				throw new ConfigurationException("Got error creating transformer from removeNamespaces", te);
 			}
@@ -582,10 +583,12 @@ public class Parameter implements INamedObject, IWithParameters {
 		return substitutionValue;		
 	}
 
+	@Override
 	public void setName(String parameterName) {
 		name = parameterName;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -626,6 +629,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		return value;
 	}
 
+	@Override
 	public String toString() {
 		return "Paramter name=["+name+"] defaultValue=["+defaultValue+"] sessionKey=["+sessionKey+"] xpathExpression=["+xpathExpression+ "] type=["+type+ "] value=["+value+ "]";
 	}

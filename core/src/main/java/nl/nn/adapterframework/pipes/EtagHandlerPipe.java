@@ -25,11 +25,9 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListenerUtils;
-import nl.nn.adapterframework.http.RestServiceDispatcher;
-import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.http.rest.ApiCacheManager;
-import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.http.rest.ApiEhcache;
+import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -49,6 +47,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 	private String uriPattern = null;
 	private IApiCache cache = null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		String action = getAction();
@@ -60,7 +59,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		}
 
 		boolean hasUriPatternParameter = false;
-		ParameterList<Parameter> parameterList = getParameterList();
+		ParameterList parameterList = getParameterList();
 		for (int i=0; i<parameterList.size(); i++) {
 			Parameter parameter = parameterList.getParameter(i);
 			if("uriPattern".equalsIgnoreCase(parameter.getName()))
@@ -74,6 +73,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		cache = ApiCacheManager.getInstance();
 	}
 
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
@@ -84,7 +84,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 
 		String uriPatternSessionKey = null;
 		ParameterValueList pvl = null;
-		ParameterList<Parameter> parameterList = getParameterList();
+		ParameterList parameterList = getParameterList();
 		if (parameterList != null) {
 			ParameterResolutionContext prc = new ParameterResolutionContext((String) input, session);
 			try {

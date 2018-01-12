@@ -86,7 +86,7 @@ public class XmlIf extends AbstractPipe {
 		super.configure();
 		if (StringUtils.isNotEmpty(getXpathExpression())) {
 			try {
-				tp = new TransformerPool(makeStylesheet(getXpathExpression(), getExpressionValue()));
+				tp = TransformerPool.getInstance(makeStylesheet(getXpathExpression(), getExpressionValue()));
 			} catch (TransformerConfigurationException e) {
 				throw new ConfigurationException(getLogPrefix(null)+"could not create transformer from xpathExpression ["+getXpathExpression()+"], target expressionValue ["+getExpressionValue()+"]",e);
 			}

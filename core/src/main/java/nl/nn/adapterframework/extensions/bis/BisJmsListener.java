@@ -180,7 +180,7 @@ public class BisJmsListener extends JmsListener {
 		}
 		try {
 			bisUtils = BisUtils.getInstance();
-			requestTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(StringUtils.isNotEmpty(getRequestNamespaceDefs()) ? bisUtils.getSoapNamespaceDefs() + "\n" + getRequestNamespaceDefs() : bisUtils.getSoapNamespaceDefs(), StringUtils.isNotEmpty(getRequestXPath()) ? bisUtils.getSoapBodyXPath() + "/" + getRequestXPath() : bisUtils.getSoapBodyXPath() + "/*", "xml"));
+			requestTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(StringUtils.isNotEmpty(getRequestNamespaceDefs()) ? bisUtils.getSoapNamespaceDefs() + "\n" + getRequestNamespaceDefs() : bisUtils.getSoapNamespaceDefs(), StringUtils.isNotEmpty(getRequestXPath()) ? bisUtils.getSoapBodyXPath() + "/" + getRequestXPath() : bisUtils.getSoapBodyXPath() + "/*", "xml"));
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix() + "cannot create transformer", e);
 		}

@@ -17,6 +17,9 @@ package nl.nn.adapterframework.batch;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -28,9 +31,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 
 /**
@@ -60,8 +60,9 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	private boolean blockByRecordType=true;
 	private AbstractPipe pipe;
 	
-	protected ParameterList<Parameter> paramList = null;
+	protected ParameterList paramList = null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (paramList!=null) {
 			paramList.configure();
@@ -71,27 +72,34 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 			configWarnings.add(ClassUtils.nameOf(this)+" ["+getName()+"]: the use of attributes prefix and suffix has been replaced by 'blocks'. Please replace with 'onBlockOpen' and 'onBlockClose', respectively");	 
 		}
 	}
+	@Override
 	public void open() throws SenderException {
 	}
+	@Override
 	public void close() throws SenderException {
 	}
 
+	@Override
 	public void openDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
 	}
+	@Override
 	public void closeDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) {
 	}
 
+	@Override
 	public void addParameter(Parameter p) {
 		if (paramList==null) {
-			paramList=new ParameterList<Parameter>();
+			paramList=new ParameterList();
 		}
 		paramList.add(p);
 	}
 
 
+	@Override
 	public void setName(String string) {
 		name = string;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -102,6 +110,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	public String getPrefix() {
 		return prefix;
 	}
+	@Override
 	public boolean hasPrefix() {
 		return StringUtils.isNotEmpty(getPrefix());
 	}
@@ -113,9 +122,11 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		return suffix;
 	}
 
+	@Override
 	public void setDefault(boolean isDefault) {
 		this.defaultResultHandler = isDefault;
 	}
+	@Override
 	public boolean isDefault() {
 		return defaultResultHandler;
 	}
@@ -123,10 +134,12 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	public void setBlockByRecordType(boolean b) {
 		blockByRecordType = b;
 	}
+	@Override
 	public boolean isBlockByRecordType() {
 		return blockByRecordType;
 	}
 
+	@Override
 	public void setPipe(AbstractPipe pipe) {
 		this.pipe = pipe;
 	}
