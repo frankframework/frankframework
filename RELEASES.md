@@ -22,6 +22,7 @@ Upcoming
 - Add in memory Ldap server (for testing purpose)
 - Move 'Dynamic parameters' from showConfiguration to showEnvironmentVariables
 - Show provided JmsDestinations with usage in showSecurityItems
+- Bugfix growing thread names for jobs (in logging)
 
 
 
