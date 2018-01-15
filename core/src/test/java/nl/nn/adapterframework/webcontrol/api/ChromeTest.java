@@ -19,7 +19,7 @@ public class ChromeTest {
 	public void SampleSauceTest() throws Exception {
 
 		DesiredCapabilities caps = DesiredCapabilities.chrome();
-		caps.setCapability("platform", "Windows XP");
+		caps.setCapability("platform", "Windows");
 		caps.setCapability("version", "43.0");
 
 		WebDriver driver = new RemoteWebDriver(new URL(URL), caps);
