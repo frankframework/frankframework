@@ -3,6 +3,12 @@ jdk:
   - openjdk7
 #  - openjdk6
 
+# Sauce labs integration
+addons:
+  sauce_connect:
+    username: "Baswat"
+    access_key: "d835004c-97a1-4e52-b63f-daa5b1d3d3fd"
+
 # Skip separate install phase as for some reason running the two default phases
 # on Travis seem to cause the second phases to select the wrong profile
 # (doesn't happen locally when running the exact same commands). And with maven
