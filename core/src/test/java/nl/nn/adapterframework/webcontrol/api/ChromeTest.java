@@ -25,7 +25,7 @@ public class ChromeTest {
 		WebDriver driver = new RemoteWebDriver(new URL(URL), caps);
 
 		/**
-		 * Goes to Sauce Lab's guinea-pig page and prints title
+		 * Goes to Sauce Lab'!s guinea-pig page and prints title
 		 */
 
 		driver.get("https://saucelabs.com/test/guinea-pig");
