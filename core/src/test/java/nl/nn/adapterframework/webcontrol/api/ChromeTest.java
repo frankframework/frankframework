@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.webcontrol.api;
 
 import org.junit.Test;
+import org.junit.Assert;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -28,9 +29,9 @@ public class ChromeTest {
 		 * Goes to Sauce Lab's guinea-pig page and prints title
 		 */
 
-		driver.get("https://saucelabs.com/test/guinea-pig");
-		System.out.println("title of page is: " + driver.getTitle());
-		
-		driver.quit();
+		 driver.get("http://ibis4example.ibissource.org/Angular/#/status");
+		 Assert.assertEquals("IAF | Adapter Status", driver.getTitle());
+		 Assert.assertTrue(true);
+		 driver.quit();
 	}
 }
