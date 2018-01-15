@@ -25,13 +25,9 @@ public class ChromeTest {
 
 		WebDriver driver = new RemoteWebDriver(new URL(URL), caps);
 
-		/**
-		 * Goes to Sauce Lab's guinea-pig page and prints title
-		 */
-
-		 driver.get("http://ibis4example.ibissource.org/iaf/gui/#/status");
-		 Assert.assertEquals("IAF | Adapter Status!!@@^&!@", driver.getTitle());
-		 Assert.assertTrue(true);
-		 driver.quit();
+		driver.get("http://ibis4example.ibissource.org/iaf/gui/#/status");
+		Assert.assertEquals("IAF | Adapter Status", driver.getTitle());
+		Assert.assertTrue(true);
+		driver.quit();
 	}
 }
