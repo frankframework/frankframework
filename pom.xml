@@ -271,11 +271,6 @@
     </profile>
     <profile>
         <id>selenium</id>
-        <activation>
-          <file>
-            <exists>C:/Users/Laurens/chromedriver_win32/chromedriver.exe</exists>
-          </file>
-        </activation>
         <dependencies>
      		<dependency>
 			    <groupId>org.seleniumhq.selenium</groupId>
