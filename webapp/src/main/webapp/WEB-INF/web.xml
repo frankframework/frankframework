@@ -76,7 +76,7 @@
 
 	<filter-mapping>
 		<filter-name>CorsFilter</filter-name>
-		<url-pattern>/iaf-api/*</url-pattern>
+		<url-pattern>/iaf/api/*</url-pattern>
 	</filter-mapping>
 
 	<filter-mapping>
@@ -86,7 +86,7 @@
 
 	<filter-mapping>
 		<filter-name>CacheControlFilter</filter-name>
-		<url-pattern>/iaf-api/*</url-pattern>
+		<url-pattern>/iaf/api/*</url-pattern>
 	</filter-mapping>
 
 	<filter-mapping>
@@ -343,7 +343,7 @@
 		<web-resource-collection>
 			<web-resource-name>IAFAPI</web-resource-name>
 			<description></description>
-			<url-pattern>/iaf-api/*</url-pattern>
+			<url-pattern>/iaf/api/*</url-pattern>
 			<http-method>OPTIONS</http-method>
 		</web-resource-collection>
 	</security-constraint>
@@ -352,7 +352,7 @@
 		<web-resource-collection>
 			<web-resource-name>IAFAPI</web-resource-name>
 			<description></description>
-			<url-pattern>/iaf-api/*</url-pattern>
+			<url-pattern>/iaf/api/*</url-pattern>
 			<http-method>GET</http-method>
 			<http-method>POST</http-method>
 			<http-method>PUT</http-method>

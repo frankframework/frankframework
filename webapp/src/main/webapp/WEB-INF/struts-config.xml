@@ -165,8 +165,6 @@
         </action>
         <action path="/showConfiguration" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowConfiguration"
-                scope="session" 
-                name="ConfigurationPropertiesForm"
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/showConfiguration.jsp"/>
         </action>
@@ -338,6 +336,8 @@
         </action>
         <action path="/showEnvironmentVariables" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowEnvironmentVariables" 
+                scope="session" 
+                name="ConfigurationPropertiesForm"
                 validate="false">
             <forward name="success" path="/jsp/view.jsp?view=/jsp/showEnvironmentVariables.jsp"/>
         </action>

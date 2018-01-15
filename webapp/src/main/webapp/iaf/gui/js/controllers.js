@@ -148,47 +148,38 @@ angular.module('iaf.beheerconsole')
 				$scope.addAlert(type, warning.message);
 			}
 		});
+		Poller.add("adapters?expanded=all", function(allAdapters) {
+			for(adapterName in allAdapters) {
+				var adapter = allAdapters[adapterName];
+				var oldAdapterData = $rootScope.adapters[adapter.name];
+				if(JSON.stringify(oldAdapterData) != JSON.stringify(adapter)) {
+					adapter.status = "started";
 
-		Api.Get("adapters", function(allAdapters) {
-			Hooks.call("adaptersLoaded", allAdapters);
-
-			$rootScope.adapters = allAdapters;
-			$scope.displayAdapters = [];
-			for(adapter in allAdapters) {
-				$scope.adapterSummary[allAdapters[adapter].state] += 1;
-				Poller.add("adapters/" + adapter + "?expanded=all", function(data) {
-					var oldAdapterData = $rootScope.adapters[data.name];
-					if(oldAdapterData != data) {
-						data.status = "started";
-						data.flow = Misc.getServerPath() + 'rest/showFlowDiagram/' + data.name;
-						for(x in data.receivers) {
-							if(data.receivers[x].started == false)
-								data.status = 'warning';
-						}
-						data.hasSender = false;
-						for(x in data.pipes) {
-							if(data.pipes[x].sender) {
-								data.hasSender = true;
-							}
-						}
-						for(i in data.messages) {
-							var level = data.messages[i].level;
-							if(level != "INFO")
-								data.status = 'warning';
-						}
-						if(!data.started)
-							data.status = "stopped";
-
-						$rootScope.adapters[data.name] = data;
-
-						$scope.updateAdapterSummary();
-						Hooks.call("adapterUpdated", data);
+					for(x in adapter.receivers) {
+						if(adapter.receivers[x].started == false)
+							adapter.status = 'warning';
 					}
-				}, true);
+					adapter.hasSender = false;
+					for(x in adapter.pipes) {
+						if(adapter.pipes[x].sender) {
+							adapter.hasSender = true;
+						}
+					}
+					for(i in adapter.messages) {
+						var level = adapter.messages[i].level;
+						if(level != "INFO")
+							adapter.status = 'warning';
+					}
+					if(!adapter.started)
+						adapter.status = "stopped";
+
+					$rootScope.adapters[adapter.name] = adapter;
+
+					$scope.updateAdapterSummary();
+					Hooks.call("adapterUpdated", adapter);
+				}
 			}
-		}, function() {
-			$scope.addAlert('danger', "An error occured while trying to load adapters!");
-		});
+		}, true);
 	});
 
 	var lastUpdated = 0;
@@ -245,11 +236,11 @@ angular.module('iaf.beheerconsole')
 		lastUpdated = updated;
 	};
 
-	Hooks.register("adapterUpdated:once", function(adapter) {
+	Hooks.register("adapterUpdated:once", function() {
 		if($location.hash()) {
 			angular.element("#"+$location.hash())[0].scrollIntoView();
 		}
-		$scope.loading = false;
+		$scope.$broadcast('loading', false);
 	});
 	Hooks.register("adapterUpdated", function(adapter) {
 		var name = adapter.name;
@@ -417,7 +408,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.filter('adapterFilter', function() {
+.filter('configurationFilter', function() {
 	return function(adapters, $scope) {
 		if(!adapters || adapters.length < 1) return [];
 		var r = {};
@@ -425,6 +416,24 @@ angular.module('iaf.beheerconsole')
 			var adapter = adapters[adapterName];
 
 			if((adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") && $scope.filter[adapter.status])
+				r[adapterName] = adapter;
+		}
+		return r;
+	};
+})
+
+.filter('searchFilter', function() {
+	return function(adapters, $scope) {
+		if(!adapters || adapters.length < 1) return [];
+
+		if(!$scope.searchText || $scope.searchText.length == 0) return adapters;
+		var searchText = $scope.searchText.toLowerCase();
+
+		var r = {};
+		for(adapterName in adapters) {
+			var adapter = adapters[adapterName];
+
+			if(JSON.stringify(adapter).replace(/"/g, '').toLowerCase().indexOf(searchText) > -1)
 				r[adapterName] = adapter;
 		}
 		return r;
@@ -446,20 +455,16 @@ angular.module('iaf.beheerconsole')
 
 	$scope.collapseAll = function() {
 		$(".adapters").each(function(i,e) {
-			var ibox = $(e);
-			var icon = ibox.find(".ibox-tools").find('i:first');
-			var content = ibox.find('div.ibox-content');
-			content.slideUp(200);
-			icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+			var a = $(e).find("div.ibox-title");
+			angular.element(a).scope().showContent = false;
 		});
 	};
 	$scope.expandAll = function() {
 		$(".adapters").each(function(i,e) {
-			var ibox = $(e);
-			var icon = ibox.find(".ibox-tools").find('i:first');
-			var content = ibox.find('div.ibox-content');
-			content.slideDown(200);
-			icon.addClass('fa-chevron-down').removeClass('fa-chevron-up');
+			setTimeout(function() {
+				var a = $(e).find("div.ibox-title");
+				angular.element(a).scope().showContent = true;
+			}, i * 10);
 		});
 	};
 	$scope.stopAll = function() {
@@ -525,7 +530,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('LoadingCtrl', ['$scope', function($scope) {
+.controller('InfoBarCtrl', ['$scope', function($scope) {
 	$scope.$on('loading', function(event, loading) { $scope.loading = loading; });
 }])
 
@@ -1122,7 +1127,7 @@ angular.module('iaf.beheerconsole')
 	});
 }])
 
-.controller('TestPipelineCtrl', ['$scope', 'Api', 'Alert', '$interval', function($scope, Api, Alert, $interval) {
+.controller('TestPipelineCtrl', ['$scope', 'Api', 'Alert', function($scope, Api, Alert) {
 	$scope.state = [];
 	$scope.file = null;
 	$scope.addNote = function(type, message, removeQueue) {
@@ -1177,7 +1182,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('TestServiceListenerCtrl', ['$scope', 'Api', 'Alert', '$interval', function($scope, Api, Alert, $interval) {
+.controller('TestServiceListenerCtrl', ['$scope', 'Api', 'Alert', function($scope, Api, Alert) {
 	$scope.state = [];
 	$scope.file = null;
 	$scope.addNote = function(type, message, removeQueue) {

@@ -15,7 +15,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.directive('toDate', ['dateFilter', 'appConstants', 'Hooks', function(dateFilter, appConstants, Hooks) {
+.directive('toDate', ['dateFilter', 'appConstants', function(dateFilter, appConstants) {
 	return {
 		restrict: 'A',
 		scope: {
@@ -40,9 +40,7 @@ angular.module('iaf.beheerconsole')
 			time: '@'
 		},
 		link: function(scope, element, attributes) {
-			var timeout = $interval(updateTime, 5000);
 			function updateTime() {
-				var text = "";
 				var seconds = Math.round((new Date().getTime() - attributes.time + appConstants.timeOffset) / 1000);
 
 				var minutes = seconds / 60;
@@ -63,12 +61,12 @@ angular.module('iaf.beheerconsole')
 				days = Math.floor(days % 7);
 				return element.text( days + 'd');
 			}
+
+			var timeout = $interval(updateTime, 300000);
 			element.on('$destroy', function() {
 				$interval.cancel(timeout);
 			});
-			setTimeout(function(){
-				updateTime();
-			}, 50);
+			scope.$watch('time', updateTime);
 		}
 	};
 }])
@@ -104,43 +102,17 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.directive('iboxToolsToggle', ['$timeout', function($timeout) {
-	return {
-		restrict: 'A',
-		scope: true,
-		templateUrl: 'views/common/ibox_tools_toggle.html',
-		controller: function ($scope, $element) {
-			// Function for collapse ibox
-			$scope.showhide = function () {
-				var ibox = $element.closest('div.ibox');
-				var icon = $element.find('i:first');
-				var content = ibox.find('div.ibox-content');
-				content.slideToggle(200);
-				// Toggle icon from up to down
-				icon.toggleClass('fa-chevron-up').toggleClass('fa-chevron-down');
-				ibox.toggleClass('').toggleClass('border-bottom');
-				$timeout(function () {
-					ibox.resize();
-					ibox.find('[id^=map-]').resize();
-				}, 50);
-			};
-		}
-	};
-}])
-
-.directive('iboxExpand', ['$timeout', function($timeout) {
+.directive('iboxExpand', function() {
 	return {
 		restrict: 'A',
 		controller: function ($scope, $element) {
-			var iboxTitle = $($element.context).find(".ibox-title");
+			var iboxTitle = $element.find(".ibox-title");
 			iboxTitle.bind('dblclick', function() {
-				var iboxToolsToggle = iboxTitle.find(".ibox-tools > a");
-				if(iboxToolsToggle)
-					iboxToolsToggle.trigger("click");
+				$scope.showContent = !$scope.showContent;
 			});
 		}
 	};
-}])
+})
 
 .directive('iboxToolsClose', ['$timeout', function($timeout) {
 	return {
@@ -195,21 +167,6 @@ angular.module('iaf.beheerconsole')
 		}
 	};
 })
-
-.directive('truncate', ['$timeout', function($timeout) {
-	return {
-		restrict: 'A',
-		scope: {
-			truncateOptions: '='
-		},
-		link: function(scope, element) {
-			$timeout(function(){
-				element.dotdotdot(scope.truncateOptions);
-
-			});
-		}
-	};
-}])
 
 .directive('icheck', ['$timeout', function($timeout) {
 	return {

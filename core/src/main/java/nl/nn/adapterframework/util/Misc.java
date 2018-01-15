@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
-import java.security.AccessControlException;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -603,6 +602,46 @@ public class Misc {
         }
 	}
 
+	public static String getConnectionPoolProperties(String confResString,
+			String providerType, String jndiName) {
+		try {
+			Class<?>[] args_types = new Class<?>[3];
+			args_types[0] = String.class;
+			args_types[1] = String.class;
+			args_types[2] = String.class;
+			Object[] args = new Object[3];
+			args[0] = confResString;
+			args[1] = providerType;
+			args[2] = jndiName;
+			return (String) Class
+					.forName("nl.nn.adapterframework.util.IbmMisc")
+					.getMethod("getConnectionPoolProperties", args_types)
+					.invoke(null, args);
+		} catch (Exception e) {
+			log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: "
+					+ e.getMessage());
+			return null;
+		}
+	}
+
+	public static String getJmsDestinations(String confResString) {
+		try {
+			Class<?>[] args_types = new Class<?>[1];
+			args_types[0] = String.class;
+			Object[] args = new Object[1];
+			args[0] = confResString;
+			return (String) Class
+					.forName("nl.nn.adapterframework.util.IbmMisc")
+					.getMethod("getJmsDestinations", args_types)
+					.invoke(null, args);
+		} catch (Exception e) {
+			log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: "
+					+ e.getMessage());
+			return null;
+		}
+	}
+
+	
 	public static long toFileSize(String value, long defaultValue) {
 		if(value == null)
 		  return defaultValue;

@@ -5,8 +5,6 @@
 <%@ page import="org.apache.log4j.Level"%>
 <%@ page import="nl.nn.adapterframework.util.AppConstants"%>
 <%@ page import="nl.nn.adapterframework.util.XmlUtils" %>
- 
-<html:xhtml/>
 
 <page title="Show configuration: <% out.write(XmlUtils.encodeChars((String)session.getAttribute("configurationName"))); %>">
 
@@ -71,49 +69,4 @@
 		</ul>
 		<pre><bean:write name="configXML" scope="request" filter="true"/></pre>
 	</div>
-	<br/>
-	<br/>
-
-	<html:form action="/logHandler.do">
-		<contentTable>
-			<caption>Dynamic parameters</caption>
-			<tbody>
-				<tr>
-					<td>
-						Root Log level</td>
-					<td>
-						<html:select property="logLevel" >	
-							<html:option value="DEBUG"/>
-							<html:option value="INFO"/>
-							<html:option value="WARN"/>
-							<html:option value="ERROR"/>
-						</html:select> <br/>
-					</td>
-				</tr>
-				<!-- todo: appconstants lezen en default zetten. -->
-				<tr>
-					<td>Log intermediary results</td>
-					<td>
-							<html:checkbox property="logIntermediaryResults"/>
-					</td>
-				</tr>
-				<tr>
-					<td>Length log records</td>
-					<td>
-							<html:text property="lengthLogRecords" size="8" maxlength="16"/>
-					</td>
-				</tr>
-
-				<tr>
-					<td>
-						<html:reset>reset</html:reset>
-					</td>
-					<td>
-						<html:submit>send</html:submit>
-					</td>
-				</tr>
-			</tbody>
-		</contentTable>
-	</html:form>
-
 </page>

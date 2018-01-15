@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,13 +26,18 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Appender;
+import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.DynaActionForm;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -84,8 +89,25 @@ public class ShowEnvironmentVariables extends ActionBase {
 		// Initialize action
 		initAction(request);
 		if(ibisManager==null)return (mapping.findForward("noIbisContext"));
-		// Retrieve environment variables for browsing
 
+	    DynaActionForm configurationPropertiesForm = getPersistentForm(mapping, form, request);
+	    Logger rl = LogUtil.getRootLogger();
+	    configurationPropertiesForm.set("logLevel", rl.getLevel().toString());
+		configurationPropertiesForm.set("logIntermediaryResults", new Boolean(false));
+		if (AppConstants.getInstance().getResolvedProperty("log.logIntermediaryResults")!=null) {
+			if (AppConstants.getInstance().getResolvedProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
+				configurationPropertiesForm.set("logIntermediaryResults", new Boolean(true));
+			}
+		}
+		Appender appender = rl.getAppender("appwrap");
+        if (appender!=null && appender instanceof IbisAppenderWrapper) {
+        	IbisAppenderWrapper iaw = (IbisAppenderWrapper) appender;
+    		configurationPropertiesForm.set("lengthLogRecords", iaw.getMaxMessageLength());
+        } else {
+    		configurationPropertiesForm.set("lengthLogRecords", -1);
+        }
+		
+		// Retrieve environment variables for browsing
 		XmlBuilder configurationsXml = new XmlBuilder("configurations");
 		List<Configuration> configurations = ibisManager.getConfigurations();
 		for (Configuration configuration : configurations) {
