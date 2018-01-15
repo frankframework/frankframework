@@ -30,7 +30,7 @@ public class ChromeTest {
 		 */
 
 		 driver.get("http://ibis4example.ibissource.org/iaf/gui/#/status");
-		 Assert.assertEquals("IAF | Adapter Status", driver.getTitle());
+		 Assert.assertEquals("IAF | Adapter Status!!@@^&!@", driver.getTitle());
 		 Assert.assertTrue(true);
 		 driver.quit();
 	}
