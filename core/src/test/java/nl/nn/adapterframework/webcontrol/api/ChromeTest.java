@@ -1,30 +1,37 @@
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.remote.RemoteWebDriver;
+package nl.nn.adapterframework.webcontrol.api;
+
+import java.util.concurrent.TimeUnit;
  
-import java.net.URL;
- 
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+
 public class ChromeTest {
- 
-  public static final String USERNAME = "Baswat";
-  public static final String ACCESS_KEY = "d835004c-97a1-4e52-b63f-daa5b1d3d3fd";
-  public static final String URL = "https://" + USERNAME + ":" + ACCESS_KEY + "@ondemand.saucelabs.com:443/wd/hub";
- 
-  public static void main(String[] args) throws Exception {
- 
-    DesiredCapabilities caps = DesiredCapabilities.chrome();
-    caps.setCapability("platform", "Windows XP");
-    caps.setCapability("version", "43.0");
- 
-    WebDriver driver = new RemoteWebDriver(new URL(URL), caps);
- 
-    /**
-     * Goes to Sauce Lab's guinea-pig page and prints title
-     */
- 
-    driver.get("http://ibis4example.ibissource.org/iaf/gui/#/status");
-    System.out.println("title of page is: " + driver.getTitle());
- 
-    driver.quit();
-  }
+	private static ChromeDriver driver;
+	WebElement element;
+	 
+	@BeforeClass
+	public static void openBrowser(){
+		System.setProperty("webdriver.chrome.driver", "C:/Users/Laurens/chromedriver_win32/chromedriver.exe");
+		driver = new ChromeDriver();
+	    driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+	}
+	 
+	@Test
+	public void ibis4example (){
+	    System.out.println("Starting test " + new Object(){}.getClass().getEnclosingMethod().getName());
+	    driver.get("http://ibis4example.ibissource.org/iaf/gui/#/status");
+	    Assert.assertEquals("IAF | Adapter Status", driver.getTitle());
+	    Assert.assertTrue(true);
+	    System.out.println("Ending test " + new Object(){}.getClass().getEnclosingMethod().getName());
+	}
+	
+	@AfterClass
+	public static void closeBrowser(){
+	    driver.quit();
+	}
 }
