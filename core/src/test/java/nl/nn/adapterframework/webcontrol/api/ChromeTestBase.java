@@ -13,7 +13,7 @@ public abstract class ChromeTestBase {
 	public static final String AUTOMATE_KEY = "d835004c-97a1-4e52-b63f-daa5b1d3d3fd";
 	private static String URL = "https://"+ USERNAME + ":" + AUTOMATE_KEY +  "@ondemand.saucelabs.com:443/wd/hub";
 	
-	public void setup() throws Exception {
+	public ChromeTestBase() throws Exception {
 		DesiredCapabilities caps = DesiredCapabilities.chrome();
 		caps.setCapability("platform", "Windows");
 		caps.setCapability("version", "43.0");
