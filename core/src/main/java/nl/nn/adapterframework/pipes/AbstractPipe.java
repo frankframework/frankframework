@@ -174,7 +174,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		inSizeStatDummyObject = new DummyNamedObject();
 		outSizeStatDummyObject = new DummyNamedObject();
 	}
-	
+
 	/**
 	 * <code>configure()</code> is called after the {@link nl.nn.adapterframework.core.PipeLine Pipeline} is registered
 	 * at the {@link nl.nn.adapterframework.core.Adapter Adapter}. Purpose of this method is to reduce
@@ -185,7 +185,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	@Override
 	public void configure() throws ConfigurationException {
 		ParameterList params = getParameterList();
-		
+
 		if (params!=null) {
 			try {
 				params.configure();
@@ -197,14 +197,14 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		if (!StringUtils.isEmpty(getElementToMove()) && !StringUtils.isEmpty(getElementToMoveChain())) {
 			throw new ConfigurationException(getLogPrefix(null)+"cannot have both an elementToMove and an elementToMoveChain specified");
 		}
-		
+
 		if (pipeForwards.isEmpty()) {
 			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 			String msg = getLogPrefix(null)+"has no forwards defined.";
 			configWarnings.add(log, msg);
 		} else {
-			for (Iterator it = pipeForwards.keySet().iterator(); it.hasNext();) {
-				String forwardName = (String)it.next();
+			for (Iterator<String> it = pipeForwards.keySet().iterator(); it.hasNext();) {
+				String forwardName = it.next();
 				PipeForward forward= pipeForwards.get(forwardName);
 				if (forward!=null) {
 					String path=forward.getPath();
@@ -258,42 +258,42 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return doPipe(input);
 	}
 
-    /**
-     * looks up a key in the pipeForward hashtable. <br/>
-     * A typical use would be on return from a Pipe: <br/>
-     * <code><pre>
-     * return new PipeRunResult(findForward("success"), result);
-     * </pre></code>
-     * In the pipeForward hashtable are available:
-     * <ul><li>All forwards defined in xml under the pipe element of this pipe</li>
-     * <li> All global forwards defined in xml under the PipeLine element</li>
-     * <li> All pipenames with their (identical) path</li>
-     * </ul>
-     * Therefore, you can directly jump to another pipe, although this is not recommended
-     * as the pipe should not know the existence of other pipes. Nevertheless, this feature
-     * may come in handy for switcher-pipes.<br/><br/>
-     * @param forward   Name of the forward
-     * @return PipeForward
-     */
+	/**
+	 * looks up a key in the pipeForward hashtable. <br/>
+	 * A typical use would be on return from a Pipe: <br/>
+	 * <code><pre>
+	 * return new PipeRunResult(findForward("success"), result);
+	 * </pre></code>
+	 * In the pipeForward hashtable are available:
+	 * <ul><li>All forwards defined in xml under the pipe element of this pipe</li>
+	 * <li> All global forwards defined in xml under the PipeLine element</li>
+	 * <li> All pipenames with their (identical) path</li>
+	 * </ul>
+	 * Therefore, you can directly jump to another pipe, although this is not recommended
+	 * as the pipe should not know the existence of other pipes. Nevertheless, this feature
+	 * may come in handy for switcher-pipes.<br/><br/>
+	 * @param forward   Name of the forward
+	 * @return PipeForward
+	 */
 	//TODO: Create a 2nd findForwards method without all pipes in the hashtable and make the first one deprecated.
-    public PipeForward findForward(String forward){
-    	if (StringUtils.isEmpty(forward)) {
-    		return null;
-    	}
-        return pipeForwards.get(forward);
-    }
+	public PipeForward findForward(String forward){
+		if (StringUtils.isEmpty(forward)) {
+			return null;
+		}
+		return pipeForwards.get(forward);
+	}
 
-    @Override
+	@Override
 	public Map<String, PipeForward> getForwards(){
-        Map<String, PipeForward> forwards = new Hashtable<String, PipeForward>(pipeForwards);
-        List<IPipe> pipes = getPipeLine().getPipes();
-        for (int i=0; i<pipes.size(); i++) {
-            String pipeName = pipes.get(i).getName();
-            if(forwards.containsKey(pipeName))
-                forwards.remove(pipeName);
-        }
-        return forwards;
-    }
+		Map<String, PipeForward> forwards = new Hashtable<String, PipeForward>(pipeForwards);
+		List<IPipe> pipes = getPipeLine().getPipes();
+		for (int i=0; i<pipes.size(); i++) {
+			String pipeName = pipes.get(i).getName();
+			if(forwards.containsKey(pipeName))
+				forwards.remove(pipeName);
+		}
+		return forwards;
+	}
 
 
 	/**
@@ -303,13 +303,13 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * from the <code>configure()</code>, <code>start()</code> and <code>stop()</code> methods.
 	 * @return String with the name of the pipe and the message id of the current message.
 	 */
-	protected String getLogPrefix(IPipeLineSession session){
-		  StringBuilder sb = new StringBuilder();
-		  sb.append("Pipe ["+getName()+"] ");
-		  if (session!=null) {
-			  sb.append("msgId ["+session.getMessageId()+"] ");
-		  }
-		  return sb.toString();
+	protected String getLogPrefix(IPipeLineSession session) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Pipe ["+getName()+"] ");
+		if (session!=null) {
+			sb.append("msgId ["+session.getMessageId()+"] ");
+		}
+		return sb.toString();
 	}
 
 	/**
@@ -320,7 +320,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * @see PipeForward
 	 */
 	@Override
-	public void registerForward(PipeForward forward){
+	public void registerForward(PipeForward forward) {
 		PipeForward current = pipeForwards.get(forward.getName());
 		if (current==null){
 			pipeForwards.put(forward.getName(), forward);
@@ -335,7 +335,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 				}
 			}
 		}
- 	}
+	}
 
 	protected boolean isRecoverAdapter() {
 		boolean recover = false;
@@ -350,14 +350,14 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		}
 		return recover;
 	}	
-	
+
 	/**
-	  * Perform necessary action to start the pipe. This method is executed
-	  * after the {@link #configure()} method, for eacht start and stop command of the
-	  * adapter.
-	  */
+	 * Perform necessary action to start the pipe. This method is executed
+	 * after the {@link #configure()} method, for each start and stop command of the
+	 * adapter.
+	 */
 	@Override
-	public void start() throws PipeStartException{
+	public void start() throws PipeStartException {
 //		if (getTransactionAttributeNum()>0 && getTransactionAttributeNum()!=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS) {
 //			try {
 //				// getUserTransaction, to make sure its available
@@ -367,22 +367,22 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 //			}
 //		}
 	}
-	 /**
-	  * Perform necessary actions to stop the <code>Pipe</code>.<br/>
-	  * For instance, closing JMS connections, dbms connections etc.
-	  */
-	 @Override
+
+	/**
+	 * Perform necessary actions to stop the <code>Pipe</code>.<br/>
+	 * For instance, closing JMS connections, dbms connections etc.
+	 */
+	@Override
 	public void stop() {}
 
-	 /**
-	  * The <code>toString()</code> method retrieves its value
-	  * by reflection, so overriding this method is mostly not
-	  * usefull.
-	  * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
-	  *
-	  **/
-
-    @Override
+	/**
+	 * The <code>toString()</code> method retrieves its value
+	 * by reflection, so overriding this method is mostly not
+	 * usefull.
+	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
+	 *
+	**/
+	@Override
 	public String toString() {
 		try {
 			return ToStringBuilder.reflectionToString(this);
@@ -390,7 +390,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 			log.warn("exception getting string representation of pipe ["+getName()+"]", t);
 		}
 		return null;
-    }
+	}
 
 	/**
 	 * Add a parameter to the list of parameters
@@ -437,17 +437,17 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return null;
 	}
 
-    @Override
-	public String getType(){
-        return this.getClass().getSimpleName();
-    }
+	@Override
+	public String getType() {
+		return this.getClass().getSimpleName();
+	}
 
 	/**
 	 * Indicates the maximum number of treads ;that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously in case
 	 *  A value of 0 indicates an unlimited number of threads.
 	 */
 	public void setMaxThreads(int newMaxThreads) {
-	  maxThreads = newMaxThreads;
+		maxThreads = newMaxThreads;
 	}
 	@Override
 	public int getMaxThreads() {
@@ -465,7 +465,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 	@Override
 	public String getName() {
-	  return this.name;
+		return this.name;
 	}
 
 	/**
