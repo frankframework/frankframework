@@ -15,6 +15,7 @@ Upcoming
 - Move 'Dynamic parameters' from showConfiguration to showEnvironmentVariables
 - Show provided JmsDestinations with usage in showSecurityItems
 - Introduction of the HashPipe
+- Replace configurations.<config-name>.throwConfigNotFoundException property with configurations.<config-name>.configNotFoundReportLevel (possible values: ERROR (default), WARN, INFO, DEBUG)
 
 
 
