@@ -82,8 +82,8 @@
         <div class="col-lg-12">
             <div class="ibox float-e-margins">
                 <div class="ibox-content summary">
-                    <div class="row">
-                        <div class="col-lg-3 pull-right m-t-xs m-b-xs" style="width:260px; z-index: 10;">
+                    <div class="row ibox-grid">
+                        <div class="ibox-right">
                             <div class="pull-left">
                                 <button title="Stop All Adapters" ng-click="stopAll()" class="btn btn-danger btn-xs" type="button"><i class="fa fa-stop"></i></button>
                                 <button title="Start All Adapters" ng-click="startAll()" class="btn btn-primary btn-xs" type="button"><i class="fa fa-play"></i></button>
@@ -100,12 +100,21 @@
                                 <button title="Show Adapter References" ng-click="showReferences()" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-picture-o"></i></button>
                             </div>
                         </div>
-                        <div class="col-lg-4 m-t-xs m-b-xs">
+                        <div class="ibox-left">
                             <span style="font-weight:700;margin-right:4px;">Filter:</span>
                             <div class="btn-group">
                                 <label class="btn btn-primary btn-outline btn-xs" ng-model="status.filter.started" ng-click="applyFilter(status.filter)" uib-btn-checkbox>Started</label>
                                 <label class="btn btn-danger btn-outline btn-xs" ng-model="status.filter.stopped" ng-click="applyFilter(status.filter)" uib-btn-checkbox>Stopped</label>
                                 <label class="btn btn-warning btn-outline btn-xs" ng-model="status.filter.warning" ng-click="applyFilter(status.filter)" uib-btn-checkbox>Warning</label>
+                            </div>
+                        </div>
+                        <div class="ibox-stretch">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Search ..." ng-model="searchText" ng-model-options="{debounce: 500}" name="search" />
+                                <i ng-show="searchText.length" ng-click="searchText = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true"/>
+                                <span class="input-group-addon">
+                                    <i class="fa fa-search" aria-hidden="true"></i>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -115,13 +124,17 @@
     </div>
 
     <div class="row">
-        <div ng-repeat="adapter in adapters | adapterFilter:this" class="col-lg-12 adapters">
-            <div ibox-expand class="ibox {{(adapter.status != 'stopped') ? 'collapsed' : ''}} float-e-margins" id="{{adapter.name}}">
+        <div ng-repeat="adapter in adapters | configurationFilter:this | searchFilter:this" class="col-lg-12 adapters">
+            <div ng-init="showContent = (adapter.status == 'stopped')" ibox-expand class="ibox float-e-margins" id="{{adapter.name}}">
                 <div class="ibox-title {{adapter.started ? ((adapter.status=='warning') ? 'warning' : 'primary') : 'danger'}}" title="Double-click to open">
                     <h5>{{adapter.name}} <small class="m-l-sm">&nbsp;{{adapter.description}}</small></h5>
-                    <div ibox-tools-toggle></div>
+                    <div>
+                        <div class="ibox-tools">
+                            <a ng-click="showContent = !showContent"> <i class="fa fa-chevron-{{(showContent) ? 'down' : 'left' }}"></i></a>
+                        </div>
+                    </div>
                 </div>
-                <div class="ibox-content p-md">
+                <div class="ibox-content p-md" ng-if="showContent">
                     <div class="row">
                         <div class="col-md-6">
                             <!-- adapter information -->
@@ -260,19 +273,19 @@
                                             &nbsp;<i class="fa fa-info"></i>
                                         </td>
                                         <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-                                        <td ng-if-end>{{message.message}}</td>
+                                        <td ng-if-end>{{message.message|truncate:700}}</td>
 
                                         <td style="width:40px;" class="text-center" ng-if-start="message.level == 'WARN'">
                                             &nbsp;<i class="fa fa-warning"></i>
                                         </td>
                                         <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-                                        <td ng-if-end style="color:#f7a54a;">{{message.message}}</td>
+                                        <td ng-if-end style="color:#f7a54a;">{{message.message|truncate:700}}</td>
 
                                         <td style="width:40px;" class="text-center" ng-if-start="message.level == 'ERROR'">
                                             &nbsp;<i class="fa fa-times"></i>
                                         </td>
                                         <td style="width:200px;" class="text-left"><span to-date time="{{message.date}}"></span></td>
-                                        <td ng-if-end style="color:#ea394c;">{{message.message}}</td>
+                                        <td ng-if-end style="color:#ea394c;">{{message.message|truncate:700}}</td>
                                     </tr>
                                 </tbody>
                             </table>

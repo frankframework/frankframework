@@ -96,9 +96,9 @@ public class BisJmsSender extends JmsSender {
 		}
 		try {
 			bisUtils = BisUtils.getInstance();
-			bisErrorTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(bisUtils.getSoapNamespaceDefs() + "\n" + bisUtils.getBisNamespaceDefs(), (isResultInPayload() ? bisUtils.getBisErrorXPath() : bisUtils.getOldBisErrorXPath()), "text"));
-			responseTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(StringUtils.isNotEmpty(getResponseNamespaceDefs()) ? bisUtils.getSoapNamespaceDefs() + "\n" + getResponseNamespaceDefs() : bisUtils.getSoapNamespaceDefs(), StringUtils.isNotEmpty(getResponseXPath()) ? bisUtils.getSoapBodyXPath() + "/" + getResponseXPath() : bisUtils.getSoapBodyXPath() + "/*", "xml"));
-			bisErrorListTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(bisUtils.getSoapNamespaceDefs() + "\n" + bisUtils.getBisNamespaceDefs(), (isResultInPayload() ? bisUtils.getBisErrorListXPath() : bisUtils.getOldBisErrorListXPath()), "xml"));
+			bisErrorTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisUtils.getSoapNamespaceDefs() + "\n" + bisUtils.getBisNamespaceDefs(), (isResultInPayload() ? bisUtils.getBisErrorXPath() : bisUtils.getOldBisErrorXPath()), "text"));
+			responseTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(StringUtils.isNotEmpty(getResponseNamespaceDefs()) ? bisUtils.getSoapNamespaceDefs() + "\n" + getResponseNamespaceDefs() : bisUtils.getSoapNamespaceDefs(), StringUtils.isNotEmpty(getResponseXPath()) ? bisUtils.getSoapBodyXPath() + "/" + getResponseXPath() : bisUtils.getSoapBodyXPath() + "/*", "xml"));
+			bisErrorListTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisUtils.getSoapNamespaceDefs() + "\n" + bisUtils.getBisNamespaceDefs(), (isResultInPayload() ? bisUtils.getBisErrorListXPath() : bisUtils.getOldBisErrorListXPath()), "xml"));
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix() + "cannot create transformer", e);
 		}

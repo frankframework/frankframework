@@ -1,0 +1,107 @@
+dn: dc=ibissource,dc=org
+objectClass: top
+objectClass: domain
+dc: ibissource
+
+dn: ou=development,dc=ibissource,dc=org
+changetype: add
+objectClass: organizationalUnit
+ou: development
+
+dn: ou=groups,ou=development,dc=ibissource,dc=org
+changetype: add
+objectClass: organizationalUnit
+objectClass: top
+ou: groups
+
+dn: cn=LEA Administrator,ou=groups,ou=development,dc=ibissource,dc=org
+changetype: add
+objectClass: posixGroup
+objectClass: top
+cn: LEA Administrator
+gidNumber: 505
+mail: leaadministrator@ibissource.org
+memberUid: sunsetadmin
+memberUid: daybreakadmin
+memberUid: daybreaknorealmadmin
+memberUid: mreynolds
+
+dn: cn=Application Developer,ou=groups,ou=development,dc=ibissource,dc=org
+changetype: add
+objectClass: posixGroup
+objectClass: top
+cn: Application Developer
+gidNumber: 506
+memberUid: testdeveloper
+memberUid: developer
+memberUid: slcdeveloper
+memberUid: developer-email@ibissource.org
+memberUid: devldapuser@ibissource.org
+memberUid: sandboxdeveloper
+memberUid: admintest-developer@ibissource.org
+
+dn: cn=SEA Administrator,ou=groups,ou=development,dc=ibissource,dc=org
+changetype: add
+objectClass: posixGroup
+objectClass: top
+cn: SEA Administrator
+gidNumber: 508
+memberUid: nyadmin
+memberUid: iladmin
+memberUid: mreynolds
+
+dn: cn=Realm Administrator,ou=groups,ou=development,dc=ibissource,dc=org
+changetype: add
+objectClass: posixGroup
+objectClass: top
+cn: Realm Administrator
+gidNumber: 509
+memberUid: fakerealmadmin
+memberUid: sunsetadmin
+memberUid: nyadmin
+memberUid: sunsetrealmadmin
+memberUid: daybreakadmin
+memberUid: mreynolds
+ GRFCuEDNjZSMfahLDbIlZuxYqdbnbFzOd
+
+dn: ou=people,ou=development,dc=ibissource,dc=org
+changetype: add
+objectClass: organizationalUnit
+objectClass: top
+ou: people
+
+dn: cn=SLC Operator,ou=people,ou=development,dc=ibissource,dc=org
+changetype: add
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+cn: SLC Operator
+gidNumber: 504
+homeDirectory: /home/users/slcoperator
+sn: Operator
+uid: slcoperator
+uidNumber: 1118
+displayName: 2ccd88620d9d3fb3ee8ee839c806fb73
+givenName: SLC
+loginShell: /bin/sh
+mail: slcoperator@ibissource.org
+userPassword:: e01ENX1qeGVYbGNhWlgxWDFDemx2VGpCdTZ3PT0=
+
+dn: cn=Daybreak Admin,ou=people,ou=development,dc=ibissource,dc=org
+changetype: add
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+cn: Daybreak Admin
+gidNumber: 505
+homeDirectory: /ingestion/lz/Midgar/13e785053e77f7d6b064cdcd43167f70ae8c32ca
+ 88c6a3b9b0c8cd52458faa77
+sn: Admin
+uid: daybreakadmin
+uidNumber: 1119
+description:: dGVuYW50PU1pZGdhcgplZE9yZz1JTC1EQVlCUkVBSw==
+displayName: 0bd6b800ec046191473a61b9b9584c48
+givenName: Daybreak
+loginShell: /bin/sh
+mail: daybreakadmin@ibissource.org
+userPassword:: e1NIQX1SSC93Qmc5REtXcnBxc25aYlN2TG4zYXZwKzg9

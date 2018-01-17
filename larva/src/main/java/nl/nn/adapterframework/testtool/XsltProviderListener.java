@@ -1,17 +1,14 @@
 package nl.nn.adapterframework.testtool;
 
-import java.io.IOException;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Map;
 
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
@@ -30,11 +27,10 @@ public class XsltProviderListener {
 	public void init() throws ListenerException {
 		try {
 			if (fromClasspath) {
-				transformerPool = new TransformerPool(ClassUtils.getResourceURL(this, filename), xslt2);
+				transformerPool = TransformerPool.getInstance(ClassUtils.getResourceURL(this, filename), xslt2);
 			} else {
 				File file = new File(filename);
-				StreamSource streamSource = new StreamSource(file);
-				transformerPool = new TransformerPool(streamSource, xslt2);
+				transformerPool = TransformerPool.getInstance(file.toURI().toURL(), xslt2);
 			}
 		} catch (Exception e) {
 			throw new ListenerException("Exception creating transformer pool for file '" + filename + "': " + e.getMessage(), e);

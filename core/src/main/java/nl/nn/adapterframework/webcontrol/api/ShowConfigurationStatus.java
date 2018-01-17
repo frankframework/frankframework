@@ -95,13 +95,13 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapters() throws ApiException {
+	public Response getAdapters(@QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) throws ApiException {
 		initBase(servletConfig);
-		
+
 		if (ibisManager == null) {
 			throw new ApiException("Config not found!");
 		}
-		
+
 		Map<String, Object> adapterList = new HashMap<String, Object>();
 		List<IAdapter> registeredAdapters = ibisManager.getRegisteredAdapters();
 		
@@ -109,18 +109,51 @@ public final class ShowConfigurationStatus extends Base {
 			Adapter adapter = (Adapter)adapterIt.next();
 			
 			Map<String, Object> adapterInfo = mapAdapter(adapter);
+			if(expanded != null && !expanded.isEmpty()) {
+				if(expanded.equalsIgnoreCase("all")) {
+					adapterInfo.put("receivers", mapAdapterReceivers(adapter, showPendingMsgCount));
+					adapterInfo.put("pipes", mapAdapterPipes(adapter));
+					adapterInfo.put("messages", mapAdapterMessages(adapter));
+				}
+				else if(expanded.equalsIgnoreCase("receivers")) {
+					adapterInfo.put("receivers", mapAdapterReceivers(adapter, showPendingMsgCount));
+				}
+				else if(expanded.equalsIgnoreCase("pipes")) {
+					adapterInfo.put("pipes", mapAdapterPipes(adapter));
+				}
+				else if(expanded.equalsIgnoreCase("messages")) {
+					adapterInfo.put("messages", mapAdapterMessages(adapter));
+				}
+				else {
+					throw new ApiException("Invalid value ["+expanded+"] for parameter expanded supplied!");
+				}
+			}
 			
 			adapterList.put((String) adapterInfo.get("name"), adapterInfo);
 		}
+
+		Response.ResponseBuilder response = null;
+
+		//Calculate the ETag on last modified date of user resource 
+		EntityTag etag = new EntityTag(adapterList.hashCode() + "");
+
+		//Verify if it matched with etag available in http request
+		response = request.evaluatePreconditions(etag);
+
+		//If ETag matches the response will be non-null; 
+		if (response != null) {
+			return response.tag(etag).build();
+		}
 		
-		return Response.status(Response.Status.CREATED).entity(adapterList).build();
+		response = Response.status(Response.Status.CREATED).entity(adapterList).tag(etag);
+		return response.build();
 	}
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapter(@PathParam("name") String name, @QueryParam("expanded") String expanded) throws ApiException {
+	public Response getAdapter(@PathParam("name") String name, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) throws ApiException {
 		initBase(servletConfig);
 
 		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(name);
@@ -133,12 +166,12 @@ public final class ShowConfigurationStatus extends Base {
 
 		if(expanded != null && !expanded.isEmpty()) {
 			if(expanded.equalsIgnoreCase("all")) {
-				adapterInfo.put("receivers", mapAdapterReceivers(adapter));
+				adapterInfo.put("receivers", mapAdapterReceivers(adapter, showPendingMsgCount));
 				adapterInfo.put("pipes", mapAdapterPipes(adapter));
 				adapterInfo.put("messages", mapAdapterMessages(adapter));
 			}
 			else if(expanded.equalsIgnoreCase("receivers")) {
-				adapterInfo.put("receivers", mapAdapterReceivers(adapter));
+				adapterInfo.put("receivers", mapAdapterReceivers(adapter, showPendingMsgCount));
 			}
 			else if(expanded.equalsIgnoreCase("pipes")) {
 				adapterInfo.put("pipes", mapAdapterPipes(adapter));
@@ -323,7 +356,7 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/receivers")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAdapterReceivers(@PathParam("name") String adapterName) throws ApiException {
+	public Response getAdapterReceivers(@PathParam("name") String adapterName, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) throws ApiException {
 		initBase(servletConfig);
 
 		if (ibisManager == null) {
@@ -336,7 +369,7 @@ public final class ShowConfigurationStatus extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		ArrayList<Object> receiverInfo = mapAdapterReceivers(adapter);
+		ArrayList<Object> receiverInfo = mapAdapterReceivers(adapter, showPendingMsgCount);
 
 		return Response.status(Response.Status.CREATED).entity(receiverInfo).build();
 	}
@@ -528,7 +561,7 @@ public final class ShowConfigurationStatus extends Base {
 		return pipes;
 	}
 
-	private ArrayList<Object> mapAdapterReceivers(Adapter adapter) {
+	private ArrayList<Object> mapAdapterReceivers(Adapter adapter, boolean showPendingMsgCount) {
 		ArrayList<Object> receivers = new ArrayList<Object>();
 		
 		Iterator<?> recIt=adapter.getReceiverIterator();
@@ -598,7 +631,7 @@ public final class ShowConfigurationStatus extends Base {
 						receiverInfo.put("restUriPattern", rl.getRestUriPattern());
 						receiverInfo.put("isView", (rl.isView()==null?false:rl.isView()));
 					}
-					if (listener instanceof JmsListenerBase) {
+					if ((listener instanceof JmsListenerBase) && showPendingMsgCount) {
 						JmsListenerBase jlb = (JmsListenerBase) listener;
 						JmsMessageBrowser jmsBrowser;
 						if (StringUtils.isEmpty(jlb
@@ -613,8 +646,7 @@ public final class ShowConfigurationStatus extends Base {
 						jmsBrowser.setDestinationType(jlb.getDestinationType());
 						String numMsgs;
 						try {
-							int messageCount = jmsBrowser
-									.getMessageCount();
+							int messageCount = jmsBrowser.getMessageCount();
 							numMsgs = String.valueOf(messageCount);
 						} catch (Throwable t) {
 							log.warn(t);
@@ -628,11 +660,13 @@ public final class ShowConfigurationStatus extends Base {
 						if (ejl.getMessageProtocol().equalsIgnoreCase("FF")) {
 							isEsbJmsFFListener = true;
 						}
-						String esbNumMsgs = EsbUtils.getQueueMessageCount(ejl);
-						if (esbNumMsgs == null) {
-							esbNumMsgs = "?";
+						if(showPendingMsgCount) {
+							String esbNumMsgs = EsbUtils.getQueueMessageCount(ejl);
+							if (esbNumMsgs == null) {
+								esbNumMsgs = "?";
+							}
+							receiverInfo.put("esbPendingMessagesCount", esbNumMsgs);
 						}
-						receiverInfo.put("esbPendingMessagesCount", esbNumMsgs);
 					}
 					receiverInfo.put("isEsbJmsFFListener", isEsbJmsFFListener);
 				}
@@ -666,7 +700,7 @@ public final class ShowConfigurationStatus extends Base {
 		}
 		return receivers;
 	}
-	
+
 	private ArrayList<Object> mapAdapterMessages(Adapter adapter) {
 		int totalMessages = adapter.getMessageKeeper().size();
 		//adapter.getMessageKeeper().get

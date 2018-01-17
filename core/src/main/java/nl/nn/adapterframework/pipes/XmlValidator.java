@@ -153,21 +153,21 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				String extractNamespaceDefs = "soapenv=" + getSoapNamespace();
 				String extractBodyXPath     = "/soapenv:Envelope/soapenv:Body/*";
 				try {
-					transformerPoolExtractSoapBody = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, "xml"));
+					transformerPoolExtractSoapBody = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, "xml"));
 				} catch (TransformerConfigurationException te) {
 					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getSoapBody", te);
 				}
 	
 				String getRootNamespace_xslt = XmlUtils.makeGetRootNamespaceXslt();
 				try {
-					transformerPoolGetRootNamespace = new TransformerPool(getRootNamespace_xslt, true);
+					transformerPoolGetRootNamespace = TransformerPool.getInstance(getRootNamespace_xslt, true);
 				} catch (TransformerConfigurationException te) {
 					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getRootNamespace", te);
 				}
 		
 				String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
 				try {
-					transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
+					transformerPoolRemoveNamespaces = TransformerPool.getInstance(removeNamespaces_xslt);
 				} catch (TransformerConfigurationException te) {
 					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
 				}

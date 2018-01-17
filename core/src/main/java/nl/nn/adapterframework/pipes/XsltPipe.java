@@ -114,7 +114,7 @@ public class XsltPipe extends FixedForwardPipe {
 			String skipEmptyTags_xslt = XmlUtils.makeSkipEmptyTagsXslt(isOmitXmlDeclaration(),isIndentXml());
 			log.debug("test [" + skipEmptyTags_xslt + "]");
 			try {
-				transformerPoolSkipEmptyTags = new TransformerPool(skipEmptyTags_xslt);
+				transformerPoolSkipEmptyTags = TransformerPool.getInstance(skipEmptyTags_xslt);
 			} catch (TransformerConfigurationException te) {
 				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from skipEmptyTags", te);
 			}
@@ -123,7 +123,7 @@ public class XsltPipe extends FixedForwardPipe {
 			String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(isOmitXmlDeclaration(),isIndentXml());
 			log.debug("test [" + removeNamespaces_xslt + "]");
 			try {
-				transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
+				transformerPoolRemoveNamespaces = TransformerPool.getInstance(removeNamespaces_xslt);
 			} catch (TransformerConfigurationException te) {
 				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
 			}

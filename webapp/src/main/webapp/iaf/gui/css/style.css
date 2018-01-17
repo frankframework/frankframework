@@ -3756,15 +3756,6 @@ code {
   margin-top: 0;
   padding: 0;
 }
-.ibox.collapsed .ibox-content {
-  display: none;
-}
-.ibox.collapsed .fa.fa-chevron-up:before {
-  content: "\f078";
-}
-.ibox.collapsed .fa.fa-chevron-down:before {
-  content: "\f077";
-}
 .ibox:after,
 .ibox:before {
   display: table;
@@ -3789,6 +3780,50 @@ code {
   user-select:none;
   -o-user-select:none;
 }
+
+.ibox-left {
+  float: left;
+  margin-right: 30px;
+  width: 280px;
+}
+.ibox-right {
+  float: right;
+  margin-left: 40px;
+  width: 260px;
+}
+.ibox-stretch {
+  display: block;
+  float: none;
+  padding: 0 80px;
+}
+.ibox-grid {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  display: inline;
+}
+.ibox-grid .ibox-left, .ibox-grid .ibox-right {
+  display: inline-block;
+  text-align: center;
+  padding: 6px 16px;
+}
+@media (max-width: 1170px) {
+  .ibox-stretch {
+    float: left;
+    width: 100%;
+    padding: 0 10px;
+  }
+}
+.input-group-closeSearch {
+  position: absolute;
+  top: 10px;
+  right: 49px;
+  z-index: 100;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+
 .adapters .ibox-title {
   cursor: pointer;
   min-height: 40px;

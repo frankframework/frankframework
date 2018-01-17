@@ -347,12 +347,26 @@ public class IbisContext {
 								classLoader = new DatabaseClassLoader(this, currentConfigurationName);
 							}
 							catch (ConfigurationException ce) {
-								boolean throwConfigNotFoundException = APP_CONSTANTS.getBoolean(
-										"configurations." + currentConfigurationName + ".throwConfigNotFoundException", true);
-								if(!throwConfigNotFoundException)
-									continue;
-								else
+								String configNotFoundReportLevel = APP_CONSTANTS.getString(
+										"configurations." + currentConfigurationName + ".configNotFoundReportLevel", "ERROR").toUpperCase();
+
+								String msg = "Could not get config '" + currentConfigurationName + "' from database, skipping";
+								if(configNotFoundReportLevel.equals("DEBUG")) {
+									LOG.debug(msg);
+								}
+								else if(configNotFoundReportLevel.equals("INFO")) {
+									log(msg);
+								}
+								else if(configNotFoundReportLevel.equals("WARN")) {
+									ConfigurationWarnings.getInstance().add(LOG, msg);
+								}
+								else {
+									if(!configNotFoundReportLevel.equals("ERROR"))
+										ConfigurationWarnings.getInstance().add(LOG, "Invalid configNotFoundReportLevel ["+configNotFoundReportLevel+"], using default [ERROR]");
 									throw ce;
+								}
+
+								continue;
 							}
 						} else if ("DummyClassLoader".equals(classLoaderType)) {
 							classLoader = new DummyClassLoader(currentConfigurationName, configurationFile);

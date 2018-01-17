@@ -240,7 +240,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			if (StringUtils.isNotEmpty(getInputXPath())) {
 				String bodyMessageNd = StringUtils.isNotEmpty(getInputNamespaceDefs()) ? soapNamespaceDefs + "\n" + getInputNamespaceDefs() : soapNamespaceDefs;
 				String bodyMessageXe = StringUtils.isNotEmpty(getInputXPath()) ? soapBodyXPath + "/" + getInputXPath() : soapBodyXPath + "/*";
-				bodyMessageTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(bodyMessageNd, bodyMessageXe, "xml"));
+				bodyMessageTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bodyMessageNd, bodyMessageXe, "xml"));
 			}
 			String bisMessageHeaderNd = soapNamespaceDefs + "\n" + bisNamespaceDefs;
 			String bisMessageHeaderXe;
@@ -249,9 +249,9 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			} else {
 				bisMessageHeaderXe = soapHeaderXPath + "/" + bisMessageHeaderXPath;
 			}
-			bisMessageHeaderTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(bisMessageHeaderNd, bisMessageHeaderXe, "xml"));
-			bisMessageHeaderConversationIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderConversationIdXPath, "text"));
-			bisMessageHeaderExternalRefToMessageIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderExternalRefToMessageIdXPath, "text"));
+			bisMessageHeaderTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisMessageHeaderNd, bisMessageHeaderXe, "xml"));
+			bisMessageHeaderConversationIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderConversationIdXPath, "text"));
+			bisMessageHeaderExternalRefToMessageIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderExternalRefToMessageIdXPath, "text"));
 
 			String bisErrorNd = soapNamespaceDefs + "\n" + bisNamespaceDefs;
 			if (isBisResultInPayload()) {
@@ -260,14 +260,14 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				bisErrorXe = soapBodyXPath + "/" + bisErrorXPath;
 			}
 			bisErrorXe = bisErrorXe + " or string-length(" + soapBodyXPath + "/" + soapErrorXPath + ")&gt;0";
-			bisErrorTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(bisErrorNd, bisErrorXe, "text"));
+			bisErrorTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisErrorNd, bisErrorXe, "text"));
 			if (isRemoveOutputNamespaces()) {
 				String removeOutputNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true, false);
-				removeOutputNamespacesTp = new TransformerPool(removeOutputNamespaces_xslt);
+				removeOutputNamespacesTp = TransformerPool.getInstance(removeOutputNamespaces_xslt);
 			}
 			if (isAddOutputNamespace()) {
 				String addOutputNamespace_xslt = XmlUtils.makeAddRootNamespaceXslt(getOutputNamespace(), true, false);
-				addOutputNamespaceTp = new TransformerPool(addOutputNamespace_xslt);
+				addOutputNamespaceTp = TransformerPool.getInstance(addOutputNamespace_xslt);
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer", e);

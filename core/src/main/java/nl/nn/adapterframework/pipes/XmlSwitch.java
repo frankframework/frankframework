@@ -120,7 +120,7 @@ public class XmlSwitch extends AbstractPipe {
 					if (stylesheetURL==null) {
 						throw new ConfigurationException(getLogPrefix(null) + "cannot find stylesheet ["+getServiceSelectionStylesheetFilename()+"]");
 					}
-					transformerPool = new TransformerPool(stylesheetURL, isXslt2());
+					transformerPool = TransformerPool.getInstance(stylesheetURL, isXslt2());
 				} catch (IOException e) {
 					throw new ConfigurationException(getLogPrefix(null) + "cannot retrieve ["+ serviceSelectionStylesheetFilename + "]", e);
 				} catch (TransformerConfigurationException te) {
@@ -130,7 +130,7 @@ public class XmlSwitch extends AbstractPipe {
 				if (StringUtils.isEmpty(getSessionKey())) {
 					try {
 						// create a transformer that looks to the root node 
-						transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource(DEFAULT_SERVICESELECTION_XPATH, "text"));
+						transformerPool = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(DEFAULT_SERVICESELECTION_XPATH, "text"));
 					} catch (TransformerConfigurationException te) {
 						throw new ConfigurationException(getLogPrefix(null) + "got error creating XPathEvaluator from string [" + DEFAULT_SERVICESELECTION_XPATH + "]", te);
 					}

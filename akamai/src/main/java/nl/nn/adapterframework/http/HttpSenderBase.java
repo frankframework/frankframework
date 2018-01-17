@@ -450,7 +450,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 				if (stylesheetURL == null) {
 					throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet ["+getStyleSheetName()+"]");
 				}
-				transformerPool = new TransformerPool(stylesheetURL);
+				transformerPool = TransformerPool.getInstance(stylesheetURL);
 			} catch (IOException e) {
 				throw new ConfigurationException(getLogPrefix() + "cannot retrieve ["+ getStyleSheetName() + "]", e);
 			} catch (TransformerConfigurationException te) {
