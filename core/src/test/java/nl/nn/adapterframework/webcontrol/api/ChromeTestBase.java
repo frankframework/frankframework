@@ -4,9 +4,12 @@ import java.net.URL;
 
 import org.junit.After;
 import org.junit.Before;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 public abstract class ChromeTestBase {
 	public static WebDriver driver;
@@ -25,5 +28,12 @@ public abstract class ChromeTestBase {
 	public void quit() throws Exception {
 		driver.quit();
 	}
+	
+	public void waitUntilVisible(By by) throws Exception {
+		waitUntilVisible(by, 10);
+	}
+		
+	public void waitUntilVisible(By by, int timeout) throws Exception {
+		new WebDriverWait(driver, timeout).until( ExpectedConditions.visibilityOfElementLocated(by) );
 	}
 }
