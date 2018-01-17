@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2016-2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
  * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, 
  *         for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)<br/>
  *         N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding Receiver</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setThrowJavaListenerNotFoundException(boolean) throwJavaListenerNotFoundException}</td><td>when set <code>false</code>, the xml-string "&lt;error&gt;could not find JavaListener [...]&lt;/error&gt;" is returned instead of throwing a SenderException</td><td>true</td></tr>
  * </table>
  * </p>
  * Any parameters are copied to the PipeLineSession of the service called.
@@ -111,6 +112,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	private int dependencyTimeOut=60;
 	private String returnedSessionKeys=null;
 	private IsolatedServiceCaller isolatedServiceCaller;
+	private boolean throwJavaListenerNotFoundException = true;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -232,7 +234,13 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			try {
 				JavaListener listener= JavaListener.getListener(javaListener);
 				if (listener==null) {
-					throw new SenderException("could not find JavaListener ["+javaListener+"]");
+					String msg = "could not find JavaListener ["+javaListener+"]";
+					if (isThrowJavaListenerNotFoundException()) {
+						throw new SenderException(msg);
+					} else {
+						log.info(getLogPrefix()+msg);
+						return "<error>"+msg+"</error>";
+					}
 				}
 				if (isIsolated()) {
 					if (isSynchronous()) {
@@ -360,4 +368,11 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		this.isolatedServiceCaller = isolatedServiceCaller;
 	}
 
+	public void setThrowJavaListenerNotFoundException(boolean b) {
+		throwJavaListenerNotFoundException = b;
+	}
+
+	public boolean isThrowJavaListenerNotFoundException() {
+		return throwJavaListenerNotFoundException;
+	}
 }
