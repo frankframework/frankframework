@@ -16,6 +16,7 @@ Upcoming
 - Show provided JmsDestinations with usage in showSecurityItems
 - Introduction of the HashPipe
 - Replace configurations.<config-name>.throwConfigNotFoundException property with configurations.<config-name>.configNotFoundReportLevel (possible values: ERROR (default), WARN, INFO, DEBUG)
+- Make ibisstore checks capable for MS SQL (next to Oracle)
 
 
 

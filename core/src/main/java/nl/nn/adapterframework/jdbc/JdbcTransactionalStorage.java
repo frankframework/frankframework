@@ -359,7 +359,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	private void checkSequence(Connection connection) {
-		if (JdbcUtil.isSequencePresent(connection, getDatabaseType(), getSchemaOwner4Check(), getSequenceName())) {
+		if (JdbcUtil.isSequencePresent(connection, getDatabaseType(), getSchemaOwner4Check(), getSequenceName(), getTableName())) {
 			//no more checks
 		} else {
 			String msg="Sequence ["+getSequenceName()+"] not present";
