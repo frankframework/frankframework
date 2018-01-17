@@ -2,6 +2,7 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.net.URL;
 
+import org.junit.After;
 import org.junit.Before;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -20,5 +21,9 @@ public abstract class ChromeTestBase {
 		caps.setCapability("version", "43.0");
 
 		driver = new RemoteWebDriver(new URL(URL), caps);
+	@After
+	public void quit() throws Exception {
+		driver.quit();
+	}
 	}
 }
