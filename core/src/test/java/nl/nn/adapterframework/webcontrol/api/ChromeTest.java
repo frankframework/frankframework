@@ -2,19 +2,24 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import org.junit.Test;
 import org.junit.Assert;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.remote.RemoteWebDriver;
-
-import java.net.URL;
+import org.openqa.selenium.By;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class ChromeTest extends ChromeTestBase {
 
 	@Test
-	public void SampleSauceTest() throws Exception {
-		driver.get("http://ibis4example.ibissource.org/iaf/gui/#/status");
+	public void PageTitle() throws Exception {
 		Assert.assertEquals("IAF | Adapter Status", driver.getTitle());
-		Assert.assertTrue(true);
-		driver.quit();
+	}
+	
+	@Test
+	public void NavigateToConfiguration() throws Exception {
+		String selector = "#side-menu li:nth-child(3) a";
+		
+		waitUntilVisible(By.cssSelector(selector));
+		driver.findElement(By.cssSelector(selector)).click();
+
+		Assert.assertEquals("IAF | Configurations", driver.getTitle());
 	}
 }
