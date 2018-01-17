@@ -1,0 +1,23 @@
+{
+  "arrays": {
+    "intElem": 1,
+    "stringElem": "abcd",
+    "array1": {
+      "arrayElement": [
+        {
+          "fielda": "1a",
+          "fieldb": "1b",
+          "fieldc": "1c"
+        }
+      ]
+    },
+    "struct": {
+      "repeatedElem": [
+        {
+          "a": 1
+        }
+      ],
+      "otherElem": "x"
+    }
+  }
+}

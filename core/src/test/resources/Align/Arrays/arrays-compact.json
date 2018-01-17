@@ -1,0 +1,28 @@
+{
+  "intElem": 1,
+  "stringElem": "abcd",
+  "array1": [
+    {
+      "fielda": "1a",
+      "fieldb": "1b",
+      "fieldc": "1c"
+    },
+    null,
+    {
+      "fielda": "2a",
+      "fieldb": "2b",
+      "fieldc": "2c"
+    }
+  ],
+  "struct": {
+    "repeatedElem": [
+      {
+        "a": 1
+      },
+      {
+        "a": 2
+      }
+    ],
+    "otherElem": "x"
+  }
+}

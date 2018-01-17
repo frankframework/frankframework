@@ -51,15 +51,15 @@ public class ParameterValueList {
 	}
 	
 	public ParameterValue getParameterValue(int i) {
-		return (ParameterValue)(list.get(i));
+		return list.get(i);
 	}
 
 	public ParameterValue getParameterValue(String name) {
-		return (ParameterValue)(map.get(name));
+		return map.get(name);
 	}
 
 	public ParameterValue removeParameterValue(String name) {
-		ParameterValue pv = (ParameterValue)map.remove(name);
+		ParameterValue pv = map.remove(name);
 		if (pv!=null) {
 			list.remove(pv);
 		}
@@ -84,7 +84,7 @@ public class ParameterValueList {
 	 */
 	public void forAllParameters(IParameterHandler handler) throws ParameterException {
 		for (Iterator<ParameterValue> param = list.iterator(); param.hasNext();) {
-			ParameterValue paramValue = (ParameterValue)param.next();
+			ParameterValue paramValue = param.next();
 			handler.handleParam(paramValue.getDefinition().getName(), paramValue.getValue());
 		}
 	}

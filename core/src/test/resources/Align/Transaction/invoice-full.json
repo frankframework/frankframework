@@ -1,0 +1,7 @@
+{
+  "transaction": {
+    "invoice": "1",
+    "vendor": "A",
+    "customer": "B"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "Strings": [
+    "Quote [\"]",
+    "Ampersand [&]",
+    "LessThan [<]",
+    "Embedded newline [\n]",
+    "Euro [€]",
+    "Smiley 1 [😊]",
+    "Smiley 2 [😀]",
+    "Huh ? [¿]"
+  ]
+}

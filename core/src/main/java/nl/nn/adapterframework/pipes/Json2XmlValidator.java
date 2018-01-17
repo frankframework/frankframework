@@ -15,8 +15,12 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Map;
 
+import javax.json.Json;
+import javax.json.JsonStructure;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -26,8 +30,6 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.xs.PSVIProvider;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.align.Json2Xml;
@@ -38,6 +40,8 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.ValidationContext;
 import nl.nn.adapterframework.validation.XmlValidatorException;
@@ -99,13 +103,18 @@ public class Json2XmlValidator extends XmlValidator {
 
 	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputformat ";
 	
+	public final String FORMAT_XML="xml";
+	public final String FORMAT_JSON="json";
+	public final String FORMAT_AUTO="auto";
+	
 	private boolean compactJsonArrays=true;
 	private boolean strictJsonArraySyntax=false;
 	private boolean jsonWithRootElements=false;
 	private String targetNamespace;
-	private String outputFormat="xml";
+	private String outputFormat=FORMAT_XML;
 	private boolean autoFormat=true;
 	private String outputFormatSessionKey="outputFormat";
+	//private String requestFormat=FORMAT_AUTO;
 
 
 	{
@@ -159,8 +168,8 @@ public class Json2XmlValidator extends XmlValidator {
 		char firstChar=messageToValidate.charAt(i);
 		if (firstChar=='<') {
 			// message is XML
-			storeInputFormat("xml",session, responseMode);
-			if (!getOutputFormat(session,responseMode).equalsIgnoreCase("json")) {
+			storeInputFormat(FORMAT_XML,session, responseMode);
+			if (!getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
 				return super.doPipe(input,session, responseMode);
 			}
 			try {
@@ -172,7 +181,7 @@ public class Json2XmlValidator extends XmlValidator {
 		if (firstChar!='{' && firstChar!='[') {
 			throw new PipeRunException(this,"message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['");
 		}
-		storeInputFormat("json",session, responseMode);
+		storeInputFormat(FORMAT_JSON,session, responseMode);
 		try {
 			return alignJson(messageToValidate, session, responseMode);
 		} catch (XmlValidatorException e) {
@@ -216,16 +225,22 @@ public class Json2XmlValidator extends XmlValidator {
 				aligner.setTargetNamespace(getTargetNamespace());
 			}
 			aligner.setErrorHandler(context.getErrorHandler());
-			JSONTokener jsonTokener = new JSONTokener(messageToValidate);
-			JSONObject json = new JSONObject(jsonTokener);
+			ParameterList parameterList = getParameterList();
+			if (parameterList!=null) {
+				ParameterResolutionContext prc = new ParameterResolutionContext(messageToValidate, session, isNamespaceAware(), false);
+				Map<String,Object> parametervalues = null;
+				parametervalues = prc.getValueMap(parameterList);
+				aligner.setOverrideValues(parametervalues);
+			}
+			JsonStructure jsonStructure = Json.createReader(new StringReader(messageToValidate)).read();
 			
-			if (getOutputFormat(session,responseMode).equalsIgnoreCase("json")) {
+			if (getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
 				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 				aligner.setContentHandler(xml2json);
-				aligner.startParse(json);
+				aligner.startParse(jsonStructure);
 				out=xml2json.toString();
 			} else {
-				Source source = aligner.asSource(json);
+				Source source = aligner.asSource(jsonStructure);
 				out = source2String(source);
 			}
 		} catch (Exception e) {

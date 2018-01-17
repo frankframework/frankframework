@@ -1,0 +1,19 @@
+<arrays xmlns="urn:arrays" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:arrays file:///C:/Gerrit/Workspaces/neon/XmlAligner/src/test/resources/arrays.xsd">
+	<intElem>1</intElem>
+	<stringElem>abcd</stringElem>
+	<array1>
+		<!-- array1 is a pure array, elem 'arrayElement' can be compacted away in json -->
+		<arrayElement>
+			<fielda>1a</fielda>
+			<fieldb>1b</fieldb>
+			<fieldc>1c</fieldc>
+		</arrayElement>
+	</array1>
+	<struct>
+		<!-- struct is not a pure array, cannot skip 'repeatedElem' -->
+		<repeatedElem>
+			<a>1</a>
+		</repeatedElem>
+		<otherElem>x</otherElem>
+	</struct>
+</arrays>

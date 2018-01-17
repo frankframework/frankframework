@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.align;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -22,14 +25,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.XMLConstants;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
+import org.apache.xerces.impl.xs.XMLSchemaLoader;
+import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
+import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-public class DomTreeAligner extends Tree2Xml<Node> {
+public class DomTreeAligner extends Tree2Xml<Document,Node> {
+
+	private final boolean DEBUG=false; 
 
 	public DomTreeAligner() throws SAXException {
 		super();
@@ -39,10 +56,16 @@ public class DomTreeAligner extends Tree2Xml<Node> {
 	}
 
 	@Override
-	public void startParse(Node node) throws SAXException {
-		setRootElement(node.getLocalName());
-		super.startParse(node);
+	public void startParse(Document dom) throws SAXException {
+		setRootElement(getNodeName(getRootNode(dom)));
+		super.startParse(dom);
 	}
+
+	@Override
+	public Node getRootNode(Document dom) {
+		return dom.getDocumentElement();
+	}
+
 	
 	@Override
 	public String getNodeNamespaceURI(Node node) { 
@@ -50,20 +73,49 @@ public class DomTreeAligner extends Tree2Xml<Node> {
 	}
 
 	public String getNodeName(Node node) { 
-		return node.getNodeName();
+		return node.getLocalName();
 	}
 
 	@Override
-	public String getText(Node node) {
+	public String getNodeText(XSElementDeclaration elementDeclaration, Node node) {
 		Node childNode=node.getFirstChild();
 		return childNode==null?null:childNode.getNodeValue();
 	}
 	
 	@Override
-	public Iterable<Node> getChildrenByName(Node node, String name) throws SAXException {
+	public boolean hasChild(XSElementDeclaration elementDeclaration, Node node, String childName) throws SAXException {
+		// TODO this does not take overrideValues and defaultValues into account...
+		if (DEBUG) log.debug("hasChild() node ["+node+"] childName ["+childName+"]");
+		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
+			if (cur.getNodeType()==Node.ELEMENT_NODE && childName.equals(getNodeName(cur))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public Set<String> getAllNodeChildNames(XSElementDeclaration elementDeclaration, Node node) throws SAXException {
+		if (DEBUG) log.debug("getAllChildNames() node ["+node+"]");
+		Set<String> children = new HashSet<String>();
+		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
+			//if (DEBUG) log.debug("getAllChildNames() found node ["+getNodeName(cur)+"] type ["+cur.getNodeType()+"] ["+ToStringBuilder.reflectionToString(cur)+"]");
+			if (cur.getNodeType()==Node.ELEMENT_NODE) {
+				if (DEBUG) log.debug("getAllChildNames() node ["+node+"] added node ["+getNodeName(cur)+"] type ["+cur.getNodeType()+"]");
+				children.add(getNodeName(cur));
+			}
+		}
+		return children;
+	}
+
+	@Override
+	public Iterable<Node> getNodeChildrenByName(Node node, XSElementDeclaration childElementDeclaration) throws SAXException {
+		String name=childElementDeclaration.getName();
+		if (DEBUG) log.debug("getChildrenByName() node ["+node+"] name ["+name+"]");
 		List<Node> children = new LinkedList<Node>();
 		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
-			if (cur.getNodeName().equals(name)) {
+			if (cur.getNodeType()==Node.ELEMENT_NODE && name.equals(getNodeName(cur))) {
+				if (DEBUG) log.debug("getChildrenByName() node ["+node+"] added node ["+getNodeName(cur)+"]");
 				children.add(cur);
 			}
 		}
@@ -71,29 +123,61 @@ public class DomTreeAligner extends Tree2Xml<Node> {
 	}
 	
 	@Override
-	public Set<String> getAllChildNames(Node node) throws SAXException {
-		Set<String> children = new HashSet<String>();
-		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
-			if (!"#text".equals(cur.getNodeName())) {
-				children.add(cur.getNodeName());
-			}
+	public boolean isNil(XSElementDeclaration elementDeclaration, Node node) {
+		NamedNodeMap attrs= node.getAttributes();
+		if (attrs==null) {
+			return false;
 		}
-		return children;
+		Node nilAttribute=attrs.getNamedItemNS(XML_SCHEMA_INSTANCE_NAMESPACE, XML_SCHEMA_NIL_ATTRIBUTE);
+		return nilAttribute!=null && "true".equals(nilAttribute.getTextContent());
 	}
 	@Override
-	public boolean isNil(Node node) {
-		return "true".equals(node.getAttributes().getNamedItemNS(XML_SCHEMA_INSTANCE_NAMESPACE, XML_SCHEMA_NIL_ATTRIBUTE));
-	}
-	@Override
-	public Map<String, String> getAttributes(Node node) throws SAXException {
+	public Map<String, String> getAttributes(XSElementDeclaration elementDeclaration, Node node) throws SAXException {
 		Map<String, String> result=new HashMap<String, String>();
 		NamedNodeMap attributes=node.getAttributes();
-		for (int i=0;i<attributes.getLength();i++) {
-			Node item=attributes.item(i);
-			result.put(item.getLocalName(), item.getNodeValue());
+		if (attributes!=null) {
+			for (int i=0;i<attributes.getLength();i++) {
+				Node item=attributes.item(i);
+				result.put(getNodeName(item), item.getNodeValue());
+			}
 		}
-		return null;
+		return result;
 	}
 
+	public static String translate(Document xmlIn, URL schemaURL) throws SAXException, IOException {
 
+		// create the ValidatorHandler
+    	SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = sf.newSchema(schemaURL); 
+		ValidatorHandler validatorHandler = schema.newValidatorHandler();
+ 	
+		// create the XSModel
+		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
+		XSModel xsModel = xsLoader.loadURI(schemaURL.toExternalForm());
+		List<XSModel> schemaInformation= new LinkedList<XSModel>();
+		schemaInformation.add(xsModel);
+		
+		// create the validator, setup the chain
+		DomTreeAligner dta = new DomTreeAligner(validatorHandler,schemaInformation);
+    	Source source=dta.asSource(xmlIn);
+        StringWriter writer = new StringWriter();
+        StreamResult result = new StreamResult(writer);
+        String xml=null;
+		try {
+	        TransformerFactory tf = TransformerFactory.newInstance();
+	        Transformer transformer = tf.newTransformer();
+	        transformer.transform(source, result);
+	        writer.flush();
+	        xml = writer.toString();
+		} catch (TransformerConfigurationException e) {
+			SAXException se = new SAXException(e);
+			se.initCause(e);
+			throw se;
+		} catch (TransformerException e) {
+			SAXException se = new SAXException(e);
+			se.initCause(e);
+			throw se;
+		}
+    	return xml;
+ 	}
 }

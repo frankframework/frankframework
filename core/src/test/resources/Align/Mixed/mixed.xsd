@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ns1="urn:mixed" targetNamespace="urn:mixed" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="root">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="mixed"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="substring" type="xs:string"/>
+	<xs:element name="subcomplex">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="mixed"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

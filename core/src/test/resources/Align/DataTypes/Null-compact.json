@@ -1,0 +1,8 @@
+{
+  "Nulls": {
+    "NullString": null,
+    "NonNullString": "text",
+    "NullElem": null,
+    "NonNullElem": "text"
+  }
+}

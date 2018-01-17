@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataTypes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:datatypes DataTypes.xsd" xmlns="urn:datatypes">
+	<Numbers>
+		<Decimal>0</Decimal>
+		<Double>3.14159265358979</Double>
+		<Float>3.0</Float>
+		<Byte>127</Byte>
+		<Int>0</Int>
+		<Integer>0</Integer>
+		<Long>0</Long>
+		<Short>4096</Short>
+		<UnsignedByte>255</UnsignedByte>
+		<UnsignedInt>0</UnsignedInt>
+		<UnsignedLong>4294967295</UnsignedLong>
+		<UnsignedShort>65535</UnsignedShort>
+		<NegativeInteger>-2</NegativeInteger>
+		<NonNegativeInteger>0</NonNegativeInteger>
+		<PositiveInteger>2</PositiveInteger>
+		<NonPositiveInteger>0</NonPositiveInteger>
+	</Numbers>
+</DataTypes>

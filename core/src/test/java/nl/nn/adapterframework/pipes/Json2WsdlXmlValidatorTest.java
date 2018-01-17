@@ -7,7 +7,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.align.Xml2Json;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -96,6 +95,8 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
         validate("JSON to XML",  val, getTestXml(testJsonCompact), "xml", compactJsonArrays, targetContent1, targetContent2);
         validate("JSON to JSON", val, getTestXml(testJsonCompact), "json", compactJsonArrays, targetContent1, targetContent2);
 
+        validate("JSON to XML, extra spaces",  val, "  "+getTestXml(testJsonCompact), "xml", compactJsonArrays, targetContent1, targetContent2);
+
         // check compatibiliy of compactJsonArrays=true with straight json
         validate("straight JSON to XML",  val, getTestXml(testJsonStraight), "xml", compactJsonArrays, targetContent1, targetContent2);
         validate("straight JSON to JSON", val, getTestXml(testJsonStraight), "json", compactJsonArrays, targetContent1, targetContent2);
@@ -118,6 +119,34 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
     	wsdlValidate(wsdl,soapBody,soapFile,xmlFile,jsonFileStraight, jsonFileCompact, targetContent1, targetContent2);
     }
 
-	
+    public void validatePlainText(String input, String expectedError) throws Exception {
+    	String wsdl="/GetPolicyDetailsTravel/wsdl/GetPolicyDetailsTravel.wsdl";
+    	String soapBody="GetPolicyDetailsTravel_Response";
+    	WsdlXmlValidator val = new WsdlXmlValidator();
+        val.setWsdl(wsdl);
+        val.setThrowException(true);
+        val.registerForward(new PipeForward("success", null));
+        val.setSoapBody(soapBody);
+        val.configure();
+        
+        PipeRunResult result;
+		try {
+			result = val.doPipe(input, session);
+	        String resultStr=(String)result.getResult();
+	        fail("expected error ["+expectedError+"]");
+		} catch (PipeRunException e) {
+			String msg=e.getMessage();
+			if (msg==null || msg.indexOf(expectedError)<0) {
+				fail("expected ["+expectedError+"] in error message, but was ["+msg+"]");
+			}
+		}
+    }
+
+    @Test
+    public void validatePlainText() throws Exception {
+    	validatePlainText("plain text", "message is not XML or JSON");
+    	validatePlainText("[ \"jsonarrayelemen\" ]", "Cannot align JSON");
+    	validatePlainText("< dit is helemaal geen xml>", "failed");
+    }
 
 }

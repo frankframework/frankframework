@@ -35,7 +35,8 @@ public class Xml2Json extends XmlTo<JsonDocumentContainer> {
 
 	public static JsonDocumentContainer translate(String xml, URL schemaURL, boolean compactJsonArrays, boolean skipRootElement) throws SAXException, IOException {
 		JsonDocumentContainer documentContainer = new JsonDocumentContainer(null, compactJsonArrays,skipRootElement);
-		return (JsonDocumentContainer)translate(xml, schemaURL, documentContainer);
+		translate(xml, schemaURL, documentContainer);
+		return documentContainer;
 	}
 
 	public String toString(boolean indent) {

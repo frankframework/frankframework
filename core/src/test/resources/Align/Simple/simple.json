@@ -1,0 +1,8 @@
+{
+  "Name": "text",
+  "Address": {
+    "Street": "text",
+    "Town": "text"
+  },
+  "Age": "text"
+}

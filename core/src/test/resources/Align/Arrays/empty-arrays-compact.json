@@ -1,0 +1,8 @@
+{
+  "intElem": 1,
+  "stringElem": "abcd",
+  "array1": [],
+  "struct": {
+    "otherElem": "x"
+  }
+}
