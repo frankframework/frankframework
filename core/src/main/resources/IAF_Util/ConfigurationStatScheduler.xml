@@ -3,7 +3,7 @@
 		<job
 			name="dump Statistics"
 			cronExpression="${statistics.cron}"
-			description="Run every hour to dump statistics"
+			description="Dump statistics to log file"
 			function="dumpStatistics"
 		/>
 	</scheduler>
