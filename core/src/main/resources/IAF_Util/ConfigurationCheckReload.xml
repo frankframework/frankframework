@@ -21,6 +21,7 @@
 	</adapter>
 	<scheduler>
 		<job name="CheckReload" adapterName="CheckReload" receiverName="CheckReload"
-			interval="${checkReload.interval}" function="sendMessage" active="${checkReload.active}" />
+			interval="${checkReload.interval}" description="Reload configs from database (if necessary)"
+			function="sendMessage" active="${checkReload.active}" />
 	</scheduler>
 </module>
