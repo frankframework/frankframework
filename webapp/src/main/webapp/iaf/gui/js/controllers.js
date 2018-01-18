@@ -154,6 +154,7 @@ angular.module('iaf.beheerconsole')
 				var oldAdapterData = $rootScope.adapters[adapter.name];
 				if(JSON.stringify(oldAdapterData) != JSON.stringify(adapter)) {
 					adapter.status = "started";
+					adapter.flow = Misc.getServerPath() + 'rest/showFlowDiagram/' + adapter.name;
 
 					for(x in adapter.receivers) {
 						if(adapter.receivers[x].started == false)
