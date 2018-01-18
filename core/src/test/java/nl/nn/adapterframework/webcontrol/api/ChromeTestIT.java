@@ -6,7 +6,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-public class ChromeTest extends ChromeTestBase {
+public class ChromeTestIT extends ChromeTestBase {
 
 	@Test
 	public void PageTitle() throws Exception {
