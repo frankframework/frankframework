@@ -41,9 +41,39 @@
       <artifactId>geronimo-jms_1.1_spec</artifactId>
       <scope>runtime</scope><!-- Overwrite <scope>provided</scope> in parent pom. -->
     </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.8.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.seleniumhq.selenium</groupId>
+        <artifactId>selenium-java</artifactId>
+        <version>2.35.0</version>
+    </dependency>
   </dependencies>
-  <build>
+    <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.20.1</version>
+        <executions>
+            <execution>
+              <id>integration-test</id>
+              <goals>
+                <goal>integration-test</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>verify</id>
+              <goals>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+         </executions>
+      </plugin>
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
@@ -66,8 +96,44 @@
               <name>otap.stage</name>
               <value>LOC</value>
             </systemProperty>
+            <systemProperty>
+              <name>jdbc.realm</name>
+              <value>jdbc</value>
+            </systemProperty>
+            <systemProperty>
+              <name>jdbc.convertFieldnamesToUppercase</name>
+              <value>true</value>
+            </systemProperty>
           </systemProperties>
+        <stopPort>8005</stopPort>
+        <stopKey>STOP</stopKey>
+        <httpConnector>
+            <port>8080</port>
+        </httpConnector>
+        <webApp>
+            <contextPath>/</contextPath>
+        </webApp>
         </configuration>
+        <executions>
+	        <execution>
+	            <id>start-jetty</id>
+	            <phase>pre-integration-test</phase>
+	            <goals>
+	                <goal>start</goal>
+	            </goals>
+	            <configuration>
+	                <scanIntervalSeconds>0</scanIntervalSeconds>
+	                <daemon>true</daemon>
+	            </configuration>
+	        </execution>
+	        <execution>
+	            <id>stop-jetty</id>
+	            <phase>post-integration-test</phase>
+	            <goals>
+	                <goal>stop</goal>
+	            </goals>
+	        </execution>
+	    </executions>
       </plugin>
     </plugins>
   </build>
