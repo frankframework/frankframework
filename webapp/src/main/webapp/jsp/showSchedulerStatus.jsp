@@ -141,7 +141,7 @@
 					<tr>
 						<td></td>
 						<td colspan="3">
-							<contentTable>
+							<contentTable width="100%">
 								<caption>Duration statistics (in ms)</caption>
 								<tbody>
 									<tr>
