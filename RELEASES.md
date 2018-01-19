@@ -19,6 +19,7 @@ Upcoming
 - Make ibisstore checks capable for MS SQL (next to Oracle)
 - Add throwJavaListenerNotFoundException attribute to IbisLocalSender
 - Support for converting json+map to xml, to support REST UPDATEs
+- Add duration statistics to showSchedulerStatus
 
 
 
