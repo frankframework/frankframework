@@ -55,7 +55,7 @@ public class TestJson2Xml extends AlignTestBase {
 	
 	public void testStrings(String xmlIn, String jsonIn, URL schemaUrl, String targetNamespace, String rootElement, boolean compactInput, boolean potentialCompactionProblems, boolean checkRoundTrip, String expectedFailureReason) throws Exception {
 		System.out.println("schemaUrl ["+schemaUrl+"]");
-		if (xmlIn!=null) assertTrue("validated input",Utils.validate(schemaUrl, xmlIn));
+		if (xmlIn!=null) assertTrue("Expected XML is not valid to XSD",Utils.validate(schemaUrl, xmlIn));
 
 		JsonValue json = Utils.string2Json(jsonIn);
 		System.out.println("jsonIn ["+json+"]");
@@ -121,6 +121,11 @@ public class TestJson2Xml extends AlignTestBase {
     public void testNullError1() throws Exception {
     	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Null-illegal1", "nillable");
     	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Null-illegal2", "nillable");
+    }
+
+    @Test
+    public void testSmileys() throws Exception {
+    	testFiles("Smileys/smiley.xsd","","", "/Smileys/smiley");
     }
 
     @Test

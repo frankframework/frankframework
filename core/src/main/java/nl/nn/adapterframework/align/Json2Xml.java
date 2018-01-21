@@ -56,7 +56,7 @@ import org.xml.sax.SAXException;
  * 
  * @author Gerrit van Brakel
  */
-public class Json2Xml extends Tree2Xml<JsonStructure,JsonValue> {
+public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 
 	public static final String MSG_FULL_INPUT_IN_STRICT_COMPACTING_MODE="straight json found while expecting compact arrays and strict syntax checking";
 	public static final String MSG_EXPECTED_SINGLE_ELEMENT="did not expect array, but single element";
@@ -91,7 +91,7 @@ public class Json2Xml extends Tree2Xml<JsonStructure,JsonValue> {
 	}
 
 	@Override
-	public void startParse(JsonStructure node) throws SAXException {
+	public void startParse(JsonValue node) throws SAXException {
 		if (node instanceof JsonObject) {
 			JsonObject root = (JsonObject)node;
 			if (StringUtils.isEmpty(getRootElement())) {
@@ -116,12 +116,11 @@ public class Json2Xml extends Tree2Xml<JsonStructure,JsonValue> {
 				}
 				setRootElement((String)root.keySet().toArray()[0]);
 			} 
+			// determine somewhat heuristically whether the json contains a 'root' node:
+			// if the outermost JsonObject contains only one key, that has the name of the root element, 
+			// then we'll assume that that is the root element...
 			if (root.size()==1 && getRootElement().equals(root.keySet().toArray()[0])) {
-				try {
-					node=((JsonStructure)root.get(getRootElement()));
-				} catch (JsonException e) {
-					throw new SAXException(e);
-				}
+				node=root.get(getRootElement());
 			}
 		}
 		if (node instanceof JsonArray && !insertElementContainerElements && strictSyntax) {
@@ -131,7 +130,7 @@ public class Json2Xml extends Tree2Xml<JsonStructure,JsonValue> {
 	}
 	
 	@Override
-	public JsonValue getRootNode(JsonStructure container) {
+	public JsonValue getRootNode(JsonValue container) {
 		return container;
 	}
 
