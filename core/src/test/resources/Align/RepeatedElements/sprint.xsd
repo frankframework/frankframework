@@ -1,0 +1,11 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="sprint">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element type="xs:integer" minOccurs="0" maxOccurs="unbounded" name="BIID"/>
+        <xs:element type="xs:integer" name="sprint_id"/>
+        <xs:element type="xs:string" minOccurs="0" name="cancel"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

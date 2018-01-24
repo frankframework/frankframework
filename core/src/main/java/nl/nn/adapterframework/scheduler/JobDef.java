@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden
+   Copyright 2013-2016, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.DirectoryCleaner;
 import nl.nn.adapterframework.util.JtaUtil;
@@ -394,6 +395,8 @@ public class JobDef {
 
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private int messageKeeperSize = 10; //default length
+	
+	private StatisticsKeeper statsKeeper;
 
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
@@ -458,6 +461,7 @@ public class JobDef {
 
 	public void configure(Configuration config) throws ConfigurationException {
 		MessageKeeper messageKeeper = getMessageKeeper();
+		statsKeeper = new StatisticsKeeper(getName());
 
 		if (StringUtils.isEmpty(getFunction())) {
 			throw new ConfigurationException("jobdef ["+getName()+"] function must be specified");
@@ -633,6 +637,7 @@ public class JobDef {
 	}
 
 	protected void runJob(IbisManager ibisManager) {
+		long startTime = System.currentTimeMillis();
 		String function = getFunction();
 
 		if (function.equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS)) {
@@ -658,6 +663,9 @@ public class JobDef {
 		} else{
 			ibisManager.handleAdapter(getFunction(), getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
 		}
+		
+		long endTime = System.currentTimeMillis();
+		statsKeeper.addValue(endTime - startTime);
 	}
 
 	private void cleanupDatabase(IbisManager ibisManager) {
@@ -1113,6 +1121,10 @@ public class JobDef {
 		this.messageKeeperSize = size;
 	}
 
+	public synchronized StatisticsKeeper getStatisticsKeeper() {
+		return statsKeeper;
+	}
+	
 	public void addDirectoryCleaner(DirectoryCleaner directoryCleaner) {
 		directoryCleaners.add(directoryCleaner);
 	}

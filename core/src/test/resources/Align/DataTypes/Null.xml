@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataTypes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:datatypes DataTypes.xsd" xmlns="urn:datatypes">
+	<Nulls>
+		<NullString xsi:nil="true"/>
+		<NonNullString>text</NonNullString>
+		<NullElem xsi:nil="true"/>
+		<NonNullElem>text</NonNullElem>
+	</Nulls>
+</DataTypes>

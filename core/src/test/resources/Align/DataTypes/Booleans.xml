@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataTypes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:datatypes DataTypes.xsd" xmlns="urn:datatypes">
+	<Booleans>
+		<Boolean>true</Boolean>
+		<Boolean>false</Boolean>
+	</Booleans>
+</DataTypes>

@@ -1,0 +1,75 @@
+package nl.nn.adapterframework.util;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.concurrent.TimeoutException;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import nl.nn.adapterframework.align.AlignTestBase;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+
+public class FileHandlerTest {
+
+	public static String BASEDIR="/FileHandler/";
+
+	private FileHandler handler;
+	private IPipeLineSession session=new PipeLineSessionBase();
+	
+	@Before
+	public void setup() throws ConfigurationException {
+		handler = new FileHandler();
+	}
+	
+	public URL getURL(String file) {
+		return FileHandlerTest.class.getResource(BASEDIR+file);
+	}
+ 
+	protected String getTestFile(String file, String charset) throws IOException, TimeoutException {
+		URL url=AlignTestBase.class.getResource(BASEDIR+file);
+		if (url==null) {
+			return null;
+		}
+        BufferedReader buf = new BufferedReader(new InputStreamReader(url.openStream(),charset));
+        StringBuilder string = new StringBuilder();
+        String line = buf.readLine();
+        while (line != null) {
+            string.append(line);
+            line = buf.readLine();
+            if (line!=null) {
+            	string.append("\n");
+            }
+        }
+        return string.toString();
+    }
+	
+	public void testRead(String filename, String charset) throws Exception {
+		URL fileURL=getURL(filename);
+		String filepath=fileURL.getPath();
+		
+		handler.setActions("read");
+		handler.setCharset(charset);
+		handler.setFileName(filepath);
+		handler.configure();
+		
+		String expectedContents=getTestFile(filename, charset);
+		Object actualContents=handler.handle(null,session,null);
+		
+		assertEquals("file contents", expectedContents, actualContents);
+	}
+	
+	@Test
+	public void testRead() throws Exception {
+		testRead("smiley.xml","utf-8");
+		testRead("smiley.json","utf-8");
+		testRead("smiley.txt","utf-8");
+	}
+	
+}

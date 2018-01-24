@@ -1,0 +1,9 @@
+<arrays xmlns="urn:arrays" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:arrays file:///C:/Gerrit/Workspaces/neon/XmlAligner/src/test/resources/arrays.xsd">
+	<intElem>1</intElem>
+	<stringElem>abcd</stringElem>
+	<array1/>
+	<struct>
+		<!-- struct is not a pure array, cannot skip 'repeatedElem' -->
+		<otherElem>x</otherElem>
+	</struct>
+</arrays>

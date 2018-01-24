@@ -153,7 +153,7 @@ public class ParameterResolutionContext {
 		Map<String, ParameterValue> paramValuesMap = getValues(parameters).getParameterValueMap();
 
 		// convert map with parameterValue to map with value		
-		Map<String,Object> result = new LinkedHashMap(paramValuesMap.size());
+		Map<String,Object> result = new LinkedHashMap<String,Object>(paramValuesMap.size());
 		for (Iterator<ParameterValue> it= paramValuesMap.values().iterator(); it.hasNext(); ) {
 			ParameterValue pv = it.next();
 			result.put(pv.getDefinition().getName(), pv.getValue());

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2014, 2017, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -150,20 +150,26 @@ public class JdbcUtil {
 		return true;
 	}
 
-	public static boolean isSequencePresent(Connection conn, int databaseType, String schemaOwner, String sequenceName) {
+	public static boolean isSequencePresent(Connection conn, int databaseType, String schemaOwner, String sequenceName, String tableName) {
 		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
 			String query="select count(*) from all_sequences where sequence_owner='"+schemaOwner.toUpperCase()+"' and sequence_name='"+sequenceName.toUpperCase()+"'";
 			try {
-				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
-					return true;
-				} 
-				return false;
+				return JdbcUtil.executeIntQuery(conn, query)>=1;
 			} catch (Exception e) {
 				log.warn("could not determine presence of sequence ["+sequenceName+"]",e);
 				return false;
 			}
-		} 
-		log.warn("could not determine presence of sequence ["+sequenceName+"] (not an Oracle database)");
+		}  else if (databaseType==DbmsSupportFactory.DBMS_MSSQLSERVER) {
+			String query="select objectproperty(object_id('"+tableName+"'), 'TableHasIdentity')";
+			try {
+				return JdbcUtil.executeIntQuery(conn, query)>=1;
+			} catch (Exception e) {
+				log.warn("could not determine presence of identity on table ["+tableName+"]",e);
+				return false;
+			}
+			
+		}
+		log.warn("could not determine presence of sequence ["+sequenceName+"] (not an Oracle or Microsoft SQL Server database)");
 		return true;
 	}
 
@@ -206,42 +212,63 @@ public class JdbcUtil {
 			query+=" and column_name=?";
 			query+=" and column_position=1";
 			try {
-				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
-					return true;
-				} 
-				return false;
+				return JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1;
 			} catch (Exception e) {
 				log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] using query ["+query+"]",e);
 				return false;
 			}
-		} 
-		log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] (not an Oracle database)");
+		}  else if (databaseType==DbmsSupportFactory.DBMS_MSSQLSERVER) {
+			String query="select count(*) from sys.index_columns where object_id = object_id('"+tableName+"') and col_name(object_id, column_id)=?";
+			try {
+				return JdbcUtil.executeIntQuery(conn, query, columnName)>=1;
+			} catch (Exception e) {
+				log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] using query ["+query+"]",e);
+				return false;
+			}
+			
+		}
+		log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] (not an Oracle or Microsoft SQL Server database)");
 		return true;
 	}
 	public static boolean hasIndexOnColumns(Connection conn, int databaseType, String schemaOwner, String tableName, List columns) {
 		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_indexes ai";
+			StringBuilder query= new StringBuilder("select count(*) from all_indexes ai");
 			for (int i=1;i<=columns.size();i++) {
-				query+=", all_ind_columns aic"+i;
+				query.append(", all_ind_columns aic"+i);
 			}
-			query+=" where ai.TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and ai.TABLE_NAME='"+tableName.toUpperCase()+"'";
+			query.append(" where ai.TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and ai.TABLE_NAME='"+tableName.toUpperCase()+"'");
 			for (int i=1;i<=columns.size();i++) {
-				query+=" and ai.OWNER=aic"+i+".INDEX_OWNER";
-				query+=" and ai.INDEX_NAME=aic"+i+".INDEX_NAME";
-				query+=" and aic"+i+".column_name='"+((String)columns.get(i-1)).toUpperCase()+"'";
-				query+=" and aic"+i+".column_position="+i;
+				query.append(" and ai.OWNER=aic"+i+".INDEX_OWNER");
+				query.append(" and ai.INDEX_NAME=aic"+i+".INDEX_NAME");
+				query.append(" and aic"+i+".column_name='"+((String)columns.get(i-1)).toUpperCase()+"'");
+				query.append(" and aic"+i+".column_position="+i);
 			}
 			try {
-				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
-					return true;
-				} 
+				return JdbcUtil.executeIntQuery(conn, query.toString())>=1;
+			} catch (Exception e) {
+				log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
 				return false;
+			}
+		}  else if (databaseType==DbmsSupportFactory.DBMS_MSSQLSERVER) {
+			StringBuilder query= new StringBuilder("select count(*) from sys.indexes si");
+			for (int i=1;i<=columns.size();i++) {
+				query.append(", sys.index_columns sic"+i);
+			}
+			query.append(" where si.object_id = object_id('"+tableName+"')");
+			for (int i=1;i<=columns.size();i++) {
+				query.append(" and si.object_id=sic"+i+".object_id");
+				query.append(" and si.index_id=sic"+i+".index_id");
+				query.append(" and col_name(sic"+i+".object_id, sic"+i+".column_id)='"+(String)columns.get(i-1)+"'");
+				query.append(" and sic"+i+".index_column_id="+i);
+			}
+			try {
+				return JdbcUtil.executeIntQuery(conn, query.toString())>=1;
 			} catch (Exception e) {
 				log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
 				return false;
 			}
 		} 
-		log.warn("could not determine presence of index columns on table ["+tableName+"] (not an Oracle database)");
+		log.warn("could not determine presence of index columns on table ["+tableName+"] (not an Oracle or Microsoft SQL Server database)");
 		return true;
 	}
 

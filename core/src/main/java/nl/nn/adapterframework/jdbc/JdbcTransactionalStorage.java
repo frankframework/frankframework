@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2015 Nationale-Nederlanden
+   Copyright 2013-2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -359,7 +359,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	private void checkSequence(Connection connection) {
-		if (JdbcUtil.isSequencePresent(connection, getDatabaseType(), getSchemaOwner4Check(), getSequenceName())) {
+		if (JdbcUtil.isSequencePresent(connection, getDatabaseType(), getSchemaOwner4Check(), getSequenceName(), getTableName())) {
 			//no more checks
 		} else {
 			String msg="Sequence ["+getSequenceName()+"] not present";

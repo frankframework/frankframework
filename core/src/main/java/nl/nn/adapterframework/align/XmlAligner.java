@@ -36,6 +36,8 @@ import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
@@ -46,6 +48,9 @@ import org.xml.sax.helpers.XMLFilterImpl;
  */
 public class XmlAligner extends XMLFilterImpl {
 	protected Logger log = Logger.getLogger(this.getClass());
+	
+	public final String FEATURE_NAMESPACES="http://xml.org/sax/features/namespaces";
+	public final String FEATURE_NAMESPACE_PREFIXES="http://xml.org/sax/features/namespace-prefixes";
 
 	private final int CHILD_OCCURRENCE_EMPTY=0;
 	private final int CHILD_OCCURRENCE_ONE_SINGLE_OCCURRING_ELEMENT=1;
@@ -134,6 +139,7 @@ public class XmlAligner extends XMLFilterImpl {
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (DEBUG) log.debug("endElement() uri ["+uri+"] localName ["+localName+"] qName ["+qName+"]");
 		indentLevel--;
+		typeDefinition=null;
 		super.endElement(uri, localName, qName);
 		multipleOccurringChildElements=multipleOccurringElements.pop();
 		parentOfSingleMultipleOccurringChildElement=parentOfSingleMultipleOccurringChildElements.pop();
@@ -348,6 +354,24 @@ public class XmlAligner extends XMLFilterImpl {
 			return (XSSimpleType)typeDefinition;
 		}
 		return null;
+	}
+
+	@Override
+	public void setFeature(String feature, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
+		log.warn("setting feature ["+feature+"] to ["+value+"]");
+		if (feature.equals(FEATURE_NAMESPACES)) {
+			if (!value) {
+				throw new SAXNotSupportedException("Cannot set feature ["+feature+"] to ["+value+"]");
+			}
+			return;
+		} 
+		if (feature.equals(FEATURE_NAMESPACE_PREFIXES)) {
+			if (value) {
+				throw new SAXNotSupportedException("Cannot set feature ["+feature+"] to ["+value+"]");
+			}
+			return;
+		} 
+		super.setFeature(feature, value);
 	}
 
 }

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2017 rel. 3 sp1 (http://www.altova.com) by NN (Nationale Nederlanden) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ns1="urn:datatypes" targetNamespace="urn:datatypes" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="DataTypes">
+		<xs:annotation>
+			<xs:documentation>Comment describing your root element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Attributed" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="subelem" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+						<xs:attribute name="decimal" type="xs:decimal"/>
+						<xs:attribute name="int" type="xs:int"/>
+						<xs:attribute name="date" type="xs:date"/>
+						<xs:attribute name="float" type="xs:float"/>
+						<xs:attribute name="double" type="xs:double"/>
+						<xs:attribute name="dateTime" type="xs:dateTime"/>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Strings" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="String" type="xs:string" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Numbers" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Decimal" type="xs:decimal"/>
+							<xs:element name="Double" type="xs:double"/>
+							<xs:element name="Float" type="xs:float"/>
+							<xs:element name="Byte" type="xs:byte"/>
+							<xs:element name="Int" type="xs:int"/>
+							<xs:element name="Integer" type="xs:integer"/>
+							<xs:element name="Long" type="xs:long"/>
+							<xs:element name="Short" type="xs:short"/>
+							<xs:element name="UnsignedByte" type="xs:unsignedByte"/>
+							<xs:element name="UnsignedInt" type="xs:unsignedInt"/>
+							<xs:element name="UnsignedLong" type="xs:unsignedLong"/>
+							<xs:element name="UnsignedShort" type="xs:unsignedShort"/>
+							<xs:element name="NegativeInteger" type="xs:negativeInteger"/>
+							<xs:element name="NonNegativeInteger" type="xs:nonNegativeInteger"/>
+							<xs:element name="PositiveInteger" type="xs:positiveInteger"/>
+							<xs:element name="NonPositiveInteger" type="xs:nonPositiveInteger"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Booleans" minOccurs="0" maxOccurs="1">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Boolean" type="xs:boolean" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Nulls" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="NullString" type="xs:string" nillable="true"/>
+							<xs:element name="NonNullString" type="xs:string" nillable="false"/>
+							<xs:element name="NullElem" type="xs:string" nillable="true"/>
+							<xs:element name="NonNullElem" nillable="false"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="DateTime" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Date" type="xs:date"/>
+							<xs:element name="DateTime" type="xs:dateTime"/>
+							<!--  
+							<xs:element name="DateTimeStamp" type="xs:dateTimeStamp"/>  
+							<xs:element name="DateTimeDuration" type="xs:dayTimeDuration"/>
+							-->
+							<xs:element name="Duration" type="xs:duration"/>
+							<xs:element name="Time"  type="xs:time"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

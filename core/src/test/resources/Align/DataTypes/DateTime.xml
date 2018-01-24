@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataTypes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:datatypes">
+	<DateTime>
+		<Date>1957-08-13</Date>
+		<DateTime>2001-12-17T09:30:47Z</DateTime>
+		<Duration>P1Y2M2DT10H30M</Duration>
+		<Time>09:30:47</Time>
+	</DateTime>
+</DataTypes>

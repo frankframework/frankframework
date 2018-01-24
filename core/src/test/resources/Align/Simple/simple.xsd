@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="urn:simple">
+	<xs:element name="simple">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Name"/>
+				<xs:element name="Address">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Street"/>
+							<xs:element name="Town"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Age"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

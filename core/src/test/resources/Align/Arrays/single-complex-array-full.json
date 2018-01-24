@@ -1,0 +1,16 @@
+{
+  "array1": {
+    "arrayElement": [
+      {
+        "fielda": "1a",
+        "fieldb": "1b",
+        "fieldc": "1c"
+      },
+      {
+        "fielda": "2a",
+        "fieldb": "2b",
+        "fieldc": "2c"
+      }
+    ]
+  }
+}

@@ -40,14 +40,14 @@ public class JsonElementContainer implements ElementContainer {
 	private boolean repeatedElement;
 	private boolean skipArrayElementContainers;
 	private boolean nil=false;
-	private boolean quoted=true;
+	private boolean number=false;
 	private String attributePrefix;
 
 	public String stringContent;
 	private Map<String,Object> contentMap;
 	private List<Object> array;
 	
-	private final boolean DEBUG=false; 	
+	private final boolean DEBUG=false;
 	
 	public JsonElementContainer(String name, boolean xmlArrayContainer, boolean repeatedElement, boolean skipArrayElementContainers, String attributePrefix) {
 		this.name=name;
@@ -70,7 +70,7 @@ public class JsonElementContainer implements ElementContainer {
 	public void setAttribute(String name, String value, XSSimpleTypeDefinition attTypeDefinition) {
 		JsonElementContainer attributeContainer = new JsonElementContainer(attributePrefix+name, false, false, false, attributePrefix);
 		if (attTypeDefinition.getNumeric()) {
-			attributeContainer.setQuoted(false);
+			attributeContainer.setNumber(true);
 		}
 		attributeContainer.setContent(value);
 		addContent(attributeContainer);
@@ -79,12 +79,11 @@ public class JsonElementContainer implements ElementContainer {
 	@Override
 	public void characters(char[] ch, int start, int length, boolean numericType, boolean booleanType) {
 		if (numericType || booleanType) {
-			setQuoted(false);
+			setNumber(true);
 		}
 		setContent(new String(ch,start,length));
 	}
 
-	
 	/*
 	 * Sets the Text content of the current object
 	 */
@@ -111,8 +110,6 @@ public class JsonElementContainer implements ElementContainer {
 				throw new IllegalStateException("already set non-null content for element ["+name+"]");
 			}
 			nil=true;
-			stringContent="null";
-			quoted=false;
 		} else {
 			if (stringContent==null) {
 				stringContent=content;
@@ -135,7 +132,7 @@ public class JsonElementContainer implements ElementContainer {
 		if (isXmlArrayContainer() && content.isRepeatedElement() && skipArrayElementContainers) {
 			if (array==null) {
 				array=new LinkedList<Object>();
-				setQuoted(content.isQuoted());
+				setNumber(content.isNumber());
 			} 
 			array.add(content.getContent());
 			return;
@@ -155,7 +152,7 @@ public class JsonElementContainer implements ElementContainer {
 				if (!(current instanceof List)) {
 					throw new IllegalArgumentException("element ["+childName+"] is not an array");
 				}
-			}
+	}
 			((List)current).add(content.getContent());
 		} else {
 			if (current!=null) {
@@ -170,7 +167,7 @@ public class JsonElementContainer implements ElementContainer {
 			return null;
 		}
 		if (stringContent!=null) {
-			if (quoted) {
+			if (!isNumber()) {
 				if (DEBUG) log.debug("getContent quoted stringContent ["+stringContent+"]");
 //				String result=StringEscapeUtils.escapeJson(stringContent.toString()); // this also converts diacritics into unicode escape sequences
 				String result=ESCAPE_JSON.translate(stringContent.toString()); 
@@ -201,11 +198,11 @@ public class JsonElementContainer implements ElementContainer {
 		return repeatedElement;
 	}
 
-	public boolean isQuoted() {
-		return quoted;
+	public boolean isNumber() {
+		return number;
 	}
-	public void setQuoted(boolean quoted) {
-		this.quoted = quoted;
+	public void setNumber(boolean number) {
+		this.number = number;
 	}
 
 	

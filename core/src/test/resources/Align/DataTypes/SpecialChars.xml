@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataTypes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:datatypes DataTypes.xsd" xmlns="urn:datatypes">
+	<Strings>
+		<String>Quote ["]</String>
+		<String>Ampersand [&amp;]</String>
+		<String>LessThan [&lt;]</String>
+		<String>Embedded newline [
+]</String>
+		<String>Euro [€]</String>
+		<String>Smiley 1 [😊]</String>
+		<String>Smiley 2 [😀]</String>
+		<String>Huh ? [¿]</String>
+	</Strings>
+</DataTypes>

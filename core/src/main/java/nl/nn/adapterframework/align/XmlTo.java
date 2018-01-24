@@ -18,6 +18,7 @@ package nl.nn.adapterframework.align;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.Stack;
 
 import javax.xml.XMLConstants;
 import javax.xml.validation.Schema;
@@ -33,6 +34,7 @@ import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -55,6 +57,8 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	private XmlAligner aligner;
 	
 	private C documentContainer;
+	Stack<String> element=new Stack<String>();
+	String topElement;
 
 	public XmlTo(XmlAligner aligner, C documentContainer) {
 		this.aligner=aligner;	
@@ -64,8 +68,22 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+		boolean xmlArrayContainer=aligner.isParentOfSingleMultipleOccurringChildElement();
+		boolean repeatedElement=aligner.isMultipleOccurringChildInParentElement(localName);
+		XSTypeDefinition typeDefinition=aligner.getTypeDefinition();
+		if (!localName.equals(topElement)) {
+			if (topElement!=null) {
+				if (DEBUG) log.debug("endElementGroup ["+topElement+"]");
+				documentContainer.endElementGroup(topElement);	
+			}
+			if (DEBUG) log.debug("startElementGroup ["+localName+"]");
+			documentContainer.startElementGroup(localName, xmlArrayContainer, repeatedElement, typeDefinition);	
+			topElement=localName;			
+		}
+		element.push(topElement);
+		topElement=null;
 		if (DEBUG) log.debug("startElement ["+localName+"] xml array container ["+aligner.isParentOfSingleMultipleOccurringChildElement()+"] repeated element ["+aligner.isMultipleOccurringChildInParentElement(localName)+"]");
-		documentContainer.startElement(localName,aligner.isParentOfSingleMultipleOccurringChildElement(),aligner.isMultipleOccurringChildInParentElement(localName), aligner.getTypeDefinition());
+		documentContainer.startElement(localName,xmlArrayContainer,repeatedElement, typeDefinition);
 		super.startElement(uri, localName, qName, atts);
 		if (aligner.isNil(atts)) {
 			documentContainer.setNull();
@@ -100,8 +118,18 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
+		if (topElement!=null) {
+			if (DEBUG) log.debug("endElementGroup ["+topElement+"]");
+			documentContainer.endElementGroup(topElement);	
+		}
+		topElement=element.pop();
+		if (DEBUG) log.debug("endElement ["+localName+"]");
 		documentContainer.endElement(localName);
 		super.endElement(uri, localName, qName);
+		if (element.isEmpty()) {
+			if (DEBUG) log.debug("endElementGroup ["+localName+"]");
+			documentContainer.endElementGroup(localName);
+		}
 	}
 
 	@Override
@@ -110,7 +138,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		boolean numericType=false;
 		boolean booleanType=false;
 		if (simpleType!=null) {
-			if (DEBUG) log.debug("characters ["+new String(ch,start,length)+"]");
+			if (DEBUG) log.debug("characters for SimpleType ["+new String(ch,start,length)+"]");
 			if (simpleType.getNumeric()) {
 				numericType=true;
 			}
@@ -122,7 +150,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		super.characters(ch, start, length);
 	}
 
-	public static DocumentContainer translate(String xml, URL schemaURL, DocumentContainer documentContainer) throws SAXException, IOException {
+	public static void translate(String xml, URL schemaURL, DocumentContainer documentContainer) throws SAXException, IOException {
 
 		// create the ValidatorHandler
     	SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -132,14 +160,13 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
     	// create the parser, setup the chain
     	XMLReader parser = new SAXParser();
     	XmlAligner aligner = new XmlAligner(validatorHandler);
-    	XmlTo xml2object = new XmlTo(aligner, documentContainer);   	
+    	XmlTo<DocumentContainer> xml2object = new XmlTo<DocumentContainer>(aligner, documentContainer);   	
     	parser.setContentHandler(validatorHandler);
     	aligner.setContentHandler(xml2object);
 	
     	// start translating
     	InputSource is = new InputSource(new StringReader(xml));
 		parser.parse(is);
-		return documentContainer;
 	}
 
 	@Override
