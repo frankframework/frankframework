@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016 - 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -222,7 +222,8 @@ import org.w3c.dom.Element;
  * </table>
  * </p>
  *
- * @author Peter Leeuwenburgh
+ * @author	Peter Leeuwenburgh
+ * @author	Niels Meijer
  */
 public class CmisSender extends SenderWithParametersBase {
 
@@ -787,7 +788,7 @@ public class CmisSender extends SenderWithParametersBase {
 		parameter.put("proxyUserName", pcf.getUsername());
 		parameter.put("proxyPassword", pcf.getPassword());
 
-		parameter.put(SessionParameter.HTTP_INVOKER_CLASS, "nl.nn.adapterframework.extensions.cmis.IbisHttpInvoker"); 
+		parameter.put(SessionParameter.HTTP_INVOKER_CLASS, "nl.nn.adapterframework.extensions.cmis.CmisHttpInvoker"); 
 
 		Session session = sessionFactory.createSession(parameter);
 		log.debug(getLogPrefix() + "connected with repository [" + getRepositoryInfo(session) + "]");

@@ -38,29 +38,52 @@ public class CmisHttpInvoker implements HttpInvoker {
 			sender.setUrlParam("url");
 
 			//Auth
-			sender.setUserName((String) session.get(SessionParameter.USER));
-			sender.setPassword((String) session.get(SessionParameter.PASSWORD));
+			if(session.get(SessionParameter.USER) != null)
+				sender.setUserName((String) session.get(SessionParameter.USER));
+			if(session.get(SessionParameter.PASSWORD) != null)
+				sender.setPassword((String) session.get(SessionParameter.PASSWORD));
 
 			//Proxy
-			sender.setProxyHost((String) session.get("proxyHost"));
-			sender.setProxyPort(Integer.parseInt((String) session.get("proxyPort")));
-			sender.setProxyUserName((String) session.get("proxyUserName"));
-			sender.setProxyPassword((String) session.get("proxyPassword"));
+			if(session.get("proxyHost") != null)
+				sender.setProxyHost((String) session.get("proxyHost"));
+			if(session.get("proxyPort") != null)
+				sender.setProxyPort(Integer.parseInt((String) session.get("proxyPort")));
+			if(session.get("proxyUserName") != null)
+				sender.setProxyUserName((String) session.get("proxyUserName"));
+			if(session.get("proxyPassword") != null)
+				sender.setProxyPassword((String) session.get("proxyPassword"));
 
 			//SSL
-			sender.setCertificate((String) session.get("certificateUrl"));
-			sender.setCertificatePassword((String) session.get("certificatePassword"));
-			sender.setKeystoreType((String) session.get("keystoreType"));
-			sender.setKeyManagerAlgorithm((String) session.get("keyManagerAlgorithm"));
-			sender.setTruststore((String) session.get("truststoreUrl"));
-			sender.setTruststorePassword((String) session.get("truststorePassword"));
-			sender.setTruststoreType((String) session.get("truststoreType"));
-			sender.setTrustManagerAlgorithm((String) session.get("trustManagerAlgorithm"));
+			if(session.get("certificateUrl") != null)
+				sender.setCertificate((String) session.get("certificateUrl"));
+			if(session.get("certificatePassword") != null)
+				sender.setCertificatePassword((String) session.get("certificatePassword"));
+			if(session.get("keystoreType") != null)
+				sender.setKeystoreType((String) session.get("keystoreType"));
+			if(session.get("keyManagerAlgorithm") != null)
+				sender.setKeyManagerAlgorithm((String) session.get("keyManagerAlgorithm"));
+			if(session.get("truststoreUrl") != null)
+				sender.setTruststore((String) session.get("truststoreUrl"));
+			if(session.get("truststorePassword") != null)
+				sender.setTruststorePassword((String) session.get("truststorePassword"));
+			if(session.get("truststoreType") != null)
+				sender.setTruststoreType((String) session.get("truststoreType"));
+			if(session.get("trustManagerAlgorithm") != null)
+				sender.setTrustManagerAlgorithm((String) session.get("trustManagerAlgorithm"));
 
 			//SSL+
-			sender.setAllowSelfSignedCertificates(Boolean.parseBoolean((String) session.get("isAllowSelfSignedCertificates")));
-			sender.setVerifyHostname(Boolean.parseBoolean((String) session.get("isVerifyHostname")));
-			sender.setIgnoreCertificateExpiredException(Boolean.parseBoolean((String) session.get("isIgnoreCertificateExpiredException")));
+			if(session.get("isAllowSelfSignedCertificates") != null) {
+				boolean isAllowSelfSignedCertificates = Boolean.parseBoolean((String) session.get("isAllowSelfSignedCertificates"));
+				sender.setAllowSelfSignedCertificates(isAllowSelfSignedCertificates);
+			}
+			if(session.get("isVerifyHostname") != null) {
+				boolean isVerifyHostname = Boolean.parseBoolean((String) session.get("isVerifyHostname"));
+				sender.setVerifyHostname(isVerifyHostname);
+			}
+			if(session.get("isIgnoreCertificateExpiredException") != null) {
+				boolean isIgnoreCertificateExpiredException = Boolean.parseBoolean((String) session.get("isIgnoreCertificateExpiredException"));
+				sender.setIgnoreCertificateExpiredException(isIgnoreCertificateExpiredException);
+			}
 
 			//Add parameters
 			Parameter parameter = new Parameter();
