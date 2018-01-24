@@ -34,7 +34,6 @@ import javax.xml.transform.TransformerConfigurationException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -532,7 +531,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	public abstract HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap) throws SenderException;
 
-	public abstract String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc, HttpServletResponse response) throws SenderException, IOException;
+	public abstract String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException;
 
 	public String sendMessageWithTimeoutGuarded(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
@@ -614,9 +613,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 					log.debug(getLogPrefix()+"status ["+statusCode+"]");
 				}
 
-				HttpServletResponse response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
-
-				result = extractResult(responseHandler, prc, response);
+				result = extractResult(responseHandler, prc);
 
 				log.debug(getLogPrefix()+"retrieved result ["+result+"]");
 			} catch (ClientProtocolException e) {

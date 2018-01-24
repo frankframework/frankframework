@@ -15,6 +15,7 @@ Upcoming
 - Move 'Dynamic parameters' from showConfiguration to showEnvironmentVariables
 - Show provided JmsDestinations with usage in showSecurityItems
 - Introduction of the HashPipe
+- Upgrade CmisSender to support 'browser' bindings, support proxys and secure connections
 
 
 

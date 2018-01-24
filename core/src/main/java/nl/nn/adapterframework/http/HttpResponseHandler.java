@@ -45,7 +45,7 @@ public class HttpResponseHandler {
 		content = httpEntity.getContent();
 	}
 
-	public StatusLine getStatus() {
+	public StatusLine getStatusLine() {
 		return httpResponse.getStatusLine();
 	}
 
@@ -53,18 +53,19 @@ public class HttpResponseHandler {
 		return httpResponse.getAllHeaders();
 	}
 
-	public InputStream getContent() throws IOException {
-		statusCode = getStatus().getStatusCode();
-		return content;
+	public InputStream getResponse() throws IOException {
+		statusCode = getStatusLine().getStatusCode();
+
+		return new ReleaseHttpResponseAfterReadInputStream(httpResponse, content);
 	}
 
-	public String getContentAsString() throws IOException {
-		return getContentAsString(false);
+	public String getResponseAsString() throws IOException {
+		return getResponseAsString(false);
 	}
 
-	public String getContentAsString(boolean returnNullonFault) throws IOException {
+	public String getResponseAsString(boolean returnNullonFault) throws IOException {
 		if(statusCode < 0)
-			contentAsString = Misc.streamToString(getContent(), "\n", getContentType(), false);
+			contentAsString = Misc.streamToString(getResponse(), "\n", getContentType(), false);
 		else if(returnNullonFault && statusCode == 500)
 			return "";
 

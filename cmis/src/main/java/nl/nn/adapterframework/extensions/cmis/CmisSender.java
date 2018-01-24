@@ -24,11 +24,13 @@ import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -91,7 +93,7 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setBindingType(String) bindingType}</td><td>"atompub" or "webservices"</td><td>"atompub"</td></tr>
+ * <tr><td>{@link #setBindingType(String) bindingType}</td><td>"atompub", "webservices" or "browser"</td><td>"atompub"</td></tr>
  * <tr><td>{@link #setFileNameSessionKey(String) fileNameSessionKey}</td><td>(only used when <code>action=create</code>) The session key that contains the name of the file to use. If not set, the value of the property <code>fileName</code> from the input message is used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFileInputStreamSessionKey(String) fileInputStreamSessionKey}</td><td>When <code>action=create</code>: the session key that contains the input stream of the file to use. When <code>action=get</code> and <code>getProperties=true</code>: the session key in which the input stream of the document is stored</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFileContentSessionKey(String) fileContentSessionKey}</td><td>When <code>action=create</code>: the session key that contains the base64 encoded content of the file to use. When <code>action=get</code> and <code>getProperties=true</code>: the session key in which the base64 encoded content of the document is stored</td><td>&nbsp;</td></tr>
@@ -101,6 +103,7 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setUseRootFolder(boolean) useRootFolder}</td><td>(only used when <code>action=create</code>) if true, the document is created in the root folder of the repository. Otherwise the document is created in the repository</td><td>true</td></tr>
  * <tr><td>{@link #setResultOnNotFound(String) resultOnNotFound}</td><td>(only used when <code>action=get</code>) result returned when no document was found for the given id (e.g. "[NOT_FOUND]"). If empty an exception is thrown</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeepSession(boolean) keepSession}</td><td>if true, the session is not closed at the end and it will be used in the next call</td><td>true</td></tr>
+ * 
  * <tr><td>{@link #setCertificate(String) certificate}</td><td>resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCertificateAuthAlias(String) certificateAuthAlias}</td><td>alias used to obtain certificate password</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -115,6 +118,11 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
  * <tr><td>{@link #setIgnoreCertificateExpiredException(boolean) ignoreCertificateExpiredException}</td><td>when true, the CertificateExpiredException is ignored</td><td>false</td></tr>
  * 
+ * <tr><td>{@link #setProxyHost(String) proxyHost}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setProxyPort(int) proxyPort}</td><td>&nbsp;</td><td>80</td></tr>
+ * <tr><td>{@link #setProxyAuthAlias(String) proxyAuthAlias}</td><td>alias used to obtain credentials for authentication to proxy</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setProxyUserName(String) proxyUserName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p>
@@ -251,6 +259,17 @@ public class CmisSender extends SenderWithParametersBase {
 	private String truststoreType = "jks";
 	private String trustManagerAlgorithm = "PKIX";
 
+	/** PROXY **/
+	private String proxyHost;
+	private int    proxyPort=80;
+	private String proxyAuthAlias;
+	private String proxyUserName;
+	private String proxyPassword;
+	private String proxyRealm=null;
+
+	List<String> actions = Arrays.asList("create", "get", "find", "update");
+	List<String> bindingTypes = Arrays.asList("atompub", "webservices", "browser");
+
 	private final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd HH:mm:ss";
 
 	public void configure() throws ConfigurationException {
@@ -263,18 +282,13 @@ public class CmisSender extends SenderWithParametersBase {
 			throw new ConfigurationException("CmisSender [" + getName()
 					+ "] has no repository configured");
 		}
-		if (!getBindingType().equalsIgnoreCase("atompub")
-				&& !getBindingType().equalsIgnoreCase("webservices")) {
+		if (!bindingTypes.contains(getBindingType())) {
 			throw new ConfigurationException("illegal value for bindingType ["
-					+ getBindingType()
-					+ "], must be 'atompub' or 'webservices'");
+					+ getBindingType() + "], must be " + bindingTypes.toString());
 		}
-		if (!getAction().equalsIgnoreCase("create")
-				&& !getAction().equalsIgnoreCase("get")
-				&& !getAction().equalsIgnoreCase("find")
-				&& !getAction().equalsIgnoreCase("update")) {
+		if (!actions.contains(getAction())) {
 			throw new ConfigurationException("illegal value for action ["
-					+ getAction() + "], must be 'create', 'get', 'find' or 'update");
+					+ getAction() + "], must be " + actions.toString());
 		}
 		if (getAction().equalsIgnoreCase("create")) {
 			if (StringUtils.isEmpty(getFileInputStreamSessionKey())
@@ -294,6 +308,51 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
+	public Session getSession(ParameterResolutionContext prc) throws SenderException {
+		if (session == null || !isKeepSession()) {
+			String authAlias_work = null;
+			String userName_work = null;
+			String password_work = null;
+	
+			ParameterValueList pvl = null;
+			try {
+				if (prc != null && paramList != null) {
+					pvl = prc.getValues(paramList);
+					if (pvl != null) {
+						ParameterValue pv = pvl .getParameterValue("authAlias");
+						if (pv != null) {
+							authAlias_work = (String) pv.getValue();
+						}
+						pv = pvl.getParameterValue("userName");
+						if (pv != null) {
+							userName_work = (String) pv.getValue();
+						}
+						pv = pvl.getParameterValue("password");
+						if (pv != null) {
+							password_work = (String) pv.getValue();
+						}
+					}
+				}
+			} catch (ParameterException e) {
+				throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
+			}
+	
+			if (authAlias_work == null) {
+				authAlias_work = getAuthAlias();
+			}
+			if (userName_work == null) {
+				userName_work = getUserName();
+			}
+			if (password_work == null) {
+				password_work = getPassword();
+			}
+	
+			CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
+			session = connect(cf.getUsername(), cf.getPassword());
+		}
+		return session;
+	}
+
 	public void open() throws SenderException {
 		/*
 		 * possible workaround to avoid
@@ -311,47 +370,7 @@ public class CmisSender extends SenderWithParametersBase {
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		try {
-			if (session == null || !isKeepSession()) {
-				String authAlias_work = null;
-				String userName_work = null;
-				String password_work = null;
-
-				ParameterValueList pvl = null;
-				try {
-					if (prc != null && paramList != null) {
-						pvl = prc.getValues(paramList);
-						if (pvl != null) {
-							ParameterValue pv = pvl .getParameterValue("authAlias");
-							if (pv != null) {
-								authAlias_work = (String) pv.getValue();
-							}
-							pv = pvl.getParameterValue("userName");
-							if (pv != null) {
-								userName_work = (String) pv.getValue();
-							}
-							pv = pvl.getParameterValue("password");
-							if (pv != null) {
-								password_work = (String) pv.getValue();
-							}
-						}
-					}
-				} catch (ParameterException e) {
-					throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
-				}
-
-				if (authAlias_work == null) {
-					authAlias_work = getAuthAlias();
-				}
-				if (userName_work == null) {
-					userName_work = getUserName();
-				}
-				if (password_work == null) {
-					password_work = getPassword();
-				}
-
-				CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
-				session = connect(cf.getUsername(), cf.getPassword());
-			}
+			session = getSession(prc);
 
 			if (getAction().equalsIgnoreCase("get")) {
 				return sendMessageForActionGet(correlationID, message, prc);
@@ -377,9 +396,7 @@ public class CmisSender extends SenderWithParametersBase {
 			String message, ParameterResolutionContext prc)
 			throws SenderException, TimeOutException {
 		if (StringUtils.isEmpty(message)) {
-			throw new SenderException(
-					getLogPrefix()
-							+ "input string cannot be empty but must contain a documentId");
+			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
 
 		CmisObject object = null;
@@ -705,22 +722,20 @@ public class CmisSender extends SenderWithParametersBase {
 		return object.getId();
 	}
 
-	private Session connect() {
-		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
-		return connect(cf.getUsername(), cf.getPassword());
-	}
-
 	private Session connect(String userName, String password) {
-		log.debug(getLogPrefix() + "connecting with url [" + getUrl()
-				+ "] repository [" + getRepository() + "]");
+		log.debug(getLogPrefix() + "connecting with url [" + getUrl() + "] repository [" + getRepository() + "]");
+
 		SessionFactory sessionFactory = SessionFactoryImpl.newInstance();
 		Map<String, String> parameter = new HashMap<String, String>();
 		parameter.put(SessionParameter.USER, userName);
 		parameter.put(SessionParameter.PASSWORD, password);
+
 		if (getBindingType().equalsIgnoreCase("atompub")) {
 			parameter.put(SessionParameter.ATOMPUB_URL, getUrl());
-			parameter.put(SessionParameter.BINDING_TYPE,
-					BindingType.ATOMPUB.value());
+			parameter.put(SessionParameter.BINDING_TYPE, BindingType.ATOMPUB.value());
+		} else if (getBindingType().equalsIgnoreCase("browser")) {
+			parameter.put(SessionParameter.BROWSER_URL, getUrl());
+			parameter.put(SessionParameter.BINDING_TYPE, BindingType.BROWSER.value());
 		} else {
 			parameter.put(SessionParameter.WEBSERVICES_REPOSITORY_SERVICE,
 					getUrl() + "/RepositoryService.svc?wsdl");
@@ -745,7 +760,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 		parameter.put(SessionParameter.REPOSITORY_ID, getRepository());
 
-
+		//SSL
 		if (getCertificate()!=null || getTruststore()!=null || isAllowSelfSignedCertificates()) {
 			CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
 			CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
@@ -760,17 +775,22 @@ public class CmisSender extends SenderWithParametersBase {
 			parameter.put("trustManagerAlgorithm", getTrustManagerAlgorithm());
 		}
 
+		//SSL+
 		parameter.put("isAllowSelfSignedCertificates", "" + isAllowSelfSignedCertificates());
 		parameter.put("isVerifyHostname", "" + isVerifyHostname());
 		parameter.put("isIgnoreCertificateExpiredException", "" + isIgnoreCertificateExpiredException());
 
-//		System.setProperty("org.apache.chemistry.opencmis.binding.webservices.jaxws.impl", "com.sun.xml.internal.ws.spi.ProviderImpl");
-		parameter.put(SessionParameter.AUTHENTICATION_PROVIDER_CLASS, "nl.nn.adapterframework.extensions.cmis.IbisAuthenticationProvider");
+		//PROXY
+		CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
+		parameter.put("proxyHost", getProxyHost());
+		parameter.put("proxyPort", ""+getProxyPort());
+		parameter.put("proxyUserName", pcf.getUsername());
+		parameter.put("proxyPassword", pcf.getPassword());
 
+		parameter.put(SessionParameter.HTTP_INVOKER_CLASS, "nl.nn.adapterframework.extensions.cmis.IbisHttpInvoker"); 
 
 		Session session = sessionFactory.createSession(parameter);
-		log.debug(getLogPrefix() + "connected with repository ["
-				+ getRepositoryInfo(session) + "]");
+		log.debug(getLogPrefix() + "connected with repository [" + getRepositoryInfo(session) + "]");
 		return session;
 	}
 
@@ -879,6 +899,51 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 
+	public String getProxyHost() {
+		return proxyHost;
+	}
+	public void setProxyHost(String string) {
+		proxyHost = string;
+	}
+
+	public int getProxyPort() {
+		return proxyPort;
+	}
+	public void setProxyPort(int i) {
+		proxyPort = i;
+	}
+
+	public String getProxyAuthAlias() {
+		return proxyAuthAlias;
+	}
+	public void setProxyAuthAlias(String string) {
+		proxyAuthAlias = string;
+	}
+
+	public String getProxyUserName() {
+		return proxyUserName;
+	}
+	public void setProxyUserName(String string) {
+		proxyUserName = string;
+	}
+
+	public String getProxyPassword() {
+		return proxyPassword;
+	}
+	public void setProxyPassword(String string) {
+		proxyPassword = string;
+	}
+
+	public String getProxyRealm() {
+		if(StringUtils.isEmpty(proxyRealm))
+			return null;
+		return proxyRealm;
+	}
+	public void setProxyRealm(String string) {
+		proxyRealm = string;
+	}
+
+
 	public String getRepositoryInfo(Session session) {
 		RepositoryInfo ri = session.getRepositoryInfo();
 		String id = ri.getId();
@@ -894,7 +959,10 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	public String getAction() {
-		return action;
+		if(action != null)
+			return action.toLowerCase();
+
+		return null;
 	}
 
 	public void setUrl(String string) {
@@ -942,7 +1010,10 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	public String getBindingType() {
-		return bindingType;
+		if(bindingType != null)
+			return bindingType.toLowerCase();
+
+		return null;
 	}
 
 	public String getFileNameSessionKey() {
@@ -1009,8 +1080,8 @@ public class CmisSender extends SenderWithParametersBase {
 		return resultOnNotFound;
 	}
 
-	public void setKeepSession(boolean b) {
-		keepSession = b;
+	public void setKeepSession(boolean keepSession) {
+		this.keepSession = keepSession;
 	}
 
 	public boolean isKeepSession() {

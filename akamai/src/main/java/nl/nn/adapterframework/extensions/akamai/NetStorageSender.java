@@ -41,6 +41,7 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
@@ -251,8 +252,8 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	}
 
 	@Override
-	public String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc, HttpServletResponse response) throws SenderException, IOException {
-		int statusCode = responseHandler.getStatus().getStatusCode();
+	public String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException {
+		int statusCode = responseHandler.getStatusLine().getStatusCode();
 
 		boolean ok = false;
 		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
@@ -272,12 +273,13 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 
 		if (!ok) {
 			throw new SenderException(getLogPrefix() + "httpstatus "
-				+ statusCode + ": " + responseHandler.getStatus().getReasonPhrase()
+				+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
 				+ " body: " + getResponseBodyAsString(responseHandler));
 		}
 
 		XmlBuilder result = new XmlBuilder("result");
 
+		HttpServletResponse response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
 		if(response == null) {
 			XmlBuilder statuscode = new XmlBuilder("statuscode");
 			statuscode.setValue(statusCode + "");
@@ -325,7 +327,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		String charset = responseHandler.getContentType();
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
 
-		String responseBody = responseHandler.getContentAsString(true);
+		String responseBody = responseHandler.getResponseAsString(true);
 		int rbLength = responseBody.length();
 		long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
 		if (rbLength >= rbSizeWarn) {

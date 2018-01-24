@@ -1,0 +1,175 @@
+package nl.nn.adapterframework.extensions.cmis;
+
+import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.chemistry.opencmis.client.bindings.impl.ClientVersion;
+import org.apache.chemistry.opencmis.client.bindings.impl.CmisBindingsHelper;
+import org.apache.chemistry.opencmis.client.bindings.spi.BindingSession;
+import org.apache.chemistry.opencmis.client.bindings.spi.http.HttpInvoker;
+import org.apache.chemistry.opencmis.client.bindings.spi.http.Output;
+import org.apache.chemistry.opencmis.client.bindings.spi.http.Response;
+import org.apache.chemistry.opencmis.commons.SessionParameter;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
+import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
+import org.apache.log4j.Logger;
+
+public class CmisHttpInvoker implements HttpInvoker {
+
+	private Logger log = LogUtil.getLogger(CmisHttpInvoker.class);
+
+	CmisHttpSender sender = null;
+
+	public CmisHttpInvoker() {
+	}
+
+	private CmisHttpSender getInstance(BindingSession session) throws SenderException, ConfigurationException {
+		if(sender == null) {
+			log.debug("creating new CmisHttpInvoker");
+			sender = new CmisHttpSender();
+
+			sender.open();
+			sender.setUrlParam("url");
+
+			//Auth
+			sender.setUserName((String) session.get(SessionParameter.USER));
+			sender.setPassword((String) session.get(SessionParameter.PASSWORD));
+
+			//Proxy
+			sender.setProxyHost((String) session.get("proxyHost"));
+			sender.setProxyPort(Integer.parseInt((String) session.get("proxyPort")));
+			sender.setProxyUserName((String) session.get("proxyUserName"));
+			sender.setProxyPassword((String) session.get("proxyPassword"));
+
+			//SSL
+			sender.setCertificate((String) session.get("certificateUrl"));
+			sender.setCertificatePassword((String) session.get("certificatePassword"));
+			sender.setKeystoreType((String) session.get("keystoreType"));
+			sender.setKeyManagerAlgorithm((String) session.get("keyManagerAlgorithm"));
+			sender.setTruststore((String) session.get("truststoreUrl"));
+			sender.setTruststorePassword((String) session.get("truststorePassword"));
+			sender.setTruststoreType((String) session.get("truststoreType"));
+			sender.setTrustManagerAlgorithm((String) session.get("trustManagerAlgorithm"));
+
+			//SSL+
+			sender.setAllowSelfSignedCertificates(Boolean.parseBoolean((String) session.get("isAllowSelfSignedCertificates")));
+			sender.setVerifyHostname(Boolean.parseBoolean((String) session.get("isVerifyHostname")));
+			sender.setIgnoreCertificateExpiredException(Boolean.parseBoolean((String) session.get("isIgnoreCertificateExpiredException")));
+
+			//Add parameters
+			Parameter parameter = new Parameter();
+			parameter.setName("writer");
+			parameter.setSessionKey("writer");
+			sender.addParameter(parameter);
+			Parameter urlParam = new Parameter();
+			urlParam.setName("url");
+			urlParam.setSessionKey("url");
+			sender.addParameter(urlParam);
+
+			// timeouts
+			int connectTimeout = session.get(SessionParameter.CONNECT_TIMEOUT, -1);
+			int readTimeout = session.get(SessionParameter.READ_TIMEOUT, -1);
+			int timeout = Math.max(connectTimeout, readTimeout);
+			if (timeout >= 0) {
+				sender.setTimeout(timeout);
+			}
+
+			sender.configure();
+		}
+		return sender;
+	}
+
+	@Override
+	public Response invokeGET(UrlBuilder url, BindingSession session) {
+		return invoke(url, "GET", null, null, null, session, null, null);
+	}
+
+	@Override
+	public Response invokeGET(UrlBuilder url, BindingSession session, BigInteger offset, BigInteger length) {
+		return invoke(url, "GET", null, null, null, session, offset, length);
+	}
+
+	@Override
+	public Response invokePOST(UrlBuilder url, String contentType, Output writer, BindingSession session) {
+		return invoke(url, "POST", contentType, null, writer, session, null, null);
+	}
+
+	@Override
+	public Response invokePUT(UrlBuilder url, String contentType, Map<String, String> headers, Output writer,
+			BindingSession session) {
+		return invoke(url, "PUT", contentType, headers, writer, session, null, null);
+	}
+
+	@Override
+	public Response invokeDELETE(UrlBuilder url, BindingSession session) {
+		return invoke(url, "DELETE", null, null, null, session, null, null);
+	}
+
+	private Response invoke(UrlBuilder url, String method, String contentType, Map<String, String> headers,
+			Output writer, BindingSession session, BigInteger offset, BigInteger length) {
+
+		log.debug("Session "+session.getSessionId()+": "+method+" "+url);
+
+		Response response = null;
+
+		try {
+			sender = getInstance(session);
+			if(sender == null)
+				throw new CmisConnectionException("Failed to create IbisHttpSender");
+
+			sender.setMethodType(method);
+			if (contentType != null)
+				sender.setContentType(contentType);
+
+			// init headers if not exist
+			if(headers == null)
+				headers = new HashMap<String, String>();
+			headers.put("User-Agent", (String) session.get(SessionParameter.USER_AGENT, ClientVersion.OPENCMIS_USER_AGENT));
+
+			// offset
+			if (offset != null || length != null) {
+				StringBuilder sb = new StringBuilder("bytes=");
+
+				if ((offset == null) || (offset.signum() == -1)) {
+					offset = BigInteger.ZERO;
+				}
+
+				sb.append(offset.toString());
+				sb.append('-');
+
+				if (length != null && length.signum() == 1) {
+					sb.append(offset.add(length.subtract(BigInteger.ONE)).toString());
+				}
+
+				headers.put("Range", sb.toString());
+			}
+
+			// compression
+			Object compression = session.get(SessionParameter.COMPRESSION);
+			if (compression != null && Boolean.parseBoolean(compression.toString())) {
+				headers.put("Accept-Encoding", "gzip,deflate");
+			}
+
+			// locale
+			if (session.get(CmisBindingsHelper.ACCEPT_LANGUAGE) instanceof String) {
+				headers.put("Accept-Language", session.get(CmisBindingsHelper.ACCEPT_LANGUAGE).toString());
+			}
+
+			log.trace("invoking CmisHttpSender: content-type["+contentType+"] headers["+headers.toString()+"]");
+
+			response = sender.invoke(url.toString(), headers, writer, session, offset, length);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CmisConnectionException(url.toString(), -1, e);
+		}
+
+		log.trace("received result code["+response.getResponseCode()+"] headers["+response.getHeaders().toString()+"]");
+		return response;
+	}
+}
