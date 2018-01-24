@@ -44,14 +44,15 @@ public class CmisHttpInvoker implements HttpInvoker {
 				sender.setPassword((String) session.get(SessionParameter.PASSWORD));
 
 			//Proxy
-			if(session.get("proxyHost") != null)
+			if(session.get("proxyHost") != null) {
 				sender.setProxyHost((String) session.get("proxyHost"));
-			if(session.get("proxyPort") != null)
-				sender.setProxyPort(Integer.parseInt((String) session.get("proxyPort")));
-			if(session.get("proxyUserName") != null)
-				sender.setProxyUserName((String) session.get("proxyUserName"));
-			if(session.get("proxyPassword") != null)
-				sender.setProxyPassword((String) session.get("proxyPassword"));
+				if(session.get("proxyPort") != null)
+					sender.setProxyPort(Integer.parseInt((String) session.get("proxyPort")));
+				if(session.get("proxyUserName") != null)
+					sender.setProxyUserName((String) session.get("proxyUserName"));
+				if(session.get("proxyPassword") != null)
+					sender.setProxyPassword((String) session.get("proxyPassword"));
+			}
 
 			//SSL
 			if(session.get("certificateUrl") != null)

@@ -782,11 +782,13 @@ public class CmisSender extends SenderWithParametersBase {
 		parameter.put("isIgnoreCertificateExpiredException", "" + isIgnoreCertificateExpiredException());
 
 		//PROXY
-		CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
-		parameter.put("proxyHost", getProxyHost());
-		parameter.put("proxyPort", ""+getProxyPort());
-		parameter.put("proxyUserName", pcf.getUsername());
-		parameter.put("proxyPassword", pcf.getPassword());
+		if (StringUtils.isNotEmpty(getProxyHost())) {
+			CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
+			parameter.put("proxyHost", getProxyHost());
+			parameter.put("proxyPort", ""+getProxyPort());
+			parameter.put("proxyUserName", pcf.getUsername());
+			parameter.put("proxyPassword", pcf.getPassword());
+		}
 
 		parameter.put(SessionParameter.HTTP_INVOKER_CLASS, "nl.nn.adapterframework.extensions.cmis.CmisHttpInvoker"); 
 
