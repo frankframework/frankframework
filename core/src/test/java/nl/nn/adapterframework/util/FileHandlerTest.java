@@ -37,19 +37,19 @@ public class FileHandlerTest {
 		if (url==null) {
 			return null;
 		}
-        BufferedReader buf = new BufferedReader(new InputStreamReader(url.openStream(),charset));
-        StringBuilder string = new StringBuilder();
-        String line = buf.readLine();
-        while (line != null) {
-            string.append(line);
-            line = buf.readLine();
-            if (line!=null) {
-            	string.append("\n");
-            }
-        }
-        return string.toString();
-    }
-	
+		BufferedReader buf = new BufferedReader(new InputStreamReader(url.openStream(),charset));
+		StringBuilder string = new StringBuilder();
+		String line = buf.readLine();
+		while (line != null) {
+			string.append(line);
+			line = buf.readLine();
+			if (line!=null) {
+				string.append("\n");
+			}
+		}
+		return string.toString();
+	}
+
 	public void testRead(String filename, String charset) throws Exception {
 		URL fileURL=getURL(filename);
 		String filepath=fileURL.getPath();
@@ -60,16 +60,22 @@ public class FileHandlerTest {
 		handler.configure();
 		
 		String expectedContents=getTestFile(filename, charset);
-		Object actualContents=handler.handle(null,session,null);
-		
+		String actualContents = (String) handler.handle(null,session,null);
 		assertEquals("file contents", expectedContents, actualContents);
 	}
-	
+
 	@Test
-	public void testRead() throws Exception {
+	public void testReadXml() throws Exception {
 		testRead("smiley.xml","utf-8");
+	}
+
+	@Test
+	public void testReadJson() throws Exception {
 		testRead("smiley.json","utf-8");
+	}
+
+	@Test
+	public void testReadTxt() throws Exception {
 		testRead("smiley.txt","utf-8");
 	}
-	
 }
