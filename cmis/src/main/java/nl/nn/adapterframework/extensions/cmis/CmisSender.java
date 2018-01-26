@@ -790,7 +790,8 @@ public class CmisSender extends SenderWithParametersBase {
 			parameter.put("proxyPassword", pcf.getPassword());
 		}
 
-		parameter.put(SessionParameter.HTTP_INVOKER_CLASS, "nl.nn.adapterframework.extensions.cmis.CmisHttpInvoker"); 
+		//Custom IBIS HttpSender to support ssl connections and proxies
+		parameter.put(SessionParameter.HTTP_INVOKER_CLASS, "nl.nn.adapterframework.extensions.cmis.CmisHttpInvoker");
 
 		Session session = sessionFactory.createSession(parameter);
 		log.debug(getLogPrefix() + "connected with repository [" + getRepositoryInfo(session) + "]");

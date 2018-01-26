@@ -1,3 +1,18 @@
+/*
+   Copyright 2018 Nationale-Nederlanden
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
 package nl.nn.adapterframework.extensions.cmis;
 
 import java.io.ByteArrayInputStream;
@@ -117,6 +132,7 @@ public class CmisHttpSender extends HttpSenderBase {
 			method.addHeader(entry.getKey(), entry.getValue());
 		}
 
+		//Cmis creates it's own contentType depending on the method and bindingType
 		method.setHeader("Content-Type", getContentType());
 
 		log.debug(getLogPrefix()+"HttpSender constructed "+getMethodType()+"-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
@@ -161,6 +177,8 @@ public class CmisHttpSender extends HttpSenderBase {
 
 		ParameterResolutionContext prc = new ParameterResolutionContext("", pls);
 		try {
+			//Don't release the connection after extracting the result.
+			//The responseStream wont be read until later in the CmisSender.
 			setStoreResultAsStreamInSessionKey("dummy");
 			sendMessageWithTimeoutGuarded(null, null, prc);
 			return (Response) pls.get("response");
