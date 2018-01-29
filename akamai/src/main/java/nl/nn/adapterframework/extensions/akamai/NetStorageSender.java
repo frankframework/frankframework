@@ -47,12 +47,10 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.FileHandler;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -95,7 +93,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author	Niels Meijer
  * @since	7.0-B4
  */
-@SuppressWarnings("deprecation")
 public class NetStorageSender extends HttpSenderBase implements HasPhysicalDestination {
 	private Logger log = LogUtil.getLogger(NetStorageSender.class);
 
@@ -146,6 +143,13 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		accessTokenCf = new CredentialFactory(getAuthAlias(), getNonce(), getAccessToken());
 	}
 
+	/**
+	 * Builds the URI with the rootDirectory, optional CpCode and makes sure the
+	 * path never ends with a slash '/'.
+	 * @param path to append to the root
+	 * @return full path to use as endpoint
+	 * @throws SenderException
+	 */
 	private URIBuilder buildUri(String path) throws SenderException {
 		if (!path.startsWith("/")) path = "/" + path;
 		try {
@@ -336,10 +340,22 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		return responseBody;
 	}
 
+	/**
+	 * Only works in combination with the UPLOAD action. If set, and not 
+	 * specified as parameter, the sender will sign the file to be uploaded. 
+	 * NOTE: if the file input is a Stream this will put the file in memory!
+	 * @param hashAlgorithm supports 3 types; md5, sha1, sha256
+	 */
 	public void setHashAlgorithm(String hashAlgorithm) {
 		this.hashAlgorithm = hashAlgorithm.toUpperCase();
 	}
 
+	/**
+	 * NetStorage action to be used
+	 * @param action delete, dir, download, du, mkdir, mtime, rename, 
+	 * rmdir, upload
+	 * @IbisDoc.required
+	 */
 	public void setAction(String action) {
 		this.action = action.toLowerCase();
 	}
@@ -348,10 +364,20 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		return action;
 	}
 
+	/**
+	 * At the time of writing, NetStorage only supports version 1
+	 * @param actionVersion
+	 * @IbisDoc.default 1
+	 */
 	public void setActionVersion(int actionVersion) {
 		this.actionVersion = actionVersion;
 	}
 
+	/**
+	 * NetStorage CP Code
+	 * @param cpCode of the storage group
+	 * @IbisDoc.optional
+	 */
 	public void setCpCode(String cpCode) {
 		this.cpCode = cpCode;
 	}
@@ -360,6 +386,11 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		return cpCode;
 	}
 
+	/**
+	 * @param url the base URL for NetStorage (without CpCode)
+	 * @IbisDoc.required
+	 */
+	@Override
 	public void setUrl(String url) {
 		if(!url.endsWith("/")) url += "/";
 		this.url = url;
@@ -369,6 +400,10 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		return url;
 	}
 
+	/**
+	 * Login is done via a Nonce and AccessToken
+	 * @param nonce to use when logging in
+	 */
 	public void setNonce(String nonce) {
 		this.nonce = nonce;
 	}
@@ -377,6 +412,11 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		return nonce;
 	}
 
+	/**
+	 * Version to validate queries made to NetStorage backend.
+	 * @param signVersion supports 3 types; 3:MD5, 4:SHA1, 5: SHA256
+	 * @IbisDoc.default 5 (SHA256)
+	 */
 	public void setSignVersion(int signVersion) {
 		this.signVersion = signVersion;
 	}
@@ -393,6 +433,10 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 			return SignType.HMACSHA256;
 	}
 
+	/**
+	 * Login is done via a Nonce and AccessToken
+	 * @param accessToken to use when logging in
+	 */
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
 	}
@@ -408,6 +452,11 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	public String getRootDir() {
 		return rootDir;
 	}
+	/**
+	 * rootDirectory on top of the url + cpCode
+	 * @param rootDir
+	 * @IbisDoc.optional
+	 */
 	public void setRootDir(String rootDir) {
 		if(!rootDir.startsWith("/")) rootDir = "/" + rootDir;
 		if(rootDir.endsWith("/"))
@@ -415,9 +464,14 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		this.rootDir = rootDir;
 	}
 
+	@Override
 	public String getAuthAlias() {
 		return authAlias;
 	}
+	/**
+	 * @param authAlias to contain the Nonce (username) and AccessToken (password)
+	 */
+	@Override
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}

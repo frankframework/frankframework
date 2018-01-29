@@ -165,6 +165,28 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.3</version>
+        <configuration>
+          <tags>
+            <tag>
+              <name>IbisDoc.required</name>
+              <!-- The value X makes javadoc ignoring the tag. See: https://maven.apache.org/plugins/maven-javadoc-plugin/javadoc-mojo.html#tags -->
+              <placement>X</placement>
+            </tag>
+            <tag>
+              <name>IbisDoc.default</name>
+              <placement>X</placement>
+            </tag>
+            <tag>
+              <name>IbisDoc.optional</name>
+              <placement>X</placement>
+            </tag>
+          </tags>
+        </configuration>
+      </plugin>
+      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.17</version>
         <configuration>
