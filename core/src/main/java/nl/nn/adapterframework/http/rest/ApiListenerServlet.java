@@ -17,6 +17,8 @@ package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.List;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
@@ -32,7 +34,10 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 public class ApiListenerServlet extends HttpServlet {
@@ -67,12 +72,6 @@ public class ApiListenerServlet extends HttpServlet {
 		messageContext.put(IPipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
-
-		String body = "";
-
-		if (!ServletFileUpload.isMultipartContent(request)) {
-			body=Misc.streamToString(request.getInputStream(),"\n",false);
-		}
 
 		try {
 			String uri = request.getPathInfo();
@@ -250,8 +249,35 @@ public class ApiListenerServlet extends HttpServlet {
 				String paramname = (String) paramnames.nextElement();
 				String paramvalue = request.getParameter(paramname);
 
-				log.trace("setting parameter ["+paramname+"] to ["+paramvalue+"]");
+				log.trace("setting queryParameter ["+paramname+"] to ["+paramvalue+"]");
 				messageContext.put(paramname, paramvalue);
+			}
+
+			/**
+			 * Map multipart parts into messageContext
+			 */
+			if (ServletFileUpload.isMultipartContent(request)) {
+				DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
+				ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
+				List<FileItem> items = servletFileUpload.parseRequest(request);
+				for (FileItem item : items) {
+					if (item.isFormField()) {
+						// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
+						String fieldName = item.getFieldName();
+						String fieldValue = item.getString();
+						log.trace("setting multipart formField ["+fieldName+"] to ["+fieldValue+"]");
+						messageContext.put(fieldName, fieldValue);
+					} else {
+						// Process form file field (input type="file").
+						String fieldName = item.getFieldName();
+						String fieldNameName = fieldName + "Name";
+						String fileName = FilenameUtils.getName(item.getName());
+						log.trace("setting multipart formFile ["+fieldNameName+"] to ["+fileName+"]");
+						messageContext.put(fieldNameName, fileName);
+						log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
+						messageContext.put(fieldName, item.getInputStream());
+					}
+				}
 			}
 
 			/**
@@ -267,6 +293,11 @@ public class ApiListenerServlet extends HttpServlet {
 			/**
 			 * Process the request through the pipeline
 			 */
+
+			String body = "";
+			if (!ServletFileUpload.isMultipartContent(request)) {
+				body=Misc.streamToString(request.getInputStream(),"\n",false);
+			}
 			String result = listener.processRequest(null, body, messageContext);
 
 			/**
