@@ -1,0 +1,177 @@
+<registeredAdapters all="false" alert="false">
+	<configurationMessages>
+		<configurationMessage date="2018-01-30 09:09:51.976" level="INFO">Configuration [Ibis4Example] startup in 593 ms</configurationMessage>
+	</configurationMessages>
+	<warnings>
+		<warning config="Ibis4Example" severe="true">Errorlog contains 6 records. Service Management should check whether these records have to be resent or deleted</warning>
+	</warnings>
+	<adapter name="ManageDatabase" description="Manage the database" config="IAF_Util" configUC="IAF*UTIL" nameUC="MANAGEDATABASE" started="true" state="Started" configured="true" upSince="2018-01-30 09:09:50" upSinceAge="2s" lastMessageDate="-" messagesInProcess="0" messagesProcessed="0" messagesInError="0" stateAlert="false">
+		<receivers>
+			<receiver isStarted="true" state="Started" name="ManageDatabase" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="JavaListener" listenerDestination="internal: ManageDatabase" hasErrorStorage="false" hasMessageLog="false" isRestListener="false" isEsbJmsFFListener="false"/>
+			<receiver isStarted="true" state="Started" name="ManageDatabase-ws" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="WebServiceListener" listenerDestination="serviceNamespaceURI [http://managedatabase.ibissource.org/]" hasErrorStorage="false" hasMessageLog="false" isRestListener="false" isEsbJmsFFListener="false"/>
+			<receiver isStarted="true" state="Started" name="ManageDatabase-ws" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="JavaListener" listenerDestination="external: testtool-ManageDatabase" hasErrorStorage="false" hasMessageLog="false" isRestListener="false" isEsbJmsFFListener="false"/>
+		</receivers>
+		<pipes>
+			<pipe name="Query" sender="XmlQuerySender$$EnhancerBySpringCGLIB$$29af745b" destination="jdbc:h2:mem:ibisTestDataSource/IBISTESTDATASOURCE" isJdbcSender="true"/>
+		</pipes>
+		<adapterMessages>
+			<adapterMessage date="2018-01-30 09:09:50.636" level="INFO">Receiver [ManageDatabase-ws] has listener on serviceNamespaceURI [http://managedatabase.ibissource.org/]</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:50.636" level="INFO">Receiver [ManageDatabase-ws] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:50.636" level="INFO">Receiver [ManageDatabase-ws] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:50.637" level="INFO">Receiver [ManageDatabase-ws] has listener on external: testtool-ManageDatabase</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:50.637" level="INFO">Receiver [ManageDatabase-ws] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:50.637" level="INFO">Receiver [ManageDatabase-ws] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:50.774" level="INFO">Adapter [ManageDatabase] up and running</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:50.774" level="INFO">Receiver [ManageDatabase] starts listening</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:50.775" level="INFO">Receiver [ManageDatabase-ws] starts listening</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:50.775" level="INFO">Receiver [ManageDatabase-ws] starts listening</adapterMessage>
+		</adapterMessages>
+	</adapter>
+	<adapter name="WebControlWebservices" config="IAF_WebControl" configUC="IAF*WEBCONTROL" nameUC="WEBCONTROLWEBSERVICES" started="true" state="Started" configured="true" upSince="2018-01-30 09:09:51" upSinceAge="1s" lastMessageDate="-" messagesInProcess="0" messagesProcessed="0" messagesInError="0" stateAlert="false">
+		<receivers>
+			<receiver isStarted="true" state="Started" name="WebControlWebservices" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="RestListener" listenerDestination="uriPattern: webservices; method: all" hasErrorStorage="false" hasMessageLog="false" isRestListener="true" restUriPattern="rest/webservices" isView="false" isEsbJmsFFListener="false"/>
+			<receiver isStarted="true" state="Started" name="WebControlWebservices" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="JavaListener" listenerDestination="external: testtool-WebControlWebservices" hasErrorStorage="false" hasMessageLog="false" isRestListener="false" isEsbJmsFFListener="false"/>
+		</receivers>
+		<pipes/>
+		<adapterMessages>
+			<adapterMessage date="2018-01-30 09:09:51.125" level="INFO">Adapter [WebControlWebservices] pipeline successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.158" level="INFO">Receiver [WebControlWebservices] has listener on uriPattern: webservices; method: all</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.158" level="INFO">Receiver [WebControlWebservices] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.158" level="INFO">Receiver [WebControlWebservices] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.158" level="INFO">Receiver [WebControlWebservices] has listener on external: testtool-WebControlWebservices</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.158" level="INFO">Receiver [WebControlWebservices] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.158" level="INFO">Receiver [WebControlWebservices] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.386" level="INFO">Adapter [WebControlWebservices] up and running</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.389" level="INFO">Receiver [WebControlWebservices] starts listening</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.390" level="INFO">Receiver [WebControlWebservices] starts listening</adapterMessage>
+		</adapterMessages>
+	</adapter>
+	<adapter name="WebControlTestPipeLine" config="IAF_WebControl" configUC="IAF*WEBCONTROL" nameUC="WEBCONTROLTESTPIPELINE" started="true" state="Started" configured="true" upSince="2018-01-30 09:09:51" upSinceAge="1s" lastMessageDate="-" messagesInProcess="0" messagesProcessed="0" messagesInError="0" stateAlert="false">
+		<receivers>
+			<receiver isStarted="true" state="Started" name="WebControlTestPipeLine" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="RestListener" listenerDestination="uriPattern: testPipeLine; method: all" hasErrorStorage="false" hasMessageLog="false" isRestListener="true" restUriPattern="rest/testPipeLine" isView="false" isEsbJmsFFListener="false"/>
+			<receiver isStarted="true" state="Started" name="WebControlTestPipeLine" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="JavaListener" listenerDestination="external: testtool-WebControlTestPipeLine" hasErrorStorage="false" hasMessageLog="false" isRestListener="false" isEsbJmsFFListener="false"/>
+		</receivers>
+		<pipes/>
+		<adapterMessages>
+			<adapterMessage date="2018-01-30 09:09:51.257" level="INFO">Adapter [WebControlTestPipeLine] pipeline successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.258" level="INFO">Receiver [WebControlTestPipeLine] has listener on uriPattern: testPipeLine; method: all</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.258" level="INFO">Receiver [WebControlTestPipeLine] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.258" level="INFO">Receiver [WebControlTestPipeLine] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.258" level="INFO">Receiver [WebControlTestPipeLine] has listener on external: testtool-WebControlTestPipeLine</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.258" level="INFO">Receiver [WebControlTestPipeLine] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.258" level="INFO">Receiver [WebControlTestPipeLine] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.384" level="INFO">Adapter [WebControlTestPipeLine] up and running</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.387" level="INFO">Receiver [WebControlTestPipeLine] starts listening</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.387" level="INFO">Receiver [WebControlTestPipeLine] starts listening</adapterMessage>
+		</adapterMessages>
+	</adapter>
+	<adapter name="WebControlShowFlowDiagram" config="IAF_WebControl" configUC="IAF*WEBCONTROL" nameUC="WEBCONTROLSHOWFLOWDIAGRAM" started="true" state="Started" configured="true" upSince="2018-01-30 09:09:51" upSinceAge="1s" lastMessageDate="-" messagesInProcess="0" messagesProcessed="0" messagesInError="0" stateAlert="false">
+		<receivers>
+			<receiver isStarted="true" state="Started" name="WebControlShowFlowDiagram" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="RestListener" listenerDestination="uriPattern: showFlowDiagram; method: all" hasErrorStorage="false" hasMessageLog="false" isRestListener="true" restUriPattern="rest/showFlowDiagram" isView="false" isEsbJmsFFListener="false"/>
+			<receiver isStarted="true" state="Started" name="WebControlShowFlowDiagram" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="JavaListener" listenerDestination="external: testtool-WebControlShowFlowDiagram" hasErrorStorage="false" hasMessageLog="false" isRestListener="false" isEsbJmsFFListener="false"/>
+		</receivers>
+		<pipes/>
+		<adapterMessages>
+			<adapterMessage date="2018-01-30 09:09:51.374" level="INFO">Adapter [WebControlShowFlowDiagram] pipeline successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.374" level="INFO">Receiver [WebControlShowFlowDiagram] has listener on uriPattern: showFlowDiagram; method: all</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.374" level="INFO">Receiver [WebControlShowFlowDiagram] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.374" level="INFO">Receiver [WebControlShowFlowDiagram] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.374" level="INFO">Receiver [WebControlShowFlowDiagram] has listener on external: testtool-WebControlShowFlowDiagram</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.374" level="INFO">Receiver [WebControlShowFlowDiagram] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.374" level="INFO">Receiver [WebControlShowFlowDiagram] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.389" level="INFO">Adapter [WebControlShowFlowDiagram] up and running</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.390" level="INFO">Receiver [WebControlShowFlowDiagram] starts listening</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.391" level="INFO">Receiver [WebControlShowFlowDiagram] starts listening</adapterMessage>
+		</adapterMessages>
+	</adapter>
+	<adapter name="HelloWorld" config="Ibis4Example" configUC="IBIS4EXAMPLE" nameUC="HELLOWORLD" started="true" state="Started" configured="true" upSince="2018-01-30 09:09:51" upSinceAge="1s" lastMessageDate="-" messagesInProcess="0" messagesProcessed="0" messagesInError="0" stateAlert="false">
+		<receivers>
+			<receiver isStarted="true" state="Started" name="HelloWorld" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="JavaListener" listenerDestination="internal: HelloWorld" hasErrorStorage="false" hasMessageLog="false" isRestListener="false" isEsbJmsFFListener="false"/>
+			<receiver isStarted="true" state="Started" name="HelloWorld" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="JavaListener" listenerDestination="external: testtool-HelloWorld" hasErrorStorage="false" hasMessageLog="false" isRestListener="false" isEsbJmsFFListener="false"/>
+		</receivers>
+		<pipes/>
+		<adapterMessages>
+			<adapterMessage date="2018-01-30 09:09:51.564" level="INFO">Adapter [HelloWorld] pipeline successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.564" level="INFO">Receiver [HelloWorld] has listener on internal: HelloWorld</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.564" level="INFO">Receiver [HelloWorld] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.564" level="INFO">Receiver [HelloWorld] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.564" level="INFO">Receiver [HelloWorld] has listener on external: testtool-HelloWorld</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.564" level="INFO">Receiver [HelloWorld] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.564" level="INFO">Receiver [HelloWorld] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.973" level="INFO">Adapter [HelloWorld] up and running</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.976" level="INFO">Receiver [HelloWorld] starts listening</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.979" level="INFO">Receiver [HelloWorld] starts listening</adapterMessage>
+		</adapterMessages>
+	</adapter>
+	<adapter name="HelloUniverse" config="Ibis4Example" configUC="IBIS4EXAMPLE" nameUC="HELLOUNIVERSE" started="true" state="Started" configured="true" upSince="2018-01-30 09:09:51" upSinceAge="1s" lastMessageDate="-" messagesInProcess="0" messagesProcessed="0" messagesInError="0" stateAlert="false">
+		<receivers>
+			<receiver isStarted="true" state="Started" name="HelloUniverse" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="JavaListener" listenerDestination="internal: HelloUniverse" hasErrorStorage="true" errorStorageCount="3" hasMessageLog="false" isRestListener="false" isEsbJmsFFListener="false"/>
+			<receiver isStarted="true" state="Started" name="HelloUniverse" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="JavaListener" listenerDestination="external: testtool-HelloUniverse" hasErrorStorage="true" errorStorageCount="3" hasMessageLog="false" isRestListener="false" isEsbJmsFFListener="false"/>
+		</receivers>
+		<pipes>
+			<pipe name="HelloUniverse" sender="FixedResultSender$$EnhancerBySpringCGLIB$$3437bfd5" hasMessageLog="true" messageLogCount="5">
+				<browser name="- HelloUniverse: message log" type="log" slotId="Ibis4Example/HelloUniverse_Out" count="5"/>
+			</pipe>
+		</pipes>
+		<adapterMessages>
+			<adapterMessage date="2018-01-30 09:09:51.661" level="INFO">Receiver [HelloUniverse] has errorStorage to jdbc:h2:mem:ibisTestDataSource/IBISTESTDATASOURCE in table [ibisstore]</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.661" level="INFO">Receiver [HelloUniverse] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.661" level="INFO">Receiver [HelloUniverse] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.661" level="INFO">Receiver [HelloUniverse] has listener on external: testtool-HelloUniverse</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.696" level="INFO">Receiver [HelloUniverse] has errorStorage to jdbc:h2:mem:ibisTestDataSource/IBISTESTDATASOURCE in table [ibisstore]</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.696" level="INFO">Receiver [HelloUniverse] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.696" level="INFO">Receiver [HelloUniverse] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.971" level="INFO">Adapter [HelloUniverse] up and running</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.972" level="INFO">Receiver [HelloUniverse] starts listening</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.977" level="INFO">Receiver [HelloUniverse] starts listening</adapterMessage>
+		</adapterMessages>
+	</adapter>
+	<adapter name="HelloWorlds" config="Ibis4Example" configUC="IBIS4EXAMPLE" nameUC="HELLOWORLDS" started="true" state="Started" configured="true" upSince="2018-01-30 09:09:51" upSinceAge="1s" lastMessageDate="-" messagesInProcess="0" messagesProcessed="0" messagesInError="0" stateAlert="false">
+		<receivers>
+			<receiver isStarted="true" state="Started" name="HelloWorlds" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="JavaListener" listenerDestination="internal: HelloWorlds" hasErrorStorage="false" hasMessageLog="false" isRestListener="false" isEsbJmsFFListener="false"/>
+			<receiver isStarted="true" state="Started" name="HelloWorlds" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="JavaListener" listenerDestination="external: testtool-HelloWorlds" hasErrorStorage="false" hasMessageLog="false" isRestListener="false" isEsbJmsFFListener="false"/>
+		</receivers>
+		<pipes>
+			<pipe name="HelloWorlds" sender="IbisLocalSender$$EnhancerBySpringCGLIB$$81367eaf" destination="JavaListener HelloWorld"/>
+		</pipes>
+		<adapterMessages>
+			<adapterMessage date="2018-01-30 09:09:51.835" level="INFO">Adapter [HelloWorlds] pipeline successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.835" level="INFO">Receiver [HelloWorlds] has listener on internal: HelloWorlds</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.835" level="INFO">Receiver [HelloWorlds] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.835" level="INFO">Receiver [HelloWorlds] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.836" level="INFO">Receiver [HelloWorlds] has listener on external: testtool-HelloWorlds</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.836" level="INFO">Receiver [HelloWorlds] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.836" level="INFO">Receiver [HelloWorlds] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.981" level="INFO">Adapter [HelloWorlds] up and running</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.982" level="INFO">Receiver [HelloWorlds] starts listening</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.983" level="INFO">Receiver [HelloWorlds] starts listening</adapterMessage>
+		</adapterMessages>
+	</adapter>
+	<adapter name="Save GUI3.0 Feedback" config="Ibis4Example" configUC="IBIS4EXAMPLE" nameUC="SAVE GUI3.0 FEEDBACK" started="true" state="Started" configured="true" upSince="2018-01-30 09:09:51" upSinceAge="1s" lastMessageDate="-" messagesInProcess="0" messagesProcessed="0" messagesInError="0" stateAlert="false">
+		<receivers>
+			<receiver isStarted="true" state="Started" name="feedbackReceiver" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="RestListener" listenerDestination="uriPattern: guiFeedbackx; method: POST" hasErrorStorage="false" hasMessageLog="false" isRestListener="true" restUriPattern="rest/guiFeedbackx" isView="false" isEsbJmsFFListener="false"/>
+			<receiver isStarted="true" state="Started" name="CreateDiagramPublic" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="RestListener" listenerDestination="uriPattern: guiFeedback; method: POST" hasErrorStorage="false" hasMessageLog="false" isRestListener="true" restUriPattern="rest-public/guiFeedback" isView="false" isEsbJmsFFListener="false"/>
+			<receiver isStarted="true" state="Started" name="CreateDiagramPublic" class="GenericReceiver" messagesReceived="0" messagesRetried="0" messagesRejected="0" listenerClass="JavaListener" listenerDestination="external: testtool-Save GUI3.0 Feedback" hasErrorStorage="false" hasMessageLog="false" isRestListener="false" isEsbJmsFFListener="false"/>
+		</receivers>
+		<pipes>
+			<pipe name="Mailer" sender="IbisJavaSender$$EnhancerBySpringCGLIB$$1b368e6e" destination="JavaListener testtool-Mailer"/>
+		</pipes>
+		<adapterMessages>
+			<adapterMessage date="2018-01-30 09:09:51.968" level="INFO">Receiver [CreateDiagramPublic] has listener on uriPattern: guiFeedback; method: POST</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.968" level="INFO">Receiver [CreateDiagramPublic] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.968" level="INFO">Receiver [CreateDiagramPublic] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.968" level="INFO">Receiver [CreateDiagramPublic] has listener on external: testtool-Save GUI3.0 Feedback</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.968" level="INFO">Receiver [CreateDiagramPublic] initialization complete</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.968" level="INFO">Receiver [CreateDiagramPublic] successfully configured</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.978" level="INFO">Adapter [Save GUI3.0 Feedback] up and running</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.979" level="INFO">Receiver [feedbackReceiver] starts listening</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.981" level="INFO">Receiver [CreateDiagramPublic] starts listening</adapterMessage>
+			<adapterMessage date="2018-01-30 09:09:51.982" level="INFO">Receiver [CreateDiagramPublic] starts listening</adapterMessage>
+		</adapterMessages>
+	</adapter>
+	<summary>
+		<adapterState starting="0" started="8" stopping="0" stopped="0" error="0"/>
+		<receiverState starting="0" started="18" stopping="0" stopped="0" error="0"/>
+		<messageLevel error="0" warn="0" info="80"/>
+	</summary>
+</registeredAdapters>

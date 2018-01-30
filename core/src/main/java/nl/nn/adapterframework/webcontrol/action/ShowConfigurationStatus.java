@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013-2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
@@ -84,7 +85,6 @@ public final class ShowConfigurationStatus extends ActionBase {
 	}
 	
 	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-
 		// Initialize action
 		initAction(request);
 		if(ibisManager==null)return (mapping.findForward("noIbisContext"));
@@ -95,20 +95,8 @@ public final class ShowConfigurationStatus extends ActionBase {
 		String alertStr = request.getParameter("alert");
 		boolean alert = Boolean.valueOf(alertStr);
 		
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-
-		XmlBuilder configurationsXml = new XmlBuilder("configurations");
-		List<Configuration> configurations = ibisManager.getConfigurations();
-		XmlBuilder configurationAllXml = new XmlBuilder("configuration");
-		configurationAllXml.setValue(CONFIG_ALL);
-		configurationAllXml.addAttribute("nameUC","0" + Misc.toSortName(CONFIG_ALL));
-		configurationsXml.addSubElement(configurationAllXml);
-		for (Configuration configuration : configurations) {
-			XmlBuilder configurationXml = new XmlBuilder("configuration");
-			configurationXml.setValue(configuration.getConfigurationName());
-			configurationXml.addAttribute("nameUC","1" + Misc.toSortName(configuration.getConfigurationName()));
-			configurationsXml.addSubElement(configurationXml);
-		}
+		List<Configuration> allConfigurations = ibisManager.getConfigurations();
+		XmlBuilder configurationsXml = toConfigurationsXml(allConfigurations);
 		request.setAttribute("configurations", configurationsXml.toXML());
 
 		Configuration configurationSelected = null;
@@ -131,6 +119,32 @@ public final class ShowConfigurationStatus extends ActionBase {
 			request.getSession().setAttribute("classLoaderType", configurationSelected.getClassLoaderType());
 		}
 
+		XmlBuilder adapters = toAdaptersXml(ibisManager.getIbisContext(), allConfigurations, configurationSelected, registeredAdapters, count, alert);
+		request.setAttribute("adapters", adapters.toXML());
+		
+		// Forward control to the specified success URI
+		log.debug("forward to success");
+		return (mapping.findForward("success"));
+	}
+
+	// public instead of private for the purpose of JUnit Test (will be changed in near future when struts is removed from IAF)
+	public XmlBuilder toConfigurationsXml(List<Configuration> configurations) {
+		XmlBuilder configurationsXml = new XmlBuilder("configurations");
+		XmlBuilder configurationAllXml = new XmlBuilder("configuration");
+		configurationAllXml.setValue(CONFIG_ALL);
+		configurationAllXml.addAttribute("nameUC","0" + Misc.toSortName(CONFIG_ALL));
+		configurationsXml.addSubElement(configurationAllXml);
+		for (Configuration configuration : configurations) {
+			XmlBuilder configurationXml = new XmlBuilder("configuration");
+			configurationXml.setValue(configuration.getConfigurationName());
+			configurationXml.addAttribute("nameUC","1" + Misc.toSortName(configuration.getConfigurationName()));
+			configurationsXml.addSubElement(configurationXml);
+		}
+		return configurationsXml;
+	}
+	
+	// public instead of private for the purpose of JUnit Test (will be changed in near future when struts is removed from IAF)
+	public XmlBuilder toAdaptersXml(IbisContext ibisContext, List<Configuration> configurations, Configuration configurationSelected, List<IAdapter> registeredAdapters, boolean count, boolean alert) {
 		XmlBuilder adapters=new XmlBuilder("registeredAdapters");
 		if (configurationSelected != null) {
 			adapters.addAttribute("all", false);
@@ -145,9 +159,9 @@ public final class ShowConfigurationStatus extends ActionBase {
 		int countConfigurationMessagesError=0;
 		MessageKeeper messageKeeper;
 		if (configurationSelected != null) {
-			messageKeeper = ibisManager.getIbisContext().getMessageKeeper(configurationSelected.getName());
+			messageKeeper = ibisContext.getMessageKeeper(configurationSelected.getName());
 		} else {
-			messageKeeper = ibisManager.getIbisContext().getMessageKeeper("*ALL*");
+			messageKeeper = ibisContext.getMessageKeeper("*ALL*");
 		}
 
 		for (int t=0; t<messageKeeper.size(); t++) {
@@ -274,6 +288,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 				}
 			}
 		}
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (configWarnings.size()>0 || esrs.size()>0 || !showCountErrorStore || cw.size()>0) {
 			XmlBuilder warningsXML=new XmlBuilder("warnings");
 			if (!showCountErrorStore) {
@@ -659,10 +674,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 		messageLevelXML.addAttribute("info",countMessagesInfo+"");
 		summaryXML.addSubElement(messageLevelXML);
 		adapters.addSubElement(summaryXML);
-		request.setAttribute("adapters", adapters.toXML());
-		
-		// Forward control to the specified success URI
-		log.debug("forward to success");
-		return (mapping.findForward("success"));
+	
+		return adapters;
 	}
 }
