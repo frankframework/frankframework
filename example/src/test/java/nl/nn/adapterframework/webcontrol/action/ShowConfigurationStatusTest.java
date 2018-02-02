@@ -48,6 +48,7 @@ public class ShowConfigurationStatusTest {
 		ibisTester = new IbisTester();
 		System.setProperty("HelloWorld.job.active", "false");
 		System.setProperty("junit.active", "true");
+		System.setProperty("configurations.names", "${instance.name},NotExistingConfig");
 		ibisTester.initTest();
 		if (ibisTester.testStartAdapters()) {
 			ibisContext = ibisTester.getIbisContext();
