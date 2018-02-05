@@ -24,6 +24,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -33,6 +34,12 @@ public class ShowConfigurationStatusTest {
 	private static Transformer adaptersTransformer;
 	private static IbisTester ibisTester;
 	private static IbisContext ibisContext;
+
+	@Before
+	public void initXMLUnit() throws IOException {
+		XMLUnit.setIgnoreWhitespace(true);
+		XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
+	}
 
 	@BeforeClass
 	public static void initTest() throws ConfigurationException,
@@ -48,7 +55,8 @@ public class ShowConfigurationStatusTest {
 		ibisTester = new IbisTester();
 		System.setProperty("HelloWorld.job.active", "false");
 		System.setProperty("junit.active", "true");
-		System.setProperty("configurations.names", "${instance.name},NotExistingConfig");
+		System.setProperty("configurations.names",
+				"${instance.name},NotExistingConfig");
 		ibisTester.initTest();
 		if (ibisTester.testStartAdapters()) {
 			ibisContext = ibisTester.getIbisContext();
@@ -76,9 +84,7 @@ public class ShowConfigurationStatusTest {
 		List<IAdapter> registeredAdapters = ibisContext.getIbisManager()
 				.getRegisteredAdapters();
 		String adaptersXml = showConfigurationStatus.toAdaptersXml(ibisContext,
-				allConfigurations, null, registeredAdapters, false, false)
-				.toXML();
-		//System.out.println(adaptersXml);
+				allConfigurations, null, registeredAdapters).toXML();
 		compareXML("webcontrol/adaptersAll.xml", adaptersXml, "adapters");
 	}
 
@@ -93,9 +99,8 @@ public class ShowConfigurationStatusTest {
 		Configuration configurationSelected = ibisContext.getIbisManager()
 				.getConfiguration("Ibis4Example");
 		String adaptersXml = showConfigurationStatus.toAdaptersXml(ibisContext,
-				allConfigurations, configurationSelected, registeredAdapters,
-				false, false).toXML();
-		//System.out.println(adaptersXml);
+				allConfigurations, configurationSelected, registeredAdapters)
+				.toXML();
 		compareXML("webcontrol/adaptersSingle.xml", adaptersXml, "adapters");
 	}
 
@@ -122,6 +127,8 @@ public class ShowConfigurationStatusTest {
 			expected = transformAdaptersXml(expected);
 			result = transformAdaptersXml(result);
 		}
+		// System.out.println("Expected [" + expected + "]");
+		// System.out.println("Result [" + result + "]");
 		Diff diff = XMLUnit.compareXML(expected, result);
 		assertTrue(diff.toString(), diff.identical());
 	}
