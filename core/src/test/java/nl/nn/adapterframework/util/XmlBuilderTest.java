@@ -36,6 +36,9 @@ public class XmlBuilderTest {
 		messageXML.setCdataValue("<xml>world</xml>");
 		messagesXML.addSubElement(messageXML);
 		messageXML = new XmlBuilder("message");
+		messageXML.setValue("<xml>world</xml>", false);
+		messagesXML.addSubElement(messageXML);
+		messageXML = new XmlBuilder("message");
 		messageXML.setValue("\"quot\" 'apos' >gt>");
 		messagesXML.addSubElement(messageXML);
 		messageXML = new XmlBuilder("message");
@@ -49,6 +52,7 @@ public class XmlBuilderTest {
 		sb.append("<messages>");
 		sb.append("<message>hello</message>");
 		sb.append("<message><![CDATA[<xml>world</xml>]]></message>");
+		sb.append("<message><xml>world</xml></message>");
 		sb.append("<message>&quot;quot&quot; &#39;apos&#39; &gt;gt&gt;</message>");
 		// sb.append("<message>\"quot\" 'apos' >gt></message>");
 		sb.append("<message>\"quot\" 'apos' >gt></message>");

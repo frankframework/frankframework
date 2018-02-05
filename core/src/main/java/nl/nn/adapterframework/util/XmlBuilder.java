@@ -15,10 +15,16 @@
  */
 package nl.nn.adapterframework.util;
 
+import java.io.IOException;
+import java.io.StringReader;
+
+import org.apache.log4j.Logger;
 import org.jdom2.Attribute;
 import org.jdom2.CDATA;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
@@ -35,6 +41,8 @@ import org.jdom2.output.XMLOutputter;
  * @author Peter Leeuwenburgh
  **/
 public class XmlBuilder {
+	static Logger log = LogUtil.getLogger(XmlBuilder.class);
+
 	private Element element;
 
 	public XmlBuilder(String tagName) {
@@ -73,13 +81,32 @@ public class XmlBuilder {
 		}
 	}
 
-	/**
-	 * @deprecated encoding is done automatically if needed. please use
-	 *             {@link #setValue(String value)} instead
-	 */
-	@Deprecated
 	public void setValue(String value, boolean encode) {
-		setValue(value);
+		if (encode) {
+			setValue(value);
+		} else {
+			if (XmlUtils.isWellFormed(value)) {
+				try {
+					Element newElement = buildElement(value);
+					element.addContent(newElement);
+				} catch (Exception e) {
+					log.warn("error building JDOM document: " + e.getMessage());
+					setValue(value);
+				}
+			} else {
+				setValue(value);
+			}
+		}
+	}
+
+	private Element buildElement(String value) throws JDOMException,
+			IOException {
+		StringReader stringReader = new StringReader(value);
+		SAXBuilder saxBuilder = new SAXBuilder();
+		Document document;
+		document = saxBuilder.build(stringReader);
+		Element element = document.getRootElement();
+		return element.detach();
 	}
 
 	public String toXML() {
