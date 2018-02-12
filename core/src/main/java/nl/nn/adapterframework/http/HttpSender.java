@@ -16,93 +16,61 @@
 package nl.nn.adapterframework.http;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-
-import javax.activation.DataHandler;
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.ContentType;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.PreencodedMimeBodyPart;
-import javax.mail.util.ByteArrayDataSource;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.TransformerConfigurationException;
-
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.HttpState;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.StatusLine;
-import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.HeadMethod;
-import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.PartSource;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
-import org.apache.commons.httpclient.protocol.Protocol;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.jackrabbit.webdav.DavException;
-import org.apache.jackrabbit.webdav.client.methods.ReportMethod;
-import org.apache.jackrabbit.webdav.version.report.ReportInfo;
-import org.apache.log4j.Logger;
-import org.htmlcleaner.CleanerProperties;
-import org.htmlcleaner.HtmlCleaner;
-import org.htmlcleaner.SimpleXmlSerializer;
-import org.htmlcleaner.TagNode;
-import org.w3c.dom.Element;
-
 import jcifs.util.Base64;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.core.TimeoutGuardSenderWithParametersBase;
+import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.FormBodyPart;
+import org.apache.http.entity.mime.FormBodyPartBuilder;
+import org.apache.http.entity.mime.MIME;
+import org.apache.http.entity.mime.content.InputStreamBody;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.jackrabbit.webdav.client.methods.HttpReport;
+import org.apache.jackrabbit.webdav.version.report.ReportInfo;
+import org.apache.log4j.Logger;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE.
@@ -160,8 +128,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setStoreResultAsStreamInSessionKey(String) storeResultAsStreamInSessionKey}</td><td>if set, a pointer to an input stream of the result is put in the specified sessionKey (as the sender interface only allows a sender to return a string a sessionKey is used instead to return the stream)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setResultStatusCodeSessionKey(String) resultStatusCodeSessionKey}</td><td>if set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMultipartXmlSessionKey(String) multipartXmlSessionKey}</td><td>if set and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, a multipart/form-data entity is created instead of a request body. For each part element in the session key a part in the multipart entity is created</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMtomEnabled(boolean) mtomEnabled}</td><td>when true and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, MTOM is enabled and requests will be send as multipart/related with type="application/xop+xml". Can be used in combination with <code>multipartXmlSessionKey</code></td><td><code>false</code></td></tr>
- * <tr><td>{@link #setMtomContentTransferEncoding(String) mtomContentTransferEncoding}</td><td>when <code>mtomEnabled=true</code>, content-transfer-encoding of the request (first part)</td><td>JavaMail's default behavior</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -225,319 +191,58 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Note 4:
  * In case <code>cannot create or initialize SocketFactory: (IOException) Unable to verify MAC</code>-exceptions are thrown,
  * please check password or authAlias configuration of the correspondig certificate. 
- *  
  * </p>
+ * 
  * <p>
  * Note 5:
  * When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
  * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
- 
- *  
  * </p>
- * @author Gerrit van Brakel
- * @since 4.2c
+ * 
+ * @author Niels Meijer
+ * @since 7.0
+ * @version 2.0
  */
-public class HttpSender extends TimeoutGuardSenderWithParametersBase implements HasPhysicalDestination {
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-	private String url;
-	private String urlParam="url";
-	private String methodType="GET"; // GET or POST
-	private String contentType="text/html; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING;
+public class HttpSender extends HttpSenderBase implements HasPhysicalDestination {
 
-	private int timeout=10000;
-	private int maxConnections=10;
-	
-	private int maxExecuteRetries=1;
-
-	private String authAlias;
-	private String userName;
-	private String password;
-	private String authDomain;
-
-	private String proxyHost;
-	private int    proxyPort=80;
-	private String proxyAuthAlias;
-	private String proxyUserName;
-	private String proxyPassword;
-	private String proxyRealm=null;
-
-	private String certificate;
-	private String certificateAuthAlias;
-	private String certificatePassword;
-	private String keystoreType="pkcs12";
-	private String keyManagerAlgorithm=null;
-	private String truststore=null;
-	private String truststoreAuthAlias;
-	private String truststorePassword=null;
-	private String truststoreType="jks";
-	private String trustManagerAlgorithm=null;
-	private String inputMessageParam=null;
-	private String headersParams=null;
-	
-	private boolean allowSelfSignedCertificates = false;
-	private boolean verifyHostname=true;
-	private boolean jdk13Compatibility=false;
-	private boolean followRedirects=true;
-	private boolean staleChecking=true;
-	private boolean encodeMessages=false;
-	private boolean paramsInUrl=true;
-	private boolean ignoreRedirects=false;
-	private boolean ignoreCertificateExpiredException=false;
-	private boolean xhtml=false;
-	private String styleSheetName=null;
-	private boolean multipart=false;
-	private boolean multipartResponse=false;
-	private boolean streamResultToServlet=false;
-	private String streamResultToFileNameSessionKey=null;
-	private boolean base64=false;
-	private String protocol=null;
+	private String streamResultToFileNameSessionKey = null;
 	private String storeResultAsStreamInSessionKey;
 	private String storeResultAsByteArrayInSessionKey;
-	private String resultStatusCodeSessionKey;
+	private boolean base64=false;
+	private boolean streamResultToServlet=false;
+
+	private boolean multipart=false;
+	private boolean multipartResponse=false;
 	private String multipartXmlSessionKey;
 	private boolean mtomEnabled = false;
-	private String mtomContentTransferEncoding=null;
-	
-	private TransformerPool transformerPool=null;
+	private String mtomContentTransferEncoding = null;
 
-	protected Parameter urlParameter;
-	
-	protected URI staticUri;
-	private MultiThreadedHttpConnectionManager connectionManager;
-	protected HttpClient httpclient;
-	protected HostConfiguration hostconfigurationBase; // hostconfiguration shared by all requests
-	protected HttpState httpState;					   // global http state	
-	private Credentials credentials;
-	
-	private AuthSSLProtocolSocketFactoryBase socketfactory =null;
-	
-	private Set parametersToSkip=new HashSet();
-
-
-	protected void addParameterToSkip(Parameter param) {
-		if (param!=null) {
-			parametersToSkip.add(param);
-		}
-	}
-	
-	protected URI getURI(String url) throws URIException {
-		URI uri = new URI(url);
-
-		if (uri.getPath()==null) {
-			uri.setPath("/");
-		}
-
-		log.info(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] path=["+uri.getPath()+"]");
-		return uri;
-	}
-	
-	protected int getPort(URI uri) {
-		int port = uri.getPort();
-		if (port<1) {
-			try {
-				log.debug(getLogPrefix()+"looking up protocol for scheme ["+uri.getScheme()+"]");
-				port = Protocol.getProtocol(uri.getScheme()).getDefaultPort();
-			} catch (IllegalStateException e) {
-				log.debug(getLogPrefix()+"protocol for scheme ["+uri.getScheme()+"] not found, setting port to 80",e);
-				port=80; 
-			}
-		}
-		return port;
-	}
-	
 	public void configure() throws ConfigurationException {
-		super.configure();
-		
-		if (!getMethodType().equals("POST")) {
-			if (!isParamsInUrl()) {
-				throw new ConfigurationException(getLogPrefix()+"paramsInUrl can only be set to false for methodType POST");
-			}
-			if (StringUtils.isNotEmpty(getInputMessageParam())) {
-				throw new ConfigurationException(getLogPrefix()+"inputMessageParam can only be set for methodType POST");
-			}
-		}
-		
-//		System.setProperty("javax.net.debug","all"); // normaal Java
-//		System.setProperty("javax.net.debug","true"); // IBM java
-		httpclient = new HttpClient();
-		httpclient.setTimeout(getTimeout());
-		httpclient.setConnectionTimeout(getTimeout());
-		httpclient.setHttpConnectionFactoryTimeout(getTimeout());
-		hostconfigurationBase = httpclient.getHostConfiguration();		           
-		
-		if (paramList!=null) {
-			paramList.configure();
-			if (StringUtils.isNotEmpty(getUrlParam())) {
-				urlParameter = paramList.findParameter(getUrlParam());
-				addParameterToSkip(urlParameter);
-			}
-		}
-		if (getMaxConnections()<=0) {
-			throw new ConfigurationException(getLogPrefix()+"maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
-		}
-		try {
-			if (urlParameter==null) {
-				if (StringUtils.isEmpty(getUrl())) {
-					throw new ConfigurationException(getLogPrefix()+"url must be specified, either as attribute, or as parameter");
-				}
-				staticUri=getURI(getUrl());
-			}
-
-			URL certificateUrl=null;
-			URL truststoreUrl=null;
-	
-			if (!StringUtils.isEmpty(getCertificate())) {
-				certificateUrl = ClassUtils.getResourceURL(classLoader, getCertificate());
-				if (certificateUrl==null) {
-					throw new ConfigurationException(getLogPrefix()+"cannot find URL for certificate resource ["+getCertificate()+"]");
-				}
-				log.info(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
-			}
-			if (!StringUtils.isEmpty(getTruststore())) {
-				truststoreUrl = ClassUtils.getResourceURL(classLoader, getTruststore());
-				if (truststoreUrl==null) {
-					throw new ConfigurationException(getLogPrefix()+"cannot find URL for truststore resource ["+getTruststore()+"]");
-				}
-				log.info(getLogPrefix()+"resolved truststore-URL to ["+truststoreUrl.toString()+"]");
-			}
-
-			
-			if (certificateUrl!=null || truststoreUrl!=null || allowSelfSignedCertificates) {
-				//AuthSSLProtocolSocketFactoryBase socketfactory ;
-				try {
-					CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
-					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
-					if (isJdk13Compatibility()) {
-						socketfactory = new AuthSSLProtocolSocketFactoryForJsse10x(
-							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
-							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(),
-							isAllowSelfSignedCertificates(), isVerifyHostname(), isIgnoreCertificateExpiredException());
-					} else {
-						socketfactory = new AuthSSLProtocolSocketFactory(
-							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
-							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(),
-							isAllowSelfSignedCertificates(), isVerifyHostname(), isIgnoreCertificateExpiredException());
-					}
-					if (StringUtils.isNotEmpty(getProtocol())) {
-						socketfactory.setProtocol(getProtocol());
-					}
-					socketfactory.initSSLContext();	
-				} catch (Throwable t) {
-					throw new ConfigurationException(getLogPrefix()+"cannot create or initialize SocketFactory",t);
-				}
-			}
-			httpState = new HttpState();
-			
-			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
-			if (!StringUtils.isEmpty(cf.getUsername())) {
-				httpState.setAuthenticationPreemptive(true);
-				String uname;
-				if (StringUtils.isNotEmpty(getAuthDomain())) {
-					uname = getAuthDomain() + "\\" + cf.getUsername();
-				} else {
-					uname = cf.getUsername();
-				}
-				credentials = new UsernamePasswordCredentials(uname, cf.getPassword());
-			}
-			if (StringUtils.isNotEmpty(getProxyHost())) {
-				httpState.setAuthenticationPreemptive(true);
-				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
-				hostconfigurationBase.setProxy(getProxyHost(), getProxyPort());
-				if (StringUtils.isNotEmpty(pcf.getUsername())) {
-					httpState.setProxyCredentials(getProxyRealm(), getProxyHost(),
-					new UsernamePasswordCredentials(pcf.getUsername(), pcf.getPassword()));
-				}
-			}
-	
-
-		} catch (URIException e) {
-			throw new ConfigurationException(getLogPrefix()+"cannot interprete uri ["+getUrl()+"]");
-		}
-
-		if (StringUtils.isNotEmpty(getStyleSheetName())) {
-			try {
-				URL stylesheetURL = ClassUtils.getResourceURL(classLoader, getStyleSheetName());
-				if (stylesheetURL==null) {
-					throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet ["+getStyleSheetName()+"]");
-				}
-				transformerPool = TransformerPool.getInstance(stylesheetURL);
-			} catch (IOException e) {
-				throw new ConfigurationException(getLogPrefix() + "cannot retrieve ["+ getStyleSheetName() + "]", e);
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException(getLogPrefix() + "got error creating transformer from file [" + getStyleSheetName() + "]", te);
-			}
-		}
+		if(!getMethodType().equalsIgnoreCase("POST"))
+			setContentType("text/html; charset="+getCharSet());
 	}
 
-	public void open() throws SenderException {
-//		connectionManager = new IbisMultiThreadedHttpConnectionManager();
-		connectionManager = new HttpConnectionManager(0,getName());
-		connectionManager.setMaxConnectionsPerHost(getMaxConnections());
-		log.debug(getLogPrefix()+"set up connectionManager, stale checking ["+connectionManager.isConnectionStaleCheckingEnabled()+"]");
-		if (connectionManager.isConnectionStaleCheckingEnabled() != isStaleChecking()) {
-			log.info(getLogPrefix()+"set up connectionManager, setting stale checking ["+isStaleChecking()+"]");
-			connectionManager.setConnectionStaleCheckingEnabled(isStaleChecking());
-		}
-		httpclient.setHttpConnectionManager(connectionManager);
-		if (transformerPool!=null) {
-			try {
-				transformerPool.open();
-			} catch (Exception e) {
-				throw new SenderException(getLogPrefix()+"cannot start TransformerPool", e);
-			}
-		}
+	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, IPipeLineSession session) throws SenderException {
+		if(isParamsInUrl())
+			return getMethod(uri, message, parameters, headersParamsMap);
+		else
+			return getPostMethodWithParamsInBody(uri, message, parameters, headersParamsMap, session);
 	}
 
-	public void close() {
-		connectionManager.shutdown();
-		connectionManager=null;
-		if (transformerPool!=null) {
-			transformerPool.close();
-		}
-	}
-
-	public boolean isSynchronous() {
-		return true;
-	}
-
-	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters, Map<String, String> headersParamsMap) {
-		if (parameters!=null) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
-		}
-		for(int i=0; i<parameters.size(); i++) {
-			if (parametersToSkip.contains(paramList.get(i))) {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"skipping ["+paramList.get(i)+"]");
-				continue;
-			}
-			ParameterValue pv = parameters.getParameterValue(i);
-			if (headersParamsMap.keySet().contains(pv.getDefinition().getName())) {
-				headersParamsMap.put(pv.getDefinition().getName(), pv.asStringValue(""));
-			} else {
-				if (parametersAppended) {
-					path.append("&");
-				} else {
-					path.append("?");
-					parametersAppended = true;
-				}
-				String parameterToAppend=pv.getDefinition().getName()+"="+URLEncoder.encode(pv.asStringValue(""));
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
-				path.append(parameterToAppend);
-			}
-		}
-		return parametersAppended;
-	}
-
-	protected HttpMethod getMethod(URI uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap) throws SenderException {
+	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap) throws SenderException {
 		try { 
 			boolean queryParametersAppended = false;
-			if (isEncodeMessages()) {
-				message = URLEncoder.encode(message);
-			}
-			
+
 			StringBuffer path = new StringBuffer(uri.getPath());
-			if (!StringUtils.isEmpty(uri.getQuery())) {
-				path.append("?"+uri.getQuery());
+			
+			if (uri.getQueryParams().size() > 0) {
+				path.append("?");
+				for (Iterator<NameValuePair> it=uri.getQueryParams().iterator(); it.hasNext(); ) {
+					NameValuePair pair = it.next();
+					path.append(pair.getName()).append("=").append(pair.getValue());
+					if(it.hasNext()) path.append("&");
+				}
 				queryParametersAppended = true;
 			}
 			
@@ -546,17 +251,14 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters,headersParamsMap);
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
 				}
-				GetMethod result = new GetMethod(path+(parameters==null? message:""));
+				HttpGet method = new HttpGet(path+(parameters==null? message:""));
 				for (String param: headersParamsMap.keySet()) {
-					result.addRequestHeader(param, headersParamsMap.get(param));
+					method.setHeader(param, headersParamsMap.get(param));
 				}
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+result.getQueryString()+"]");
-				return result;
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI().getQuery()+"]");
+				return method;
 			} else if (getMethodType().equals("POST")) {
-				PostMethod postMethod = new PostMethod(path.toString());
-				if (StringUtils.isNotEmpty(getContentType())) {
-					postMethod.setRequestHeader("Content-Type",getContentType());
-				}
+				HttpPost method = new HttpPost(path.toString());
 				if (parameters!=null) {
 					StringBuffer msg = new StringBuffer(message);
 					appendParameters(true,msg,parameters,headersParamsMap);
@@ -567,17 +269,14 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 					}
 				}
 				for (String param: headersParamsMap.keySet()) {
-					postMethod.addRequestHeader(param, headersParamsMap.get(param));
+					method.setHeader(param, headersParamsMap.get(param));
 				}
-				postMethod.setRequestBody(message);
-			
-				return postMethod;
+				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()));
+				method.setEntity(entity);
+				return method;
 			}
 			if (getMethodType().equals("PUT")) {
-				PutMethod putMethod = new PutMethod(path.toString());
-				if (StringUtils.isNotEmpty(getContentType())) {
-					putMethod.setRequestHeader("Content-Type",getContentType());
-				}
+				HttpPut method = new HttpPut(path.toString());
 				if (parameters!=null) {
 					StringBuffer msg = new StringBuffer(message);
 					appendParameters(true,msg,parameters,headersParamsMap);
@@ -587,51 +286,44 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 						message=msg.toString();
 					}
 				}
-				putMethod.setRequestBody(message);
-				return putMethod;
+				HttpEntity entity = new ByteArrayEntity(message.getBytes(getCharSet()));
+				method.setEntity(entity);
+				return method;
 			}
 			if (getMethodType().equals("DELETE")) {
-				DeleteMethod deleteMethod = new DeleteMethod(path.toString());
-				if (StringUtils.isNotEmpty(getContentType())) {
-					deleteMethod.setRequestHeader("Content-Type",getContentType());
-				}
-				return deleteMethod;
+				HttpDelete method = new HttpDelete(path.toString());
+				return method;
 			}
 			if (getMethodType().equals("HEAD")) {
-				HeadMethod headMethod = new HeadMethod(path.toString());
-				if (StringUtils.isNotEmpty(getContentType())) {
-					headMethod.setRequestHeader("Content-Type",getContentType());
-				}
-				return headMethod;
+				HttpHead method = new HttpHead(path.toString());
+				return method;
 			}
 			if (getMethodType().equals("REPORT")) {
 				Element element = XmlUtils.buildElement(message, true);
 				ReportInfo reportInfo = new ReportInfo(element, 0);
-				ReportMethod reportMethod = new ReportMethod(path.toString(), reportInfo);
+				HttpReport method = new HttpReport(path.toString(), reportInfo);
 				if (StringUtils.isNotEmpty(getContentType())) {
-					reportMethod.setRequestHeader("Content-Type",getContentType());
+					method.setHeader("Content-Type", getContentType());
 				}
-				return reportMethod;
+				return method;
 			}
-			throw new SenderException("unknown methodtype ["+getMethodType()+"], must be either POST, GET, PUT or DELETE");
-		} catch (URIException e) {
-			throw new SenderException(getLogPrefix()+"cannot find path from url ["+getUrl()+"]", e);
-		} catch (DavException e) {
-			throw new SenderException(e);
-		} catch (DomBuilderException e) {
-			throw new SenderException(e);
-		} catch (IOException e) {
+			throw new SenderException("unknown methodtype ["+getMethodType()+"], must be either GET, PUT, POST, DELETE, HEAD or REPORT");
+		} catch (Exception e) {
+			//Catch all exceptions and throw them as SenderException
 			throw new SenderException(e);
 		}
 	}
 
-	protected PostMethod getPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, ParameterResolutionContext prc) throws SenderException {
+	protected HttpPost getPostMethodWithParamsInBody(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, IPipeLineSession session) throws SenderException {
 		try {
-			PostMethod hmethod = new PostMethod(uri.getPath());
-			if (!isMultipart() && StringUtils.isEmpty(getMultipartXmlSessionKey()) && !isMtomEnabled()) {
+			HttpPost hmethod = new HttpPost(uri.build());
+
+			if (!isMultipart() && StringUtils.isEmpty(getMultipartXmlSessionKey())) {
+				List<NameValuePair> Parameters = new ArrayList<NameValuePair>();
+
 				if (StringUtils.isNotEmpty(getInputMessageParam())) {
-					hmethod.addParameter(getInputMessageParam(),message);
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+getInputMessageParam()+"] with value ["+message+"]");
+					Parameters.add(new BasicNameValuePair(getInputMessageParam(),message));
+					log.debug(getLogPrefix()+"appended parameter ["+getInputMessageParam()+"] with value ["+message+"]");
 				}
 				if (parameters!=null) {
 					for(int i=0; i<parameters.size(); i++) {
@@ -639,65 +331,98 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 						String name = pv.getDefinition().getName();
 						String value = pv.asStringValue("");
 						if (headersParamsMap.keySet().contains(name)) {
-							hmethod.addRequestHeader(name,value);
+							hmethod.addHeader(name,value);
 							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended header ["+name+"] with value ["+value+"]");
 						} else {
-							hmethod.addParameter(name,value);
+							Parameters.add(new BasicNameValuePair(name,value));
 							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
 						}
 					}
 				}
-			} else {
-				if (isMtomEnabled()) {
-					addMtomMultiPartToPostMethod(hmethod, message, parameters, prc);
-				} else {
-					addMultiPartToPostMethod(hmethod, message, parameters, prc);
+				try {
+					hmethod.setEntity(new UrlEncodedFormEntity(Parameters));
+				} catch (UnsupportedEncodingException e) {
+					throw new SenderException(getLogPrefix()+"unsupported encoding for one or more post parameters");
 				}
 			}
-			return hmethod;
-		} catch (Exception e) {
-			throw new SenderException(getLogPrefix() + "got error creating postmethod for url [" + getUrl() + "]", e);
+			else {
+				HttpEntity requestEntity = createMultiPartEntity(message, parameters, session);
+				hmethod.setEntity(requestEntity);
+			}
+		return hmethod;
+		} catch (URISyntaxException e) {
+			throw new SenderException(getLogPrefix()+"cannot find path from url ["+getUrl()+"]", e);
 		}
 	}
 
-	protected void addMultiPartToPostMethod(PostMethod hmethod, String message, ParameterValueList parameters, ParameterResolutionContext prc) throws SenderException {
-		List<Part> partList = new ArrayList<Part>();
+	protected FormBodyPart createMultipartBodypart(String name, String message) {
+		return createMultipartBodypart(name, message, ContentType.DEFAULT_TEXT.getMimeType());
+	}
+
+	protected FormBodyPart createMultipartBodypart(String name, String message, String contentType) {
+		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create()
+			.setName(name)
+			.setBody(new StringBody(message, ContentType.create(contentType, getCharSet())));
+
+		if (StringUtils.isNotEmpty(getMtomContentTransferEncoding()))
+			bodyPart.setField(MIME.CONTENT_TRANSFER_ENC, getMtomContentTransferEncoding());
+
+		return bodyPart.build();
+	}
+
+	protected FormBodyPart createMultipartBodypart(String name, InputStream is, String fileName) {
+		return createMultipartBodypart(name, is, fileName, ContentType.APPLICATION_OCTET_STREAM.getMimeType());
+	}
+
+	protected FormBodyPart createMultipartBodypart(String name, InputStream is, String fileName, String contentType) {
+		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create()
+			.setName(name)
+			.setBody(new InputStreamBody(is, ContentType.create(contentType, getCharSet()), fileName));
+		return bodyPart.build();
+	}
+
+	protected HttpEntity createMultiPartEntity(String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
+
+		entity.setCharset(Charset.forName(getCharSet()));
+		if(isMtomEnabled())
+			entity.setMtomMultipart();
+
 		if (StringUtils.isNotEmpty(getInputMessageParam())) {
-			StringPart stringPart = new StringPart(getInputMessageParam(), message);
-			partList.add(stringPart);
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getInputMessageParam()+"] with value ["+message+"]");
+			entity.addPart(createMultipartBodypart(getInputMessageParam(), message));
+			log.debug(getLogPrefix()+"appended stringpart ["+getInputMessageParam()+"] with value ["+message+"]");
 		}
 		if (parameters!=null) {
 			for(int i=0; i<parameters.size(); i++) {
 				ParameterValue pv = parameters.getParameterValue(i);
 				String paramType = pv.getDefinition().getType();
 				String name = pv.getDefinition().getName();
+
 				if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
 					Object value = pv.getValue();
 					if (value instanceof InputStream) {
-						InputStream is = (InputStream)value;
+						InputStream fis = (InputStream)value;
 						String fileName = null;
 						String sessionKey = pv.getDefinition().getSessionKey();
 						if (sessionKey != null) {
-							fileName = (String) prc.getSession().get(sessionKey + "Name");
+							fileName = (String) session.get(sessionKey + "Name");
 						}
-						StreamPartSource sps = new StreamPartSource(is, fileName);
-						FilePart filePart = new FilePart(name,sps);
-						partList.add(filePart);
-						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+value+"] and name ["+fileName+"]");
+
+						entity.addPart(createMultipartBodypart(name, fis, fileName));
+						log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+value+"] and name ["+fileName+"]");
 					} else {
 						throw new SenderException(getLogPrefix()+"unknown inputstream ["+value.getClass()+"] for parameter ["+name+"]");
 					}
 				} else {
 					String value = pv.asStringValue("");
-					StringPart stringPart = new StringPart(name, value);
-					partList.add(stringPart);
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
+					entity.addPart(createMultipartBodypart(name, value));
+					log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
 				}
 			}
 		}
+
 		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
-			String multipartXml = (String) prc.getSession().get(getMultipartXmlSessionKey());
+			String multipartXml = (String) session.get(getMultipartXmlSessionKey());
 			if (StringUtils.isEmpty(multipartXml)) {
 				log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
 			} else {
@@ -707,202 +432,67 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 				} catch (DomBuilderException e) {
 					throw new SenderException(getLogPrefix()+"error building multipart xml", e);
 				}
-				Collection parts = XmlUtils.getChildTags(partsElement, "part");
+				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
 				if (parts==null || parts.size()==0) {
 					log.warn(getLogPrefix()+"no part(s) in multipart xml [" + multipartXml + "]");
 				} else {
-					int c = 0;
-					Iterator iter = parts.iterator();
+					Iterator<Node> iter = parts.iterator();
 					while (iter.hasNext()) {
-						c++;
 						Element partElement = (Element) iter.next();
 						//String partType = partElement.getAttribute("type");
 						String partName = partElement.getAttribute("name");
 						String partSessionKey = partElement.getAttribute("sessionKey");
-						Object partObject = prc.getSession().get(partSessionKey);
-						if (partObject instanceof InputStream) {
-							InputStream is = (InputStream)partObject;
-							StreamPartSource sps = new StreamPartSource(is, partName);
-							FilePart filePart = new FilePart(partSessionKey,sps);
-							partList.add(filePart);
-							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+partSessionKey+"]  with value ["+partObject+"] and name ["+partName+"]");
-						} else {
-							String partValue = (String) prc.getSession().get(partSessionKey);
-							StringPart stringPart = new StringPart(partSessionKey, partValue);
-							partList.add(stringPart);
-							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+partSessionKey+"]  with value ["+partValue+"]");
-						}
-					}
-				}
-			}
-		}
-		Part[] parts = new Part[partList.size()];
-		partList.toArray(parts);
-		MultipartRequestEntity request = new MultipartRequestEntity(parts, hmethod.getParams());
-		hmethod.setRequestEntity(request);
-	}
-
-	protected void addMtomMultiPartToPostMethod(PostMethod hmethod, String message, ParameterValueList parameters, ParameterResolutionContext prc) throws SenderException, MessagingException, IOException {
-		MyMimeMultipart mimeMultipart = new MyMimeMultipart("related");
-		String start = null;
-		if (StringUtils.isNotEmpty(getInputMessageParam())) {
-			MimeBodyPart mimeBodyPart = new MimeBodyPart();
-			mimeBodyPart.setContent(message, "application/xop+xml; charset=UTF-8; type=\"text/xml\"");
-			start = "<" + getInputMessageParam() + ">";
-			mimeBodyPart.setContentID(start);
-			if (StringUtils.isNotEmpty(getMtomContentTransferEncoding())) {
-				mimeBodyPart.setHeader("Content-Transfer-Encoding", getMtomContentTransferEncoding());
-			}
-			mimeMultipart.addBodyPart(mimeBodyPart);
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (string)part ["+getInputMessageParam()+"] with value ["+message+"]");
-		}
-		if (parameters!=null) {
-			for(int i=0; i<parameters.size(); i++) {
-				ParameterValue pv = parameters.getParameterValue(i);
-				String paramType = pv.getDefinition().getType();
-				String name = pv.getDefinition().getName();
-				if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
-					Object value = pv.getValue();
-					if (value instanceof InputStream) {
-						InputStream is = (InputStream)value;
-						String fileName = null;
-						String sessionKey = pv.getDefinition().getSessionKey();
-						if (sessionKey != null) {
-							fileName = (String) prc.getSession().get(sessionKey + "Name");
-						}
-						MimeBodyPart mimeBodyPart = new PreencodedMimeBodyPart("binary");
-						mimeBodyPart.setDisposition(javax.mail.Part.ATTACHMENT);
-						ByteArrayDataSource ds = new ByteArrayDataSource(is, "application/octet-stream"); 
-						mimeBodyPart.setDataHandler(new DataHandler(ds));
-						mimeBodyPart.setFileName(fileName);
-						mimeBodyPart.setContentID("<" + name + ">");
-				        mimeMultipart.addBodyPart(mimeBodyPart);
-						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (file)part ["+name+"] with value ["+value+"] and name ["+fileName+"]");
-					} else {
-						throw new SenderException(getLogPrefix()+"unknown inputstream ["+value.getClass()+"] for parameter ["+name+"]");
-					}
-				} else {
-					String value = pv.asStringValue("");
-					MimeBodyPart mimeBodyPart = new MimeBodyPart();
-					mimeBodyPart.setContent(value, "text/xml");
-					if (start==null) {
-						start = "<" + name + ">";
-						mimeBodyPart.setContentID(start);
-					} else {
-						mimeBodyPart.setContentID("<" + name + ">");
-					}
-					mimeMultipart.addBodyPart(mimeBodyPart);
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (string)part ["+name+"] with value ["+value+"]");
-				}
-			}
-		}
-		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
-			String multipartXml = (String) prc.getSession().get(getMultipartXmlSessionKey());
-			if (StringUtils.isEmpty(multipartXml)) {
-				log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
-			} else {
-				Element partsElement;
-				try {
-					partsElement = XmlUtils.buildElement(multipartXml);
-				} catch (DomBuilderException e) {
-					throw new SenderException(getLogPrefix()+"error building multipart xml", e);
-				}
-				Collection parts = XmlUtils.getChildTags(partsElement, "part");
-				if (parts==null || parts.size()==0) {
-					log.warn(getLogPrefix()+"no part(s) in multipart xml [" + multipartXml + "]");
-				} else {
-					int c = 0;
-					Iterator iter = parts.iterator();
-					while (iter.hasNext()) {
-						c++;
-						Element partElement = (Element) iter.next();
-						//String partType = partElement.getAttribute("type");
-						String partName = partElement.getAttribute("name");
 						String partMimeType = partElement.getAttribute("mimeType");
-						String partSessionKey = partElement.getAttribute("sessionKey");
-						Object partObject = prc.getSession().get(partSessionKey);
+						Object partObject = session.get(partSessionKey);
 						if (partObject instanceof InputStream) {
-							InputStream is = (InputStream)partObject;
-							MimeBodyPart mimeBodyPart = new PreencodedMimeBodyPart("binary");
-							mimeBodyPart.setDisposition(javax.mail.Part.ATTACHMENT);
-							ByteArrayDataSource ds = new ByteArrayDataSource(is, (partMimeType==null?"application/octet-stream":partMimeType));
-							mimeBodyPart.setDataHandler(new DataHandler(ds));
-							mimeBodyPart.setFileName(partName);
-							mimeBodyPart.setContentID("<" + partName + ">");
-					        mimeMultipart.addBodyPart(mimeBodyPart);
-							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (file)part ["+partSessionKey+"] with value ["+partObject+"] and name ["+partName+"]");
+							InputStream fis = (InputStream) partObject;
+
+							entity.addPart(createMultipartBodypart(partSessionKey, fis, partName, partMimeType));
+							log.debug(getLogPrefix()+"appended filepart ["+partSessionKey+"] with value ["+partObject+"] and name ["+partName+"]");
 						} else {
-							String partValue = (String) prc.getSession().get(partSessionKey);
-							MimeBodyPart mimeBodyPart = new MimeBodyPart();
-							mimeBodyPart.setContent(partValue, "text/xml");
-							if (start==null) {
-								start = "<" + partName + ">";
-								mimeBodyPart.setContentID(start);
-							} else {
-								mimeBodyPart.setContentID("<" + partName + ">");
-							}
-							mimeMultipart.addBodyPart(mimeBodyPart);
-							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended (string)part ["+partSessionKey+"] with value ["+partValue+"]");
+							String partValue = (String) session.get(partSessionKey);
+
+							entity.addPart(createMultipartBodypart(partName, partValue, partMimeType));
+							log.debug(getLogPrefix()+"appended stringpart ["+partSessionKey+"]  with value ["+partValue+"]");
 						}
 					}
 				}
 			}
 		}
-		MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()));
-		mimeMessage.setContent(mimeMultipart);
-		mimeMessage.saveChanges();
-		InputStreamRequestEntity request = new InputStreamRequestEntity(mimeMessage.getInputStream());
-		hmethod.setRequestEntity(request);
-		String contentTypeMtom = "multipart/related; type=\"application/xop+xml\"; start=\"" + start + "\"; start-info=\"text/xml\"; boundary=\"" + mimeMultipart.getBoundary() + "\"";
-		Header header = new Header("Content-Type", contentTypeMtom);
-		hmethod.addRequestHeader(header);
+
+//		String contentTypeMtom = "multipart/related; type=\"application/xop+xml\"; start=\""+start+"\"; start-info=\"text/xml\"; boundary=\""+boundary+"\"";
+
+
+//		entity.setMimeSubtype("related");
+//		StringBuffer buf = new StringBuffer(64);
+//		buf.append("----=_Part_").append((new Object()).hashCode()).append('.').append(System.currentTimeMillis());
+//		String boundary = buf.toString();
+//		entity.setBoundary(boundary);
+//		NameValuePair[] nvp = new NameValuePair[3];
+//		nvp[0] = new BasicNameValuePair("charset", getCharSet());
+//		nvp[1] = new BasicNameValuePair("type", "application/xop+xml");
+//		nvp[2] = new BasicNameValuePair("start", "<"+start+">");
+//		nvp[2] = new BasicNameValuePair("start-info", "<"+start+">");
+//		for (NameValuePair param: nvp) {
+//			System.out.println(param.getName() +" - "+param.getValue());
+//		}
+//		ContentType ct = ContentType.create("multipart/related", nvp);
+//		entity.setContentType(ct);
+
+//		entity.seContentType(contentTypeMtom);
+		return entity.build();
 	}
 
-	private class StreamPartSource implements PartSource {
-		private InputStream is = null;
-		private String fileName;
-		
-		public StreamPartSource(InputStream is, String fileName) {
-			this.is = is;
-			this.fileName = fileName;
-		}
-		
-		public InputStream createInputStream() throws IOException {
-			return is;
-		}
+	protected String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException {
+		int statusCode = responseHandler.getStatusLine().getStatusCode();
 
-		public String getFileName() {
-			if (fileName == null) {
-				return "unknown";
-			}
-			return fileName;
-		}
-
-		public long getLength() {
-			long len = 0;
-			try {
-				if (is instanceof FileInputStream) {
-					len = ((FileInputStream)is).getChannel().size();
-				} else {
-					len = is.available();
-				}
-			} catch (IOException e) {
-				log.warn(getLogPrefix()+"could not determine input stream size", e);
-			}
-			return len;
-		}
-	}
-
-	public String extractResult(HttpMethod httpmethod, ParameterResolutionContext prc, HttpServletResponse response, String fileName) throws SenderException, IOException {
-		int statusCode = httpmethod.getStatusCode();
 		boolean ok = false;
 		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
-			prc.getSession().put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
 			ok = true;
 		} else {
 			if (statusCode==HttpServletResponse.SC_OK) {
 				ok = true;
-			} else { 
+			} else {
 				if (isIgnoreRedirects()) {
 					if (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT) {
 						ok = true;
@@ -910,48 +500,50 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 				}
 			}
 		}
+
 		if (!ok) {
 			throw new SenderException(getLogPrefix() + "httpstatus "
-					+ statusCode + ": " +httpmethod.getStatusText()
-					+ " body: " + getResponseBodyAsString(httpmethod));
+					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
+					+ " body: " + getResponseBodyAsString(responseHandler));
 		}
+
+		HttpServletResponse response = null;
+		if (isStreamResultToServlet())
+			response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
+
 		if (response==null) {
-			if (fileName==null) {
+			if (StringUtils.isEmpty(getStreamResultToFileNameSessionKey())) {
 				if (isBase64()) {
-					return getResponseBodyAsBase64(httpmethod);
+					return getResponseBodyAsBase64(responseHandler.getResponse());
 				} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
-					prc.getSession().put(getStoreResultAsStreamInSessionKey(), new ReleaseConnectionAfterReadInputStream(httpmethod, httpmethod.getResponseBodyAsStream()));
+					prc.getSession().put(getStoreResultAsStreamInSessionKey(), responseHandler.getResponse());
 					return "";
 				} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
-					InputStream is = httpmethod.getResponseBodyAsStream();
-					prc.getSession().put(getStoreResultAsByteArrayInSessionKey(), IOUtils.toByteArray(is));
+					prc.getSession().put(getStoreResultAsByteArrayInSessionKey(), Misc.streamToBytes(responseHandler.getResponse()));
 					return "";
 				} else if (isMultipartResponse()) {
-					return handleMultipartResponse(
-							httpmethod.getResponseHeader("Content-Type").getValue(),
-							httpmethod.getResponseBodyAsStream(), prc, httpmethod);
+					return handleMultipartResponse(responseHandler, prc);
 				} else {
-					//return httpmethod.getResponseBodyAsString();
-					return getResponseBodyAsString(httpmethod);
+					return getResponseBodyAsString(responseHandler);
 				}
 			} else {
-					InputStream is = httpmethod.getResponseBodyAsStream();
-					File file = new File(fileName);
-					Misc.streamToFile(is, file);
-					return fileName;
+				String fileName = (String) prc.getSession().get(getStreamResultToFileNameSessionKey());
+				File file = new File(fileName);
+				Misc.streamToFile(responseHandler.getResponse(), file);
+				return fileName;
 			}
 		} else {
-			streamResponseBody(httpmethod, response);
+			streamResponseBody(responseHandler, response);
 			return "";
 		}
 	}
 
-	public String getResponseBodyAsString(HttpMethod httpmethod) throws IOException {
-		String charset = ((HttpMethodBase)httpmethod).getResponseCharSet();
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
+	public String getResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
+		String charset = responseHandler.getContentType();
+		log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
 		if ("HEAD".equals(getMethodType())) {
 			XmlBuilder headersXml = new XmlBuilder("headers");
-			Header[] headers = httpmethod.getResponseHeaders();
+			Header[] headers = responseHandler.getAllHeaders();
 			for (Header header : headers) {
 				XmlBuilder headerXml = new XmlBuilder("header");
 				headerXml.addAttribute("name", header.getName());
@@ -960,11 +552,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 			}
 			return headersXml.toXML();
 		}
-		InputStream is = httpmethod.getResponseBodyAsStream();
-		if (is == null) {
-			return null;
-		}
-		String responseBody = Misc.streamToString(is,"\n",charset,false);
+		String responseBody = responseHandler.getResponseAsString(true);
 		int rbLength = responseBody.length();
 		long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
 		if (rbLength >= rbSizeWarn) {
@@ -973,8 +561,8 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		return responseBody;
 	}
 
-	public String getResponseBodyAsBase64(HttpMethod httpmethod) throws IOException {
-		byte[] bytes = httpmethod.getResponseBody();
+	public String getResponseBodyAsBase64(InputStream is) throws IOException {
+		byte[] bytes = Misc.streamToBytes(is);
 		if (bytes == null) {
 			return null;
 		}
@@ -982,21 +570,19 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		return Base64.encode(bytes);
 	}
 
-	public static String handleMultipartResponse(String contentType,
-			InputStream inputStream, ParameterResolutionContext prc,
-			HttpMethod httpMethod) throws IOException, SenderException {
+	public static String handleMultipartResponse(HttpResponseHandler httpHandler, ParameterResolutionContext prc) throws IOException, SenderException {
+		return handleMultipartResponse(httpHandler.getContentType(), httpHandler.getResponse(), prc, httpHandler);
+	}
+	public static String handleMultipartResponse(String contentType, InputStream inputStream, ParameterResolutionContext prc, HttpResponseHandler httpHandler) throws IOException, SenderException {
 		String result = null;
 		try {
-			InputStreamDataSource dataSource =
-					new InputStreamDataSource(contentType, inputStream);
+			InputStreamDataSource dataSource = new InputStreamDataSource(httpHandler.getContentType(), inputStream);
 			MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
 			for (int i = 0; i < mimeMultipart.getCount(); i++) {
 				BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 				boolean lastPart = mimeMultipart.getCount() == i + 1;
 				if (i == 0) {
-					String charset =
-							org.apache.http.entity.ContentType.parse(
-									bodyPart.getContentType()).getCharset().name();
+					String charset = ContentType.parse(bodyPart.getContentType()).getCharset().name();
 					InputStream bodyPartInputStream = bodyPart.getInputStream();
 					result = Misc.streamToString(bodyPartInputStream, charset);
 					if (lastPart) {
@@ -1006,10 +592,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 					// When the last stream is read the
 					// httpMethod.releaseConnection() can be called, hence pass
 					// httpMethod to ReleaseConnectionAfterReadInputStream.
-					prc.getSession().put("multipart" + i,
-							new ReleaseConnectionAfterReadInputStream(
-									lastPart ? httpMethod : null,
-									bodyPart.getInputStream()));
+					prc.getSession().put("multipart" + i, new ReleaseConnectionAfterReadInputStream( lastPart ? httpHandler : null, bodyPart.getInputStream()));
 				}
 			}
 		} catch(MessagingException e) {
@@ -1018,10 +601,10 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		return result;
 	}
 
-	public void streamResponseBody(HttpMethod httpmethod, HttpServletResponse response) throws IOException {
-		streamResponseBody(httpmethod.getResponseBodyAsStream(),
-				httpmethod.getResponseHeader("Content-Type").getValue(),
-				httpmethod.getResponseHeader("Content-Disposition").getValue(),
+	public void streamResponseBody(HttpResponseHandler responseHandler, HttpServletResponse response) throws IOException {
+		streamResponseBody(responseHandler.getResponse(),
+				responseHandler.getHeader("Content-Type"),
+				responseHandler.getHeader("Content-Disposition"),
 				response, log, getLogPrefix());
 	}
 
@@ -1040,489 +623,6 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		log.debug(logPrefix + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
 	}
 
-	public String sendMessageWithTimeoutGuarded(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		ParameterValueList pvl = null;
-		try {
-			if (prc !=null && paramList !=null) {
-				pvl=prc.getValues(paramList);
-			}
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
-		}
-		URI uri;
-		HttpMethod httpmethod;
-		HostConfiguration hostconfiguration=new HostConfiguration(hostconfigurationBase);
-		try {
-			if (urlParameter!=null) {
-				String url=(String)pvl.getParameterValue(getUrlParam()).getValue();
-				uri=getURI(url);
-			} else {
-				uri=staticUri;
-			}
-
-			Map<String, String> headersParamsMap = new HashMap<String, String>();
-			if (headersParams != null) {
-				StringTokenizer st = new StringTokenizer(headersParams, ",");
-				while (st.hasMoreElements()) {
-					headersParamsMap.put(st.nextToken(), null);
-				}
-			}
-
-			if (!isParamsInUrl()) {
-				httpmethod=getPostMethodWithParamsInBody(uri, message, pvl, headersParamsMap, prc);
-			} else {
-				httpmethod=getMethod(uri, message, pvl, headersParamsMap);
-				if (!"POST".equals(getMethodType()) && !"PUT".equals(getMethodType()) && !"REPORT".equals(getMethodType())) {
-					httpmethod.setFollowRedirects(isFollowRedirects());
-				}
-			}
-
-			int port = getPort(uri);
-		
-			if (socketfactory!=null && "https".equals(uri.getScheme())) {
-				Protocol authhttps = new Protocol(uri.getScheme(), socketfactory, port);
-				hostconfiguration.setHost(uri.getHost(),port,authhttps);
-			} else {
-				hostconfiguration.setHost(uri.getHost(),port,uri.getScheme());
-			}
-			log.info(getLogPrefix()+"configured httpclient for host ["+hostconfiguration.getHostURL()+"]");
-		
-			if (credentials!=null) {
-				httpState.setCredentials(null, uri.getHost(), credentials);
-			}
-		} catch (URIException e) {
-			throw new SenderException(e);
-		}
-		
-		String result = null;
-		int statusCode = -1;
-		int count=getMaxExecuteRetries();
-		String msg = null;
-		while (count-->=0 && statusCode==-1) {
-			try {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"executing method");
-				statusCode = httpclient.executeMethod(hostconfiguration,httpmethod,httpState);
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"executed method");
-				
-				if (statusCode!=HttpServletResponse.SC_OK) {
-					StatusLine statusline = httpmethod.getStatusLine();
-					if (statusline!=null) { 
-						log.warn(getLogPrefix()+"status ["+statusline.toString()+"]");
-					} else {
-						log.warn(getLogPrefix()+"no statusline found");
-					}
-				} else {
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"status ["+statusCode+"]");
-				}
-				HttpServletResponse response = null;
-				if (isStreamResultToServlet()) {
-					response = (HttpServletResponse) prc.getSession().get(IPipeLineSession.HTTP_RESPONSE_KEY);
-				}
-				String fileName = null;
-				if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
-					fileName = (String) prc.getSession().get(getStreamResultToFileNameSessionKey());
-				}
-				result = extractResult(httpmethod, prc, response, fileName);
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"retrieved result ["+result+"]");
-			} catch (HttpException e) {
-				Throwable throwable = e.getCause();
-				String cause = null;
-				if (throwable!=null) {
-					cause = throwable.toString();
-				}
-				msg = e.getMessage();
-				log.warn(getLogPrefix()+"httpException with message [" + msg + "] and cause [" + cause + "], executeRetries left [" + count + "]");
-			} catch (IOException e) {
-				httpmethod.abort();
-				if (e instanceof SocketTimeoutException) {
-					throw new TimeOutException(e);
-				} 
-				throw new SenderException(e);
-			} finally {
-				// In case of storeResultAsStreamInSessionKey release connection
-				// is done by ReleaseConnectionAfterReadInputStream.
-				if (StringUtils.isEmpty(getStoreResultAsStreamInSessionKey())) {
-					httpmethod.releaseConnection();
-				}
-			}
-		}
-
-		if (statusCode==-1){
-			if (StringUtils.contains(msg.toUpperCase(), "TIMEOUTEXCEPTION")) {
-				//java.net.SocketTimeoutException: Read timed out
-				throw new TimeOutException("Failed to recover from timeout exception");
-			}
-			throw new SenderException("Failed to recover from exception");
-		}
-		
-		if (isXhtml() && StringUtils.isNotEmpty(result)) {
-			result = XmlUtils.skipDocTypeDeclaration(result.trim());
-			if (result.startsWith("<html>") || result.startsWith("<html ")) {
-				CleanerProperties props = new CleanerProperties();
-				HtmlCleaner cleaner = new HtmlCleaner(props);
-				TagNode tagNode = cleaner.clean(result);
-				result = new SimpleXmlSerializer(props).getXmlAsString(tagNode);
-
-				if (transformerPool != null) {
-					log.debug(getLogPrefix() + " transforming result ["
-							+ result + "]");
-					ParameterResolutionContext prc_xslt = new ParameterResolutionContext(
-							result, null, true, true);
-					try {
-						result = transformerPool.transform(
-								prc_xslt.getInputSource(), null);
-					} catch (Exception e) {
-						throw new SenderException(
-								"Exception on transforming input", e);
-					}
-				}
-			}
-		}
-		return result;
-	}
-
-	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
-		return sendMessage(correlationID, message, null);
-	}
-
-
-
-	public String getPhysicalDestinationName() {
-		if (urlParameter!=null) {
-			return "dynamic url";
-		}
-		return getUrl();
-	}
-
-
-
-	public String getUrl() {
-		return url;
-	}
-	public void setUrl(String string) {
-		url = string;
-	}
-
-	public String getUrlParam() {
-		return urlParam;
-	}
-	public void setUrlParam(String urlParam) {
-		this.urlParam = urlParam;
-	}
-
-	public String getMethodType() {
-		return methodType;
-	}
-	public void setMethodType(String string) {
-		methodType = string;
-	}
-
-	public void setContentType(String string) {
-		contentType = string;
-	}
-	public String getContentType() {
-		return contentType;
-	}
-
-	public int getTimeout() {
-		return timeout;
-	}
-	public void setTimeout(int i) {
-		timeout = i;
-	}
-
-	public int retrieveTymeout() {
-		// add 1 second to timeout to be sure HttpClient timeout is not
-		// overruled
-		return (getTimeout() / 1000) + 1;
-	}
-
-	public int getMaxConnections() {
-		return maxConnections;
-	}
-	public void setMaxConnections(int i) {
-		maxConnections = i;
-	}
-
-	public int getMaxExecuteRetries() {
-		return maxExecuteRetries;
-	}
-	public void setMaxExecuteRetries(int i) {
-		maxExecuteRetries = i;
-	}
-
-
-	public String getAuthAlias() {
-		return authAlias;
-	}
-	public void setAuthAlias(String string) {
-		authAlias = string;
-	}
-
-	public String getUserName() {
-		return userName;
-	}
-	public void setUserName(String string) {
-		userName = string;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-	public void setPassword(String string) {
-		password = string;
-	}
-
-	public String getAuthDomain() {
-		return authDomain;
-	}
-	public void setAuthDomain(String string) {
-		authDomain = string;
-	}
-
-	public String getProxyHost() {
-		return proxyHost;
-	}
-	public void setProxyHost(String string) {
-		proxyHost = string;
-	}
-
-	public int getProxyPort() {
-		return proxyPort;
-	}
-	public void setProxyPort(int i) {
-		proxyPort = i;
-	}
-
-	public String getProxyAuthAlias() {
-		return proxyAuthAlias;
-	}
-	public void setProxyAuthAlias(String string) {
-		proxyAuthAlias = string;
-	}
-
-	public String getProxyUserName() {
-		return proxyUserName;
-	}
-	public void setProxyUserName(String string) {
-		proxyUserName = string;
-	}
-
-	public String getProxyPassword() {
-		return proxyPassword;
-	}
-	public void setProxyPassword(String string) {
-		proxyPassword = string;
-	}
-
-	public String getProxyRealm() {
-		return proxyRealm;
-	}
-	public void setProxyRealm(String string) {
-		proxyRealm = string;
-	}
-
-
-	
-	public String getCertificate() {
-		return certificate;
-	}
-	public void setCertificate(String string) {
-		certificate = string;
-	}
-
-	public String getCertificateAuthAlias() {
-		return certificateAuthAlias;
-	}
-	public void setTruststoreAuthAlias(String string) {
-		truststoreAuthAlias = string;
-	}
-
-	public String getCertificatePassword() {
-		return certificatePassword;
-	}
-	public void setCertificatePassword(String string) {
-		certificatePassword = string;
-	}
-
-	public String getKeystoreType() {
-		return keystoreType;
-	}
-	public void setKeystoreType(String string) {
-		keystoreType = string;
-	}
-
-	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		this.keyManagerAlgorithm = keyManagerAlgorithm;
-	}
-	public String getKeyManagerAlgorithm() {
-		return keyManagerAlgorithm;
-	}
-
-	
-	public String getTruststore() {
-		return truststore;
-	}
-	public void setTruststore(String string) {
-		truststore = string;
-	}
-
-	public String getTruststoreAuthAlias() {
-		return truststoreAuthAlias;
-	}
-	public void setCertificateAuthAlias(String string) {
-		certificateAuthAlias = string;
-	}
-
-	public String getTruststorePassword() {
-		return truststorePassword;
-	}
-	public void setTruststorePassword(String string) {
-		truststorePassword = string;
-	}
-
-	public String getTruststoreType() {
-		return truststoreType;
-	}
-	public void setTruststoreType(String string) {
-		truststoreType = string;
-	}
-
-	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
-		this.trustManagerAlgorithm = trustManagerAlgorithm;
-	}
-	public String getTrustManagerAlgorithm() {
-		return trustManagerAlgorithm;
-	}
-
-
-	public boolean isVerifyHostname() {
-		return verifyHostname;
-	}
-	public void setVerifyHostname(boolean b) {
-		verifyHostname = b;
-	}
-
-	public boolean isJdk13Compatibility() {
-		return jdk13Compatibility;
-	}
-	public void setJdk13Compatibility(boolean b) {
-		jdk13Compatibility = b;
-	}
-
-	public boolean isEncodeMessages() {
-		return encodeMessages;
-	}
-	public void setEncodeMessages(boolean b) {
-		encodeMessages = b;
-	}
-
-	public boolean isStaleChecking() {
-		return staleChecking;
-	}
-	public void setStaleChecking(boolean b) {
-		staleChecking = b;
-	}
-
-	public boolean isFollowRedirects() {
-		return followRedirects;
-	}
-	public void setFollowRedirects(boolean b) {
-		followRedirects = b;
-	}
-
-	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
-		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
-	}
-
-	public boolean isAllowSelfSignedCertificates() {
-		return allowSelfSignedCertificates;
-	}
-
-	public void setInputMessageParam(String inputMessageParam) {
-		this.inputMessageParam = inputMessageParam;
-	}
-	public String getInputMessageParam() {
-		return inputMessageParam;
-	}
-
-	public void setHeadersParams(String headersParams) {
-		this.headersParams = headersParams;
-	}
-	public String getHeadersParams() {
-		return headersParams;
-	}
-
-	public void setIgnoreRedirects(boolean b) {
-		ignoreRedirects = b;
-	}
-	public boolean isIgnoreRedirects() {
-		return ignoreRedirects;
-	}
-
-	public void setIgnoreCertificateExpiredException(boolean b) {
-		ignoreCertificateExpiredException = b;
-	}
-	public boolean isIgnoreCertificateExpiredException() {
-		return ignoreCertificateExpiredException;
-	}
-
-	public void setParamsInUrl(boolean b) {
-		paramsInUrl = b;
-	}
-	public boolean isParamsInUrl() {
-		return paramsInUrl;
-	}
-
-	public void setXhtml(boolean b) {
-		xhtml = b;
-	}
-	public boolean isXhtml() {
-		return xhtml;
-	}
-
-	public void setStyleSheetName(String stylesheetName){
-		this.styleSheetName=stylesheetName;
-	}
-	public String getStyleSheetName() {
-		return styleSheetName;
-	}
-
-	public void setMultipart(boolean b) {
-		multipart = b;
-	}
-	public boolean isMultipart() {
-		return multipart;
-	}
-
-	public void setMultipartResponse(boolean b) {
-		multipartResponse = b;
-	}
-	public boolean isMultipartResponse() {
-		return multipartResponse;
-	}
-
-	public void setStreamResultToServlet(boolean b) {
-		streamResultToServlet = b;
-	}
-	public boolean isStreamResultToServlet() {
-		return streamResultToServlet;
-	}
-
-	public void setBase64(boolean b) {
-		base64 = b;
-	}
-	public boolean isBase64() {
-		return base64;
-	}
-
-	public String getProtocol() {
-		return protocol;
-	}
-
-	public void setProtocol(String string) {
-		protocol = string;
-	}
 
 	public String getStreamResultToFileNameSessionKey() {
 		return streamResultToFileNameSessionKey;
@@ -1545,11 +645,32 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
 	}
 
-	public String getResultStatusCodeSessionKey() {
-		return resultStatusCodeSessionKey;
+	public void setBase64(boolean b) {
+		base64 = b;
 	}
-	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
-		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
+	public boolean isBase64() {
+		return base64;
+	}
+
+	public void setStreamResultToServlet(boolean b) {
+		streamResultToServlet = b;
+	}
+	public boolean isStreamResultToServlet() {
+		return streamResultToServlet;
+	}
+
+	public void setMultipart(boolean b) {
+		multipart = b;
+	}
+	public boolean isMultipart() {
+		return multipart;
+	}
+
+	public void setMultipartResponse(boolean b) {
+		multipartResponse = b;
+	}
+	public boolean isMultipartResponse() {
+		return multipartResponse;
 	}
 
 	public String getMultipartXmlSessionKey() {
@@ -1562,6 +683,7 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	public boolean isMtomEnabled() {
 		return mtomEnabled;
 	}
+
 	public void setMtomEnabled(boolean mtomEnabled) {
 		this.mtomEnabled = mtomEnabled;
 	}
@@ -1571,28 +693,5 @@ public class HttpSender extends TimeoutGuardSenderWithParametersBase implements 
 	}
 	public void setMtomContentTransferEncoding(String mtomContentTransferEncoding) {
 		this.mtomContentTransferEncoding = mtomContentTransferEncoding;
-	}
-	
-	public class MyMimeMultipart extends MimeMultipart {
-		private String boundary;
-		
-		public MyMimeMultipart(String subtype) {
-			super();
-			boundary = getBoundaryValue();
-			ContentType cType = new ContentType("multipart", subtype, null);
-			cType.setParameter("boundary", boundary);
-			contentType = cType.toString();
-		}
-
-		public String getBoundaryValue() {
-			StringBuffer buf = new StringBuffer(64);
-			buf.append("----=_Part_").append((new Object()).hashCode())
-					.append('.').append(System.currentTimeMillis());
-			return buf.toString();
-		}
-		
-		public String getBoundary() {
-			return boundary;
-		}
 	}
 }

@@ -34,6 +34,7 @@ import javax.xml.transform.TransformerConfigurationException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -51,6 +52,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -209,7 +211,8 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	private String url;
 	private String urlParam = "url";
 	private String methodType = "GET";
-	private String contentType = "text/html; charset="+getCharSet();
+	private String charSet = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private String contentType = null;
 
 	/** CONNECTION POOL **/
 	private int timeout = 10000;
@@ -260,16 +263,8 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	private boolean ignoreRedirects=false;
 	private boolean xhtml=false;
 	private String styleSheetName=null;
-	private boolean multipart=false;
-	private boolean multipartResponse=false;
-	private boolean streamResultToServlet=false;
-	private String streamResultToFileNameSessionKey=null;
-	private boolean base64=false;
 	private String protocol=null;
-	private String storeResultAsStreamInSessionKey;
-	private String storeResultAsByteArrayInSessionKey;
 	private String resultStatusCodeSessionKey;
-	private String multipartXmlSessionKey;
 
 	private TransformerPool transformerPool=null;
 
@@ -277,8 +272,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 	protected URIBuilder staticUri;
 	private CredentialFactory credentials;
-
-	private String charSet = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 
 	private Set<Parameter> parametersToSkip=new HashSet<Parameter>();
 
@@ -529,10 +522,31 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return parametersAppended;
 	}
 
-	public abstract HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap) throws SenderException;
+	/**
+	 * Custom implementation to create a {@link HttpRequestBase HttpRequest} object.
+	 * @param uri endpoint to send the message to
+	 * @param message to be sent
+	 * @param parameters ParameterValueList that contains all the senders parameters
+	 * @param headersParamsMap Map that contains the {@link #setHeadersParams}
+	 * @param session PipeLineSession to retrieve or store data from
+	 * @return a {@link HttpRequestBase HttpRequest} object
+	 * @throws SenderException
+	 */
+	protected abstract HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, IPipeLineSession session) throws SenderException;
 
-	public abstract String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException;
+	/**
+	 * Custom implementation to extract the response and format it to a String result. <br/>
+	 * It is important that the {@link HttpResponseHandler#getResponse() response} 
+	 * will be read or will be {@link HttpResponseHandler#close() closed}.
+	 * @param responseHandler {@link HttpResponseHandler} that contains the response information
+	 * @param prc ParameterResolutionContext
+	 * @return a string that will be passed to the pipeline
+	 * @throws SenderException
+	 * @throws IOException
+	 */
+	protected abstract String extractResult(HttpResponseHandler responseHandler, ParameterResolutionContext prc) throws SenderException, IOException;
 
+	@Override
 	public String sendMessageWithTimeoutGuarded(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		try {
@@ -563,9 +577,13 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 				}
 			}
 
-			httpRequestBase = getMethod(uri, message, pvl, headersParamsMap);
+			if (isEncodeMessages()) {
+				message = URLEncoder.encode(message, getCharSet());
+			}
+
+			httpRequestBase = getMethod(uri, message, pvl, headersParamsMap, prc.getSession());
 			if(httpRequestBase == null)
-				throw new SenderException("invalid or unknown httpRequestBase");
+				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodType()+"]");
 
 			if (!"POST".equals(getMethodType()) && !"PUT".equals(getMethodType()) && !"REPORT".equals(getMethodType())) {
 				httpClientBuilder.setRedirectStrategy(new DefaultRedirectStrategy() {
@@ -574,6 +592,10 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 						return true;
 					}
 				});
+			}
+
+			if (StringUtils.isNotEmpty(getContentType())) {
+				httpRequestBase.setHeader("Content-Type", getContentType());
 			}
 
 			if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
@@ -587,7 +609,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 			log.info(getLogPrefix()+"configured httpclient for host ["+uri.getHost()+"]");
 
-		} catch (URISyntaxException e) {
+		} catch (Exception e) {
 			throw new SenderException(e);
 		}
 
@@ -607,6 +629,9 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 				StatusLine statusline = httpResponse.getStatusLine();
 				statusCode = statusline.getStatusCode();
 
+				if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && prc != null) {
+					prc.getSession().put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
+				}
 				if (statusCode != HttpServletResponse.SC_OK) {
 					log.warn(getLogPrefix()+"status ["+statusline.toString()+"]");
 				} else {
@@ -617,6 +642,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 				log.debug(getLogPrefix()+"retrieved result ["+result+"]");
 			} catch (ClientProtocolException e) {
+				httpRequestBase.abort();
 				Throwable throwable = e.getCause();
 				String cause = null;
 				if (throwable != null) {
@@ -631,12 +657,15 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 				}
 				throw new SenderException(e);
 			} finally {
-				//TODO: Make sure stream is closed properly
-				// In case of storeResultAsStreamInSessionKey release connection
-				// is done by ReleaseConnectionAfterReadInputStream.
-				if (StringUtils.isEmpty(getStoreResultAsStreamInSessionKey())) {
-					httpRequestBase.releaseConnection();
-				}
+				// By forcing the use of the HttpResponseHandler the resultStream 
+				// will automatically be closed when it has been read.
+				// See HttpResponseHandler and ReleaseConnectionAfterReadInputStream.
+				// We cannot close the connection as the response might be kept
+				// in a sessionKey for later use in the pipeline.
+				// 
+				// IMPORTANT: It is possible that poorly written implementations
+				// wont read or close the response.
+				// This will cause the connection to become stale..
 			}
 		}
 
@@ -671,11 +700,12 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return result;
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
 		return sendMessage(correlationID, message, null);
 	}
 
-
+	@Override
 	public String getPhysicalDestinationName() {
 		if (urlParameter!=null) {
 			return "dynamic url";
@@ -684,27 +714,45 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	}
 
 
-	public String getUrl() {
-		return url;
-	}
+	/**
+	 * URL or base of URL to be used
+	 * @param string
+	 */
 	public void setUrl(String string) {
 		url = string;
 	}
-
-	public String getUrlParam() {
-		return urlParam;
+	public String getUrl() {
+		return url;
 	}
+
+	/**
+	 * Parameter that is used to obtain url; overrides url-attribute
+	 * @param urlParam
+	 * @IbisDoc.default url
+	 */
 	public void setUrlParam(String urlParam) {
 		this.urlParam = urlParam;
 	}
-
-	public String getMethodType() {
-		return methodType.toUpperCase();
+	public String getUrlParam() {
+		return urlParam;
 	}
+
+	/**
+	 * Type of method to be executed 
+	 * @param string one of; GET, POST, PUT, DELETE, HEAD or REPORT
+	 * @IbisDoc.default GET
+	 */
 	public void setMethodType(String string) {
 		methodType = string;
 	}
+	public String getMethodType() {
+		return methodType.toUpperCase();
+	}
 
+	/**
+	 * Content-Type of the request
+	 * @param string
+	 */
 	public void setContentType(String string) {
 		contentType = string;
 	}
@@ -712,6 +760,11 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return contentType;
 	}
 
+	/**
+	 * Default charset of the request
+	 * @param string
+	 * @IbisDoc.Default UTF-8
+	 */
 	public void setCharSet(String string) {
 		charSet = string;
 	}
@@ -719,31 +772,40 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return charSet;
 	}
 
-	public int getTimeout() {
-		return timeout;
-	}
+	/**
+	 * Timeout in ms of obtaining a connection/result. 0 means no timeout
+	 * @param i
+	 * @IbisDoc.default 10000
+	 */
 	public void setTimeout(int i) {
 		timeout = i;
 	}
-
-	public int retrieveTymeout() {
-		// add 1 second to timeout to be sure HttpClient timeout is not
-		// overruled
-		return (getTimeout() / 1000) + 1;
+	public int getTimeout() {
+		return timeout;
 	}
 
-	public int getMaxConnections() {
-		return maxConnections;
-	}
+	/**
+	 * The maximum number of concurrent connections
+	 * @param i
+	 * @IbisDoc.default 10
+	 */
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
-
-	public int getMaxExecuteRetries() {
-		return maxExecuteRetries;
+	public int getMaxConnections() {
+		return maxConnections;
 	}
+
+	/**
+	 * The maximum number of times the execution is retried
+	 * @param i
+	 * IbisDoc.default 1
+	 */
 	public void setMaxExecuteRetries(int i) {
 		maxExecuteRetries = i;
+	}
+	public int getMaxExecuteRetries() {
+		return maxExecuteRetries;
 	}
 
 
@@ -820,7 +882,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	}
 
 
-	
 	public String getCertificate() {
 		return certificate;
 	}
@@ -907,43 +968,66 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		jdk13Compatibility = b;
 	}
 
-	public boolean isEncodeMessages() {
-		return encodeMessages;
-	}
-	public void setEncodeMessages(boolean b) {
-		encodeMessages = b;
-	}
-
-	public boolean isStaleChecking() {
-		return staleChecking;
-	}
-	public void setStaleChecking(boolean b) {
-		staleChecking = b;
-	}
-	
-	public int getStaleTimeout() {
-		return staleTimeout;
-	}
-	
-	public void setStaleTimeout(int timeout) {
-		staleTimeout = timeout;
-	}
-
-	public boolean isFollowRedirects() {
-		return followRedirects;
-	}
-	public void setFollowRedirects(boolean b) {
-		followRedirects = b;
-	}
-
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
 		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
 	}
-
 	public boolean isAllowSelfSignedCertificates() {
 		return allowSelfSignedCertificates;
 	}
 
+	/**
+	 * Specifies whether messages will encoded, e.g. spaces will be replaced by '+'
+	 * @param b
+	 */
+	public void setEncodeMessages(boolean b) {
+		encodeMessages = b;
+	}
+	public boolean isEncodeMessages() {
+		return encodeMessages;
+	}
+
+	/**
+	 * Controls whether connections checked to be stale, i.e. appear open, but are not.	
+	 * @param b
+	 * IbisDoc.default true
+	 */
+	public void setStaleChecking(boolean b) {
+		staleChecking = b;
+	}
+	public boolean isStaleChecking() {
+		return staleChecking;
+	}
+
+	/**
+	 * Used when StaleChecking=true. Timeout when stale connections should be closed.
+	 * @param timeout
+	 * IbisDoc.default 5000
+	 */
+	public void setStaleTimeout(int timeout) {
+		staleTimeout = timeout;
+	}
+	public int getStaleTimeout() {
+		return staleTimeout;
+	}
+
+	/**
+	 * When true, a redirect request will be honored, e.g. to switch to https	
+	 * @param b
+	 * IbisDoc.default true
+	 */
+	public void setFollowRedirects(boolean b) {
+		followRedirects = b;
+	}
+	public boolean isFollowRedirects() {
+		return followRedirects;
+	}
+
+	
+	/**
+	 * Only used when methodeType=POST and paramsInUrl=false.
+	 * Name of the request parameter which is used to put the input message in
+	 * @param inputMessageParam
+	 */
 	public void setInputMessageParam(String inputMessageParam) {
 		this.inputMessageParam = inputMessageParam;
 	}
@@ -951,6 +1035,10 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return inputMessageParam;
 	}
 
+	/**
+	 * Comma separated list of parameter names which should be set as http headers
+	 * @param headersParams
+	 */
 	public void setHeadersParams(String headersParams) {
 		this.headersParams = headersParams;
 	}
@@ -958,6 +1046,10 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return headersParams;
 	}
 
+	/**
+	 * When true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful
+	 * @param b
+	 */
 	public void setIgnoreRedirects(boolean b) {
 		ignoreRedirects = b;
 	}
@@ -965,6 +1057,11 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return ignoreRedirects;
 	}
 
+	/**
+	 * The CertificateExpiredException is ignored when set to true
+	 * @param b
+	 * @IbisDoc.default false
+	 */
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;
 	}
@@ -972,6 +1069,11 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return ignoreCertificateExpiredException;
 	}
 
+	/**
+	 * When false and methodeType=POST, request parameters are put in the request body instead of in the url
+	 * @param b
+	 * @IbisDoc.default true
+	 */
 	public void setParamsInUrl(boolean b) {
 		paramsInUrl = b;
 	}
@@ -979,13 +1081,22 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return paramsInUrl;
 	}
 
-	public void setXhtml(boolean b) {
-		xhtml = b;
+	/**
+	 * Transformes the response to xhtml
+	 * @param xHtml
+	 * @IbisDoc.default false
+	 */
+	public void setXhtml(boolean xHtml) {
+		xhtml = xHtml;
 	}
 	public boolean isXhtml() {
 		return xhtml;
 	}
 
+	/**
+	 * Only used when xhtml=true.
+	 * @param stylesheetName to apply to the html response
+	 */
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
@@ -993,74 +1104,26 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return styleSheetName;
 	}
 
-	public void setMultipart(boolean b) {
-		multipart = b;
+	/**
+	 * Secure socket protocol (such as "SSL" and "TLS") to use when a SSLContext object is generated.
+	 * @param protocol
+	 * @IbisDoc.default SSL
+	 */
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
 	}
-	public boolean isMultipart() {
-		return multipart;
-	}
-
-	public void setMultipartResponse(boolean b) {
-		multipartResponse = b;
-	}
-	public boolean isMultipartResponse() {
-		return multipartResponse;
-	}
-
-	public void setStreamResultToServlet(boolean b) {
-		streamResultToServlet = b;
-	}
-	public boolean isStreamResultToServlet() {
-		return streamResultToServlet;
-	}
-
-	public void setBase64(boolean b) {
-		base64 = b;
-	}
-	public boolean isBase64() {
-		return base64;
-	}
-
 	public String getProtocol() {
 		return protocol;
 	}
 
-	public void setProtocol(String string) {
-		protocol = string;
-	}
-
-	public String getStreamResultToFileNameSessionKey() {
-		return streamResultToFileNameSessionKey;
-	}
-	public void setStreamResultToFileNameSessionKey(String string) {
-		streamResultToFileNameSessionKey = string;
-	}
-
-	public String getStoreResultAsStreamInSessionKey() {
-		return storeResultAsStreamInSessionKey;
-	}
-	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
-		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
-	}
-
-	public String getStoreResultAsByteArrayInSessionKey() {
-		return storeResultAsByteArrayInSessionKey;
-	}
-	public void setStoreResultAsByteArrayInSessionKey(String storeResultAsByteArrayInSessionKey) {
-		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
-	}
-
-	public String getResultStatusCodeSessionKey() {
-		return resultStatusCodeSessionKey;
-	}
+	/**
+	 * The statusCode of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned
+	 * @param resultStatusCodeSessionKey to store the statusCode in
+	 */
 	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
 		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
 	}
-
-	public String getMultipartXmlSessionKey() {
-		return multipartXmlSessionKey;
-	}
-	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
-		this.multipartXmlSessionKey = multipartXmlSessionKey;
+	public String getResultStatusCodeSessionKey() {
+		return resultStatusCodeSessionKey;
 	}
 }

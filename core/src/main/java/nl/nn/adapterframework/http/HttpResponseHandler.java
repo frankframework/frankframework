@@ -53,10 +53,15 @@ public class HttpResponseHandler {
 		return httpResponse.getAllHeaders();
 	}
 
+	/**
+	 * Returns an {@link ReleaseConnectionAfterReadInputStream InputStream} that will automatically close the HttpRequest when fully read
+	 * @return an {@link ReleaseConnectionAfterReadInputStream InputStream} retrieved from {@link HttpEntity#getContent()}
+	 * @throws IOException
+	 */
 	public InputStream getResponse() throws IOException {
 		statusCode = getStatusLine().getStatusCode();
 
-		return new ReleaseHttpResponseAfterReadInputStream(httpResponse, content);
+		return new ReleaseConnectionAfterReadInputStream(this, content);
 	}
 
 	public String getResponseAsString() throws IOException {
@@ -76,10 +81,6 @@ public class HttpResponseHandler {
 		return httpResponse.getFirstHeader(header).getValue();
 	}
 
-	public HttpEntity getEntity() {
-		return httpEntity;
-	}
-
 	public String getContentType() {
 		Header contentTypeHeader = this.getFirstHeader(HttpHeaders.CONTENT_TYPE);
 		ContentType contentType;
@@ -94,6 +95,10 @@ public class HttpResponseHandler {
 		return charSet;
 	}
 
+	/**
+	 * Consumes the {@link HttpEntity} and will release the connection.
+	 * @throws IOException
+	 */
 	public void close() throws IOException {
 		EntityUtils.consume(httpEntity);
 		content.close();

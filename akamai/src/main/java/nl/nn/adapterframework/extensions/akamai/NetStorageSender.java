@@ -179,7 +179,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap) throws SenderException {
+	public HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, Map<String, String> headersParamsMap, IPipeLineSession session) throws SenderException {
 
 		NetStorageAction netStorageAction = new NetStorageAction(getAction());
 		netStorageAction.setVersion(actionVersion);

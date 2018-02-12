@@ -62,7 +62,7 @@ public class CmisHttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList pvl, Map<String, String> headersParamsMap) throws SenderException {
+	public HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList pvl, Map<String, String> headersParamsMap, IPipeLineSession session) throws SenderException {
 		HttpRequestBase method = null;
 
 		try {
@@ -177,9 +177,6 @@ public class CmisHttpSender extends HttpSenderBase {
 
 		ParameterResolutionContext prc = new ParameterResolutionContext("", pls);
 		try {
-			//Don't release the connection after extracting the result.
-			//The responseStream wont be read until later in the CmisSender.
-			setStoreResultAsStreamInSessionKey("dummy");
 			sendMessageWithTimeoutGuarded(null, null, prc);
 			return (Response) pls.get("response");
 		}
