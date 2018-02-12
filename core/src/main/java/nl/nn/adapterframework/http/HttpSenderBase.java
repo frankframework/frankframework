@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 - 2018 Integration Partners
+   Copyright 2017-2018 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -799,7 +799,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	/**
 	 * The maximum number of times the execution is retried
 	 * @param i
-	 * IbisDoc.default 1
+	 * @IbisDoc.default 1
 	 */
 	public void setMaxExecuteRetries(int i) {
 		maxExecuteRetries = i;
@@ -989,7 +989,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	/**
 	 * Controls whether connections checked to be stale, i.e. appear open, but are not.	
 	 * @param b
-	 * IbisDoc.default true
+	 * @IbisDoc.default true
 	 */
 	public void setStaleChecking(boolean b) {
 		staleChecking = b;
@@ -1001,7 +1001,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	/**
 	 * Used when StaleChecking=true. Timeout when stale connections should be closed.
 	 * @param timeout
-	 * IbisDoc.default 5000
+	 * @IbisDoc.default 5000
 	 */
 	public void setStaleTimeout(int timeout) {
 		staleTimeout = timeout;
@@ -1013,7 +1013,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	/**
 	 * When true, a redirect request will be honored, e.g. to switch to https	
 	 * @param b
-	 * IbisDoc.default true
+	 * @IbisDoc.default true
 	 */
 	public void setFollowRedirects(boolean b) {
 		followRedirects = b;

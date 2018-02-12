@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2017-2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -121,15 +121,12 @@ public class WebServiceSender extends HttpSender {
 	private Parameter soapActionParameter;
 	private Parameter serviceNamespaceURIParameter;
 
-	public WebServiceSender() {
-		super();
-		setMethodType("POST");
-		setContentType("text/xml; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING);
-	}
-
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		setMethodType("POST");
+		setContentType("text/xml; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING);
+
 		if (isSoap()) {
 			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 			//String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";

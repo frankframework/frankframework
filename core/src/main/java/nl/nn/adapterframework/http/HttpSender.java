@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016-2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -219,6 +219,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	private String mtomContentTransferEncoding = null;
 
 	public void configure() throws ConfigurationException {
+		super.configure();
 		if(!getMethodType().equalsIgnoreCase("POST"))
 			setContentType("text/html; charset="+getCharSet());
 	}
