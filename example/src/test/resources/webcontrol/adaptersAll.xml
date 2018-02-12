@@ -4,8 +4,12 @@
 		<configurationMessage date="2018-01-29 16:36:46.730" level="INFO">Configuration [IAF_Util] startup in 1593 ms</configurationMessage>
 		<configurationMessage date="2018-01-29 16:36:47.466" level="INFO">Configuration [IAF_WebControl] startup in 736 ms</configurationMessage>
 		<configurationMessage date="2018-01-29 16:36:48.130" level="INFO">Configuration [Ibis4Example] startup in 662 ms</configurationMessage>
+		<configurationMessage date="2018-01-29 16:36:48.130" level="ERROR">Configuration [NotExistingConfig]  exception: error during unmarshalling configuration from file [NotExistingConfig/Configuration.xml] with digester-rules-file [digester-rules.xml] in element []: Configuration file not found: NotExistingConfig/Configuration.xml</configurationMessage>
 		<configurationMessage date="2018-01-29 16:36:48.130" level="INFO">Application [Ibis4Example] startup in 4771 ms</configurationMessage>
 	</configurationMessages>
+	<exceptions>
+		<exception config="NotExistingConfig">error during unmarshalling configuration from file [NotExistingConfig/Configuration.xml] with digester-rules-file [digester-rules.xml] in element []: Configuration file not found: NotExistingConfig/Configuration.xml</exception>
+	</exceptions>
 	<warnings>
 		<warning config="Ibis4Example" severe="true">Errorlog contains 6 records. Service Management should check whether these records have to be resent or deleted</warning>
 	</warnings>
