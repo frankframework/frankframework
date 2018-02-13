@@ -22,6 +22,7 @@ Upcoming
 - Add duration statistics to showSchedulerStatus
 - Upgrade CmisSender to support 'browser' bindings, support proxys and secure connections
 - Refactor HttpSender and WebServiceSender and (LSM) upgrade HttpClient from version 3 to version 4. Better (Mtom-)Multipart implementation and support for other http implementations using the HttpSenderBase and HttpResponseHandler
+- Fix NPE DumpIbisConsole
 
 
 
