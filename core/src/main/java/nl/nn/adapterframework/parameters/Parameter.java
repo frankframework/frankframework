@@ -89,6 +89,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setDecimalSeparator(String) decimalSeparator}</td><td>used in combination with type <code>number</code></td><td>system default</td></tr>
  * <tr><td>{@link #setGroupingSeparator(String) groupingSeparator}</td><td>used in combination with type <code>number</code></td><td>system default</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or Stylesheet, instead of the current input message. If no xpathExpression or Stylesheet are specified, the value itself is returned. If the value "*" is specified, all existing sessionKeys are added as parameter of which the name starts with the name of this parameter. If also the name of the parameter has the value "*" then all existing sessionKeys are added as parameter (except "tsReceived")</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSessionKeyXPath(String) sessionKeyXPath}</td><td>Instead of a fixed <code>sessionKey</code> it's also possible to use a xpath expression to extract the name of the <code>sessionKey</code></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>The xpath expression to extract the parameter value from the (xml formatted) input or session-variable.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNamespaceDefs(String) namespaceDefs}</td><td>namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>URL to a stylesheet that wil be applied to the contents of the message or the value of the session-variable.</td><td>&nbsp;</td></tr>
@@ -158,6 +159,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	private String name = null;
 	private String type = null;
 	private String sessionKey = null;
+	private String sessionKeyXPath = null;
 	private String xpathExpression = null; 
 	private String namespaceDefs = null;
 	private String styleSheetName = null;
@@ -181,6 +183,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	private DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
 	private TransformerPool transformerPoolRemoveNamespaces;
+	private TransformerPool transformerPoolSessionKey = null;
 	protected ParameterList paramList = null;
 	private boolean configured = false;
 
@@ -193,6 +196,10 @@ public class Parameter implements INamedObject, IWithParameters {
 	}
 
 	public void configure() throws ConfigurationException {
+		if (StringUtils.isNotEmpty(getSessionKey()) && 
+			    StringUtils.isNotEmpty(getSessionKeyXPath())) {
+			throw new ConfigurationException("Parameter ["+getName()+"] cannot have both sessionKey and sessionKeyXPath specified");
+		}
 		if (StringUtils.isNotEmpty(getXpathExpression()) || 
 		    StringUtils.isNotEmpty(styleSheetName)) {
 			if (paramList!=null) {
@@ -217,6 +224,9 @@ public class Parameter implements INamedObject, IWithParameters {
 				throw new ConfigurationException("Got error creating transformer from removeNamespaces", te);
 			}
 		}
+		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
+			transformerPoolSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", classLoader, getNamespaceDefs(), getSessionKeyXPath(), null,"text",false,null);
+	    }
 		if (TYPE_DATE.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_DATE_PATTERN);
 		}
@@ -296,6 +306,17 @@ public class Parameter implements INamedObject, IWithParameters {
 			throw new ParameterException("Parameter ["+getName()+"] not configured");
 		}
 		
+		String retrievedSessionKey;
+		if (transformerPoolSessionKey != null) {
+			try {
+				retrievedSessionKey = transformerPoolSessionKey.transform(prc.getInput(), null);
+			} catch (Exception e) {
+				throw new ParameterException("SessionKey for parameter ["+getName()+"] exception on transformation to get name", e);
+			}
+		} else {
+			retrievedSessionKey = getSessionKey();
+		}
+		
 		TransformerPool pool = getTransformerPool();
 		if (pool != null) {
 			try {
@@ -303,9 +324,9 @@ public class Parameter implements INamedObject, IWithParameters {
 				Source source=null;
 				if (StringUtils.isNotEmpty(getValue())) {
 					source = XmlUtils.stringToSourceForSingleUse(getValue(), prc.isNamespaceAware());
-				} else if (StringUtils.isNotEmpty(getSessionKey())) {
+				} else if (StringUtils.isNotEmpty(retrievedSessionKey)) {
 					String sourceString;
-					Object sourceObject = prc.getSession().get(getSessionKey());
+					Object sourceObject = prc.getSession().get(retrievedSessionKey);
 					if (TYPE_LIST.equals(getType())
 							&& sourceObject instanceof List) {
 						List<String> items = (List<String>) sourceObject;
@@ -333,10 +354,10 @@ public class Parameter implements INamedObject, IWithParameters {
 						sourceString = (String) sourceObject;
 					}
 					if (StringUtils.isNotEmpty(sourceString)) {
-						log.debug("Parameter ["+getName()+"] using sessionvariable ["+getSessionKey()+"] as source for transformation");
+						log.debug("Parameter ["+getName()+"] using sessionvariable ["+retrievedSessionKey+"] as source for transformation");
 						source = XmlUtils.stringToSourceForSingleUse(sourceString, prc.isNamespaceAware());
 					} else {
-						log.debug("Parameter ["+getName()+"] sessionvariable ["+getSessionKey()+"] empty, no transformation will be performed");
+						log.debug("Parameter ["+getName()+"] sessionvariable ["+retrievedSessionKey+"] empty, no transformation will be performed");
 					}
 				} else if (StringUtils.isNotEmpty(getPattern())) {
 					String sourceString = format(alreadyResolvedParameters, prc);
@@ -363,8 +384,8 @@ public class Parameter implements INamedObject, IWithParameters {
 				throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
 			}
 		} else {
-			if (StringUtils.isNotEmpty(getSessionKey())) {
-				result=prc.getSession().get(getSessionKey());
+			if (StringUtils.isNotEmpty(retrievedSessionKey)) {
+				result=prc.getSession().get(retrievedSessionKey);
 			} else if (StringUtils.isNotEmpty(getPattern())) {
 				result=format(alreadyResolvedParameters, prc);
 			} else if (StringUtils.isNotEmpty(getValue())) {
@@ -385,7 +406,7 @@ public class Parameter implements INamedObject, IWithParameters {
 				if ("defaultValue".equals(token)) {
 					result = getDefaultValue();
 				} else if ("sessionKey".equals(token)) {
-					result = prc.getSession().get(getSessionKey());
+					result = prc.getSession().get(retrievedSessionKey);
 				} else if ("pattern".equals(token)) {
 					result = format(alreadyResolvedParameters, prc);
 				} else if ("value".equals(token)) {
@@ -621,6 +642,14 @@ public class Parameter implements INamedObject, IWithParameters {
 		return sessionKey;
 	}
 
+	public void setSessionKeyXPath(String string) {
+		sessionKeyXPath = string;
+	}
+
+	public String getSessionKeyXPath() {
+		return sessionKeyXPath;
+	}
+
 	public void setValue(String value) {
 		this.value = value;
 	}
@@ -631,7 +660,7 @@ public class Parameter implements INamedObject, IWithParameters {
 
 	@Override
 	public String toString() {
-		return "Paramter name=["+name+"] defaultValue=["+defaultValue+"] sessionKey=["+sessionKey+"] xpathExpression=["+xpathExpression+ "] type=["+type+ "] value=["+value+ "]";
+		return "Parameter name=["+name+"] defaultValue=["+defaultValue+"] sessionKey=["+sessionKey+"] sessionKeyXPath=["+sessionKeyXPath+"] xpathExpression=["+xpathExpression+ "] type=["+type+ "] value=["+value+ "]";
 	}
 
 	/**

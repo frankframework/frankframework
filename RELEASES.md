@@ -25,6 +25,7 @@ Upcoming
 - Fix NPE DumpIbisConsole
 - Refactor CheckReload job
 - StreamPipe: add possibility to append reason to AntiVirus Fail Message
+- Add sessionKeyXPath attribute to Parameter (to be more flexible)
 
 
 
