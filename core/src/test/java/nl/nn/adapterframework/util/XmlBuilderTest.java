@@ -64,8 +64,8 @@ public class XmlBuilderTest {
 
 	private void compareXML(String expected, String actual)
 			throws SAXException, IOException {
-		System.out.println(expected);
-		System.out.println(actual);
+//		System.out.println(expected);
+//		System.out.println(actual);
 		Diff diff = XMLUnit.compareXML(expected, actual);
 		assertTrue(diff.toString(), diff.identical());
 	}

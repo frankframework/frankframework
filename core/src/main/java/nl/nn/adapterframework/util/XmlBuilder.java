@@ -114,7 +114,7 @@ public class XmlBuilder {
 	}
 
 	public String toXML(boolean xmlHeader) {
-		Document document = new Document(element);
+		Document document = new Document(element.detach());
 		XMLOutputter xmlOutputter = new XMLOutputter();
 		xmlOutputter.setFormat(Format.getPrettyFormat().setOmitDeclaration(
 				!xmlHeader));
