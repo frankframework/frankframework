@@ -26,6 +26,7 @@ Upcoming
 - Refactor CheckReload job
 - StreamPipe: add possibility to append reason to AntiVirus Fail Message
 - Add sessionKeyXPath attribute to Parameter (to be more flexible)
+- Refactor ReplacerPipe replaceNonXmlChar and fix javadoc
 
 
 
