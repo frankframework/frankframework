@@ -255,7 +255,7 @@ public class Json2XmlValidator extends XmlValidator {
 	public static String source2String(Source source) throws TransformerException {
 		StringWriter writer = new StringWriter();
 		StreamResult result = new StreamResult(writer);
-		TransformerFactory tf = XmlUtils.getTransformerFactory(false);
+		TransformerFactory tf = XmlUtils.getTransformerFactory(true); // set xslt2=true to avoid problems with diacritics
 		Transformer transformer = tf.newTransformer();
 		transformer.transform(source, result);
 		writer.flush();

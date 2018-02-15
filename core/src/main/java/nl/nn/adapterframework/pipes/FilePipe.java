@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.FileHandler;
 public class FilePipe extends FixedForwardPipe {
 	FileHandler fileHandler;
 
-	FilePipe() {
+	public FilePipe() {
 		fileHandler = new FileHandler();
 	}
 	
