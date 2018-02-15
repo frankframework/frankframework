@@ -256,7 +256,7 @@ public class RestServiceDispatcher  {
 			}
 			String etagCacheKey = restPath+"_"+uri;
 
-			if(cache.containsKey(etagCacheKey)) {
+			if(cache != null && cache.containsKey(etagCacheKey)) {
 				String cachedEtag = (String) cache.get(etagCacheKey);
 
 				if(ifNoneMatch != null && ifNoneMatch.equalsIgnoreCase(cachedEtag) && method.equalsIgnoreCase("GET")) {
