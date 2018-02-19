@@ -40,7 +40,8 @@ public class JsonElementContainer implements ElementContainer {
 	private boolean repeatedElement;
 	private boolean skipArrayElementContainers;
 	private boolean nil=false;
-	private boolean number=false;
+	private boolean bool=false;
+	private boolean numeric=false;
 	private String attributePrefix;
 
 	public String stringContent;
@@ -70,7 +71,7 @@ public class JsonElementContainer implements ElementContainer {
 	public void setAttribute(String name, String value, XSSimpleTypeDefinition attTypeDefinition) {
 		JsonElementContainer attributeContainer = new JsonElementContainer(attributePrefix+name, false, false, false, attributePrefix);
 		if (attTypeDefinition.getNumeric()) {
-			attributeContainer.setNumber(true);
+			attributeContainer.setNumeric(true);
 		}
 		attributeContainer.setContent(value);
 		addContent(attributeContainer);
@@ -78,8 +79,11 @@ public class JsonElementContainer implements ElementContainer {
 
 	@Override
 	public void characters(char[] ch, int start, int length, boolean numericType, boolean booleanType) {
-		if (numericType || booleanType) {
-			setNumber(true);
+		if (numericType) {
+			setNumeric(true);
+		}
+		if (booleanType) {
+			setBool(true);
 		}
 		setContent(new String(ch,start,length));
 	}
@@ -132,7 +136,8 @@ public class JsonElementContainer implements ElementContainer {
 		if (isXmlArrayContainer() && content.isRepeatedElement() && skipArrayElementContainers) {
 			if (array==null) {
 				array=new LinkedList<Object>();
-				setNumber(content.isNumber());
+				setNumeric(content.isNumeric());
+				setBool(content.isBool());
 			} 
 			array.add(content.getContent());
 			return;
@@ -167,13 +172,26 @@ public class JsonElementContainer implements ElementContainer {
 			return null;
 		}
 		if (stringContent!=null) {
-			if (!isNumber()) {
-				if (DEBUG) log.debug("getContent quoted stringContent ["+stringContent+"]");
-//				String result=StringEscapeUtils.escapeJson(stringContent.toString()); // this also converts diacritics into unicode escape sequences
-				String result=ESCAPE_JSON.translate(stringContent.toString()); 
-				return '"'+result+'"';
+			if (isBool()) {
+				return stringContent;
 			}
-			return stringContent;
+			if (isNumeric()) {
+				if (stringContent.length()>1) {	// check for leading zeroes, and remove them.
+					boolean negative=stringContent.charAt(0)=='-';
+					int i=negative?1:0;
+					while (i<stringContent.length()-1 && stringContent.charAt(i)=='0' && Character.isDigit(stringContent.charAt(i+1))) {
+						i++;
+					}
+					if (i>(negative?1:0)) {
+						return (negative?"-":"")+stringContent.substring(i);
+					}
+				}
+				return stringContent;
+			}
+			if (DEBUG) log.debug("getContent quoted stringContent ["+stringContent+"]");
+//				String result=StringEscapeUtils.escapeJson(stringContent.toString()); // this also converts diacritics into unicode escape sequences
+			String result=ESCAPE_JSON.translate(stringContent.toString()); 
+			return '"'+result+'"';
 		}
 		if (array!=null) {
 			return array;
@@ -198,11 +216,18 @@ public class JsonElementContainer implements ElementContainer {
 		return repeatedElement;
 	}
 
-	public boolean isNumber() {
-		return number;
+	public boolean isBool() {
+		return bool;
 	}
-	public void setNumber(boolean number) {
-		this.number = number;
+	public void setBool(boolean bool) {
+		this.bool = bool;
+	}
+
+	public boolean isNumeric() {
+		return numeric;
+	}
+	public void setNumeric(boolean numeric) {
+		this.numeric = numeric;
 	}
 
 	
