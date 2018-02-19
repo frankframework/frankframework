@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:nn="urn:fbp" xmlns="urn:fbp" targetNamespace="urn:fbp" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:element name="EmbeddedChoice" type="nn:EmbeddedChoiceType"/>
+	<xsd:complexType name="EmbeddedChoiceType">
+		<xsd:sequence>
+			<xsd:element name="EnableFuzzySearch" type="xsd:string" minOccurs="0"/>
+			<xsd:choice minOccurs="0">
+				<xsd:element name="BusinessPartnerId" type="xsd:string" minOccurs="0"/>
+				<xsd:element name="Qualifier" type="xsd:string" minOccurs="0"/>
+			</xsd:choice>
+			<xsd:element name="IgnoreFilter" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+</xsd:schema>

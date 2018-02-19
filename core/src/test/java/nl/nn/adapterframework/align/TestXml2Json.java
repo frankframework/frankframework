@@ -70,7 +70,7 @@ public class TestXml2Json extends AlignTestBase {
 		    	assertEquals(jsonFullExpected,jsonOut);
 			}
     	}
-		
+    	
 //    	
 //    	// setup the chain
 //    	XMLReader parser = new SAXParser();
@@ -246,7 +246,12 @@ public class TestXml2Json extends AlignTestBase {
 //		testXml2Json("/Transaction/transaction.xsd","/Transaction/invoice","transaction",true);
 //	}
 //
-    
+	@Test
+	public void testLeadingZeroes() throws Exception {
+    	testXml2Json("DataTypes/DataTypes.xsd", "/DataTypes/Numbers-leadingzeroes", "DataTypes", true, true, false, null);
+	}
+
+  
     @Override
 	@Test
     @Ignore("test on erronous json input")

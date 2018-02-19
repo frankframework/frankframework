@@ -132,5 +132,10 @@ public class TestJson2Xml extends AlignTestBase {
     public void testJsonAndMap() throws Exception {
     	testTreeAndMap("TreeAndMap/employee.xsd","urn:employee","updateEmployeeRequest","/TreeAndMap/updateEmployeeRequest","/TreeAndMap/updateEmployeeRequestResult", null);
     }
-	
+
+    @Test
+    public void testEmbeddedChoice() throws Exception {
+    	testFiles("EmbeddedChoice/EmbeddedChoice.xsd","","EmbeddedChoice", "/EmbeddedChoice/EmbeddedChoice",false,null,false);
+    }
+
 }

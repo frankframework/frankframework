@@ -284,9 +284,18 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		Set<String> processedChildren = new HashSet<String>();
 		
 		if (childParticles!=null) {
+//			if (DEBUG) log.debug("ToXml.handleComplexTypedElement() iterating over childParticles, size ["+childParticles.size()+"]"); 
+//			if (DEBUG) {
+//				for (int i=0;i<childParticles.size();i++) {
+//					XSParticle childParticle=childParticles.get(i);
+//					XSElementDeclaration childElementDeclaration = (XSElementDeclaration)childParticle.getTerm();
+//					if (DEBUG) log.debug("ToXml.handleComplexTypedElement() list children ["+i+"], name ["+childElementDeclaration.getName()+"]");
+//				}
+//			}
 			for (int i=0;i<childParticles.size();i++) {
 				XSParticle childParticle=childParticles.get(i);
 				XSElementDeclaration childElementDeclaration = (XSElementDeclaration)childParticle.getTerm();
+				if (DEBUG) log.debug("ToXml.handleComplexTypedElement() processing child ["+i+"], name ["+childElementDeclaration.getName()+"]"); 
 				processChildElement(node, name, childElementDeclaration, childParticle.getMinOccurs()>0, processedChildren);
 			}
 		}
@@ -457,6 +466,8 @@ public abstract class ToXml<C,N> extends XmlAligner {
 					failureReasons.addAll(choiceFailureReasons);
 					return false;
 				}
+				if (DEBUG) log.debug("Replace path with best path of Choice Compositor, size ["+bestPath.size()+"]");
+				path.clear();
 				path.addAll(bestPath);
 				return true;
 			default:
@@ -498,7 +509,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			}
 			for (XSParticle resultParticle:path) {
 				if (elementName.equals(resultParticle.getTerm().getName())) {
-					if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] found but requiredmultiple times");
+					if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] found but required multiple times");
 					failureReasons.add("element ["+elementName+"] required multiple times");
 					return false;
 				}
