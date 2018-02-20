@@ -34,7 +34,6 @@ public abstract class Map2Xml<K,V,M extends Map<K,V>> extends ToXml<M,V> {
 
 	{
 		setDeepSearch(true);
-		setAutoInsertMandatory(false);
 	}
 	
 	public Map2Xml() {

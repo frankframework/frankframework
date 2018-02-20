@@ -112,6 +112,9 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 	}
 	public void setOverrideValues(Map<String, Object> overrideValues) {
 		this.overrideValues = overrideValues;
+		boolean mustDeepSearch=overrideValues!=null && !overrideValues.isEmpty();
+		setDeepSearch(mustDeepSearch);
+		setAutoInsertMandatory(mustDeepSearch);
 	}
 
 	public Map<String, Object> getDefaultValues() {

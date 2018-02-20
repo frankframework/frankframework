@@ -74,6 +74,12 @@ public class TestMap2Xml extends AlignTestBase {
 		}
 		testStrings(xmlString,mapString,   schemaUrl,namespace, rootElement,  true, expectedFailureReason);
 	}
+
+	@Test
+    public void testNestedValue() throws Exception {
+    	testFiles("NestedValue/nestedValue.xsd","urn:gbpd","NestedValue","/NestedValue/nestedValue");
+    }
+
 	
     @Override
 	@Test

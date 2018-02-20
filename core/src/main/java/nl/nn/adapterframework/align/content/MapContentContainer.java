@@ -10,10 +10,12 @@ import org.apache.commons.lang3.text.translate.AggregateTranslator;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.EntityArrays;
 import org.apache.commons.lang3.text.translate.LookupTranslator;
+import org.apache.log4j.Logger;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 public class MapContentContainer<V> implements DocumentContainer {
+	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String attributeSeparator=".";
 	private String indexSeparator=".";
@@ -82,10 +84,13 @@ public class MapContentContainer<V> implements DocumentContainer {
 
 	@Override
 	public void characters(char[] ch, int start, int length, boolean numericType, boolean booleanType) {
-		String value=ESCAPE_JSON.translate(new String(ch,start,length));
+		String rawValue=new String(ch,start,length);
 		if (currentName==null) {
-			System.out.println("no name to set characters ["+value+"]");
+			if (rawValue.trim().length()>0) {
+				log.warn("no name to set characters ["+rawValue+"]");
+			}
 		} else {
+			String value=ESCAPE_JSON.translate(rawValue);
 			if (currentValue==null) {
 				currentValue=value;
 			} else {
