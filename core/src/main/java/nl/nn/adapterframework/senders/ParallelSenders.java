@@ -61,10 +61,10 @@ public class ParallelSenders extends SenderSeries {
 
 
 	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		Guard guard= new Guard();
-		Map executorMap = new HashMap();
-		for (Iterator it=getSenderIterator();it.hasNext();) {
-			ISender sender = (ISender)it.next();
+		Guard guard = new Guard();
+		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
+		for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
+			ISender sender = it.next();
 			// Create a new ParameterResolutionContext to be thread safe, see
 			// documentation on constructor of ParameterResolutionContext
 			// (parameter cacheXmlSource).
@@ -91,24 +91,25 @@ public class ParallelSenders extends SenderSeries {
 		} catch (InterruptedException e) {
 			throw new SenderException(getLogPrefix()+"was interupted",e);
 		}
+
 		XmlBuilder resultsXml = new XmlBuilder("results");
-		for (Iterator it=getSenderIterator();it.hasNext();) {
-			ISender sender = (ISender)it.next();
-			ParallelSenderExecutor pse = (ParallelSenderExecutor)executorMap.get(sender);
+		for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
+			ISender sender = it.next();
+			ParallelSenderExecutor pse = (ParallelSenderExecutor) executorMap.get(sender);
 			XmlBuilder resultXml = new XmlBuilder("result");
-			resultXml.addAttribute("senderClass",ClassUtils.nameOf(sender));
-			resultXml.addAttribute("senderName",sender.getName());
+			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
+			resultXml.addAttribute("senderName", sender.getName());
 			Throwable throwable = pse.getThrowable();
 			if (throwable==null) {
 				Object result = pse.getReply();
 				if (result==null) {
-					resultXml.addAttribute("type","null");
+					resultXml.addAttribute("type", "null");
 				} else {
-					resultXml.addAttribute("type",ClassUtils.nameOf(result));
+					resultXml.addAttribute("type", ClassUtils.nameOf(result));
 					resultXml.setValue(XmlUtils.skipXmlDeclaration(result.toString()),false);
 				}
 			} else {
-				resultXml.addAttribute("type",ClassUtils.nameOf(throwable));
+				resultXml.addAttribute("type", ClassUtils.nameOf(throwable));
 				resultXml.setValue(throwable.getMessage());
 			}
 			resultsXml.addSubElement(resultXml); 

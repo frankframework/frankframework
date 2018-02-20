@@ -57,8 +57,8 @@ import nl.nn.adapterframework.util.ClassUtils;
  */
 public class SenderSeries extends SenderWrapperBase {
 
-	private List senderList=new LinkedList();
-	private Map statisticsMap=new HashMap();
+	private List<ISender> senderList = new LinkedList<ISender>();
+	private Map<ISender, StatisticsKeeper> statisticsMap = new HashMap<ISender, StatisticsKeeper>();
 	private boolean synchronous=true;
 
 	protected boolean isSenderConfigured() {
@@ -66,8 +66,8 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	public void configure() throws ConfigurationException {
-		for (Iterator it=senderList.iterator();it.hasNext();) {
-			ISender sender = (ISender)it.next();
+		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
+			ISender sender = it.next();
 			if (sender instanceof PipeAware) {
 				((PipeAware)sender).setPipe(getPipe());
 			}
@@ -78,15 +78,15 @@ public class SenderSeries extends SenderWrapperBase {
 
 
 	public void open() throws SenderException {
-		for (Iterator it=senderList.iterator();it.hasNext();) {
-			ISender sender = (ISender)it.next();
+		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
+			ISender sender = it.next();
 			sender.open();
 		}
 		super.open();
 	}
 	public void close() throws SenderException {
-		for (Iterator it=senderList.iterator();it.hasNext();) {
-			ISender sender = (ISender)it.next();
+		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
+			ISender sender = it.next();
 			sender.close();
 		}
 		super.close();
@@ -94,8 +94,8 @@ public class SenderSeries extends SenderWrapperBase {
 
 	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		long t1 = System.currentTimeMillis();
-		for (Iterator it=senderList.iterator();it.hasNext();) {
-			ISender sender = (ISender)it.next();
+		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
+			ISender sender = it.next();
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"sending correlationID ["+correlationID+"] message ["+message+"] to sender ["+sender.getName()+"]");
 			if (sender instanceof ISenderWithParameters) {
 				message = ((ISenderWithParameters)sender).sendMessage(correlationID,message,prc);
@@ -112,8 +112,8 @@ public class SenderSeries extends SenderWrapperBase {
 
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		//Object senderData=hski.openGroup(data,getName(),"sender");
-		for (Iterator it=getSenderIterator();it.hasNext();) {
-			ISender sender = (ISender)it.next();
+		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
+			ISender sender = it.next();
 			hski.handleStatisticsKeeper(data,getStatisticsKeeper(sender));		
 			if (sender instanceof HasStatistics) {
 				((HasStatistics)sender).iterateOverStatistics(hski,data,action);
@@ -130,7 +130,7 @@ public class SenderSeries extends SenderWrapperBase {
 		return synchronous;
 	}
 	public void setSynchronous(boolean value) {
-		synchronous=value;
+		synchronous = value;
 	}
 
 	public void setSender(ISender sender) {
@@ -138,11 +138,11 @@ public class SenderSeries extends SenderWrapperBase {
 		setSynchronous(sender.isSynchronous()); // set synchronous to isSynchronous of the last Sender added
 		statisticsMap.put(sender, new StatisticsKeeper("-> "+ClassUtils.nameOf(sender)));
 	}
-	protected Iterator getSenderIterator() {
+	protected Iterator<ISender> getSenderIterator() {
 		return senderList.iterator();
 	}
 	protected StatisticsKeeper getStatisticsKeeper(ISender sender) {
-		return (StatisticsKeeper)statisticsMap.get(sender);
+		return statisticsMap.get(sender);
 	}
 
 }

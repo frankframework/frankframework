@@ -27,7 +27,7 @@ Upcoming
 - StreamPipe: add possibility to append reason to AntiVirus Fail Message
 - Add sessionKeyXPath attribute to Parameter (to be more flexible)
 - Refactor ReplacerPipe replaceNonXmlChar and fix javadoc
-
+- Introduction of the ShadowSender, a shadowSender allows you to duplicate the outgoing message and send it to an alternative endpoint for later use and comparison
 
 
 7.0-RC2
