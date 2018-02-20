@@ -1279,7 +1279,8 @@ public class XmlUtils {
 	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark).
 	 */
 	public static String encodeCdataString(String string) {
-		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, false);
+		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, false,
+				false);
 	}
 
 	/**
@@ -1287,23 +1288,28 @@ public class XmlUtils {
 	 * appended with #, the character number and ;.
 	 */
 	public static String replaceNonValidXmlCharacters(String string) {
-		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, true);
+		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, true,
+				false);
 	}
 
-	public static String replaceNonValidXmlCharacters(String string, char to, boolean appendCharNum) {
+	public static String replaceNonValidXmlCharacters(String string, char to,
+			boolean appendCharNum,
+			boolean allowUnicodeSupplementaryCharacters) {
 		if (string==null) {
 			return null;
 		} else {
 			int length = string.length();
 			StringBuilder encoded = new StringBuilder(length);
+			int c;
 			int counter = 0;
-			for (int i = 0; i < length; i++) {
-				char c=string.charAt(i);
-				if (isPrintableUnicodeChar(c)) {
-					encoded.append(c);
+			for (int i = 0; i < length; i += Character.charCount(c)) {
+				c=string.codePointAt(i);
+				if (isPrintableUnicodeChar(c,
+						allowUnicodeSupplementaryCharacters)) {
+					encoded.appendCodePoint(c);
 				} else {
 					if (appendCharNum) {
-						encoded.append(to + "#" + (int)c + ";"); 
+						encoded.append(to + "#" + c + ";"); 
 					} else {
 						encoded.append(to);
 					}
@@ -1317,14 +1323,17 @@ public class XmlUtils {
 		}
 	}
 
-	public static String stripNonValidXmlCharacters(String string) {
+	public static String stripNonValidXmlCharacters(String string,
+			boolean allowUnicodeSupplementaryCharacters) {
 		int length = string.length();
 		StringBuilder encoded = new StringBuilder(length);
+		int c;
 		int counter = 0;
-		for (int i = 0; i < length; i++) {
-			char c=string.charAt(i);
-			if (isPrintableUnicodeChar(c)) {
-				encoded.append(c);
+		for (int i = 0; i < length; i += Character.charCount(c)) {
+			c=string.codePointAt(i);
+			if (isPrintableUnicodeChar(c,
+					allowUnicodeSupplementaryCharacters)) {
+				encoded.appendCodePoint(c);
 			} else {
 				counter++;
 			}
@@ -1335,13 +1344,19 @@ public class XmlUtils {
 		return encoded.toString();
 	}
 
-	public static boolean isPrintableUnicodeChar(char c) {
+	public static boolean isPrintableUnicodeChar(int c) {
+		return isPrintableUnicodeChar(c, false);
+	}
+
+	public static boolean isPrintableUnicodeChar(int c,
+			boolean allowUnicodeSupplementaryCharacters) {
 		return (c == 0x0009)
 			|| (c == 0x000A)
 			|| (c == 0x000D)
 			|| (c >= 0x0020 && c <= 0xD7FF)
 			|| (c >= 0xE000 && c <= 0xFFFD)
-			|| (c >= 0x0010000 && c <= 0x0010FFFF);
+			|| (allowUnicodeSupplementaryCharacters
+					&& (c >= 0x00010000 && c <= 0x0010FFFF));
 	}
 
 	/**

@@ -12,6 +12,8 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.0-RC2...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
+- Refactor ReplacerPipe replaceNonXmlChar and fix javadoc
+- Support Unicode supplementary characters (like a smiley) in replace/stripNonValidXmlCharacters (which is used in ReplacerPipe). In the old code a Unicode supplementary character like a smiley was seen as two characters which would both be replaced/stripped. To be backwards compatible the Unicode supplementary characters are still replaced/stripped (by one character instead of two) but can be allowed using allowUnicodeSupplementaryCharacters
 
 
 
