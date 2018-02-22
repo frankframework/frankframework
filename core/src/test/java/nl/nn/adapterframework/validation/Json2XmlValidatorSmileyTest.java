@@ -21,12 +21,17 @@ import nl.nn.adapterframework.pipes.Json2XmlValidator;
 
 public class Json2XmlValidatorSmileyTest extends TestCase {
 
+	public String CHARSET_UTF8="UTF-8";
+	
+	public String charset=CHARSET_UTF8;
+	
 	public String jsonFile="/Align/Smileys/smiley-full.json";
 	public String xmlFile="/Align/Smileys/smiley.xml";
 	public String xsd="Align/Smileys/smiley.xsd";
 	
-	public String expectedJson="{  \"x\": \"😊\"}";
-	public String expectedXml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><x>😊</x>";
+	public String expectedJson="{\n  \"x\": \"😊\"\n}";
+	public String expectedXml="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<x>😊</x>\n";
+	public String expectedXmlNoNewline="<?xml version=\"1.0\" encoding=\"UTF-8\"?><x>😊</x>";
 
 	public String smileyJson="\"😊\"";
 	
@@ -68,8 +73,11 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 		return Xml2Json.translate(xml, FilePipe.class.getResource("/"+xsd), true, true).toString();
 	}
 	
-	public void testRead() throws IOException {
+	public void testReadJson() throws IOException {
 		assertEquals(expectedJson,getTestFile(jsonFile));
+	}
+
+	public void testReadXml() throws IOException {
 		assertEquals(expectedXml,getTestFile(xmlFile));
 	}
 	
@@ -81,7 +89,7 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 		assertEquals(expectedJson,json);
 		String xml=jsonToXml(json);
 		System.out.println("testJson2Xml: xml ["+xml+"]");
-		assertEquals(getTestFile(xmlFile),xml);
+		assertEquals(expectedXmlNoNewline,xml);
 	}
 
 	public void testJson2XmlViaPipe() throws IOException, ConfigurationException, PipeStartException, PipeRunException {
@@ -90,7 +98,7 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 		assertEquals(expectedJson,json);
 		String xml=jsonToXmlViaPipe(json);
 		System.out.println("testJson2XmlViaPipe: xml ["+xml+"]");
-		assertEquals(getTestFile(xmlFile),xml);
+		assertEquals(expectedXmlNoNewline,xml);
 	}
 
 
@@ -114,13 +122,15 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 
 	
     protected String getTestFile(String testfile) throws IOException {
-        BufferedReader buf = new BufferedReader(new InputStreamReader(FilePipe.class.getResourceAsStream(testfile)));
+        BufferedReader buf = new BufferedReader(new InputStreamReader(FilePipe.class.getResourceAsStream(testfile),charset));
         StringBuilder string = new StringBuilder();
-        String line = buf.readLine();
-        while (line != null) {
-            string.append(line);
-            line = buf.readLine();
-        }
+		while (true) {
+			int c=buf.read();
+			if (c<0) {
+				break;
+			}
+			string.append((char)c);
+		}
         return string.toString();
     }
 

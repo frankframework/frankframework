@@ -22,6 +22,10 @@ public class FileHandlerTest {
 
 	private FileHandler handler;
 	private IPipeLineSession session=new PipeLineSessionBase();
+
+	public String CHARSET_UTF8="UTF-8";
+	public String charset=CHARSET_UTF8;
+
 	
 	@Before
 	public void setup() throws ConfigurationException {
@@ -39,13 +43,12 @@ public class FileHandlerTest {
 		}
 		BufferedReader buf = new BufferedReader(new InputStreamReader(url.openStream(),charset));
 		StringBuilder string = new StringBuilder();
-		String line = buf.readLine();
-		while (line != null) {
-			string.append(line);
-			line = buf.readLine();
-			if (line!=null) {
-				string.append("\n");
+		while (true) {
+			int c=buf.read();
+			if (c<0) {
+				break;
 			}
+			string.append((char)c);
 		}
 		return string.toString();
 	}
@@ -66,16 +69,16 @@ public class FileHandlerTest {
 
 	@Test
 	public void testReadXml() throws Exception {
-		testRead("smiley.xml","utf-8");
+		testRead("smiley.xml",charset);
 	}
 
 	@Test
 	public void testReadJson() throws Exception {
-		testRead("smiley.json","utf-8");
+		testRead("smiley.json",charset);
 	}
 
 	@Test
 	public void testReadTxt() throws Exception {
-		testRead("smiley.txt","utf-8");
+		testRead("smiley.txt",charset);
 	}
 }
