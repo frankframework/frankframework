@@ -74,14 +74,14 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	protected ValidatorHandler validatorHandler;
 	private List<XSModel> schemaInformation; 
 
-	private boolean autoInsertMandatory=false;   // TODO: behaviour needs to be tested.
+//	private boolean autoInsertMandatory=false;   // TODO: behaviour needs to be tested.
 	private boolean deepSearch=false;
 
 	private String prefixPrefix="ns";
 	private int prefixPrefixCounter=1;
 	private Map<String,String>prefixMap=new HashMap<String,String>();
 
-	private final boolean DEBUG=false; 
+	protected final boolean DEBUG=false; 
 	
 	public ToXml() {
 		super();
@@ -179,7 +179,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		}
 		XSElementDeclaration elementDeclaration=findElementDeclarationForName(nodeNamespace,name);
 		if (elementDeclaration==null) {
-			throw new SAXException(MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION+" for ["+name+"] in namespace["+name+"]");
+			throw new SAXException(MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION+" for ["+name+"] in namespace ["+nodeNamespace+"]");
 //			if (DEBUG) log.debug("node ["+name+"] did not find elementDeclaration, assigning targetNamespace ["+getTargetNamespace()+"]");
 //			nodeNamespace=getTargetNamespace();
 		}
@@ -281,6 +281,23 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		//List<XSParticle> childParticles = getChildElementDeclarations(typeDefinition);
 		if (DEBUG) log.debug("ToXml.handleComplexTypedElement() search for best path for available children of element ["+name+"]"); 
 		List<XSParticle> childParticles = getBestChildElementPath(elementDeclaration, node, false);
+		if (DEBUG) {
+			if (childParticles==null) {
+				log.debug("Examined node ["+name+"] deepSearch ["+isDeepSearch()+"] path found is null");
+			} else {
+				String msg="Examined node ["+name+"] deepSearch ["+isDeepSearch()+"] found path length ["+childParticles.size()+"]: ";
+				boolean tail=false;
+				for(XSParticle particle:childParticles) {
+					if (tail) {
+						msg+=", ";
+					} else {
+						tail=true;
+					}
+					msg+=particle.getTerm().getName();
+				}
+				log.debug(msg);
+			}
+		}
 		Set<String> processedChildren = new HashSet<String>();
 		
 		if (childParticles!=null) {
@@ -348,11 +365,18 @@ public abstract class ToXml<C,N> extends XmlAligner {
 				handleElement(childElementDeclaration,childNode);
 			}
 			if (DEBUG) log.debug("processed ["+i+"] children found by name ["+childElementName+"] in ["+parentName+"]");
-			if (i==0 && isDeepSearch()) {
+			if (i==0 && isDeepSearch() && childElementDeclaration.getTypeDefinition().getTypeCategory()!=XSTypeDefinition.SIMPLE_TYPE) {
+				if (DEBUG) log.debug("no children processed, and deepSearch, not a simple type therefore handle node ["+childElementName+"] in ["+parentName+"]");
 				handleElement(childElementDeclaration,node);
+				childSeen=true;
 			}
 		} else {
 			if (DEBUG) log.debug("no children found by name ["+childElementName+"] in ["+parentName+"]");
+			if (isDeepSearch() && childElementDeclaration.getTypeDefinition().getTypeCategory()!=XSTypeDefinition.SIMPLE_TYPE) {
+				if (DEBUG) log.debug("no children found, and deepSearch, not a simple type therefore handle node ["+childElementName+"] in ["+parentName+"]");
+				handleElement(childElementDeclaration,node);
+				childSeen=true;
+			}
 		}
 		if (childSeen) {
 			if (processedChildren.contains(childElementName)) {
@@ -360,10 +384,10 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			}
 			processedChildren.add(childElementName);
 		}
-		if (!childSeen && mandatory && isAutoInsertMandatory()) {
-			if (log.isDebugEnabled()) log.debug("inserting mandatory element ["+childElementName+"]");
-			handleElement(childElementDeclaration,node); // insert node when minOccurs > 0, and no node is present
-		}
+//		if (!childSeen && mandatory && isAutoInsertMandatory()) {
+//			if (log.isDebugEnabled()) log.debug("inserting mandatory element ["+childElementName+"]");
+//			handleElement(childElementDeclaration,node); // insert node when minOccurs > 0, and no node is present
+//		}
 	}
 
 	public List<XSParticle> getBestChildElementPath(XSElementDeclaration elementDeclaration, N node, boolean silent) throws SAXException {
@@ -495,12 +519,12 @@ public abstract class ToXml<C,N> extends XmlAligner {
 					}
 				}
 				if (particle.getMinOccurs()>0) {
-					if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration mandatory element ["+elementName+"] not found, path fails, autoInsertMandatory ["+isAutoInsertMandatory()+"]");
-					if (isAutoInsertMandatory()) {
-						path.add(particle);
-						if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, nested elements found in deep search");
-						return true;
-					}
+//					if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration mandatory element ["+elementName+"] not found, path fails, autoInsertMandatory ["+isAutoInsertMandatory()+"]");
+//					if (isAutoInsertMandatory()) {
+//						path.add(particle);
+//						if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, nested elements found in deep search");
+//						return true;
+//					}
 					failureReasons.add(MSG_EXPECTED_ELEMENT+" ["+elementName+"]");
 					return false;
 				}
@@ -625,12 +649,12 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		this.schemaInformation = schemaInformation;
 	}
 
-	public boolean isAutoInsertMandatory() {
-		return autoInsertMandatory;
-	}
-	public void setAutoInsertMandatory(boolean autoInsertMandatory) {
-		this.autoInsertMandatory = autoInsertMandatory;
-	}
+//	public boolean isAutoInsertMandatory() {
+//		return autoInsertMandatory;
+//	}
+//	public void setAutoInsertMandatory(boolean autoInsertMandatory) {
+//		this.autoInsertMandatory = autoInsertMandatory;
+//	}
 
 	public boolean isDeepSearch() {
 		return deepSearch;

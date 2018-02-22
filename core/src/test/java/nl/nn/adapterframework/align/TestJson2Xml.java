@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 
 import java.io.StringReader;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.json.Json;
@@ -17,13 +18,13 @@ public class TestJson2Xml extends AlignTestBase {
 	
 
 	public void testJsonNoRoundTrip(String jsonIn, URL schemaUrl, String targetNamespace, String rootElement, boolean compactConversion, boolean strictSyntax, String expectedFailureReason, String description) throws Exception {
-		testJson(jsonIn, null, schemaUrl, targetNamespace, rootElement, compactConversion, strictSyntax, null, expectedFailureReason, description);
+		testJson(jsonIn, null, false, schemaUrl, targetNamespace, rootElement, compactConversion, strictSyntax, null, expectedFailureReason, description);
 	}
-	public void testJson(String jsonIn, Map<String,Object> properties, URL schemaUrl, String targetNamespace, String rootElement, boolean compactConversion, boolean strictSyntax, String resultJsonExpected, String expectedFailureReason, String description) throws Exception {
+	public void testJson(String jsonIn, Map<String,Object> properties, boolean deepSearch, URL schemaUrl, String targetNamespace, String rootElement, boolean compactConversion, boolean strictSyntax, String resultJsonExpected, String expectedFailureReason, String description) throws Exception {
 		Object json = Utils.string2Json(jsonIn);
 		try {
 			JsonStructure jsonStructure = Json.createReader(new StringReader(jsonIn)).read();
-			String xmlAct = Json2Xml.translate(jsonStructure, schemaUrl, compactConversion, rootElement, strictSyntax, targetNamespace, properties);
+			String xmlAct = Json2Xml.translate(jsonStructure, schemaUrl, compactConversion, rootElement, strictSyntax, deepSearch, targetNamespace, properties);
 	    	System.out.println("xml out="+xmlAct);
 	    	if (expectedFailureReason!=null) {
 	    		fail("Expected to fail: "+description);
@@ -59,20 +60,26 @@ public class TestJson2Xml extends AlignTestBase {
 
 		JsonValue json = Utils.string2Json(jsonIn);
 		System.out.println("jsonIn ["+json+"]");
-    	testJson(jsonIn, null, schemaUrl, targetNamespace, rootElement, compactInput, false, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], relaxed");
-    	testJson(jsonIn, null, schemaUrl, targetNamespace, rootElement, compactInput, true, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], strict");
+    	Map<String,Object> overrideMap = new HashMap<String,Object>();
+    	overrideMap.put("Key not expected", "value of unexpected key");
+    	testJson(jsonIn, null,        false, schemaUrl, targetNamespace, rootElement, compactInput, false, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], relaxed");
+    	testJson(jsonIn, null,        true, schemaUrl, targetNamespace, rootElement, compactInput, false, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], relaxed, deep search");
+    	testJson(jsonIn, overrideMap, true, schemaUrl, targetNamespace, rootElement, compactInput, false, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], relaxed, parameters");
+    	testJson(jsonIn, null,        false, schemaUrl, targetNamespace, rootElement, compactInput, true, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], strict");
+    	testJson(jsonIn, null,        true, schemaUrl, targetNamespace, rootElement, compactInput, true, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], strict, deep search");
+    	testJson(jsonIn, overrideMap, true, schemaUrl, targetNamespace, rootElement, compactInput, true, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], strict, parameters");
     	if (expectedFailureReason==null) {
 	    	if (potentialCompactionProblems) {
 	    		if (compactInput) {
 		        	testJsonNoRoundTrip(jsonIn, schemaUrl, targetNamespace, rootElement, !compactInput, false, expectedFailureReason,"compact input, full expected, relaxed, potentialCompactionProblems");
-		        	testJson(jsonIn, null, schemaUrl, targetNamespace, rootElement, !compactInput, true, checkRoundTrip?jsonIn:null,Json2Xml.MSG_EXPECTED_SINGLE_ELEMENT,"compact input, full expected, strict, potentialCompactionProblems");
+		        	testJson(jsonIn, null, false, schemaUrl, targetNamespace, rootElement, !compactInput, true, checkRoundTrip?jsonIn:null,Json2Xml.MSG_EXPECTED_SINGLE_ELEMENT,"compact input, full expected, strict, potentialCompactionProblems");
 	    		} else {
 	    			testJsonNoRoundTrip(jsonIn, schemaUrl, targetNamespace, rootElement, !compactInput, false, expectedFailureReason,"full input, compact expected, relaxed, potentialCompactionProblems");
-		        	testJson(jsonIn, null, schemaUrl, targetNamespace, rootElement, !compactInput, true, checkRoundTrip?jsonIn:null,Json2Xml.MSG_FULL_INPUT_IN_STRICT_COMPACTING_MODE,"full input, compact expected, strict, potentialCompactionProblems");
+		        	testJson(jsonIn, null, false, schemaUrl, targetNamespace, rootElement, !compactInput, true, checkRoundTrip?jsonIn:null,Json2Xml.MSG_FULL_INPUT_IN_STRICT_COMPACTING_MODE,"full input, compact expected, strict, potentialCompactionProblems");
 	    		}
 	    	} else {
-	        	testJson(jsonIn, null, schemaUrl, targetNamespace, rootElement, !compactInput, false, checkRoundTrip?jsonIn:null,expectedFailureReason,"compact in ["+compactInput+"] and conversion not, relaxed, no potentialCompactionProblems");
-	        	testJson(jsonIn, null, schemaUrl, targetNamespace, rootElement, !compactInput, true, checkRoundTrip?jsonIn:null,expectedFailureReason,"compact in ["+compactInput+"] and conversion not, strict, no potentialCompactionProblems");    		
+	        	testJson(jsonIn, null, false, schemaUrl, targetNamespace, rootElement, !compactInput, false, checkRoundTrip?jsonIn:null,expectedFailureReason,"compact in ["+compactInput+"] and conversion not, relaxed, no potentialCompactionProblems");
+	        	testJson(jsonIn, null, false, schemaUrl, targetNamespace, rootElement, !compactInput, true, checkRoundTrip?jsonIn:null,expectedFailureReason,"compact in ["+compactInput+"] and conversion not, strict, no potentialCompactionProblems");    		
 	    	}
     	}
 	}
@@ -108,7 +115,8 @@ public class TestJson2Xml extends AlignTestBase {
 		System.out.println("jsonIn ["+jsonIn+"]");
 		Map<String,Object> map = stringToMap(propertiesString);
 		
-		testJson(jsonString, map, schemaUrl, namespace, rootElement, true, false, resultJsonString, expectedFailureReason, null);
+		testJson(jsonString, map, true, schemaUrl, namespace, rootElement, true, false, resultJsonString, expectedFailureReason, null);
+		
 //		String schemaString=FileUtils.resourceToString(schemaUrl);
 	}
 	

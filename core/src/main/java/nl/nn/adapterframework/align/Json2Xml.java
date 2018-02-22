@@ -61,7 +61,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	public static final String MSG_FULL_INPUT_IN_STRICT_COMPACTING_MODE="straight json found while expecting compact arrays and strict syntax checking";
 	public static final String MSG_EXPECTED_SINGLE_ELEMENT="did not expect array, but single element";
 	
-	private final boolean DEBUG=false; 
+	private static final boolean DEBUG=false; 
 	
 	private boolean insertElementContainerElements;
 	private boolean strictSyntax;
@@ -291,10 +291,10 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	}
 	public static String translate(JsonStructure jsonStructure, URL schemaURL, boolean compactJsonArrays, String rootElement, String targetNamespace) throws SAXException, IOException {
 //		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
-		return translate(jsonStructure, schemaURL, compactJsonArrays, rootElement, false, targetNamespace, null);
+		return translate(jsonStructure, schemaURL, compactJsonArrays, rootElement, false, false, targetNamespace, null);
 	}
 	
-	public static String translate(JsonStructure json, URL schemaURL, boolean compactJsonArrays, String rootElement, boolean strictSyntax, String targetNamespace, Map<String,Object> overrideValues) throws SAXException, IOException {
+	public static String translate(JsonStructure json, URL schemaURL, boolean compactJsonArrays, String rootElement, boolean strictSyntax, boolean deepSearch, String targetNamespace, Map<String,Object> overrideValues) throws SAXException, IOException {
 
 		// create the ValidatorHandler
     	SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -313,8 +313,10 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			j2x.setOverrideValues(overrideValues);
 		}
 		if (targetNamespace!=null) {
+			//if (DEBUG) System.out.println("setting targetNamespace ["+targetNamespace+"]");
 			j2x.setTargetNamespace(targetNamespace);
 		}
+		j2x.setDeepSearch(deepSearch);
     	Source source=j2x.asSource(json);
         StringWriter writer = new StringWriter();
         StreamResult result = new StreamResult(writer);

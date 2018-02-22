@@ -82,6 +82,7 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 		String nodeName=elementDeclaration.getName();
 		if (overrideValues!=null && overrideValues.containsKey(nodeName)) {
 			Object text=overrideValues.get(nodeName);
+			if (DEBUG) log.debug("getText() node ["+nodeName+"] override found ["+text+"]");
 			if (text==null || text instanceof String) {
 				return (String)text;
 			}
@@ -90,11 +91,13 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 		String result=getNodeText(elementDeclaration, node);
 		if (defaultValues!=null && StringUtils.isEmpty(result) && defaultValues.containsKey(nodeName)) {
 			Object text=defaultValues.get(nodeName);
+			if (DEBUG) log.debug("getText() node ["+nodeName+"] default found ["+text+"]");
 			if (text==null || text instanceof String) {
 				result = (String)text;
 			}
 			result = text.toString();
 		}
+		if (DEBUG) log.debug("getText() node ["+nodeName+"] returning value ["+result+"]");
 		return result;
 	}
 
@@ -114,7 +117,6 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 		this.overrideValues = overrideValues;
 		boolean mustDeepSearch=overrideValues!=null && !overrideValues.isEmpty();
 		setDeepSearch(mustDeepSearch);
-		setAutoInsertMandatory(mustDeepSearch);
 	}
 
 	public Map<String, Object> getDefaultValues() {

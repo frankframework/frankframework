@@ -167,6 +167,20 @@ public class JsonElementContainer implements ElementContainer {
 		}
 	}
 
+	public static String stripLeadingZeroes(String value) {
+		if (value.length()>1) {	// check for leading zeroes, and remove them.
+			boolean negative=value.charAt(0)=='-';
+			int i=negative?1:0;
+			while (i<value.length()-1 && value.charAt(i)=='0' && Character.isDigit(value.charAt(i+1))) {
+				i++;
+			}
+			if (i>(negative?1:0)) {
+				return (negative?"-":"")+value.substring(i);
+			}
+		}
+		return value;
+	}
+	
 	public Object getContent() {
 		if (nil) {
 			return null;
@@ -176,17 +190,7 @@ public class JsonElementContainer implements ElementContainer {
 				return stringContent;
 			}
 			if (isNumeric()) {
-				if (stringContent.length()>1) {	// check for leading zeroes, and remove them.
-					boolean negative=stringContent.charAt(0)=='-';
-					int i=negative?1:0;
-					while (i<stringContent.length()-1 && stringContent.charAt(i)=='0' && Character.isDigit(stringContent.charAt(i+1))) {
-						i++;
-					}
-					if (i>(negative?1:0)) {
-						return (negative?"-":"")+stringContent.substring(i);
-					}
-				}
-				return stringContent;
+				return stripLeadingZeroes(stringContent);
 			}
 			if (DEBUG) log.debug("getContent quoted stringContent ["+stringContent+"]");
 //				String result=StringEscapeUtils.escapeJson(stringContent.toString()); // this also converts diacritics into unicode escape sequences
