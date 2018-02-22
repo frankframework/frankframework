@@ -74,7 +74,7 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 	}
 	
 	public void testReadJson() throws IOException {
-		assertEquals(expectedJson,getTestFile(jsonFile));
+		assertJsonEqual(expectedJson,getTestFile(jsonFile));
 	}
 
 	public void testReadXml() throws IOException {
@@ -86,7 +86,7 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 	public void testJson2Xml() throws SAXException, IOException  {
 		String json=getTestFile(jsonFile);
 		System.out.println("testJson2Xml: json ["+json+"]");
-		assertEquals(expectedJson,json);
+		assertJsonEqual(expectedJson,json);
 		String xml=jsonToXml(json);
 		System.out.println("testJson2Xml: xml ["+xml+"]");
 		assertEquals(expectedXmlNoNewline,xml);
@@ -95,7 +95,7 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 	public void testJson2XmlViaPipe() throws IOException, ConfigurationException, PipeStartException, PipeRunException {
 		String json=getTestFile(jsonFile);
 		System.out.println("testJson2XmlViaPipe: json ["+json+"]");
-		assertEquals(expectedJson,json);
+		assertJsonEqual(expectedJson,json);
 		String xml=jsonToXmlViaPipe(json);
 		System.out.println("testJson2XmlViaPipe: xml ["+xml+"]");
 		assertEquals(expectedXmlNoNewline,xml);
@@ -120,6 +120,13 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 		assertEquals(smileyJson,json);
 	}
 
+	public void assertJsonEqual(String jsonExp, String jsonAct) {
+		assertEquals(removeNewlines(jsonExp),removeNewlines(jsonAct));
+	}
+	
+	public String removeNewlines(String contents) {
+		return contents.replaceAll("[\n\r]", "");
+	}
 	
     protected String getTestFile(String testfile) throws IOException {
         BufferedReader buf = new BufferedReader(new InputStreamReader(FilePipe.class.getResourceAsStream(testfile),charset));
