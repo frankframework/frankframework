@@ -66,10 +66,19 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 		if(getAuthenticationMethod() != null && !authenticationMethods.contains(getAuthenticationMethod()))
 			throw new ConfigurationException("Unknown authenticationMethod ["+authenticationMethod+"]");
-
-		ApiServiceDispatcher.getInstance().registerServiceClient(this);
 	}
 
+	@Override
+	public void open() throws ListenerException {
+		super.open();
+		try {
+			ApiServiceDispatcher.getInstance().registerServiceClient(this);
+		} catch (ConfigurationException e) {
+			throw new ListenerException(e);
+		}
+	}
+	
+	@Override
 	public void close() {
 		super.close();
 		ApiServiceDispatcher.getInstance().unregisterServiceClient(this);

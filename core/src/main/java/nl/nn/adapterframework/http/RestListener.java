@@ -92,6 +92,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (isView()==null) {
@@ -101,7 +102,16 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 				setView(false);
 			}
 		}
-		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), getValidateEtag());
+	}
+
+	@Override
+	public void open() throws ListenerException {
+		super.open();
+		try {
+			RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), getValidateEtag());
+		} catch (ConfigurationException e) {
+			throw new ListenerException(e);
+		}
 	}
 
 	@Override
