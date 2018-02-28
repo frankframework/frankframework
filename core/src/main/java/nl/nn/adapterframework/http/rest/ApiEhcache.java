@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
+import net.sf.ehcache.Status;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.util.AppConstants;
@@ -138,6 +139,12 @@ public class ApiEhcache implements IApiCache {
 	}
 
 	public boolean containsKey(String string) {
+		//workaround to avoid NPE after a full reload (/adapterHandlerAsAdmin.do?action=fullreload)
+		//TODO: fix this in a proper way
+		if (cache.getStatus().equals(Status.STATUS_SHUTDOWN)) {
+			log.info("cache ["+KEY_CACHE_NAME+"] has status shutdown, so returning false");
+			return false;
+		}
 		return cache.isKeyInCache(string);
 	}
 
@@ -148,9 +155,6 @@ public class ApiEhcache implements IApiCache {
 	public void clear() {
 		cache.removeAll();
 	}
-
-
-
 
 	public boolean isEternal() {
 		return eternal;
