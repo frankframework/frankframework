@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2015 Nationale-Nederlanden
+   Copyright 2013-2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.http;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,18 +33,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.http.rest.ApiCacheManager;
-import nl.nn.adapterframework.http.rest.IApiCache;
-import nl.nn.adapterframework.http.rest.ApiEhcache;
-import nl.nn.adapterframework.http.rest.ApiMemcached;
-import nl.nn.adapterframework.receivers.ServiceClient;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -51,6 +40,18 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.http.rest.ApiCacheManager;
+import nl.nn.adapterframework.http.rest.IApiCache;
+import nl.nn.adapterframework.receivers.ServiceClient;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 /**
  * Singleton class that knows about the RestListeners that are active.
  * <br/>
@@ -67,6 +68,7 @@ public class RestServiceDispatcher  {
 	private final String KEY_LISTENER="listener";
 	private final String KEY_ETAG_KEY="etagKey";
 	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
+	private final String SVG_FILE_NO_IMAGE_AVAILABLE = "/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg";
 
 	private static AppConstants appConstants = AppConstants.getInstance();
 	private static String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
@@ -131,6 +133,11 @@ public class RestServiceDispatcher  {
 		
 		String matchingPattern = findMatchingPattern(uri);
 		if (matchingPattern==null) {
+			if (uri != null && (uri.equals("/showFlowDiagram")
+					|| uri.startsWith("/showFlowDiagram/"))) {
+				emulateShowFlowDiagram(httpServletResponse);
+				return "";
+			}
 			throw new ListenerException("no REST listener configured for uri ["+uri+"]");
 		}
 		
@@ -159,6 +166,7 @@ public class RestServiceDispatcher  {
 		}
 
 		context.put("contentType", contentType);
+		context.put("userAgent", httpServletRequest.getHeader("User-Agent"));
 		ServiceClient listener=(ServiceClient)methodConfig.get(KEY_LISTENER);
 		String etagKey=(String)methodConfig.get(KEY_ETAG_KEY);
 		String contentTypeKey=(String)methodConfig.get(KEY_CONTENT_TYPE_KEY);
@@ -291,6 +299,31 @@ public class RestServiceDispatcher  {
 		}
 	}
 
+	private void emulateShowFlowDiagram(HttpServletResponse httpServletResponse)
+			throws ListenerException {
+		URL svgSource = ClassUtils.getResourceURL(this,
+				SVG_FILE_NO_IMAGE_AVAILABLE);
+		if (svgSource == null) {
+			throw new ListenerException("cannot find resource ["
+					+ SVG_FILE_NO_IMAGE_AVAILABLE + "]");
+		}
+		try {
+			httpServletResponse.setContentType("image/svg+xml");
+			InputStream inputStream = null;
+			try {
+				inputStream = svgSource.openStream();
+				Misc.streamToStream(inputStream,
+						httpServletResponse.getOutputStream());
+			} finally {
+				if (inputStream != null) {
+					inputStream.close();
+				}
+			}
+		} catch (IOException e) {
+			throw new ListenerException(e);
+		}
+	}
+	
 	public void registerServiceClient(ServiceClient listener, String uriPattern,
 			String method, String etagSessionKey, String contentTypeSessionKey, boolean validateEtag) throws ConfigurationException {
 		uriPattern = unifyUriPattern(uriPattern);
