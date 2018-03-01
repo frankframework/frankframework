@@ -135,7 +135,8 @@ public class RestServiceDispatcher  {
 		if (matchingPattern==null) {
 			if (uri != null && (uri.equals("/showFlowDiagram")
 					|| uri.startsWith("/showFlowDiagram/"))) {
-				emulateShowFlowDiagram(httpServletResponse);
+				log.info("no REST listener configured for uri ["+uri+"], so using 'no image available'");
+				noImageAvailable(httpServletResponse);
 				return "";
 			}
 			throw new ListenerException("no REST listener configured for uri ["+uri+"]");
@@ -299,7 +300,7 @@ public class RestServiceDispatcher  {
 		}
 	}
 
-	private void emulateShowFlowDiagram(HttpServletResponse httpServletResponse)
+	private void noImageAvailable(HttpServletResponse httpServletResponse)
 			throws ListenerException {
 		URL svgSource = ClassUtils.getResourceURL(this,
 				SVG_FILE_NO_IMAGE_AVAILABLE);
