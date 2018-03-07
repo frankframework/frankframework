@@ -65,6 +65,10 @@ public class TransformerPool {
 	private Templates templates;
 	private URL reloadURL=null;
 
+	private ClassLoaderURIResolver classLoaderURIResolver =
+			new ClassLoaderURIResolver(
+					Thread.currentThread().getContextClassLoader());
+
 	private static class TransformerPoolKey {
 		private String xsltString;
 		private String urlString;
@@ -129,7 +133,7 @@ public class TransformerPool {
 	private ObjectPool pool = new SoftReferenceObjectPool(new BasePoolableObjectFactory() {
 		@Override
 		public Object makeObject() throws Exception {
-			return createTransformer();			
+			return createTransformer();
 		}
 	}); 
 
@@ -140,6 +144,7 @@ public class TransformerPool {
 	private TransformerPool(Source source, String sysId, boolean xslt2) throws TransformerConfigurationException {
 		super();
 		tFactory = XmlUtils.getTransformerFactory(xslt2);
+		tFactory.setURIResolver(classLoaderURIResolver);
 		initTransformerPool(source, sysId);
 
 		// check if a transformer can be initiated
@@ -351,13 +356,16 @@ public class TransformerPool {
 		}
 	}
 
-
 	protected synchronized Transformer createTransformer() throws TransformerConfigurationException {
 		Transformer t = templates.newTransformer();
 		if (t==null) {
 			throw new TransformerConfigurationException("cannot instantiate transformer");
 		}
 		t.setErrorListener(new TransformerErrorListener());
+		// Set URIResolver on transformer for Xalan. Setting it on the factory
+		// doesn't work for Xalan. See
+		// https://www.oxygenxml.com/archives/xsl-list/200306/msg00021.html
+		t.setURIResolver(classLoaderURIResolver);
 		return t;
 	}
 

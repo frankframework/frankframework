@@ -32,6 +32,7 @@ Upcoming
 - Fix missing service client registering after stopping and starting rest/api adapters
 - Workaround to avoid NPE after a full reload
 - Avoid warning when ShowFlowDiagram REST listener is unavailable
+- Support document(), xsl:import, and xsl:include with config in database
 
 
 
