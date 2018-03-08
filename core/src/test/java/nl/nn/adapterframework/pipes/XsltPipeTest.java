@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +12,6 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -87,15 +87,11 @@ public class XsltPipeTest extends PipeTestBase<XsltPipe> {
 			}
 			return count;
 		}
-}
-
-	@BeforeClass
-	public static void initClass() {
-		System.setProperty("jdbc.convertFieldnamesToUppercase", "true");
 	}
-	
+
 	@Before
 	public void init() {
+		System.setProperty("jdbc.convertFieldnamesToUppercase", "true");
 		testAppender = new TestAppender();
 		LogUtil.getRootLogger().addAppender(testAppender);
 	}
@@ -133,7 +129,7 @@ public class XsltPipeTest extends PipeTestBase<XsltPipe> {
 		// 2) error 2 from avoidSystemError2 (see below) only applies for XSLT
 		// 2.0
 		ErrorOutputStream errorOutputStream = new ErrorOutputStream();
-		// System.setErr(new PrintStream(errorOutputStream));
+		System.setErr(new PrintStream(errorOutputStream));
 		pipe.setStyleSheetName("/Xslt/root.xsl");
 		pipe.setXslt2(false);
 		pipe.configure();
@@ -157,7 +153,7 @@ public class XsltPipeTest extends PipeTestBase<XsltPipe> {
 		// more than once. This is permitted, but may lead to errors or
 		// unexpected behavior"
 		ErrorOutputStream errorOutputStream = new ErrorOutputStream();
-		// System.setErr(new PrintStream(errorOutputStream));
+		System.setErr(new PrintStream(errorOutputStream));
 		pipe.setStyleSheetName("/Xslt/root2.xsl");
 		pipe.setXslt2(true);
 		pipe.configure();
