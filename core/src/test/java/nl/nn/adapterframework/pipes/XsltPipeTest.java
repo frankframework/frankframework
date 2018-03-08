@@ -11,6 +11,7 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -87,6 +88,11 @@ public class XsltPipeTest extends PipeTestBase<XsltPipe> {
 			return count;
 		}
 }
+
+	@BeforeClass
+	public static void initClass() {
+		System.setProperty("jdbc.convertFieldnamesToUppercase", "true");
+	}
 	
 	@Before
 	public void init() {
