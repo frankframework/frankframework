@@ -160,8 +160,8 @@ public class LogUtil {
 					new DOMConfigurator().doConfigure(reader, hierarchy);
 				}
 			}
+			hideRegex = log4jProperties.getProperty("log.hideRegex");
 		}
-		hideRegex = log4jProperties.getProperty("log.hideRegex");
 		if (hideRegex != null) {
 			hideRegex = XmlUtils.decodeChars(hideRegex);
 		}

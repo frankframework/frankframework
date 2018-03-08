@@ -114,6 +114,7 @@ public class Json2XmlValidator extends XmlValidator {
 	private String outputFormat=FORMAT_XML;
 	private boolean autoFormat=true;
 	private String outputFormatSessionKey="outputFormat";
+	private boolean namespaceLessXmlInAndOut=false;
 	//private String requestFormat=FORMAT_AUTO;
 
 
@@ -168,9 +169,18 @@ public class Json2XmlValidator extends XmlValidator {
 		char firstChar=messageToValidate.charAt(i);
 		if (firstChar=='<') {
 			// message is XML
+			if (isNamespaceLessXmlInAndOut()) {
+				messageToValidate=addNamespace(messageToValidate);
+			}
 			storeInputFormat(FORMAT_XML,session, responseMode);
 			if (!getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
-				return super.doPipe(input,session, responseMode);
+				PipeRunResult result=super.doPipe(messageToValidate,session, responseMode);
+				if (isNamespaceLessXmlInAndOut()) {
+					String msg=(String)result.getResult();
+					msg=XmlUtils.removeNamespaces(msg);
+					result.setResult(msg);
+				}
+				return result;
 			}
 			try {
 				return alignXml2Json(messageToValidate, session, responseMode);
@@ -242,6 +252,9 @@ public class Json2XmlValidator extends XmlValidator {
 			} else {
 				Source source = aligner.asSource(jsonStructure);
 				out = source2String(source);
+				if (isNamespaceLessXmlInAndOut()) {
+					out = XmlUtils.removeNamespaces(out);
+				}
 			}
 		} catch (Exception e) {
 			resultEvent= validator.finalizeValidation(context, session, e);
@@ -262,6 +275,15 @@ public class Json2XmlValidator extends XmlValidator {
 		return writer.toString();
 	}
 
+	public String addNamespace(String xml) {
+		if (xml.indexOf("xmlns")>0) {
+			return xml;
+		}
+		String namespace = getSchemaLocation().split(" ")[0];
+		System.out.println("setting namespace ["+namespace+"]");
+		int elementEnd=xml.indexOf('>');
+		return xml.substring(0, elementEnd)+" xmlns=\""+namespace+"\""+xml.substring(elementEnd);
+	}
 	
 	
 	public String getTargetNamespace() {
@@ -312,6 +334,14 @@ public class Json2XmlValidator extends XmlValidator {
 
 	public void setAutoFormat(boolean autoFormat) {
 		this.autoFormat = autoFormat;
+	}
+
+	public boolean isNamespaceLessXmlInAndOut() {
+		return namespaceLessXmlInAndOut;
+	}
+
+	public void setNamespaceLessXmlInAndOut(boolean namespaceLessXmlInAndOut) {
+		this.namespaceLessXmlInAndOut = namespaceLessXmlInAndOut;
 	}
 
 }
