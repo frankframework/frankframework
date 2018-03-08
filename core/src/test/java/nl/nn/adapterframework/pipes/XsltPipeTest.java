@@ -122,6 +122,7 @@ public class XsltPipeTest extends PipeTestBase<XsltPipe> {
 		assertEquals(expected, xmlOut.trim());
 	}
 
+	@Ignore
 	@Test
 	public void avoidSystemError() throws Exception {
 		// 1) "Can not load requested doc: ...\Xslt\colorLookup.xml (The system
