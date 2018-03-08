@@ -154,7 +154,7 @@ public class TransformerPool {
 	}	
 	
 	private TransformerPool(URL url, boolean xslt2) throws TransformerConfigurationException, IOException {
-		this(new StreamSource(url.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING),url.toString(),xslt2);
+		this(new StreamSource(url.openStream()),url.toString(),xslt2);
 	}
 	
 	private TransformerPool(String xsltString, String sysId, boolean xslt2) throws TransformerConfigurationException {
@@ -243,7 +243,7 @@ public class TransformerPool {
 
 	private void reloadTransformerPool() throws TransformerConfigurationException, IOException {
 		if (reloadURL!=null) {
-			initTransformerPool(new StreamSource(reloadURL.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING),reloadURL.toString());
+			initTransformerPool(new StreamSource(reloadURL.openStream()),reloadURL.toString());
 			try {
 				pool.clear();
 			} catch (Exception e) {
