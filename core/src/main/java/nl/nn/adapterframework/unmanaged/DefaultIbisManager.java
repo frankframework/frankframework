@@ -82,7 +82,7 @@ public class DefaultIbisManager implements IbisManager {
 
     public Configuration getConfiguration(String configurationName) {
         for (Configuration configuration : configurations) {
-            if (configurationName.equals(configuration.getConfigurationName())) {
+            if (configurationName.equals(configuration.getName())) {
                 return configuration;
             }
         }
@@ -341,9 +341,9 @@ public class DefaultIbisManager implements IbisManager {
     }
 
     public void startScheduledJobs(Configuration configuration) {
-        List scheduledJobs = configuration.getScheduledJobs();
-        for (Iterator iter = scheduledJobs.iterator(); iter.hasNext();) {
-            JobDef jobdef = (JobDef) iter.next();
+        List<JobDef> scheduledJobs = configuration.getScheduledJobs();
+        for (Iterator<JobDef> iter = scheduledJobs.iterator(); iter.hasNext();) {
+            JobDef jobdef = iter.next();
             try {
                 schedulerHelper.scheduleJob(this, jobdef);
                 log.info("job scheduled with properties :" + jobdef.toString());
@@ -360,7 +360,7 @@ public class DefaultIbisManager implements IbisManager {
     }
 
     private void startAdapters(Configuration configuration) {
-        log.info("Starting all autostart-configured adapters for configuation " + configuration.getConfigurationName());
+        log.info("Starting all autostart-configured adapters for configuation " + configuration.getName());
         for (IAdapter adapter : configuration.getAdapterService().getAdapters().values()) {
             if (adapter.isAutoStart()) {
                 log.info("Starting adapter [" + adapter.getName()+"]");
@@ -377,7 +377,7 @@ public class DefaultIbisManager implements IbisManager {
 
     private void stopAdapters(Configuration configuration) {
         configuration.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
-        log.info("Stopping all adapters for configuation " + configuration.getConfigurationName());
+        log.info("Stopping all adapters for configuation " + configuration.getName());
         List<IAdapter> adapters = new ArrayList<IAdapter>(configuration.getAdapterService().getAdapters().values());
         Collections.reverse(adapters);
         for (IAdapter adapter : adapters) {
@@ -397,7 +397,7 @@ public class DefaultIbisManager implements IbisManager {
     }
 
     public List<IAdapter> getRegisteredAdapters() {
-        List registeredAdapters = new ArrayList<IAdapter>();
+        List<IAdapter> registeredAdapters = new ArrayList<IAdapter>();
         for (Configuration configuration : configurations) {
             registeredAdapters.addAll(configuration.getRegisteredAdapters());
         }
@@ -406,7 +406,7 @@ public class DefaultIbisManager implements IbisManager {
 
     public List<IAdapter> getRegisteredAdapters(String configurationName) {
         for (Configuration configuration : configurations) {
-            if (configurationName.equals(configuration.getConfigurationName())) {
+            if (configurationName.equals(configuration.getName())) {
                 return configuration.getRegisteredAdapters();
             }
         }

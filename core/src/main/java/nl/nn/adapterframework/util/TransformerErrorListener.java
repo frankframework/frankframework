@@ -36,7 +36,7 @@ public class TransformerErrorListener implements ErrorListener {
 	private IOException fatalIOException;
 
 	TransformerErrorListener() {
-		this(false);
+		this(true);
 	}
 
 	TransformerErrorListener(boolean throwException) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 - 2017 Nationale-Nederlanden
+   Copyright 2013, 2016 - 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,12 +36,6 @@ import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 
 import nl.nn.adapterframework.configuration.classloaders.BasePathClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.DummyClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
-import nl.nn.adapterframework.configuration.classloaders.ServiceClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
@@ -103,13 +97,18 @@ public class IbisContext {
 		}
 		if(!Boolean.parseBoolean(AppConstants.getInstance().getProperty("jdbc.convertFieldnamesToUppercase")))
 			ConfigurationWarnings.getInstance().add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
+
+		String loadFileSuffix = AppConstants.getInstance().getProperty("ADDITIONAL.PROPERTIES.FILE.SUFFIX");
+		if (StringUtils.isNotEmpty(loadFileSuffix))
+			ConfigurationWarnings.getInstance().add(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
 	}
+
 	private ApplicationContext applicationContext;
 	private IbisManager ibisManager;
-	private Map<String, ClassLoader> classLoaders = new HashMap<String, ClassLoader>();
 	private Map<String, MessageKeeper> messageKeepers = new HashMap<String, MessageKeeper>();
 	private int messageKeeperSize = 10;
 	private FlowDiagram flowDiagram;
+	private ClassLoaderManager classLoaderManager = null;
 
 	public void setDefaultApplicationServerType(String defaultApplicationServerType) {
 		if (defaultApplicationServerType.equals(getApplicationServerType())) {
@@ -181,9 +180,10 @@ public class IbisContext {
 			applicationContext = createApplicationContext();
 			ibisManager = (IbisManager)applicationContext.getBean("ibisManager");
 			ibisManager.setIbisContext(this);
+			classLoaderManager = new ClassLoaderManager(this);
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
-			load(null);
+			load();
 			getMessageKeeper().setMaxSize(Math.max(messageKeeperSize, getMessageKeeper().size()));
 
 			log("startup in " + (System.currentTimeMillis() - start) + " ms");
@@ -291,177 +291,140 @@ public class IbisContext {
 		((ConfigurableApplicationContext)applicationContext).close();
 	}
 
+	private void load() {
+		load(null);
+	}
+
 	private void load(String configurationName) {
 		boolean configFound = false;
-		boolean configLogAppend = false;
+
+		//We have an ordered list with all configurations, lets loop through!
+		ConfigurationDigester configurationDigester = new ConfigurationDigester();
 		StringTokenizer tokenizer = new StringTokenizer(CONFIGURATIONS, ",");
 		while (tokenizer.hasMoreTokens()) {
 			String currentConfigurationName = tokenizer.nextToken();
-			if (configurationName == null
-					|| configurationName.equals(currentConfigurationName)) {
-				long start = System.currentTimeMillis();
+
+			if (configurationName == null || configurationName.equals(currentConfigurationName)) {
 				configFound = true;
-				String configurationFile = APP_CONSTANTS.getResolvedProperty(
-						"configurations." + currentConfigurationName + ".configurationFile");
-				if (configurationFile == null) {
-					configurationFile = "Configuration.xml";
-					if (!currentConfigurationName.equals(INSTANCE_NAME)) {
-						configurationFile = currentConfigurationName + "/" + configurationFile;
-					}
-				}
+
 				ConfigurationException customClassLoaderConfigurationException = null;
-				ClassLoader classLoader = classLoaders.get(currentConfigurationName);
-				if (classLoader != null) {
-					// Reuse class loader as it is difficult to have all
-					// references to the class loader removed (see also
-					// http://zeroturnaround.com/rebellabs/rjc201/).
-					// Create a heapdump after an unload and garbage collect and
-					// view the references to the instances of the root class
-					// loader class (BasePathClassLoader when a base path is
-					// used).
-					if (classLoader instanceof ReloadAware) {
-						try {
-							((ReloadAware)classLoader).reload();
-						} catch (ConfigurationException e) {
-							customClassLoaderConfigurationException = e;
-						}
-					}
-				} else {
-					String classLoaderType = APP_CONSTANTS.getResolvedProperty(
-							"configurations." + currentConfigurationName + ".classLoaderType");
-					try {
-						if ("DirectoryClassLoader".equals(classLoaderType)) {
-							String directory = APP_CONSTANTS.getResolvedProperty(
-									"configurations." + currentConfigurationName + ".directory");
-							classLoader = new DirectoryClassLoader(directory);
-						} else if ("JarFileClassLoader".equals(classLoaderType)) {
-							String jar = APP_CONSTANTS.getResolvedProperty(
-									"configurations." + currentConfigurationName + ".jar");
-							classLoader = new JarFileClassLoader(jar, currentConfigurationName);
-						} else if ("ServiceClassLoader".equals(classLoaderType)) {
-							String adapterName = APP_CONSTANTS.getResolvedProperty(
-									"configurations." + currentConfigurationName + ".adapterName");
-							classLoader = new ServiceClassLoader(ibisManager, adapterName, currentConfigurationName);
-						} else if ("DatabaseClassLoader".equals(classLoaderType)) {
-							try {
-								classLoader = new DatabaseClassLoader(this, currentConfigurationName);
-							}
-							catch (ConfigurationException ce) {
-								String configNotFoundReportLevel = APP_CONSTANTS.getString(
-										"configurations." + currentConfigurationName + ".configNotFoundReportLevel", "ERROR").toUpperCase();
-
-								String msg = "Could not get config '" + currentConfigurationName + "' from database, skipping";
-								if(configNotFoundReportLevel.equals("DEBUG")) {
-									LOG.debug(msg);
-								}
-								else if(configNotFoundReportLevel.equals("INFO")) {
-									log(msg);
-								}
-								else if(configNotFoundReportLevel.equals("WARN")) {
-									ConfigurationWarnings.getInstance().add(LOG, msg);
-								}
-								else {
-									if(!configNotFoundReportLevel.equals("ERROR"))
-										ConfigurationWarnings.getInstance().add(LOG, "Invalid configNotFoundReportLevel ["+configNotFoundReportLevel+"], using default [ERROR]");
-									throw ce;
-								}
-
-								continue;
-							}
-						} else if ("DummyClassLoader".equals(classLoaderType)) {
-							classLoader = new DummyClassLoader(currentConfigurationName, configurationFile);
-						} else if (classLoaderType != null) {
-							throw new ConfigurationException("Invalid classLoaderType: " + classLoaderType);
-						}
-
-						String basePath = "";
-						int i = configurationFile.lastIndexOf('/');
-						if (i != -1) {
-							basePath = configurationFile.substring(0, i + 1);
-						}
-						if (classLoader == null) {
-							classLoader = Thread.currentThread().getContextClassLoader();
-						}
-						classLoader = new BasePathClassLoader(classLoader, basePath);
-					} catch (ConfigurationException e) {
-						customClassLoaderConfigurationException = e;
-					}
-					classLoaders.put(currentConfigurationName, classLoader);
-				}
-
-				String currentConfigurationVersion =
-						getConfigurationVersion(AppConstants.getInstance(classLoader));
-				Configuration configuration = null;
-				ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-				if (classLoader != null) {
-					Thread.currentThread().setContextClassLoader(classLoader);
-				}
+				ClassLoader classLoader = null;
 				try {
+					classLoader = classLoaderManager.get(currentConfigurationName);
 
-					if(APP_CONSTANTS.getBoolean("jdbc.migrator.active", false)) {
-						try {
-							Migrator databaseMigrator = (Migrator) getBean("jdbcMigrator");
-							databaseMigrator.setIbisContext(this);
-							databaseMigrator.configure(currentConfigurationName, classLoader);
-							databaseMigrator.update();
-						}
-						catch (Exception e) {
-							log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperMessage.ERROR_LEVEL);
-						}
-					}
+					//An error occurred but we don't want to throw any exceptions.
+					//Skip the config so it can be initialized at a later time.
+					if(classLoader == null)
+						continue;
 
-					configuration = new Configuration(new BasicAdapterServiceImpl());
-					configuration.setName(currentConfigurationName);
-					configuration.setVersion(currentConfigurationVersion);
-					configuration.setIbisManager(ibisManager);
-					ibisManager.addConfiguration(configuration);
-					ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
-					if (customClassLoaderConfigurationException == null) {
-						ConfigurationDigester configurationDigester = new ConfigurationDigester();
-						configurationDigester.digestConfiguration(classLoader, configuration, configurationFile, configLogAppend);
-						configLogAppend = true;
-						if (currentConfigurationVersion == null) {
-							currentConfigurationVersion = configuration.getVersion();
-						} else if (!currentConfigurationVersion.equals(configuration.getVersion())) {
-							log(currentConfigurationName, currentConfigurationVersion,
-									"configuration version doesn't match Configuration version attribute: "
-									+ configuration.getVersion(),
-									MessageKeeperMessage.WARN_LEVEL);
-						}
-						if (!currentConfigurationName.equals(configuration.getName())) {
-							log(currentConfigurationName, currentConfigurationVersion,
-									"configuration name doesn't match Configuration name attribute: "
-									+ configuration.getName(),
-									MessageKeeperMessage.WARN_LEVEL);
-							messageKeepers.put(configuration.getName(),
-									messageKeepers.remove(currentConfigurationName));
-						}
-						if (configuration.isAutoStart()) {
-							ibisManager.startConfiguration(configuration);
-							log(currentConfigurationName, currentConfigurationVersion,
-									"startup in " + (System.currentTimeMillis() - start) + " ms");
-						} else {
-							log(currentConfigurationName, currentConfigurationVersion,
-									"configured in " + (System.currentTimeMillis() - start) + " ms");
-						}
-						generateFlows(configuration, currentConfigurationName, currentConfigurationVersion);
-					} else {
-						throw customClassLoaderConfigurationException;
-					}
 				} catch (ConfigurationException e) {
-					configuration.setConfigurationException(e);
-					log(currentConfigurationName, currentConfigurationVersion, " exception",
-							MessageKeeperMessage.ERROR_LEVEL, e);
-				} finally {
-					Thread.currentThread().setContextClassLoader(originalClassLoader);
-					ConfigurationWarnings.getInstance().setActiveConfiguration(null);
+					customClassLoaderConfigurationException = e;
 				}
+
+				digestClassLoaderConfiguration(classLoader, configurationDigester, currentConfigurationName, customClassLoaderConfigurationException);
 			}
 		}
+
 		generateFlow();
+		//Check if the configuration we try to reload actually exists
 		if (!configFound) {
 			log(configurationName, configurationName + " not found in '"
 					+ CONFIGURATIONS + "'", MessageKeeperMessage.ERROR_LEVEL);
+		}
+	}
+
+	public String getConfigurationFile(String currentConfigurationName) {
+		String configurationFile = APP_CONSTANTS.getResolvedProperty(
+				"configurations." + currentConfigurationName + ".configurationFile");
+		if (configurationFile == null) {
+			configurationFile = "Configuration.xml";
+			if (!currentConfigurationName.equals(INSTANCE_NAME)) {
+				configurationFile = currentConfigurationName + "/" + configurationFile;
+			}
+		}
+		return configurationFile;
+	}
+
+	private void digestClassLoaderConfiguration(ClassLoader classLoader, 
+			ConfigurationDigester configurationDigester, 
+			String currentConfigurationName, 
+			ConfigurationException customClassLoaderConfigurationException) {
+
+		long start = System.currentTimeMillis();
+		try {
+			if(classLoader != null)
+				classLoaderManager.reload(classLoader);
+		} catch (ConfigurationException e) {
+			customClassLoaderConfigurationException = e;
+		}
+
+		String configurationFile = getConfigurationFile(currentConfigurationName);
+		String currentConfigurationVersion =
+				getConfigurationVersion(AppConstants.getInstance(classLoader));
+		Configuration configuration = null;
+		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+		if (classLoader != null) {
+			Thread.currentThread().setContextClassLoader(classLoader);
+		}
+		try {
+			configuration = new Configuration(new BasicAdapterServiceImpl());
+			configuration.setName(currentConfigurationName);
+			configuration.setVersion(currentConfigurationVersion);
+			configuration.setIbisManager(ibisManager);
+			ibisManager.addConfiguration(configuration);
+			ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
+			if (customClassLoaderConfigurationException == null) {
+
+				if(AppConstants.getInstance(classLoader).getBoolean("jdbc.migrator.active", false)) {
+					try {
+						Migrator databaseMigrator = (Migrator) getBean("jdbcMigrator");
+						databaseMigrator.setIbisContext(this);
+						databaseMigrator.configure(currentConfigurationName, classLoader);
+						databaseMigrator.update();
+					}
+					catch (Exception e) {
+						log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperMessage.ERROR_LEVEL);
+					}
+				}
+
+				configurationDigester.digestConfiguration(classLoader, configuration, configurationFile);
+				if (currentConfigurationVersion == null) {
+					currentConfigurationVersion = configuration.getVersion();
+				} else if (!currentConfigurationVersion.equals(configuration.getVersion())) {
+					log(currentConfigurationName, currentConfigurationVersion,
+							"configuration version doesn't match Configuration version attribute: "
+							+ configuration.getVersion(),
+							MessageKeeperMessage.WARN_LEVEL);
+				}
+				if (!currentConfigurationName.equals(configuration.getName())) {
+					log(currentConfigurationName, currentConfigurationVersion,
+							"configuration name doesn't match Configuration name attribute: "
+							+ configuration.getName(),
+							MessageKeeperMessage.WARN_LEVEL);
+					messageKeepers.put(configuration.getName(),
+							messageKeepers.remove(currentConfigurationName));
+				}
+
+				if (configuration.isAutoStart()) {
+					ibisManager.startConfiguration(configuration);
+					log(currentConfigurationName, currentConfigurationVersion,
+							"startup in " + (System.currentTimeMillis() - start) + " ms");
+				}
+				else {
+					log(currentConfigurationName, currentConfigurationVersion,
+							"configured in " + (System.currentTimeMillis() - start) + " ms");
+				}
+				generateFlows(configuration, currentConfigurationName, currentConfigurationVersion);
+			} else {
+				throw customClassLoaderConfigurationException;
+			}
+		} catch (ConfigurationException e) {
+			configuration.setConfigurationException(e);
+			log(currentConfigurationName, currentConfigurationVersion, " exception",
+					MessageKeeperMessage.ERROR_LEVEL, e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(originalClassLoader);
+			ConfigurationWarnings.getInstance().setActiveConfiguration(null);
 		}
 	}
 

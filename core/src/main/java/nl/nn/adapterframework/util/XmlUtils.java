@@ -835,7 +835,7 @@ public class XmlUtils {
 			// may lead to errors or unexpected behavior"
 			// written to System.err
 			// (https://stackoverflow.com/questions/10096086/how-to-handle-duplicate-imports-in-xslt)
-			factory.setErrorListener(new TransformerErrorListener(true));
+			factory.setErrorListener(new TransformerErrorListener());
 			return factory;
 		} else {
 			// Use a Xalan version with different package names to prevent the

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,11 @@
 */
 package nl.nn.adapterframework.configuration.classloaders;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
@@ -42,6 +46,19 @@ public class BasePathClassLoader extends ClassLoader implements ReloadAware {
 			else
 				return null;
 		}
+	}
+
+	@Override
+	public Enumeration<URL> getResources(String name) throws IOException {
+		Vector<URL> urls = new Vector<URL>();
+
+		URL basePathUrl = getResource(name, false);
+		if (basePathUrl != null)
+			urls.add(basePathUrl);
+
+		urls.addAll(Collections.list(getParent().getResources(name)));
+
+		return urls.elements();
 	}
 
 	public void reload() throws ConfigurationException {

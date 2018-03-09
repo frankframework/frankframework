@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -92,6 +92,7 @@ public class ConfigurationDigester {
 
 	private String configurationFile = null;
 	private String digesterRulesFile = DIGESTER_RULES_DEFAULT;
+	private boolean configLogAppend = false;
 
 	String lastResolvedEntity = null;
 
@@ -170,6 +171,11 @@ public class ConfigurationDigester {
 		}
 
 		return digester;
+	}
+
+	public void digestConfiguration(ClassLoader classLoader, Configuration configuration, String configurationFile) throws ConfigurationException {
+		digestConfiguration(classLoader, configuration, configurationFile, configLogAppend);
+		configLogAppend = true;
 	}
 
 	public void digestConfiguration(ClassLoader classLoader, Configuration configuration, String configurationFile, boolean configLogAppend) throws ConfigurationException {
