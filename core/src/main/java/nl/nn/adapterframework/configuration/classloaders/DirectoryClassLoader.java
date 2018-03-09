@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,7 +33,11 @@ public class DirectoryClassLoader extends ClassLoader {
 	private List<File> directories;
 
 	public DirectoryClassLoader(String directory) throws ConfigurationException {
-		super(DirectoryClassLoader.class.getClassLoader());
+		this(directory, DirectoryClassLoader.class.getClassLoader());
+	}
+
+	public DirectoryClassLoader(String directory, ClassLoader parent) throws ConfigurationException {
+		super(parent);
 		if (directory == null) {
 			AppConstants appConstants = AppConstants.getInstance();
 			String configurationsDirectory = appConstants.getResolvedProperty("configurations.directory");

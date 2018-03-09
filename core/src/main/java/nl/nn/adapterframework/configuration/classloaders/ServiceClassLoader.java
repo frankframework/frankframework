@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,8 +29,13 @@ public class ServiceClassLoader extends JarBytesClassLoader {
 	private String adapterName;
 	private String configurationName;
 
+
 	public ServiceClassLoader(IbisManager ibisManager, String adapterName, String configurationName) throws ConfigurationException {
-		super(ServiceClassLoader.class.getClassLoader());
+		this(ibisManager, adapterName, configurationName, ServiceClassLoader.class.getClassLoader());
+	}
+
+	public ServiceClassLoader(IbisManager ibisManager, String adapterName, String configurationName, ClassLoader parent) throws ConfigurationException {
+		super(parent);
 		this.ibisManager = ibisManager;
 		this.adapterName = adapterName;
 		this.configurationName = configurationName;

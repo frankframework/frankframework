@@ -28,7 +28,11 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 	private Map<String, Object> configuration;
 
 	public DatabaseClassLoader(IbisContext ibisContext, String configurationName) throws ConfigurationException {
-		super(DatabaseClassLoader.class.getClassLoader());
+		this(ibisContext, configurationName, DatabaseClassLoader.class.getClassLoader());
+	}
+
+	public DatabaseClassLoader(IbisContext ibisContext, String configurationName, ClassLoader parent) throws ConfigurationException {
+		super(parent);
 		this.ibisContext = ibisContext;
 		this.configurationName = configurationName;
 		reload();

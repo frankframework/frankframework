@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,7 +28,11 @@ public class JarFileClassLoader extends BytesClassLoader {
 	private String configurationName;
 
 	public JarFileClassLoader(String jarFileName, String configurationName) throws ConfigurationException {
-		super(JarFileClassLoader.class.getClassLoader());
+		this(jarFileName, configurationName, JarFileClassLoader.class.getClassLoader());
+	}
+
+	public JarFileClassLoader(String jarFileName, String configurationName, ClassLoader parent) throws ConfigurationException {
+		super(parent);
 		this.jarFileName = jarFileName;
 		this.configurationName = configurationName;
 		reload();

@@ -135,7 +135,14 @@ public final class ShowConfigurationStatus extends ActionBase {
 			configurationSelected = ibisManager.getConfiguration(configurationName);
 			registeredAdapters = configurationSelected.getRegisteredAdapters();
 			request.getSession().setAttribute("configurationName", configurationSelected.getConfigurationName());
-			request.getSession().setAttribute("classLoaderType", configurationSelected.getClassLoaderType());
+
+			String classLoaderType = configurationSelected.getClassLoaderType();
+			String parentConfig = AppConstants.getInstance().getString(
+					"configurations." + configurationName + ".parentConfig", null);
+			if(parentConfig != null)
+				classLoaderType += " with parentConfig ["+parentConfig+"]";
+
+			request.getSession().setAttribute("classLoaderType", classLoaderType);
 		}
 
 		XmlBuilder adapters = toAdaptersXml(ibisManager.getIbisContext(), allConfigurations, configurationSelected, registeredAdapters, showConfigurationStatusManager);
