@@ -159,39 +159,40 @@ public class Json2XmlValidator extends XmlValidator {
      */
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session, boolean responseMode) throws PipeRunException {
-		String messageToValidate;
-		messageToValidate = input.toString();
+		String messageToValidate=input==null?"{}":input.toString();
 		int i=0;
 		while (i<messageToValidate.length() && Character.isWhitespace(messageToValidate.charAt(i))) i++;
 		if (i>=messageToValidate.length()) {
-			throw new PipeRunException(this,"message contains only whitespace");
-		}
-		char firstChar=messageToValidate.charAt(i);
-		if (firstChar=='<') {
-			// message is XML
-			if (isNamespaceLessXmlInAndOut()) {
-				messageToValidate=addNamespace(messageToValidate);
-			}
-			storeInputFormat(FORMAT_XML,session, responseMode);
-			if (!getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
-				PipeRunResult result=super.doPipe(messageToValidate,session, responseMode);
+			messageToValidate="{}";
+			storeInputFormat(FORMAT_JSON,session, responseMode);
+		} else {
+			char firstChar=messageToValidate.charAt(i);
+			if (firstChar=='<') {
+				// message is XML
 				if (isNamespaceLessXmlInAndOut()) {
-					String msg=(String)result.getResult();
-					msg=XmlUtils.removeNamespaces(msg);
-					result.setResult(msg);
+					messageToValidate=addNamespace(messageToValidate);
 				}
-				return result;
+				storeInputFormat(FORMAT_XML,session, responseMode);
+				if (!getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
+					PipeRunResult result=super.doPipe(messageToValidate,session, responseMode);
+					if (isNamespaceLessXmlInAndOut()) {
+						String msg=(String)result.getResult();
+						msg=XmlUtils.removeNamespaces(msg);
+						result.setResult(msg);
+					}
+					return result;
+				}
+				try {
+					return alignXml2Json(messageToValidate, session, responseMode);
+				} catch (Exception e) {
+					throw new PipeRunException(this, "Alignment of XML to JSON failed",e);
+				}
 			}
-			try {
-				return alignXml2Json(messageToValidate, session, responseMode);
-			} catch (Exception e) {
-				throw new PipeRunException(this, "Alignment of XML to JSON failed",e);
+			if (firstChar!='{' && firstChar!='[') {
+				throw new PipeRunException(this,"message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['");
 			}
+			storeInputFormat(FORMAT_JSON,session, responseMode);
 		}
-		if (firstChar!='{' && firstChar!='[') {
-			throw new PipeRunException(this,"message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['");
-		}
-		storeInputFormat(FORMAT_JSON,session, responseMode);
 		try {
 			return alignJson(messageToValidate, session, responseMode);
 		} catch (XmlValidatorException e) {
@@ -251,10 +252,7 @@ public class Json2XmlValidator extends XmlValidator {
 				out=xml2json.toString();
 			} else {
 				Source source = aligner.asSource(jsonStructure);
-				out = source2String(source);
-				if (isNamespaceLessXmlInAndOut()) {
-					out = XmlUtils.removeNamespaces(out);
-				}
+				out = XmlUtils.source2String(source,isNamespaceLessXmlInAndOut());
 			}
 		} catch (Exception e) {
 			resultEvent= validator.finalizeValidation(context, session, e);
@@ -263,16 +261,6 @@ public class Json2XmlValidator extends XmlValidator {
 		PipeForward forward=determineForward(resultEvent, session, responseMode);
 		PipeRunResult result=new PipeRunResult(forward,out);
 		return result;
-	}
-
-	public static String source2String(Source source) throws TransformerException {
-		StringWriter writer = new StringWriter();
-		StreamResult result = new StreamResult(writer);
-		TransformerFactory tf = XmlUtils.getTransformerFactory(true); // set xslt2=true to avoid problems with diacritics
-		Transformer transformer = tf.newTransformer();
-		transformer.transform(source, result);
-		writer.flush();
-		return writer.toString();
 	}
 
 	public String addNamespace(String xml) {

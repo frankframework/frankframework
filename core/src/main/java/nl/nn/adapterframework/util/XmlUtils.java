@@ -780,6 +780,8 @@ public class XmlUtils {
 			throw new DomBuilderException(e);
 		}
 	}
+	
+	
 
 	public static synchronized Transformer createTransformer(String xsltString)
 		throws TransformerConfigurationException {
@@ -1534,6 +1536,22 @@ public class XmlUtils {
 		}
 
 		return sb.toString();
+	}
+
+	public static String source2String(Source source, boolean removeNamespaces) throws TransformerException {
+		StringWriter writer = new StringWriter();
+		StreamResult result = new StreamResult(writer);
+		Transformer transformer;
+		if (removeNamespaces) {
+			String removeNamespaces_xslt = makeRemoveNamespacesXslt(true,false);
+			transformer = createTransformer(removeNamespaces_xslt);
+		} else {
+			TransformerFactory tf = XmlUtils.getTransformerFactory(true); // set xslt2=true to avoid problems with diacritics
+			transformer = tf.newTransformer();
+		}
+		transformer.transform(source, result);
+		writer.flush();
+		return writer.toString();
 	}
 
 	public static String removeNamespaces(String input) {
