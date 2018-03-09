@@ -109,10 +109,11 @@ public class LoginFilter implements Filter {
 	protected final List<String> allowedTesterPaths = new ArrayList<String>();
 
 	public void init(FilterConfig filterConfig) throws ServletException {
-		otapStage = AppConstants.getInstance().getResolvedProperty("otap.stage");
-		instanceName = AppConstants.getInstance().getResolvedProperty("instance.name");
+		AppConstants appConstants = AppConstants.getInstance();
+		otapStage = appConstants.getResolvedProperty("otap.stage");
+		instanceName = appConstants.getResolvedProperty("instance.name");
 
-		String ldapAuthMode = AppConstants.getInstance().getString("ldap.auth.mode", LDAP_AUTH_MODE_NONE_STR);
+		String ldapAuthMode = appConstants.getString("ldap.auth.mode", LDAP_AUTH_MODE_NONE_STR);
 		ldapAuthModeNum = getLdapAuthModeNum(ldapAuthMode);
 		if (ldapAuthModeNum < 0) {
 			log.warn("Unknown ldapAuthMode [" + ldapAuthMode + "], will use [" + LDAP_AUTH_MODE_NONE_STR + "]");
@@ -141,23 +142,23 @@ public class LoginFilter implements Filter {
 			}
 
 			if (ldapAuthModeNum >= LDAP_AUTH_MODE_BASIC) {
-				ldapAuthUrl = AppConstants.getInstance().getResolvedProperty("ldap.auth.url");
+				ldapAuthUrl = appConstants.getResolvedProperty("ldap.auth.url");
 				if (ldapAuthUrl == null) {
 					String ldapAuthUrlProp = "ldap.auth." + otapStage.toLowerCase() + ".url";
-					ldapAuthUrl = AppConstants.getInstance().getResolvedProperty(ldapAuthUrlProp);
+					ldapAuthUrl = appConstants.getResolvedProperty(ldapAuthUrlProp);
 				}
 
-				ldapAuthUserBase = AppConstants.getInstance().getResolvedProperty("ldap.auth.user.base");
+				ldapAuthUserBase = appConstants.getResolvedProperty("ldap.auth.user.base");
 				if (ldapAuthModeNum >= LDAP_AUTH_MODE_FULL) {
-					ldapAuthObserverBase = AppConstants.getInstance().getResolvedProperty("ldap.auth.observer.base");
+					ldapAuthObserverBase = appConstants.getResolvedProperty("ldap.auth.observer.base");
 					if (ldapAuthObserverBase == null) {
 						throw new ServletException("property [ldap.auth.observer.base] should be set");
 					}
-					ldapAuthDataAdminBase = AppConstants.getInstance().getResolvedProperty("ldap.auth.dataadmin.base");
+					ldapAuthDataAdminBase = appConstants.getResolvedProperty("ldap.auth.dataadmin.base");
 					if (ldapAuthDataAdminBase == null) {
 						throw new ServletException("property [ldap.auth.dataadmin.base] should be set");
 					}
-					ldapAuthTesterBase = AppConstants.getInstance().getResolvedProperty("ldap.auth.tester.base");
+					ldapAuthTesterBase = appConstants.getResolvedProperty("ldap.auth.tester.base");
 					if (ldapAuthTesterBase == null) {
 						throw new ServletException("property [ldap.auth.tester.base] should be set");
 					}
