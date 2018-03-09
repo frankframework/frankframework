@@ -36,6 +36,8 @@ Upcoming
 - Improve error handling TransformerPools and TransformerFactories
 - Add support for configuration hierarchies. Configurations can define a parent configuration via the property 'configurations.<config-name>.parentConfig=<parentConfig-name>'
 - Fix property file classloading with suffix files.The classloader will search and consolidate all properties found in the classloader chain
+- Introduction of the RestSender
+
 
 
 ### Non backwards compatible changes
