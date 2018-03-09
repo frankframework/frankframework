@@ -33,6 +33,7 @@ Upcoming
 - Workaround to avoid NPE after a full reload
 - Avoid warning when ShowFlowDiagram REST listener is unavailable
 - Support document(), xsl:import, and xsl:include with config in database
+- Improve error handling TransformerPools and TransformerFactories
 
 
 

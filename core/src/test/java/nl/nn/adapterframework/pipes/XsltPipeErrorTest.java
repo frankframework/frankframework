@@ -9,10 +9,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -21,11 +22,10 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-public class XsltPipeTest2 {
+public class XsltPipeErrorTest {
 
 	private IPipeLineSession session = new PipeLineSessionBase();
 	private TestAppender testAppender;
@@ -41,14 +41,18 @@ public class XsltPipeTest2 {
 		public String toString() {
 			return line.toString();
 		}
+
+		public boolean isEmpty() {
+			return toString().length() == 0;
+		}
 	}
 
 	private class TestAppender extends AppenderSkeleton {
-		public List<String> messages = new ArrayList<String>();
+		public List<String> alerts = new ArrayList<String>();
 
 		public void doAppend(LoggingEvent event) {
 			if (event.getLevel().toInt() >= Level.WARN_INT) {
-				messages.add(event.getLevel() + " "
+				alerts.add(event.getLevel() + " "
 						+ event.getMessage().toString());
 			}
 		}
@@ -69,30 +73,17 @@ public class XsltPipeTest2 {
 			// TODO Auto-generated method stub
 		}
 
-		public int getNumberOfWarnings() {
-			int count = 0;
-			for (String message : messages) {
-				if (message.startsWith(Level.WARN.toString())) {
-					count++;
-				}
-			}
-			return count;
+		public int getNumberOfAlerts() {
+			return alerts.size();
 		}
 
-		public int getNumberOfNonWarnings() {
-			int count = 0;
-			for (String message : messages) {
-				if (!message.startsWith(Level.WARN.toString())) {
-					count++;
-				}
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			for (String alert : alerts) {
+				sb.append(alert);
+				sb.append("\n");
 			}
-			return count;
-		}
-
-		public void printLog() {
-			for (String message : messages) {
-				System.out.println(message);
-			}
+			return sb.toString();
 		}
 	}
 
@@ -103,7 +94,6 @@ public class XsltPipeTest2 {
 		LogUtil.getRootLogger().addAppender(testAppender);
 	}
 
-	@Ignore
 	@Test
 	public void duplicateImportError() throws Exception {
 		// this error only applies to XSLT 2.0
@@ -114,29 +104,12 @@ public class XsltPipeTest2 {
 		xsltPipe.setStyleSheetName("/Xslt/duplicateImport/root.xsl");
 		xsltPipe.setXslt2(false);
 		xsltPipe.configure();
-		xsltPipe.start();
-		String input = getFile("/Xslt/duplicateImport/in.xml");
-		PipeRunResult prr = xsltPipe.doPipe(input, session);
-
-		System.out.println("log:");
-		testAppender.printLog();
-		System.out.println("systemErr:");
-		System.out.println("" + errorOutputStream);
-		System.out.println("result:");
-		System.out.println("" + prr.getResult());
-
-		assertEquals(true, errorOutputStream.toString().length() == 0);
-		assertEquals(0, testAppender.getNumberOfWarnings());
-		assertEquals(0, testAppender.getNumberOfNonWarnings());
+		assertEquals(true, errorOutputStream.isEmpty());
+		assertEquals(0, testAppender.getNumberOfAlerts());
 	}
 
-	@Ignore
 	@Test
 	public void duplicateImportError2() throws Exception {
-		// WARN Nonfatal transformation warning: Stylesheet module
-		// file:/.../Xslt/duplicateImport/name2.xsl is included or imported more
-		// than once. This is permitted, but may lead to errors or unexpected
-		// behavior
 		ErrorOutputStream errorOutputStream = new ErrorOutputStream();
 		System.setErr(new PrintStream(errorOutputStream));
 		XsltPipe xsltPipe = new XsltPipe();
@@ -144,20 +117,17 @@ public class XsltPipeTest2 {
 		xsltPipe.setStyleSheetName("/Xslt/duplicateImport/root2.xsl");
 		xsltPipe.setXslt2(true);
 		xsltPipe.configure();
-		xsltPipe.start();
-		String input = getFile("/Xslt/duplicateImport/in.xml");
-		PipeRunResult prr = xsltPipe.doPipe(input, session);
-		assertEquals(true, errorOutputStream.toString().length() == 0);
-		assertEquals(1, testAppender.getNumberOfWarnings());
-		assertEquals(0, testAppender.getNumberOfNonWarnings());
+		assertEquals(true, errorOutputStream.isEmpty());
+		assertEquals(1, testAppender.getNumberOfAlerts());
+		assertEquals(
+				true,
+				testAppender.toString().contains(
+						"is included or imported more than once"));
 	}
 
-	@Ignore
 	@Test
 	public void documentNotFound() throws Exception {
-		// WARN Nonfatal transformation warning: Can not load requested doc:
-		// ...\Xslt\documentNotFound\colorLookup.xml (The system cannot find the
-		// file specified)
+		// error not during configure(), but during doPipe()
 		ErrorOutputStream errorOutputStream = new ErrorOutputStream();
 		System.setErr(new PrintStream(errorOutputStream));
 		XsltPipe xsltPipe = new XsltPipe();
@@ -167,19 +137,21 @@ public class XsltPipeTest2 {
 		xsltPipe.configure();
 		xsltPipe.start();
 		String input = getFile("/Xslt/documentNotFound/in.xml");
-		PipeRunResult prr = xsltPipe.doPipe(input, session);
-		assertEquals(true, errorOutputStream.toString().length() == 0);
-		assertEquals(1, testAppender.getNumberOfWarnings());
-		assertEquals(0, testAppender.getNumberOfNonWarnings());
+		String errorMessage = null;
+		try {
+			xsltPipe.doPipe(input, session);
+		} catch (PipeRunException e) {
+			errorMessage = e.getMessage();
+		}
+		assertEquals(true, errorOutputStream.isEmpty());
+		assertEquals(0, testAppender.getNumberOfAlerts());
+		assertEquals(true,
+				errorMessage.contains("java.io.FileNotFoundException"));
 	}
 
-	@Ignore
 	@Test
 	public void documentNotFound2() throws Exception {
-		// WARN Nonfatal transformation error: I/O error reported by XML parser
-		// processing file:/.../Xslt/documentNotFound/colorLookup.xml:
-		// ...\Xslt\documentNotFound\colorLookup.xml (The system cannot find the
-		// file specified)
+		// error not during configure(), but during doPipe()
 		ErrorOutputStream errorOutputStream = new ErrorOutputStream();
 		System.setErr(new PrintStream(errorOutputStream));
 		XsltPipe xsltPipe = new XsltPipe();
@@ -189,10 +161,53 @@ public class XsltPipeTest2 {
 		xsltPipe.configure();
 		xsltPipe.start();
 		String input = getFile("/Xslt/documentNotFound/in.xml");
-		PipeRunResult prr = xsltPipe.doPipe(input, session);
-		assertEquals(true, errorOutputStream.toString().length() == 0);
-		assertEquals(1, testAppender.getNumberOfWarnings());
-		assertEquals(0, testAppender.getNumberOfNonWarnings());
+		String errorMessage = null;
+		try {
+			xsltPipe.doPipe(input, session);
+		} catch (PipeRunException e) {
+			errorMessage = e.getMessage();
+		}
+		assertEquals(true, errorOutputStream.isEmpty());
+		assertEquals(0, testAppender.getNumberOfAlerts());
+		assertEquals(true,
+				errorMessage.contains("java.io.FileNotFoundException"));
+	}
+
+	@Test
+	public void importNotFound() throws Exception {
+		ErrorOutputStream errorOutputStream = new ErrorOutputStream();
+		System.setErr(new PrintStream(errorOutputStream));
+		XsltPipe xsltPipe = new XsltPipe();
+		xsltPipe.registerForward(createPipeSuccessForward());
+		xsltPipe.setStyleSheetName("/Xslt/importNotFound/root.xsl");
+		xsltPipe.setXslt2(false);
+		xsltPipe.configure();
+		assertEquals(false, errorOutputStream.isEmpty());
+		assertEquals(
+				true,
+				errorOutputStream.toString().contains(
+						"java.io.FileNotFoundException"));
+		assertEquals(0, testAppender.getNumberOfAlerts());
+	}
+
+	@Test
+	public void importNotFound2() throws Exception {
+		ErrorOutputStream errorOutputStream = new ErrorOutputStream();
+		System.setErr(new PrintStream(errorOutputStream));
+		XsltPipe xsltPipe = new XsltPipe();
+		xsltPipe.registerForward(createPipeSuccessForward());
+		xsltPipe.setStyleSheetName("/Xslt/importNotFound/root2.xsl");
+		xsltPipe.setXslt2(true);
+		String errorMessage = null;
+		try {
+			xsltPipe.configure();
+		} catch (ConfigurationException e) {
+			errorMessage = e.getMessage();
+		}
+		assertEquals(true, errorOutputStream.isEmpty());
+		assertEquals(0, testAppender.getNumberOfAlerts());
+		assertEquals(true,
+				errorMessage.contains("Failed to compile stylesheet"));
 	}
 
 	private PipeForward createPipeSuccessForward() {
