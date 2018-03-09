@@ -9,7 +9,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <ibissource.maven.repository.https>https://github.com/ibissource/mvn-repo/raw/master</ibissource.maven.repository.https>
+    <ibissource.maven.repository.https>https://raw.githubusercontent.com/ibissource/mvn-repo/master</ibissource.maven.repository.https>
     <ibissource.maven.repository.file>file:../mvn-repo</ibissource.maven.repository.file>
     <ibissource.maven.repository.proprietary.file>file:../mvn-repo-proprietary</ibissource.maven.repository.proprietary.file>
   </properties>
