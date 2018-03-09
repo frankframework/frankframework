@@ -802,7 +802,7 @@ public class XmlUtils {
 	public static synchronized Transformer createTransformer(URL url, boolean xslt2)
 		throws TransformerConfigurationException, IOException {
 
-		StreamSource stylesource = new StreamSource(url.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING);
+		StreamSource stylesource = new StreamSource(url.openStream());
 		stylesource.setSystemId(url.toString());
 		return createTransformer(stylesource, xslt2);
 	}

@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.xml.transform.Source;
@@ -42,21 +43,32 @@ public class ClassLoaderURIResolver implements URIResolver {
 		this.classLoader = classLoader;
 	}
 
-	@Override
 	public Source resolve(String href, String base) throws TransformerException {
 		String absoluteHref = href;
-		if (base != null && base.startsWith(BytesClassLoader.PROTOCOL + ":")
-				&& base.contains("/")) {
-			absoluteHref = base.substring(BytesClassLoader.PROTOCOL.length()
-					+ 1, base.lastIndexOf("/") + 1) + href;
+		if (base != null && base.contains("/")) {
+			absoluteHref = base.substring(0, base.lastIndexOf("/") + 1) + href;
 		}
-		try {
-			URL url = ClassUtils.getResourceURL(classLoader, absoluteHref);
+		// Convert String to URL which the JVM is able to do for standard url's
+		// but for our custom class loader we need to do it manually.
+		URL url = null;
+		if (absoluteHref.startsWith(BytesClassLoader.PROTOCOL + ":")) {
+			url = ClassUtils.getResourceURL(classLoader,
+					absoluteHref.substring(BytesClassLoader.PROTOCOL.length() + 1));
 			if (url == null) {
-				String message = "Cannot resolve href '" + href + "' with base '" + base + "'";
+				String message = "Cannot get resource for href '" + href + "' with base '" + base + "'";
 				log.warn(message);
 				throw new TransformerException(message);
 			}
+		} else {
+			try {
+				url = new URL(absoluteHref);
+			} catch(MalformedURLException e) {
+				String message = "Cannot convert href '" + href + "' with base '" + base + "' to URL";
+				log.warn(message);
+				throw new TransformerException(message);
+			}
+		}
+		try {
 			StreamSource streamSource = new StreamSource(url.openStream(), absoluteHref);
 			return streamSource;
 		} catch (IOException e) {

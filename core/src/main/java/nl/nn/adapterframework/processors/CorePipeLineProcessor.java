@@ -102,16 +102,23 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		if (inputValidator!=null) {
 			log.debug("validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, messageId, message, pipeLineSession);
-			if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-				PipeForward validationForward=validationResult.getPipeForward();
-				if (validationForward.getPath()==null) {
-					throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of inputValidator has emtpy forward path");
+			if (validationResult!=null) {
+				if (!validationResult.getPipeForward().getName().equals("success")) {
+					PipeForward validationForward=validationResult.getPipeForward();
+					if (validationForward.getPath()==null) {
+						throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of inputValidator has emtpy forward path");
+					}
+					log.warn("setting first pipe to ["+validationForward.getPath()+"] due to validation fault");
+					inputValidateError = true;
+					pipeToRun = pipeLine.getPipe(validationForward.getPath());
+					if (pipeToRun==null) {
+						throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
+					}
 				}
-				log.warn("setting first pipe to ["+validationForward.getPath()+"] due to validation fault");
-				inputValidateError = true;
-				pipeToRun = pipeLine.getPipe(validationForward.getPath());
-				if (pipeToRun==null) {
-					throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
+				Object validatedMessage = validationResult.getResult();
+				if (validatedMessage!=null) {
+					object=validatedMessage;
+					message=validatedMessage.toString();
 				}
 			}
 		}
