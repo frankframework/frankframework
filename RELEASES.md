@@ -38,6 +38,7 @@ Upcoming
 - Fix property file classloading with suffix files.The classloader will search and consolidate all properties found in the classloader chain
 - Introduction of the RestSender
 - Fix NPE in ApiEhCache after a full reload
+- Replace struts page "Show configuration status" by rest service
 
 
 

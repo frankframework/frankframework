@@ -113,9 +113,7 @@
 
 		<%@ include file="menuBar.jsp" %>
 
-		<% if (view.equals("/jsp/showConfigurationStatus.jsp")) { %>
-			<jsp:include page="/jsp/showConfigurationStatus.jsp" flush="true"/>
-		<%} else if (view.equals("/jsp/browseQueue.jsp")) {%>  
+		<% if (view.equals("/jsp/browseQueue.jsp")) {%>  
 			<jsp:include page="/jsp/browseQueue.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/queueContents.jsp")) {%>
 			<jsp:include page="/jsp/queueContents.jsp" flush="true"/>		

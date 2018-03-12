@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013-2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -497,6 +497,28 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		return null;
 	}
+
+	public IReceiver getReceiverByNameAndListener(String receiverName,
+			Class listenerClass) {
+		if (listenerClass == null) {
+			return getReceiverByName(receiverName);
+		}
+		Iterator<IReceiver> it = receivers.iterator();
+		while (it.hasNext()) {
+			IReceiver receiver = it.next();
+			if (receiver.getName().equalsIgnoreCase(receiverName)) {
+				if (receiver instanceof ReceiverBase) {
+					ReceiverBase receiverBase = (ReceiverBase) receiver;
+					if (listenerClass
+							.equals(receiverBase.getListener().getClass())) {
+						return receiver;
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
 	public Iterator<IReceiver> getReceiverIterator() {
 		return receivers.iterator();
 	}
