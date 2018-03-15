@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017,2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,6 +63,7 @@ public class XmlAligner extends XMLFilterImpl {
 	private boolean indent=true;
 	private final boolean DEBUG=false; 
 
+	private AlignmentContext context;
 	private int indentLevel;
 	private XSTypeDefinition typeDefinition;
 
@@ -134,10 +135,12 @@ public class XmlAligner extends XMLFilterImpl {
 		}
 		super.startElement(namespaceUri, localName, qName, attributes);
 		indentLevel++;
+		context = new AlignmentContext(context, namespaceUri, localName, qName, attributes, typeDefinition, indentLevel, multipleOccurringChildElements, parentOfSingleMultipleOccurringChildElement);
 	}
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (DEBUG) log.debug("endElement() uri ["+uri+"] localName ["+localName+"] qName ["+qName+"]");
+		context = context.getParent();
 		indentLevel--;
 		typeDefinition=null;
 		super.endElement(uri, localName, qName);
@@ -372,6 +375,10 @@ public class XmlAligner extends XMLFilterImpl {
 			return;
 		} 
 		super.setFeature(feature, value);
+	}
+
+	public AlignmentContext getContext() {
+		return context;
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017,2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -543,7 +543,24 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			return true;
 		}
 		if (term instanceof XSWildcard) {
-			log.warn("getBestMatchingElementPath SHOULD implement term instanceof XSWildcard ["+ToStringBuilder.reflectionToString(term)+"]");
+			XSWildcard wildcard=(XSWildcard)term;
+			String processContents;
+			switch (wildcard.getProcessContents()) {
+			case XSWildcard.PC_LAX: processContents="LAX"; break;
+			case XSWildcard.PC_SKIP: processContents="SKIP"; break;
+			case XSWildcard.PC_STRICT: processContents="STRICT"; break;
+			default: 
+					throw new IllegalStateException("getBestMatchingElementPath wildcard.processContents is not PC_LAX, PC_SKIP or PC_STRICT, but ["+wildcard.getProcessContents()+"]");
+			}
+			String namespaceConstraint;
+			switch (wildcard.getConstraintType()) {
+			case XSWildcard.NSCONSTRAINT_ANY : namespaceConstraint="ANY"; break;
+			case XSWildcard.NSCONSTRAINT_LIST : namespaceConstraint="SKIP "+wildcard.getNsConstraintList(); break;
+			case XSWildcard.NSCONSTRAINT_NOT : namespaceConstraint="NOT "+wildcard.getNsConstraintList(); break;
+			default: 
+					throw new IllegalStateException("getBestMatchingElementPath wildcard.namespaceConstraint is not ANY, LIST or NOT, but ["+wildcard.getConstraintType()+"]");
+			}
+			log.warn("getBestMatchingElementPath term for element ["+baseElementDeclaration.getName()+"] is WILDCARD namespaceConstraint ["+namespaceConstraint+"] processContents ["+processContents+"]. Please check if the element typed properly in the schema");
 			return true;
 		} 
 		throw new IllegalStateException("getBestMatchingElementPath unknown Term type ["+term.getClass().getName()+"]");

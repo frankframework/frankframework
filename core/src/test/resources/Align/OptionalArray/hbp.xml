@@ -1,0 +1,5 @@
+<pim:Root xmlns:pim="urn:pim">
+	<pim:Employee>
+		<pim:EmployeeDisability/>
+	</pim:Employee>
+</pim:Root>

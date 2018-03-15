@@ -1,0 +1,10 @@
+{
+  "company": { 
+  	  "id": "xxx" 
+  },
+  "employee": {},
+  "address" : {
+	  "street": "Schenkkade 51"
+  }
+}
+  

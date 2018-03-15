@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:nn="urn:pim" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:pim" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:element name="Root" type="nn:Root"/>
+	<xsd:complexType name="Root">
+		<xsd:all>
+			<xsd:element name="Employee" type="nn:Employee" minOccurs="0"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="Employee">
+		<xsd:all>
+			<xsd:element name="EmployeeDisability" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="DisabilityOverview" minOccurs="0" maxOccurs="unbounded">
+							<xsd:complexType>
+								<xsd:all>
+									<xsd:element name="Class" type="xsd:ID" minOccurs="0"/>
+									<xsd:element name="Start" type="xsd:date" minOccurs="0"/>
+								</xsd:all>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
+</xsd:schema>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017,2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -110,6 +110,7 @@ public class Json2XmlValidator extends XmlValidator {
 	private boolean compactJsonArrays=true;
 	private boolean strictJsonArraySyntax=false;
 	private boolean jsonWithRootElements=false;
+	private boolean deepSearch=false;
 	private String targetNamespace;
 	private String outputFormat=FORMAT_XML;
 	private boolean autoFormat=true;
@@ -235,6 +236,7 @@ public class Json2XmlValidator extends XmlValidator {
 			if (StringUtils.isNotEmpty(getTargetNamespace())) {
 				aligner.setTargetNamespace(getTargetNamespace());
 			}
+			aligner.setDeepSearch(isDeepSearch());
 			aligner.setErrorHandler(context.getErrorHandler());
 			ParameterList parameterList = getParameterList();
 			if (parameterList!=null) {
@@ -330,6 +332,14 @@ public class Json2XmlValidator extends XmlValidator {
 
 	public void setNamespaceLessXmlInAndOut(boolean namespaceLessXmlInAndOut) {
 		this.namespaceLessXmlInAndOut = namespaceLessXmlInAndOut;
+	}
+
+	public boolean isDeepSearch() {
+		return deepSearch;
+	}
+
+	public void setDeepSearch(boolean deepSearch) {
+		this.deepSearch = deepSearch;
 	}
 
 }
