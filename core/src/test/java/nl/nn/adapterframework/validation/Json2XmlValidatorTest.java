@@ -62,6 +62,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		instance=new Json2XmlValidator();
 		instance.registerForward(new PipeForward("success",null));
 		instance.setSoapNamespace(null);
+		instance.setFailOnWildcards(false);
 	}
 
 	@Override

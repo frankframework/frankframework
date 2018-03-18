@@ -76,6 +76,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 
 //	private boolean autoInsertMandatory=false;   // TODO: behaviour needs to be tested.
 	private boolean deepSearch=false;
+	private boolean failOnWildcards=false;
 
 	private String prefixPrefix="ns";
 	private int prefixPrefixCounter=1;
@@ -560,7 +561,11 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			default: 
 					throw new IllegalStateException("getBestMatchingElementPath wildcard.namespaceConstraint is not ANY, LIST or NOT, but ["+wildcard.getConstraintType()+"]");
 			}
-			log.warn("getBestMatchingElementPath term for element ["+baseElementDeclaration.getName()+"] is WILDCARD namespaceConstraint ["+namespaceConstraint+"] processContents ["+processContents+"]. Please check if the element typed properly in the schema");
+			String msg="term for element ["+baseElementDeclaration.getName()+"] is WILDCARD; namespaceConstraint ["+namespaceConstraint+"] processContents ["+processContents+"]. Please check if the element typed properly in the schema";
+			if (isFailOnWildcards()) {
+				throw new IllegalStateException(msg+", or set failOnWildcards=\"false\"");
+			}
+			log.warn(msg);
 			return true;
 		} 
 		throw new IllegalStateException("getBestMatchingElementPath unknown Term type ["+term.getClass().getName()+"]");
@@ -679,6 +684,14 @@ public abstract class ToXml<C,N> extends XmlAligner {
 
 	public void setDeepSearch(boolean deepSearch) {
 		this.deepSearch = deepSearch;
+	}
+
+	public boolean isFailOnWildcards() {
+		return failOnWildcards;
+	}
+
+	public void setFailOnWildcards(boolean failOnWildcards) {
+		this.failOnWildcards = failOnWildcards;
 	}
 
 }
