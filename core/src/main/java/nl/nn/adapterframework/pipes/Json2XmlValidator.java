@@ -117,6 +117,7 @@ public class Json2XmlValidator extends XmlValidator {
 	private String outputFormatSessionKey="outputFormat";
 	private boolean namespaceLessXmlInAndOut=false;
 	//private String requestFormat=FORMAT_AUTO;
+	private boolean failOnWildcards=true;
 
 
 	{
@@ -238,6 +239,7 @@ public class Json2XmlValidator extends XmlValidator {
 			}
 			aligner.setDeepSearch(isDeepSearch());
 			aligner.setErrorHandler(context.getErrorHandler());
+			aligner.setFailOnWildcards(isFailOnWildcards());
 			ParameterList parameterList = getParameterList();
 			if (parameterList!=null) {
 				ParameterResolutionContext prc = new ParameterResolutionContext(messageToValidate, session, isNamespaceAware(), false);
@@ -340,6 +342,14 @@ public class Json2XmlValidator extends XmlValidator {
 
 	public void setDeepSearch(boolean deepSearch) {
 		this.deepSearch = deepSearch;
+	}
+
+	public boolean isFailOnWildcards() {
+		return failOnWildcards;
+	}
+
+	public void setFailOnWildcards(boolean failOnWildcards) {
+		this.failOnWildcards = failOnWildcards;
 	}
 
 }

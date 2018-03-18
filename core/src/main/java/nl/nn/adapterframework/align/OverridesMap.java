@@ -15,11 +15,60 @@
 */
 package nl.nn.adapterframework.align;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 public class OverridesMap<V> extends SubstitutionNode<V> implements SubstitutionProvider<V> {
+	
+	Map<String,Set<String>> allParents = new HashMap<String,Set<String>>();
+	
+	@Override
+	protected void registerSubstitute(String[] elements, int index, V value) {
+		super.registerSubstitute(elements, index, value);
+		for(int i=0;i<index;i++) {
+			registerParent(i>0?elements[i-1]:null,elements[i]);
+		}
+	}
+
+	protected void registerParent(String parent, String child) {
+		if (parent==null) {
+			// if parent is null, searching can stop after this child
+			allParents.put(child, null);
+			return;
+		}
+		Set<String> parentSetOfChild=null;
+		boolean created=false;
+		if (allParents.containsKey(child)) {
+			parentSetOfChild = allParents.get(child);
+			if (parentSetOfChild==null) {
+				return; // child already registered with null parent;
+			}
+		} else {
+			parentSetOfChild=new HashSet<String>();
+			allParents.put(child, parentSetOfChild);
+			created=true;
+		}
+		if (created || !parentSetOfChild.contains(parent)) {
+			parentSetOfChild.add(parent);
+		}
+	}
 	
 	@Override
 	public boolean hasSubstitutionsFor(AlignmentContext context, String childName) {
-		return getMatchingValue(context, childName)!=null;
+		while (allParents.containsKey(childName)) {
+			Set<String> parentSetOfChild = allParents.get(childName);
+			if (parentSetOfChild==null) {
+				return true;
+			}
+			if (context==null) {
+				return false;
+			}
+			childName=context.getLocalName();
+			context=context.getParent();
+		}
+		return false;
 	}
 
 	@Override

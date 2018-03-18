@@ -57,6 +57,9 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 
 	@Override
 	public boolean hasChild(XSElementDeclaration elementDeclaration, N node, String childName) throws SAXException {
+		// should check for complex or simple type. 
+		// for complex, any path of a substitution is valid
+		// for simple, only when a valid substitution value is found, a hit should be present.
 		if (sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
 			return true;
 		}
@@ -67,12 +70,13 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 	@Override
 	public final Iterable<N> getChildrenByName(N node, XSElementDeclaration childElementDeclaration) throws SAXException {
 		String childName=childElementDeclaration.getName();
-		if (sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
+		Iterable<N> children = getNodeChildrenByName(node, childElementDeclaration);
+		if (children==null && sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
 			List<N> result=new LinkedList<N>();
 			result.add(node);
 			return result;
 		}
-		return getNodeChildrenByName(node, childElementDeclaration);
+		return children;
 	}
 
 	@Override
