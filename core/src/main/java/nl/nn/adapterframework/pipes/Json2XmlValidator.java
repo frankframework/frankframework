@@ -173,6 +173,7 @@ public class Json2XmlValidator extends XmlValidator {
 				// message is XML
 				if (isNamespaceLessXmlInAndOut()) {
 					messageToValidate=addNamespace(messageToValidate);
+					//if (log.isDebugEnabled()) log.debug("added namespace to message ["+messageToValidate+"]");
 				}
 				storeInputFormat(FORMAT_XML,session, responseMode);
 				if (!getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
@@ -270,10 +271,14 @@ public class Json2XmlValidator extends XmlValidator {
 	public String addNamespace(String xml) {
 		if (xml.indexOf("xmlns")>0) {
 			return xml;
-		}
+		}	
 		String namespace = getSchemaLocation().split(" ")[0];
-		System.out.println("setting namespace ["+namespace+"]");
-		int elementEnd=xml.indexOf('>');
+		if (log.isDebugEnabled()) log.debug("setting namespace ["+namespace+"]");
+		int startPos=0;
+		if (xml.trim().startsWith("<?")) {
+			startPos=xml.indexOf("?>")+2;
+		}
+		int elementEnd=xml.indexOf('>',startPos);
 		return xml.substring(0, elementEnd)+" xmlns=\""+namespace+"\""+xml.substring(elementEnd);
 	}
 	
