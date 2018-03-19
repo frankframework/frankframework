@@ -78,6 +78,12 @@ public class ApiListenerServlet extends HttpServlet {
 			String method = request.getMethod().toUpperCase();
 			log.trace("ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]");
 
+			if (uri==null) {
+				response.setStatus(400);
+				log.warn("Aborting request with status [400], empty uri");
+				return;
+			}
+			
 			if(uri.startsWith("/"))
 				uri = uri.substring(1);
 			if(uri.endsWith("/"))
