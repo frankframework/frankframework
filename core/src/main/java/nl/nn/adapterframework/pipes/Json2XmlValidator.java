@@ -16,16 +16,11 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonStructure;
 import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
@@ -86,6 +81,8 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * <tr><td>{@link #setOutputFormat(String) outputFormat}</td><td>default format of the result. Either 'xml' or 'json'</td><td>xml</td></tr>
 * <tr><td>{@link #setAutoFormat(boolean) autoFormat}</td><td>when true, the format on 'output' is set to the same as the format of the input message on 'input'</td><td>true</td></tr>
 * <tr><td>{@link #setOutputFormatSessionKey(String) outputFormatSessionKey}</td><td>session key to retrieve outputFormat from.</td><td>outputFormat</td></tr>
+* <tr><td>{@link #setNamespaceLessXmlInAndOut(boolean) namespaceLessXmlInAndOut}</td><td>when true, all XML is expected to be without namespaces. To process, the targetNamespace is added to the XML</td><td>false</td></tr>
+* <tr><td>{@link #setFailOnWildcards(boolean) failOnWildcards}</td><td>when true, an exception is thrown when a Wildcard is found in the XML Schema when parsing an object. This often indicates that an element is not properly typed in the XML Schema, and could lead to ambuigities.</td><td>true</td></tr>
 * </table>
 * <p><b>Exits:</b>
 * <table border="1">
@@ -269,7 +266,7 @@ public class Json2XmlValidator extends XmlValidator {
 	}
 
 	public String addNamespace(String xml) {
-		if (xml.indexOf("xmlns")>0) {
+		if (StringUtils.isEmpty(xml) || xml.indexOf("xmlns")>0) {
 			return xml;
 		}	
 		String namespace = getSchemaLocation().split(" ")[0];
@@ -279,6 +276,12 @@ public class Json2XmlValidator extends XmlValidator {
 			startPos=xml.indexOf("?>")+2;
 		}
 		int elementEnd=xml.indexOf('>',startPos);
+		if (elementEnd<0) {
+			return xml;
+		}
+		if (xml.charAt(elementEnd-1)=='/') {
+			elementEnd--;
+		}
 		return xml.substring(0, elementEnd)+" xmlns=\""+namespace+"\""+xml.substring(elementEnd);
 	}
 	
@@ -328,7 +331,6 @@ public class Json2XmlValidator extends XmlValidator {
 	public boolean isAutoFormat() {
 		return autoFormat;
 	}
-
 	public void setAutoFormat(boolean autoFormat) {
 		this.autoFormat = autoFormat;
 	}
@@ -336,7 +338,6 @@ public class Json2XmlValidator extends XmlValidator {
 	public boolean isNamespaceLessXmlInAndOut() {
 		return namespaceLessXmlInAndOut;
 	}
-
 	public void setNamespaceLessXmlInAndOut(boolean namespaceLessXmlInAndOut) {
 		this.namespaceLessXmlInAndOut = namespaceLessXmlInAndOut;
 	}
@@ -344,7 +345,6 @@ public class Json2XmlValidator extends XmlValidator {
 	public boolean isDeepSearch() {
 		return deepSearch;
 	}
-
 	public void setDeepSearch(boolean deepSearch) {
 		this.deepSearch = deepSearch;
 	}
@@ -352,7 +352,6 @@ public class Json2XmlValidator extends XmlValidator {
 	public boolean isFailOnWildcards() {
 		return failOnWildcards;
 	}
-
 	public void setFailOnWildcards(boolean failOnWildcards) {
 		this.failOnWildcards = failOnWildcards;
 	}

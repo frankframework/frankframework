@@ -164,5 +164,10 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
     	testAddNamespace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root>"+tail,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root xmlns=\"xxx\">"+tail);
     	testAddNamespace("<root xmlns=\"xxx\">"+tail,"<root xmlns=\"xxx\">"+tail);
     	testAddNamespace("<root xmlns=\"yyy\">"+tail,"<root xmlns=\"yyy\">"+tail);
-    }
+    	testAddNamespace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>bagger","<?xml version=\"1.0\" encoding=\"UTF-8\"?>bagger");
+       	testAddNamespace("bagger","bagger");
+       	testAddNamespace("","");
+       	testAddNamespace(null,null);
+       	testAddNamespace("<root/>","<root xmlns=\"xxx\"/>");
+     }
 }
