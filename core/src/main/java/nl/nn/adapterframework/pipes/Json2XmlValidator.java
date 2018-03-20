@@ -81,8 +81,9 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * <tr><td>{@link #setOutputFormat(String) outputFormat}</td><td>default format of the result. Either 'xml' or 'json'</td><td>xml</td></tr>
 * <tr><td>{@link #setAutoFormat(boolean) autoFormat}</td><td>when true, the format on 'output' is set to the same as the format of the input message on 'input'</td><td>true</td></tr>
 * <tr><td>{@link #setOutputFormatSessionKey(String) outputFormatSessionKey}</td><td>session key to retrieve outputFormat from.</td><td>outputFormat</td></tr>
-* <tr><td>{@link #setNamespaceLessXmlInAndOut(boolean) namespaceLessXmlInAndOut}</td><td>when true, all XML is expected to be without namespaces. To process, the targetNamespace is added to the XML</td><td>false</td></tr>
 * <tr><td>{@link #setFailOnWildcards(boolean) failOnWildcards}</td><td>when true, an exception is thrown when a Wildcard is found in the XML Schema when parsing an object. This often indicates that an element is not properly typed in the XML Schema, and could lead to ambuigities.</td><td>true</td></tr>
+* <tr><td>{@link #setAcceptNamespaceLessXml(boolean) acceptNamespaceLessXml}</td><td>when true, all XML is allowed to be without namespaces. When no namespaces are detected (by the presence of the string 'xmlns') in the XML string, the root namespace is added to the XML</td><td>false</td></tr>
+* <tr><td>{@link #setProduceNamespaceLessXml(boolean) produceNamespaceLessXml}</td><td>when true, all XML that is generated is without a namespace set</td><td>false</td></tr>
 * </table>
 * <p><b>Exits:</b>
 * <table border="1">
@@ -112,9 +113,10 @@ public class Json2XmlValidator extends XmlValidator {
 	private String outputFormat=FORMAT_XML;
 	private boolean autoFormat=true;
 	private String outputFormatSessionKey="outputFormat";
-	private boolean namespaceLessXmlInAndOut=false;
 	//private String requestFormat=FORMAT_AUTO;
 	private boolean failOnWildcards=true;
+	private boolean acceptNamespaceLessXml=false;
+	private boolean produceNamespaceLessXml=false;
 
 
 	{
@@ -168,14 +170,14 @@ public class Json2XmlValidator extends XmlValidator {
 			char firstChar=messageToValidate.charAt(i);
 			if (firstChar=='<') {
 				// message is XML
-				if (isNamespaceLessXmlInAndOut()) {
+				if (isAcceptNamespaceLessXml()) {
 					messageToValidate=addNamespace(messageToValidate);
 					//if (log.isDebugEnabled()) log.debug("added namespace to message ["+messageToValidate+"]");
 				}
 				storeInputFormat(FORMAT_XML,session, responseMode);
 				if (!getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
 					PipeRunResult result=super.doPipe(messageToValidate,session, responseMode);
-					if (isNamespaceLessXmlInAndOut()) {
+					if (isProduceNamespaceLessXml()) {
 						String msg=(String)result.getResult();
 						msg=XmlUtils.removeNamespaces(msg);
 						result.setResult(msg);
@@ -254,7 +256,7 @@ public class Json2XmlValidator extends XmlValidator {
 				out=xml2json.toString();
 			} else {
 				Source source = aligner.asSource(jsonStructure);
-				out = XmlUtils.source2String(source,isNamespaceLessXmlInAndOut());
+				out = XmlUtils.source2String(source,isProduceNamespaceLessXml());
 			}
 		} catch (Exception e) {
 			resultEvent= validator.finalizeValidation(context, session, e);
@@ -335,13 +337,6 @@ public class Json2XmlValidator extends XmlValidator {
 		this.autoFormat = autoFormat;
 	}
 
-	public boolean isNamespaceLessXmlInAndOut() {
-		return namespaceLessXmlInAndOut;
-	}
-	public void setNamespaceLessXmlInAndOut(boolean namespaceLessXmlInAndOut) {
-		this.namespaceLessXmlInAndOut = namespaceLessXmlInAndOut;
-	}
-
 	public boolean isDeepSearch() {
 		return deepSearch;
 	}
@@ -354,6 +349,20 @@ public class Json2XmlValidator extends XmlValidator {
 	}
 	public void setFailOnWildcards(boolean failOnWildcards) {
 		this.failOnWildcards = failOnWildcards;
+	}
+
+	public boolean isAcceptNamespaceLessXml() {
+		return acceptNamespaceLessXml;
+	}
+	public void setAcceptNamespaceLessXml(boolean acceptNamespaceLessXml) {
+		this.acceptNamespaceLessXml = acceptNamespaceLessXml;
+	}
+
+	public boolean isProduceNamespaceLessXml() {
+		return produceNamespaceLessXml;
+	}
+	public void setProduceNamespaceLessXml(boolean produceNamespaceLessXml) {
+		this.produceNamespaceLessXml = produceNamespaceLessXml;
 	}
 
 }
