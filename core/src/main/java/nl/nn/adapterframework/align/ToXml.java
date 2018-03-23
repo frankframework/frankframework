@@ -146,9 +146,13 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	 */
 	public void startParse(C root) throws SAXException {
 		//if (DEBUG) log.debug("startParse() rootNode ["+node.toString()+"]"); // result of node.toString() is confusing. Do not log this.
-		validatorHandler.startDocument();
-		handleNode(root, getRootElement(), getTargetNamespace());
-		validatorHandler.endDocument();
+		try {
+			validatorHandler.startDocument();
+			handleNode(root, getRootElement(), getTargetNamespace());
+			validatorHandler.endDocument();
+		} catch (SAXException e) {
+			handleError(e);
+		}
 	}
 
 	public abstract N getRootNode(C container);
@@ -584,7 +588,15 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			throw new SAXException(msg);
 		}		
 	}
-	
+
+	public void handleError(SAXException e) throws SAXException {
+		ErrorHandler errorHandler=validatorHandler.getErrorHandler();
+		if (errorHandler!=null) {
+			errorHandler.error(new SAXParseException(e.getMessage(),null));
+		} else {
+			throw e;
+		}		
+	}
 	
 	public String getQName(String namespace, String name) throws SAXException {
 		if (StringUtils.isNotEmpty(namespace)) {
