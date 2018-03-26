@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017,2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,16 +16,11 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonStructure;
 import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
@@ -86,6 +81,9 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * <tr><td>{@link #setOutputFormat(String) outputFormat}</td><td>default format of the result. Either 'xml' or 'json'</td><td>xml</td></tr>
 * <tr><td>{@link #setAutoFormat(boolean) autoFormat}</td><td>when true, the format on 'output' is set to the same as the format of the input message on 'input'</td><td>true</td></tr>
 * <tr><td>{@link #setOutputFormatSessionKey(String) outputFormatSessionKey}</td><td>session key to retrieve outputFormat from.</td><td>outputFormat</td></tr>
+* <tr><td>{@link #setFailOnWildcards(boolean) failOnWildcards}</td><td>when true, an exception is thrown when a Wildcard is found in the XML Schema when parsing an object. This often indicates that an element is not properly typed in the XML Schema, and could lead to ambuigities.</td><td>true</td></tr>
+* <tr><td>{@link #setAcceptNamespaceLessXml(boolean) acceptNamespaceLessXml}</td><td>when true, all XML is allowed to be without namespaces. When no namespaces are detected (by the presence of the string 'xmlns') in the XML string, the root namespace is added to the XML</td><td>false</td></tr>
+* <tr><td>{@link #setProduceNamespaceLessXml(boolean) produceNamespaceLessXml}</td><td>when true, all XML that is generated is without a namespace set</td><td>false</td></tr>
 * </table>
 * <p><b>Exits:</b>
 * <table border="1">
@@ -110,12 +108,15 @@ public class Json2XmlValidator extends XmlValidator {
 	private boolean compactJsonArrays=true;
 	private boolean strictJsonArraySyntax=false;
 	private boolean jsonWithRootElements=false;
+	private boolean deepSearch=false;
 	private String targetNamespace;
 	private String outputFormat=FORMAT_XML;
 	private boolean autoFormat=true;
 	private String outputFormatSessionKey="outputFormat";
-	private boolean namespaceLessXmlInAndOut=false;
 	//private String requestFormat=FORMAT_AUTO;
+	private boolean failOnWildcards=true;
+	private boolean acceptNamespaceLessXml=false;
+	private boolean produceNamespaceLessXml=false;
 
 
 	{
@@ -169,13 +170,14 @@ public class Json2XmlValidator extends XmlValidator {
 			char firstChar=messageToValidate.charAt(i);
 			if (firstChar=='<') {
 				// message is XML
-				if (isNamespaceLessXmlInAndOut()) {
+				if (isAcceptNamespaceLessXml()) {
 					messageToValidate=addNamespace(messageToValidate);
+					//if (log.isDebugEnabled()) log.debug("added namespace to message ["+messageToValidate+"]");
 				}
 				storeInputFormat(FORMAT_XML,session, responseMode);
 				if (!getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
 					PipeRunResult result=super.doPipe(messageToValidate,session, responseMode);
-					if (isNamespaceLessXmlInAndOut()) {
+					if (isProduceNamespaceLessXml()) {
 						String msg=(String)result.getResult();
 						msg=XmlUtils.removeNamespaces(msg);
 						result.setResult(msg);
@@ -235,7 +237,9 @@ public class Json2XmlValidator extends XmlValidator {
 			if (StringUtils.isNotEmpty(getTargetNamespace())) {
 				aligner.setTargetNamespace(getTargetNamespace());
 			}
+			aligner.setDeepSearch(isDeepSearch());
 			aligner.setErrorHandler(context.getErrorHandler());
+			aligner.setFailOnWildcards(isFailOnWildcards());
 			ParameterList parameterList = getParameterList();
 			if (parameterList!=null) {
 				ParameterResolutionContext prc = new ParameterResolutionContext(messageToValidate, session, isNamespaceAware(), false);
@@ -252,7 +256,7 @@ public class Json2XmlValidator extends XmlValidator {
 				out=xml2json.toString();
 			} else {
 				Source source = aligner.asSource(jsonStructure);
-				out = XmlUtils.source2String(source,isNamespaceLessXmlInAndOut());
+				out = XmlUtils.source2String(source,isProduceNamespaceLessXml());
 			}
 		} catch (Exception e) {
 			resultEvent= validator.finalizeValidation(context, session, e);
@@ -264,12 +268,22 @@ public class Json2XmlValidator extends XmlValidator {
 	}
 
 	public String addNamespace(String xml) {
-		if (xml.indexOf("xmlns")>0) {
+		if (StringUtils.isEmpty(xml) || xml.indexOf("xmlns")>0) {
+			return xml;
+		}	
+		String namespace = getSchemaLocation().split(" ")[0];
+		if (log.isDebugEnabled()) log.debug("setting namespace ["+namespace+"]");
+		int startPos=0;
+		if (xml.trim().startsWith("<?")) {
+			startPos=xml.indexOf("?>")+2;
+		}
+		int elementEnd=xml.indexOf('>',startPos);
+		if (elementEnd<0) {
 			return xml;
 		}
-		String namespace = getSchemaLocation().split(" ")[0];
-		System.out.println("setting namespace ["+namespace+"]");
-		int elementEnd=xml.indexOf('>');
+		if (xml.charAt(elementEnd-1)=='/') {
+			elementEnd--;
+		}
 		return xml.substring(0, elementEnd)+" xmlns=\""+namespace+"\""+xml.substring(elementEnd);
 	}
 	
@@ -319,17 +333,36 @@ public class Json2XmlValidator extends XmlValidator {
 	public boolean isAutoFormat() {
 		return autoFormat;
 	}
-
 	public void setAutoFormat(boolean autoFormat) {
 		this.autoFormat = autoFormat;
 	}
 
-	public boolean isNamespaceLessXmlInAndOut() {
-		return namespaceLessXmlInAndOut;
+	public boolean isDeepSearch() {
+		return deepSearch;
+	}
+	public void setDeepSearch(boolean deepSearch) {
+		this.deepSearch = deepSearch;
 	}
 
-	public void setNamespaceLessXmlInAndOut(boolean namespaceLessXmlInAndOut) {
-		this.namespaceLessXmlInAndOut = namespaceLessXmlInAndOut;
+	public boolean isFailOnWildcards() {
+		return failOnWildcards;
+	}
+	public void setFailOnWildcards(boolean failOnWildcards) {
+		this.failOnWildcards = failOnWildcards;
+	}
+
+	public boolean isAcceptNamespaceLessXml() {
+		return acceptNamespaceLessXml;
+	}
+	public void setAcceptNamespaceLessXml(boolean acceptNamespaceLessXml) {
+		this.acceptNamespaceLessXml = acceptNamespaceLessXml;
+	}
+
+	public boolean isProduceNamespaceLessXml() {
+		return produceNamespaceLessXml;
+	}
+	public void setProduceNamespaceLessXml(boolean produceNamespaceLessXml) {
+		this.produceNamespaceLessXml = produceNamespaceLessXml;
 	}
 
 }

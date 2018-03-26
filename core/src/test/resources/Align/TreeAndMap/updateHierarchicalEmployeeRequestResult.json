@@ -1,0 +1,12 @@
+{
+  "company": {
+    "id": "100"
+  },
+  "employee": {
+    "id": "1044"
+  },
+  "address": {
+    "street": "Schenkkade 51",
+    "town": "Den Haag"
+  }
+}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017,2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,8 +37,7 @@ import org.xml.sax.SAXException;
  */
 public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 
-	private Map<String,Object> overrideValues;
-	private Map<String,Object> defaultValues;
+	SubstitutionProvider<?> sp;
 	
 	public Tree2Xml() {
 		super();
@@ -58,8 +57,10 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 
 	@Override
 	public boolean hasChild(XSElementDeclaration elementDeclaration, N node, String childName) throws SAXException {
-		if (overrideValues!=null && overrideValues.containsKey(childName) || 
-			defaultValues!=null && defaultValues.containsKey(childName)) {
+		// should check for complex or simple type. 
+		// for complex, any path of a substitution is valid
+		// for simple, only when a valid substitution value is found, a hit should be present.
+		if (sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
 			return true;
 		}
 		Set<String> allChildNames=getAllNodeChildNames(elementDeclaration, node);
@@ -69,30 +70,31 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 	@Override
 	public final Iterable<N> getChildrenByName(N node, XSElementDeclaration childElementDeclaration) throws SAXException {
 		String childName=childElementDeclaration.getName();
-		if (overrideValues!=null && overrideValues.containsKey(childName)) {
+		Iterable<N> children = getNodeChildrenByName(node, childElementDeclaration);
+		if (children==null && sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
 			List<N> result=new LinkedList<N>();
 			result.add(node);
 			return result;
 		}
-		return getNodeChildrenByName(node, childElementDeclaration);
+		return children;
 	}
 
 	@Override
 	public final String getText(XSElementDeclaration elementDeclaration, N node) {
 		String nodeName=elementDeclaration.getName();
-		if (overrideValues!=null && overrideValues.containsKey(nodeName)) {
-			Object text=overrideValues.get(nodeName);
+		Object text;
+		if (DEBUG) log.debug("getText() node ["+nodeName+"] currently parsed element ["+getContext().getLocalName()+"]");
+		if (sp!=null && (text=sp.getOverride(getContext()))!=null) {
 			if (DEBUG) log.debug("getText() node ["+nodeName+"] override found ["+text+"]");
-			if (text==null || text instanceof String) {
+			if (text instanceof String) {
 				return (String)text;
 			}
 			return text.toString();
 		}
 		String result=getNodeText(elementDeclaration, node);
-		if (defaultValues!=null && StringUtils.isEmpty(result) && defaultValues.containsKey(nodeName)) {
-			Object text=defaultValues.get(nodeName);
+		if (sp!=null && StringUtils.isEmpty(result) && (text=sp.getDefault(getContext()))!=null) {
 			if (DEBUG) log.debug("getText() node ["+nodeName+"] default found ["+text+"]");
-			if (text==null || text instanceof String) {
+			if (text instanceof String) {
 				result = (String)text;
 			}
 			result = text.toString();
@@ -110,21 +112,17 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 		return unProcessedChildren;
 	}
 
-	public Map<String, Object> getOverrideValues() {
-		return overrideValues;
+	public SubstitutionProvider<?> getSubstitutionProvider() {
+		return sp;
 	}
+	public void setSubstitutionProvider(SubstitutionProvider<?> substitutions) {
+		this.sp = substitutions;
+	}
+
 	public void setOverrideValues(Map<String, Object> overrideValues) {
-		this.overrideValues = overrideValues;
-		boolean mustDeepSearch=overrideValues!=null && !overrideValues.isEmpty();
-		setDeepSearch(mustDeepSearch);
+		OverridesMap<Object> overrides=new OverridesMap<Object>();
+		overrides.registerSubstitutes(overrideValues);
+		setSubstitutionProvider(overrides);
 	}
-
-	public Map<String, Object> getDefaultValues() {
-		return defaultValues;
-	}
-	public void setDefaultValues(Map<String, Object> defaultValues) {
-		this.defaultValues = defaultValues;
-	}
-
 
 }

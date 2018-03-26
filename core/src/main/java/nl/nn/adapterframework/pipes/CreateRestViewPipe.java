@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2015-2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -234,7 +234,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		XmlBuilder menuBar = new XmlBuilder("menuBar");
 		XmlBuilder imagelinkMenu = new XmlBuilder("imagelinkMenu");
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"showConfigurationStatus.do", "configurationStatus",
+				"rest/showConfigurationStatus", "configurationStatus",
 				"Show Configuration Status"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"showConfiguration.do", "configuration", "Show Configuration"));
@@ -265,7 +265,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"executeJdbcQuery.do", "execquery", "Execute a Jdbc Query"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"browseJdbcTable.do", "browsetable", "Browse a Jdbc Tabl"));
+				"browseJdbcTable.do", "browsetable", "Browse a Jdbc Table"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"DumpIbisConsole", "dump", "Dump Ibis Console"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
@@ -285,7 +285,7 @@ public class CreateRestViewPipe extends XsltPipe {
 				"javascript:void(0)", "info", "Information"));
 		if (appConstants.getBoolean("console.active", false)) {
 			imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-					"iaf/gui", "theme", "GUI 3.0"));
+					"iaf/gui", "theme", "Try our new GUI 3.0 and leave feedback!"));
 		}
 		menuBar.addSubElement(imagelinkMenu);
 		return menuBar.toXML();

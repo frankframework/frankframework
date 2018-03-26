@@ -1,20 +1,24 @@
-package nl.nn.adapterframework.webcontrol.action;
+package nl.nn.adapterframework.webcontrol.pipes;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.extensions.test.IbisTester;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -27,6 +31,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.xml.sax.SAXException;
 
 public class ShowConfigurationStatusTest {
@@ -34,11 +39,14 @@ public class ShowConfigurationStatusTest {
 	private static Transformer adaptersTransformer;
 	private static IbisTester ibisTester;
 	private static IbisContext ibisContext;
+	private IPipeLineSession session;
 
 	@Before
 	public void initXMLUnit() throws IOException {
 		XMLUnit.setIgnoreWhitespace(true);
 		XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
+		session = new PipeLineSessionBase();
+		session.put("method", "GET");
 	}
 
 	@BeforeClass
@@ -65,43 +73,43 @@ public class ShowConfigurationStatusTest {
 	}
 
 	@Test
-	public void testConfigurationsXml() throws IOException, SAXException,
-			DomBuilderException, TransformerException {
-		List<Configuration> allConfigurations = ibisContext.getIbisManager()
-				.getConfigurations();
+	public void testAllConfigs() throws ConfigurationException,
+			PipeRunException, DomBuilderException, SAXException, IOException,
+			TransformerException {
 		ShowConfigurationStatus showConfigurationStatus = new ShowConfigurationStatus();
-		String configurationsXml = showConfigurationStatus.toConfigurationsXml(
-				allConfigurations).toXML();
-		compareXML("webcontrol/configurations.xml", configurationsXml);
+		PipeLine pipeLine = new PipeLine();
+		Adapter adapter = (Adapter) ibisContext.getIbisManager()
+				.getRegisteredAdapter("WebControlShowConfigurationStatus");
+		pipeLine.setAdapter(adapter);
+		showConfigurationStatus.registerForward(createPipeSuccessForward());
+		showConfigurationStatus.configure(pipeLine);
+		session.put("configuration", "*ALL*");
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		session.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
+		PipeRunResult pipeRunResult = showConfigurationStatus.doPipe(null,
+				session);
+		compareXML("webcontrol/allConfigs.xml",
+				(String) pipeRunResult.getResult());
 	}
 
 	@Test
-	public void testAdaptersXmlAll() throws IOException, SAXException,
-			DomBuilderException, TransformerException {
-		List<Configuration> allConfigurations = ibisContext.getIbisManager()
-				.getConfigurations();
+	public void testSingleConfig() throws ConfigurationException,
+			PipeRunException, DomBuilderException, SAXException, IOException,
+			TransformerException {
 		ShowConfigurationStatus showConfigurationStatus = new ShowConfigurationStatus();
-		List<IAdapter> registeredAdapters = ibisContext.getIbisManager()
-				.getRegisteredAdapters();
-		String adaptersXml = showConfigurationStatus.toAdaptersXml(ibisContext,
-				allConfigurations, null, registeredAdapters).toXML();
-		compareXML("webcontrol/adaptersAll.xml", adaptersXml, "adapters");
-	}
-
-	@Test
-	public void testAdaptersXmlSingle() throws IOException, SAXException,
-			DomBuilderException, TransformerException {
-		List<Configuration> allConfigurations = ibisContext.getIbisManager()
-				.getConfigurations();
-		ShowConfigurationStatus showConfigurationStatus = new ShowConfigurationStatus();
-		List<IAdapter> registeredAdapters = ibisContext.getIbisManager()
-				.getRegisteredAdapters();
-		Configuration configurationSelected = ibisContext.getIbisManager()
-				.getConfiguration("Ibis4Example");
-		String adaptersXml = showConfigurationStatus.toAdaptersXml(ibisContext,
-				allConfigurations, configurationSelected, registeredAdapters)
-				.toXML();
-		compareXML("webcontrol/adaptersSingle.xml", adaptersXml, "adapters");
+		PipeLine pipeLine = new PipeLine();
+		Adapter adapter = (Adapter) ibisContext.getIbisManager()
+				.getRegisteredAdapter("WebControlShowConfigurationStatus");
+		pipeLine.setAdapter(adapter);
+		showConfigurationStatus.registerForward(createPipeSuccessForward());
+		showConfigurationStatus.configure(pipeLine);
+		session.put("configuration", "Ibis4Example");
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		session.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
+		PipeRunResult pipeRunResult = showConfigurationStatus.doPipe(null,
+				session);
+		compareXML("webcontrol/singleConfig.xml",
+				(String) pipeRunResult.getResult());
 	}
 
 	@AfterClass
@@ -109,13 +117,13 @@ public class ShowConfigurationStatusTest {
 		ibisTester.closeTest();
 	}
 
-	private void compareXML(String expectedFile, String result)
-			throws SAXException, IOException, DomBuilderException,
-			TransformerException {
-		compareXML(expectedFile, result, null);
+	private PipeForward createPipeSuccessForward() {
+		PipeForward pipeForward = new PipeForward();
+		pipeForward.setName("success");
+		return pipeForward;
 	}
 
-	private void compareXML(String expectedFile, String result, String id)
+	private void compareXML(String expectedFile, String result)
 			throws SAXException, IOException, DomBuilderException,
 			TransformerException {
 		URL expectedUrl = ClassUtils.getResourceURL(this, expectedFile);
@@ -123,10 +131,8 @@ public class ShowConfigurationStatusTest {
 			throw new IOException("cannot find resource [" + expectedUrl + "]");
 		}
 		String expected = Misc.resourceToString(expectedUrl);
-		if ("adapters".equals(id)) {
-			expected = transformAdaptersXml(expected);
-			result = transformAdaptersXml(result);
-		}
+		expected = transformAdaptersXml(expected);
+		result = transformAdaptersXml(result);
 		// System.out.println("Expected [" + expected + "]");
 		// System.out.println("Result [" + result + "]");
 		Diff diff = XMLUnit.compareXML(expected, result);

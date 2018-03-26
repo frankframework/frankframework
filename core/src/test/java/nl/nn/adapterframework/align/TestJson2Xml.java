@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 
@@ -58,16 +59,27 @@ public class TestJson2Xml extends AlignTestBase {
 		System.out.println("schemaUrl ["+schemaUrl+"]");
 		if (xmlIn!=null) assertTrue("Expected XML is not valid to XSD",Utils.validate(schemaUrl, xmlIn));
 
-		JsonValue json = Utils.string2Json(jsonIn);
+		JsonStructure json = Utils.string2Json(jsonIn);
 		System.out.println("jsonIn ["+json+"]");
     	Map<String,Object> overrideMap = new HashMap<String,Object>();
     	overrideMap.put("Key not expected", "value of unexpected key");
+    	if (json instanceof JsonObject) {
+    		JsonObject jo = (JsonObject)json;
+    		for (String key:jo.keySet()) {
+    			if (overrideMap.containsKey(key)) {
+    				System.out.println("multiple occurrences in object for element ["+key+"]");
+    			}
+    			overrideMap.put(key, null);
+    		}
+    	}
     	testJson(jsonIn, null,        false, schemaUrl, targetNamespace, rootElement, compactInput, false, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], relaxed");
-    	testJson(jsonIn, null,        true, schemaUrl, targetNamespace, rootElement, compactInput, false, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], relaxed, deep search");
-    	testJson(jsonIn, overrideMap, true, schemaUrl, targetNamespace, rootElement, compactInput, false, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], relaxed, parameters");
-    	testJson(jsonIn, null,        false, schemaUrl, targetNamespace, rootElement, compactInput, true, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], strict");
-    	testJson(jsonIn, null,        true, schemaUrl, targetNamespace, rootElement, compactInput, true, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], strict, deep search");
-    	testJson(jsonIn, overrideMap, true, schemaUrl, targetNamespace, rootElement, compactInput, true, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], strict, parameters");
+    	testJson(jsonIn, null,        false, schemaUrl, targetNamespace, rootElement, compactInput, true,  checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], strict");
+    	testJson(jsonIn, overrideMap, false, schemaUrl, targetNamespace, rootElement, compactInput, false, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], relaxed, parameters");
+    	testJson(jsonIn, overrideMap, false, schemaUrl, targetNamespace, rootElement, compactInput, true,  checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], strict, parameters");
+//    	testJson(jsonIn, null,        true, schemaUrl, targetNamespace, rootElement, compactInput, false, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], relaxed, deep search");
+//    	testJson(jsonIn, overrideMap, true, schemaUrl, targetNamespace, rootElement, compactInput, false, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], relaxed, parameters");
+//    	testJson(jsonIn, null,        true, schemaUrl, targetNamespace, rootElement, compactInput, true, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], strict, deep search");
+//    	testJson(jsonIn, overrideMap, true, schemaUrl, targetNamespace, rootElement, compactInput, true, checkRoundTrip?jsonIn:null,expectedFailureReason,"(compact in and conversion) ["+compactInput+"], strict, parameters");
     	if (expectedFailureReason==null) {
 	    	if (potentialCompactionProblems) {
 	    		if (compactInput) {
@@ -139,6 +151,11 @@ public class TestJson2Xml extends AlignTestBase {
     @Test
     public void testJsonAndMap() throws Exception {
     	testTreeAndMap("TreeAndMap/employee.xsd","urn:employee","updateEmployeeRequest","/TreeAndMap/updateEmployeeRequest","/TreeAndMap/updateEmployeeRequestResult", null);
+    }
+
+    @Test
+    public void testJsonAndMapHierarchical() throws Exception {
+    	testTreeAndMap("TreeAndMap/hierarchicalEmployee.xsd","urn:employee","updateHierarchicalEmployeeRequest","/TreeAndMap/updateHierarchicalEmployeeRequest","/TreeAndMap/updateHierarchicalEmployeeRequestResult", null);
     }
 
 	@Test

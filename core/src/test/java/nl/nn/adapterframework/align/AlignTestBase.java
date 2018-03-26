@@ -219,5 +219,11 @@ public abstract class AlignTestBase {
 		testFiles("Transaction/transaction.xsd","","transaction","Transaction/invoice");
 	}
 
+    @Test
+	public void testOptionalArray() throws Exception {
+    	// this test was originally for a wildcard, but conversion fails on multiple occurences of element 'Id' (for Party and OrganisationName)
+    	// wildcard was 'solved' by setting a proper type for PartyAgreementRole
+		testFiles("OptionalArray/hbp.xsd","","Root","OptionalArray/hbp",true);
+	}
 
 }

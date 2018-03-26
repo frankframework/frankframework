@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017,2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -140,6 +140,8 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		String result;
 		if (node instanceof JsonString) {
 			result=((JsonString)node).getString();
+		} else if (node instanceof JsonStructure) { // this happens when override key is present without a value
+			result=null; 
 		} else { 
 			result=node.toString();
 		}

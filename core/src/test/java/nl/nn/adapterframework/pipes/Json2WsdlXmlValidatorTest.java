@@ -149,4 +149,25 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
     	validatePlainText("< dit is helemaal geen xml>", "failed");
     }
 
+    public void testAddNamespace(String xml, String expected) {
+        WsdlXmlValidator val = new WsdlXmlValidator();
+        val.setSchemaLocation("xxx yyy");
+        String act=val.addNamespace(xml);
+        assertEquals(expected,act);
+    }
+    
+    @Test
+    public void testAddNamespace() {
+    	String tail="<elem1>content</elem></root>";
+    	testAddNamespace("<root>"+tail,"<root xmlns=\"xxx\">"+tail);
+    	testAddNamespace("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>"+tail,"<?xml version=\"1.0\" encoding=\"UTF-8\"?><root xmlns=\"xxx\">"+tail);
+    	testAddNamespace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root>"+tail,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root xmlns=\"xxx\">"+tail);
+    	testAddNamespace("<root xmlns=\"xxx\">"+tail,"<root xmlns=\"xxx\">"+tail);
+    	testAddNamespace("<root xmlns=\"yyy\">"+tail,"<root xmlns=\"yyy\">"+tail);
+    	testAddNamespace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>bagger","<?xml version=\"1.0\" encoding=\"UTF-8\"?>bagger");
+       	testAddNamespace("bagger","bagger");
+       	testAddNamespace("","");
+       	testAddNamespace(null,null);
+       	testAddNamespace("<root/>","<root xmlns=\"xxx\"/>");
+     }
 }

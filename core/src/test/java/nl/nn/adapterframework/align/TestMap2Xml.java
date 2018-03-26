@@ -144,5 +144,11 @@ public class TestMap2Xml extends AlignTestBase {
 		super.testMixedContentUnknown();
     }
 
+    @Override
+    @Test
+	@Ignore("No content")
+	public void testOptionalArray() throws Exception {
+		super.testMixedContentUnknown();
+    }
 
 }

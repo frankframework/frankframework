@@ -86,11 +86,23 @@ public class RestServiceDispatcher  {
 	}
 
 	public String findMatchingPattern(String uri) {
+		if (uri==null) {
+			return null;
+		}
+
+		String lookupUriPattern;
+		int index = uri.indexOf('/', 1);
+		if (index >= 1) {
+			lookupUriPattern = uri.substring(0, index);
+		} else {
+			lookupUriPattern = uri;
+		}
+
 		String matchingPattern=null;
 		for (Iterator it=patternClients.keySet().iterator();it.hasNext();) {
 			String uriPattern=(String)it.next();
 			if (log.isTraceEnabled()) log.trace("comparing uri to pattern ["+uriPattern+"] ");
-			if (uri.startsWith(uriPattern)) {
+			if (lookupUriPattern.equals(uriPattern)) {
 				matchingPattern=uriPattern;
 				break;
 			}
@@ -139,13 +151,23 @@ public class RestServiceDispatcher  {
 				noImageAvailable(httpServletResponse);
 				return "";
 			}
+			if (uri != null && (uri.equals("/showConfigurationStatus")
+					|| uri.startsWith("/showConfigurationStatus/"))) {
+				log.info("no REST listener configured for uri [" + uri
+						+ "], if REST listener does exist then trying to restart");
+				if (RestListenerUtils
+						.restartShowConfigurationStatus(servletContext)) {
+					httpServletResponse.setHeader("REFRESH", "0");
+					return "";
+				}
+			}
 			throw new ListenerException("no REST listener configured for uri ["+uri+"]");
 		}
 		
 		Map methodConfig = getMethodConfig(matchingPattern, method);
 		
 		if (methodConfig==null) {
-			throw new ListenerException("No RestListeners specified for uri ["+uri+"] method ["+method+"]");
+			throw new ListenerException("No REST listener specified for uri ["+uri+"] method ["+method+"]");
 		}
 		if (context==null) {
 			context=new PipeLineSessionBase();

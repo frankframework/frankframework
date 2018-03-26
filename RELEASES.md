@@ -38,6 +38,7 @@ Upcoming
 - Fix property file classloading with suffix files.The classloader will search and consolidate all properties found in the classloader chain
 - Introduction of the RestSender
 - Fix NPE in ApiEhCache after a full reload
+- Replace struts page "Show configuration status" by rest service
 - Add fetch action for CmisSender in order to retreive metadata
 - Add CMIS bridge functionality (CmisListener) and the option to remap properties on getObject requests. A bridged cmisListener has to be configured to route traffic!
 

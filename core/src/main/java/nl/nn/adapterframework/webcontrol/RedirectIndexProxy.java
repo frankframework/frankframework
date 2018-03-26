@@ -85,7 +85,7 @@ public class RedirectIndexProxy extends HttpServlet {
 			}
 		}
 		else {
-			response.sendRedirect("showConfigurationStatus.do");
+			response.sendRedirect("rest/showConfigurationStatus");
 		}
 	}
 

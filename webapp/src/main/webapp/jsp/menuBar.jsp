@@ -7,7 +7,7 @@
 <menuBar>
 	<imagelinkMenu>
 			<imagelink 
-				href="showConfigurationStatus.do"
+				href="rest/showConfigurationStatus"
 				type="configurationStatus"
 				alt="Show Configuration Status">
 			</imagelink>
