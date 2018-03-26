@@ -30,5 +30,10 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.chemistry.opencmis</groupId>
+			<artifactId>chemistry-opencmis-server-bindings</artifactId>
+			<version>${opencmis.version}</version>
+		</dependency>
 	</dependencies>
 </project>

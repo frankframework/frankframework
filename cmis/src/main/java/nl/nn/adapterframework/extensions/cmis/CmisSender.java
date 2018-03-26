@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -41,10 +42,12 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactoryBase;
+import nl.nn.adapterframework.extensions.cmis.server.CmisServletDispatcher;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.AbstractPipe;
+import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
@@ -59,6 +62,7 @@ import org.apache.chemistry.opencmis.client.api.ObjectId;
 import org.apache.chemistry.opencmis.client.api.OperationContext;
 import org.apache.chemistry.opencmis.client.api.Property;
 import org.apache.chemistry.opencmis.client.api.QueryResult;
+import org.apache.chemistry.opencmis.client.api.Relationship;
 import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.api.SessionFactory;
 import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
@@ -67,6 +71,7 @@ import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
+import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.codec.binary.Base64;
@@ -225,7 +230,7 @@ import org.w3c.dom.Element;
  * @author	Peter Leeuwenburgh
  * @author	Niels Meijer
  */
-public class CmisSender extends SenderWithParametersBase {
+public class CmisSender extends SenderWithParametersBase implements PipeAware {
 
 	private String action;
 	private String url;
@@ -262,16 +267,18 @@ public class CmisSender extends SenderWithParametersBase {
 
 	/** PROXY **/
 	private String proxyHost;
-	private int    proxyPort=80;
+	private int proxyPort = 80;
 	private String proxyAuthAlias;
 	private String proxyUserName;
 	private String proxyPassword;
-	private String proxyRealm=null;
+	private String proxyRealm = null;
 
-	List<String> actions = Arrays.asList("create", "get", "find", "update");
+	List<String> actions = Arrays.asList("create", "get", "find", "update", "fetch");
 	List<String> bindingTypes = Arrays.asList("atompub", "webservices", "browser");
+	private AbstractPipe pipe = null;
+	private boolean isBridgeSender = false;
 
-	private final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd HH:mm:ss";
+	public final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd HH:mm:ss";
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -307,6 +314,18 @@ public class CmisSender extends SenderWithParametersBase {
 				}
 			}
 		}
+
+		if(isBridgeSender()) {
+			CmisServletDispatcher.getInstance().registerServiceClient(this);
+		}
+	}
+
+	public Session getSession() {
+		if (session == null || !isKeepSession()) {
+			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+			session = connect(cf.getUsername(), cf.getPassword());
+		}
+		return session;
 	}
 
 	public Session getSession(ParameterResolutionContext prc) throws SenderException {
@@ -314,13 +333,13 @@ public class CmisSender extends SenderWithParametersBase {
 			String authAlias_work = null;
 			String userName_work = null;
 			String password_work = null;
-	
+
 			ParameterValueList pvl = null;
 			try {
 				if (prc != null && paramList != null) {
 					pvl = prc.getValues(paramList);
 					if (pvl != null) {
-						ParameterValue pv = pvl .getParameterValue("authAlias");
+						ParameterValue pv = pvl.getParameterValue("authAlias");
 						if (pv != null) {
 							authAlias_work = (String) pv.getValue();
 						}
@@ -381,6 +400,8 @@ public class CmisSender extends SenderWithParametersBase {
 				return sendMessageForActionFind(correlationID, message, prc);
 			} else if (getAction().equalsIgnoreCase("update")) {
 				return sendMessageForActionUpdate(correlationID, message, prc);
+			} else if (getAction().equalsIgnoreCase("fetch")) {
+				return sendMessageForActionFetch(correlationID, message, prc);
 			} else {
 				throw new SenderException(getLogPrefix() + "unknown action ["
 						+ getAction() + "]");
@@ -411,8 +432,8 @@ public class CmisSender extends SenderWithParametersBase {
 			} else {
 				throw new SenderException(e);
 			}
-
 		}
+
 		Document document = (Document) object;
 		ContentStream contentStream = document.getContentStream();
 
@@ -460,6 +481,7 @@ public class CmisSender extends SenderWithParametersBase {
 					propertiesXml.addSubElement(getPropertyXml(property));
 				}
 				cmisXml.addSubElement(propertiesXml);
+
 				return cmisXml.toXML();
 			} else {
 				return Misc.streamToString(inputStream, null, false);
@@ -476,22 +498,23 @@ public class CmisSender extends SenderWithParametersBase {
 		Object value = property.getFirstValue();
 		if (value == null) {
 			propertyXml.addAttribute("isNull", "true");
+		}
+		if (value instanceof BigInteger) {
+			BigInteger bi = (BigInteger) property.getFirstValue();
+			propertyXml.setValue(String.valueOf(bi));
+			propertyXml.addAttribute("type", "integer");
+		} else if (value instanceof Boolean) {
+			Boolean b = (Boolean) property.getFirstValue();
+			propertyXml.setValue(String.valueOf(b));
+			propertyXml.addAttribute("type", "boolean");
+		} else if (value instanceof GregorianCalendar) {
+			GregorianCalendar gc = (GregorianCalendar) property.getFirstValue();
+			//TODO shouldn't this be "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+			SimpleDateFormat sdf = new SimpleDateFormat(FORMATSTRING_BY_DEFAULT);
+			propertyXml.setValue(sdf.format(gc.getTime()));
+			propertyXml.addAttribute("type", "datetime");
 		} else {
-			if (value instanceof BigInteger) {
-				BigInteger bi = (BigInteger) property.getFirstValue();
-				propertyXml.setValue(String.valueOf(bi));
-			} else if (value instanceof Boolean) {
-				Boolean b = (Boolean) property.getFirstValue();
-				propertyXml.setValue(String.valueOf(b));
-			} else if (value instanceof GregorianCalendar) {
-				GregorianCalendar gc = (GregorianCalendar) property
-						.getFirstValue();
-				SimpleDateFormat sdf = new SimpleDateFormat(
-						"yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-				propertyXml.setValue(sdf.format(gc.getTime()));
-			} else {
-				propertyXml.setValue((String) property.getFirstValue());
-			}
+			propertyXml.setValue((String) property.getFirstValue());
 		}
 		return propertyXml;
 	}
@@ -643,11 +666,11 @@ public class CmisSender extends SenderWithParametersBase {
 			throw new SenderException(e);
 		}
 		String statement = XmlUtils.getChildTagAsString(queryElement, "statement");
-		String maxItems = XmlUtils .getChildTagAsString(queryElement, "maxItems");
+		String maxItems = XmlUtils.getChildTagAsString(queryElement, "maxItems");
 		String skipCount = XmlUtils.getChildTagAsString(queryElement, "skipCount");
 		String searchAllVersions = XmlUtils.getChildTagAsString(queryElement, "searchAllVersions");
 
-		String includeAllowableActions = XmlUtils.getChildTagAsString( queryElement, "includeAllowableActions");
+		String includeAllowableActions = XmlUtils.getChildTagAsString(queryElement, "includeAllowableActions");
 
 		OperationContext operationContext = session.createOperationContext();
 		if (StringUtils.isNotEmpty(maxItems)) {
@@ -679,6 +702,94 @@ public class CmisSender extends SenderWithParametersBase {
 			rowsetXml.addSubElement(rowXml);
 		}
 		cmisXml.addSubElement(rowsetXml);
+		return cmisXml.toXML();
+	}
+
+	private String sendMessageForActionFetch(String correlationID,
+			String message, ParameterResolutionContext prc)
+			throws SenderException, TimeOutException {
+		Element queryElement = null;
+		try {
+			if (XmlUtils.isWellFormed(message, "cmis")) {
+				queryElement = XmlUtils.buildElement(message);
+			} else {
+				queryElement = XmlUtils.buildElement("<cmis/>");
+			}
+		} catch (DomBuilderException e) {
+			throw new SenderException(e);
+		}
+
+		String objectIdstr = XmlUtils.getChildTagAsString(queryElement, "objectId");
+		String filter = XmlUtils.getChildTagAsString(queryElement, "filter");
+		boolean includeAllowableActions = XmlUtils.getChildTagAsBoolean(queryElement, "includeAllowableActions");
+		boolean includePolicies = XmlUtils.getChildTagAsBoolean(queryElement, "includePolicies");
+		boolean includeAcl = XmlUtils.getChildTagAsBoolean(queryElement, "includeAcl");
+
+		OperationContext operationContext = session.createOperationContext();
+
+		if (StringUtils.isNotEmpty(filter))
+			operationContext.setFilterString(filter);
+		operationContext.setIncludeAllowableActions(includeAllowableActions);
+		operationContext.setIncludePolicies(includePolicies);
+		operationContext.setIncludeAcls(includeAcl);
+
+		CmisObject object = null;
+		try {
+			object = session.getObject(session.createObjectId(objectIdstr), operationContext);
+		} catch (CmisObjectNotFoundException e) {
+			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
+				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
+				return getResultOnNotFound();
+			} else {
+				throw new SenderException(e);
+			}
+		}
+
+		XmlBuilder cmisXml = new XmlBuilder("cmis");
+
+		XmlBuilder propertiesXml = new XmlBuilder("properties");
+		for (Iterator it = object.getProperties().iterator(); it.hasNext();) {
+			Property property = (Property) it.next();
+			propertiesXml.addSubElement(getPropertyXml(property));
+		}
+		cmisXml.addSubElement(propertiesXml);
+
+		XmlBuilder allowableActionsXml = new XmlBuilder("allowableActions");
+		Set<Action> actions = object.getAllowableActions().getAllowableActions();
+		for (Action action : actions) {
+			XmlBuilder actionXml = new XmlBuilder("action");
+			actionXml.setValue(action.value());
+			allowableActionsXml.addSubElement(actionXml);
+		}
+		cmisXml.addSubElement(allowableActionsXml);
+
+		XmlBuilder isExactAclXml = new XmlBuilder("isExactAcl");
+		if(object.getAcl() != null)
+			isExactAclXml.setValue(object.getAcl().isExact().toString());
+		cmisXml.addSubElement(isExactAclXml);
+
+		XmlBuilder policiesXml = new XmlBuilder("policyIds");
+		List<ObjectId> policies = object.getPolicyIds();
+		if(policies != null) {
+			for (ObjectId objectId : policies) {
+				XmlBuilder policyXml = new XmlBuilder("policyId");
+				policyXml.setValue(objectId.getId());
+				policiesXml.addSubElement(policyXml);
+			}
+		}
+		cmisXml.addSubElement(policiesXml);
+
+		XmlBuilder relationshipsXml = new XmlBuilder("relationships");
+		List<Relationship> relationships = object.getRelationships();
+		if(relationships != null) {
+			for (Relationship relation : relationships) {
+				XmlBuilder policyXml = new XmlBuilder("relation");
+				policyXml.setValue(relation.getId());
+				relationshipsXml.addSubElement(policyXml);
+			}
+		}
+		cmisXml.addSubElement(relationshipsXml);
+
 		return cmisXml.toXML();
 	}
 
@@ -776,21 +887,21 @@ public class CmisSender extends SenderWithParametersBase {
 			parameter.put("trustManagerAlgorithm", getTrustManagerAlgorithm());
 		}
 
-		//SSL+
+		// SSL+
 		parameter.put("isAllowSelfSignedCertificates", "" + isAllowSelfSignedCertificates());
 		parameter.put("isVerifyHostname", "" + isVerifyHostname());
 		parameter.put("isIgnoreCertificateExpiredException", "" + isIgnoreCertificateExpiredException());
 
-		//PROXY
+		// PROXY
 		if (StringUtils.isNotEmpty(getProxyHost())) {
 			CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
 			parameter.put("proxyHost", getProxyHost());
-			parameter.put("proxyPort", ""+getProxyPort());
+			parameter.put("proxyPort", "" + getProxyPort());
 			parameter.put("proxyUserName", pcf.getUsername());
 			parameter.put("proxyPassword", pcf.getPassword());
 		}
 
-		//Custom IBIS HttpSender to support ssl connections and proxies
+		// Custom IBIS HttpSender to support ssl connections and proxies
 		parameter.put(SessionParameter.HTTP_INVOKER_CLASS, "nl.nn.adapterframework.extensions.cmis.CmisHttpInvoker");
 
 		Session session = sessionFactory.createSession(parameter);
@@ -902,10 +1013,10 @@ public class CmisSender extends SenderWithParametersBase {
 		return trustManagerAlgorithm;
 	}
 
-
 	public String getProxyHost() {
 		return proxyHost;
 	}
+
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
@@ -913,6 +1024,7 @@ public class CmisSender extends SenderWithParametersBase {
 	public int getProxyPort() {
 		return proxyPort;
 	}
+
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
@@ -920,6 +1032,7 @@ public class CmisSender extends SenderWithParametersBase {
 	public String getProxyAuthAlias() {
 		return proxyAuthAlias;
 	}
+
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
@@ -927,6 +1040,7 @@ public class CmisSender extends SenderWithParametersBase {
 	public String getProxyUserName() {
 		return proxyUserName;
 	}
+
 	public void setProxyUserName(String string) {
 		proxyUserName = string;
 	}
@@ -934,6 +1048,7 @@ public class CmisSender extends SenderWithParametersBase {
 	public String getProxyPassword() {
 		return proxyPassword;
 	}
+
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
@@ -943,10 +1058,10 @@ public class CmisSender extends SenderWithParametersBase {
 			return null;
 		return proxyRealm;
 	}
+
 	public void setProxyRealm(String string) {
 		proxyRealm = string;
 	}
-
 
 	public String getRepositoryInfo(Session session) {
 		RepositoryInfo ri = session.getRepositoryInfo();
@@ -1090,5 +1205,23 @@ public class CmisSender extends SenderWithParametersBase {
 
 	public boolean isKeepSession() {
 		return keepSession;
+	}
+
+	public void setBridgeSender(boolean isBridgeSender) {
+		this.isBridgeSender  = isBridgeSender;
+	}
+
+	public boolean isBridgeSender() {
+		return isBridgeSender;
+	}
+
+	@Override
+	public void setPipe(AbstractPipe pipe) {
+		this.pipe  = pipe;
+	}
+
+	@Override
+	public AbstractPipe getPipe() {
+		return pipe;
 	}
 }

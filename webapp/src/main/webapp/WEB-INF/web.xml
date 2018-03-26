@@ -108,6 +108,101 @@
 		<load-on-startup>0</load-on-startup>
 	</servlet>
 
+	<!-- START CMIS 
+	<listener>
+		<listener-class>org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener</listener-class>
+	</listener>
+
+	<servlet>
+		<servlet-name>cmisws10</servlet-name>
+		<servlet-class>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</servlet-class>
+		<init-param>
+			<description>CMIS version of this endpoint</description>
+			<param-name>cmisVersion</param-name>
+			<param-value>1.0</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet>
+		<servlet-name>cmisws11</servlet-name>
+		<servlet-class>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</servlet-class>
+		<init-param>
+			<description>CMIS version of this endpoint</description>
+			<param-name>cmisVersion</param-name>
+			<param-value>1.1</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet>
+		<servlet-name>cmisatom10</servlet-name>
+		<servlet-class>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</servlet-class>
+		<init-param>
+			<description>Call Context Handler implementation</description>
+			<param-name>callContextHandler</param-name>
+			<param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
+		</init-param>
+		<init-param>
+			<description>CMIS version of this endpoint</description>
+			<param-name>cmisVersion</param-name>
+			<param-value>1.0</param-value>
+		</init-param>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+
+	<servlet>
+		<servlet-name>cmisatom11</servlet-name>
+		<servlet-class>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</servlet-class>
+		<init-param>
+			<description>Call Context Handler implementation</description>
+			<param-name>callContextHandler</param-name>
+			<param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
+		</init-param>
+		<init-param>
+			<description>CMIS version of this endpoint</description>
+			<param-name>cmisVersion</param-name>
+			<param-value>1.1</param-value>
+		</init-param>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+
+	<servlet>
+		<servlet-name>cmisbrowser</servlet-name>
+		<servlet-class>org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet</servlet-class>
+		<init-param>
+			<description>Call Context Handler implementation</description>
+			<param-name>callContextHandler</param-name>
+			<param-value>org.apache.chemistry.opencmis.server.impl.browser.token.TokenCallContextHandler</param-value>
+		</init-param>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>cmisws10</servlet-name>
+		<url-pattern>/cmis/webservices10/*</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>cmisws11</servlet-name>
+		<url-pattern>/cmis/webservices/*</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>cmisatom10</servlet-name>
+		<url-pattern>/cmis/atompub10/*</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>cmisatom11</servlet-name>
+		<url-pattern>/cmis/atompub/*</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>cmisbrowser</servlet-name>
+		<url-pattern>/cmis/browser/*</url-pattern>
+	</servlet-mapping>
+	 END CMIS -->
 
 	<!-- SOAP servlets -->
 	<servlet>
