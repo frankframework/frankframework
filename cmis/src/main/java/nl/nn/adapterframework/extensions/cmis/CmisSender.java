@@ -94,6 +94,7 @@ import org.w3c.dom.Element;
  * <li><code>create</code>: create a document</li>
  * <li><code>find</code>: perform a query that returns properties</li>
  * <li><code>update</code>: update the properties of an existing document</li>
+ * <li><code>fetch</code>: get the (meta)data of a folder or document</li>
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
@@ -128,8 +129,15 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setProxyAuthAlias(String) proxyAuthAlias}</td><td>alias used to obtain credentials for authentication to proxy</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyUserName(String) proxyUserName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * 
+ * <tr><td>{@link #setBridgeSender(boolean) isBridgeSender}</td><td>when a cmisListener is used, this specifies where non-bypassed requests should be send to</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
+ * <p><b>NOTE:</b></p>
+ * <p>Only one CmisSender can act as the default 'bridged' sender!</p>
+ * <p>When used to proxy requests, you should use the fetch action!</p>
+ * <p></p>
+ * 
  * <p>
  * <table border="1">
  * <b>Parameters:</b>
