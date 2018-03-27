@@ -20,13 +20,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
@@ -49,7 +46,6 @@ import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.jms.JmsListenerBase;
 import nl.nn.adapterframework.jms.JmsMessageBrowser;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -67,16 +63,13 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author Peter Leeuwenburgh
  */
 
-public class ShowConfigurationStatus extends TimeoutGuardPipe {
-	private static final String CONFIG_ALL = "*ALL*";
+public class ShowConfigurationStatus extends ConfigurationBase {
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance()
 			.getInt("adapter.message.max.size", 0);
 	private static final boolean SHOW_COUNT_MESSAGELOG = AppConstants
 			.getInstance().getBoolean("messageLog.count.show", true);
 	private static final boolean SHOW_COUNT_ERRORSTORE = AppConstants
 			.getInstance().getBoolean("errorStore.count.show", true);
-
-	private IbisContext ibisContext;
 
 	private class ErrorStoreCounter {
 		String config;
@@ -113,26 +106,7 @@ public class ShowConfigurationStatus extends TimeoutGuardPipe {
 	}
 
 	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-		ibisContext = ((Adapter) getAdapter()).getConfiguration()
-				.getIbisManager().getIbisContext();
-	}
-
-	@Override
-	public String doPipeWithTimeoutGuarded(Object input,
-			IPipeLineSession session) throws PipeRunException {
-		String method = (String) session.get("method");
-		if (method.equalsIgnoreCase("GET")) {
-			return doGet(session);
-		} else {
-			throw new PipeRunException(this,
-					getLogPrefix(session) + "Illegal value for method ["
-							+ method + "], must be 'GET'");
-		}
-	}
-
-	private String doGet(IPipeLineSession session) throws PipeRunException {
+	protected String doGet(IPipeLineSession session) throws PipeRunException {
 		String configurationName = null;
 
 		ShowConfigurationStatusManager showConfigurationStatusManager = new ShowConfigurationStatusManager();
@@ -145,50 +119,30 @@ public class ShowConfigurationStatus extends TimeoutGuardPipe {
 			showConfigurationStatusManager.alert = Boolean
 					.parseBoolean(alertStr);
 			configurationName = CONFIG_ALL;
+		}
+
+		if (configurationName==null) {
+			configurationName = retrieveConfigurationName(session);
+		}
+		Configuration configuration = ibisContext.getIbisManager().getConfiguration(configurationName);
+		boolean configAll;
+		if (configurationName == null
+				|| configurationName.equalsIgnoreCase(CONFIG_ALL)
+				|| configuration == null) {
+			configAll = true;
 		} else {
-			configurationName = (String) session.get("configuration");
+			configAll = false;
 		}
 
 		List<Configuration> allConfigurations = ibisContext.getIbisManager()
 				.getConfigurations();
 		XmlBuilder configurationsXml = toConfigurationsXml(allConfigurations);
 
-		Configuration configurationSelected = null;
-		List<IAdapter> registeredAdapters;
-		HttpServletRequest httpServletRequest = (HttpServletRequest) session
-				.get(IPipeLineSession.HTTP_REQUEST_KEY);
-		if (configurationName == null) {
-			configurationName = (String) httpServletRequest.getSession()
-					.getAttribute("configurationName");
-		}
-		if (configurationName == null
-				|| configurationName.equalsIgnoreCase(CONFIG_ALL)
-				|| ibisContext.getIbisManager()
-						.getConfiguration(configurationName) == null) {
-			registeredAdapters = ibisContext.getIbisManager()
-					.getRegisteredAdapters();
-			session.put("configurationName", CONFIG_ALL);
-			httpServletRequest.getSession().setAttribute("configurationName",
-					CONFIG_ALL);
-			session.put("classLoaderType", null);
-			httpServletRequest.getSession().setAttribute("classLoaderType",
-					null);
-		} else {
-			configurationSelected = ibisContext.getIbisManager()
-					.getConfiguration(configurationName);
-			registeredAdapters = configurationSelected.getRegisteredAdapters();
-			session.put("configurationName",
-					configurationSelected.getConfigurationName());
-			httpServletRequest.getSession().setAttribute("configurationName",
-					configurationSelected.getConfigurationName());
-			session.put("classLoaderType",
-					configurationSelected.getClassLoaderType());
-			httpServletRequest.getSession().setAttribute("classLoaderType",
-					configurationSelected.getClassLoaderType());
-		}
+		List<IAdapter> registeredAdapters = retrieveRegisteredAdapters(configAll, configuration);
+		storeConfiguration(session, configAll, configuration);
 
 		XmlBuilder adapters = toAdaptersXml(ibisContext, allConfigurations,
-				configurationSelected, registeredAdapters,
+				(configAll?null:configuration), registeredAdapters,
 				showConfigurationStatusManager);
 
 		XmlBuilder root = new XmlBuilder("root");
@@ -198,23 +152,14 @@ public class ShowConfigurationStatus extends TimeoutGuardPipe {
 		return root.toXML();
 	}
 
-	private XmlBuilder toConfigurationsXml(List<Configuration> configurations) {
-		XmlBuilder configurationsXml = new XmlBuilder("configurations");
-		XmlBuilder configurationAllXml = new XmlBuilder("configuration");
-		configurationAllXml.setValue(CONFIG_ALL);
-		configurationAllXml.addAttribute("nameUC",
-				"0" + Misc.toSortName(CONFIG_ALL));
-		configurationsXml.addSubElement(configurationAllXml);
-		for (Configuration configuration : configurations) {
-			XmlBuilder configurationXml = new XmlBuilder("configuration");
-			configurationXml.setValue(configuration.getConfigurationName());
-			configurationXml.addAttribute("nameUC", "1"
-					+ Misc.toSortName(configuration.getConfigurationName()));
-			configurationsXml.addSubElement(configurationXml);
+	private List<IAdapter> retrieveRegisteredAdapters(boolean configAll, Configuration configuration) {
+		if (configAll) {
+			return ibisContext.getIbisManager().getRegisteredAdapters();
+		} else {
+			return configuration.getRegisteredAdapters();
 		}
-		return configurationsXml;
 	}
-
+	
 	private XmlBuilder toAdaptersXml(IbisContext ibisContext,
 			List<Configuration> configurations,
 			Configuration configurationSelected,
