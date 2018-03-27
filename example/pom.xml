@@ -19,6 +19,10 @@
   <dependencies>
     <dependency>
       <groupId>org.ibissource</groupId>
+      <artifactId>ibis-adapterframework-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-webapp</artifactId>
       <type>war</type>
     </dependency>
@@ -49,11 +53,6 @@
 		<version>4.8.2</version>
 		<scope>test</scope>
 	</dependency>
-    <dependency>
-		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-core</artifactId>
-		<scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-ladybug</artifactId>
