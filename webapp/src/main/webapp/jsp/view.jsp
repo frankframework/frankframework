@@ -131,8 +131,6 @@
 			<jsp:include page="/jsp/testService.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/showLogging.jsp")) {%>
 			<jsp:include page="/jsp/showLogging.jsp" flush="true"/> 
-		<%} else if (view.equals("/jsp/showConfiguration.jsp")) {%>
-			<jsp:include page="/jsp/showConfiguration.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/noConfig.jsp")) {%> 
 			<jsp:include page="/jsp/noConfig.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/noIbisContext.jsp")) {%> 

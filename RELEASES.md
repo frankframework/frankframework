@@ -41,6 +41,7 @@ Upcoming
 - Replace struts page "Show configuration status" by rest service
 - Add fetch action for CmisSender in order to retreive metadata
 - Add CMIS bridge functionality (CmisListener) and the option to remap properties on getObject requests. A bridged cmisListener has to be configured to route traffic!
+- Replace struts page "Show configuration" by rest service
 
 
 

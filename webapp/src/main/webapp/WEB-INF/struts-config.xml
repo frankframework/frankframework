@@ -158,15 +158,10 @@
                 validate="false">
             <forward name="success" path="/rest/showConfigurationStatus" redirect="true" contextRelative="true"/>
         </action>
-        <action path="/showConfiguration" 
-                type="nl.nn.adapterframework.webcontrol.action.ShowConfiguration"
-                validate="false">
-            <forward name="success" path="/jsp/view.jsp?view=/jsp/showConfiguration.jsp"/>
-        </action>
         <action path="/configHandler" 
                 type="nl.nn.adapterframework.webcontrol.action.ConfigHandler"
                 validate="false">
-            <forward name="success" path="/showConfiguration.do" redirect="true" contextRelative="true"/>
+            <forward name="success" path="/rest/showConfiguration" redirect="true" contextRelative="true"/>
         </action>
         <action path="/showMonitors" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowMonitors"
