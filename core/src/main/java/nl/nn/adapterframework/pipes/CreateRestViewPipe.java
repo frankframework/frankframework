@@ -237,7 +237,7 @@ public class CreateRestViewPipe extends XsltPipe {
 				"rest/showConfigurationStatus", "configurationStatus",
 				"Show Configuration Status"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"showConfiguration.do", "configuration", "Show Configuration"));
+				"rest/showConfiguration", "configuration", "Show Configuration"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"showLogging.do", "logging", "Show Logging"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,

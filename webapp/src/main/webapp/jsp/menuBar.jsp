@@ -12,7 +12,7 @@
 				alt="Show Configuration Status">
 			</imagelink>
 			<imagelink 
-				href="showConfiguration.do"
+				href="rest/showConfiguration"
 				type="configuration"
 				alt="Show Configuration">
 			</imagelink>
