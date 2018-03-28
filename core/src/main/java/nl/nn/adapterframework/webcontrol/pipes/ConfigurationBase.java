@@ -48,6 +48,10 @@ public abstract class ConfigurationBase extends TimeoutGuardPipe {
 
 	@Override
 	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session) throws PipeRunException {
+		// workaround for NPE on main screen of the IbisConsole (because sometimes ibisContext is still null after configuration)
+		if (ibisContext==null) {
+			ibisContext = ((Adapter) getAdapter()).getConfiguration().getIbisManager().getIbisContext();
+		}
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
 			return doGet(session);
