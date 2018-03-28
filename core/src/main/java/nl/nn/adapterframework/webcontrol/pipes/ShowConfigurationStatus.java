@@ -25,7 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
@@ -64,12 +64,11 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 
 public class ShowConfigurationStatus extends ConfigurationBase {
-	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance()
-			.getInt("adapter.message.max.size", 0);
-	private static final boolean SHOW_COUNT_MESSAGELOG = AppConstants
-			.getInstance().getBoolean("messageLog.count.show", true);
-	private static final boolean SHOW_COUNT_ERRORSTORE = AppConstants
-			.getInstance().getBoolean("errorStore.count.show", true);
+	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
+	private static final boolean SHOW_COUNT_MESSAGELOG = AppConstants.getInstance().getBoolean("messageLog.count.show",
+			true);
+	private static final boolean SHOW_COUNT_ERRORSTORE = AppConstants.getInstance().getBoolean("errorStore.count.show",
+			true);
 
 	private class ErrorStoreCounter {
 		String config;
@@ -107,6 +106,8 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 
 	@Override
 	protected String doGet(IPipeLineSession session) throws PipeRunException {
+		IbisManager ibisManager = retrieveIbisManager();
+
 		String configurationName = null;
 
 		ShowConfigurationStatusManager showConfigurationStatusManager = new ShowConfigurationStatusManager();
@@ -116,33 +117,33 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 
 		String alertStr = (String) session.get("alert");
 		if (alertStr != null) {
-			showConfigurationStatusManager.alert = Boolean
-					.parseBoolean(alertStr);
+			showConfigurationStatusManager.alert = Boolean.parseBoolean(alertStr);
 			configurationName = CONFIG_ALL;
 		}
 
-		if (configurationName==null) {
+		if (configurationName == null) {
 			configurationName = retrieveConfigurationName(session);
 		}
-		Configuration configuration = ibisContext.getIbisManager().getConfiguration(configurationName);
+		Configuration configuration = null;
 		boolean configAll;
-		if (configurationName == null
-				|| configurationName.equalsIgnoreCase(CONFIG_ALL)
-				|| configuration == null) {
+		if (configurationName == null || configurationName.equalsIgnoreCase(CONFIG_ALL)) {
 			configAll = true;
 		} else {
-			configAll = false;
+			configuration = ibisManager.getConfiguration(configurationName);
+			if (configuration == null) {
+				configAll = true;
+			} else {
+				configAll = false;
+			}
 		}
 
-		List<Configuration> allConfigurations = ibisContext.getIbisManager()
-				.getConfigurations();
+		List<Configuration> allConfigurations = ibisManager.getConfigurations();
 		XmlBuilder configurationsXml = toConfigurationsXml(allConfigurations);
 
-		List<IAdapter> registeredAdapters = retrieveRegisteredAdapters(configAll, configuration);
+		List<IAdapter> registeredAdapters = retrieveRegisteredAdapters(ibisManager, configAll, configuration);
 		storeConfiguration(session, configAll, configuration);
 
-		XmlBuilder adapters = toAdaptersXml(ibisContext, allConfigurations,
-				(configAll?null:configuration), registeredAdapters,
+		XmlBuilder adapters = toAdaptersXml(ibisManager, allConfigurations, configuration, registeredAdapters,
 				showConfigurationStatusManager);
 
 		XmlBuilder root = new XmlBuilder("root");
@@ -152,18 +153,17 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		return root.toXML();
 	}
 
-	private List<IAdapter> retrieveRegisteredAdapters(boolean configAll, Configuration configuration) {
+	private List<IAdapter> retrieveRegisteredAdapters(IbisManager ibisManager, boolean configAll,
+			Configuration configuration) {
 		if (configAll) {
-			return ibisContext.getIbisManager().getRegisteredAdapters();
+			return ibisManager.getRegisteredAdapters();
 		} else {
 			return configuration.getRegisteredAdapters();
 		}
 	}
-	
-	private XmlBuilder toAdaptersXml(IbisContext ibisContext,
-			List<Configuration> configurations,
-			Configuration configurationSelected,
-			List<IAdapter> registeredAdapters,
+
+	private XmlBuilder toAdaptersXml(IbisManager ibisManager, List<Configuration> configurations,
+			Configuration configurationSelected, List<IAdapter> registeredAdapters,
 			ShowConfigurationStatusManager showConfigurationStatusManager) {
 		XmlBuilder adapters = new XmlBuilder("registeredAdapters");
 		if (configurationSelected != null) {
@@ -172,30 +172,25 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			adapters.addAttribute("all", true);
 		}
 		if (showConfigurationStatusManager.alert != null) {
-			adapters.addAttribute("alert",
-					showConfigurationStatusManager.alert);
+			adapters.addAttribute("alert", showConfigurationStatusManager.alert);
 		}
 
-		XmlBuilder configurationMessagesXml = toConfigurationMessagesXml(
-				ibisContext, configurationSelected);
+		XmlBuilder configurationMessagesXml = toConfigurationMessagesXml(ibisManager, configurationSelected);
 		adapters.addSubElement(configurationMessagesXml);
 
-		XmlBuilder configurationExceptionsXml = toConfigurationExceptionsXml(
-				configurations, configurationSelected);
+		XmlBuilder configurationExceptionsXml = toConfigurationExceptionsXml(configurations, configurationSelected);
 		if (configurationExceptionsXml != null) {
 			adapters.addSubElement(configurationExceptionsXml);
 		}
 
-		XmlBuilder configurationWarningsXml = toConfigurationWarningsXml(
-				configurations, configurationSelected);
+		XmlBuilder configurationWarningsXml = toConfigurationWarningsXml(configurations, configurationSelected);
 		if (configurationWarningsXml != null) {
 			adapters.addSubElement(configurationWarningsXml);
 		}
 
 		for (IAdapter iAdapter : registeredAdapters) {
 			Adapter adapter = (Adapter) iAdapter;
-			XmlBuilder adapterXml = toAdapterXml(configurationSelected, adapter,
-					showConfigurationStatusManager);
+			XmlBuilder adapterXml = toAdapterXml(configurationSelected, adapter, showConfigurationStatusManager);
 			adapters.addSubElement(adapterXml);
 		}
 
@@ -204,32 +199,25 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		return adapters;
 	}
 
-	private XmlBuilder toConfigurationMessagesXml(IbisContext ibisContext,
-			Configuration configurationSelected) {
-		XmlBuilder configurationMessages = new XmlBuilder(
-				"configurationMessages");
+	private XmlBuilder toConfigurationMessagesXml(IbisManager ibisManager, Configuration configurationSelected) {
+		XmlBuilder configurationMessages = new XmlBuilder("configurationMessages");
 		MessageKeeper messageKeeper;
 		if (configurationSelected != null) {
-			messageKeeper = ibisContext
-					.getMessageKeeper(configurationSelected.getName());
+			messageKeeper = ibisManager.getIbisContext().getMessageKeeper(configurationSelected.getName());
 		} else {
-			messageKeeper = ibisContext.getMessageKeeper(CONFIG_ALL);
+			messageKeeper = ibisManager.getIbisContext().getMessageKeeper(CONFIG_ALL);
 		}
 
 		for (int t = 0; t < messageKeeper.size(); t++) {
-			XmlBuilder configurationMessage = new XmlBuilder(
-					"configurationMessage");
+			XmlBuilder configurationMessage = new XmlBuilder("configurationMessage");
 			String msg = messageKeeper.getMessage(t).getMessageText();
 			if (MAX_MESSAGE_SIZE > 0 && msg.length() > MAX_MESSAGE_SIZE) {
-				msg = msg.substring(0, MAX_MESSAGE_SIZE) + "...("
-						+ (msg.length() - MAX_MESSAGE_SIZE)
+				msg = msg.substring(0, MAX_MESSAGE_SIZE) + "...(" + (msg.length() - MAX_MESSAGE_SIZE)
 						+ " characters more)";
 			}
 			configurationMessage.setValue(msg, true);
 			configurationMessage.addAttribute("date",
-					DateUtils.format(
-							messageKeeper.getMessage(t).getMessageDate(),
-							DateUtils.FORMAT_FULL_GENERIC));
+					DateUtils.format(messageKeeper.getMessage(t).getMessageDate(), DateUtils.FORMAT_FULL_GENERIC));
 			String level = messageKeeper.getMessage(t).getMessageLevel();
 			configurationMessage.addAttribute("level", level);
 			configurationMessages.addSubElement(configurationMessage);
@@ -237,16 +225,14 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		return configurationMessages;
 	}
 
-	private XmlBuilder toConfigurationExceptionsXml(
-			List<Configuration> configurations,
+	private XmlBuilder toConfigurationExceptionsXml(List<Configuration> configurations,
 			Configuration configurationSelected) {
 		List<String[]> configurationExceptions = new ArrayList<String[]>();
 		if (configurationSelected != null) {
 			if (configurationSelected.getConfigurationException() != null) {
 				String[] item = new String[2];
 				item[0] = configurationSelected.getName();
-				item[1] = configurationSelected.getConfigurationException()
-						.getMessage();
+				item[1] = configurationSelected.getConfigurationException().getMessage();
 				configurationExceptions.add(item);
 			}
 		} else {
@@ -254,8 +240,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 				if (configuration.getConfigurationException() != null) {
 					String[] item = new String[2];
 					item[0] = configuration.getName();
-					item[1] = configuration.getConfigurationException()
-							.getMessage();
+					item[1] = configuration.getConfigurationException().getMessage();
 					configurationExceptions.add(item);
 				}
 			}
@@ -264,8 +249,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			XmlBuilder exceptionsXML = new XmlBuilder("exceptions");
 			for (int j = 0; j < configurationExceptions.size(); j++) {
 				XmlBuilder exceptionXML = new XmlBuilder("exception");
-				exceptionXML.addAttribute("config",
-						configurationExceptions.get(j)[0]);
+				exceptionXML.addAttribute("config", configurationExceptions.get(j)[0]);
 				exceptionXML.setValue(configurationExceptions.get(j)[1]);
 				exceptionsXML.addSubElement(exceptionXML);
 			}
@@ -274,19 +258,15 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		return null;
 	}
 
-	private XmlBuilder toConfigurationWarningsXml(
-			List<Configuration> configurations,
+	private XmlBuilder toConfigurationWarningsXml(List<Configuration> configurations,
 			Configuration configurationSelected) {
-		ConfigurationWarnings globalConfigurationWarnings = ConfigurationWarnings
-				.getInstance();
+		ConfigurationWarnings globalConfigurationWarnings = ConfigurationWarnings.getInstance();
 
-		List<ErrorStoreCounter> errorStoreCounters = retrieveErrorStoreCounters(
-				configurations, configurationSelected);
+		List<ErrorStoreCounter> errorStoreCounters = retrieveErrorStoreCounters(configurations, configurationSelected);
 
 		List<String[]> selectedConfigurationWarnings = new ArrayList<String[]>();
 		if (configurationSelected != null) {
-			BaseConfigurationWarnings configWarns = configurationSelected
-					.getConfigurationWarnings();
+			BaseConfigurationWarnings configWarns = configurationSelected.getConfigurationWarnings();
 			for (int j = 0; j < configWarns.size(); j++) {
 				String[] item = new String[2];
 				item[0] = configurationSelected.getName();
@@ -295,8 +275,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			}
 		} else {
 			for (Configuration configuration : configurations) {
-				BaseConfigurationWarnings configWarns = configuration
-						.getConfigurationWarnings();
+				BaseConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
 				for (int j = 0; j < configWarns.size(); j++) {
 					String[] item = new String[2];
 					item[0] = configuration.getName();
@@ -305,8 +284,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 				}
 			}
 		}
-		if (!globalConfigurationWarnings.isEmpty()
-				|| !errorStoreCounters.isEmpty() || !SHOW_COUNT_ERRORSTORE
+		if (!globalConfigurationWarnings.isEmpty() || !errorStoreCounters.isEmpty() || !SHOW_COUNT_ERRORSTORE
 				|| !selectedConfigurationWarnings.isEmpty()) {
 			XmlBuilder warningsXML = new XmlBuilder("warnings");
 			if (!SHOW_COUNT_ERRORSTORE) {
@@ -332,16 +310,13 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			}
 			for (int j = 0; j < globalConfigurationWarnings.size(); j++) {
 				XmlBuilder warningXML = new XmlBuilder("warning");
-				warningXML
-						.setValue((String) globalConfigurationWarnings.get(j));
+				warningXML.setValue((String) globalConfigurationWarnings.get(j));
 				warningsXML.addSubElement(warningXML);
 			}
 			for (int j = 0; j < selectedConfigurationWarnings.size(); j++) {
 				XmlBuilder warningXML = new XmlBuilder("warning");
-				warningXML.addAttribute("config",
-						selectedConfigurationWarnings.get(j)[0]);
-				warningXML.setValue(
-						(String) selectedConfigurationWarnings.get(j)[1]);
+				warningXML.addAttribute("config", selectedConfigurationWarnings.get(j)[0]);
+				warningXML.setValue((String) selectedConfigurationWarnings.get(j)[1]);
 				warningsXML.addSubElement(warningXML);
 			}
 			return warningsXML;
@@ -349,8 +324,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		return null;
 	}
 
-	private List<ErrorStoreCounter> retrieveErrorStoreCounters(
-			List<Configuration> configurations,
+	private List<ErrorStoreCounter> retrieveErrorStoreCounters(List<Configuration> configurations,
 			Configuration configurationSelected) {
 		List<ErrorStoreCounter> errorStoreCounters = new ArrayList<ErrorStoreCounter>();
 		if (SHOW_COUNT_ERRORSTORE) {
@@ -358,29 +332,24 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			if (configurationSelected != null) {
 				String config = configurationSelected.getName();
 				int counter = 0;
-				for (Iterator adapterIt = configurationSelected
-						.getRegisteredAdapters().iterator(); adapterIt
-								.hasNext();) {
+				for (Iterator adapterIt = configurationSelected.getRegisteredAdapters().iterator(); adapterIt
+						.hasNext();) {
 					Adapter adapter = (Adapter) adapterIt.next();
 					counter += retrieveErrorStoragesMessageCount(adapter);
 				}
 				if (counter > 0) {
-					errorStoreCounters
-							.add(new ErrorStoreCounter(config, counter));
+					errorStoreCounters.add(new ErrorStoreCounter(config, counter));
 				}
 			} else {
 				for (Configuration configuration : configurations) {
 					String config = configuration.getName();
 					int counter = 0;
-					for (Iterator adapterIt = configuration
-							.getRegisteredAdapters().iterator(); adapterIt
-									.hasNext();) {
+					for (Iterator adapterIt = configuration.getRegisteredAdapters().iterator(); adapterIt.hasNext();) {
 						Adapter adapter = (Adapter) adapterIt.next();
 						counter += retrieveErrorStoragesMessageCount(adapter);
 					}
 					if (counter > 0) {
-						errorStoreCounters
-								.add(new ErrorStoreCounter(config, counter));
+						errorStoreCounters.add(new ErrorStoreCounter(config, counter));
 					}
 				}
 			}
@@ -390,27 +359,22 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 
 	private int retrieveErrorStoragesMessageCount(Adapter adapter) {
 		int counter = 0;
-		for (Iterator receiverIt = adapter.getReceiverIterator(); receiverIt
-				.hasNext();) {
+		for (Iterator receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
 			ReceiverBase receiver = (ReceiverBase) receiverIt.next();
 			ITransactionalStorage errorStorage = receiver.getErrorStorage();
 			if (errorStorage != null) {
 				try {
 					counter += errorStorage.getMessageCount();
 				} catch (Exception e) {
-					log.warn(
-							"error occured on getting number of errorlog records for adapter ["
-									+ adapter.getName()
-									+ "], assuming there are no errorlog records",
-							e);
+					log.warn("error occured on getting number of errorlog records for adapter [" + adapter.getName()
+							+ "], assuming there are no errorlog records", e);
 				}
 			}
 		}
 		return counter;
 	}
 
-	private XmlBuilder toAdapterXml(Configuration configurationSelected,
-			Adapter adapter,
+	private XmlBuilder toAdapterXml(Configuration configurationSelected, Adapter adapter,
 			ShowConfigurationStatusManager showConfigurationStatusManager) {
 		ShowConfigurationStatusAdapterManager showConfigurationStatusAdapterManager = new ShowConfigurationStatusAdapterManager();
 
@@ -421,11 +385,9 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		String adapterDescription = adapter.getDescription();
 		adapterXML.addAttribute("description", adapterDescription);
 		adapterXML.addAttribute("config", adapter.getConfiguration().getName());
-		adapterXML.addAttribute("configUC",
-				Misc.toSortName(adapter.getConfiguration().getName()));
+		adapterXML.addAttribute("configUC", Misc.toSortName(adapter.getConfiguration().getName()));
 		adapterXML.addAttribute("nameUC", Misc.toSortName(adapterName));
-		adapterXML.addAttribute("started",
-				"" + (adapterRunState.equals(RunStateEnum.STARTED)));
+		adapterXML.addAttribute("started", "" + (adapterRunState.equals(RunStateEnum.STARTED)));
 		adapterXML.addAttribute("state", adapterRunState.toString());
 		if (adapterRunState.equals(RunStateEnum.STARTING)) {
 			showConfigurationStatusManager.countAdapterStateStarting++;
@@ -441,35 +403,26 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		if (!(adapterRunState.equals(RunStateEnum.STARTED))) {
 			showConfigurationStatusAdapterManager.stateAlert = true;
 		}
-		adapterXML.addAttribute("configured",
-				"" + adapter.configurationSucceeded());
+		adapterXML.addAttribute("configured", "" + adapter.configurationSucceeded());
 		Date statsUpSinceDate = adapter.getStatsUpSinceDate();
 
 		if (statsUpSinceDate != null) {
 			if (statsUpSinceDate.getTime() > 0) {
-				adapterXML.addAttribute("upSince", adapter
-						.getStatsUpSince(DateUtils.FORMAT_GENERICDATETIME));
-				adapterXML.addAttribute("upSinceAge",
-						Misc.getAge(statsUpSinceDate.getTime()));
+				adapterXML.addAttribute("upSince", adapter.getStatsUpSince(DateUtils.FORMAT_GENERICDATETIME));
+				adapterXML.addAttribute("upSinceAge", Misc.getAge(statsUpSinceDate.getTime()));
 			} else
 				adapterXML.addAttribute("upSince", "-");
 		}
-		adapterXML.addAttribute("lastMessageDate",
-				adapter.getLastMessageDate(DateUtils.FORMAT_GENERICDATETIME));
+		adapterXML.addAttribute("lastMessageDate", adapter.getLastMessageDate(DateUtils.FORMAT_GENERICDATETIME));
 		Date lastMessageDate = adapter.getLastMessageDateDate();
 		if (lastMessageDate != null) {
-			adapterXML.addAttribute("lastMessageDateAge",
-					Misc.getAge(lastMessageDate.getTime()));
+			adapterXML.addAttribute("lastMessageDateAge", Misc.getAge(lastMessageDate.getTime()));
 		}
-		adapterXML.addAttribute("messagesInProcess",
-				"" + adapter.getNumOfMessagesInProcess());
-		adapterXML.addAttribute("messagesProcessed",
-				"" + adapter.getNumOfMessagesProcessed());
-		adapterXML.addAttribute("messagesInError",
-				"" + adapter.getNumOfMessagesInError());
+		adapterXML.addAttribute("messagesInProcess", "" + adapter.getNumOfMessagesInProcess());
+		adapterXML.addAttribute("messagesProcessed", "" + adapter.getNumOfMessagesProcessed());
+		adapterXML.addAttribute("messagesInError", "" + adapter.getNumOfMessagesInError());
 
-		XmlBuilder receiversXml = toReceiversXml(configurationSelected, adapter,
-				showConfigurationStatusManager,
+		XmlBuilder receiversXml = toReceiversXml(configurationSelected, adapter, showConfigurationStatusManager,
 				showConfigurationStatusAdapterManager);
 		if (receiversXml != null) {
 			adapterXML.addSubElement(receiversXml);
@@ -479,22 +432,18 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			XmlBuilder pipesElem = toPipesXml(adapter);
 			adapterXML.addSubElement(pipesElem);
 
-			XmlBuilder adapterMessages = toAdapterMessagesXmlSelected(adapter,
-					showConfigurationStatusManager);
+			XmlBuilder adapterMessages = toAdapterMessagesXmlSelected(adapter, showConfigurationStatusManager);
 			adapterXML.addSubElement(adapterMessages);
 		} else {
-			XmlBuilder adapterMessages = toAdapterMessagesXmlAll(adapter,
-					showConfigurationStatusManager,
+			XmlBuilder adapterMessages = toAdapterMessagesXmlAll(adapter, showConfigurationStatusManager,
 					showConfigurationStatusAdapterManager);
 			adapterXML.addSubElement(adapterMessages);
 		}
-		adapterXML.addAttribute("stateAlert",
-				showConfigurationStatusAdapterManager.stateAlert);
+		adapterXML.addAttribute("stateAlert", showConfigurationStatusAdapterManager.stateAlert);
 		return adapterXML;
 	}
 
-	private XmlBuilder toReceiversXml(Configuration configurationSelected,
-			Adapter adapter,
+	private XmlBuilder toReceiversXml(Configuration configurationSelected, Adapter adapter,
 			ShowConfigurationStatusManager showConfigurationStatusManager,
 			ShowConfigurationStatusAdapterManager showConfigurationStatusAdapterManager) {
 		Iterator recIt = adapter.getReceiverIterator();
@@ -509,8 +458,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 
 			RunStateEnum receiverRunState = receiver.getRunState();
 
-			receiverXML.addAttribute("isStarted",
-					"" + (receiverRunState.equals(RunStateEnum.STARTED)));
+			receiverXML.addAttribute("isStarted", "" + (receiverRunState.equals(RunStateEnum.STARTED)));
 			receiverXML.addAttribute("state", receiverRunState.toString());
 			if (receiverRunState.equals(RunStateEnum.STARTING)) {
 				showConfigurationStatusManager.countReceiverStateStarting++;
@@ -523,28 +471,22 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			} else if ((receiverRunState.equals(RunStateEnum.ERROR))) {
 				showConfigurationStatusManager.countReceiverStateError++;
 			}
-			if (!showConfigurationStatusAdapterManager.stateAlert
-					&& !(receiverRunState.equals(RunStateEnum.STARTED))) {
+			if (!showConfigurationStatusAdapterManager.stateAlert && !(receiverRunState.equals(RunStateEnum.STARTED))) {
 				showConfigurationStatusAdapterManager.stateAlert = true;
 			}
 			receiverXML.addAttribute("name", receiver.getName());
 			receiverXML.addAttribute("class", ClassUtils.nameOf(receiver));
-			receiverXML.addAttribute("messagesReceived",
-					"" + receiver.getMessagesReceived());
-			receiverXML.addAttribute("messagesRetried",
-					"" + receiver.getMessagesRetried());
-			receiverXML.addAttribute("messagesRejected",
-					"" + receiver.getMessagesRejected());
+			receiverXML.addAttribute("messagesReceived", "" + receiver.getMessagesReceived());
+			receiverXML.addAttribute("messagesRetried", "" + receiver.getMessagesRetried());
+			receiverXML.addAttribute("messagesRejected", "" + receiver.getMessagesRejected());
 			if (configurationSelected != null) {
 				ISender sender = null;
 				if (receiver instanceof ReceiverBase) {
 					ReceiverBase rb = (ReceiverBase) receiver;
 					IListener listener = rb.getListener();
-					receiverXML.addAttribute("listenerClass",
-							ClassUtils.nameOf(listener));
+					receiverXML.addAttribute("listenerClass", ClassUtils.nameOf(listener));
 					if (listener instanceof HasPhysicalDestination) {
-						String pd = ((HasPhysicalDestination) rb.getListener())
-								.getPhysicalDestinationName();
+						String pd = ((HasPhysicalDestination) rb.getListener()).getPhysicalDestinationName();
 						receiverXML.addAttribute("listenerDestination", pd);
 					}
 					if (listener instanceof HasSender) {
@@ -552,49 +494,39 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 					}
 					ITransactionalStorage ts;
 					ts = rb.getErrorStorage();
-					receiverXML.addAttribute("hasErrorStorage",
-							"" + (ts != null));
+					receiverXML.addAttribute("hasErrorStorage", "" + (ts != null));
 					if (ts != null) {
 						try {
 							if (SHOW_COUNT_ERRORSTORE) {
-								receiverXML.addAttribute("errorStorageCount",
-										ts.getMessageCount());
+								receiverXML.addAttribute("errorStorageCount", ts.getMessageCount());
 							} else {
-								receiverXML.addAttribute("errorStorageCount",
-										"?");
+								receiverXML.addAttribute("errorStorageCount", "?");
 							}
 						} catch (Exception e) {
 							log.warn(e);
-							receiverXML.addAttribute("errorStorageCount",
-									"error");
+							receiverXML.addAttribute("errorStorageCount", "error");
 						}
 					}
 					ts = rb.getMessageLog();
-					receiverXML.addAttribute("hasMessageLog",
-							"" + (ts != null));
+					receiverXML.addAttribute("hasMessageLog", "" + (ts != null));
 					if (ts != null) {
 						try {
 							if (SHOW_COUNT_MESSAGELOG) {
-								receiverXML.addAttribute("messageLogCount",
-										ts.getMessageCount());
+								receiverXML.addAttribute("messageLogCount", ts.getMessageCount());
 							} else {
-								receiverXML.addAttribute("messageLogCount",
-										"?");
+								receiverXML.addAttribute("messageLogCount", "?");
 							}
 						} catch (Exception e) {
 							log.warn(e);
-							receiverXML.addAttribute("messageLogCount",
-									"error");
+							receiverXML.addAttribute("messageLogCount", "error");
 						}
 					}
 					boolean isRestListener = (listener instanceof RestListener);
 					receiverXML.addAttribute("isRestListener", isRestListener);
 					if (isRestListener) {
 						RestListener rl = (RestListener) listener;
-						receiverXML.addAttribute("restUriPattern",
-								rl.getRestUriPattern());
-						receiverXML.addAttribute("isView",
-								(rl.isView() == null ? false : rl.isView()));
+						receiverXML.addAttribute("restUriPattern", rl.getRestUriPattern());
+						receiverXML.addAttribute("isView", (rl.isView() == null ? false : rl.isView()));
 					}
 					if (showConfigurationStatusManager.count) {
 						if (listener instanceof JmsListenerBase) {
@@ -603,16 +535,12 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 							if (StringUtils.isEmpty(jlb.getMessageSelector())) {
 								jmsBrowser = new JmsMessageBrowser();
 							} else {
-								jmsBrowser = new JmsMessageBrowser(
-										jlb.getMessageSelector());
+								jmsBrowser = new JmsMessageBrowser(jlb.getMessageSelector());
 							}
-							jmsBrowser
-									.setName("MessageBrowser_" + jlb.getName());
+							jmsBrowser.setName("MessageBrowser_" + jlb.getName());
 							jmsBrowser.setJmsRealm(jlb.getJmsRealName());
-							jmsBrowser.setDestinationName(
-									jlb.getDestinationName());
-							jmsBrowser.setDestinationType(
-									jlb.getDestinationType());
+							jmsBrowser.setDestinationName(jlb.getDestinationName());
+							jmsBrowser.setDestinationType(jlb.getDestinationType());
 							String numMsgs;
 							try {
 								int messageCount = jmsBrowser.getMessageCount();
@@ -621,8 +549,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 								log.warn(t);
 								numMsgs = "?";
 							}
-							receiverXML.addAttribute("pendingMessagesCount",
-									numMsgs);
+							receiverXML.addAttribute("pendingMessagesCount", numMsgs);
 						}
 					}
 					boolean isEsbJmsFFListener = false;
@@ -632,17 +559,14 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 							isEsbJmsFFListener = true;
 						}
 						if (showConfigurationStatusManager.count) {
-							String esbNumMsgs = EsbUtils
-									.getQueueMessageCount(ejl);
+							String esbNumMsgs = EsbUtils.getQueueMessageCount(ejl);
 							if (esbNumMsgs == null) {
 								esbNumMsgs = "?";
 							}
-							receiverXML.addAttribute("esbPendingMessagesCount",
-									esbNumMsgs);
+							receiverXML.addAttribute("esbPendingMessagesCount", esbNumMsgs);
 						}
 					}
-					receiverXML.addAttribute("isEsbJmsFFListener",
-							isEsbJmsFFListener);
+					receiverXML.addAttribute("isEsbJmsFFListener", isEsbJmsFFListener);
 				}
 
 				if (receiver instanceof HasSender) {
@@ -655,25 +579,20 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 				}
 				if (sender != null) {
 					receiverXML.addAttribute("senderName", sender.getName());
-					receiverXML.addAttribute("senderClass",
-							ClassUtils.nameOf(sender));
+					receiverXML.addAttribute("senderClass", ClassUtils.nameOf(sender));
 					if (sender instanceof HasPhysicalDestination) {
-						String pd = ((HasPhysicalDestination) sender)
-								.getPhysicalDestinationName();
+						String pd = ((HasPhysicalDestination) sender).getPhysicalDestinationName();
 						receiverXML.addAttribute("senderDestination", pd);
 					}
 				}
 				if (receiver instanceof IThreadCountControllable) {
 					IThreadCountControllable tcc = (IThreadCountControllable) receiver;
 					if (tcc.isThreadCountReadable()) {
-						receiverXML.addAttribute("threadCount",
-								tcc.getCurrentThreadCount() + "");
-						receiverXML.addAttribute("maxThreadCount",
-								tcc.getMaxThreadCount() + "");
+						receiverXML.addAttribute("threadCount", tcc.getCurrentThreadCount() + "");
+						receiverXML.addAttribute("maxThreadCount", tcc.getMaxThreadCount() + "");
 					}
 					if (tcc.isThreadCountControllable()) {
-						receiverXML.addAttribute("threadCountControllable",
-								"true");
+						receiverXML.addAttribute("threadCountControllable", "true");
 					}
 				}
 			}
@@ -697,8 +616,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 				pipeElem.addAttribute("sender", ClassUtils.nameOf(sender));
 				if (sender instanceof HasPhysicalDestination) {
 					pipeElem.addAttribute("destination",
-							((HasPhysicalDestination) sender)
-									.getPhysicalDestinationName());
+							((HasPhysicalDestination) sender).getPhysicalDestinationName());
 				}
 				if (sender instanceof JdbcSenderBase) {
 					pipeElem.addAttribute("isJdbcSender", "true");
@@ -706,11 +624,9 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 				IListener listener = msp.getListener();
 				if (listener != null) {
 					pipeElem.addAttribute("listenerName", listener.getName());
-					pipeElem.addAttribute("listenerClass",
-							ClassUtils.nameOf(listener));
+					pipeElem.addAttribute("listenerClass", ClassUtils.nameOf(listener));
 					if (listener instanceof HasPhysicalDestination) {
-						String pd = ((HasPhysicalDestination) listener)
-								.getPhysicalDestinationName();
+						String pd = ((HasPhysicalDestination) listener).getPhysicalDestinationName();
 						pipeElem.addAttribute("listenerDestination", pd);
 					}
 				}
@@ -746,21 +662,15 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		XmlBuilder adapterMessages = new XmlBuilder("adapterMessages");
 		for (int t = 0; t < adapter.getMessageKeeper().size(); t++) {
 			XmlBuilder adapterMessage = new XmlBuilder("adapterMessage");
-			String msg = adapter.getMessageKeeper().getMessage(t)
-					.getMessageText();
+			String msg = adapter.getMessageKeeper().getMessage(t).getMessageText();
 			if (MAX_MESSAGE_SIZE > 0 && msg.length() > MAX_MESSAGE_SIZE) {
-				msg = msg.substring(0, MAX_MESSAGE_SIZE) + "...("
-						+ (msg.length() - MAX_MESSAGE_SIZE)
+				msg = msg.substring(0, MAX_MESSAGE_SIZE) + "...(" + (msg.length() - MAX_MESSAGE_SIZE)
 						+ " characters more)";
 			}
 			adapterMessage.setValue(msg, true);
-			adapterMessage.addAttribute("date",
-					DateUtils.format(
-							adapter.getMessageKeeper().getMessage(t)
-									.getMessageDate(),
-							DateUtils.FORMAT_FULL_GENERIC));
-			String level = adapter.getMessageKeeper().getMessage(t)
-					.getMessageLevel();
+			adapterMessage.addAttribute("date", DateUtils
+					.format(adapter.getMessageKeeper().getMessage(t).getMessageDate(), DateUtils.FORMAT_FULL_GENERIC));
+			String level = adapter.getMessageKeeper().getMessage(t).getMessageLevel();
 			adapterMessage.addAttribute("level", level);
 			adapterMessages.addSubElement(adapterMessage);
 			if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
@@ -784,8 +694,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		int cmw = 0;
 		int cmi = 0;
 		for (int t = 0; t < adapter.getMessageKeeper().size(); t++) {
-			String level = adapter.getMessageKeeper().getMessage(t)
-					.getMessageLevel();
+			String level = adapter.getMessageKeeper().getMessage(t).getMessageLevel();
 			if (level.equals(MessageKeeperMessage.ERROR_LEVEL)) {
 				cme++;
 			} else {
@@ -802,55 +711,38 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		showConfigurationStatusManager.countMessagesError += cme;
 		showConfigurationStatusManager.countMessagesWarn += cmw;
 		showConfigurationStatusManager.countMessagesInfo += cmi;
-		String lastMessageLevel = adapter.getMessageKeeper()
-				.getMessage(adapter.getMessageKeeper().size() - 1)
+		String lastMessageLevel = adapter.getMessageKeeper().getMessage(adapter.getMessageKeeper().size() - 1)
 				.getMessageLevel();
-		adapterMessages.addAttribute("lastMessageLevel",
-				lastMessageLevel.toLowerCase());
+		adapterMessages.addAttribute("lastMessageLevel", lastMessageLevel.toLowerCase());
 		if (!showConfigurationStatusAdapterManager.stateAlert
 				&& (lastMessageLevel.equals(MessageKeeperMessage.ERROR_LEVEL)
-						|| lastMessageLevel
-								.equals(MessageKeeperMessage.WARN_LEVEL))) {
+						|| lastMessageLevel.equals(MessageKeeperMessage.WARN_LEVEL))) {
 			showConfigurationStatusAdapterManager.stateAlert = true;
 		}
 
 		return adapterMessages;
 	}
 
-	private XmlBuilder toSummaryXml(
-			ShowConfigurationStatusManager showConfigurationStatusManager) {
+	private XmlBuilder toSummaryXml(ShowConfigurationStatusManager showConfigurationStatusManager) {
 		XmlBuilder summaryXML = new XmlBuilder("summary");
 		XmlBuilder adapterStateXML = new XmlBuilder("adapterState");
-		adapterStateXML.addAttribute("starting",
-				showConfigurationStatusManager.countAdapterStateStarting + "");
-		adapterStateXML.addAttribute("started",
-				showConfigurationStatusManager.countAdapterStateStarted + "");
-		adapterStateXML.addAttribute("stopping",
-				showConfigurationStatusManager.countAdapterStateStopping + "");
-		adapterStateXML.addAttribute("stopped",
-				showConfigurationStatusManager.countAdapterStateStopped + "");
-		adapterStateXML.addAttribute("error",
-				showConfigurationStatusManager.countAdapterStateError + "");
+		adapterStateXML.addAttribute("starting", showConfigurationStatusManager.countAdapterStateStarting + "");
+		adapterStateXML.addAttribute("started", showConfigurationStatusManager.countAdapterStateStarted + "");
+		adapterStateXML.addAttribute("stopping", showConfigurationStatusManager.countAdapterStateStopping + "");
+		adapterStateXML.addAttribute("stopped", showConfigurationStatusManager.countAdapterStateStopped + "");
+		adapterStateXML.addAttribute("error", showConfigurationStatusManager.countAdapterStateError + "");
 		summaryXML.addSubElement(adapterStateXML);
 		XmlBuilder receiverStateXML = new XmlBuilder("receiverState");
-		receiverStateXML.addAttribute("starting",
-				showConfigurationStatusManager.countReceiverStateStarting + "");
-		receiverStateXML.addAttribute("started",
-				showConfigurationStatusManager.countReceiverStateStarted + "");
-		receiverStateXML.addAttribute("stopping",
-				showConfigurationStatusManager.countReceiverStateStopping + "");
-		receiverStateXML.addAttribute("stopped",
-				showConfigurationStatusManager.countReceiverStateStopped + "");
-		receiverStateXML.addAttribute("error",
-				showConfigurationStatusManager.countReceiverStateError + "");
+		receiverStateXML.addAttribute("starting", showConfigurationStatusManager.countReceiverStateStarting + "");
+		receiverStateXML.addAttribute("started", showConfigurationStatusManager.countReceiverStateStarted + "");
+		receiverStateXML.addAttribute("stopping", showConfigurationStatusManager.countReceiverStateStopping + "");
+		receiverStateXML.addAttribute("stopped", showConfigurationStatusManager.countReceiverStateStopped + "");
+		receiverStateXML.addAttribute("error", showConfigurationStatusManager.countReceiverStateError + "");
 		summaryXML.addSubElement(receiverStateXML);
 		XmlBuilder messageLevelXML = new XmlBuilder("messageLevel");
-		messageLevelXML.addAttribute("error",
-				showConfigurationStatusManager.countMessagesError + "");
-		messageLevelXML.addAttribute("warn",
-				showConfigurationStatusManager.countMessagesWarn + "");
-		messageLevelXML.addAttribute("info",
-				showConfigurationStatusManager.countMessagesInfo + "");
+		messageLevelXML.addAttribute("error", showConfigurationStatusManager.countMessagesError + "");
+		messageLevelXML.addAttribute("warn", showConfigurationStatusManager.countMessagesWarn + "");
+		messageLevelXML.addAttribute("info", showConfigurationStatusManager.countMessagesInfo + "");
 		summaryXML.addSubElement(messageLevelXML);
 		return summaryXML;
 	}

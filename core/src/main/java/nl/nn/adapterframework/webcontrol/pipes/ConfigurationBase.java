@@ -20,11 +20,10 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -38,20 +37,8 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public abstract class ConfigurationBase extends TimeoutGuardPipe {
 	protected static final String CONFIG_ALL = "*ALL*";
 
-	protected IbisContext ibisContext;
-
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-		ibisContext = ((Adapter) getAdapter()).getConfiguration().getIbisManager().getIbisContext();
-	}
-
 	@Override
 	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session) throws PipeRunException {
-		// workaround for NPE on main screen of the IbisConsole (because sometimes ibisContext is still null after configuration)
-		if (ibisContext==null) {
-			ibisContext = ((Adapter) getAdapter()).getConfiguration().getIbisManager().getIbisContext();
-		}
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
 			return doGet(session);
@@ -66,20 +53,27 @@ public abstract class ConfigurationBase extends TimeoutGuardPipe {
 	 * child class.
 	 */
 	protected String doGet(IPipeLineSession session) throws PipeRunException {
+		IbisManager ibisManager = RestListenerUtils.retrieveIbisManager(session);
+
 		String configurationName = null;
 
 		if (configurationName == null) {
 			configurationName = retrieveConfigurationName(session);
 		}
-		Configuration configuration = ibisContext.getIbisManager().getConfiguration(configurationName);
+		Configuration configuration = null;
 		boolean configAll;
-		if (configurationName == null || configurationName.equalsIgnoreCase(CONFIG_ALL) || configuration == null) {
+		if (configurationName == null || configurationName.equalsIgnoreCase(CONFIG_ALL)) {
 			configAll = true;
 		} else {
-			configAll = false;
+			configuration = ibisManager.getConfiguration(configurationName);
+			if (configuration == null) {
+				configAll = true;
+			} else {
+				configAll = false;
+			}
 		}
 
-		List<Configuration> allConfigurations = ibisContext.getIbisManager().getConfigurations();
+		List<Configuration> allConfigurations = ibisManager.getConfigurations();
 		XmlBuilder configurationsXml = toConfigurationsXml(allConfigurations);
 
 		storeConfiguration(session, configAll, configuration);
@@ -128,5 +122,9 @@ public abstract class ConfigurationBase extends TimeoutGuardPipe {
 			configurationsXml.addSubElement(configurationXml);
 		}
 		return configurationsXml;
+	}
+
+	protected IbisManager retrieveIbisManager() {
+		return getAdapter().getConfiguration().getIbisManager();
 	}
 }

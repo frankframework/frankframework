@@ -15,45 +15,13 @@
  */
 package nl.nn.adapterframework.webcontrol.pipes;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-
-import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.IThreadCountControllable;
-import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
-import nl.nn.adapterframework.extensions.esb.EsbUtils;
-import nl.nn.adapterframework.http.RestListener;
-import nl.nn.adapterframework.jdbc.JdbcSenderBase;
-import nl.nn.adapterframework.jms.JmsListenerBase;
-import nl.nn.adapterframework.jms.JmsMessageBrowser;
-import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -68,16 +36,23 @@ public class ShowConfiguration extends ConfigurationBase {
 
 	@Override
 	protected String doGet(IPipeLineSession session) throws PipeRunException {
+		IbisManager ibisManager = retrieveIbisManager();
+
 		String configurationName = retrieveConfigurationName(session);
-		Configuration configuration = ibisContext.getIbisManager().getConfiguration(configurationName);
+		Configuration configuration = null;
 		boolean configAll;
-		if (configurationName == null || configurationName.equalsIgnoreCase(CONFIG_ALL) || configuration == null) {
+		if (configurationName == null || configurationName.equalsIgnoreCase(CONFIG_ALL)) {
 			configAll = true;
 		} else {
-			configAll = false;
+			configuration = ibisManager.getConfiguration(configurationName);
+			if (configuration == null) {
+				configAll = true;
+			} else {
+				configAll = false;
+			}
 		}
 
-		List<Configuration> allConfigurations = ibisContext.getIbisManager().getConfigurations();
+		List<Configuration> allConfigurations = ibisManager.getConfigurations();
 		XmlBuilder configurationsXml = toConfigurationsXml(allConfigurations);
 
 		StringBuilder sb = new StringBuilder();
@@ -111,13 +86,4 @@ public class ShowConfiguration extends ConfigurationBase {
 
 		return root.toXML();
 	}
-
-	private List<IAdapter> retrieveRegisteredAdapters(boolean configAll, Configuration configuration) {
-		if (configAll) {
-			return ibisContext.getIbisManager().getRegisteredAdapters();
-		} else {
-			return configuration.getRegisteredAdapters();
-		}
-	}
-
 }
