@@ -470,14 +470,14 @@ angular.module('iaf.beheerconsole')
 	};
 	$scope.stopAll = function() {
 		var adapters = Array();
-		for(adapter in $filter('adapterFilter')($scope.adapters, $scope)) {
+		for(adapter in $filter('configurationFilter')($scope.adapters, $scope)) {
 			adapters.push(adapter);
 		}
 		Api.Put("adapters", {"action": "stop", "adapters": adapters});
 	};
 	$scope.startAll = function() {
 		var adapters = Array();
-		for(adapter in $filter('adapterFilter')($scope.adapters, $scope)) {
+		for(adapter in $filter('configurationFilter')($scope.adapters, $scope)) {
 			adapters.push(adapter);
 		}
 		Api.Put("adapters", {"action": "start", "adapters": adapters});
