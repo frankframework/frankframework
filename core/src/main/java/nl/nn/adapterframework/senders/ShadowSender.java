@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.core.task.TaskExecutor;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
@@ -112,6 +114,8 @@ public class ShadowSender extends ParallelSenders {
 	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
+		TaskExecutor executor = createTaskExecutor();
+
 		for (Iterator<ISender> it = getExecutableSenders(); it.hasNext();) {
 			ISender sender = it.next();
 			// Create a new ParameterResolutionContext to be thread safe, see
@@ -133,7 +137,7 @@ public class ShadowSender extends ParallelSenders {
 					correlationID, message, newPrc, guard,
 					getStatisticsKeeper(sender));
 			executorMap.put(sender, pse);
-			getTaskExecutor().execute(pse);
+			executor.execute(pse);
 		}
 		try {
 			guard.waitForAllResources();

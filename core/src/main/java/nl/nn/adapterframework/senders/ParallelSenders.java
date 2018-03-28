@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017 Nationale-Nederlanden
+   Copyright 2013, 2017-2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package nl.nn.adapterframework.senders;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -29,6 +28,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
  * Collection of Senders, that are executed all at the same time.
@@ -41,6 +41,7 @@ import org.springframework.core.task.TaskExecutor;
  * <tr><td>{@link #setGetInputFromFixedValue(String) getInputFromFixedValue}</td><td>when set, this fixed value is taken as input, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
+ * <tr><td>{@link #setMaxConcurrentThreads(int) maxThreads}</td><td>sets and upper limit to the amount of concurrent threads that can be run simultaneously. Use 0 to disable.</td><td>0</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -54,15 +55,13 @@ import org.springframework.core.task.TaskExecutor;
  */
 public class ParallelSenders extends SenderSeries {
 
-	/**
-	 * The thread-pool for spawning threads, injected by Spring
-	 */
-	private TaskExecutor taskExecutor;
-
+	private int maxConcurrentThreads = 0;
 
 	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
+		TaskExecutor executor = createTaskExecutor();
+
 		for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
 			ISender sender = it.next();
 			// Create a new ParameterResolutionContext to be thread safe, see
@@ -84,7 +83,8 @@ public class ParallelSenders extends SenderSeries {
 					correlationID, message, newPrc, guard,
 					getStatisticsKeeper(sender));
 			executorMap.put(sender, pse);
-			getTaskExecutor().execute(pse);
+
+			executor.execute(pse);
 		}
 		try {
 			guard.waitForAllResources();
@@ -123,11 +123,19 @@ public class ParallelSenders extends SenderSeries {
 		} 
 	}
 
-	public void setTaskExecutor(TaskExecutor executor) {
-		taskExecutor = executor;
-	}
-	public TaskExecutor getTaskExecutor() {
-		return taskExecutor;
+	protected TaskExecutor createTaskExecutor() {
+		ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) getPipe().getAdapter().getConfiguration().getIbisManager().getIbisContext().getBean("concurrentTaskExecutor");
+		executor.setCorePoolSize(getMaxConcurrentThreads());
+		return executor;
 	}
 
+	public void setMaxConcurrentThreads(int maxThreads) {
+		if(maxThreads < 1)
+			maxThreads = 0;
+
+		this.maxConcurrentThreads = maxThreads;
+	}
+	public int getMaxConcurrentThreads() {
+		return maxConcurrentThreads;
+	}
 }
