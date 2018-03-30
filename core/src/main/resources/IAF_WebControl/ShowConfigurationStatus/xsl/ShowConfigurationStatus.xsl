@@ -595,6 +595,11 @@
 									<xsl:call-template name="runStateImage">
 										<xsl:with-param name="state" select="@state" />
 									</xsl:call-template>
+									<xsl:if test="@isRestListener='true' and not(@isAvailable='true')">
+										<booleanImage>
+											<xsl:attribute name="value" select="@isAvailable" />
+										</booleanImage>
+									</xsl:if>
 								</td>
 								<td colspan="2" class="receiverRow">
 									<xsl:value-of select="@name" />

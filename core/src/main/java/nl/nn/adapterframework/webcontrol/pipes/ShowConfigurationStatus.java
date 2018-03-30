@@ -42,6 +42,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.http.RestListener;
+import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.jms.JmsListenerBase;
 import nl.nn.adapterframework.jms.JmsMessageBrowser;
@@ -527,6 +528,11 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 						RestListener rl = (RestListener) listener;
 						receiverXML.addAttribute("restUriPattern", rl.getRestUriPattern());
 						receiverXML.addAttribute("isView", (rl.isView() == null ? false : rl.isView()));
+						String matchingPattern = RestServiceDispatcher
+								.getInstance()
+								.findMatchingPattern("/" + rl.getUriPattern());
+						receiverXML.addAttribute("isAvailable",
+								(matchingPattern == null ? false : true));
 					}
 					if (showConfigurationStatusManager.count) {
 						if (listener instanceof JmsListenerBase) {
