@@ -43,6 +43,7 @@ Upcoming
 - Add CMIS bridge functionality (CmisListener) and the option to remap properties on getObject requests. A bridged cmisListener has to be configured to route traffic!
 - Replace struts page "Show configuration" by rest service
 - Add concurrency limit to parallel senders
+- Encode file path parameter in FileViewerServlet
 
 
 

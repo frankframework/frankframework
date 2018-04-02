@@ -43,22 +43,22 @@
 			<td>
 				<xtags:choose>
 					<xtags:when test="@directory='true'">
-						<a href="showLogging.do?directory=<%=canonicalName%>">directory</a>
+						<a href="showLogging.do?directory=<%=java.net.URLEncoder.encode(canonicalName)%>">directory</a>
 					</xtags:when>
 					<xtags:otherwise>
 						<% if (canonicalName.indexOf("_xml.log")!=-1) { %>
-							<a href="FileViewerServlet?resultType=xml&amp;fileName=<%=canonicalName%>">xml</a>
-							<a href="FileViewerServlet?resultType=bin&amp;fileName=<%=canonicalName%>">bin</a>
-							<a href="FileViewerServlet?resultType=html&amp;fileName=<%=canonicalName%>&amp;log4j=true">2html</a>
-							<a href="FileViewerServlet?resultType=text&amp;fileName=<%=canonicalName%>&amp;log4j=true">2text</a>
+							<a href="FileViewerServlet?resultType=xml&amp;fileName=<%=java.net.URLEncoder.encode(canonicalName)%>">xml</a>
+							<a href="FileViewerServlet?resultType=bin&amp;fileName=<%=java.net.URLEncoder.encode(canonicalName)%>">bin</a>
+							<a href="FileViewerServlet?resultType=html&amp;fileName=<%=java.net.URLEncoder.encode(canonicalName)%>&amp;log4j=true">2html</a>
+							<a href="FileViewerServlet?resultType=text&amp;fileName=<%=java.net.URLEncoder.encode(canonicalName)%>&amp;log4j=true">2text</a>
 						<% } else { %>
 						<% if (canonicalName.indexOf("-stats_")!=-1) { %>
-							<a href="FileViewerServlet?resultType=xml&amp;fileName=<%=canonicalName%>">xml</a>
-							<a href="FileViewerServlet?resultType=bin&amp;fileName=<%=canonicalName%>">bin</a>
-							<a href="FileViewerServlet?resultType=html&amp;fileName=<%=canonicalName%>&amp;stats=true">2html</a>
+							<a href="FileViewerServlet?resultType=xml&amp;fileName=<%=java.net.URLEncoder.encode(canonicalName)%>">xml</a>
+							<a href="FileViewerServlet?resultType=bin&amp;fileName=<%=java.net.URLEncoder.encode(canonicalName)%>">bin</a>
+							<a href="FileViewerServlet?resultType=html&amp;fileName=<%=java.net.URLEncoder.encode(canonicalName)%>&amp;stats=true">2html</a>
 						<% } else { %>
-							<a href="FileViewerServlet?resultType=html&amp;fileName=<%=canonicalName%>">html</a>
-							<a href="FileViewerServlet?resultType=bin&amp;fileName=<%=canonicalName%>">bin</a>
+							<a href="FileViewerServlet?resultType=html&amp;fileName=<%=java.net.URLEncoder.encode(canonicalName)%>">html</a>
+							<a href="FileViewerServlet?resultType=bin&amp;fileName=<%=java.net.URLEncoder.encode(canonicalName)%>">bin</a>
 						<% }} %>
 					</xtags:otherwise>
 				</xtags:choose>
