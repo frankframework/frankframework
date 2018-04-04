@@ -120,6 +120,8 @@ public class ClassUtils {
 	 * @return URL of the resource or null if it can't be not found
 	 */
 	static public URL getResourceURL(ClassLoader classLoader, String resource, String allowedProtocols) {
+		if(classLoader == null)
+			classLoader = ClassUtils.class.getClassLoader();
 
 		// Remove slash like Class.getResource(String name) is doing before
 		// delegation to ClassLoader

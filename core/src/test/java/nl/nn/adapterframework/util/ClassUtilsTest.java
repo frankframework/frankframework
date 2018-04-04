@@ -121,4 +121,24 @@ public class ClassUtilsTest {
 
 		assertNotNull(url);
 	}
+
+	@Test
+	public void getResourceURLnullClassLoader1() throws URISyntaxException, IOException {
+		URL url = ClassUtils.getResourceURL(null, fileName);
+		assertEquals(fileContent, Misc.streamToString(url.openStream()).trim());
+	}
+
+	@Test
+	public void getResourceURLnullClassLoaderNonExistingFile() throws URISyntaxException, IOException {
+		URL url = ClassUtils.getResourceURL(null, "apple.pie.with.raisins");
+
+		assertNull(url);
+	}
+
+	@Test
+	public void getResourceURLnullClassLoaderWithExternalFile() throws URISyntaxException, IOException {
+		URL url = ClassUtils.getResourceURL(null, "file://potato.ext", "file");
+
+		assertEquals("", url.getFile()); //returns an empty string if one does not exist
+	}
 }
