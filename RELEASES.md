@@ -44,6 +44,7 @@ Upcoming
 - Replace struts page "Show configuration" by rest service
 - Add concurrency limit to parallel senders
 - Encode file path parameter in FileViewerServlet
+- Fix getResourceURL not being able to fetch files from places other then the classpath. This has now been disabled by default, but can be enabled with the property: classloader.allowed.protocols followed by the protocol(s) you wish to enable (file,http,ftp)
 
 
 
