@@ -31,17 +31,23 @@ import org.apache.chemistry.opencmis.commons.data.ObjectData;
 import org.apache.chemistry.opencmis.commons.data.Properties;
 import org.apache.chemistry.opencmis.commons.data.RenditionData;
 import org.apache.chemistry.opencmis.commons.enums.Action;
+import org.apache.chemistry.opencmis.commons.enums.Cardinality;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
+import org.apache.chemistry.opencmis.commons.enums.PropertyType;
 import org.apache.chemistry.opencmis.commons.enums.UnfileObject;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.AllowableActionsImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ObjectDataImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PolicyIdListImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertiesImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyBooleanDefinitionImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyBooleanImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyDateTimeDefinitionImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyDateTimeImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIdImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerDefinitionImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyStringDefinitionImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyStringImpl;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
 import org.apache.chemistry.opencmis.commons.spi.ObjectService;
@@ -123,21 +129,58 @@ public class ObjectServiceImpl implements ObjectService {
 		Iterator<Node> propertyIterator = XmlUtils.getChildTags(propertiesElement, "property").iterator();
 		while (propertyIterator.hasNext()) {
 			Element propertyElement = (Element) propertyIterator.next();
-			String property = XmlUtils.getStringValue(propertyElement);
+			String propertyValue = XmlUtils.getStringValue(propertyElement);
 			String nameAttr = propertyElement.getAttribute("name");
 			String typeAttr = propertyElement.getAttribute("type");
+			boolean isNull = Boolean.parseBoolean(propertyElement.getAttribute("isNull"));
+			if(isNull)
+				propertyValue = null;
+
 			if (StringUtils.isEmpty(typeAttr) || typeAttr.equalsIgnoreCase("string")) {
+				PropertyStringDefinitionImpl propertyDefinition = new PropertyStringDefinitionImpl();
+				propertyDefinition.setId(nameAttr);
+				propertyDefinition.setDisplayName(nameAttr);
+				propertyDefinition.setLocalName(nameAttr);
+				propertyDefinition.setQueryName(nameAttr);
+				propertyDefinition.setCardinality(Cardinality.SINGLE);
+
 				if(nameAttr.startsWith("cmis:")) {
-					properties.addProperty(new PropertyIdImpl(nameAttr, property));
+					propertyDefinition.setPropertyType(PropertyType.ID);
+					properties.addProperty(new PropertyIdImpl(propertyDefinition, propertyValue));
 				}
 				else {
-					properties.addProperty(new PropertyStringImpl(nameAttr, property));
+					propertyDefinition.setPropertyType(PropertyType.STRING);
+					properties.addProperty(new PropertyStringImpl(propertyDefinition, propertyValue));
 				}
 			} else if (typeAttr.equalsIgnoreCase("integer")) {
-				properties.addProperty(new PropertyIntegerImpl(nameAttr, new BigInteger(property)));
+
+				PropertyIntegerDefinitionImpl propertyDefinition = new PropertyIntegerDefinitionImpl();
+				propertyDefinition.setId(nameAttr);
+				propertyDefinition.setDisplayName(nameAttr);
+				propertyDefinition.setLocalName(nameAttr);
+				propertyDefinition.setQueryName(nameAttr);
+				propertyDefinition.setCardinality(Cardinality.SINGLE);
+
+				properties.addProperty(new PropertyIntegerImpl(propertyDefinition, new BigInteger(propertyValue)));
 			} else if (typeAttr.equalsIgnoreCase("boolean")) {
-				properties.addProperty(new PropertyBooleanImpl(nameAttr, Boolean.parseBoolean(property)));
+
+				PropertyBooleanDefinitionImpl propertyDefinition = new PropertyBooleanDefinitionImpl();
+				propertyDefinition.setId(nameAttr);
+				propertyDefinition.setDisplayName(nameAttr);
+				propertyDefinition.setLocalName(nameAttr);
+				propertyDefinition.setQueryName(nameAttr);
+				propertyDefinition.setCardinality(Cardinality.SINGLE);
+
+				properties.addProperty(new PropertyBooleanImpl(propertyDefinition, Boolean.parseBoolean(propertyValue)));
 			} else if (typeAttr.equalsIgnoreCase("datetime")) {
+
+				PropertyDateTimeDefinitionImpl propertyDefinition = new PropertyDateTimeDefinitionImpl();
+				propertyDefinition.setId(nameAttr);
+				propertyDefinition.setDisplayName(nameAttr);
+				propertyDefinition.setLocalName(nameAttr);
+				propertyDefinition.setQueryName(nameAttr);
+				propertyDefinition.setCardinality(Cardinality.SINGLE);
+
 				String formatStringAttr = propertyElement.getAttribute("formatString");
 				if (StringUtils.isEmpty(formatStringAttr)) {
 					formatStringAttr = CmisSender.FORMATSTRING_BY_DEFAULT;
@@ -145,17 +188,18 @@ public class ObjectServiceImpl implements ObjectService {
 				DateFormat df = new SimpleDateFormat(formatStringAttr);
 				Date date;
 				try {
-					date = df.parse(property);
+					date = df.parse(propertyValue);
 				} catch (ParseException e) {
-					throw new SenderException("exception parsing date [" + property + "] using formatString [" + formatStringAttr + "]", e);
+					throw new SenderException("exception parsing date [" + propertyValue + "] using formatString [" + formatStringAttr + "]", e);
 				}
 				GregorianCalendar gregorian = new GregorianCalendar();
 				gregorian.setTime(date);
-				properties.addProperty(new PropertyDateTimeImpl(nameAttr, gregorian));
+
+				properties.addProperty(new PropertyDateTimeImpl(propertyDefinition, gregorian));
 			} else {
-				log.warn("unparsable type [" + typeAttr + "] for property ["+property+"]");
+				log.warn("unparsable type [" + typeAttr + "] for property ["+propertyValue+"]");
 			}
-			log.debug("set property name [" + nameAttr + "] value [" + property + "]");
+			log.debug("set property name [" + nameAttr + "] value [" + propertyValue + "]");
 		}
 
 		return properties;
