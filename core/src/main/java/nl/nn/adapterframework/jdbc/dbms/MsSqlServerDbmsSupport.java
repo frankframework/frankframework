@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -133,5 +134,59 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 
 	public String getIbisStoreSummaryQuery() {
 		return "select type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120) msgdate, count(*) msgcount from ibisstore group by slotid, type, CONVERT(VARCHAR(10), MESSAGEDATE, 120) order by type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120)";
+	}
+
+	@Override
+	public boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName) {
+		String query="select * from sys.indexes where name = '"+indexName+"' and object_id = object_id('"+tableName+"')";
+		try {
+			return JdbcUtil.executeIntQuery(conn, query)>=1;
+		} catch (Exception e) {
+			log.warn("could not determine presence of identity on table ["+tableName+"]",e);
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isSequencePresent(Connection conn, String schemaOwner, String tableName, String sequenceName) {
+		String query="select objectproperty(object_id('"+tableName+"'), 'TableHasIdentity')";
+		try {
+			return JdbcUtil.executeIntQuery(conn, query)>=1;
+		} catch (Exception e) {
+			log.warn("could not determine presence of identity on table ["+tableName+"]",e);
+			return false;
+		}
+	}
+
+	@Override
+	public boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) {
+		String query="select count(*) from sys.index_columns where object_id = object_id('"+tableName+"') and col_name(object_id, column_id)=?";
+		try {
+			return JdbcUtil.executeIntQuery(conn, query, columnName)>=1;
+		} catch (Exception e) {
+			log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] using query ["+query+"]",e);
+			return false;
+		}
+	}
+
+	@Override
+	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
+		StringBuilder query= new StringBuilder("select count(*) from sys.indexes si");
+		for (int i=1;i<=columns.size();i++) {
+			query.append(", sys.index_columns sic"+i);
+		}
+		query.append(" where si.object_id = object_id('"+tableName+"')");
+		for (int i=1;i<=columns.size();i++) {
+			query.append(" and si.object_id=sic"+i+".object_id");
+			query.append(" and si.index_id=sic"+i+".index_id");
+			query.append(" and col_name(sic"+i+".object_id, sic"+i+".column_id)='"+(String)columns.get(i-1)+"'");
+			query.append(" and sic"+i+".index_column_id="+i);
+		}
+		try {
+			return JdbcUtil.executeIntQuery(conn, query.toString())>=1;
+		} catch (Exception e) {
+			log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
+			return false;
+		}
 	}
 }

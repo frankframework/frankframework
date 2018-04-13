@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -95,16 +95,16 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		Connection conn = null;
 		try {
 			conn = qs.getConnection();
-			if (!JdbcUtil.columnExists(conn, tableName, "*")) {
+			if (!qs.getDbmsSupport().isColumnPresent(conn, tableName, "*")) {
 				throw new ConfigurationException("The table [" + tableName + "] doesn't exist");
 			}
-			if (!JdbcUtil.columnExists(conn, tableName, labelField)) {
+			if (!qs.getDbmsSupport().isColumnPresent(conn, tableName, labelField)) {
 				throw new ConfigurationException("The column [" + labelField + "] doesn't exist");
 			}
-			if (!JdbcUtil.columnExists(conn, tableName, valueInField)) {
+			if (!qs.getDbmsSupport().isColumnPresent(conn, tableName, valueInField)) {
 				throw new ConfigurationException("The column [" + valueInField + "] doesn't exist");
 			}
-			if (!JdbcUtil.columnExists(conn, tableName, valueOutField)) {
+			if (!qs.getDbmsSupport().isColumnPresent(conn, tableName, valueOutField)) {
 				throw new ConfigurationException("The column [" + valueOutField + "] doesn't exist");
 			}
 			query = "SELECT " + valueOutField + " FROM " + tableName + 

@@ -29,7 +29,6 @@ import java.io.Writer;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -38,7 +37,6 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.Properties;
 import java.util.zip.DataFormatException;
 import java.util.zip.DeflaterOutputStream;
@@ -51,7 +49,6 @@ import javax.jms.TextMessage;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
-import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 
@@ -67,219 +64,9 @@ import org.apache.log4j.Logger;
 public class JdbcUtil {
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 
-	private static final boolean useMetaDataForTableExists=false;
-
 	private static final String DATEFORMAT = AppConstants.getInstance().getString("jdbc.dateFormat", "yyyy-MM-dd");
 	private static final String TIMESTAMPFORMAT = AppConstants.getInstance().getString("jdbc.timestampFormat", "yyyy-MM-dd HH:mm:ss");
 	private static Properties jdbcProperties = null;
-	
-	/**
-	 * @return true if tableName exists in database in this connection
-	 */
-	public static boolean tableExists(Connection conn, String tableName ) throws SQLException {
-		
-		PreparedStatement stmt = null;
-		if (useMetaDataForTableExists) {
-			DatabaseMetaData dbmeta = conn.getMetaData();
-			ResultSet tableset = dbmeta.getTables(null, null, tableName, null);
-			return !tableset.isAfterLast();
-		} 
-		String query=null;
-		try {
-			query="select count(*) from "+tableName;
-			log.debug("create statement to check for existence of ["+tableName+"] using query ["+query+"]");
-			stmt = conn.prepareStatement(query);
-			log.debug("execute statement");
-			ResultSet rs = stmt.executeQuery();
-			log.debug("statement executed");
-			rs.close();
-			return true;
-		} catch (SQLException e) {
-			if (log.isDebugEnabled()) log.debug("exception checking for existence of ["+tableName+"] using query ["+query+"]", e);
-			return false;
-		} finally {
-			if (stmt!=null) {
-				stmt.close();
-			}
-		}
-	}
-	
-	public static boolean columnExists(Connection conn, String tableName, String columnName) throws SQLException {
-		PreparedStatement stmt = null;
-		String query=null;
-		try {
-			query = "SELECT count(" + columnName + ") FROM " + tableName;
-			stmt = conn.prepareStatement(query);
-
-			ResultSet rs = null;
-			try {
-				rs = stmt.executeQuery();
-				return true;
-			} catch (SQLException e) {
-				if (log.isDebugEnabled()) log.debug("exception checking for existence of column ["+columnName+"] in table ["+tableName+"] executing query ["+query+"]", e);
-				return false;
-			} finally {
-				if (rs != null) {
-					rs.close();
-				}
-			}
-		} catch (SQLException e) {
-			log.warn("exception checking for existence of column ["+columnName+"] in table ["+tableName+"] preparing query ["+query+"]", e);
-			return false;
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-			}
-		}
-	}
-
-	public static boolean isIndexPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_indexes where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"'";
-			try {
-				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
-					return true;
-				} 
-				return false;
-			} catch (Exception e) {
-				log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"]",e);
-				return false;
-			}
-		} 
-		log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
-		return true;
-	}
-
-	public static boolean isSequencePresent(Connection conn, int databaseType, String schemaOwner, String sequenceName, String tableName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_sequences where sequence_owner='"+schemaOwner.toUpperCase()+"' and sequence_name='"+sequenceName.toUpperCase()+"'";
-			try {
-				return JdbcUtil.executeIntQuery(conn, query)>=1;
-			} catch (Exception e) {
-				log.warn("could not determine presence of sequence ["+sequenceName+"]",e);
-				return false;
-			}
-		}  else if (databaseType==DbmsSupportFactory.DBMS_MSSQLSERVER) {
-			String query="select objectproperty(object_id('"+tableName+"'), 'TableHasIdentity')";
-			try {
-				return JdbcUtil.executeIntQuery(conn, query)>=1;
-			} catch (Exception e) {
-				log.warn("could not determine presence of identity on table ["+tableName+"]",e);
-				return false;
-			}
-			
-		}
-		log.warn("could not determine presence of sequence ["+sequenceName+"] (not an Oracle or Microsoft SQL Server database)");
-		return true;
-	}
-
-
-	public static boolean isIndexColumnPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName, String columnName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
-			try {
-				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
-					return true;
-				} 
-				return false;
-			} catch (Exception e) {
-				log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
-				return false;
-			}
-		} 
-		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
-		return true;
-	}
-
-	public static int getIndexColumnPosition(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName, String columnName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select column_position from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
-			try {
-				return JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase());
-			} catch (Exception e) {
-				log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
-				return -1;
-			}
-		} 
-		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
-		return -1;
-	}
-
-	public static boolean hasIndexOnColumn(Connection conn, int databaseType, String schemaOwner, String tableName, String columnName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_ind_columns";
-			query+=" where TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and TABLE_NAME='"+tableName.toUpperCase()+"'";
-			query+=" and column_name=?";
-			query+=" and column_position=1";
-			try {
-				return JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1;
-			} catch (Exception e) {
-				log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] using query ["+query+"]",e);
-				return false;
-			}
-		}  else if (databaseType==DbmsSupportFactory.DBMS_MSSQLSERVER) {
-			String query="select count(*) from sys.index_columns where object_id = object_id('"+tableName+"') and col_name(object_id, column_id)=?";
-			try {
-				return JdbcUtil.executeIntQuery(conn, query, columnName)>=1;
-			} catch (Exception e) {
-				log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] using query ["+query+"]",e);
-				return false;
-			}
-			
-		}
-		log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] (not an Oracle or Microsoft SQL Server database)");
-		return true;
-	}
-	public static boolean hasIndexOnColumns(Connection conn, int databaseType, String schemaOwner, String tableName, List columns) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			StringBuilder query= new StringBuilder("select count(*) from all_indexes ai");
-			for (int i=1;i<=columns.size();i++) {
-				query.append(", all_ind_columns aic"+i);
-			}
-			query.append(" where ai.TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and ai.TABLE_NAME='"+tableName.toUpperCase()+"'");
-			for (int i=1;i<=columns.size();i++) {
-				query.append(" and ai.OWNER=aic"+i+".INDEX_OWNER");
-				query.append(" and ai.INDEX_NAME=aic"+i+".INDEX_NAME");
-				query.append(" and aic"+i+".column_name='"+((String)columns.get(i-1)).toUpperCase()+"'");
-				query.append(" and aic"+i+".column_position="+i);
-			}
-			try {
-				return JdbcUtil.executeIntQuery(conn, query.toString())>=1;
-			} catch (Exception e) {
-				log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
-				return false;
-			}
-		}  else if (databaseType==DbmsSupportFactory.DBMS_MSSQLSERVER) {
-			StringBuilder query= new StringBuilder("select count(*) from sys.indexes si");
-			for (int i=1;i<=columns.size();i++) {
-				query.append(", sys.index_columns sic"+i);
-			}
-			query.append(" where si.object_id = object_id('"+tableName+"')");
-			for (int i=1;i<=columns.size();i++) {
-				query.append(" and si.object_id=sic"+i+".object_id");
-				query.append(" and si.index_id=sic"+i+".index_id");
-				query.append(" and col_name(sic"+i+".object_id, sic"+i+".column_id)='"+(String)columns.get(i-1)+"'");
-				query.append(" and sic"+i+".index_column_id="+i);
-			}
-			try {
-				return JdbcUtil.executeIntQuery(conn, query.toString())>=1;
-			} catch (Exception e) {
-				log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
-				return false;
-			}
-		} 
-		log.warn("could not determine presence of index columns on table ["+tableName+"] (not an Oracle or Microsoft SQL Server database)");
-		return true;
-	}
-
-	public static String getSchemaOwner(Connection conn, int databaseType) throws SQLException, JdbcException  {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL";
-			return executeStringQuery(conn, query);
-		} 
-		log.warn("could not determine current schema (not an Oracle database)");
-		return "";
-	}
 
 	public static String warningsToString(SQLWarning warnings) {
 		XmlBuilder warningsElem = warningsToXmlBuilder(warnings);
@@ -295,8 +82,8 @@ public class JdbcUtil {
 			parent.addSubElement(warningsElem);	
 		}
 	}
-				
-	public static XmlBuilder warningsToXmlBuilder(SQLWarning warnings) {	
+
+	public static XmlBuilder warningsToXmlBuilder(SQLWarning warnings) {
 		if (warnings!=null) {
 			XmlBuilder warningsElem = new XmlBuilder("warnings");
 			while (warnings!=null) {
@@ -1171,10 +958,11 @@ public class JdbcUtil {
 				jdbcProperties = new Properties();
 				JdbcFacade ibisProp = new JdbcFacade();
 				ibisProp.setJmsRealm(jmsRealm);
+				
 				Connection conn = null;
 				try {
 					conn = ibisProp.getConnection();
-					if (JdbcUtil.tableExists(conn, "ibisprop")) {
+					if (ibisProp.getDbmsSupport().isTablePresent(conn, "ibisprop")) {
 						String query = "select name, value from ibisprop";
 						jdbcProperties.putAll(executePropertiesQuery(conn, query));
 					}

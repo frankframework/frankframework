@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ public class Locker extends JdbcFacade {
 	public String lock() throws JdbcException, SQLException, InterruptedException {
 		Connection conn = getConnection();
 		try {
-			if (!JdbcUtil.tableExists(conn, "ibisLock")) {
+			if (!getDbmsSupport().isTablePresent(conn, "ibisLock")) {
 				if (isIgnoreTableNotExist()) {
 					log.info("table [ibisLock] does not exist, ignoring lock");
 					return LOCK_IGNORED;

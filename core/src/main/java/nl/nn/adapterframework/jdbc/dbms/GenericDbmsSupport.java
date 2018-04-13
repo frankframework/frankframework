@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import java.io.Writer;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -236,17 +238,71 @@ public class GenericDbmsSupport implements IDbmsSupport {
 			log.warn("could not determine presence of table ["+tableName+"]",e);
 			return false;
 		}
-	} 
-	
-	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
+	}
+
+	private final boolean useMetaDataForTableExists=false;
+	public boolean isTablePresent(Connection conn, String tableName) throws JdbcException {
 		try {
-			return JdbcUtil.tableExists(conn, tableName);
-		} catch (SQLException e) {
+			PreparedStatement stmt = null;
+			if (useMetaDataForTableExists) {
+				DatabaseMetaData dbmeta = conn.getMetaData();
+				ResultSet tableset = dbmeta.getTables(null, null, tableName, null);
+				return !tableset.isAfterLast();
+			} 
+			String query=null;
+			try {
+				query="select count(*) from "+tableName;
+				log.debug("create statement to check for existence of ["+tableName+"] using query ["+query+"]");
+				stmt = conn.prepareStatement(query);
+				log.debug("execute statement");
+				ResultSet rs = stmt.executeQuery();
+				log.debug("statement executed");
+				rs.close();
+				return true;
+			} catch (SQLException e) {
+				if (log.isDebugEnabled()) log.debug("exception checking for existence of ["+tableName+"] using query ["+query+"]", e);
+				return false;
+			} finally {
+				if (stmt!=null) {
+					stmt.close();
+				}
+			}
+		}
+		catch(SQLException e) {
 			throw new JdbcException(e);
 		}
 	}
 
-	public boolean doIsTableColumnPresent(Connection conn, String columnsTable, String schemaColumn, String tableNameColumn, String columnNameColumn, String schemaName, String tableName, String columnName) throws JdbcException {
+	public boolean isColumnPresent(Connection conn, String tableName, String columnName) throws SQLException {
+		PreparedStatement stmt = null;
+		String query=null;
+		try {
+			query = "SELECT count(" + columnName + ") FROM " + tableName;
+			stmt = conn.prepareStatement(query);
+
+			ResultSet rs = null;
+			try {
+				rs = stmt.executeQuery();
+				return true;
+			} catch (SQLException e) {
+				if (log.isDebugEnabled()) log.debug("exception checking for existence of column ["+columnName+"] in table ["+tableName+"] executing query ["+query+"]", e);
+				return false;
+			} finally {
+				if (rs != null) {
+					rs.close();
+				}
+			}
+		} catch (SQLException e) {
+			log.warn("exception checking for existence of column ["+columnName+"] in table ["+tableName+"] preparing query ["+query+"]", e);
+			return false;
+		} finally {
+			if (stmt != null) {
+				stmt.close();
+			}
+		}
+	}
+
+	protected boolean doIsTableColumnPresent(Connection conn, String columnsTable, String schemaColumn, String tableNameColumn, String columnNameColumn, String schemaName, String tableName, String columnName) throws JdbcException {
 		String query="select count(*) from "+columnsTable+" where upper("+tableNameColumn+")=? and upper("+columnNameColumn+")=?";
 		if (StringUtils.isNotEmpty(schemaName)) {
 			if (StringUtils.isNotEmpty(schemaColumn)) {
@@ -267,118 +323,40 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		log.warn("could not determine correct presence of column ["+columnName+"] of table ["+tableName+"], assuming it exists");
 		return true;
 	}
-	
-	
-	public boolean isIndexPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_indexes where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"'";
-			try {
-				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
-					return true;
-				} 
-				return false;
-			} catch (Exception e) {
-				log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"]",e);
-				return false;
-			}
-		} 
-		log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
+
+	public boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName) {
+		log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"]");
 		return true;
 	}
 
-	public boolean isSequencePresent(Connection conn, int databaseType, String schemaOwner, String sequenceName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_sequences where sequence_owner='"+schemaOwner.toUpperCase()+"' and sequence_name='"+sequenceName.toUpperCase()+"'";
-			try {
-				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
-					return true;
-				}  
-				return false;
-			} catch (Exception e) {
-				log.warn("could not determine presence of sequence ["+sequenceName+"]",e);
-				return false;
-			}
-		} 
-		log.warn("could not determine presence of sequence ["+sequenceName+"] (not an Oracle database)");
+	public boolean isSequencePresent(Connection conn, String schemaOwner, String tableName, String sequenceName) {
+		log.warn("could not determine presence of sequence ["+sequenceName+"]");
 		return true;
 	}
 
-
-	public boolean isIndexColumnPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName, String columnName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
-			try {
-				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
-					return true;
-				} 
-				return false;
-			} catch (Exception e) {
-				log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
-				return false;
-			}
-		} 
-		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
+	public boolean isIndexColumnPresent(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
+		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]");
 		return true;
 	}
 
-	public int getIndexColumnPosition(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName, String columnName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select column_position from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
-			try {
-				return JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase());
-			} catch (Exception e) {
-				log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
-				return -1;
-			}
-		} 
-		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
+	public int getIndexColumnPosition(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
+		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]");
 		return -1;
 	}
 
-	public boolean hasIndexOnColumn(Connection conn, int databaseType, String schemaOwner, String tableName, String columnName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_ind_columns";
-			query+=" where TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and TABLE_NAME='"+tableName.toUpperCase()+"'";
-			query+=" and column_name=?";
-			query+=" and column_position=1";
-			try {
-				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
-					return true;
-				} 
-				return false;
-			} catch (Exception e) {
-				log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] using query ["+query+"]",e);
-				return false;
-			}
-		}
-		log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] (not an Oracle database)");
+	public boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) {
+		log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"]");
 		return true;
 	}
-	public boolean hasIndexOnColumns(Connection conn, int databaseType, String schemaOwner, String tableName, List columns) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_indexes ai";
-			for (int i=1;i<=columns.size();i++) {
-				query+=", all_ind_columns aic"+i;
-			}
-			query+=" where ai.TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and ai.TABLE_NAME='"+tableName.toUpperCase()+"'";
-			for (int i=1;i<=columns.size();i++) {
-				query+=" and ai.OWNER=aic"+i+".INDEX_OWNER";
-				query+=" and ai.INDEX_NAME=aic"+i+".INDEX_NAME";
-				query+=" and aic"+i+".column_name='"+((String)columns.get(i-1)).toUpperCase()+"'";
-				query+=" and aic"+i+".column_position="+i;
-			}
-			try {
-				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
-					return true;
-				} 
-				return false;
-			} catch (Exception e) {
-				log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
-				return false;
-			}
-		} 
-		log.warn("could not determine presence of index columns on table ["+tableName+"] (not an Oracle database)");
+
+	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
+		log.warn("could not determine presence of index columns on table ["+tableName+"]");
 		return true;
+	}
+
+	public String getSchemaOwner(Connection conn) throws SQLException, JdbcException {
+		log.warn("could not determine current schema");
+		return "";
 	}
 
 	public boolean isUniqueConstraintViolation(SQLException e) {

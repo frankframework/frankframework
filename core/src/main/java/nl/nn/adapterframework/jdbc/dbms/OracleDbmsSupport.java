@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.jdbc.dbms;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -178,5 +179,99 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 
 	public String getBooleanValue(boolean value) {
 		return (value) ? "1" : "0";
+	}
+
+	@Override
+	public boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName) {
+		String query="select count(*) from all_indexes where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"'";
+		try {
+			if (JdbcUtil.executeIntQuery(conn, query)>=1) {
+				return true;
+			} 
+			return false;
+		} catch (Exception e) {
+			log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"]",e);
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isSequencePresent(Connection conn, String schemaOwner, String tableName, String sequenceName) {
+		String query="select count(*) from all_sequences where sequence_owner='"+schemaOwner.toUpperCase()+"' and sequence_name='"+sequenceName.toUpperCase()+"'";
+		try {
+			if (JdbcUtil.executeIntQuery(conn, query)>=1) {
+				return true;
+			}  
+			return false;
+		} catch (Exception e) {
+			log.warn("could not determine presence of sequence ["+sequenceName+"]",e);
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isIndexColumnPresent(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
+		String query="select count(*) from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
+		try {
+			if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
+				return true;
+			} 
+			return false;
+		} catch (Exception e) {
+			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
+			return false;
+		}
+	}
+
+	@Override
+	public int getIndexColumnPosition(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
+		String query="select column_position from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
+		try {
+			return JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase());
+		} catch (Exception e) {
+			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
+			return -1;
+		}
+	}
+
+	@Override
+	public boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) {
+		String query="select count(*) from all_ind_columns";
+		query+=" where TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and TABLE_NAME='"+tableName.toUpperCase()+"'";
+		query+=" and column_name=?";
+		query+=" and column_position=1";
+		try {
+			return JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1;
+		} catch (Exception e) {
+			log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] using query ["+query+"]",e);
+			return false;
+		}
+	}
+
+	@Override
+	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
+		StringBuilder query= new StringBuilder("select count(*) from all_indexes ai");
+		for (int i=1;i<=columns.size();i++) {
+			query.append(", all_ind_columns aic"+i);
+		}
+		query.append(" where ai.TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and ai.TABLE_NAME='"+tableName.toUpperCase()+"'");
+		for (int i=1;i<=columns.size();i++) {
+			query.append(" and ai.OWNER=aic"+i+".INDEX_OWNER");
+			query.append(" and ai.INDEX_NAME=aic"+i+".INDEX_NAME");
+			query.append(" and aic"+i+".column_name='"+((String)columns.get(i-1)).toUpperCase()+"'");
+			query.append(" and aic"+i+".column_position="+i);
+		}
+		try {
+			return JdbcUtil.executeIntQuery(conn, query.toString())>=1;
+		} catch (Exception e) {
+			log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
+			return false;
+		}
+	}
+
+	@Override
+	public String getSchemaOwner(Connection conn) throws SQLException, JdbcException {
+		String query="SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL";
+		return JdbcUtil.executeStringQuery(conn, query);
 	}
 }
