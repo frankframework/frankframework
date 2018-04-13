@@ -48,6 +48,7 @@ Upcoming
 - Add console warning when security constraints (in web.xml file) are disabled. Suppress warnings by setting security.constraint.warning to false
 - Fix CmisListener not being able to process multivalue properties
 - Refactor all DbmsSupport classes
+- Change webdav library to provided scope as it is incompatible with java 6
 
 
 
