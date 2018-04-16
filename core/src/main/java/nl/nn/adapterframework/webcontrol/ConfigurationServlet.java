@@ -90,7 +90,7 @@ public class ConfigurationServlet extends HttpServlet {
 						ConfigurationWarnings.getInstance().add(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
 				}
 			} catch (Exception e) {
-				log.warn("unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
+				ConfigurationWarnings.getInstance().add(log, "unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
 			}
 		}
 	}
