@@ -50,6 +50,9 @@ Upcoming
 - Refactor all DbmsSupport classes
 - Change webdav library to provided scope as it is incompatible with java 6
 - Fix httpclient3 errors in IAF submodules
+- Fix NPE in httpSender when retrieving result without content
+- Remove unused Struts (validation) files
+- Replace webdav library with custom implementation
 
 
 
