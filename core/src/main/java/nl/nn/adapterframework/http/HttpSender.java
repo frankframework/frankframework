@@ -66,8 +66,6 @@ import org.apache.http.entity.mime.MIME;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.jackrabbit.webdav.client.methods.HttpReport;
-import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -299,15 +297,16 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 				HttpHead method = new HttpHead(path.toString());
 				return method;
 			}
+
 			if (getMethodType().equals("REPORT")) {
 				Element element = XmlUtils.buildElement(message, true);
-				ReportInfo reportInfo = new ReportInfo(element, 0);
-				HttpReport method = new HttpReport(path.toString(), reportInfo);
+				HttpReport method = new HttpReport(path.toString(), element);
 				if (StringUtils.isNotEmpty(getContentType())) {
 					method.setHeader("Content-Type", getContentType());
 				}
 				return method;
 			}
+
 			throw new SenderException("unknown methodtype ["+getMethodType()+"], must be either GET, PUT, POST, DELETE, HEAD or REPORT");
 		} catch (Exception e) {
 			//Catch all exceptions and throw them as SenderException
