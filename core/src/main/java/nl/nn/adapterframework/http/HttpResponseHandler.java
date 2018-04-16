@@ -41,8 +41,10 @@ public class HttpResponseHandler {
 
 	public HttpResponseHandler(HttpResponse resp) throws IllegalStateException, IOException {
 		httpResponse = resp;
-		httpEntity = httpResponse.getEntity();
-		content = httpEntity.getContent();
+		if(httpResponse.getEntity() != null) {
+			httpEntity = httpResponse.getEntity();
+			content = httpEntity.getContent();
+		}
 	}
 
 	public StatusLine getStatusLine() {
