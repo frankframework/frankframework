@@ -431,7 +431,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 
 		CmisObject object = null;
 		try {
-			object = session.getObject(session.createObjectId(message));
+			object = getCmisObject(message);
 		} catch (CmisObjectNotFoundException e) {
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message
@@ -714,9 +714,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		return cmisXml.toXML();
 	}
 
-	private String sendMessageForActionFetch(String correlationID,
-			String message, ParameterResolutionContext prc)
-			throws SenderException, TimeOutException {
+	private CmisObject getCmisObject(String message) throws SenderException, CmisObjectNotFoundException {
 		Element queryElement = null;
 		try {
 			if (XmlUtils.isWellFormed(message, "cmis")) {
@@ -729,6 +727,9 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		}
 
 		String objectIdstr = XmlUtils.getChildTagAsString(queryElement, "objectId");
+		if(objectIdstr == null)
+			objectIdstr = XmlUtils.getChildTagAsString(queryElement, "id");
+
 		String filter = XmlUtils.getChildTagAsString(queryElement, "filter");
 		boolean includeAllowableActions = XmlUtils.getChildTagAsBoolean(queryElement, "includeAllowableActions");
 		boolean includePolicies = XmlUtils.getChildTagAsBoolean(queryElement, "includePolicies");
@@ -742,9 +743,16 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		operationContext.setIncludePolicies(includePolicies);
 		operationContext.setIncludeAcls(includeAcl);
 
+		return session.getObject(session.createObjectId(objectIdstr), operationContext);
+	}
+
+	private String sendMessageForActionFetch(String correlationID,
+			String message, ParameterResolutionContext prc)
+			throws SenderException, TimeOutException {
+
 		CmisObject object = null;
 		try {
-			object = session.getObject(session.createObjectId(objectIdstr), operationContext);
+			object = getCmisObject(message);
 		} catch (CmisObjectNotFoundException e) {
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
