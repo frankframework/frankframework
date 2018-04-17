@@ -25,7 +25,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -77,6 +76,7 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundExcept
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * Sender to obtain information from and write to a CMIS application.
@@ -483,9 +483,8 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 
 				XmlBuilder cmisXml = new XmlBuilder("cmis");
 				XmlBuilder propertiesXml = new XmlBuilder("properties");
-				for (Iterator it = document.getProperties().iterator(); it
-						.hasNext();) {
-					Property property = (Property) it.next();
+				for (Iterator<Property<?>> it = document.getProperties().iterator(); it.hasNext();) {
+					Property<?> property = (Property<?>) it.next();
 					propertiesXml.addSubElement(getPropertyXml(property));
 				}
 				cmisXml.addSubElement(propertiesXml);
@@ -499,11 +498,12 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		}
 	}
 
-	private XmlBuilder getPropertyXml(PropertyData property) {
+	private XmlBuilder getPropertyXml(PropertyData<?> property) {
 		XmlBuilder propertyXml = new XmlBuilder("property");
 		String name = property.getId();
 		propertyXml.addAttribute("name", name);
 		Object value = property.getFirstValue();
+
 		if (value == null) {
 			propertyXml.addAttribute("isNull", "true");
 		}
@@ -551,7 +551,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		}
 
 		String mediaType;
-		Map props = new HashMap();
+		Map<String, Object> props = new HashMap<String, Object>();
 		Element cmisElement;
 		try {
 			if (XmlUtils.isWellFormed(message, "cmis")) {
@@ -616,23 +616,24 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		}
 	}
 
-	private void processProperties(Element propertiesElement, Map props)
-			throws SenderException {
-		Collection properties = XmlUtils.getChildTags(propertiesElement,
-				"property");
-		Iterator iter = properties.iterator();
+	private void processProperties(Element propertiesElement, Map<String, Object> props) throws SenderException {
+		Iterator<Node> iter = XmlUtils.getChildTags(propertiesElement, "property").iterator();
+
 		while (iter.hasNext()) {
 			Element propertyElement = (Element) iter.next();
 			String property = XmlUtils.getStringValue(propertyElement);
 			if (StringUtils.isNotEmpty(property)) {
 				String nameAttr = propertyElement.getAttribute("name");
 				String typeAttr = propertyElement.getAttribute("type");
-				if (StringUtils.isEmpty(typeAttr)
-						|| typeAttr.equalsIgnoreCase("string")) {
+
+				if (StringUtils.isEmpty(typeAttr) || typeAttr.equalsIgnoreCase("string")) {
 					props.put(nameAttr, property);
+				} else if (typeAttr.equalsIgnoreCase("integer")) {
+					props.put(nameAttr, new BigInteger(property));
+				} else if (typeAttr.equalsIgnoreCase("boolean")) {
+					props.put(nameAttr, Boolean.parseBoolean(property));
 				} else if (typeAttr.equalsIgnoreCase("datetime")) {
-					String formatStringAttr = propertyElement
-							.getAttribute("formatString");
+					String formatStringAttr = propertyElement.getAttribute("formatString");
 					if (StringUtils.isEmpty(formatStringAttr)) {
 						formatStringAttr = FORMATSTRING_BY_DEFAULT;
 					}
@@ -756,8 +757,8 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		XmlBuilder cmisXml = new XmlBuilder("cmis");
 
 		XmlBuilder propertiesXml = new XmlBuilder("properties");
-		for (Iterator it = object.getProperties().iterator(); it.hasNext();) {
-			Property property = (Property) it.next();
+		for (Iterator<Property<?>> it = object.getProperties().iterator(); it.hasNext();) {
+			Property<?> property = (Property<?>) it.next();
 			propertiesXml.addSubElement(getPropertyXml(property));
 		}
 		cmisXml.addSubElement(propertiesXml);
@@ -805,7 +806,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			String message, ParameterResolutionContext prc)
 			throws SenderException, TimeOutException {
 		String objectId = null;
-		Map props = new HashMap();
+		Map<String, Object> props = new HashMap<String, Object>();
 		Element cmisElement;
 		try {
 			if (XmlUtils.isWellFormed(message, "cmis")) {

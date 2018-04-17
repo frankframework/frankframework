@@ -53,6 +53,7 @@ Upcoming
 - Fix NPE in httpSender when retrieving result without content
 - Remove unused Struts (validation) files
 - Replace webdav library with custom implementation
+- Add boolean support for CmisSender create/update actions
 
 
 
