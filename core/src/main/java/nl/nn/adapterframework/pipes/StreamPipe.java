@@ -71,6 +71,7 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>httpRequest</td><td>an HttpServletRequest object to stream from. Each part is put in a session key and the result of this pipe is a xml with info about these parts and the name of the session key</td></tr>
  * <tr><td>contentType</td><td>the Content-Type header to set in case httpResponse was specified</td></tr>
  * <tr><td>contentDisposition</td><td>the Content-Disposition header to set in case httpResponse was specified</td></tr>
+ * <tr><td>redirectLocation</td><td>the redirect location to set in case httpResponse was specified</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
