@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016-2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -147,6 +147,7 @@ public class StreamPipe extends FixedForwardPipe {
 		HttpServletResponse httpResponse = null;
 		String contentType = null;
 		String contentDisposition = null;
+		String redirectLocation = null;
 		if (parameters != null) {
 			if (parameters.get("inputStream") != null) {
 				inputStream = (InputStream) parameters.get("inputStream");
@@ -169,6 +170,10 @@ public class StreamPipe extends FixedForwardPipe {
 				contentDisposition = (String) parameters
 						.get("contentDisposition");
 			}
+			if (parameters.get("redirectLocation") != null) {
+				redirectLocation = (String) parameters
+						.get("redirectLocation");
+			}
 		}
 		if (inputStream == null && input instanceof InputStream) {
 			inputStream = (InputStream) input;
@@ -177,7 +182,7 @@ public class StreamPipe extends FixedForwardPipe {
 			if (httpResponse != null) {
 				HttpSender.streamResponseBody(inputStream, contentType,
 						contentDisposition, httpResponse, log,
-						getLogPrefix(session));
+						getLogPrefix(session), redirectLocation);
 			} else if (httpRequest != null) {
 				StringBuilder partsString = new StringBuilder("<parts>");
 				String firstStringPart = null;
