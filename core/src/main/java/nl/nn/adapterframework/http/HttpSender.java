@@ -611,16 +611,27 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	public static void streamResponseBody(InputStream is, String contentType,
 			String contentDisposition, HttpServletResponse response,
 			Logger log, String logPrefix) throws IOException {
+		streamResponseBody(is, contentType, contentDisposition, response, log, logPrefix, null);
+	}
+
+	public static void streamResponseBody(InputStream is, String contentType,
+			String contentDisposition, HttpServletResponse response,
+			Logger log, String logPrefix, String redirectLocation) throws IOException {
 		if (StringUtils.isNotEmpty(contentType)) {
 			response.setHeader("Content-Type", contentType); 
 		}
 		if (StringUtils.isNotEmpty(contentDisposition)) {
 			response.setHeader("Content-Disposition", contentDisposition); 
 		}
-		OutputStream outputStream = response.getOutputStream();
-		Misc.streamToStream(is, outputStream);
-		outputStream.close();
-		log.debug(logPrefix + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
+		if (StringUtils.isNotEmpty(redirectLocation)) {
+			response.sendRedirect(redirectLocation);
+		}
+		if (is != null) {
+			OutputStream outputStream = response.getOutputStream();
+			Misc.streamToStream(is, outputStream);
+			outputStream.close();
+			log.debug(logPrefix + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
+		}
 	}
 
 
