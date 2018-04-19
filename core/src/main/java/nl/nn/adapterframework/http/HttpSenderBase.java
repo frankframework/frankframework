@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerConfigurationException;
@@ -66,6 +67,12 @@ import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
@@ -219,6 +226,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	private int maxConnections = 10;
 	private int maxExecuteRetries = 1;
 	private PoolingHttpClientConnectionManager connectionManager;
+	private SSLConnectionSocketFactory sslSocketFactory = null;
 	protected HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 	protected HttpClientContext httpClientContext = HttpClientContext.create();
 	protected HttpHost httpTarget;
@@ -250,7 +258,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	private String trustManagerAlgorithm=null;
 	private boolean allowSelfSignedCertificates = false;
 	private boolean verifyHostname=true;
-	private boolean jdk13Compatibility=false;
 	private boolean ignoreCertificateExpiredException=false;
 
 	private String inputMessageParam=null;
@@ -361,32 +368,23 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 			}
 
 			if (certificateUrl != null || truststoreUrl != null || allowSelfSignedCertificates) {
-				AuthSSLProtocolSocketFactoryBase socketfactory;
 				try {
 					CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
 					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
 
-					if (isJdk13Compatibility()) {
-						socketfactory = new AuthSSLProtocolSocketFactoryForJsse10x(
+					SSLContext sslContext = AuthSSLConnectionSocket.createSSLContext(
 							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
-							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(),
-							isAllowSelfSignedCertificates(), isVerifyHostname(), isIgnoreCertificateExpiredException());
-					} else {
-						socketfactory = new AuthSSLProtocolSocketFactory(
-							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
-							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(),
-							isAllowSelfSignedCertificates(), isVerifyHostname(), isIgnoreCertificateExpiredException());
-					}
+							truststoreUrl, truststoreCf.getPassword(), getTruststoreType(), getTrustManagerAlgorithm(),
+							isAllowSelfSignedCertificates(), isVerifyHostname(), isIgnoreCertificateExpiredException(), getProtocol());
 
-					if (StringUtils.isNotEmpty(getProtocol())) {
-						socketfactory.setProtocol(getProtocol());
-					}
+					HostnameVerifier hostnameVerifier = new DefaultHostnameVerifier();
+					if(!isVerifyHostname())
+						hostnameVerifier = new NoopHostnameVerifier();
 
-					socketfactory.initSSLContext();
-
-					SSLContext sslContext = (SSLContext) socketfactory.sslContext;
-					SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext);
-					httpClientBuilder.setSSLSocketFactory(socketFactory);
+					sslSocketFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
+					// This method will be overwritten by the connectionManager when connectionPooling is enabled!
+					httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
+					log.debug(getLogPrefix()+"created custom SSLConnectionSocketFactory");
 
 				} catch (Throwable t) {
 					throw new ConfigurationException(getLogPrefix()+"cannot create or initialize SocketFactory",t);
@@ -454,7 +452,21 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	}
 
 	public void open() throws SenderException {
-		connectionManager = new PoolingHttpClientConnectionManager();
+		// In order to support multiThreading and connectionPooling
+		// If a sslSocketFactory has been defined, the connectionManager has to be initialized with the sslSocketFactory
+		if(sslSocketFactory != null) {
+			Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+				.register("http", PlainConnectionSocketFactory.getSocketFactory())
+				.register("https", sslSocketFactory)
+				.build();
+			connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			log.debug(getLogPrefix()+"created PoolingHttpClientConnectionManager with custom SSLConnectionSocketFactory");
+		}
+		else {
+			connectionManager = new PoolingHttpClientConnectionManager();
+			log.debug(getLogPrefix()+"created default PoolingHttpClientConnectionManager");
+		}
+
 		connectionManager.setMaxTotal(getMaxConnections());
 
 		log.debug(getLogPrefix()+"set up connectionManager, inactivity checking ["+connectionManager.getValidateAfterInactivity()+"]");
@@ -959,13 +971,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	}
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
-	}
-
-	public boolean isJdk13Compatibility() {
-		return jdk13Compatibility;
-	}
-	public void setJdk13Compatibility(boolean b) {
-		jdk13Compatibility = b;
 	}
 
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {

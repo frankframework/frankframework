@@ -56,6 +56,7 @@ Upcoming
 - Add boolean support for CmisSender create/update actions
 - Add possibility to send redirect in HttpSender
 - Add regex attribute to XmlIf pipe
+- Fix verifyHostname and allowSelfSignedCertificates bug in HttpSenderBase
 
 
 
