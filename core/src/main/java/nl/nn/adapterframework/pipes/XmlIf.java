@@ -44,6 +44,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setExpressionValue(String) expressionValue}</td><td>a string to compare the result of the xpathExpression (or the input-message itself) to. If not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setThenForwardName(String) thenForwardName}</td><td>forward returned when 'true'</code></td><td>then</td></tr>
  * <tr><td>{@link #setElseForwardName(String) elseForwardName}</td><td>forward returned when 'false'</td><td>else</td></tr>
+ * <tr><td>{@link #setRegex(String) regex}</td><td>regular expression to be applied to the input-message (ignored if xpathExpression is specified)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  *
@@ -58,6 +59,7 @@ public class XmlIf extends AbstractPipe {
 	private String expressionValue = null;
 	private String thenForwardName = "then";
 	private String elseForwardName = "else";
+	private String regex = null;
 
 	private TransformerPool tp = null;
 
@@ -116,6 +118,12 @@ public class XmlIf extends AbstractPipe {
 				forward = tp.transform(sInput,null, isNamespaceAware());
 			} catch (Exception e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"cannot evaluate expression",e);
+			}
+		} else if (StringUtils.isNotEmpty(getRegex())) {
+			if (sInput.matches(getRegex())) {
+				forward = thenForwardName;
+			} else {
+				forward = elseForwardName;
 			}
 		} else {
 			if (StringUtils.isEmpty(expressionValue)) {
@@ -184,4 +192,10 @@ public class XmlIf extends AbstractPipe {
 		return xpathExpression;
 	}
 
+	public void setRegex(String regex){
+		this.regex = regex;
+	}
+	public String getRegex(){
+		return regex;
+	}
 }

@@ -55,6 +55,7 @@ Upcoming
 - Replace webdav library with custom implementation
 - Add boolean support for CmisSender create/update actions
 - Add possibility to send redirect in HttpSender
+- Add regex attribute to XmlIf pipe
 
 
 
