@@ -694,7 +694,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 				CleanerProperties props = new CleanerProperties();
 				HtmlCleaner cleaner = new HtmlCleaner(props);
 				TagNode tagNode = cleaner.clean(result);
-				result = new SimpleXmlSerializer(props).getXmlAsString(tagNode);
+				result = new SimpleXmlSerializer(props).getAsString(tagNode);
 
 				if (transformerPool != null) {
 					log.debug(getLogPrefix() + " transforming result [" + result + "]");
