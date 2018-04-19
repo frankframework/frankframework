@@ -57,6 +57,7 @@ Upcoming
 - Add possibility to send redirect in HttpSender
 - Add regex attribute to XmlIf pipe
 - Fix verifyHostname and allowSelfSignedCertificates bug in HttpSenderBase
+- Remove jdk13Compatibility property in HttpSenderBase
 
 
 
