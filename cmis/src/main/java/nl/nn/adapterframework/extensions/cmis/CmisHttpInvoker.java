@@ -49,7 +49,6 @@ public class CmisHttpInvoker implements HttpInvoker {
 			log.debug("creating new CmisHttpInvoker");
 			sender = new CmisHttpSender();
 
-			sender.open();
 			sender.setUrlParam("url");
 
 			//Auth
@@ -120,6 +119,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 			}
 
 			sender.configure();
+			sender.open();
 		}
 		return sender;
 	}
