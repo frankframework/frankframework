@@ -121,11 +121,15 @@ public class WebServiceSender extends HttpSender {
 	private Parameter soapActionParameter;
 	private Parameter serviceNamespaceURIParameter;
 
+	public WebServiceSender() {
+		super();
+		setMethodType("POST");
+		setContentType("text/xml; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		setMethodType("POST");
-		setContentType("text/xml; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING);
 
 		if (isSoap()) {
 			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
