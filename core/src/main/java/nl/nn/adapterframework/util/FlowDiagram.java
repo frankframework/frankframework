@@ -235,6 +235,8 @@ public class FlowDiagram {
 				if (StringUtils.isNotEmpty(truststore)) {
 					httpSender.setTruststore(truststore);
 					httpSender.setTruststorePassword(truststorePassword);
+				} else {
+					httpSender.setAllowSelfSignedCertificates(true);
 				}
 				httpSender.setParamsInUrl(false);
 				httpSender.setMultipart(true);
