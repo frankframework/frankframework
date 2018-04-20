@@ -113,6 +113,11 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 				configAll = false;
 			}
 		}
+		
+		if (configAll) {
+			configuration = ibisManager.getConfigurations().get(0);
+			configAll = false;
+		}
 
 		List<Configuration> allConfigurations = ibisManager.getConfigurations();
 		XmlBuilder configurationsXml = toConfigurationsXml(allConfigurations, false);
