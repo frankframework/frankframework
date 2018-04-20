@@ -8,6 +8,7 @@
 	<!ENTITY ShowConfig SYSTEM "ConfigurationShowConfig.xml">
 	<!ENTITY ShowFlowDiagram SYSTEM "ConfigurationShowFlowDiagram.xml">
 	<!ENTITY ExecuteJdbcProperties SYSTEM "ConfigurationExecuteJdbcProperties.xml">
+	<!ENTITY ShowEnvironmentVariables SYSTEM "ConfigurationShowEnvironmentVariables.xml">
 ]>
 <configuration name="IAF_WebControl">
 	&ShowConfigurationStatus;
@@ -19,4 +20,5 @@
 	&ShowConfig;
 	&ShowFlowDiagram;
 	&ExecuteJdbcProperties;
+	&ShowEnvironmentVariables;
 </configuration>

@@ -308,13 +308,6 @@
         	<forward name="success" path="/jsp/view.jsp?view=/jsp/jdbcTableContents.jsp" />
         	<forward name="cancel" path="/rest/showConfigurationStatus" />
         </action>        
-        <action path="/logHandler" 
-                type="nl.nn.adapterframework.webcontrol.action.LogHandler"
-                scope="session" 
-                name="ConfigurationPropertiesForm"
-                validate="false">
-            <forward name="success" path="/rest/showConfigurationStatus" redirect="true"/>
-        </action>
         <action path="/showSchedulerStatus" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowSchedulerStatus"
                 validate="false">
@@ -323,13 +316,6 @@
         <action path="/schedulerHandler" 
                 type="nl.nn.adapterframework.webcontrol.action.SchedulerHandler">
             <forward name="success" path="/showSchedulerStatus.do" redirect="true"/>
-        </action>
-        <action path="/showEnvironmentVariables" 
-                type="nl.nn.adapterframework.webcontrol.action.ShowEnvironmentVariables" 
-                scope="session" 
-                name="ConfigurationPropertiesForm"
-                validate="false">
-            <forward name="success" path="/jsp/view.jsp?view=/jsp/showEnvironmentVariables.jsp"/>
         </action>
         <action path="/showSecurityItems" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowSecurityItems" 

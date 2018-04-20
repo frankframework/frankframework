@@ -260,7 +260,7 @@ public class CreateRestViewPipe extends XsltPipe {
 						"showSchedulerStatus.do", "scheduler",
 						"Show Scheduler status"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
-				"showEnvironmentVariables.do", "properties",
+				"rest/showEnvironmentVariables", "properties",
 				"Show Environment Variables"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"executeJdbcQuery.do", "execquery", "Execute a Jdbc Query"));

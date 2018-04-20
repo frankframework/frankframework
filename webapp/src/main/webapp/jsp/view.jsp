@@ -137,8 +137,6 @@
 			<jsp:include page="/jsp/noIbisContext.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/showSchedulerStatus.jsp")) {%>
 			<jsp:include page="/jsp/showSchedulerStatus.jsp" flush="true"/>
-		<%} else if (view.equals("/jsp/showEnvironmentVariables.jsp")) {%>
-			<jsp:include page="/jsp/showEnvironmentVariables.jsp" flush="true"/> 
 		<%} else if (view.equals("/jsp/executeJdbcQuery.jsp")) {%>
 			<jsp:include page="/jsp/executeJdbcQuery.jsp" flush="true"/> 
 		<%} else if (view.equals("/jsp/showSecurityItems.jsp")) {%>

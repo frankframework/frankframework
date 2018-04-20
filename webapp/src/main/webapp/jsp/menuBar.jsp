@@ -61,7 +61,7 @@
 				alt="Show Scheduler status">
 			</imagelink>
 			<imagelink
-				href="showEnvironmentVariables.do"
+				href="rest/showEnvironmentVariables"
 				type="properties"
 				alt="Show Environment Variables">
 			</imagelink>

@@ -493,7 +493,6 @@
 			<url-pattern>/showSchedulerStatus.do</url-pattern>
 			<url-pattern>/FileViewerServlet</url-pattern>
 			<url-pattern>/DumpIbisConsole</url-pattern>
-			<url-pattern>/showEnvironmentVariables.do</url-pattern>
 			<url-pattern>/browser.do</url-pattern>
 			<url-pattern>/showSecurityItems.do</url-pattern>
 			<url-pattern>/showMonitors.do</url-pattern>

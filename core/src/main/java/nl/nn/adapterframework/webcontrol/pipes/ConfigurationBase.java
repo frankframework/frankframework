@@ -110,11 +110,17 @@ public abstract class ConfigurationBase extends TimeoutGuardPipe {
 	}
 
 	protected XmlBuilder toConfigurationsXml(List<Configuration> configurations) {
+		return toConfigurationsXml(configurations, true);
+	}
+
+	protected XmlBuilder toConfigurationsXml(List<Configuration> configurations, boolean includeAll) {
 		XmlBuilder configurationsXml = new XmlBuilder("configurations");
-		XmlBuilder configurationAllXml = new XmlBuilder("configuration");
-		configurationAllXml.setValue(CONFIG_ALL);
-		configurationAllXml.addAttribute("nameUC", "0" + Misc.toSortName(CONFIG_ALL));
-		configurationsXml.addSubElement(configurationAllXml);
+		if (includeAll) {
+			XmlBuilder configurationAllXml = new XmlBuilder("configuration");
+			configurationAllXml.setValue(CONFIG_ALL);
+			configurationAllXml.addAttribute("nameUC", "0" + Misc.toSortName(CONFIG_ALL));
+			configurationsXml.addSubElement(configurationAllXml);
+		}
 		for (Configuration configuration : configurations) {
 			XmlBuilder configurationXml = new XmlBuilder("configuration");
 			configurationXml.setValue(configuration.getConfigurationName());
