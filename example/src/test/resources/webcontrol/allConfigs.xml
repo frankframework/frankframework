@@ -221,6 +221,45 @@
          </receivers>
          <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
       </adapter>
+      <adapter config="IAF_WebControl"
+               configUC="IAF*WEBCONTROL"
+               configured="true"
+               lastMessageDate="-"
+               messagesInError="0"
+               messagesInProcess="0"
+               messagesProcessed="0"
+               name="WebControlShowEnvironmentVariables"
+               nameUC="WEBCONTROLSHOWENVIRONMENTVARIABLES"
+               started="true"
+               state="Started"
+               stateAlert="false"
+               upSince="0000-00-00 00:00:00"
+               upSinceAge="-">
+         <receivers>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlShowEnvironmentVariables-get"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlShowEnvironmentVariables-post"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="WebControlShowEnvironmentVariables-post"
+                      state="Started"/>
+         </receivers>
+         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
+      </adapter>
       <adapter config="Ibis4Example"
                configUC="IBIS4EXAMPLE"
                configured="true"
@@ -318,13 +357,17 @@
          <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
       </adapter>
       <summary>
-         <adapterState error="0" started="9" starting="0" stopped="0" stopping="0"/>
+         <adapterState error="0"
+                       started="10"
+                       starting="0"
+                       stopped="0"
+                       stopping="0"/>
          <receiverState error="0"
-                        started="19"
+                        started="22"
                         starting="0"
                         stopped="0"
                         stopping="0"/>
-         <messageLevel error="0" info="90" warn="0"/>
+         <messageLevel error="0" info="100" warn="0"/>
       </summary>
   </registeredAdapters>
 </root>
