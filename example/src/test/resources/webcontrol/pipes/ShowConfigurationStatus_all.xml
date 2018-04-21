@@ -18,9 +18,6 @@
       <exceptions>
          <exception config="NotExistingConfig">error during unmarshalling configuration from file [NotExistingConfig/Configuration.xml] with digester-rules-file [digester-rules.xml] in element []: Configuration file not found: NotExistingConfig/Configuration.xml</exception>
       </exceptions>
-      <warnings>
-         <warning config="Ibis4Example" severe="true">Errorlog contains 6 records. Service Management should check whether these records have to be resent or deleted</warning>
-      </warnings>
       <adapter config="IAF_Util"
                configUC="IAF*UTIL"
                configured="true"
