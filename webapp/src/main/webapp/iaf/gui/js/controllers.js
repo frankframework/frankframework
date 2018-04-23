@@ -166,11 +166,12 @@ angular.module('iaf.beheerconsole')
 							adapter.hasSender = true;
 						}
 					}
-					for(i in adapter.messages) {
-						var level = adapter.messages[i].level;
-						if(level != "INFO")
+					if(adapter.messages.length > 0) {
+						var message = adapter.messages[adapter.messages.length -1];
+						if(message.level != "INFO")
 							adapter.status = 'warning';
 					}
+
 					if(!adapter.started)
 						adapter.status = "stopped";
 
