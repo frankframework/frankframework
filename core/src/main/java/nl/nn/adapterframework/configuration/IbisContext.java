@@ -291,11 +291,11 @@ public class IbisContext {
 		((ConfigurableApplicationContext)applicationContext).close();
 	}
 
-	private void load() {
+	public void load() {
 		load(null);
 	}
 
-	private void load(String configurationName) {
+	public void load(String configurationName) {
 		boolean configFound = false;
 
 		//We have an ordered list with all configurations, lets loop through!
