@@ -422,6 +422,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 
 		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
 			String multipartXml = (String) session.get(getMultipartXmlSessionKey());
+			log.debug(getLogPrefix()+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
 			if (StringUtils.isEmpty(multipartXml)) {
 				log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
 			} else {
@@ -452,33 +453,13 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 							String partValue = (String) session.get(partSessionKey);
 
 							entity.addPart(createMultipartBodypart(partName, partValue, partMimeType));
-							log.debug(getLogPrefix()+"appended stringpart ["+partSessionKey+"]  with value ["+partValue+"]");
+							log.debug(getLogPrefix()+"appended stringpart ["+partSessionKey+"] with value ["+partValue+"]");
 						}
 					}
 				}
 			}
 		}
 
-//		String contentTypeMtom = "multipart/related; type=\"application/xop+xml\"; start=\""+start+"\"; start-info=\"text/xml\"; boundary=\""+boundary+"\"";
-
-
-//		entity.setMimeSubtype("related");
-//		StringBuffer buf = new StringBuffer(64);
-//		buf.append("----=_Part_").append((new Object()).hashCode()).append('.').append(System.currentTimeMillis());
-//		String boundary = buf.toString();
-//		entity.setBoundary(boundary);
-//		NameValuePair[] nvp = new NameValuePair[3];
-//		nvp[0] = new BasicNameValuePair("charset", getCharSet());
-//		nvp[1] = new BasicNameValuePair("type", "application/xop+xml");
-//		nvp[2] = new BasicNameValuePair("start", "<"+start+">");
-//		nvp[2] = new BasicNameValuePair("start-info", "<"+start+">");
-//		for (NameValuePair param: nvp) {
-//			System.out.println(param.getName() +" - "+param.getValue());
-//		}
-//		ContentType ct = ContentType.create("multipart/related", nvp);
-//		entity.setContentType(ct);
-
-//		entity.seContentType(contentTypeMtom);
 		return entity.build();
 	}
 
