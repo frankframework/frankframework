@@ -54,6 +54,7 @@ public class IbisConsoleTest {
 	@BeforeClass
 	public static void initTest() throws ConfigurationException, TransformerConfigurationException, IOException {
 		ibisTester = new IbisTester();
+		System.setProperty("create.dbscript.location", "webcontrol/create_database_h2.sql");
 		System.setProperty("HelloWorld.job.active", "false");
 		System.setProperty("junit.active", "true");
 		System.setProperty("configurations.names", "${instance.name},NotExistingConfig");

@@ -10,6 +10,9 @@
       <configurationMessages>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [Ibis4Example] startup in 0 ms</configurationMessage>
       </configurationMessages>
+      <warnings>
+         <warning config="Ibis4Example" severe="true">Errorlog contains 6 records. Service Management should check whether these records have to be resent or deleted</warning>
+      </warnings>
       <adapter config="Ibis4Example"
                configUC="IBIS4EXAMPLE"
                configured="true"
@@ -82,7 +85,7 @@
                upSinceAge="-">
          <receivers>
             <receiver class="GenericReceiver"
-                      errorStorageCount="0"
+                      errorStorageCount="3"
                       hasErrorStorage="true"
                       hasMessageLog="false"
                       isEsbJmsFFListener="false"
@@ -96,7 +99,7 @@
                       name="HelloUniverse"
                       state="Started"/>
             <receiver class="GenericReceiver"
-                      errorStorageCount="0"
+                      errorStorageCount="3"
                       hasErrorStorage="true"
                       hasMessageLog="false"
                       isEsbJmsFFListener="false"
@@ -112,10 +115,10 @@
          </receivers>
          <pipes>
             <pipe hasMessageLog="true"
-                  messageLogCount="0"
+                  messageLogCount="5"
                   name="HelloUniverse"
                   sender="FixedResultSender">
-               <browser count="0"
+               <browser count="5"
                         name="- HelloUniverse: message log"
                         slotId="Ibis4Example/HelloUniverse_Out"
                         type="log"/>
