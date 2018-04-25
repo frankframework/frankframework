@@ -18,12 +18,14 @@ package nl.nn.adapterframework.util;
 import java.io.IOException;
 import java.io.StringReader;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jdom2.Attribute;
 import org.jdom2.CDATA;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
@@ -51,7 +53,14 @@ public class XmlBuilder {
 
 	public void addAttribute(String name, String value) {
 		if (value != null) {
-			element.setAttribute(new Attribute(name, value));
+			if (name.equalsIgnoreCase("xmlns")) {
+				element.setNamespace(Namespace.getNamespace(value));
+			} else if (StringUtils.startsWithIgnoreCase(name, "xmlns:")) {
+				String prefix = name.substring(6);
+				element.setNamespace(Namespace.getNamespace(prefix, value));
+			} else {
+				element.setAttribute(new Attribute(name, value));
+			}
 		}
 	}
 
