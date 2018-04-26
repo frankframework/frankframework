@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.cmis;
 
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -33,6 +34,7 @@ import org.apache.chemistry.opencmis.client.bindings.spi.http.Response;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
+import org.apache.chemistry.opencmis.commons.spi.AuthenticationProvider;
 import org.apache.log4j.Logger;
 
 public class CmisHttpInvoker implements HttpInvoker {
@@ -198,6 +200,28 @@ public class CmisHttpInvoker implements HttpInvoker {
 			// locale
 			if (session.get(CmisBindingsHelper.ACCEPT_LANGUAGE) instanceof String) {
 				headers.put("Accept-Language", session.get(CmisBindingsHelper.ACCEPT_LANGUAGE).toString());
+			}
+
+			AuthenticationProvider authProvider = CmisBindingsHelper.getAuthenticationProvider(session);
+			if (authProvider != null) {
+				Map<String, List<String>> httpHeaders = authProvider.getHTTPHeaders(url.toString());
+				if (httpHeaders != null) {
+					for (Map.Entry<String, List<String>> header : httpHeaders.entrySet()) {
+						if (header.getKey() != null && !header.getValue().isEmpty()) {
+							String key = header.getKey();
+							if (key.equalsIgnoreCase("user-agent")) {
+								headers.put("User-Agent", header.getValue().get(0));
+							}
+							else {
+								for (String value : header.getValue()) {
+									if (value != null) {
+										headers.put(key, value);
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 
 			log.trace("invoking CmisHttpSender: content-type["+contentType+"] headers["+headers.toString()+"]");
