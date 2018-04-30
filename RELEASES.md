@@ -60,6 +60,7 @@ Upcoming
 - Remove jdk13Compatibility property in HttpSenderBase
 - Replace struts page "Show Environment variables" by rest service
 - Bugfix namespaces in XmlBuilder
+- Introduction of JsonWellFormedChecker
 
 
 
