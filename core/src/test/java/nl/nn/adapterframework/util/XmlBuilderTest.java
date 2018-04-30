@@ -46,9 +46,15 @@ public class XmlBuilderTest {
 		messagesXML.addSubElement(messageXML);
 		messageXML = new XmlBuilder("message");
 		messageXML.addAttribute("xmlns", "http://nn.nl/XmlBuilder");
+		XmlBuilder subMessageXML = new XmlBuilder("subMessage");
+		subMessageXML.setValue("hello");
+		messageXML.addSubElement(subMessageXML);
 		messagesXML.addSubElement(messageXML);
 		messageXML = new XmlBuilder("message");
 		messageXML.addAttribute("xmlns:xb", "http://nn.nl/XmlBuilder");
+		subMessageXML = new XmlBuilder("subMessage");
+		subMessageXML.setValue("hello");
+		messageXML.addSubElement(subMessageXML);
 		messagesXML.addSubElement(messageXML);
 		summaryXML.addSubElement(messagesXML);
 
@@ -62,8 +68,12 @@ public class XmlBuilderTest {
 		sb.append("<message>&quot;quot&quot; &#39;apos&#39; &gt;gt&gt;</message>");
 		// sb.append("<message>\"quot\" 'apos' >gt></message>");
 		sb.append("<message>\"quot\" 'apos' >gt></message>");
-		sb.append("<message xmlns=\"http://nn.nl/XmlBuilder\"/>");
-		sb.append("<xb:message xmlns:xb=\"http://nn.nl/XmlBuilder\"/>");
+		sb.append("<message xmlns=\"http://nn.nl/XmlBuilder\">");
+		sb.append("<subMessage>hello</subMessage>");
+		sb.append("</message>");
+		sb.append("<xb:message xmlns:xb=\"http://nn.nl/XmlBuilder\">");
+		sb.append("<xb:subMessage>hello</xb:subMessage>");
+		sb.append("</xb:message>");
 		sb.append("</messages>");
 		sb.append("</summary>");
 

@@ -73,7 +73,17 @@ public class XmlBuilder {
 	}
 
 	public void addSubElement(XmlBuilder newElement) {
+		addSubElement(newElement, true);
+	}
+
+	public void addSubElement(XmlBuilder newElement, boolean adoptNamespace) {
 		if (newElement != null) {
+			if (adoptNamespace
+					&& StringUtils.isNotEmpty(element.getNamespaceURI())
+					&& StringUtils
+							.isEmpty(newElement.element.getNamespaceURI())) {
+				newElement.element.setNamespace(element.getNamespace());
+			}
 			element.addContent(newElement.element);
 		}
 	}
@@ -108,8 +118,8 @@ public class XmlBuilder {
 		}
 	}
 
-	private Element buildElement(String value) throws JDOMException,
-			IOException {
+	private Element buildElement(String value)
+			throws JDOMException, IOException {
 		StringReader stringReader = new StringReader(value);
 		SAXBuilder saxBuilder = new SAXBuilder();
 		Document document;
@@ -125,8 +135,8 @@ public class XmlBuilder {
 	public String toXML(boolean xmlHeader) {
 		Document document = new Document(element.detach());
 		XMLOutputter xmlOutputter = new XMLOutputter();
-		xmlOutputter.setFormat(Format.getPrettyFormat().setOmitDeclaration(
-				!xmlHeader));
+		xmlOutputter.setFormat(
+				Format.getPrettyFormat().setOmitDeclaration(!xmlHeader));
 		return xmlOutputter.outputString(document);
 	}
 }
