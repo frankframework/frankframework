@@ -61,6 +61,7 @@ Upcoming
 - Replace struts page "Show Environment variables" by rest service
 - Bugfix namespaces in XmlBuilder
 - Introduction of JsonWellFormedChecker
+- Introduction of Stream2StringPipe
 
 
 
