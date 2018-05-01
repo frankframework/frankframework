@@ -63,6 +63,7 @@ Upcoming
 - Introduction of JsonWellFormedChecker
 - Introduction of Stream2StringPipe
 - Fix stale connections not being cleaned up by the ConnectionPoolManager. See: https://issues.apache.org/jira/browse/HTTPCLIENT-1609
+- Fix multipart parsing issues
 
 
 ### Non backwards compatible changes

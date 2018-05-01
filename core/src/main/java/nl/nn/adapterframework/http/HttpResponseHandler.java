@@ -72,7 +72,7 @@ public class HttpResponseHandler {
 
 	public String getResponseAsString(boolean returnNullonFault) throws IOException {
 		if(statusCode < 0)
-			contentAsString = Misc.streamToString(getResponse(), "\n", getContentType(), false);
+			contentAsString = Misc.streamToString(getResponse(), "\n", getCharset(), false);
 		else if(returnNullonFault && statusCode == 500)
 			return "";
 
@@ -83,7 +83,7 @@ public class HttpResponseHandler {
 		return httpResponse.getFirstHeader(header).getValue();
 	}
 
-	public String getContentType() {
+	public ContentType getContentType() {
 		Header contentTypeHeader = this.getFirstHeader(HttpHeaders.CONTENT_TYPE);
 		ContentType contentType;
 		if (contentTypeHeader != null) {
@@ -91,6 +91,11 @@ public class HttpResponseHandler {
 		} else {
 			contentType = ContentType.getOrDefault(httpEntity);
 		}
+		return contentType;
+	}
+
+	public String getCharset() {
+		ContentType contentType = getContentType();
 		String charSet = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 		if(contentType != null && contentType.getCharset() != null)
 			charSet = contentType.getCharset().displayName();

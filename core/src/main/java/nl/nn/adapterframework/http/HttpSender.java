@@ -519,7 +519,7 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	}
 
 	public String getResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
-		String charset = responseHandler.getContentType();
+		String charset = responseHandler.getCharset();
 		log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
 		if ("HEAD".equals(getMethodType())) {
 			XmlBuilder headersXml = new XmlBuilder("headers");
@@ -551,12 +551,12 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	}
 
 	public static String handleMultipartResponse(HttpResponseHandler httpHandler, ParameterResolutionContext prc) throws IOException, SenderException {
-		return handleMultipartResponse(httpHandler.getContentType(), httpHandler.getResponse(), prc, httpHandler);
+		return handleMultipartResponse(httpHandler.getContentType().getMimeType(), httpHandler.getResponse(), prc, httpHandler);
 	}
-	public static String handleMultipartResponse(String contentType, InputStream inputStream, ParameterResolutionContext prc, HttpResponseHandler httpHandler) throws IOException, SenderException {
+	public static String handleMultipartResponse(String mimeType, InputStream inputStream, ParameterResolutionContext prc, HttpResponseHandler httpHandler) throws IOException, SenderException {
 		String result = null;
 		try {
-			InputStreamDataSource dataSource = new InputStreamDataSource(httpHandler.getContentType(), inputStream);
+			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType, inputStream);
 			MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
 			for (int i = 0; i < mimeMultipart.getCount(); i++) {
 				BodyPart bodyPart = mimeMultipart.getBodyPart(i);
