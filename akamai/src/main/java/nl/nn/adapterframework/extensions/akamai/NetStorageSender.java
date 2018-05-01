@@ -328,7 +328,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	}
 
 	public String getResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
-		String charset = responseHandler.getContentType();
+		String charset = responseHandler.getCharset();
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
 
 		String responseBody = responseHandler.getResponseAsString(true);
