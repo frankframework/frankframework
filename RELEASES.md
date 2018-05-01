@@ -62,7 +62,7 @@ Upcoming
 - Bugfix namespaces in XmlBuilder
 - Introduction of JsonWellFormedChecker
 - Introduction of Stream2StringPipe
-
+- Fix stale connections not being cleaned up by the ConnectionPoolManager. See: https://issues.apache.org/jira/browse/HTTPCLIENT-1609
 
 
 ### Non backwards compatible changes
