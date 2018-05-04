@@ -226,9 +226,9 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	private int maxExecuteRetries = 1;
 	private PoolingHttpClientConnectionManager connectionManager;
 	private SSLConnectionSocketFactory sslSocketFactory = null;
-	protected HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-	protected HttpClientContext httpClientContext = HttpClientContext.create();
-	protected HttpHost httpTarget;
+	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+	private HttpClientContext httpClientContext = HttpClientContext.create();
+	private CloseableHttpClient httpClient;
 
 	/** SECURITY */
 	private String authAlias;
@@ -325,6 +325,12 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 			}
 		}
 
+		/**
+		 * TODO find out if this really breaks proxy authentication or not.
+		 */
+//		httpClientBuilder.disableAuthCaching();
+		httpClientBuilder.disableAutomaticRetries();
+
 		Builder requestConfig = RequestConfig.custom();
 		requestConfig.setConnectTimeout(getTimeout());
 		requestConfig.setConnectionRequestTimeout(getTimeout());
@@ -399,10 +405,14 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 				} else {
 					uname = credentials.getUsername();
 				}
+
 				credentialsProvider.setCredentials(
 					new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), 
 					new UsernamePasswordCredentials(uname, credentials.getPassword())
 				);
+
+				requestConfig.setTargetPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
+				requestConfig.setAuthenticationEnabled(true);
 			}
 			if (StringUtils.isNotEmpty(getProxyHost())) {
 				HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort());
@@ -416,19 +426,22 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 				}
 				log.trace("setting credentialProvider [" + credentialsProvider.toString() + "]");
 
+				if(prefillProxyAuthCache()) {
+					requestConfig.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
+
+					AuthCache authCache = httpClientContext.getAuthCache();
+					if(authCache == null)
+						authCache = new BasicAuthCache();
+	
+					authCache.put(proxy, new BasicScheme());
+					httpClientContext.setAuthCache(authCache);
+				}
+
 				requestConfig.setProxy(proxy);
-				requestConfig.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
-
-				AuthCache authCache = httpClientContext.getAuthCache();
-				if(authCache == null)
-					authCache = new BasicAuthCache();
-
-				authCache.put(proxy, new BasicScheme());
-				httpClientContext.setAuthCache(authCache);
 				httpClientBuilder.setProxy(proxy);
 			}
-			httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
 
+			httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
 		} catch (URISyntaxException e) {
 			throw new ConfigurationException(getLogPrefix()+"cannot interpret uri ["+getUrl()+"]");
 		}
@@ -448,6 +461,14 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		}
 
 		httpClientBuilder.setDefaultRequestConfig(requestConfig.build());
+
+		// The redirect strategy used to only redirect GET, DELETE and HEAD.
+		httpClientBuilder.setRedirectStrategy(new DefaultRedirectStrategy() {
+			@Override
+			protected boolean isRedirectable(String method) {
+				return isFollowRedirects();
+			}
+		});
 	}
 
 	public void open() throws SenderException {
@@ -475,8 +496,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 			connectionManager.setValidateAfterInactivity(getStaleTimeout());
 		}
 
-		httpClientBuilder.useSystemProperties();
-		httpClientBuilder.disableAuthCaching();
 		httpClientBuilder.setConnectionManager(connectionManager);
 
 		if (transformerPool!=null) {
@@ -486,6 +505,12 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 				throw new SenderException(getLogPrefix()+"cannot start TransformerPool", e);
 			}
 		}
+
+		httpClient = httpClientBuilder.build();
+	}
+
+	public CloseableHttpClient getHttpClient() {
+		return httpClient;
 	}
 
 	public void close() {
@@ -568,6 +593,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
 		}
 
+		HttpHost httpTarget;
 		URIBuilder uri;
 		HttpRequestBase httpRequestBase;
 		try {
@@ -596,15 +622,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 			if(httpRequestBase == null)
 				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodType()+"]");
 
-			if (!"POST".equals(getMethodType()) && !"PUT".equals(getMethodType()) && !"REPORT".equals(getMethodType())) {
-				httpClientBuilder.setRedirectStrategy(new DefaultRedirectStrategy() {
-					@Override
-					protected boolean isRedirectable(String method) {
-						return true;
-					}
-				});
-			}
-
 			if (StringUtils.isNotEmpty(getContentType())) {
 				httpRequestBase.setHeader("Content-Type", getContentType());
 			}
@@ -614,7 +631,9 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 				if(authCache == null)
 					authCache = new BasicAuthCache();
 
-				authCache.put(httpTarget, new BasicScheme());
+				if(authCache.get(httpTarget) == null)
+					authCache.put(httpTarget, new BasicScheme());
+
 				httpClientContext.setAuthCache(authCache);
 			}
 
@@ -624,8 +643,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 			throw new SenderException(e);
 		}
 
-		CloseableHttpClient httpClient = httpClientBuilder.build();
-
 		String result = null;
 		int statusCode = -1;
 		int count=getMaxExecuteRetries();
@@ -633,7 +650,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		while (count-- >= 0 && statusCode == -1) {
 			try {
 				log.debug(getLogPrefix()+"executing method [" + httpRequestBase.getRequestLine() + "]");
-				HttpResponse httpResponse = httpClient.execute(httpTarget, httpRequestBase, httpClientContext);
+				HttpResponse httpResponse = getHttpClient().execute(httpTarget, httpRequestBase, httpClientContext);
 				log.debug(getLogPrefix()+"executed method");
 
 				HttpResponseHandler responseHandler = new HttpResponseHandler(httpResponse);
@@ -653,14 +670,18 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 				log.debug(getLogPrefix()+"retrieved result ["+result+"]");
 			} catch (ClientProtocolException e) {
-				httpRequestBase.abort();
-				Throwable throwable = e.getCause();
-				String cause = null;
-				if (throwable != null) {
-					cause = throwable.toString();
+				StringBuilder msgBuilder = new StringBuilder(getLogPrefix()+"httpException with");
+				if(e.getMessage() != null) {
+					msg = e.getMessage();
+					msgBuilder.append(" message [" + msg + "]");
 				}
-				msg = e.getMessage();
-				log.warn(getLogPrefix()+"httpException with message [" + msg + "] and cause [" + cause + "], executeRetries left [" + count + "]");
+				Throwable throwable = e.getCause();
+				if (throwable != null) {
+					msgBuilder.append(" cause [" + throwable.toString() + "]");
+				}
+				msgBuilder.append(" executeRetries left [" + count + "]");
+
+				log.warn(msgBuilder.toString());
 			} catch (IOException e) {
 				httpRequestBase.abort();
 				if (e instanceof SocketTimeoutException) {
@@ -681,7 +702,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		}
 
 		if (statusCode == -1){
-			if (StringUtils.contains(msg.toUpperCase(), "TIMEOUTEXCEPTION")) {
+			if (msg != null && StringUtils.contains(msg.toUpperCase(), "TIMEOUTEXCEPTION")) {
 				//java.net.SocketTimeoutException: Read timed out
 				throw new TimeOutException("Failed to recover from timeout exception");
 			}
@@ -890,6 +911,14 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	}
 	public void setProxyRealm(String string) {
 		proxyRealm = string;
+	}
+
+	/**
+	 * TODO: make this configurable
+	 * @return false
+	 */
+	public boolean prefillProxyAuthCache() {
+		return false;
 	}
 
 
