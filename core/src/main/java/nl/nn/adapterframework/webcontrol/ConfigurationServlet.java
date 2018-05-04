@@ -84,7 +84,8 @@ public class ConfigurationServlet extends HttpServlet {
 		String stage = appConstants.getString("otap.stage", "LOC");
 		if(appConstants.getBoolean("security.constraint.warning", !"LOC".equalsIgnoreCase(stage))) {
 			try {
-				URL webXml = servletContext.getResource("WEB-INF\\web.xml");
+				String web = File.separator+"WEB-INF"+File.separator+"web.xml";
+				URL webXml = servletContext.getResource(web);
 				if(webXml != null) {
 					if(XmlUtils.buildDomDocument(webXml).getElementsByTagName("security-constraint").getLength() < 1)
 						ConfigurationWarnings.getInstance().add(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
