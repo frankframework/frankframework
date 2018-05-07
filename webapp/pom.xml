@@ -28,19 +28,19 @@
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-ladybug</artifactId>
-      <version>2.0.0.3711</version>
+      <version>2.0.0.3713</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-ladybug</artifactId>
-      <version>2.0.0.3711</version>
+      <version>2.0.0.3713</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-echo2</artifactId>
-      <version>2.0.0.3555</version>
+      <version>2.0.0.3713</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>

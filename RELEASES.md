@@ -64,6 +64,12 @@ Upcoming
 - Introduction of Stream2StringPipe
 - Fix stale connections not being cleaned up by the ConnectionPoolManager. See: https://issues.apache.org/jira/browse/HTTPCLIENT-1609
 - Fix multipart parsing issues
+- Update to latest Ladybug Test Tool version
+    - Add custom XmlDecoder for testtool imports
+    - Display escaped characters with different background color
+    - Support Unicode supplementary characters (don't handle a smiley as two characters)
+    - Change colors to be IAF GUI 3.0 friendly
+
 
 
 ### Non backwards compatible changes
