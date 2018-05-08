@@ -20,8 +20,8 @@ notifications:
       - travis-n@ibissource.org
       - travis-p@ibissource.org
       - travis-g@ibissource.org
-    on_success: always # default: change
-    on_failure: always # default: always
+#    on_success: always # default: change
+#    on_failure: always # default: always
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
