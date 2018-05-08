@@ -123,6 +123,7 @@ public class WebServiceSender extends HttpSender {
 	public WebServiceSender() {
 		super();
 		setMethodType("POST");
+		setContentType("text/xml; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING);
 	}
 
 	@Override
