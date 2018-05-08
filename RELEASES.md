@@ -69,6 +69,7 @@ Upcoming
     - Display escaped characters with different background color
     - Support Unicode supplementary characters (don't handle a smiley as two characters)
     - Change colors to be IAF GUI 3.0 friendly
+- Prevent Show Tibco Queues to still fail when passive servers in server url
 
 
 
