@@ -468,14 +468,18 @@ angular.module('iaf.beheerconsole')
 			}, i * 10);
 		});
 	};
-	$scope.stopAll = function() {
+	$scope.stopAll = function($event) {
+		var btn = $event.currentTarget;
+		btn.addClass('loading');
 		var adapters = Array();
 		for(adapter in $filter('adapterFilter')($scope.adapters, $scope)) {
 			adapters.push(adapter);
 		}
 		Api.Put("adapters", {"action": "stop", "adapters": adapters});
 	};
-	$scope.startAll = function() {
+	$scope.startAll = function($event) {
+		var btn = $event.currentTarget;
+		btn.addClass('loading');
 		var adapters = Array();
 		for(adapter in $filter('adapterFilter')($scope.adapters, $scope)) {
 			adapters.push(adapter);
