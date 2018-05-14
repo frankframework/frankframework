@@ -1,4 +1,6 @@
 <!DOCTYPE configuration [
+	<!ENTITY ShowConfigurationStatus SYSTEM "ConfigurationShowConfigurationStatus.xml">
+	<!ENTITY ShowConfiguration SYSTEM "ConfigurationShowConfiguration.xml">
 	<!ENTITY Webservices SYSTEM "ConfigurationWebservices.xml">
 	<!ENTITY TestPipeLine SYSTEM "ConfigurationTestPipeLine.xml">
 	<!ENTITY TestIfsaService SYSTEM "ConfigurationTestIfsaService.xml">
@@ -6,8 +8,11 @@
 	<!ENTITY ShowConfig SYSTEM "ConfigurationShowConfig.xml">
 	<!ENTITY ShowFlowDiagram SYSTEM "ConfigurationShowFlowDiagram.xml">
 	<!ENTITY ExecuteJdbcProperties SYSTEM "ConfigurationExecuteJdbcProperties.xml">
+	<!ENTITY ShowEnvironmentVariables SYSTEM "ConfigurationShowEnvironmentVariables.xml">
 ]>
 <configuration name="IAF_WebControl">
+	&ShowConfigurationStatus;
+	&ShowConfiguration;
 	&Webservices;
 	&TestPipeLine;
 	&TestIfsaService;
@@ -15,4 +20,5 @@
 	&ShowConfig;
 	&ShowFlowDiagram;
 	&ExecuteJdbcProperties;
+	&ShowEnvironmentVariables;
 </configuration>

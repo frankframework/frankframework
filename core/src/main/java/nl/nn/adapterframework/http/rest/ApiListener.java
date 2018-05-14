@@ -43,7 +43,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private String consumes = "ANY";
 	private String produces = "ANY";
-	private List<String> mediaTypes = Arrays.asList("ANY", "XML", "JSON", "TEXT");
+	private List<String> mediaTypes = Arrays.asList("ANY", "XML", "JSON", "TEXT", "MULTIPART");
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -66,10 +66,19 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 		if(getAuthenticationMethod() != null && !authenticationMethods.contains(getAuthenticationMethod()))
 			throw new ConfigurationException("Unknown authenticationMethod ["+authenticationMethod+"]");
-
-		ApiServiceDispatcher.getInstance().registerServiceClient(this);
 	}
 
+	@Override
+	public void open() throws ListenerException {
+		super.open();
+		try {
+			ApiServiceDispatcher.getInstance().registerServiceClient(this);
+		} catch (ConfigurationException e) {
+			throw new ListenerException(e);
+		}
+	}
+	
+	@Override
 	public void close() {
 		super.close();
 		ApiServiceDispatcher.getInstance().unregisterServiceClient(this);
@@ -133,12 +142,16 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return consumes;
 	}
 	public boolean isConsumable(String contentType) {
-		String mediaType = "text/plain";
+		if(getConsumes().equals("ANY"))
+			return true;
 
+		String mediaType = "text/plain";
 		if(getConsumes().equals("XML"))
 			mediaType = "application/xml";
 		else if(getConsumes().equals("JSON"))
 			mediaType = "application/json";
+		else if(getConsumes().equals("MULTIPART"))
+			mediaType = "multipart/"; //There are different multipart contentTypes, see: https://msdn.microsoft.com/en-us/library/ms527355(v=exchg.10).aspx
 
 		return contentType.contains(mediaType);
 	}

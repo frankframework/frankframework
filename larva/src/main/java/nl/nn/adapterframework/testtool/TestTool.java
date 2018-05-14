@@ -1621,7 +1621,13 @@ public class TestTool {
 				webServiceListener.setName("Test Tool WebServiceListener");
 				webServiceListener.setServiceNamespaceURI(serviceNamespaceURI);
 				webServiceListener.setHandler(listenerMessageHandler);
-				webServiceListener.open();
+				try {
+					webServiceListener.open();
+				} catch (ListenerException e) {
+					closeQueues(queues, properties, writers);
+					queues = null;
+					errorMessage("Could not open web service listener '" + name + "': " + e.getMessage(), e, writers);
+				}
 				Map webServiceListenerInfo = new HashMap();
 				webServiceListenerInfo.put("webServiceListener", webServiceListener);
 				webServiceListenerInfo.put("listenerMessageHandler", listenerMessageHandler);

@@ -52,7 +52,7 @@ public class IbisTester {
 		}
 	}
 
-	public class ScenarioRunner implements Callable<String> {
+	private class ScenarioRunner implements Callable<String> {
 		private String scenariosRootDir;
 		private String scenario;
 
@@ -68,8 +68,7 @@ public class IbisTester {
 			if (scenario == null) {
 				String ibisContextKey = appConstants
 						.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
-				application = new MockServletContext("file:" + webAppPath,
-						null);
+				application = new MockServletContext("file:" + webAppPath, null);
 				application.setAttribute(ibisContextKey, ibisContext);
 				silent = false;
 			} else {
@@ -78,8 +77,7 @@ public class IbisTester {
 				silent = true;
 			}
 			if (scenariosRootDir != null) {
-				request.setParameter("scenariosrootdirectory",
-						scenariosRootDir);
+				request.setParameter("scenariosrootdirectory", scenariosRootDir);
 			}
 			Writer writer = new StringWriter();
 			runScenarios(application, request, writer, silent);
@@ -114,6 +112,22 @@ public class IbisTester {
 	}
 
 	public boolean doTest() {
+		initTest();
+		try {
+			boolean result = testStartAdapters();
+			if (result) {
+				result = testLarva();
+			}
+			return result;
+		} finally {
+			closeTest();
+		}
+	}
+
+	// all called methods in doTest must be public so they can also be called
+	// from outside
+
+	public void initTest() {
 		try {
 			// fix for GitLab Runner
 			File file = new File("target/log");
@@ -130,18 +144,13 @@ public class IbisTester {
 		System.setProperty("flow.create.url", "");
 		debug("***start***");
 		ibisContext = null;
-		try {
-			boolean result = testStartAdapters();
-			if (result) {
-				result = testLarva();
-			}
-			return result;
-		} finally {
-			if (ibisContext != null) {
-				ibisContext.destroy();
-			}
-			debug("***end***");
+	}
+
+	public void closeTest() {
+		if (ibisContext != null) {
+			ibisContext.destroy();
 		}
+		debug("***end***");
 	}
 
 	public boolean testStartAdapters() {
@@ -178,8 +187,7 @@ public class IbisTester {
 				debug("adapter [" + adapter.getName() + "] has state ["
 						+ runState + "], will retry...");
 				int count = 30;
-				while (count-- > 0
-						&& !(RunStateEnum.STARTED).equals(runState)) {
+				while (count-- > 0 && !(RunStateEnum.STARTED).equals(runState)) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
@@ -274,13 +282,15 @@ public class IbisTester {
 	}
 
 	private boolean runScenarios(String xhtml) {
-		Collection<String> scenarios = evaluateXPath(xhtml,
+		Collection<String> scenarios = evaluateXPath(
+				xhtml,
 				"(html/body//select[@name='execute'])[1]/option/@value[ends-with(.,'.properties')]");
 		if (scenarios == null || scenarios.size() == 0) {
 			error("No scenarios found");
 			return false;
 		} else {
-			String scenariosRootDir = evaluateXPathFirst(xhtml,
+			String scenariosRootDir = evaluateXPathFirst(
+					xhtml,
 					"(html/body//select[@name='scenariosrootdirectory'])[1]/option[@selected]/@value");
 			String scenariosRoot = evaluateXPathFirst(xhtml,
 					"(html/body//select[@name='scenariosrootdirectory'])[1]/option[@selected]");
@@ -297,8 +307,8 @@ public class IbisTester {
 				if (StringUtils.isNotEmpty(scenario)
 						&& StringUtils.isNotEmpty(scenariosRootDir)) {
 					if (scenario.startsWith(scenariosRootDir)) {
-						scenarioShortName = scenario
-								.substring(scenariosRootDir.length());
+						scenarioShortName = scenario.substring(scenariosRootDir
+								.length());
 					} else {
 						scenarioShortName = scenario;
 					}
@@ -351,8 +361,8 @@ public class IbisTester {
 		long startTime = 0;
 		while (count-- > 0 && resultString == null) {
 			startTime = System.currentTimeMillis();
-			ScenarioRunner scenarioRunner = new ScenarioRunner(scenariosRootDir,
-					scenario);
+			ScenarioRunner scenarioRunner = new ScenarioRunner(
+					scenariosRootDir, scenario);
 			ExecutorService service = Executors.newSingleThreadExecutor();
 			Future future = service.submit(scenarioRunner);
 			long timeout = 60;
@@ -377,13 +387,13 @@ public class IbisTester {
 	}
 
 	private static void debug(String string) {
-		System.out.println(
-				getIsoTimeStamp() + " " + getMemoryInfo() + " " + string);
+		System.out.println(getIsoTimeStamp() + " " + getMemoryInfo() + " "
+				+ string);
 	}
 
 	private static void error(String string) {
-		System.err.println(
-				getIsoTimeStamp() + " " + getMemoryInfo() + " " + string);
+		System.err.println(getIsoTimeStamp() + " " + getMemoryInfo() + " "
+				+ string);
 	}
 
 	private static String getIsoTimeStamp() {
@@ -393,14 +403,14 @@ public class IbisTester {
 	private static String getMemoryInfo() {
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();
-		return "[" + ProcessMetrics.normalizedNotation(totalMem - freeMem) + "/"
-				+ ProcessMetrics.normalizedNotation(totalMem) + "]";
+		return "[" + ProcessMetrics.normalizedNotation(totalMem - freeMem)
+				+ "/" + ProcessMetrics.normalizedNotation(totalMem) + "]";
 	}
 
 	private static String evaluateXPathFirst(String xhtml, String xpath) {
 		try {
-			return XmlUtils.evaluateXPathNodeSetFirstElement(xhtml, xpath,
-					true);
+			return XmlUtils
+					.evaluateXPathNodeSetFirstElement(xhtml, xpath, true);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -408,8 +418,7 @@ public class IbisTester {
 		}
 	}
 
-	private static Collection<String> evaluateXPath(String xhtml,
-			String xpath) {
+	private static Collection<String> evaluateXPath(String xhtml, String xpath) {
 		try {
 			return XmlUtils.evaluateXPathNodeSet(xhtml, xpath, true);
 		} catch (Exception e) {
@@ -459,5 +468,9 @@ public class IbisTester {
 		} else {
 			return null;
 		}
+	}
+
+	public IbisContext getIbisContext() {
+		return ibisContext;
 	}
 }

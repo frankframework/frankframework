@@ -98,7 +98,7 @@ public class StreamPipeTest {
 		PipeRunResult pipeRunResult = streamPipe.doPipe("", session);
 		assertEquals("antiVirusFailed",
 				pipeRunResult.getPipeForward().getName());
-		String expectedResult = "multipart contains file [doc002.pdf] with antivirus status [Fail]";
+		String expectedResult = "multipart contains file [doc002.pdf] with antivirus status [Fail] and message []";
 		assertEquals(expectedResult, pipeRunResult.getResult());
 	}
 

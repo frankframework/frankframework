@@ -4,17 +4,26 @@
   <groupId>org.ibissource</groupId>
   <artifactId>ibis-adapterframework-parent</artifactId>
   <version>7.0-RC3-SNAPSHOT</version>
-  <name>Ibis AdapterFramework parent</name>
   <packaging>pom</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <ibissource.maven.repository.https>https://github.com/ibissource/mvn-repo/raw/master</ibissource.maven.repository.https>
+    <ibissource.maven.repository.https>https://raw.githubusercontent.com/ibissource/mvn-repo/master</ibissource.maven.repository.https>
     <ibissource.maven.repository.file>file:../mvn-repo</ibissource.maven.repository.file>
     <ibissource.maven.repository.proprietary.file>file:../mvn-repo-proprietary</ibissource.maven.repository.proprietary.file>
   </properties>
 
+  <name>Ibis AdapterFramework parent</name>
+  <description>The Ibis Adapter Framework is an easy to use, stateless integration framework which allows (transactional) messages to be modified and exchanged between different systems.</description>
   <url>http://maven.ibissource.org/iaf/</url>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>manual</distribution>
+    </license>
+  </licenses>
 
   <dependencyManagement>
     <dependencies>
@@ -60,6 +69,11 @@
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
+        <artifactId>ibis-adapterframework-cmis</artifactId>
+        <version>7.0-RC3-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-webapp</artifactId>
         <version>7.0-RC3-SNAPSHOT</version>
         <type>war</type>
@@ -87,7 +101,7 @@
       <dependency>
         <groupId>javax.servlet</groupId>
         <artifactId>servlet-api</artifactId>
-        <version>2.4</version>
+        <version>2.5</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
@@ -158,6 +172,28 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.3</version>
+        <configuration>
+          <tags>
+            <tag>
+              <name>IbisDoc.required</name>
+              <!-- The value X makes javadoc ignoring the tag. See: https://maven.apache.org/plugins/maven-javadoc-plugin/javadoc-mojo.html#tags -->
+              <placement>X</placement>
+            </tag>
+            <tag>
+              <name>IbisDoc.default</name>
+              <placement>X</placement>
+            </tag>
+            <tag>
+              <name>IbisDoc.optional</name>
+              <placement>X</placement>
+            </tag>
+          </tags>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -246,6 +282,7 @@
         <module>example</module>
         <module>larva</module>
         <module>akamai</module>
+        <module>cmis</module>
         <module>webapp</module>
       </modules>
     </profile>
@@ -264,6 +301,7 @@
         <module>ifsa</module>
         <module>larva</module>
         <module>akamai</module>
+        <module>cmis</module>
         <module>sap</module>
         <module>tibco</module>
         <module>webapp</module>

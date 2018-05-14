@@ -246,8 +246,7 @@ public class TibcoUtils {
 				if (state == ServerInfo.SERVER_ACTIVE) {
 					uws_ok = true;
 				} else {
-					log.debug("Server [" + uw + "] is not active, state ["
-							+ admin.getInfo().getState() + "]");
+					log.debug("Server [" + uw + "] is not active");
 					try {
 						admin.close();
 					} catch (TibjmsAdminException e) {

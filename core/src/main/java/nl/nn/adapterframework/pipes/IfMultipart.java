@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017-2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,19 +39,23 @@ public class IfMultipart extends AbstractPipe {
 		String forward;
 		PipeForward pipeForward = null;
 
-		if (!(input instanceof HttpServletRequest)) {
-			throw new PipeRunException(this,
-					getLogPrefix(null)
-							+ "expected HttpServletRequest as input, got ["
-							+ ClassUtils.nameOf(input) + "]");
-		}
-
-		HttpServletRequest request = (HttpServletRequest) input;
-		String contentType = request.getContentType();
-		if (StringUtils.isNotEmpty(contentType) && contentType.startsWith("multipart")) {
-			forward = thenForwardName;
-		} else {
+		if (input == null) {
 			forward = elseForwardName;
+		} else {
+			if (!(input instanceof HttpServletRequest)) {
+				throw new PipeRunException(this,
+						getLogPrefix(null)
+								+ "expected HttpServletRequest as input, got ["
+								+ ClassUtils.nameOf(input) + "]");
+			}
+
+			HttpServletRequest request = (HttpServletRequest) input;
+			String contentType = request.getContentType();
+			if (StringUtils.isNotEmpty(contentType) && contentType.startsWith("multipart")) {
+				forward = thenForwardName;
+			} else {
+				forward = elseForwardName;
+			}
 		}
 
 		log.debug(

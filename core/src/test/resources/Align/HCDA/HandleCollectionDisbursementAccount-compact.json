@@ -1,0 +1,80 @@
+{
+  "MessageHeader": {
+    "TimestampSend": "aaaaaaaaaaaaaaaaaaaa",
+    "ControlSendDate": "1967-08-13"
+  },
+  "ContractAccount": {
+    "accountId": "aaaaaaaaaaaaaaaaaaaa",
+    "startDate": "1967-08-13",
+    "partyReference": "aaaaaaaaaaaaaaaaaaaa",
+    "partyAdministration": "aaa",
+    "currentAccountIndicator": "a",
+    "contractAccountDescription": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "PolicyAccount": [
+      {
+        "insuranceAdministration": "VL",
+        "policyReference": "aaaaaaaaaaaaaaaaaaaa",
+        "bankAccount": "aaaaaaaaaaaaaaaaaa",
+        "paymentMethod": "10",
+        "dunningVariant": "String",
+        "mortgageAssignment": "aa",
+        "fiscalAssignment": "aa",
+        "loanAssignment": "a",
+        "beneficiaryRight": "a",
+        "outputCode": "String",
+        "portfolioNumber": "String",
+        "sepaNumber": "String",
+        "bic": "String",
+        "startDateSEPAMandate": "String"
+      },
+      {
+        "insuranceAdministration": "SD",
+        "policyReference": "aaaaaaaaaaaaaaaaaaaa",
+        "bankAccount": "aaaaaaaaaaaaaaaaaa",
+        "paymentMethod": "10",
+        "dunningVariant": "String",
+        "mortgageAssignment": "aa",
+        "fiscalAssignment": "aa",
+        "loanAssignment": "a",
+        "beneficiaryRight": "a",
+        "outputCode": "String",
+        "portfolioNumber": "String",
+        "sepaNumber": "String",
+        "bic": "String",
+        "startDateSEPAMandate": "String"
+      },
+      {
+        "insuranceAdministration": "VP",
+        "policyReference": "aaaaaaaaaaaaaaaaaaaa",
+        "bankAccount": "aaaaaaaaaaaaaaaaaa",
+        "paymentMethod": "10",
+        "dunningVariant": "String",
+        "mortgageAssignment": "aa",
+        "fiscalAssignment": "aa",
+        "loanAssignment": "a",
+        "beneficiaryRight": "a",
+        "outputCode": "String",
+        "portfolioNumber": "String",
+        "sepaNumber": "String",
+        "bic": "String",
+        "startDateSEPAMandate": "String"
+      },
+      {
+        "insuranceAdministration": "VC",
+        "policyReference": "aaaaaaaaaaaaaaaaaaaa",
+        "bankAccount": "aaaaaaaaaaaaaaaaaa",
+        "paymentMethod": "10",
+        "dunningVariant": "String",
+        "mortgageAssignment": "aa",
+        "fiscalAssignment": "aa",
+        "loanAssignment": "a",
+        "beneficiaryRight": "a",
+        "outputCode": "String",
+        "portfolioNumber": "String",
+        "sepaNumber": "String",
+        "bic": "String",
+        "startDateSEPAMandate": "String"
+      }
+    ]
+  }
+}

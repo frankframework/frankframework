@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<start>
+	<Namen>
+		<Naam>Peter</Naam>
+		<Naam>Jaco</Naam>
+		<Naam>Niels</Naam>
+	</Namen>
+	<Voornamen>
+		<Naam>Gerrit</Naam>
+		<Naam>Jeroen</Naam>
+	</Voornamen>
+</start>

@@ -1,0 +1,10 @@
+{
+  "DataTypes": {
+    "Booleans": {
+      "Boolean": [
+        true,
+        false
+      ]
+    }
+  }
+}

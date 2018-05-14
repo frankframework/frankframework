@@ -148,30 +148,20 @@
     <action-mappings>
         <!-- Process a user logoff -->
         
-        <action path="/showConfigurationStatus" 
-                type="nl.nn.adapterframework.webcontrol.action.ShowConfigurationStatus" 
-                validate="false">
-            <forward name="success" path="/jsp/view.jsp?view=/jsp/showConfigurationStatus.jsp"/>
-        </action>
         <action path="/adapterHandler" 
                 type="nl.nn.adapterframework.webcontrol.action.AdapterHandler"
                 validate="false">
-            <forward name="success" path="/showConfigurationStatus.do" redirect="true" contextRelative="true"/>
+            <forward name="success" path="/rest/showConfigurationStatus" redirect="true" contextRelative="true"/>
         </action>
         <action path="/adapterHandlerAsAdmin" 
                 type="nl.nn.adapterframework.webcontrol.action.AdapterHandlerAsAdmin"
                 validate="false">
-            <forward name="success" path="/showConfigurationStatus.do" redirect="true" contextRelative="true"/>
-        </action>
-        <action path="/showConfiguration" 
-                type="nl.nn.adapterframework.webcontrol.action.ShowConfiguration"
-                validate="false">
-            <forward name="success" path="/jsp/view.jsp?view=/jsp/showConfiguration.jsp"/>
+            <forward name="success" path="/rest/showConfigurationStatus" redirect="true" contextRelative="true"/>
         </action>
         <action path="/configHandler" 
                 type="nl.nn.adapterframework.webcontrol.action.ConfigHandler"
                 validate="false">
-            <forward name="success" path="/showConfiguration.do" redirect="true" contextRelative="true"/>
+            <forward name="success" path="/rest/showConfiguration" redirect="true" contextRelative="true"/>
         </action>
         <action path="/showMonitors" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowMonitors"
@@ -287,19 +277,19 @@
 				validate="false" 
 				input="/jsp/view.jsp?view=/jsp/browseQueue.jsp">
         	<forward name="success" path="/jsp/view.jsp?view=/jsp/queueContents.jsp" />
-        	<forward name="cancel" path="/showConfigurationStatus.do" />
+        	<forward name="cancel" path="/rest/showConfigurationStatus" />
         </action>        
 		<action path="/browser" 
 				type="nl.nn.adapterframework.webcontrol.action.Browse" 
 				validate="false" name="browseQueueForm" scope="session">
         	<forward name="success" path="/jsp/view.jsp?view=/jsp/browse.jsp" />
-        	<forward name="cancel" path="/showConfigurationStatus.do" />
+        	<forward name="cancel" path="/rest/showConfigurationStatus" />
         </action>        
 		<action path="/browserExecute" 
 				type="nl.nn.adapterframework.webcontrol.action.BrowseExecute" 
 				validate="false" name="browseQueueForm" scope="session">
         	<forward name="success" path="/jsp/view.jsp?view=/jsp/browse.jsp" />
-        	<forward name="cancel" path="/showConfigurationStatus.do" />
+        	<forward name="cancel" path="/rest/showConfigurationStatus" />
         </action>        
 		<action	path="/browseJdbcTable" 
        			type="nl.nn.adapterframework.webcontrol.action.BrowseJdbcTable" 
@@ -316,15 +306,8 @@
 				validate="false" 
 				input="/jsp/view.jsp?view=/jsp/browseJdbcTable.jsp">
         	<forward name="success" path="/jsp/view.jsp?view=/jsp/jdbcTableContents.jsp" />
-        	<forward name="cancel" path="/showConfigurationStatus.do" />
+        	<forward name="cancel" path="/rest/showConfigurationStatus" />
         </action>        
-        <action path="/logHandler" 
-                type="nl.nn.adapterframework.webcontrol.action.LogHandler"
-                scope="session" 
-                name="ConfigurationPropertiesForm"
-                validate="false">
-            <forward name="success" path="/showConfigurationStatus.do" redirect="true"/>
-        </action>
         <action path="/showSchedulerStatus" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowSchedulerStatus"
                 validate="false">
@@ -333,13 +316,6 @@
         <action path="/schedulerHandler" 
                 type="nl.nn.adapterframework.webcontrol.action.SchedulerHandler">
             <forward name="success" path="/showSchedulerStatus.do" redirect="true"/>
-        </action>
-        <action path="/showEnvironmentVariables" 
-                type="nl.nn.adapterframework.webcontrol.action.ShowEnvironmentVariables" 
-                scope="session" 
-                name="ConfigurationPropertiesForm"
-                validate="false">
-            <forward name="success" path="/jsp/view.jsp?view=/jsp/showEnvironmentVariables.jsp"/>
         </action>
         <action path="/showSecurityItems" 
                 type="nl.nn.adapterframework.webcontrol.action.ShowSecurityItems" 

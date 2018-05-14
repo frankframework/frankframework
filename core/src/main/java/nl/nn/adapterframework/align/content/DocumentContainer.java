@@ -17,9 +17,9 @@ package nl.nn.adapterframework.align.content;
 
 import org.apache.xerces.xs.XSTypeDefinition;
 
-public interface DocumentContainer extends ElementContainer {
+public interface DocumentContainer extends ElementGroupContainer {
 
-	public void startElement(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition);
-	public void endElement(String localName);
+	public void startElementGroup(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition);
+	public void endElementGroup(String localName);
 
 }

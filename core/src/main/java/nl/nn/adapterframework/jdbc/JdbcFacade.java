@@ -15,41 +15,34 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.util.Date;
 import java.util.Map;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.jms.JNDIBase;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.task.TimeoutGuard;
-
-import org.apache.commons.lang.StringUtils;
+import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * Provides functions for JDBC connections.
@@ -291,95 +284,16 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return result;
 	}
 
-	protected void applyParameters(PreparedStatement statement, ParameterValueList parameters) throws SQLException, SenderException {
-		// statement.clearParameters();
-	
-/*
-		// getParameterMetaData() is not supported on the WebSphere java.sql.PreparedStatement implementation.
-		int senderParameterCount = parameters.size();
-		int statementParameterCount = statement.getParameterMetaData().getParameterCount();
-		if (statementParameterCount<senderParameterCount) {
-			throw new SenderException(getLogPrefix()+"statement has more ["+statementParameterCount+"] parameters defined than sender ["+senderParameterCount+"]");
-		}
-*/		
-		
-		for (int i=0; i< parameters.size(); i++) {
+	protected void applyParameters(PreparedStatement statement,
+			ParameterValueList parameters) throws SQLException, JdbcException {
+		for (int i = 0; i < parameters.size(); i++) {
 			ParameterValue pv = parameters.getParameterValue(i);
-			String paramType = pv.getDefinition().getType();
-			Object value = pv.getValue();
-	//		log.debug("applying parameter ["+(i+1)+","+parameters.getParameterValue(i).getDefinition().getName()+"], value["+parameterValue+"]");
-
-			if (Parameter.TYPE_DATE.equals(paramType)) {
-				if (value==null) {
-					statement.setNull(i+1, Types.DATE);
-				} else {
-					statement.setDate(i+1, new java.sql.Date(((Date)value).getTime()));
-				}
-			} else if (Parameter.TYPE_DATETIME.equals(paramType)) {
-				if (value==null) {
-					statement.setNull(i+1, Types.TIMESTAMP);
-				} else {
-					statement.setTimestamp(i+1, new Timestamp(((Date)value).getTime()));
-				}
-			} else if (Parameter.TYPE_TIMESTAMP.equals(paramType)) {
-				if (value==null) {
-					statement.setNull(i+1, Types.TIMESTAMP);
-				} else {
-					statement.setTimestamp(i+1, new Timestamp(((Date)value).getTime()));
-				}
-			} else if (Parameter.TYPE_TIME.equals(paramType)) {
-				if (value==null) {
-					statement.setNull(i+1, Types.TIME);
-				} else {
-					statement.setTime(i+1, new java.sql.Time(((Date)value).getTime()));
-				}
-			} else if (Parameter.TYPE_XMLDATETIME.equals(paramType)) {
-				if (value==null) {
-					statement.setNull(i+1, Types.TIMESTAMP);
-				} else {
-					statement.setTimestamp(i+1, new Timestamp(((Date)value).getTime()));
-				}
-			} else if (Parameter.TYPE_NUMBER.equals(paramType)) {
-				if (value==null) {
-					statement.setNull(i+1, Types.NUMERIC);
-				} else {
-					statement.setDouble(i+1, ((Number)value).doubleValue());
-				}
-			} else if (Parameter.TYPE_INTEGER.equals(paramType)) {
-				if (value==null) {
-					statement.setNull(i+1, Types.INTEGER);
-				} else {
-					statement.setInt(i+1, (Integer) value);
-				}
-			} else if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
-				if (value instanceof FileInputStream) {
-					FileInputStream fis = (FileInputStream)value;
-					long len= 0;
-					try {
-						len = fis.getChannel().size();
-					} catch (IOException e) {
-						log.warn(getLogPrefix()+"could not determine file size", e);
-					}
-					statement.setBinaryStream(i+1, fis, (int) len);
-				} else if (value instanceof ByteArrayInputStream) {
-					ByteArrayInputStream bais = (ByteArrayInputStream) value;
-					long len= bais.available();
-					statement.setBinaryStream(i+1, bais, (int) len);
-				} else if (value instanceof InputStream) {
-					statement.setBinaryStream(i+1, (InputStream)value);
-				} else {
-					throw new SenderException(getLogPrefix()+"unknown inputstream ["+value.getClass()+"] for parameter ["+pv.getDefinition().getName()+"]");
-				}
-			} else if ("string2bytes".equals(paramType)) {
-				statement.setBytes(i+1, ((String)value).getBytes());
-			} else if ("bytes".equals(paramType)) {
-				statement.setBytes(i+1, (byte[])value);
-			} else { 
-				statement.setString(i+1, (String)value);
-			}
+			JdbcUtil.applyParameter(statement,
+					new SimpleParameter(pv.getDefinition().getName(),
+							pv.getDefinition().getType(), pv.getValue()),
+					i + 1);
 		}
-	}
-	
+	}	
 
 
 	/**

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<start>
+	<Namen>
+		<Naam kleur="green">Peter</Naam>
+		<Naam kleur="blue">Jaco</Naam>
+		<Naam kleur="red">Niels</Naam>
+	</Namen>
+	<Voornamen>
+		<Naam kleur="red">Gerrit</Naam>
+		<Naam kleur="yellow">Jeroen</Naam>
+	</Voornamen>
+</start>

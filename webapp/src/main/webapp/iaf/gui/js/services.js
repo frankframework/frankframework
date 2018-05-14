@@ -828,44 +828,4 @@ angular.module('iaf.beheerconsole')
 			}
 			return false;
 		};
-	}]).config(['$httpProvider', function($httpProvider) {
-		$httpProvider.interceptors.push(['$rootScope', 'appConstants', '$q', '$location', 'Alert', 'Misc', function($rootScope, appConstants, $q, $location, Alert, Misc) {
-			return {
-				responseError: function(rejection) {
-					if(rejection.config && rejection.config.url && rejection.config.url.indexOf(Misc.getServerPath()) < 0) return;
-					switch (rejection.status) {
-						case -1:
-							console.log(appConstants.init, rejection);
-							sessionStorage.setItem("authToken", null);
-							if(appConstants.init == 1) {
-								if(rejection.config.headers["Authorization"] != undefined) {
-									Alert.add(1, "Wrong password...", true);
-								}
-							}
-							if(appConstants.init == 2) {
-								if($location.path().indexOf("login") < 0)
-									sessionStorage.setItem('location', $location.path() || "status");
-								Alert.add(1, "Connection to the server was lost, please reauthenticate!", true);
-							}
-							$location.path("login");
-							break;
-						case 401:
-							var location = $location.path();
-							if(location.indexOf("login") < 0)
-								sessionStorage.setItem('location', location);
-							sessionStorage.setItem('authToken', null);
-							//var deferred = $q.defer();
-							//$rootScope.$broadcast('event:auth-loginRequired', rejection);
-							$location.path("login");
-							//return deferred.promise;
-							break;
-						case 403:
-							//$rootScope.$broadcast('event:auth-forbidden', rejection);
-							break;
-					}
-					// otherwise, default behaviour
-					return $q.reject(rejection);
-				}
-			};
-		}]);
 	}]);

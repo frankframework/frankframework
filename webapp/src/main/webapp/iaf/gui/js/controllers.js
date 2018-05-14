@@ -166,11 +166,12 @@ angular.module('iaf.beheerconsole')
 							adapter.hasSender = true;
 						}
 					}
-					for(i in adapter.messages) {
-						var level = adapter.messages[i].level;
-						if(level != "INFO")
+					if(adapter.messages.length > 0) {
+						var message = adapter.messages[adapter.messages.length -1];
+						if(message.level != "INFO")
 							adapter.status = 'warning';
 					}
+
 					if(!adapter.started)
 						adapter.status = "stopped";
 
@@ -472,7 +473,7 @@ angular.module('iaf.beheerconsole')
 		var btn = $event.currentTarget;
 		btn.addClass('loading');
 		var adapters = Array();
-		for(adapter in $filter('adapterFilter')($scope.adapters, $scope)) {
+		for(adapter in $filter('configurationFilter')($scope.adapters, $scope)) {
 			adapters.push(adapter);
 		}
 		Api.Put("adapters", {"action": "stop", "adapters": adapters});
@@ -481,7 +482,7 @@ angular.module('iaf.beheerconsole')
 		var btn = $event.currentTarget;
 		btn.addClass('loading');
 		var adapters = Array();
-		for(adapter in $filter('adapterFilter')($scope.adapters, $scope)) {
+		for(adapter in $filter('configurationFilter')($scope.adapters, $scope)) {
 			adapters.push(adapter);
 		}
 		Api.Put("adapters", {"action": "start", "adapters": adapters});

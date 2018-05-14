@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -93,5 +94,11 @@ public class XmlValidatorTest2 extends XmlValidatorTestBase {
         return null;
     }
 
+    @Test
+    public void validatePlainText() throws Exception {
+    	String inputFile="/Basic/in/plainText";
+    	String expectedError="Content is not allowed in prolog";
+    	validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK,inputFile,expectedError);
+    }
 
 }

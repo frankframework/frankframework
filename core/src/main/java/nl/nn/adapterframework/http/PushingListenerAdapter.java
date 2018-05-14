@@ -66,7 +66,7 @@ public class PushingListenerAdapter implements IPushingListener, ServiceClient {
 		}
 	}
 
-	public void open() {
+	public void open() throws ListenerException {
 		setRunning(true);
 	}
 	public void close() {

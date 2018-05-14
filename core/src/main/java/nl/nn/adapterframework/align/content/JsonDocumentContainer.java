@@ -19,9 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.json.stream.JsonGenerator;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
 
 /**
  * Helper class to construct JSON from XML events.
@@ -54,22 +55,28 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 
 	@Override
 	protected void addContent(JsonElementContainer parent, JsonElementContainer child) {
+		if (DEBUG) log.debug("DocCont.addGroupContent name ["+parent.getName()+"] child ["+child.getName()+"]");
 		parent.addContent(child);
 	}
+
+//	@Override
+//	protected void addElementContent(JsonNodeContainer parent, JsonNodeContainer child) {
+//		if (DEBUG) log.debug("DocCont.addElementContent (do nothing) name ["+parent.getName()+"] child ["+child.getName()+"]");
+//	}
 
 	
 
 
-	public JSONObject toJson() {
-		Object content=getRoot().getContent();
-		if (content==null) {
-			return null;
-		}
-		if (content instanceof JSONObject) {
-			return (JSONObject)content;
-		}
-		return new JSONObject(content);
-	}
+//	public JSONObject toJson() {
+//		Object content=getRoot().getContent();
+//		if (content==null) {
+//			return null;
+//		}
+//		if (content instanceof JSONObject) {
+//			return (JSONObject)content;
+//		}
+//		return new JSONObject(content);
+//	}
 	
 	@Override
 	public String toString() {
@@ -86,20 +93,22 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 			content=map.values().toArray()[0];
 		}
 		StringBuffer sb = new StringBuffer();
-		toString(sb,skipRootElement?content:this,indent?0:-1);
+		toString(sb,content,indent?0:-1);
 		return sb.toString();
+//		Map config  =new HashMap<String,Object>();
+//		config.put(JsonGenerator.PRETTY_PRINTING,true);
+//		JsonGeneratorFactory gf = Json.createGeneratorFactory(config);
+//		
+//		StringWriter writer = new StringWriter();
+//		JsonGenerator generator = gf.createGenerator(writer);
+//		generate(generator, null, content);
+//		generator.close();
+//		return writer.toString();
 	}
 	
 	protected void toString(StringBuffer sb, Object item, int indentLevel) {
 		if (item==null) {
 			sb.append("null");
-		} else
-		if (item instanceof JsonDocumentContainer) {
-			// handle top level
-				if (name!=null) {
-					sb.append(name).append(": ");
-				}
-				toString(sb,getRoot().getContent(),indentLevel);
 		} else if (item instanceof String) {
 			sb.append(item); 
 		} else if (item instanceof Map) {
@@ -131,7 +140,30 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 			throw new NotImplementedException("cannot handle class ["+item.getClass().getName()+"]");
 		}
 	}
-	
+
+	protected void generate(JsonGenerator g, String key, Object item) {
+		if (item==null) {
+			if (key!=null) g.writeNull(key); else g.writeNull(); 
+		} else if (item instanceof String) {
+			if (key!=null) g.write(key,(String)item); else g.write((String)item); 
+		} else if (item instanceof Map) {
+			if (key!=null) g.writeStartObject(key); else g.writeStartObject(); 
+			for (Entry<String,Object> entry:((Map<String,Object>)item).entrySet()) {
+				generate(g, entry.getKey(), entry.getValue());
+			}
+			g.writeEnd();
+		} else if (item instanceof List) {
+			if (key!=null) g.writeStartArray(key); else g.writeStartArray(); 
+			for (Object subitem:(List)item) {
+				generate(g, null, subitem);
+			}
+			g.writeEnd();
+		} else {
+			throw new NotImplementedException("cannot handle class ["+item.getClass().getName()+"]");
+		}
+	}
+
+
 	private void newLine(StringBuffer sb, int indentLevel) {
 		if (indentLevel>=0)  {
 			sb.append(INDENTOR, 0, (indentLevel<MAX_INDENT?indentLevel:MAX_INDENT)*2+1);
@@ -149,6 +181,4 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 		this.skipRootElement = skipRootElement;
 	}
 
-
-	
 }

@@ -18,6 +18,7 @@ package nl.nn.adapterframework.webcontrol;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.Date;
 
 import javax.servlet.ServletContext;
@@ -32,6 +33,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -72,10 +74,26 @@ public class ConfigurationServlet extends HttpServlet {
 		servletContext.setAttribute(attributeKey, ibisContext);
 		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey	+ "]");
 		ibisContext.init();
+
 		if(ibisContext.getIbisManager() == null)
 			log.warn("Servlet init finished without successfully initializing the ibisContext");
 		else
 			log.debug("Servlet init finished");
+
+		//Add console warning when security constraints have not been enabled
+		String stage = appConstants.getString("otap.stage", "LOC");
+		if(appConstants.getBoolean("security.constraint.warning", !"LOC".equalsIgnoreCase(stage))) {
+			try {
+				String web = File.separator+"WEB-INF"+File.separator+"web.xml";
+				URL webXml = servletContext.getResource(web);
+				if(webXml != null) {
+					if(XmlUtils.buildDomDocument(webXml).getElementsByTagName("security-constraint").getLength() < 1)
+						ConfigurationWarnings.getInstance().add(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
+				}
+			} catch (Exception e) {
+				ConfigurationWarnings.getInstance().add(log, "unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
+			}
+		}
 	}
 
 	@Override

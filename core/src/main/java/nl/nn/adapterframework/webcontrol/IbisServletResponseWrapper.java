@@ -57,10 +57,10 @@ public class IbisServletResponseWrapper	extends HttpServletResponseWrapper {
 
 	public class IbisServletOutputStream extends ServletOutputStream {
 
-		public StringBuffer stringBuffer = new StringBuffer("");
+		private StringBuilder stringBuilder = new StringBuilder("");
 
 		public void write(int i) {
-			stringBuffer.append(i);
+			stringBuilder.append(i);
 		}
 	}
 	/* (non-Javadoc)
@@ -283,7 +283,7 @@ public class IbisServletResponseWrapper	extends HttpServletResponseWrapper {
 	 */
 	public ServletResponse getResponse() {
 		// TODO Auto-generated method stub
-		return null;
+		return super.getResponse();
 	}
 
 	/* (non-Javadoc)

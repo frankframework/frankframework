@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.Misc;
 public class NetStorageUtils {
 
 	/**
-	 * An enum of the hash algorithms supported by {@link #computeHash(java.io.InputStream, com.akamai.netstorage.Utils.HashAlgorithm)}
+	 * An enum of the hash algorithms supported by {@link #computeHash(java.io.InputStream, nl.nn.adapterframework.extensions.akamai.NetStorageUtils.HashAlgorithm)}
 	 * Currently supported hashes include MD5; SHA1; SHA256
 	 *
 	 * The string representation matches the java {@link java.security.MessageDigest#getInstance(String)} canonical names.
@@ -65,7 +65,7 @@ public class NetStorageUtils {
 	}
 
 	/**
-	 * An enum of the keyed-hash algorithms supported by {@link #computeKeyedHash(byte[], String, com.akamai.netstorage.Utils.KeyedHashAlgorithm)}
+	 * An enum of the keyed-hash algorithms supported by {@link #computeKeyedHash(byte[], String, nl.nn.adapterframework.extensions.akamai.NetStorageUtils.KeyedHashAlgorithm)}
 	 * Currently supported hashes include HMAC-MD5; HMAC-SHA1; HMAC-SHA256
 	 *
 	 * The string representation matches the java {@link javax.crypto.Mac#getInstance(String)}} cononical names.
@@ -121,7 +121,7 @@ public class NetStorageUtils {
 	/**
 	 * Computes the hash of a given InputStream. This is a wrapper over the MessageDigest crypto functions.
 	 *
-	 * @param srcStream a bytearray
+	 * @param srcBytes to generate a hash over
 	 * @param hashAlgorithm the Algorithm to use to compute the hash
 	 * @return a byte[] representation of the hash. If the InputStream is a null object
 	 * then null will be returned. If the InputStream is empty an empty byte[] {} will be returned.

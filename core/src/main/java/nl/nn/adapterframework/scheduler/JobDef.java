@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.scheduler;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,12 +37,15 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.DirectoryCleaner;
 import nl.nn.adapterframework.util.JtaUtil;
@@ -376,6 +382,7 @@ public class JobDef {
 	public static final String JOB_FUNCTION_CLEANUPDB="cleanupDatabase";
 	public static final String JOB_FUNCTION_CLEANUPFS="cleanupFileSystem";
 	public static final String JOB_FUNCTION_RECOVER_ADAPTERS="recoverAdapters";
+	public static final String JOB_FUNCTION_CHECK_RELOAD="checkReload";
 
     private String name;
     private String cronExpression;
@@ -394,6 +401,8 @@ public class JobDef {
 
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private int messageKeeperSize = 10; //default length
+	
+	private StatisticsKeeper statsKeeper;
 
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
@@ -458,6 +467,7 @@ public class JobDef {
 
 	public void configure(Configuration config) throws ConfigurationException {
 		MessageKeeper messageKeeper = getMessageKeeper();
+		statsKeeper = new StatisticsKeeper(getName());
 
 		if (StringUtils.isEmpty(getFunction())) {
 			throw new ConfigurationException("jobdef ["+getName()+"] function must be specified");
@@ -472,7 +482,8 @@ public class JobDef {
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATSFULL) ||
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPDB) ||
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPFS) ||
-				getFunction().equalsIgnoreCase(JOB_FUNCTION_RECOVER_ADAPTERS)
+				getFunction().equalsIgnoreCase(JOB_FUNCTION_RECOVER_ADAPTERS) ||
+				getFunction().equalsIgnoreCase(JOB_FUNCTION_CHECK_RELOAD)
 			)) {
 			throw new ConfigurationException("jobdef ["+getName()+"] function ["+getFunction()+"] must be one of ["+
 			JOB_FUNCTION_STOP_ADAPTER+","+
@@ -486,6 +497,7 @@ public class JobDef {
 			JOB_FUNCTION_CLEANUPDB+","+
 			JOB_FUNCTION_CLEANUPFS+
 			JOB_FUNCTION_RECOVER_ADAPTERS+
+			JOB_FUNCTION_CHECK_RELOAD+
 			"]");
 		}
 		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS)) {
@@ -501,6 +513,9 @@ public class JobDef {
 			// nothing special for now
 		} else 
 		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_RECOVER_ADAPTERS)) {
+			// nothing special for now
+		} else 
+		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_CHECK_RELOAD)) {
 			// nothing special for now
 		} else 
 		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_QUERY)) {
@@ -633,6 +648,7 @@ public class JobDef {
 	}
 
 	protected void runJob(IbisManager ibisManager) {
+		long startTime = System.currentTimeMillis();
 		String function = getFunction();
 
 		if (function.equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS)) {
@@ -650,6 +666,9 @@ public class JobDef {
 		if (function.equalsIgnoreCase(JOB_FUNCTION_RECOVER_ADAPTERS)) {
 			recoverAdapters(ibisManager);
 		} else
+			if (function.equalsIgnoreCase(JOB_FUNCTION_CHECK_RELOAD)) {
+				checkReload(ibisManager);
+			} else
 		if (function.equalsIgnoreCase(JOB_FUNCTION_QUERY)) {
 			executeQueryJob(ibisManager);
 		} else
@@ -658,6 +677,9 @@ public class JobDef {
 		} else{
 			ibisManager.handleAdapter(getFunction(), getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
 		}
+		
+		long endTime = System.currentTimeMillis();
+		statsKeeper.addValue(endTime - startTime);
 	}
 
 	private void cleanupDatabase(IbisManager ibisManager) {
@@ -779,6 +801,74 @@ public class JobDef {
 		for (Iterator it=directoryCleaners.iterator();it.hasNext();) {
 			DirectoryCleaner directoryCleaner = (DirectoryCleaner)it.next();
 			directoryCleaner.cleanup();
+		}
+	}
+
+	private void checkReload(IbisManager ibisManager) {
+		String configJmsRealm = JmsRealmFactory.getInstance()
+				.getFirstDatasourceJmsRealm();
+		List<String> configsToReload = new ArrayList<String>();
+
+		if (StringUtils.isNotEmpty(configJmsRealm)) {
+			Connection conn = null;
+			ResultSet rs = null;
+			FixedQuerySender qs = (FixedQuerySender) ibisManager
+					.getIbisContext()
+					.createBeanAutowireByName(FixedQuerySender.class);
+			qs.setJmsRealm(configJmsRealm);
+			qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+			String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = 'TRUE' and AUTORELOAD = 'TRUE'";
+			try {
+				qs.configure();
+				qs.open();
+				conn = qs.getConnection();
+				PreparedStatement stmt = conn.prepareStatement(selectQuery);
+				for (Configuration configuration : ibisManager
+						.getConfigurations()) {
+					if ("DatabaseClassLoader"
+							.equals(configuration.getClassLoaderType())) {
+						String configName = configuration.getName();
+						stmt.setString(1, configName);
+						rs = stmt.executeQuery();
+						if (rs.next()) {
+							String ibisConfigVersion = rs.getString(1);
+							String configVersion = configuration.getVersion();
+							if (!StringUtils.equalsIgnoreCase(ibisConfigVersion,
+									configVersion)) {
+								configsToReload.add(configName);
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				String msg = "error while executing query [" + selectQuery
+						+ "] (as part of scheduled job execution): "
+						+ e.getMessage();
+				getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+				log.error(getLogPrefix() + msg);
+			} finally {
+				qs.close();
+				if (rs != null) {
+					try {
+						rs.close();
+					} catch (SQLException e) {
+						log.warn("Could not close resultset", e);
+					}
+				}
+				if (conn != null) {
+					try {
+						conn.close();
+					} catch (SQLException e) {
+						log.warn("Could not close connection", e);
+					}
+				}
+			}
+		}
+
+		if (!configsToReload.isEmpty()) {
+			for (String configToReload : configsToReload) {
+				ibisManager.getIbisContext().reload(configToReload);
+			}
 		}
 	}
 
@@ -1113,6 +1203,10 @@ public class JobDef {
 		this.messageKeeperSize = size;
 	}
 
+	public synchronized StatisticsKeeper getStatisticsKeeper() {
+		return statsKeeper;
+	}
+	
 	public void addDirectoryCleaner(DirectoryCleaner directoryCleaner) {
 		directoryCleaners.add(directoryCleaner);
 	}

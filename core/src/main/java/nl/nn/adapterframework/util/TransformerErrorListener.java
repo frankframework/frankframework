@@ -31,21 +31,21 @@ import org.apache.log4j.Logger;
 public class TransformerErrorListener implements ErrorListener {
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
-	private boolean handleOnlyWarnings;
+	private boolean throwException;
 	private TransformerException fatalTransformerException;
 	private IOException fatalIOException;
 
 	TransformerErrorListener() {
-		this(false);
+		this(true);
 	}
 
-	TransformerErrorListener(boolean handleOnlyWarnings) {
-		this.handleOnlyWarnings = handleOnlyWarnings;
+	TransformerErrorListener(boolean throwException) {
+		this.throwException = throwException;
 	}
 
 	public void error(TransformerException transformerException)
 			throws TransformerException {
-		if (handleOnlyWarnings) {
+		if (throwException) {
 			throw transformerException;
 		}
 		log.warn("Nonfatal transformation error: "
@@ -54,7 +54,7 @@ public class TransformerErrorListener implements ErrorListener {
 
 	public void fatalError(TransformerException transformerException)
 			throws TransformerException {
-		if (handleOnlyWarnings) {
+		if (throwException) {
 			throw transformerException;
 		}
 		this.setFatalTransformerException(transformerException);

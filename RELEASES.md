@@ -14,6 +14,68 @@ Upcoming
 
 - Move 'Dynamic parameters' from showConfiguration to showEnvironmentVariables
 - Show provided JmsDestinations with usage in showSecurityItems
+- Introduction of the HashPipe
+- Replace configurations.<config-name>.throwConfigNotFoundException property with configurations.<config-name>.configNotFoundReportLevel (possible values: ERROR (default), WARN, INFO, DEBUG)
+- Make ibisstore checks capable for MS SQL (next to Oracle)
+- Add throwJavaListenerNotFoundException attribute to IbisLocalSender
+- Support for converting json+map to xml, to support REST UPDATEs
+- Add duration statistics to showSchedulerStatus
+- Upgrade CmisSender to support 'browser' bindings, support proxys and secure connections
+- Refactor HttpSender and WebServiceSender and (LSM) upgrade HttpClient from version 3 to version 4. Better (Mtom-)Multipart implementation and support for other http implementations using the HttpSenderBase and HttpResponseHandler
+- Fix NPE DumpIbisConsole
+- Refactor CheckReload job
+- StreamPipe: add possibility to append reason to AntiVirus Fail Message
+- Add sessionKeyXPath attribute to Parameter (to be more flexible)
+- Refactor ReplacerPipe replaceNonXmlChar and fix javadoc
+- Introduction of the ShadowSender, a shadowSender allows you to duplicate the outgoing message and send it to an alternative endpoint for later use and comparison
+- Support Unicode supplementary characters (like a smiley) in replace/stripNonValidXmlCharacters (which is used in ReplacerPipe). In the old code a Unicode supplementary character like a smiley was seen as two characters which would both be replaced/stripped. To be backwards compatible the Unicode supplementary characters are still replaced/stripped (by one character instead of two) but can be allowed using allowUnicodeSupplementaryCharacters
+- Fix missing service client registering after stopping and starting rest/api adapters
+- Workaround to avoid NPE after a full reload
+- Avoid warning when ShowFlowDiagram REST listener is unavailable
+- Support document(), xsl:import, and xsl:include with config in database
+- Improve error handling TransformerPools and TransformerFactories
+- Add support for configuration hierarchies. Configurations can define a parent configuration via the property 'configurations.<config-name>.parentConfig=<parentConfig-name>'
+- Fix property file classloading with suffix files.The classloader will search and consolidate all properties found in the classloader chain
+- Introduction of the RestSender
+- Fix NPE in ApiEhCache after a full reload
+- Replace struts page "Show configuration status" by rest service
+- Add fetch action for CmisSender in order to retreive metadata
+- Add CMIS bridge functionality (CmisListener) and the option to remap properties on getObject requests. A bridged cmisListener has to be configured to route traffic!
+- Replace struts page "Show configuration" by rest service
+- Add concurrency limit to parallel senders
+- Encode file path parameter in FileViewerServlet
+- Fix getResourceURL not being able to fetch files from places other then the classpath. This has now been disabled by default, but can be enabled with the property: classloader.allowed.protocols followed by the protocol(s) you wish to enable (file,http,ftp)
+- Add console warning when security constraints (in web.xml file) are disabled. Suppress warnings by setting security.constraint.warning to false
+- Fix CmisListener not being able to process multivalue properties
+- Refactor all DbmsSupport classes
+- Change webdav library to provided scope as it is incompatible with java 6
+- Fix httpclient3 errors in IAF submodules
+- Fix NPE in httpSender when retrieving result without content
+- Remove unused Struts (validation) files
+- Replace webdav library with custom implementation
+- Add boolean support for CmisSender create/update actions
+- Add possibility to send redirect in HttpSender
+- Add regex attribute to XmlIf pipe
+- Fix verifyHostname and allowSelfSignedCertificates bug in HttpSenderBase
+- Remove jdk13Compatibility property in HttpSenderBase
+- Replace struts page "Show Environment variables" by rest service
+- Bugfix namespaces in XmlBuilder
+- Introduction of JsonWellFormedChecker
+- Introduction of Stream2StringPipe
+- Fix stale connections not being cleaned up by the ConnectionPoolManager. See: https://issues.apache.org/jira/browse/HTTPCLIENT-1609
+- Fix multipart parsing issues
+- Update to latest Ladybug Test Tool version
+    - Add custom XmlDecoder for testtool imports
+    - Display escaped characters with different background color
+    - Support Unicode supplementary characters (don't handle a smiley as two characters)
+    - Change colors to be IAF GUI 3.0 friendly
+- Prevent Show Tibco Queues to still fail when passive servers in server url
+
+
+
+### Non backwards compatible changes
+
+- ADDITIONAL.PROPERTIES.FILE.SUFFIX has been made obsolete. Users are adviced to remove suffix files as soon as possible.
 
 
 

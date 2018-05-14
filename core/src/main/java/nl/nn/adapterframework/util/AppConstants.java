@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -218,31 +220,34 @@ public final class AppConstants extends Properties implements Serializable{
 		while (tokenizer.hasMoreTokens()) {
 			String theFilename= tokenizer.nextToken().trim();
 			try {
-				InputStream is = null;
 				if (directory != null) {
 					File file = new File(directory + "/" + theFilename);
 					if (file.exists()) {
-						is = new FileInputStream(file);
+						InputStream is = new FileInputStream(file);
+						load(is);
+						log.info("Application constants loaded from file [" + theFilename + "]");
 					} else {
 						log.debug("cannot find file ["+theFilename+"] to load additional properties from, ignoring");
 					}
 				}
-				URL url = null;
-				if (is == null) {
-					url = ClassUtils.getResourceURL(classLoader, theFilename);
-					if (url == null) {
+				else {
+					ClassLoader cl = classLoader;
+					if(classLoader == null) {
+						cl = AppConstants.class.getClassLoader();
+					}
+					List<URL> resources = Collections.list(cl.getResources(theFilename));
+					if(resources.size() == 0)
 						log.debug("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
-					} else {
-						is = url.openStream();
-					}
-				}
-				if (is != null) {
-					load(is);
-					if (url != null) {
+
+					//We need to reverse the loading order to make sure the parent files are loaded first
+					Collections.reverse(resources);
+
+					for (URL url : resources) {
+						InputStream is = url.openStream();
+						load(is);
 						log.info("Application constants loaded from url [" + url.toString() + "]");
-					} else {
-						log.info("Application constants loaded from file [" + theFilename + "]");
 					}
+
 					if (loadAdditionalPropertiesFiles) {
 						// Add properties after load(is) to prevent load(is)
 						// from overriding them

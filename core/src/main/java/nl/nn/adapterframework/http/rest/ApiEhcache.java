@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
+import net.sf.ehcache.Status;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.util.AppConstants;
@@ -115,6 +116,12 @@ public class ApiEhcache implements IApiCache {
 
 
 	public Object get(String key) {
+		// Workaround to avoid NPE after a full reload (/adapterHandlerAsAdmin.do?action=fullreload)
+		// get() and isKeyInCache() are not synchronized methods and do not contain any state checking.
+		// The cache can only check if a key exists if it's state is ALIVE.
+		if(!cache.getStatus().equals(Status.STATUS_ALIVE))
+			return null;
+
 		Element element = cache.get(key);
 		if (element==null) {
 			return null;
@@ -137,8 +144,8 @@ public class ApiEhcache implements IApiCache {
 		return cache.remove(key);
 	}
 
-	public boolean containsKey(String string) {
-		return cache.isKeyInCache(string);
+	public boolean containsKey(String key) {
+		return (this.get(key) != null);
 	}
 
 	public void flush() {
@@ -148,9 +155,6 @@ public class ApiEhcache implements IApiCache {
 	public void clear() {
 		cache.removeAll();
 	}
-
-
-
 
 	public boolean isEternal() {
 		return eternal;

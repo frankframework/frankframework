@@ -97,7 +97,7 @@
 							<xtags:variable id="cf" select="@jndiName"/>
 							<tr ref="spannedRow">
 								<xtags:variable id="count" select="count(destination)"/>
-								<td rowspan="<%=count%>"><xtags:valueOf select="$cf"/></td>
+								<td rowspan="<%=(count=="0"?"1":count)%>"><xtags:valueOf select="$cf"/></td>
 								<td><xtags:valueOf select="destination[1]/@jndiName"/></td>
 								<td><xtags:valueOf select="destination[1]"/></td>
 								<td>

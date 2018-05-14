@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2014, 2017, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.util;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,15 +30,17 @@ import java.io.Writer;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.zip.DataFormatException;
@@ -51,9 +54,10 @@ import javax.jms.TextMessage;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
-import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.SimpleParameter;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.log4j.Logger;
@@ -67,192 +71,9 @@ import org.apache.log4j.Logger;
 public class JdbcUtil {
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 
-	private static final boolean useMetaDataForTableExists=false;
-
 	private static final String DATEFORMAT = AppConstants.getInstance().getString("jdbc.dateFormat", "yyyy-MM-dd");
 	private static final String TIMESTAMPFORMAT = AppConstants.getInstance().getString("jdbc.timestampFormat", "yyyy-MM-dd HH:mm:ss");
 	private static Properties jdbcProperties = null;
-	
-	/**
-	 * @return true if tableName exists in database in this connection
-	 */
-	public static boolean tableExists(Connection conn, String tableName ) throws SQLException {
-		
-		PreparedStatement stmt = null;
-		if (useMetaDataForTableExists) {
-			DatabaseMetaData dbmeta = conn.getMetaData();
-			ResultSet tableset = dbmeta.getTables(null, null, tableName, null);
-			return !tableset.isAfterLast();
-		} 
-		String query=null;
-		try {
-			query="select count(*) from "+tableName;
-			log.debug("create statement to check for existence of ["+tableName+"] using query ["+query+"]");
-			stmt = conn.prepareStatement(query);
-			log.debug("execute statement");
-			ResultSet rs = stmt.executeQuery();
-			log.debug("statement executed");
-			rs.close();
-			return true;
-		} catch (SQLException e) {
-			if (log.isDebugEnabled()) log.debug("exception checking for existence of ["+tableName+"] using query ["+query+"]", e);
-			return false;
-		} finally {
-			if (stmt!=null) {
-				stmt.close();
-			}
-		}
-	}
-	
-	public static boolean columnExists(Connection conn, String tableName, String columnName) throws SQLException {
-		PreparedStatement stmt = null;
-		String query=null;
-		try {
-			query = "SELECT count(" + columnName + ") FROM " + tableName;
-			stmt = conn.prepareStatement(query);
-
-			ResultSet rs = null;
-			try {
-				rs = stmt.executeQuery();
-				return true;
-			} catch (SQLException e) {
-				if (log.isDebugEnabled()) log.debug("exception checking for existence of column ["+columnName+"] in table ["+tableName+"] executing query ["+query+"]", e);
-				return false;
-			} finally {
-				if (rs != null) {
-					rs.close();
-				}
-			}
-		} catch (SQLException e) {
-			log.warn("exception checking for existence of column ["+columnName+"] in table ["+tableName+"] preparing query ["+query+"]", e);
-			return false;
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-			}
-		}
-	}
-
-	public static boolean isIndexPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_indexes where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"'";
-			try {
-				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
-					return true;
-				} 
-				return false;
-			} catch (Exception e) {
-				log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"]",e);
-				return false;
-			}
-		} 
-		log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
-		return true;
-	}
-
-	public static boolean isSequencePresent(Connection conn, int databaseType, String schemaOwner, String sequenceName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_sequences where sequence_owner='"+schemaOwner.toUpperCase()+"' and sequence_name='"+sequenceName.toUpperCase()+"'";
-			try {
-				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
-					return true;
-				} 
-				return false;
-			} catch (Exception e) {
-				log.warn("could not determine presence of sequence ["+sequenceName+"]",e);
-				return false;
-			}
-		} 
-		log.warn("could not determine presence of sequence ["+sequenceName+"] (not an Oracle database)");
-		return true;
-	}
-
-
-	public static boolean isIndexColumnPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName, String columnName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
-			try {
-				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
-					return true;
-				} 
-				return false;
-			} catch (Exception e) {
-				log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
-				return false;
-			}
-		} 
-		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
-		return true;
-	}
-
-	public static int getIndexColumnPosition(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName, String columnName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select column_position from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
-			try {
-				return JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase());
-			} catch (Exception e) {
-				log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
-				return -1;
-			}
-		} 
-		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
-		return -1;
-	}
-
-	public static boolean hasIndexOnColumn(Connection conn, int databaseType, String schemaOwner, String tableName, String columnName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_ind_columns";
-			query+=" where TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and TABLE_NAME='"+tableName.toUpperCase()+"'";
-			query+=" and column_name=?";
-			query+=" and column_position=1";
-			try {
-				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
-					return true;
-				} 
-				return false;
-			} catch (Exception e) {
-				log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] using query ["+query+"]",e);
-				return false;
-			}
-		} 
-		log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] (not an Oracle database)");
-		return true;
-	}
-	public static boolean hasIndexOnColumns(Connection conn, int databaseType, String schemaOwner, String tableName, List columns) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_indexes ai";
-			for (int i=1;i<=columns.size();i++) {
-				query+=", all_ind_columns aic"+i;
-			}
-			query+=" where ai.TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and ai.TABLE_NAME='"+tableName.toUpperCase()+"'";
-			for (int i=1;i<=columns.size();i++) {
-				query+=" and ai.OWNER=aic"+i+".INDEX_OWNER";
-				query+=" and ai.INDEX_NAME=aic"+i+".INDEX_NAME";
-				query+=" and aic"+i+".column_name='"+((String)columns.get(i-1)).toUpperCase()+"'";
-				query+=" and aic"+i+".column_position="+i;
-			}
-			try {
-				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
-					return true;
-				} 
-				return false;
-			} catch (Exception e) {
-				log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
-				return false;
-			}
-		} 
-		log.warn("could not determine presence of index columns on table ["+tableName+"] (not an Oracle database)");
-		return true;
-	}
-
-	public static String getSchemaOwner(Connection conn, int databaseType) throws SQLException, JdbcException  {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL";
-			return executeStringQuery(conn, query);
-		} 
-		log.warn("could not determine current schema (not an Oracle database)");
-		return "";
-	}
 
 	public static String warningsToString(SQLWarning warnings) {
 		XmlBuilder warningsElem = warningsToXmlBuilder(warnings);
@@ -268,8 +89,8 @@ public class JdbcUtil {
 			parent.addSubElement(warningsElem);	
 		}
 	}
-				
-	public static XmlBuilder warningsToXmlBuilder(SQLWarning warnings) {	
+
+	public static XmlBuilder warningsToXmlBuilder(SQLWarning warnings) {
 		if (warnings!=null) {
 			XmlBuilder warningsElem = new XmlBuilder("warnings");
 			while (warnings!=null) {
@@ -1144,10 +965,11 @@ public class JdbcUtil {
 				jdbcProperties = new Properties();
 				JdbcFacade ibisProp = new JdbcFacade();
 				ibisProp.setJmsRealm(jmsRealm);
+				
 				Connection conn = null;
 				try {
 					conn = ibisProp.getConnection();
-					if (JdbcUtil.tableExists(conn, "ibisprop")) {
+					if (ibisProp.getDbmsSupport().isTablePresent(conn, "ibisprop")) {
 						String query = "select name, value from ibisprop";
 						jdbcProperties.putAll(executePropertiesQuery(conn, query));
 					}
@@ -1171,5 +993,250 @@ public class JdbcUtil {
 		jdbcProperties.clear();
 		jdbcProperties = null;
 		retrieveJdbcPropertiesFromDatabase();
+	}
+
+	public static synchronized Connection retrieveConnection(String jmsRealm)
+			throws JdbcException {
+		JdbcFacade jdbcFacade = new JdbcFacade();
+		jdbcFacade.setJmsRealm(jmsRealm);
+		return jdbcFacade.getConnection();
+	}
+
+	public static String selectAllFromTable(Connection conn, String tableName)
+			throws SQLException {
+		return selectAllFromTable(conn, tableName, null);
+	}
+
+	public static String selectAllFromTable(Connection conn, String tableName,
+			String orderBy) throws SQLException {
+		PreparedStatement stmt = null;
+		try {
+			String query = "select * from " + tableName
+					+ (orderBy != null ? " ORDER BY " + orderBy : "");
+			stmt = conn.prepareStatement(query);
+			ResultSet rs = stmt.executeQuery();
+			try {
+				DB2XMLWriter db2xml = new DB2XMLWriter();
+				return db2xml.getXML(rs);
+			} finally {
+				rs.close();
+			}
+		} finally {
+			if (stmt != null) {
+				stmt.close();
+			}
+		}
+	}
+
+	public static List<List<Object>> executeObjectListListQuery(Connection connection, String query, int columnsCount) throws JdbcException {
+		PreparedStatement stmt = null;
+		List<List<Object>> objectListList = new ArrayList<List<Object>>();
+		
+		try {
+			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
+			stmt = connection.prepareStatement(query);
+			ResultSet rs = stmt.executeQuery();
+			try {
+				while (rs.next()) {
+					List<Object> objectList = new ArrayList<Object>();
+					for (int i=1; i<=columnsCount; i++) {
+						objectList.add(rs.getObject(i));
+					}
+					objectListList.add(objectList);
+				}
+				return objectListList;
+			} finally {
+				rs.close();
+			}
+		} catch (Exception e) {
+			throw new JdbcException("could not obtain value using query ["+query+"]",e);
+		} finally {
+			if (stmt!=null) {
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					throw new JdbcException("could not close statement of query ["+query+"]",e);
+				}
+			}
+		}
+	}
+
+	public static void executeStatement(Connection connection, String query,
+			List<SimpleParameter> simpleParameters) throws JdbcException {
+		PreparedStatement stmt = null;
+		try {
+			if (log.isDebugEnabled())
+				log.debug("prepare and execute query [" + query + "]"
+						+ displayParameters(simpleParameters));
+			stmt = connection.prepareStatement(query);
+			applyParameters(stmt, simpleParameters);
+			stmt.execute();
+		} catch (Exception e) {
+			throw new JdbcException("could not execute query [" + query + "]"
+					+ displayParameters(simpleParameters), e);
+		} finally {
+			if (stmt != null) {
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					log.warn(
+							"exception closing statement for query [" + query
+									+ "]" + displayParameters(simpleParameters),
+							e);
+				}
+			}
+		}
+	}
+
+	public static Object executeQuery(Connection connection, String query,
+			List<SimpleParameter> simpleParameters) throws JdbcException {
+		PreparedStatement stmt = null;
+		try {
+			if (log.isDebugEnabled())
+				log.debug("prepare and execute query [" + query + "]"
+						+ displayParameters(simpleParameters));
+			stmt = connection.prepareStatement(query);
+			applyParameters(stmt, simpleParameters);
+			ResultSet rs = stmt.executeQuery();
+			try {
+				if (!rs.next()) {
+					return null;
+				}
+				int columnsCount = rs.getMetaData().getColumnCount();
+				if (columnsCount == 1) {
+					return rs.getObject(1);
+				} else {
+					List<Object> resultList = new ArrayList<Object>();
+					for (int i = 1; i <= columnsCount; i++) {
+						resultList.add(rs.getObject(i));
+					}
+					return resultList;
+				}
+			} finally {
+				rs.close();
+			}
+		} catch (Exception e) {
+			throw new JdbcException("could not obtain value using query ["
+					+ query + "]" + displayParameters(simpleParameters), e);
+		} finally {
+			if (stmt != null) {
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					log.warn(
+							"exception closing statement for query [" + query
+									+ "]" + displayParameters(simpleParameters),
+							e);
+				}
+			}
+		}
+	}
+	
+	private static String displayParameters(List<SimpleParameter> simpleParameters) {
+		if (simpleParameters == null) {
+			return "";
+		}
+		StringBuilder sb = new StringBuilder();
+		int i = 0;
+		for (SimpleParameter simpleParameter : simpleParameters) {
+			i++;
+			sb.append("param" + i + " [");
+			sb.append(simpleParameter.getValue() + "]");
+		}
+		return sb.toString();
+	}
+
+	public static void applyParameters(PreparedStatement statement,
+			List<SimpleParameter> simpleParameters)
+			throws SQLException, JdbcException {
+		if (simpleParameters != null) {
+			int i = 0;
+			for (SimpleParameter simpleParameter : simpleParameters) {
+				applyParameter(statement, simpleParameter, ++i);
+			}
+		}
+	}
+
+	public static void applyParameter(PreparedStatement statement,
+			SimpleParameter simpleParameter, int parameterIndex)
+			throws SQLException, JdbcException {
+		String paramType = simpleParameter.getType();
+		Object value = simpleParameter.getValue();
+		if (Parameter.TYPE_DATE.equals(paramType)) {
+			if (value == null) {
+				statement.setNull(parameterIndex, Types.DATE);
+			} else {
+				statement.setDate(parameterIndex,
+						new java.sql.Date(((Date) value).getTime()));
+			}
+		} else if (Parameter.TYPE_DATETIME.equals(paramType)) {
+			if (value == null) {
+				statement.setNull(parameterIndex, Types.TIMESTAMP);
+			} else {
+				statement.setTimestamp(parameterIndex,
+						new Timestamp(((Date) value).getTime()));
+			}
+		} else if (Parameter.TYPE_TIMESTAMP.equals(paramType)) {
+			if (value == null) {
+				statement.setNull(parameterIndex, Types.TIMESTAMP);
+			} else {
+				statement.setTimestamp(parameterIndex,
+						new Timestamp(((Date) value).getTime()));
+			}
+		} else if (Parameter.TYPE_TIME.equals(paramType)) {
+			if (value == null) {
+				statement.setNull(parameterIndex, Types.TIME);
+			} else {
+				statement.setTime(parameterIndex,
+						new java.sql.Time(((Date) value).getTime()));
+			}
+		} else if (Parameter.TYPE_XMLDATETIME.equals(paramType)) {
+			if (value == null) {
+				statement.setNull(parameterIndex, Types.TIMESTAMP);
+			} else {
+				statement.setTimestamp(parameterIndex,
+						new Timestamp(((Date) value).getTime()));
+			}
+		} else if (Parameter.TYPE_NUMBER.equals(paramType)) {
+			if (value == null) {
+				statement.setNull(parameterIndex, Types.NUMERIC);
+			} else {
+				statement.setDouble(parameterIndex,
+						((Number) value).doubleValue());
+			}
+		} else if (Parameter.TYPE_INTEGER.equals(paramType)) {
+			if (value == null) {
+				statement.setNull(parameterIndex, Types.INTEGER);
+			} else {
+				statement.setInt(parameterIndex, (Integer) value);
+			}
+		} else if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
+			if (value instanceof FileInputStream) {
+				FileInputStream fis = (FileInputStream) value;
+				long len = 0;
+				try {
+					len = fis.getChannel().size();
+				} catch (IOException e) {
+					log.warn("could not determine file size", e);
+				}
+				statement.setBinaryStream(parameterIndex, fis, (int) len);
+			} else if (value instanceof ByteArrayInputStream) {
+				ByteArrayInputStream bais = (ByteArrayInputStream) value;
+				long len = bais.available();
+				statement.setBinaryStream(parameterIndex, bais, (int) len);
+			} else if (value instanceof InputStream) {
+				statement.setBinaryStream(parameterIndex, (InputStream) value);
+			} else {
+				throw new JdbcException("unknown inputstream ["
+						+ value.getClass() + "] for parameter ["
+						+ simpleParameter.getName() + "]");
+			}
+		} else if ("string2bytes".equals(paramType)) {
+			statement.setBytes(parameterIndex, ((String) value).getBytes());
+		} else if ("bytes".equals(paramType)) {
+			statement.setBytes(parameterIndex, (byte[]) value);
+		} else {
+			statement.setString(parameterIndex, (String) value);
+		}
 	}
 }

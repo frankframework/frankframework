@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2015 Nationale-Nederlanden
+   Copyright 2013-2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -298,7 +298,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		IDbmsSupport dbms=getDbmsSupport();
 		String schemaOwner=getSchemaOwner4Check();
 		log.debug("checking for presence of table ["+getTableName()+"] in schema/catalog ["+schemaOwner+"]");
-		if (dbms.isTablePresent(connection, getSchemaOwner4Check(), getTableName())) {
+		if (dbms.isTablePresent(connection, getTableName())) {
 			checkTableColumnPresent(connection,dbms,getKeyField());
 			checkTableColumnPresent(connection,dbms,getTypeField());
 			checkTableColumnPresent(connection,dbms,getSlotIdField());
@@ -321,7 +321,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private void checkIndices(Connection connection) {
 		checkIndexOnColumnPresent(connection, getKeyField());
 		
-		ArrayList columnList= new ArrayList();
+		ArrayList<String> columnList= new ArrayList<String>();
 		if (StringUtils.isNotEmpty(getTypeField())) {
 			columnList.add(getTypeField());
 		}
@@ -339,15 +339,15 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	private void checkIndexOnColumnPresent(Connection connection, String column) {
-		if (!JdbcUtil.hasIndexOnColumn(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName(), column)) {
+		if (!getDbmsSupport().hasIndexOnColumn(connection, getSchemaOwner4Check(), getTableName(), column)) {
 			String msg="table ["+getTableName()+"] has no index on column ["+column+"]";
 			ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
 		}
 	}
 
-	private void checkIndexOnColumnsPresent(Connection connection, List columns) {
+	private void checkIndexOnColumnsPresent(Connection connection, List<String> columns) {
 		if (columns!=null && !columns.isEmpty()) {
-			if (!JdbcUtil.hasIndexOnColumns(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName(), columns)) {
+			if (!getDbmsSupport().hasIndexOnColumns(connection, getSchemaOwner4Check(), getTableName(), columns)) {
 				String msg="table ["+getTableName()+"] has no index on columns ["+columns.get(0);
 				for (int i=1;i<columns.size();i++) {
 					msg+=","+columns.get(i);
@@ -359,7 +359,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	private void checkSequence(Connection connection) {
-		if (JdbcUtil.isSequencePresent(connection, getDatabaseType(), getSchemaOwner4Check(), getSequenceName())) {
+		if (getDbmsSupport().isSequencePresent(connection, getSchemaOwner4Check(), getTableName(), getSequenceName())) {
 			//no more checks
 		} else {
 			String msg="Sequence ["+getSequenceName()+"] not present";
@@ -583,12 +583,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 			if (checkIfTableExists) {
 				try {
-					tableMustBeCreated = !JdbcUtil.tableExists(conn, getPrefix()+getTableName());
+					tableMustBeCreated = !getDbmsSupport().isTablePresent(conn, getPrefix()+getTableName());
 					if (!isCreateTable() && tableMustBeCreated) {
 						throw new SenderException("table ["+getPrefix()+getTableName()+"] does not exist");
 					}
 					 log.info("table ["+getPrefix()+getTableName()+"] does "+(tableMustBeCreated?"NOT ":"")+"exist");
-				} catch (SQLException e) {
+				} catch (JdbcException e) {
 					log.warn(getLogPrefix()+"exception determining existence of table ["+getPrefix()+getTableName()+"] for transactional storage, trying to create anyway."+ e.getMessage());
 					tableMustBeCreated=true;
 				}

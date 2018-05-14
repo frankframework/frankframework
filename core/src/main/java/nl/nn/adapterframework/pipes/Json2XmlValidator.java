@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017,2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,19 +15,16 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.StringWriter;
+import java.io.StringReader;
+import java.util.Map;
 
+import javax.json.Json;
+import javax.json.JsonStructure;
 import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.xs.PSVIProvider;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.align.Json2Xml;
@@ -38,6 +35,8 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.ValidationContext;
 import nl.nn.adapterframework.validation.XmlValidatorException;
@@ -82,6 +81,9 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * <tr><td>{@link #setOutputFormat(String) outputFormat}</td><td>default format of the result. Either 'xml' or 'json'</td><td>xml</td></tr>
 * <tr><td>{@link #setAutoFormat(boolean) autoFormat}</td><td>when true, the format on 'output' is set to the same as the format of the input message on 'input'</td><td>true</td></tr>
 * <tr><td>{@link #setOutputFormatSessionKey(String) outputFormatSessionKey}</td><td>session key to retrieve outputFormat from.</td><td>outputFormat</td></tr>
+* <tr><td>{@link #setFailOnWildcards(boolean) failOnWildcards}</td><td>when true, an exception is thrown when a Wildcard is found in the XML Schema when parsing an object. This often indicates that an element is not properly typed in the XML Schema, and could lead to ambuigities.</td><td>true</td></tr>
+* <tr><td>{@link #setAcceptNamespaceLessXml(boolean) acceptNamespaceLessXml}</td><td>when true, all XML is allowed to be without namespaces. When no namespaces are detected (by the presence of the string 'xmlns') in the XML string, the root namespace is added to the XML</td><td>false</td></tr>
+* <tr><td>{@link #setProduceNamespaceLessXml(boolean) produceNamespaceLessXml}</td><td>when true, all XML that is generated is without a namespace set</td><td>false</td></tr>
 * </table>
 * <p><b>Exits:</b>
 * <table border="1">
@@ -99,13 +101,22 @@ public class Json2XmlValidator extends XmlValidator {
 
 	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputformat ";
 	
+	public final String FORMAT_XML="xml";
+	public final String FORMAT_JSON="json";
+	public final String FORMAT_AUTO="auto";
+	
 	private boolean compactJsonArrays=true;
 	private boolean strictJsonArraySyntax=false;
 	private boolean jsonWithRootElements=false;
+	private boolean deepSearch=false;
 	private String targetNamespace;
-	private String outputFormat="xml";
+	private String outputFormat=FORMAT_XML;
 	private boolean autoFormat=true;
 	private String outputFormatSessionKey="outputFormat";
+	//private String requestFormat=FORMAT_AUTO;
+	private boolean failOnWildcards=true;
+	private boolean acceptNamespaceLessXml=false;
+	private boolean produceNamespaceLessXml=false;
 
 
 	{
@@ -149,30 +160,41 @@ public class Json2XmlValidator extends XmlValidator {
      */
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session, boolean responseMode) throws PipeRunException {
-		String messageToValidate;
-		messageToValidate = input.toString();
+		String messageToValidate=input==null?"{}":input.toString();
 		int i=0;
 		while (i<messageToValidate.length() && Character.isWhitespace(messageToValidate.charAt(i))) i++;
 		if (i>=messageToValidate.length()) {
-			throw new PipeRunException(this,"message contains only whitespace");
-		}
-		char firstChar=messageToValidate.charAt(i);
-		if (firstChar=='<') {
-			// message is XML
-			storeInputFormat("xml",session, responseMode);
-			if (!getOutputFormat(session,responseMode).equalsIgnoreCase("json")) {
-				return super.doPipe(input,session, responseMode);
+			messageToValidate="{}";
+			storeInputFormat(FORMAT_JSON,session, responseMode);
+		} else {
+			char firstChar=messageToValidate.charAt(i);
+			if (firstChar=='<') {
+				// message is XML
+				if (isAcceptNamespaceLessXml()) {
+					messageToValidate=addNamespace(messageToValidate);
+					//if (log.isDebugEnabled()) log.debug("added namespace to message ["+messageToValidate+"]");
+				}
+				storeInputFormat(FORMAT_XML,session, responseMode);
+				if (!getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
+					PipeRunResult result=super.doPipe(messageToValidate,session, responseMode);
+					if (isProduceNamespaceLessXml()) {
+						String msg=(String)result.getResult();
+						msg=XmlUtils.removeNamespaces(msg);
+						result.setResult(msg);
+					}
+					return result;
+				}
+				try {
+					return alignXml2Json(messageToValidate, session, responseMode);
+				} catch (Exception e) {
+					throw new PipeRunException(this, "Alignment of XML to JSON failed",e);
+				}
 			}
-			try {
-				return alignXml2Json(messageToValidate, session, responseMode);
-			} catch (Exception e) {
-				throw new PipeRunException(this, "Alignment of XML to JSON failed",e);
+			if (firstChar!='{' && firstChar!='[') {
+				throw new PipeRunException(this,"message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['");
 			}
+			storeInputFormat(FORMAT_JSON,session, responseMode);
 		}
-		if (firstChar!='{' && firstChar!='[') {
-			throw new PipeRunException(this,"message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['");
-		}
-		storeInputFormat("json",session, responseMode);
 		try {
 			return alignJson(messageToValidate, session, responseMode);
 		} catch (XmlValidatorException e) {
@@ -215,18 +237,26 @@ public class Json2XmlValidator extends XmlValidator {
 			if (StringUtils.isNotEmpty(getTargetNamespace())) {
 				aligner.setTargetNamespace(getTargetNamespace());
 			}
+			aligner.setDeepSearch(isDeepSearch());
 			aligner.setErrorHandler(context.getErrorHandler());
-			JSONTokener jsonTokener = new JSONTokener(messageToValidate);
-			JSONObject json = new JSONObject(jsonTokener);
+			aligner.setFailOnWildcards(isFailOnWildcards());
+			ParameterList parameterList = getParameterList();
+			if (parameterList!=null) {
+				ParameterResolutionContext prc = new ParameterResolutionContext(messageToValidate, session, isNamespaceAware(), false);
+				Map<String,Object> parametervalues = null;
+				parametervalues = prc.getValueMap(parameterList);
+				aligner.setOverrideValues(parametervalues);
+			}
+			JsonStructure jsonStructure = Json.createReader(new StringReader(messageToValidate)).read();
 			
-			if (getOutputFormat(session,responseMode).equalsIgnoreCase("json")) {
+			if (getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
 				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 				aligner.setContentHandler(xml2json);
-				aligner.startParse(json);
+				aligner.startParse(jsonStructure);
 				out=xml2json.toString();
 			} else {
-				Source source = aligner.asSource(json);
-				out = source2String(source);
+				Source source = aligner.asSource(jsonStructure);
+				out = XmlUtils.source2String(source,isProduceNamespaceLessXml());
 			}
 		} catch (Exception e) {
 			resultEvent= validator.finalizeValidation(context, session, e);
@@ -237,16 +267,25 @@ public class Json2XmlValidator extends XmlValidator {
 		return result;
 	}
 
-	public static String source2String(Source source) throws TransformerException {
-		StringWriter writer = new StringWriter();
-		StreamResult result = new StreamResult(writer);
-		TransformerFactory tf = XmlUtils.getTransformerFactory(false);
-		Transformer transformer = tf.newTransformer();
-		transformer.transform(source, result);
-		writer.flush();
-		return writer.toString();
+	public String addNamespace(String xml) {
+		if (StringUtils.isEmpty(xml) || xml.indexOf("xmlns")>0) {
+			return xml;
+		}	
+		String namespace = getSchemaLocation().split(" ")[0];
+		if (log.isDebugEnabled()) log.debug("setting namespace ["+namespace+"]");
+		int startPos=0;
+		if (xml.trim().startsWith("<?")) {
+			startPos=xml.indexOf("?>")+2;
+		}
+		int elementEnd=xml.indexOf('>',startPos);
+		if (elementEnd<0) {
+			return xml;
+		}
+		if (xml.charAt(elementEnd-1)=='/') {
+			elementEnd--;
+		}
+		return xml.substring(0, elementEnd)+" xmlns=\""+namespace+"\""+xml.substring(elementEnd);
 	}
-
 	
 	
 	public String getTargetNamespace() {
@@ -294,9 +333,36 @@ public class Json2XmlValidator extends XmlValidator {
 	public boolean isAutoFormat() {
 		return autoFormat;
 	}
-
 	public void setAutoFormat(boolean autoFormat) {
 		this.autoFormat = autoFormat;
+	}
+
+	public boolean isDeepSearch() {
+		return deepSearch;
+	}
+	public void setDeepSearch(boolean deepSearch) {
+		this.deepSearch = deepSearch;
+	}
+
+	public boolean isFailOnWildcards() {
+		return failOnWildcards;
+	}
+	public void setFailOnWildcards(boolean failOnWildcards) {
+		this.failOnWildcards = failOnWildcards;
+	}
+
+	public boolean isAcceptNamespaceLessXml() {
+		return acceptNamespaceLessXml;
+	}
+	public void setAcceptNamespaceLessXml(boolean acceptNamespaceLessXml) {
+		this.acceptNamespaceLessXml = acceptNamespaceLessXml;
+	}
+
+	public boolean isProduceNamespaceLessXml() {
+		return produceNamespaceLessXml;
+	}
+	public void setProduceNamespaceLessXml(boolean produceNamespaceLessXml) {
+		this.produceNamespaceLessXml = produceNamespaceLessXml;
 	}
 
 }

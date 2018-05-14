@@ -1,0 +1,9 @@
+{
+  "Attributed": {
+    "@decimal": 0.1,
+    "@int": 400,
+    "@date": "1957-08-13",
+    "@dateTime": "2001-12-17T09:30:47Z",
+    "subelem": "it is in the attributes"
+  }
+}

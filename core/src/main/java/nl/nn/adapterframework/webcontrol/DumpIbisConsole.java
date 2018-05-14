@@ -35,12 +35,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 
 /**
@@ -140,7 +140,6 @@ public class DumpIbisConsole extends HttpServlet {
 	}
 
 	public void followLinks(Set resourceSet, String htmlString, String linkStartFilter) {
-
 		String hs = htmlString.toUpperCase();
 		int posLinkStart = hs.indexOf("<A ");
 		while (posLinkStart >= 0) {
@@ -166,7 +165,6 @@ public class DumpIbisConsole extends HttpServlet {
 	}
 
 	public void extractResources(Set resources, String htmlString) {
-
 		String hs = htmlString.toUpperCase();
 		int p0 = hs.indexOf("<LINK ");
 		while (p0 >= 0) {
@@ -233,27 +231,33 @@ public class DumpIbisConsole extends HttpServlet {
 
 			copyServletResponse(zipOutputStream, request, response, "/showLogging.do", directoryName + "showLogging.html", resources, setFileViewer, "FileViewerServlet");
 
-			// find filename of ibis logfiles
-			FileAppender fa = (FileAppender)LogUtil.getRootLogger().getAppender("file");
-			File logFile = new File(fa.getFile());
-			String ibisLogFileName = logFile.getName();
-			
-			// find filename of stats logfiles
-			String statLogFileStart = AppConstants.getInstance().getResolvedProperty("instance.name");
-			
-			String sysLogFileStart = "SystemOut";
+			// find filename of all log files
+			String ibisLogFileStart = AppConstants.getInstance().getResolvedProperty("instance.name.lc");
+			String sysLogFileStart = "System"; //SystemOut and SystemErr
+			String garbageCollectionLogFileStart = "GClog";
 
 			for (Iterator iterator = setFileViewer.iterator();iterator.hasNext();) {
 				String s = (String) iterator.next();
-				if (s.indexOf("resultType=text") >= 0) {
+				if (s.indexOf("resultType=bin") >= 0) {
 					int p1 = s.length();
 					int p2 = s.indexOf("fileName=");
 					String fileName = s.substring(p2 + 9, p1);
+					int p3 = fileName.indexOf("&amp;");
+					if (p3 >= 0) {
+						fileName = fileName.substring(0, p3);
+					}
 					File file = new File(fileName);
 					String fn = file.getName();
-					if (fn.startsWith(ibisLogFileName) || 
-					    fn.startsWith(statLogFileStart) || 
-						fn.startsWith(sysLogFileStart)) {
+					if (fn.startsWith(ibisLogFileStart) || 
+						fn.startsWith(sysLogFileStart) ||
+						fn.startsWith(garbageCollectionLogFileStart)) {
+						// best solution would be to stream files binary, but because log files are not binary reading as text also works
+						s = StringUtils.replace(s, "resultType=bin", "resultType=text");
+						s = StringUtils.replace(s, "&amp;", "&");
+						if (fn.startsWith(garbageCollectionLogFileStart)) {
+							// rename garbage collection log files so there are ordered correctly 
+							fn = garbageCollectionLogFileStart + ".log." + DateUtils.format(new Date(file.lastModified()), "yyyyMMddHHmmss");
+						}
 						copyServletResponse(zipOutputStream, request, response, "/" + s, directoryName + "log/" + fn, resources, null,null);
 					}
 				}

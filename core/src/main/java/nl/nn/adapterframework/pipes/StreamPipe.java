@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016-2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -53,9 +55,11 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>{@link #setExtractFirstStringPart(boolean) extractFirstStringPart}</td><td>(only used for parameter <code>httpRequest</code>) when true the first part is not put in a session key but returned to the pipeline (as the result of this pipe)</td><td>false</td></tr>
  * <tr><td>{@link #setMultipartXmlSessionKey(String) multipartXmlSessionKey}</td><td>(only used when <code>extractFirstStringPart=true</code>) the session key to put the xml in with info about the stored parts</td><td><code>multipartXml</code></td></tr>
  * <tr><td>{@link #setCheckAntiVirus(boolean) checkAntiVirus}</td><td>(only used for parameter <code>httpRequest</code>) when true parts are checked for antivirus scan returncode. These antivirus scan parts have been added by another application (so the antivirus scan is NOT performed in this pipe). For each file part an antivirus scan part have been added by this other application (directly after this file part)</td><td>false</td></tr>
- * <tr><td>{@link #setAntiVirusPartName(String) antiVirusPartName}</td><td>(only used for parameter <code>httpRequest</code> and when <code>checkAntiVirus=true</code>) name of antivirus scan parts</td><td><code>antivirus_rc</code></td></tr>
+ * <tr><td>{@link #setAntiVirusPartName(String) antiVirusPartName}</td><td>(only used for parameter <code>httpRequest</code> and when <code>checkAntiVirus=true</code>) name of antivirus scan status parts</td><td><code>antivirus_rc</code></td></tr>
+ * <tr><td>{@link #setAntiVirusMessagePartName(String) antiVirusMessagePartName}</td><td>(only used for parameter <code>httpRequest</code> and when <code>checkAntiVirus=true</code>) name of antivirus scan message parts</td><td><code>antivirus_msg</code></td></tr>
  * <tr><td>{@link #setAntiVirusPassedMessage(String) antiVirusPassedMessage}</td><td>(only used for parameter <code>httpRequest</code> and when <code>checkAntiVirus=true</code>) message of antivirus scan parts which indicates the antivirus scan passed</td><td><code>Pass</code></td></tr>
  * <tr><td>{@link #setAntiVirusFailureAsSoapFault(boolean) antiVirusFailureAsSoapFault}</td><td>(only used for parameter <code>httpRequest</code> and when <code>checkAntiVirus=true</code>) when true and the antiVirusFailed forward is specified and the antivirus scan did not pass, a SOAP Fault is returned instead of only a plain error message</td><td>false</td></tr>
+ * <tr><td>{@link #setAntiVirusFailureReasonSessionKey(String) antiVirusFailureReasonSessionKey}</td><td>(only used for parameter <code>httpRequest</code> and when <code>checkAntiVirus=true</code>) if not empty and the antiVirusFailed forward is specified and the antivirus scan did not pass, the error message (or SOAP Fault) is stored in this session key and the first string part is returned to the pipeline</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -67,6 +71,7 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>httpRequest</td><td>an HttpServletRequest object to stream from. Each part is put in a session key and the result of this pipe is a xml with info about these parts and the name of the session key</td></tr>
  * <tr><td>contentType</td><td>the Content-Type header to set in case httpResponse was specified</td></tr>
  * <tr><td>contentDisposition</td><td>the Content-Disposition header to set in case httpResponse was specified</td></tr>
+ * <tr><td>redirectLocation</td><td>the redirect location to set in case httpResponse was specified</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -86,9 +91,35 @@ public class StreamPipe extends FixedForwardPipe {
 	private String multipartXmlSessionKey = "multipartXml";
 	private boolean checkAntiVirus = false;
 	private String antiVirusPartName = "antivirus_rc";
+	private String antiVirusMessagePartName = "antivirus_msg";
 	private String antiVirusPassedMessage = "Pass";
 	private boolean antiVirusFailureAsSoapFault = false;
+	private String antiVirusFailureReasonSessionKey;
 
+	private class AntiVirusObject {
+		private String fileName;
+		private String status;
+		private String message;
+
+		public AntiVirusObject(String fileName, String status, String message) {
+			this.fileName = fileName;
+			this.status = status;
+			this.message = message;
+		}
+
+		public String getFileName() {
+			return fileName;
+		}
+
+		public String getStatus() {
+			return status;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+	}
+	
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session)
 			throws PipeRunException {
@@ -117,6 +148,7 @@ public class StreamPipe extends FixedForwardPipe {
 		HttpServletResponse httpResponse = null;
 		String contentType = null;
 		String contentDisposition = null;
+		String redirectLocation = null;
 		if (parameters != null) {
 			if (parameters.get("inputStream") != null) {
 				inputStream = (InputStream) parameters.get("inputStream");
@@ -139,6 +171,10 @@ public class StreamPipe extends FixedForwardPipe {
 				contentDisposition = (String) parameters
 						.get("contentDisposition");
 			}
+			if (parameters.get("redirectLocation") != null) {
+				redirectLocation = (String) parameters
+						.get("redirectLocation");
+			}
 		}
 		if (inputStream == null && input instanceof InputStream) {
 			inputStream = (InputStream) input;
@@ -147,10 +183,11 @@ public class StreamPipe extends FixedForwardPipe {
 			if (httpResponse != null) {
 				HttpSender.streamResponseBody(inputStream, contentType,
 						contentDisposition, httpResponse, log,
-						getLogPrefix(session));
+						getLogPrefix(session), redirectLocation);
 			} else if (httpRequest != null) {
 				StringBuilder partsString = new StringBuilder("<parts>");
 				String firstStringPart = null;
+				List<AntiVirusObject> antiVirusObjects = new ArrayList<AntiVirusObject>();
 				if (ServletFileUpload.isMultipartContent(httpRequest)) {
 					log.debug(getLogPrefix(session)
 							+ "request with content type ["
@@ -167,7 +204,9 @@ public class StreamPipe extends FixedForwardPipe {
 					log.debug(getLogPrefix(session)
 							+ "multipart request items size [" + items.size()
 							+ "]");
-					String lastProcessedFileName = null;
+					String lastFoundFileName = null;
+					String lastFoundAVStatus = null;
+					String lastFoundAVMessage = null;
 					for (FileItem item : items) {
 						if (item.isFormField()) {
 							// Process regular form field (input
@@ -177,38 +216,21 @@ public class StreamPipe extends FixedForwardPipe {
 							if (isCheckAntiVirus() && fieldName
 									.equalsIgnoreCase(getAntiVirusPartName())) {
 								log.debug(getLogPrefix(session)
-										+ "found antivirus part [" + fieldName
+										+ "found antivirus status part [" + fieldName
 										+ "] with value [" + fieldValue + "]");
-								if (!fieldValue.equalsIgnoreCase(
-										getAntiVirusPassedMessage())) {
-									String errorMessage = "multipart contains file ["
-											+ lastProcessedFileName
-											+ "] with antivirus status ["
-											+ fieldValue + "]";
-									PipeForward antiVirusFailedForward = findForward(
-											ANTIVIRUS_FAILED_FORWARD);
-									if (antiVirusFailedForward == null) {
-										throw new PipeRunException(this,
-												errorMessage);
-									} else {
-										if (antiVirusFailureAsSoapFault) {
-											errorMessage = createSoapFaultMessage(
-													errorMessage);
-										}
-										return new PipeRunResult(
-												antiVirusFailedForward,
-												errorMessage);
-									}
-								}
+								lastFoundAVStatus = fieldValue;
+							} else if (isCheckAntiVirus() && fieldName
+									.equalsIgnoreCase(getAntiVirusMessagePartName())) {
+								log.debug(getLogPrefix(session)
+										+ "found antivirus message part [" + fieldName
+										+ "] with value [" + fieldValue + "]");
+								lastFoundAVMessage = fieldValue;
 							} else {
+								log.debug(getLogPrefix(session)
+										+ "found string part [" + fieldName
+										+ "] with value [" + fieldValue + "]");
 								if (isExtractFirstStringPart()
-										&& firstStringPart == null
-										&& !(isCheckAntiVirus()
-												&& fieldName.equalsIgnoreCase(
-														getAntiVirusPartName()))) {
-									log.debug(getLogPrefix(session)
-											+ "extracting first string part ["
-											+ fieldValue + "]");
+										&& firstStringPart == null) {
 									firstStringPart = fieldValue;
 								} else {
 									String sessionKeyName = "part_string"
@@ -228,6 +250,18 @@ public class StreamPipe extends FixedForwardPipe {
 							}
 						} else {
 							// Process form file field (input type="file").
+							if (lastFoundFileName != null
+									&& lastFoundAVStatus != null) {
+								antiVirusObjects.add(new AntiVirusObject(
+										lastFoundFileName, lastFoundAVStatus,
+										lastFoundAVMessage));
+								lastFoundFileName = null;
+								lastFoundAVStatus = null;
+								lastFoundAVMessage = null;
+							}
+							log.debug(
+									getLogPrefix(session) + "found file part ["
+											+ item.getName() + "]");
 							String sessionKeyName = "part_file"
 									+ (++fileCounter > 1 ? fileCounter : "");
 							String fileName = FilenameUtils
@@ -245,8 +279,14 @@ public class StreamPipe extends FixedForwardPipe {
 									+ fileName + "\" sessionKey=\""
 									+ sessionKeyName + "\" size=\"" + size
 									+ "\" mimeType=\"" + mimeType + "\"/>");
-							lastProcessedFileName = fileName;
+							lastFoundFileName = fileName;
 						}
+					}
+					if (lastFoundFileName != null
+							&& lastFoundAVStatus != null) {
+						antiVirusObjects
+								.add(new AntiVirusObject(lastFoundFileName,
+										lastFoundAVStatus, lastFoundAVMessage));
 					}
 				} else {
 					log.debug(getLogPrefix(session)
@@ -263,6 +303,42 @@ public class StreamPipe extends FixedForwardPipe {
 				} else {
 					result = partsString.toString();
 				}
+				if (!antiVirusObjects.isEmpty()) {
+					for (AntiVirusObject antiVirusObject : antiVirusObjects) {
+						if (!antiVirusObject.getStatus().equalsIgnoreCase(
+								getAntiVirusPassedMessage())) {
+							String errorMessage = "multipart contains file ["
+									+ antiVirusObject.getFileName()
+									+ "] with antivirus status ["
+									+ antiVirusObject.getStatus()
+									+ "] and message ["
+									+ StringUtils.defaultString(
+											antiVirusObject.getMessage())
+									+ "]";
+							PipeForward antiVirusFailedForward = findForward(
+									ANTIVIRUS_FAILED_FORWARD);
+							if (antiVirusFailedForward == null) {
+								throw new PipeRunException(this,
+										errorMessage);
+							} else {
+								if (antiVirusFailureAsSoapFault) {
+									errorMessage = createSoapFaultMessage(
+											errorMessage);
+								}
+								if (StringUtils.isEmpty(getAntiVirusFailureReasonSessionKey())) {
+									return new PipeRunResult(
+											antiVirusFailedForward,
+											errorMessage);
+								} else {
+									session.put(getAntiVirusFailureReasonSessionKey(), errorMessage);
+									return new PipeRunResult(
+											antiVirusFailedForward,
+											result);
+								}
+							}
+						}
+					}
+				}
 			} else {
 				Misc.streamToStream(inputStream, outputStream);
 			}
@@ -276,7 +352,7 @@ public class StreamPipe extends FixedForwardPipe {
 		}
 		return new PipeRunResult(getForward(), result);
 	}
-
+	
 	protected String adjustFirstStringPart(String firstStringPart,
 			IPipeLineSession session) throws PipeRunException {
 		if (firstStringPart == null) {
@@ -347,6 +423,14 @@ public class StreamPipe extends FixedForwardPipe {
 		this.antiVirusPartName = antiVirusPartName;
 	}
 
+	public String getAntiVirusMessagePartName() {
+		return antiVirusMessagePartName;
+	}
+
+	public void setAntiVirusMessagePartName(String antiVirusMessagePartName) {
+		this.antiVirusMessagePartName = antiVirusMessagePartName;
+	}
+
 	public String getAntiVirusPassedMessage() {
 		return antiVirusPassedMessage;
 	}
@@ -361,5 +445,13 @@ public class StreamPipe extends FixedForwardPipe {
 
 	public boolean getAntiVirusFailureAsSoapFault() {
 		return antiVirusFailureAsSoapFault;
+	}
+
+	public void setAntiVirusFailureReasonSessionKey(String antiVirusFailureReasonSessionKey) {
+		this.antiVirusFailureReasonSessionKey = antiVirusFailureReasonSessionKey;
+	}
+
+	public String getAntiVirusFailureReasonSessionKey() {
+		return antiVirusFailureReasonSessionKey;
 	}
 }

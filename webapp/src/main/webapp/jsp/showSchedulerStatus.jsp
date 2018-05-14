@@ -129,14 +129,35 @@
 										<td>Start time</td><td><xtags:valueOf select="@startTime"/></td>
 									</tr>
 									<tr>
+										<td>Previous fire</td><td><xtags:valueOf select="@previousFireTime"/></td>
+									</tr>
+									<tr>
 										<td>Next fire</td><td><xtags:valueOf select="@nextFireTime"/></td>
 									</tr>
 								</table>
 							</td>
-							<td>
-							 </td>
 						</tr>
 					</xtags:forEach> <!-- trigger -->
+					<tr>
+						<td></td>
+						<td colspan="3">
+							<contentTable width="100%">
+								<caption>Duration statistics (in ms)</caption>
+								<tbody>
+									<tr>
+										<xtags:forEach select="../jobRunStatistics/jobRunDuration/summary/item">
+											<th><xtags:valueOf select="@name"/></th>
+										</xtags:forEach>
+									</tr>
+									<tr>
+										<xtags:forEach select="../jobRunStatistics/jobRunDuration/summary/item">
+											<td align="right"><xtags:valueOf select="@value"/></td>
+										</xtags:forEach>
+									</tr>
+								</tbody>
+							</contentTable>
+						</td>
+					</tr>
 					<xtags:forEach select="../jobMessages">
 						<tr>
 							<td></td>

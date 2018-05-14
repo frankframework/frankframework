@@ -7,12 +7,12 @@
 <menuBar>
 	<imagelinkMenu>
 			<imagelink 
-				href="showConfigurationStatus.do"
+				href="rest/showConfigurationStatus"
 				type="configurationStatus"
 				alt="Show Configuration Status">
 			</imagelink>
 			<imagelink 
-				href="showConfiguration.do"
+				href="rest/showConfiguration"
 				type="configuration"
 				alt="Show Configuration">
 			</imagelink>
@@ -61,7 +61,7 @@
 				alt="Show Scheduler status">
 			</imagelink>
 			<imagelink
-				href="showEnvironmentVariables.do"
+				href="rest/showEnvironmentVariables"
 				type="properties"
 				alt="Show Environment Variables">
 			</imagelink>

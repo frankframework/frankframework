@@ -40,14 +40,15 @@ public class JsonElementContainer implements ElementContainer {
 	private boolean repeatedElement;
 	private boolean skipArrayElementContainers;
 	private boolean nil=false;
-	private boolean quoted=true;
+	private boolean bool=false;
+	private boolean numeric=false;
 	private String attributePrefix;
 
 	public String stringContent;
 	private Map<String,Object> contentMap;
 	private List<Object> array;
 	
-	private final boolean DEBUG=false; 	
+	private final boolean DEBUG=false;
 	
 	public JsonElementContainer(String name, boolean xmlArrayContainer, boolean repeatedElement, boolean skipArrayElementContainers, String attributePrefix) {
 		this.name=name;
@@ -70,7 +71,7 @@ public class JsonElementContainer implements ElementContainer {
 	public void setAttribute(String name, String value, XSSimpleTypeDefinition attTypeDefinition) {
 		JsonElementContainer attributeContainer = new JsonElementContainer(attributePrefix+name, false, false, false, attributePrefix);
 		if (attTypeDefinition.getNumeric()) {
-			attributeContainer.setQuoted(false);
+			attributeContainer.setNumeric(true);
 		}
 		attributeContainer.setContent(value);
 		addContent(attributeContainer);
@@ -78,13 +79,15 @@ public class JsonElementContainer implements ElementContainer {
 
 	@Override
 	public void characters(char[] ch, int start, int length, boolean numericType, boolean booleanType) {
-		if (numericType || booleanType) {
-			setQuoted(false);
+		if (numericType) {
+			setNumeric(true);
+		}
+		if (booleanType) {
+			setBool(true);
 		}
 		setContent(new String(ch,start,length));
 	}
 
-	
 	/*
 	 * Sets the Text content of the current object
 	 */
@@ -111,8 +114,6 @@ public class JsonElementContainer implements ElementContainer {
 				throw new IllegalStateException("already set non-null content for element ["+name+"]");
 			}
 			nil=true;
-			stringContent="null";
-			quoted=false;
 		} else {
 			if (stringContent==null) {
 				stringContent=content;
@@ -135,7 +136,8 @@ public class JsonElementContainer implements ElementContainer {
 		if (isXmlArrayContainer() && content.isRepeatedElement() && skipArrayElementContainers) {
 			if (array==null) {
 				array=new LinkedList<Object>();
-				setQuoted(content.isQuoted());
+				setNumeric(content.isNumeric());
+				setBool(content.isBool());
 			} 
 			array.add(content.getContent());
 			return;
@@ -155,7 +157,7 @@ public class JsonElementContainer implements ElementContainer {
 				if (!(current instanceof List)) {
 					throw new IllegalArgumentException("element ["+childName+"] is not an array");
 				}
-			}
+	}
 			((List)current).add(content.getContent());
 		} else {
 			if (current!=null) {
@@ -165,18 +167,35 @@ public class JsonElementContainer implements ElementContainer {
 		}
 	}
 
+	public static String stripLeadingZeroes(String value) {
+		if (value.length()>1) {	// check for leading zeroes, and remove them.
+			boolean negative=value.charAt(0)=='-';
+			int i=negative?1:0;
+			while (i<value.length()-1 && value.charAt(i)=='0' && Character.isDigit(value.charAt(i+1))) {
+				i++;
+			}
+			if (i>(negative?1:0)) {
+				return (negative?"-":"")+value.substring(i);
+			}
+		}
+		return value;
+	}
+	
 	public Object getContent() {
 		if (nil) {
 			return null;
 		}
 		if (stringContent!=null) {
-			if (quoted) {
-				if (DEBUG) log.debug("getContent quoted stringContent ["+stringContent+"]");
-//				String result=StringEscapeUtils.escapeJson(stringContent.toString()); // this also converts diacritics into unicode escape sequences
-				String result=ESCAPE_JSON.translate(stringContent.toString()); 
-				return '"'+result+'"';
+			if (isBool()) {
+				return stringContent;
 			}
-			return stringContent;
+			if (isNumeric()) {
+				return stripLeadingZeroes(stringContent);
+			}
+			if (DEBUG) log.debug("getContent quoted stringContent ["+stringContent+"]");
+//				String result=StringEscapeUtils.escapeJson(stringContent.toString()); // this also converts diacritics into unicode escape sequences
+			String result=ESCAPE_JSON.translate(stringContent.toString()); 
+			return '"'+result+'"';
 		}
 		if (array!=null) {
 			return array;
@@ -201,11 +220,18 @@ public class JsonElementContainer implements ElementContainer {
 		return repeatedElement;
 	}
 
-	public boolean isQuoted() {
-		return quoted;
+	public boolean isBool() {
+		return bool;
 	}
-	public void setQuoted(boolean quoted) {
-		this.quoted = quoted;
+	public void setBool(boolean bool) {
+		this.bool = bool;
+	}
+
+	public boolean isNumeric() {
+		return numeric;
+	}
+	public void setNumeric(boolean numeric) {
+		this.numeric = numeric;
 	}
 
 	

@@ -15,10 +15,13 @@
 */
 package nl.nn.adapterframework.scheduler;
 
+import java.text.DecimalFormat;
 import java.util.Date;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.statistics.ItemList;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
@@ -42,6 +45,9 @@ import org.quartz.Trigger;
   */
 public class SchedulerAdapter {
 	protected Logger log=LogUtil.getLogger(this);
+
+    private DecimalFormat tf=new DecimalFormat(ItemList.PRINT_FORMAT_TIME);
+    private DecimalFormat pf=new DecimalFormat(ItemList.PRINT_FORMAT_PERC);
 	
     /**
      * Get all jobgroups, jobs within this group, the jobdetail and the
@@ -87,6 +93,8 @@ public class SchedulerAdapter {
                     }
 					XmlBuilder ms= getJobMessages(jobDef);
 					jn.addSubElement(ms);
+					XmlBuilder jrs= getJobRunStatistics(jobDef);
+					jn.addSubElement(jrs);
                 }
                 el.addSubElement(jb);
                 xbRoot.addSubElement(el);
@@ -142,6 +150,19 @@ public class SchedulerAdapter {
 			}
 		}
 		return jobMessages;
+	}
+
+	public XmlBuilder getJobRunStatistics(JobDef jobdef) {
+		XmlBuilder jobRunStatistics = new XmlBuilder("jobRunStatistics");
+		if (jobdef != null) {
+			StatisticsKeeper statsKeeper = jobdef.getStatisticsKeeper();
+			if (statsKeeper != null) {
+				XmlBuilder jobRunDuration = statsKeeper.toXml("jobRunDuration",
+						false, tf, pf);
+				jobRunStatistics.addSubElement(jobRunDuration);
+			}
+		}
+		return jobRunStatistics;
 	}
 
     public XmlBuilder getSchedulerCalendarNamesToXml(Scheduler theScheduler) {
@@ -316,6 +337,10 @@ public class SchedulerAdapter {
             try {
                 date = trigger.getFinalFireTime();
                 xbRoot.addAttribute("finalFireTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
+            } catch (Exception e) { log.debug(e); };
+            try {
+                date = trigger.getPreviousFireTime();
+                xbRoot.addAttribute("previousFireTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
             } catch (Exception e) { log.debug(e); };
             try {
                 date = trigger.getNextFireTime();

@@ -207,12 +207,25 @@
 					<table valign="center">
 						<tr>
 							<td>
-								<img alt="GitHub">
-									<xsl:attribute name="src"><xsl:value-of select="concat($srcPrefix,'./bootstrap/img/github.png')"/></xsl:attribute>
-								</img>
+								<a href="http://www.integrationpartners.nl/ibis-adapter-framework/handleiding-iaf-beheerconsole" target="_blank">
+									<img alt="Help">
+										<xsl:attribute name="src"><xsl:value-of select="concat($srcPrefix,'./images/help.gif')"/></xsl:attribute>
+									</img>
+								</a>
 							</td>
 							<td>
-								<a href="https://github.com/ibissource/iaf">https://github.com/ibissource/iaf</a>
+								<a href="https://github.com/ibissource/iaf" target="_blank">
+									<img alt="GitHub">
+										<xsl:attribute name="src"><xsl:value-of select="concat($srcPrefix,'./images/github.png')"/></xsl:attribute>
+									</img>
+								</a>
+							</td>
+							<td>
+								<a href="https://ibissource.org/" target="_blank">
+									<img alt="Ibissource">
+										<xsl:attribute name="src"><xsl:value-of select="concat($srcPrefix,'./images/ibissource.png')"/></xsl:attribute>
+									</img>
+								</a>
 							</td>
 						</tr>
 					</table>
@@ -220,13 +233,6 @@
 				<p>
 					<table width="100%">
 						<tr>
-							<td>
-								<a href="http://www.integrationpartners.nl/ibis-adapter-framework/handleiding-iaf-beheerconsole">
-									<img alt="Help">
-										<xsl:attribute name="src"><xsl:value-of select="concat($srcPrefix,'./images/help.gif')"/></xsl:attribute>
-									</img>
-								</a>
-							</td>
 							<td align="right">
 								<button onclick="document.getElementById('popupInfo').style.display='none';document.getElementById('overlay').style.display='none'">OK</button>
 							</td>

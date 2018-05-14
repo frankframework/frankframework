@@ -18,45 +18,48 @@ package nl.nn.adapterframework.http;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.httpclient.HttpMethod;
-
 public class ReleaseConnectionAfterReadInputStream extends InputStream {
 	InputStream inputStream;
-	HttpMethod httpMethod;
+	HttpResponseHandler responseHandler;
 
-	public ReleaseConnectionAfterReadInputStream(HttpMethod httpMethod, InputStream inputStream) throws IOException {
-		this.httpMethod = httpMethod;
+	public ReleaseConnectionAfterReadInputStream(HttpResponseHandler responseHandler, InputStream inputStream) throws IOException {
+		this.responseHandler = responseHandler;
 		this.inputStream = inputStream;
+	}
+
+	public ReleaseConnectionAfterReadInputStream(HttpResponseHandler responseHandler) throws IOException {
+		this.responseHandler = responseHandler;
+		this.inputStream = responseHandler.getResponse();
 	}
 
 	public int read() throws IOException {
 		int i = inputStream.read();
-		if (i == -1 && httpMethod != null) {
-			httpMethod.releaseConnection();
+		if (i == -1 && responseHandler != null) {
+			responseHandler.close();
 		}
 		return i;
 	}
 
 	public int read(byte[] b) throws IOException {
 		int i = inputStream.read(b);
-		if (i == -1 && httpMethod != null) {
-			httpMethod.releaseConnection();
+		if (i == -1 && responseHandler != null) {
+			responseHandler.close();
 		}
 		return i;
 	}
 
 	public int read(byte[] b, int off, int len) throws IOException {
 		int i = inputStream.read(b, off, len);
-		if (i == -1 && httpMethod != null) {
-			httpMethod.releaseConnection();
+		if (i == -1 && responseHandler != null) {
+			responseHandler.close();
 		}
 		return i;
 	}
 
 	public void close() throws IOException {
 		inputStream.close();
-		if (httpMethod != null) {
-			 httpMethod.releaseConnection();
+		if (responseHandler != null) {
+			responseHandler.close();
 		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import nl.nn.adapterframework.util.FileHandler;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
+ * <tr><td>"exception"</td><td>if an error occurred</td></tr>
  * </table>
  * </p>
  * 
@@ -40,7 +41,7 @@ import nl.nn.adapterframework.util.FileHandler;
 public class FilePipe extends FixedForwardPipe {
 	FileHandler fileHandler;
 
-	FilePipe() {
+	public FilePipe() {
 		fileHandler = new FileHandler();
 	}
 	
@@ -57,7 +58,11 @@ public class FilePipe extends FixedForwardPipe {
 			return new PipeRunResult(getForward(), fileHandler.handle(input, session, getParameterList()));
 		}
 		catch(Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"Error while executing file action(s)", e); 
+			if (findForward("exception") != null) {
+				return new PipeRunResult(findForward("exception"), input);
+			} else {
+				throw new PipeRunException(this, getLogPrefix(session)+"Error while executing file action(s)", e);
+			}
 		}
 	}
 

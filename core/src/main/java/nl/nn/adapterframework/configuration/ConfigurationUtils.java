@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016-2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,67 +46,56 @@ import org.apache.log4j.Logger;
  * Functions to manipulate the configuration. 
  *
  * @author  Peter Leeuwenburgh
+ * @author  Jaco de Groot
  */
 public class ConfigurationUtils {
-	protected static Logger log = LogUtil.getLogger(ConfigurationUtils.class);
+	private static Logger log = LogUtil.getLogger(ConfigurationUtils.class);
 
-	private static final String CONFIGURATION_STUB4TESTTOOL_KEY = "stub4testtool.configuration";
+	private static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
+	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
+	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
 	private static final String VALIDATORS_DISABLED_KEY = "validators.disabled";
 
-	private static String stub4testtool_xslt = "/xml/xsl/stub4testtool.xsl";
-	private static String active_xslt = "/xml/xsl/active.xsl";
+	public static boolean stubConfiguration() {
+		return AppConstants.getInstance().getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
+	}
+
+	public static String getStubbedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
+		Map<String, Object> parameters = new Hashtable<String, Object>();
+		// Parameter disableValidators has been used to test the impact of
+		// validators on memory usage.
+		parameters.put("disableValidators", AppConstants.getInstance().getBoolean(VALIDATORS_DISABLED_KEY, false));
+		return getTweakedConfiguration(configuration, originalConfig, STUB4TESTTOOL_XSLT, parameters);
+	}
 
 	public static String getActivatedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
-		URL active_xsltSource = ClassUtils.getResourceURL(configuration.getClassLoader(), active_xslt);
-		if (active_xsltSource == null) {
-			throw new ConfigurationException("cannot find resource [" + active_xslt + "]");
+		return getTweakedConfiguration(configuration, originalConfig, ACTIVE_XSLT, null);
+	}
+
+	public static String getTweakedConfiguration(Configuration configuration,
+			String originalConfig, String tweakXslt,
+			Map<String, Object> parameters) throws ConfigurationException {
+		URL tweak_xsltSource = ClassUtils.getResourceURL(configuration.getClassLoader(), tweakXslt);
+		if (tweak_xsltSource == null) {
+			throw new ConfigurationException("cannot find resource [" + tweakXslt + "]");
 		}
 		try {
-			Transformer active_transformer = XmlUtils.createTransformer(active_xsltSource);
+			Transformer tweak_transformer = XmlUtils.createTransformer(tweak_xsltSource);
+			XmlUtils.setTransformerParameters(tweak_transformer, parameters);
 			// Use namespaceAware=true, otherwise for some reason the
 			// transformation isn't working with a SAXSource, in system out it
 			// generates:
 			// jar:file: ... .jar!/xml/xsl/active.xsl; Line #34; Column #13; java.lang.NullPointerException
-			return XmlUtils.transformXml(active_transformer, originalConfig, true);
+			return XmlUtils.transformXml(tweak_transformer, originalConfig, true);
 		} catch (IOException e) {
-			throw new ConfigurationException("cannot retrieve [" + active_xslt + "]", e);
+			throw new ConfigurationException("cannot retrieve [" + tweakXslt + "]", e);
 		} catch (TransformerConfigurationException tce) {
-			throw new ConfigurationException("got error creating transformer from file [" + active_xslt + "]", tce);
+			throw new ConfigurationException("got error creating transformer from file [" + tweakXslt + "]", tce);
 		} catch (TransformerException te) {
-			throw new ConfigurationException("got error transforming resource [" + active_xsltSource.toString() + "] from [" + active_xslt + "]", te);
+			throw new ConfigurationException("got error transforming resource [" + tweak_xsltSource.toString() + "] from [" + tweakXslt + "]", te);
 		} catch (DomBuilderException de) {
 			throw new ConfigurationException("caught DomBuilderException", de);
 		}
-	}
-
-	public static String getStubbedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
-		URL stub4testtool_xsltSource = ClassUtils.getResourceURL(configuration.getClassLoader(), stub4testtool_xslt);
-		if (stub4testtool_xsltSource == null) {
-			throw new ConfigurationException("cannot find resource [" + stub4testtool_xslt + "]");
-		}
-		try {
-			Transformer stub_transformer = XmlUtils.createTransformer(stub4testtool_xsltSource);
-			// Use namespaceAware=true, otherwise for some reason the
-			// transformation isn't working with a SAXSource, in system out it
-			// generates:
-			// jar:file: ... .jar!/xml/xsl/stub4testtool.xsl; Line #210; Column #13; java.lang.NullPointerException
-			Map parameters = new Hashtable();
-			parameters.put("disableValidators", AppConstants.getInstance().getBoolean(VALIDATORS_DISABLED_KEY, false));
-			XmlUtils.setTransformerParameters(stub_transformer, parameters);
-			return XmlUtils.transformXml(stub_transformer, originalConfig, true);
-		} catch (IOException e) {
-			throw new ConfigurationException("cannot retrieve [" + stub4testtool_xslt + "]", e);
-		} catch (TransformerConfigurationException tce) {
-			throw new ConfigurationException("got error creating transformer from file [" + stub4testtool_xslt + "]", tce);
-		} catch (TransformerException te) {
-			throw new ConfigurationException("got error transforming resource [" + stub4testtool_xsltSource.toString() + "] from [" + stub4testtool_xslt + "]", te);
-		} catch (DomBuilderException de) {
-			throw new ConfigurationException("caught DomBuilderException", de);
-		}
-	}
-
-	public static boolean stubConfiguration() {
-		return AppConstants.getInstance().getBoolean(CONFIGURATION_STUB4TESTTOOL_KEY, false);
 	}
 
 	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name) throws ConfigurationException {

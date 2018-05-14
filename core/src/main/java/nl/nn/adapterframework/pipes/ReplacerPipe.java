@@ -34,8 +34,9 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setFind(String) find}</td><td>string to search for</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReplace(String) replace}</td><td>string that will replace each of the strings found</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLineSeparatorSymbol(String) lineSeparatorSymbol}</td><td>Sets the string the representation in find and replace of the line separator</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplaceNonXmlChars(boolean) replaceNonXmlChars}</td><td>Replace all non XML chars (not in the <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char">character range as specified by the XML specification</a>) with {@link nl.nn.adapterframework.util.XmlUtils#replaceNonValidXmlCharacters(String, char, boolean) replaceNonXmlChar}</td><td>true</td></tr>
- * <tr><td>{@link #setReplaceNonXmlChar(String) replaceNonXmlChar}</td><td>character that will replace each non valid XML character (empty character is also possible)</td><td>0x00BF (inverted question mark)</td></tr>
+ * <tr><td>{@link #setReplaceNonXmlChars(boolean) replaceNonXmlChars}</td><td>Replace all non XML chars (not in the <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char">character range as specified by the XML specification</a>) with {@link nl.nn.adapterframework.util.XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}</td><td>false</td></tr>
+ * <tr><td>{@link #setReplaceNonXmlChar(String) replaceNonXmlChar}</td><td>character that will replace each non valid XML character (empty string is also possible) (use &amp;#x00BF; for inverted question mark)</td><td>empty string</td></tr>
+ * <tr><td>{@link #setAllowUnicodeSupplementaryCharacters(boolean) allowUnicodeSupplementaryCharacters}</td><td>Whether to allow Unicode supplementary characters (like a smiley) during {@link nl.nn.adapterframework.util.XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}</td><td>false</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * </table>
@@ -56,8 +57,8 @@ public class ReplacerPipe extends FixedForwardPipe {
 	private String replace;
 	private String lineSeparatorSymbol=null;
 	private boolean replaceNonXmlChars=false;
-	private String replaceNonXmlString=null;
-	private char replaceNonXmlChar=XmlUtils.REPLACE_NON_XML_CHAR;
+	private String replaceNonXmlChar=null;
+	private boolean allowUnicodeSupplementaryCharacters=false;
 
 	{
 		setSizeStatistics(true);
@@ -82,9 +83,6 @@ public class ReplacerPipe extends FixedForwardPipe {
 			if (getReplaceNonXmlChar()!=null) {
 				if (getReplaceNonXmlChar().length()>1) {
 					throw new ConfigurationException(getLogPrefix(null) + "replaceNonXmlChar ["+getReplaceNonXmlChar()+"] has to be one character");
-				}
-				if (getReplaceNonXmlChar().length()==1) {
-					replaceNonXmlChar = getReplaceNonXmlChar().charAt(0);
 				}
 			}
 		}
@@ -119,9 +117,12 @@ public class ReplacerPipe extends FixedForwardPipe {
 		}
 		if (isReplaceNonXmlChars()) {
 			if (StringUtils.isEmpty(getReplaceNonXmlChar())) {
-				string = XmlUtils.stripNonValidXmlCharacters(string);
+				string = XmlUtils.stripNonValidXmlCharacters(string,
+						isAllowUnicodeSupplementaryCharacters());
 			} else {
-				string = XmlUtils.replaceNonValidXmlCharacters(string,replaceNonXmlChar,false);
+				string = XmlUtils.replaceNonValidXmlCharacters(string,
+						getReplaceNonXmlChar().charAt(0), false,
+						isAllowUnicodeSupplementaryCharacters());
 			}
 		}
 		return new PipeRunResult(getForward(),string);
@@ -153,6 +154,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	public String getLineSeparatorSymbol() {
 		return lineSeparatorSymbol;
 	}
+
 	public void setLineSeparatorSymbol(String string) {
 		lineSeparatorSymbol = string;
 	}
@@ -165,11 +167,21 @@ public class ReplacerPipe extends FixedForwardPipe {
 		return replaceNonXmlChars;
 	}
 
-	public void setReplaceNonXmlChar(String replaceNonXmlString) {
-		this.replaceNonXmlString = replaceNonXmlString;
+	public void setReplaceNonXmlChar(String replaceNonXmlChar) {
+		this.replaceNonXmlChar = replaceNonXmlChar;
 	}
+
 	public String getReplaceNonXmlChar() {
-		return replaceNonXmlString;
+		return replaceNonXmlChar;
 	}
+
+	public void setAllowUnicodeSupplementaryCharacters(boolean b) {
+		allowUnicodeSupplementaryCharacters = b;
+	}
+
+	public boolean isAllowUnicodeSupplementaryCharacters() {
+		return allowUnicodeSupplementaryCharacters;
+	}
+
 }
 

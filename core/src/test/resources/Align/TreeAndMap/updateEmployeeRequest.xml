@@ -1,0 +1,8 @@
+<updateEmployeeRequest xmlns="urn:employee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:employee file:///C:/Gerrit/Workspaces/neon/XmlAligner/src/test/resources/Align/TreeAndMap/Employee.xsd">
+	<companyid>100</companyid>
+	<employeeid>1044</employeeid>
+	<address>
+		<street>Schenkkade 51</street>
+		<town>Den Haag</town>
+	</address>
+</updateEmployeeRequest>

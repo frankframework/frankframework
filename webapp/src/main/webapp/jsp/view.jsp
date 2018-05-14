@@ -113,9 +113,7 @@
 
 		<%@ include file="menuBar.jsp" %>
 
-		<% if (view.equals("/jsp/showConfigurationStatus.jsp")) { %>
-			<jsp:include page="/jsp/showConfigurationStatus.jsp" flush="true"/>
-		<%} else if (view.equals("/jsp/browseQueue.jsp")) {%>  
+		<% if (view.equals("/jsp/browseQueue.jsp")) {%>  
 			<jsp:include page="/jsp/browseQueue.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/queueContents.jsp")) {%>
 			<jsp:include page="/jsp/queueContents.jsp" flush="true"/>		
@@ -133,16 +131,12 @@
 			<jsp:include page="/jsp/testService.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/showLogging.jsp")) {%>
 			<jsp:include page="/jsp/showLogging.jsp" flush="true"/> 
-		<%} else if (view.equals("/jsp/showConfiguration.jsp")) {%>
-			<jsp:include page="/jsp/showConfiguration.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/noConfig.jsp")) {%> 
 			<jsp:include page="/jsp/noConfig.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/noIbisContext.jsp")) {%> 
 			<jsp:include page="/jsp/noIbisContext.jsp" flush="true"/>
 		<%} else if (view.equals("/jsp/showSchedulerStatus.jsp")) {%>
 			<jsp:include page="/jsp/showSchedulerStatus.jsp" flush="true"/>
-		<%} else if (view.equals("/jsp/showEnvironmentVariables.jsp")) {%>
-			<jsp:include page="/jsp/showEnvironmentVariables.jsp" flush="true"/> 
 		<%} else if (view.equals("/jsp/executeJdbcQuery.jsp")) {%>
 			<jsp:include page="/jsp/executeJdbcQuery.jsp" flush="true"/> 
 		<%} else if (view.equals("/jsp/showSecurityItems.jsp")) {%>

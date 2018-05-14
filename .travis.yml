@@ -14,5 +14,14 @@ script: mvn install -B
 
 notifications:
   email:
-    - ibistravis@meeuw.org
-    - travis@ibissource.org
+    recipients:
+      - travis-j@ibissource.org
+      - travis-j2@ibissource.org
+      - travis-n@ibissource.org
+      - travis-p@ibissource.org
+      - travis-g@ibissource.org
+#    on_success: always # default: change
+#    on_failure: always # default: always
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

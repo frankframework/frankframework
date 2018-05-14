@@ -313,6 +313,10 @@ public final class ShowConfiguration extends Base {
 				ConfigurationUtils.addConfigToDatabase(ibisContext, jmsRealm, activate_config, automatic_reload, name, version, fileName, file, user);
 			}
 
+			if(automatic_reload) {
+				ibisContext.load(name);
+			}
+
 			return Response.status(Response.Status.CREATED).entity(result).build();
 		} catch (Exception e) {
 			throw new ApiException("Failed to upload Configuration!");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 	private final static String PRODUCT_NAME_MSSQLSERVER="Microsoft SQL Server";
 
 	private Properties dbmsSupportMap; 
-	
+
 	public IDbmsSupport getDbmsSupport(Connection conn) {
 		String product;
 		try {
@@ -66,8 +66,9 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 						} 
 					}
 				}
-			}				
-		} else {
+			}
+		}
+		else {
 			log.warn("no dbmsSupportMap specified, reverting to built in types");
 			if (PRODUCT_NAME_ORACLE_.equals(product)) {
 				log.debug("Setting databasetype to ORACLE");
@@ -85,8 +86,8 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 	public Properties getDbmsSupportMap() {
 		return dbmsSupportMap;
 	}
+
 	public void setDbmsSupportMap(Properties dbmsSupportMap) {
 		this.dbmsSupportMap = dbmsSupportMap;
 	}
-
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017,2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,15 @@
 */
 package nl.nn.adapterframework.align;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.validation.ValidatorHandler;
 
+import org.apache.commons.lang.StringUtils;
+//import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.SAXException;
@@ -31,11 +35,9 @@ import org.xml.sax.SAXException;
  *
  * @param <N>
  */
-public abstract class Tree2Xml<N> extends ToXml<N,N> {
+public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 
-	private boolean autoInsertMandatory=false;   // TODO: behaviour needs to be tested.
-
-	private final boolean DEBUG=false; 
+	SubstitutionProvider<?> sp;
 	
 	public Tree2Xml() {
 		super();
@@ -49,48 +51,78 @@ public abstract class Tree2Xml<N> extends ToXml<N,N> {
 		super(validatorHandler,schemaInformation);
 	}
 
-	
+	public abstract Set<String> getAllNodeChildNames(XSElementDeclaration elementDeclaration, N node) throws SAXException; // returns null when no children present, otherwise a _copy_ of the Set (it will be modified)
+	public abstract Iterable<N> getNodeChildrenByName(N node, XSElementDeclaration childElementDeclaration) throws SAXException;
+	public abstract String getNodeText(XSElementDeclaration elementDeclaration, N node);
+
 	@Override
-	protected void processChildElement(N node, String name, XSElementDeclaration childElementDeclaration, boolean mandatory, Set<String> unProcessedChildren, Set<String> processedChildren) throws SAXException {
-		String childElementName = childElementDeclaration.getName(); 
-		if (DEBUG) log.debug("Tree2Xml.processChildElement() parent name ["+name+"] childElementName ["+childElementName+"]");
-		Iterable<N> childNodes = getChildrenByName(node,childElementName);
-		boolean childSeen=false;
-		if (childNodes!=null) {
-			childSeen=true;
-			int i=0;
-			for (N childNode:childNodes) {
-				i++;
-				handleNode(childNode,childElementDeclaration);
-			}
-			if (DEBUG) log.debug("processed ["+i+"] children found by name ["+childElementName+"] in ["+name+"]");
-		} else {
-			if (DEBUG) log.debug("no children found by name ["+childElementName+"] in ["+name+"]");
+	public boolean hasChild(XSElementDeclaration elementDeclaration, N node, String childName) throws SAXException {
+		// should check for complex or simple type. 
+		// for complex, any path of a substitution is valid
+		// for simple, only when a valid substitution value is found, a hit should be present.
+		if (sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
+			return true;
 		}
-		if (childSeen) {
-			if (unProcessedChildren==null) {
-				throw new IllegalStateException("child element ["+childElementName+"] found, but node ["+name+"] should have no children");
-			}
-			if (!unProcessedChildren.remove(childElementName)) {
-				throw new IllegalStateException("child element ["+childElementName+"] not found in list of unprocessed children of node ["+name+"]");
-			}
-			if (processedChildren.contains(childElementName)) {
-				throw new IllegalStateException("child element ["+childElementName+"] already processed for node ["+name+"]");
-			}
-			processedChildren.add(childElementName);
-		}
-		if (!childSeen && mandatory && isAutoInsertMandatory()) {
-			if (log.isDebugEnabled()) log.debug("inserting mandatory element ["+childElementName+"]");
-			handleNode(node,childElementDeclaration); // insert node when minOccurs > 0, and no node is present
-		}
+		Set<String> allChildNames=getAllNodeChildNames(elementDeclaration, node);
+		return allChildNames!=null && allChildNames.contains(childName);
 	}
 
-
-	public boolean isAutoInsertMandatory() {
-		return autoInsertMandatory;
+	@Override
+	public final Iterable<N> getChildrenByName(N node, XSElementDeclaration childElementDeclaration) throws SAXException {
+		String childName=childElementDeclaration.getName();
+		Iterable<N> children = getNodeChildrenByName(node, childElementDeclaration);
+		if (children==null && sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
+			List<N> result=new LinkedList<N>();
+			result.add(node);
+			return result;
+		}
+		return children;
 	}
-	public void setAutoInsertMandatory(boolean autoInsertMandatory) {
-		this.autoInsertMandatory = autoInsertMandatory;
+
+	@Override
+	public final String getText(XSElementDeclaration elementDeclaration, N node) {
+		String nodeName=elementDeclaration.getName();
+		Object text;
+		if (DEBUG) log.debug("getText() node ["+nodeName+"] currently parsed element ["+getContext().getLocalName()+"]");
+		if (sp!=null && (text=sp.getOverride(getContext()))!=null) {
+			if (DEBUG) log.debug("getText() node ["+nodeName+"] override found ["+text+"]");
+			if (text instanceof String) {
+				return (String)text;
+			}
+			return text.toString();
+		}
+		String result=getNodeText(elementDeclaration, node);
+		if (sp!=null && StringUtils.isEmpty(result) && (text=sp.getDefault(getContext()))!=null) {
+			if (DEBUG) log.debug("getText() node ["+nodeName+"] default found ["+text+"]");
+			if (text instanceof String) {
+				result = (String)text;
+			}
+			result = text.toString();
+		}
+		if (DEBUG) log.debug("getText() node ["+nodeName+"] returning value ["+result+"]");
+		return result;
+	}
+
+	@Override
+	protected Set<String> getUnprocessedChildElementNames(XSElementDeclaration elementDeclaration, N node, Set<String> processedChildren) throws SAXException {
+		Set<String> unProcessedChildren = getAllNodeChildNames(elementDeclaration,node);
+		if (unProcessedChildren!=null && !unProcessedChildren.isEmpty()) {
+			unProcessedChildren.removeAll(processedChildren);
+		}
+		return unProcessedChildren;
+	}
+
+	public SubstitutionProvider<?> getSubstitutionProvider() {
+		return sp;
+	}
+	public void setSubstitutionProvider(SubstitutionProvider<?> substitutions) {
+		this.sp = substitutions;
+	}
+
+	public void setOverrideValues(Map<String, Object> overrideValues) {
+		OverridesMap<Object> overrides=new OverridesMap<Object>();
+		overrides.registerSubstitutes(overrideValues);
+		setSubstitutionProvider(overrides);
 	}
 
 }

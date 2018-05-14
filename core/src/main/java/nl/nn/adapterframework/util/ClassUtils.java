@@ -24,6 +24,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 
@@ -86,6 +89,16 @@ public class ClassUtils {
     }
 
 	/**
+	 * Get a resource-URL with the ClassLoader derived from an object or class
+	 * @param obj object to derive the ClassLoader from
+	 * @param resource name of the resource you are trying to fetch the URL from
+	 * @return URL of the resource or null if it can't be not found
+	 */
+	static public URL getResourceURL(Object obj, String resource) {
+		return getResourceURL(obj.getClass().getClassLoader(), resource);
+	}
+
+	/**
 	 * Get a resource-URL from a specific ClassLoader. This should be used by
 	 * classes which are part of the Ibis configuration (like pipes and senders)
 	 * because the configuration might be loaded from outside the webapp
@@ -95,39 +108,42 @@ public class ClassUtils {
 	 * @see IbisContext#init()
 	 */
 	static public URL getResourceURL(ClassLoader classLoader, String resource) {
-		return getResourceURL(classLoader, null, resource);
+		return getResourceURL(classLoader, resource, AppConstants.getInstance().getString("classloader.allowed.protocols", null));
 	}
 
 	/**
-	 * Get a resource-URL, first from Class then from it's ClassLoader
-	 * if not found with Class.
-	 *
+	 * Get a resource-URL from a ClassLoader
+	 * @param classLoader to retrieve the file from
+	 * @param resource name of the resource you are trying to fetch the URL from
+	 * @param getFileFromFilesystem specifies if when the file can't be found 
+	 * on the classpath, (and begins with 'file://' it can be retrieved from the filesystem instead.
+	 * @return URL of the resource or null if it can't be not found
 	 */
-	static public URL getResourceURL(Object obj, String resource) {
-		return getResourceURL(null, obj.getClass(), resource);
-	}
+	static public URL getResourceURL(ClassLoader classLoader, String resource, String allowedProtocols) {
+		if(classLoader == null)
+			classLoader = ClassUtils.class.getClassLoader();
 
-	/**
-	 * Get a resource-URL, first from Class then from it's ClassLoader
-	 * if not found with Class.
-	 */
-	static public URL getResourceURL(Class klass, String resource) {
-		return getResourceURL(null, klass, resource);
-	}
-
-	static private URL getResourceURL(ClassLoader classLoader, Class klass, String resource) {
-		if (classLoader == null) {
-			if (klass == null) {
-				klass = ClassUtils.class;
-			}
-			classLoader = klass.getClassLoader();
-		}
 		// Remove slash like Class.getResource(String name) is doing before
 		// delegation to ClassLoader
 		if (resource.startsWith("/")) {
 			resource = resource.substring(1);
 		}
-		return classLoader.getResource(resource);
+		URL url = classLoader.getResource(resource);
+
+		// then try to get it as a URL
+		if (url == null && allowedProtocols != null && !allowedProtocols.isEmpty() && resource.contains(":/")) {
+			String protocol = resource.substring(0, resource.indexOf(":"));
+			List<String> protocols = new ArrayList<String>(Arrays.asList(allowedProtocols.split(",")));
+			if(protocols.contains(protocol)) {
+				try {
+					url = new URL(Misc.replace(resource, " ", "%20"));
+				} catch(MalformedURLException e) {
+					log.debug("Could not find resource as URL [" + resource + "]: "+e.getMessage());
+				}
+			}
+		}
+
+		return url;
 	}
 
     /**

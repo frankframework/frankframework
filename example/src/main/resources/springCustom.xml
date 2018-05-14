@@ -37,6 +37,9 @@
 		>
 		<property name="driverClassName" value="org.h2.Driver"/>
 		<property name="url" value="jdbc:h2:${log.dir}/${instance.name.lc}"/>
+		<property name="maxActive" value="1000"/>
+		<property name="maxIdle" value="5"/>
+		<property name="maxWait" value="30000"/>
 	</bean>
 
 	<!--

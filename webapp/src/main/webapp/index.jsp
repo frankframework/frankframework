@@ -6,5 +6,5 @@
 
 <%-- Just a page to forward to the configurationStatus view --%>
 
- 	<%pageContext.forward("/showConfigurationStatus.do");%>
+ 	<%pageContext.forward("/rest/showConfigurationStatus");%>
  
