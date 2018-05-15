@@ -564,7 +564,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	 * @param message to be sent
 	 * @param parameters ParameterValueList that contains all the senders parameters
 	 * @param headersParamsMap Map that contains the {@link #setHeadersParams}
-	 * @param session PipeLineSession to retrieve or store data from
+	 * @param session PipeLineSession to retrieve or store data from, or NULL when not set
 	 * @return a {@link HttpRequestBase HttpRequest} object
 	 * @throws SenderException
 	 */
@@ -618,7 +618,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 				message = URLEncoder.encode(message, getCharSet());
 			}
 
-			httpRequestBase = getMethod(uri, message, pvl, headersParamsMap, prc.getSession());
+			httpRequestBase = getMethod(uri, message, pvl, headersParamsMap, (prc==null) ? null : prc.getSession());
 			if(httpRequestBase == null)
 				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodType()+"]");
 
@@ -730,11 +730,6 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		}
 
 		return result;
-	}
-
-	@Override
-	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
-		return sendMessage(correlationID, message, null);
 	}
 
 	@Override
