@@ -70,6 +70,7 @@ Upcoming
     - Support Unicode supplementary characters (don't handle a smiley as two characters)
     - Change colors to be IAF GUI 3.0 friendly
 - Prevent Show Tibco Queues to still fail when passive servers in server url
+- Fix servlets in web.xml causing errors when cmis dependency is missing
 
 
 

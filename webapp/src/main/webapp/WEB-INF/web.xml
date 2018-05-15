@@ -108,36 +108,48 @@
 		<load-on-startup>0</load-on-startup>
 	</servlet>
 
-	<!-- START CMIS 
+	<!-- START CMIS -->
 	<listener>
-		<listener-class>org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener</listener-class>
+		<listener-class>nl.nn.adapterframework.extensions.cmis.CmisRepositoryContextListener</listener-class>
 	</listener>
 
 	<servlet>
 		<servlet-name>cmisws10</servlet-name>
-		<servlet-class>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</servlet-class>
+		<servlet-class>nl.nn.adapterframework.extensions.cmis.CmisServletRouter</servlet-class>
 		<init-param>
 			<description>CMIS version of this endpoint</description>
 			<param-name>cmisVersion</param-name>
 			<param-value>1.0</param-value>
+		</init-param>
+		<init-param>
+			<param-name>servlet-class</param-name>
+			<param-value>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 
 	<servlet>
 		<servlet-name>cmisws11</servlet-name>
-		<servlet-class>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</servlet-class>
+		<servlet-class>nl.nn.adapterframework.extensions.cmis.CmisServletRouter</servlet-class>
 		<init-param>
 			<description>CMIS version of this endpoint</description>
 			<param-name>cmisVersion</param-name>
 			<param-value>1.1</param-value>
+		</init-param>
+		<init-param>
+			<param-name>servlet-class</param-name>
+			<param-value>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 
 	<servlet>
 		<servlet-name>cmisatom10</servlet-name>
-		<servlet-class>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</servlet-class>
+		<servlet-class>nl.nn.adapterframework.extensions.cmis.CmisServletRouter</servlet-class>
+		<init-param>
+			<param-name>servlet-class</param-name>
+			<param-value>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</param-value>
+		</init-param>
 		<init-param>
 			<description>Call Context Handler implementation</description>
 			<param-name>callContextHandler</param-name>
@@ -153,7 +165,11 @@
 
 	<servlet>
 		<servlet-name>cmisatom11</servlet-name>
-		<servlet-class>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</servlet-class>
+		<servlet-class>nl.nn.adapterframework.extensions.cmis.CmisServletRouter</servlet-class>
+		<init-param>
+			<param-name>servlet-class</param-name>
+			<param-value>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</param-value>
+		</init-param>
 		<init-param>
 			<description>Call Context Handler implementation</description>
 			<param-name>callContextHandler</param-name>
@@ -169,7 +185,11 @@
 
 	<servlet>
 		<servlet-name>cmisbrowser</servlet-name>
-		<servlet-class>org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet</servlet-class>
+		<servlet-class>nl.nn.adapterframework.extensions.cmis.CmisServletRouter</servlet-class>
+		<init-param>
+			<param-name>servlet-class</param-name>
+			<param-value>org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet</param-value>
+		</init-param>
 		<init-param>
 			<description>Call Context Handler implementation</description>
 			<param-name>callContextHandler</param-name>
@@ -202,7 +222,7 @@
 		<servlet-name>cmisbrowser</servlet-name>
 		<url-pattern>/cmis/browser/*</url-pattern>
 	</servlet-mapping>
-	 END CMIS -->
+	<!-- END CMIS -->
 
 	<!-- SOAP servlets -->
 	<servlet>
