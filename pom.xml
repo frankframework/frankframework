@@ -74,6 +74,21 @@
         <type>war</type>
       </dependency>
       <dependency>
+        <groupId>org.ibissource</groupId>
+        <artifactId>ibis-adapterframework-ladybug</artifactId>
+        <version>2.0.0.3713</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ibissource</groupId>
+        <artifactId>ibis-ladybug</artifactId>
+        <version>2.0.0.3713</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ibissource</groupId>
+        <artifactId>ibis-echo2</artifactId>
+        <version>2.0.0.3713</version>
+      </dependency>
+      <dependency>
         <groupId>commons-lang</groupId>
         <artifactId>commons-lang</artifactId>
         <version>2.6</version>
