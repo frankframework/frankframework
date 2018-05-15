@@ -128,6 +128,10 @@ public class WebServiceSender extends HttpSender {
 		setContentType("text/xml; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING);
 	}
 
+	public String getLogPrefix() {
+		return "WebServiceSender ["+getName()+"] to ["+getPhysicalDestinationName()+"] ";
+	}
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
