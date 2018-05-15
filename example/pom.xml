@@ -56,20 +56,17 @@
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-ladybug</artifactId>
-      <version>2.0.0.3711</version>
-		<scope>test</scope>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-ladybug</artifactId>
-      <version>2.0.0.3711</version>
-		<scope>test</scope>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-echo2</artifactId>
-      <version>2.0.0.3555</version>
-		<scope>test</scope>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.aspectj</groupId>
