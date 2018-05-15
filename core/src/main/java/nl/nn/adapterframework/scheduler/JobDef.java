@@ -31,11 +31,14 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
+import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.http.RestListener;
+import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
@@ -1021,6 +1024,44 @@ public class JobDef {
 								log.debug("finished recovering receiver ["
 										+ receiver.getName() + "] of adapter ["
 										+ adapter.getName() + "]");
+							}
+						} else if (receiverRunState
+								.equals(RunStateEnum.STARTED)) {
+							// workaround for started RestListeners of which
+							// uriPattern is not registered correctly
+							IListener listener = receiver.getListener();
+							if (listener instanceof RestListener) {
+								RestListener restListener = (RestListener) listener;
+								String matchingPattern = RestServiceDispatcher
+										.getInstance().findMatchingPattern("/"
+												+ restListener.getUriPattern());
+								if (matchingPattern == null) {
+									log.debug("trying to recover receiver ["
+											+ receiver.getName()
+											+ "] (restListener) of adapter ["
+											+ adapter.getName() + "]");
+									if (receiver!=null) {
+										if (receiver.configurationSucceeded()) {
+											receiver.stopRunning();
+											int count = 10;
+											while (count-- >= 0
+													&& !receiver.getRunState().equals(
+															RunStateEnum.STOPPED)) {
+												try {
+													Thread.sleep(1000);
+												} catch (InterruptedException e) {
+													log.debug("Interrupted waiting for receiver to stop", e);
+												}
+											}
+										}
+										// check for start is in method startRunning in
+										// ReceiverBase self
+										receiver.startRunning();
+										log.debug("finished recovering receiver ["
+												+ receiver.getName() + "] (restListener) of adapter ["
+												+ adapter.getName() + "]");
+									}
+								}
 							}
 						}
 						receiverRunState = receiver.getRunState();
