@@ -71,6 +71,7 @@ Upcoming
     - Change colors to be IAF GUI 3.0 friendly
 - Prevent Show Tibco Queues to still fail when passive servers in server url
 - Fix servlets in web.xml causing errors when cmis dependency is missing
+- Bugfix error "ShowConfigurationStatus.xsl line [683]: Cannot convert string to double"
 
 
 

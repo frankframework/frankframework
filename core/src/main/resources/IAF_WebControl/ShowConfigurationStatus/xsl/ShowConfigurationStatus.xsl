@@ -680,7 +680,7 @@
 											</imagelink>
 										</xsl:if>
 										<xsl:choose>
-											<xsl:when test="@errorStorageCount=-1">
+											<xsl:when test="@errorStorageCount='-1'">
 												<image type="browseErrorStore" alt="errorStore" />
 											</xsl:when>
 											<xsl:otherwise>
@@ -701,7 +701,7 @@
 									</xsl:if>
 									<xsl:if test="@hasMessageLog='true'">
 										<xsl:choose>
-											<xsl:when test="@messageLogCount=-1">
+											<xsl:when test="@messageLogCount='-1'">
 												<image type="browseMessageLog" alt="messageLog" />
 											</xsl:when>
 											<xsl:otherwise>
@@ -753,7 +753,7 @@
 								<td>
 									<xsl:if test="@hasMessageLog='true'">
 										<xsl:choose>
-											<xsl:when test="@messageLogCount=-1">
+											<xsl:when test="@messageLogCount='-1'">
 												<image type="browseMessageLog" alt="messageLog" />
 											</xsl:when>
 											<xsl:otherwise>
