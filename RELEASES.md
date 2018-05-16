@@ -73,6 +73,7 @@ Upcoming
 - Fix servlets in web.xml causing errors when cmis dependency is missing
 - Bugfix error "ShowConfigurationStatus.xsl line [683]: Cannot convert string to double"
 - Recover job: restart RestListeners of which uriPattern is not registered correctly
+- Restore "IBIS startup failed" error page for ShowConfigurationStatus
 
 
 

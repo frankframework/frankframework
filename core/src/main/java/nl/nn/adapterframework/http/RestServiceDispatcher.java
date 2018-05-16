@@ -44,9 +44,11 @@ import org.apache.log4j.Logger;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.http.rest.IApiCache;
+import nl.nn.adapterframework.pipes.CreateRestViewPipe;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -159,6 +161,8 @@ public class RestServiceDispatcher  {
 						.restartShowConfigurationStatus(servletContext)) {
 					httpServletResponse.setHeader("REFRESH", "0");
 					return "";
+				} else {
+					return retrieveNoIbisContext(httpServletRequest, servletContext);
 				}
 			}
 			throw new ListenerException("no REST listener configured for uri ["+uri+"]");
@@ -343,6 +347,29 @@ public class RestServiceDispatcher  {
 				}
 			}
 		} catch (IOException e) {
+			throw new ListenerException(e);
+		}
+	}
+
+	public String retrieveNoIbisContext(HttpServletRequest httpServletRequest,
+			ServletContext servletContext) throws ListenerException {
+		try {
+			CreateRestViewPipe pipe = new CreateRestViewPipe();
+			pipe.setStyleSheetName("xml/xsl/web/noIbisContext.xsl");
+			pipe.setXslt2(true);
+			PipeForward pipeForward = new PipeForward();
+			pipeForward.setName("success");
+			pipe.registerForward(pipeForward);
+			pipe.configure();
+			pipe.start();
+			IPipeLineSession session = new PipeLineSessionBase();
+			session.put(IPipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
+			session.put(IPipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
+			String result = (String) pipe.doPipe("<dummy/>", session)
+					.getResult();
+			pipe.stop();
+			return result;
+		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
 	}
