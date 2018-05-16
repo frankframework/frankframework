@@ -811,6 +811,13 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 		return timeout;
 	}
 
+	@Override
+	public int retrieveTymeout() {
+		// add 1 second to timeout to be sure HttpClient timeout is not
+		// overruled
+		return (getTimeout() / 1000) + 1;
+	}
+
 	/**
 	 * The maximum number of concurrent connections
 	 * @param i

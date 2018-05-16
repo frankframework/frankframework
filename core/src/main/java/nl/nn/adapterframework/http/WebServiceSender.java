@@ -125,7 +125,6 @@ public class WebServiceSender extends HttpSender {
 	public WebServiceSender() {
 		super();
 		setMethodType("POST");
-		setContentType("text/xml; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING);
 	}
 
 	public String getLogPrefix() {
@@ -155,6 +154,12 @@ public class WebServiceSender extends HttpSender {
 				wsscf = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
 			log.debug(getLogPrefix()+"created CredentialFactory for username=["+wsscf.getUsername()+"]");
 		}
+	}
+
+	@Override
+	protected HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, java.util.Map<String,String> headersParamsMap) throws SenderException {
+		setContentType("text/xml; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING);
+		return super.getMethod(uri, message, parameters, headersParamsMap);
 	}
 
 	@Override
