@@ -27,10 +27,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletResponse;
+
 import jcifs.util.Base64;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -355,7 +357,10 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	}
 
 	protected FormBodyPart createMultipartBodypart(String name, String message) {
-		return createMultipartBodypart(name, message, ContentType.DEFAULT_TEXT.getMimeType());
+		if(isMtomEnabled())
+			return createMultipartBodypart(name, message, "application/xop+xml");
+		else
+			return createMultipartBodypart(name, message, ContentType.DEFAULT_TEXT.getMimeType());
 	}
 
 	protected FormBodyPart createMultipartBodypart(String name, String message, String contentType) {
