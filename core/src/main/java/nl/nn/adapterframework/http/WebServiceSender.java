@@ -32,6 +32,8 @@ import nl.nn.adapterframework.util.Misc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.FormBodyPart;
 
 /**
  * Sender that sends a message via a WebService.
@@ -195,6 +197,11 @@ public class WebServiceSender extends HttpSender {
 		log.debug(getLogPrefix()+"setting SOAPAction header ["+soapActionURI+"]");
 		method.setHeader("SOAPAction", soapActionURI);
 		return method;
+	}
+
+	@Override
+	protected FormBodyPart createMultipartBodypart(String name, String message) {
+		return createMultipartBodypart(name, message, "application/xop+xml");
 	}
 
 	@Override

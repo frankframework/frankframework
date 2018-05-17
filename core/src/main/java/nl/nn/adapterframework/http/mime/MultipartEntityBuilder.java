@@ -200,7 +200,7 @@ public class MultipartEntityBuilder {
 		if(mtom) {
 			paramsList.add(new BasicNameValuePair("type", "application/xop+xml"));
 			paramsList.add(new BasicNameValuePair("start", firstPart));
-			paramsList.add(new BasicNameValuePair("start-info", firstPart));
+			paramsList.add(new BasicNameValuePair("start-info", "text/xml"));
 			subtypeCopy = MTOM_SUBTYPE;
 		}
 
