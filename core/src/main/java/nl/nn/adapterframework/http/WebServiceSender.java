@@ -32,7 +32,6 @@ import nl.nn.adapterframework.util.Misc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.FormBodyPart;
 
 /**
@@ -201,7 +200,10 @@ public class WebServiceSender extends HttpSender {
 
 	@Override
 	protected FormBodyPart createMultipartBodypart(String name, String message) {
-		return createMultipartBodypart(name, message, "application/xop+xml");
+		if(isMtomEnabled())
+			return createMultipartBodypart(name, message, "application/xop+xml");
+		else
+			return super.createMultipartBodypart(name, message);
 	}
 
 	@Override
