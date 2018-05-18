@@ -6,6 +6,15 @@
         <dependent-module archiveName="ibis-adapterframework-core-7.0-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-core/iaf-core">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="ibis-adapterframework-larva-7.0-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-larva/iaf-larva">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="ibis-adapterframework-akamai-7.0-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-akamai/iaf-akamai">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="ibis-adapterframework-cmis-7.0-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-cmis/iaf-cmis">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <dependent-module archiveName="ibis-adapterframework-ifsa-7.0-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ifsa/iaf-ifsa">
             <dependency-type>uses</dependency-type>
         </dependent-module>
@@ -19,15 +28,6 @@
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module archiveName="ibis-adapterframework-ibm-7.0-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ibm/iaf-ibm">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-larva-7.0-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-larva/iaf-larva">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-akamai-7.0-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-akamai/iaf-akamai">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="ibis-adapterframework-cmis-7.0-RC3-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-cmis/iaf-cmis">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module deploy-path="/" handle="module:/overlay/prj/iaf-webapp?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">

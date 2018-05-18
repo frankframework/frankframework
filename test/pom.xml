@@ -28,26 +28,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-ifsa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-tibco</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-sap</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-coolgen</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-ibm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-larva</artifactId>
 		</dependency>
 		<dependency>
