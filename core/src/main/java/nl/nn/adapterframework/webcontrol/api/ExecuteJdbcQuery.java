@@ -110,30 +110,33 @@ public final class ExecuteJdbcQuery extends Base {
 		}
 
 		//We have all info we need, lets execute the query!
+		DirectQuerySender qs;
 		try {
-			DirectQuerySender qs = (DirectQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-			try {
-				qs.setName("QuerySender");
-				qs.setJmsRealm(realm);
-				qs.setQueryType(queryType);
-				qs.setBlobSmartGet(true);
-				qs.configure(true);
-				qs.open();
-				result = qs.sendMessage("dummy", query);
-				if (resultType.equalsIgnoreCase("csv")) {
-					URL url = ClassUtils.getResourceURL(this, DB2XML_XSLT);
-					if (url!=null) {
-						Transformer t = XmlUtils.createTransformer(url);
-						result = XmlUtils.transformXml(t,result);
-					}
-				}
-
-				qs.close();
-			} catch (Throwable t) {
-				throw new ApiException("An error occured on executing jdbc query: "+t.toString(), 400);
-			}
+			qs = (DirectQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 		} catch (Exception e) {
-			throw new ApiException("An error occured on creating or closing the connection: "+e.toString(), 400);
+			log.error(e);
+			throw new ApiException("An error occured on creating or closing the connection!", 500);
+		}
+
+		try {
+			qs.setName("QuerySender");
+			qs.setJmsRealm(realm);
+			qs.setQueryType(queryType);
+			qs.setBlobSmartGet(true);
+			qs.configure(true);
+			qs.open();
+			result = qs.sendMessage("dummy", query);
+			if (resultType.equalsIgnoreCase("csv")) {
+				URL url = ClassUtils.getResourceURL(this, DB2XML_XSLT);
+				if (url!=null) {
+					Transformer t = XmlUtils.createTransformer(url);
+					result = XmlUtils.transformXml(t,result);
+				}
+			}
+		} catch (Throwable t) {
+			throw new ApiException("An error occured on executing jdbc query: " + t.getMessage(), 400);
+		} finally {
+			qs.close();
 		}
 
 		if(resultType.equalsIgnoreCase("json")) {
@@ -141,7 +144,7 @@ public final class ExecuteJdbcQuery extends Base {
 				returnEntity = XmlQueryResult2Map(result);
 			}
 			if(returnEntity == null)
-				throw new ApiException("Invalid query result.", 400);
+				throw new ApiException("Invalid query result", 400);
 		}
 		else
 			returnEntity = result;

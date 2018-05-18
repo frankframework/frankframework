@@ -75,6 +75,7 @@ Upcoming
 - Recover job: restart RestListeners of which uriPattern is not registered correctly
 - Restore "IBIS startup failed" error page for ShowConfigurationStatus
 - Bugfix multiple WebServiceSender and MTOM related issues
+- Add IAF-TEST module for IAF integration tests
 
 
 
