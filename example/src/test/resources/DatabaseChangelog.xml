@@ -1,0 +1,91 @@
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+<!-- When using one of the following commands, a rollback script is not required
+AddColumn
+AddDefaultValue
+AddForeignKeyConstraint
+AddLookupTable
+AddNotNullConstraint
+AddPrimaryKey
+AddUniqueConstraint
+CreateIndex
+CreateSequence
+CreateTable
+CreateView
+DropNotNullConstraint
+RenameColumn
+RenameTable
+RenameView
+TagDatabase
+-->
+
+	<property name="now" value="now()" dbms="h2"/>
+	<property name="now" value="sysdate" dbms="oracle"/>
+	<property name="now" value="now()" dbms="mysql"/>
+	<property name="now" value="now()" dbms="postgresql"/>
+
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('E', 'Ibis4Example/HelloUniverse_In', 1001, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('E', 'Ibis4Example/HelloUniverse_In', 1002, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('E', 'Ibis4Example/HelloUniverse_In', 1003, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Ibis4Example/HelloUniverse_Out', 2001, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Ibis4Example/HelloUniverse_Out', 2002, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Ibis4Example/HelloUniverse_Out', 2003, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Ibis4Example/HelloUniverse_Out', 2004, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Ibis4Example/HelloUniverse_Out', 2005, CURRENT_TIMESTAMP); -->
+
+	<changeSet id="Ibis4Example:1" author="Niels Meijer">
+		<insert tableName="IBISSTORE">
+			<column name="TYPE" value="E" />
+			<column name="SLOTID" value="Ibis4Example/HelloUniverse_In" />
+			<column name="MESSAGEID" value="1001" />
+			<column name="MESSAGEDATE" value="${now}" />
+		</insert>
+		<insert tableName="IBISSTORE">
+			<column name="TYPE" value="E" />
+			<column name="SLOTID" value="Ibis4Example/HelloUniverse_In" />
+			<column name="MESSAGEID" value="1002" />
+			<column name="MESSAGEDATE" value="${now}" />
+		</insert>
+		<insert tableName="IBISSTORE">
+			<column name="TYPE" value="E" />
+			<column name="SLOTID" value="Ibis4Example/HelloUniverse_In" />
+			<column name="MESSAGEID" value="1003" />
+			<column name="MESSAGEDATE" value="${now}" />
+		</insert>
+		<insert tableName="IBISSTORE">
+			<column name="TYPE" value="L" />
+			<column name="SLOTID" value="Ibis4Example/HelloUniverse_Out" />
+			<column name="MESSAGEID" value="2001" />
+			<column name="MESSAGEDATE" value="${now}" />
+		</insert>
+		<insert tableName="IBISSTORE">
+			<column name="TYPE" value="L" />
+			<column name="SLOTID" value="Ibis4Example/HelloUniverse_Out" />
+			<column name="MESSAGEID" value="2002" />
+			<column name="MESSAGEDATE" value="${now}" />
+		</insert>
+		<insert tableName="IBISSTORE">
+			<column name="TYPE" value="L" />
+			<column name="SLOTID" value="Ibis4Example/HelloUniverse_Out" />
+			<column name="MESSAGEID" value="2003" />
+			<column name="MESSAGEDATE" value="${now}" />
+		</insert>
+		<insert tableName="IBISSTORE">
+			<column name="TYPE" value="L" />
+			<column name="SLOTID" value="Ibis4Example/HelloUniverse_Out" />
+			<column name="MESSAGEID" value="2004" />
+			<column name="MESSAGEDATE" value="${now}" />
+		</insert>
+		<insert tableName="IBISSTORE">
+			<column name="TYPE" value="L" />
+			<column name="SLOTID" value="Ibis4Example/HelloUniverse_Out" />
+			<column name="MESSAGEID" value="2005" />
+			<column name="MESSAGEDATE" value="${now}" />
+		</insert>
+	</changeSet>
+
+</databaseChangeLog>

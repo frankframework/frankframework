@@ -80,6 +80,11 @@
       </dependency>
       <dependency>
         <groupId>org.ibissource</groupId>
+        <artifactId>ibis-adapterframework-test</artifactId>
+        <version>7.0-RC3-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ibissource</groupId>
         <artifactId>ibis-adapterframework-ladybug</artifactId>
         <version>2.0.0.3713</version>
       </dependency>
@@ -299,6 +304,7 @@
         <module>akamai</module>
         <module>cmis</module>
         <module>webapp</module>
+        <module>test</module>
       </modules>
     </profile>
     <profile>
@@ -320,6 +326,7 @@
         <module>sap</module>
         <module>tibco</module>
         <module>webapp</module>
+        <module>test</module>
       </modules>
     </profile>
   </profiles>

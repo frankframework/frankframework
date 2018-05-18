@@ -1,0 +1,8 @@
+<!DOCTYPE configuration [
+]>
+<configuration name="Ibis4Test">
+	<jmsRealms>
+		<jmsRealm realmName="jdbc" datasourceName="jdbc/${instance.name.lc}"/>
+		<!-- jmsRealm realmName="qcf" queueConnectionFactoryName="jms/qcf"/ -->
+	</jmsRealms>
+</configuration>

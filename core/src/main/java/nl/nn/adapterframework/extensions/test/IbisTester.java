@@ -164,7 +164,8 @@ public class IbisTester {
 		appConstants.put("project.basedir", projectBaseDir);
 		debug("***set property with name [project.basedir] and value ["
 				+ projectBaseDir + "]***");
-		appConstants.put("create.dbscript.location", "create_database_h2.sql");
+
+		System.setProperty("jdbc.migrator.active", "true");
 		// appConstants.put("validators.disabled", "true");
 		// appConstants.put("xmlValidator.lazyInit", "true");
 		// appConstants.put("xmlValidator.maxInitialised", "200");

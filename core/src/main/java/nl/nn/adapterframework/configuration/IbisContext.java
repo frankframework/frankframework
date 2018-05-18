@@ -381,6 +381,7 @@ public class IbisContext {
 						databaseMigrator.setIbisContext(this);
 						databaseMigrator.configure(currentConfigurationName, classLoader);
 						databaseMigrator.update();
+						databaseMigrator.close();
 					}
 					catch (Exception e) {
 						log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperMessage.ERROR_LEVEL);
