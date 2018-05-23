@@ -81,6 +81,7 @@ Upcoming
     - Release old configuration objects when reloaded (new object was only used when pipe description not in cache)
     - Bugfix pipe description being showed from other configuration when both configurations contain the same adapter and pipe name
     - Show resources from schema, wsdl, fileName and schemaLocation attributes too in pipe description
+- Add LarvaPipe
 
 
 

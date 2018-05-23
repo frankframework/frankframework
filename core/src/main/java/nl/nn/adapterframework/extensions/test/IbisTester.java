@@ -331,7 +331,10 @@ public class IbisTester {
 				if (result == null) {
 					error(scenarioInfo + " failed");
 				} else {
-					if (("[***PASSED***]").equals(result.resultString)) {
+					if (result.resultString != null
+							&& (result.resultString.endsWith("passed")
+									|| result.resultString.endsWith("passed after autosave"))
+							) {
 						debug(scenarioInfo + " passed in [" + result.duration
 								+ "] msec");
 						scenariosPassed++;

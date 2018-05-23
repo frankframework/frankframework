@@ -38,6 +38,7 @@ import java.util.zip.ZipInputStream;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
@@ -104,23 +105,56 @@ public class TestTool {
 	private static final int RESULT_AUTOSAVED = 2;
 	// dirty solution by Marco de Reus:
 	private static String zeefVijlNeem = "";
-	private static String windiffCommand;
 	private static Writer silentOut = null;
 	private static boolean autoSaveDiffs = false;
-	
+
+	public static IbisContext getIbisContext(ServletContext application) {
+		AppConstants appConstants = AppConstants.getInstance();
+		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
+		IbisContext ibisContext = (IbisContext)application.getAttribute(ibisContextKey);
+		return ibisContext;
+	}
+
+	public static AppConstants getAppConstants(IbisContext ibisContext) {
+		// Load AppConstants using a class loader to get an instance that has
+		// resolved application.server.type in ServerSpecifics*.properties,
+		// SideSpecifics*.properties and StageSpecifics*.properties filenames
+		// See IbisContext.setDefaultApplicationServerType() and userstory
+		// 'Refactor ConfigurationServlet en AppConstants' too.
+		Configuration configuration = ibisContext.getIbisManager().getConfigurations().get(0);
+		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
+		return appConstants;
+	}
+
 	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
 		runScenarios(application, request, out, false);
 	}
-		
+
 	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, boolean silent) {
+		String paramLogLevel = request.getParameter("loglevel");
+		String paramAutoScroll = request.getParameter("autoscroll");
+		String paramExecute = request.getParameter("execute");
+		String paramWaitBeforeCleanUp = request.getParameter("waitbeforecleanup");
+		String servletPath = request.getServletPath();
+		int i = servletPath.lastIndexOf('/');
+		String realPath = application.getRealPath(servletPath.substring(0, i));
+		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
+		IbisContext ibisContext = getIbisContext(application);
+		AppConstants appConstants = getAppConstants(ibisContext);
+		runScenarios(ibisContext, appConstants, paramLogLevel,
+				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp,
+				realPath, paramScenariosRootDirectory, out, silent);
+	}
+
+	public static void runScenarios(IbisContext ibisContext, AppConstants appConstants, String paramLogLevel,
+			String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp,
+			String realPath, String paramScenariosRootDirectory,
+			Writer out, boolean silent) {
 		String logLevel = "wrong pipeline messages";
 		String autoScroll = "true";
-		
-		String paramLogLevel = request.getParameter("loglevel");
 		if (paramLogLevel != null && LOG_LEVEL_ORDER.indexOf("[" + paramLogLevel + "]") > -1) {
 			logLevel = paramLogLevel;
 		}
-		String paramAutoScroll = request.getParameter("autoscroll");
 		if (paramAutoScroll == null && paramLogLevel != null) {
 			autoScroll = "false";
 		}
@@ -142,10 +176,6 @@ public class TestTool {
 		}
 
 		TestTool.debugMessage("Start logging to logbuffer until form is written", writers);
-		debugMessage("Get ibis context", writers);
-		AppConstants appConstants = AppConstants.getInstance();
-		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
-		IbisContext ibisContext = (IbisContext)application.getAttribute(ibisContextKey);
 		String asd = appConstants.getResolvedProperty("larva.diffs.autosave");
 		if (asd!=null) {
 			autoSaveDiffs = Boolean.parseBoolean(asd);
@@ -153,7 +183,10 @@ public class TestTool {
 		debugMessage("Initialize scenarios root directories", writers);
 		List scenariosRootDirectories = new ArrayList();
 		List scenariosRootDescriptions = new ArrayList();
-		String currentScenariosRootDirectory = initScenariosRootDirectories(appConstants, application, request, scenariosRootDirectories, scenariosRootDescriptions, writers);
+		String currentScenariosRootDirectory = initScenariosRootDirectories(
+				appConstants, realPath,
+				paramScenariosRootDirectory, scenariosRootDirectories,
+				scenariosRootDescriptions, writers);
 		if (scenariosRootDirectories.size() == 0) {
 			debugMessage("Stop logging to logbuffer", writers);
 			writers.put("uselogbuffer", "stop");
@@ -171,18 +204,8 @@ public class TestTool {
 					}
 				}
 			}
-			String windiffCmd = appConstants.getResolvedProperty("larva.windiff.command");
-			if (windiffCmd != null) {
-				windiffCommand = windiffCmd;
-			} else {
-				windiffCommand = currentScenariosRootDirectory + "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
-			}
 			debugMessage("Read scenarios from directory '" + currentScenariosRootDirectory + "'", writers);
 			List allScenarioFiles = readScenarioFiles(appConstants, currentScenariosRootDirectory, writers);
-			debugMessage("Read execute parameter", writers);
-			String paramExecute = request.getParameter("execute");
-			debugMessage("Read waitbeforecleanup parameter", writers);
-			String paramWaitBeforeCleanUp = request.getParameter("waitbeforecleanup");
 			debugMessage("Initialize 'wait before cleanup' variable", writers);
 			int waitBeforeCleanUp = 100;
 			if (paramWaitBeforeCleanUp != null) {
@@ -258,7 +281,7 @@ public class TestTool {
 							if (steps != null) {
 								synchronized(STEP_SYNCHRONIZER) {
 									debugMessage("Open queues", writers);
-									Map queues = openQueues(scenarioDirectory, steps, properties, ibisContext, writers);
+									Map queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers);
 									if (queues != null) {
 										debugMessage("Execute steps", writers);
 										boolean allStepsPassed = true;
@@ -311,26 +334,32 @@ public class TestTool {
 						}
 	
 						if (scenarioPassed==RESULT_OK) {
-							scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed", writers);
+							scenariosPassed++;
+							scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")", writers);
 							if (silent) {
 								try {
-									out.write("[***PASSED***]");
+									out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed");
 								} catch (IOException e) {
 								}
 							}
-							scenariosPassed++;
 						} else if (scenarioPassed==RESULT_AUTOSAVED) {
+							scenariosAutosaved++;
 							scenarioAutosavedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave", writers);
 							if (silent) {
 								try {
-									out.write("[***PASSED***]");
+									out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
 								} catch (IOException e) {
 								}
 							}
-							scenariosAutosaved++;
 						} else {
-							scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed", writers);
 							scenariosFailed++;
+							scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")", writers);
+							if (silent) {
+								try {
+									out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed");
+								} catch (IOException e) {
+								}
+							}
 						}
 						
 						writeHtml("</div>", writers, false);
@@ -339,7 +368,7 @@ public class TestTool {
 					debugMessage("Print statistics information", writers);
 					int scenariosTotal = scenariosPassed + scenariosAutosaved + scenariosFailed;
 					if (scenariosTotal == 0) {
-						scenariosTotalMessage("No scenarios found", writers);
+						scenariosTotalMessage("No scenarios found", writers, out, silent);
 					} else {
 						if (writers!=null) {
 							if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
@@ -350,38 +379,38 @@ public class TestTool {
 						debugMessage("Print statistics information", writers);
 						if (scenariosPassed == scenariosTotal) {
 							if (scenariosTotal == 1) {
-								scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + executeTime + " ms)", writers);
+								scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + executeTime + " ms)", writers, out, silent);
 							} else {
-								scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers);
+								scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers, out, silent);
 							}
 						} else if (scenariosFailed == scenariosTotal) {
 							if (scenariosTotal == 1) {
-								scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + executeTime + " ms)", writers);
+								scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + executeTime + " ms)", writers, out, silent);
 							} else {
-								scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers);
+								scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers, out, silent);
 							}
 						} else {
 							if (scenariosTotal == 1) {
-								scenariosTotalMessage("1 scenario executed in " + executeTime + " ms", writers);
+								scenariosTotalMessage("1 scenario executed in " + executeTime + " ms", writers, out, silent);
 							} else {
-								scenariosTotalMessage(scenariosTotal + " scenarios executed in " + executeTime + " ms", writers);
+								scenariosTotalMessage(scenariosTotal + " scenarios executed in " + executeTime + " ms", writers, out, silent);
 							}
 							if (scenariosPassed == 1) {
-								scenariosPassedTotalMessage("1 scenario passed", writers);
+								scenariosPassedTotalMessage("1 scenario passed", writers, out, silent);
 							} else {
-								scenariosPassedTotalMessage(scenariosPassed + " scenarios passed", writers);
+								scenariosPassedTotalMessage(scenariosPassed + " scenarios passed", writers, out, silent);
 							}
 							if (autoSaveDiffs) {
 								if (scenariosAutosaved == 1) {
-									scenariosAutosavedTotalMessage("1 scenario passed after autosave", writers);
+									scenariosAutosavedTotalMessage("1 scenario passed after autosave", writers, out, silent);
 								} else {
-									scenariosAutosavedTotalMessage(scenariosAutosaved + " scenarios passed after autosave", writers);
+									scenariosAutosavedTotalMessage(scenariosAutosaved + " scenarios passed after autosave", writers, out, silent);
 								}
 							}
 							if (scenariosFailed == 1) {
-								scenariosFailedTotalMessage("1 scenario failed", writers);
+								scenariosFailedTotalMessage("1 scenario failed", writers, out, silent);
 							} else {
-								scenariosFailedTotalMessage(scenariosFailed + " scenarios failed", writers);
+								scenariosFailedTotalMessage(scenariosFailed + " scenarios failed", writers, out, silent);
 							}
 						}
 					}
@@ -833,24 +862,52 @@ public class TestTool {
 		writeLog("<h2 class='failed'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
 	}
 
-	public static void scenariosTotalMessage(String message, Map writers) {
-		String method = "totals";
-		writeLog("<h1 class='total'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+	public static void scenariosTotalMessage(String message, Map writers, Writer out, boolean silent) {
+		if (silent) {
+			try {
+				out.write(message);
+			} catch (IOException e) {
+			}
+		} else {
+			String method = "totals";
+			writeLog("<h1 class='total'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+		}
 	}
 
-	public static void scenariosPassedTotalMessage(String message, Map writers) {
-		String method = "totals";
-		writeLog("<h1 class='passed'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+	public static void scenariosPassedTotalMessage(String message, Map writers, Writer out, boolean silent) {
+		if (silent) {
+			try {
+				out.write(message);
+			} catch (IOException e) {
+			}
+		} else {
+			String method = "totals";
+			writeLog("<h1 class='passed'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+		}
 	}
 
-	public static void scenariosAutosavedTotalMessage(String message, Map writers) {
-		String method = "totals";
-		writeLog("<h1 class='autosaved'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+	public static void scenariosAutosavedTotalMessage(String message, Map writers, Writer out, boolean silent) {
+		if (silent) {
+			try {
+				out.write(message);
+			} catch (IOException e) {
+			}
+		} else {
+			String method = "totals";
+			writeLog("<h1 class='autosaved'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+		}
 	}
 
-	public static void scenariosFailedTotalMessage(String message, Map writers) {
-		String method = "totals";
-		writeLog("<h1 class='failed'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+	public static void scenariosFailedTotalMessage(String message, Map writers, Writer out, boolean silent) {
+		if (silent) {
+			try {
+				out.write(message);
+			} catch (IOException e) {
+			}
+		} else {
+			String method = "totals";
+			writeLog("<h1 class='failed'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+		}
 	}
 
 	public static void errorMessage(String message, Map writers) {
@@ -888,94 +945,79 @@ public class TestTool {
 	}
 
 	public static String initScenariosRootDirectories(
-			AppConstants appConstants,
-			ServletContext application, HttpServletRequest request,
+			AppConstants appConstants, String realPath,
+			String paramScenariosRootDirectory,
 			List scenariosRootDirectories, List scenariosRootDescriptions,
 			Map writers) {
 		String currentScenariosRootDirectory = null;
-		String servletPath = request.getServletPath();
-		if (servletPath == null) {
-			if (writers != null) errorMessage("Could not read servlet path", writers);
+		if (realPath == null) {
+			errorMessage("Could not read webapp real path", writers);
 		} else {
-			int i = servletPath.lastIndexOf('/');
-			if (i == -1) {
-				if (writers != null) errorMessage("Could not find '/' in servlet path", writers);
-			} else {
-				String realPath = application.getRealPath(servletPath.substring(0, i));
-				if (realPath == null) {
-					if (writers != null) errorMessage("Could not read webapp real path", writers);
+			if (!realPath.endsWith(File.separator)) {
+				realPath = realPath + File.separator;
+			}
+			Map<String, String> scenariosRoots = new HashMap<String, String>();
+			Map<String, String> scenariosRootsBroken = new HashMap<String, String>();
+			int j = 1;
+			String directory = appConstants.getResolvedProperty("scenariosroot" + j + ".directory");
+			String description = appConstants.getResolvedProperty("scenariosroot" + j + ".description");
+			while (directory != null) {
+				if (description == null) {
+					errorMessage("Could not find description for root directory '" + directory + "'", writers);
+				} else if (scenariosRoots.get(description) != null) {
+					errorMessage("A root directory named '" + description + "' already exist", writers);
 				} else {
-					if (!realPath.endsWith(File.separator)) {
-						realPath = realPath + File.separator;
-					}
-					Map<String, String> scenariosRoots = new HashMap<String, String>();
-					Map<String, String> scenariosRootsBroken = new HashMap<String, String>();
-					int j = 1;
-					String directory = appConstants.getResolvedProperty("scenariosroot" + j + ".directory");
-					String description = appConstants.getResolvedProperty("scenariosroot" + j + ".description");
-					while (directory != null) {
-						if (description == null) {
-							if (writers != null) errorMessage("Could not find description for root directory '" + directory + "'", writers);
-						} else if (scenariosRoots.get(description) != null) {
-							if (writers != null) errorMessage("A root directory named '" + description + "' already exist", writers);
-						} else {
-							String parent = realPath;
-							String m2eFileName = appConstants.getResolvedProperty("scenariosroot" + j + ".m2e.pom.properties");
-							if (m2eFileName != null) {
-								File m2eFile = new File(realPath, m2eFileName);
-								if (m2eFile.exists()) {
-									if (writers != null) {
-										debugMessage("Read m2e pom.properties: " + m2eFileName, writers);
-										Properties m2eProperties = readProperties(null, m2eFile, false, writers);
-										parent = m2eProperties.getProperty("m2e.projectLocation");
-										debugMessage("Use m2e parent: " + parent, writers);
-									}
-								}
-							}
-							directory = getAbsolutePath(parent, directory, true);
-							if (new File(directory).exists()) {
-								scenariosRoots.put(description, directory);
-							} else {
-								scenariosRootsBroken.put(description, directory);
-							}
+					String parent = realPath;
+					String m2eFileName = appConstants.getResolvedProperty("scenariosroot" + j + ".m2e.pom.properties");
+					if (m2eFileName != null) {
+						File m2eFile = new File(realPath, m2eFileName);
+						if (m2eFile.exists()) {
+							debugMessage("Read m2e pom.properties: " + m2eFileName, writers);
+							Properties m2eProperties = readProperties(null, m2eFile, false, writers);
+							parent = m2eProperties.getProperty("m2e.projectLocation");
+							debugMessage("Use m2e parent: " + parent, writers);
 						}
-						j++;
-						directory = appConstants.getResolvedProperty("scenariosroot" + j + ".directory");
-						description = appConstants.getResolvedProperty("scenariosroot" + j + ".description");
 					}
-					TreeSet treeSet = new TreeSet(new CaseInsensitiveComparator());
-					treeSet.addAll(scenariosRoots.keySet());
-					Iterator iterator = treeSet.iterator();
-					while (iterator.hasNext()) {
-						description = (String)iterator.next();
-						scenariosRootDescriptions.add(description);
-						scenariosRootDirectories.add(scenariosRoots.get(description));
-					}
-					treeSet.clear();
-					treeSet.addAll(scenariosRootsBroken.keySet());
-					iterator = treeSet.iterator();
-					while (iterator.hasNext()) {
-						description = (String)iterator.next();
-						scenariosRootDescriptions.add("X " + description);
-						scenariosRootDirectories.add(scenariosRootsBroken.get(description));
-					}
-					if (writers != null) debugMessage("Read scenariosrootdirectory parameter", writers);
-					String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
-					String paramScenariosDeploymentSpecs = request.getParameter("scenariosdeploymentspecs");
-					if (writers != null) debugMessage("Get current scenarios root directory", writers);
-					if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.equals("")) {
-						String scenariosRootDefault = appConstants.getResolvedProperty("scenariosroot.default");
-						if (scenariosRootDefault != null) {
-							currentScenariosRootDirectory = scenariosRoots.get(scenariosRootDefault);
-						}
-						if (currentScenariosRootDirectory == null
-								&& scenariosRootDirectories.size() > 0) {
-							currentScenariosRootDirectory = (String)scenariosRootDirectories.get(0);
-						}
+					directory = getAbsolutePath(parent, directory, true);
+					if (new File(directory).exists()) {
+						scenariosRoots.put(description, directory);
 					} else {
-						currentScenariosRootDirectory = paramScenariosRootDirectory;
+						scenariosRootsBroken.put(description, directory);
 					}
 				}
+				j++;
+				directory = appConstants.getResolvedProperty("scenariosroot" + j + ".directory");
+				description = appConstants.getResolvedProperty("scenariosroot" + j + ".description");
+			}
+			TreeSet treeSet = new TreeSet(new CaseInsensitiveComparator());
+			treeSet.addAll(scenariosRoots.keySet());
+			Iterator iterator = treeSet.iterator();
+			while (iterator.hasNext()) {
+				description = (String)iterator.next();
+				scenariosRootDescriptions.add(description);
+				scenariosRootDirectories.add(scenariosRoots.get(description));
+			}
+			treeSet.clear();
+			treeSet.addAll(scenariosRootsBroken.keySet());
+			iterator = treeSet.iterator();
+			while (iterator.hasNext()) {
+				description = (String)iterator.next();
+				scenariosRootDescriptions.add("X " + description);
+				scenariosRootDirectories.add(scenariosRootsBroken.get(description));
+			}
+			debugMessage("Read scenariosrootdirectory parameter", writers);
+			debugMessage("Get current scenarios root directory", writers);
+			if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.equals("")) {
+				String scenariosRootDefault = appConstants.getResolvedProperty("scenariosroot.default");
+				if (scenariosRootDefault != null) {
+					currentScenariosRootDirectory = scenariosRoots.get(scenariosRootDefault);
+				}
+				if (currentScenariosRootDirectory == null
+						&& scenariosRootDirectories.size() > 0) {
+					currentScenariosRootDirectory = (String)scenariosRootDirectories.get(0);
+				}
+			} else {
+				currentScenariosRootDirectory = paramScenariosRootDirectory;
 			}
 		}
 		return currentScenariosRootDirectory;
@@ -1135,7 +1177,9 @@ public class TestTool {
 		return steps;
 	}
 
-	public static Map openQueues(String scenarioDirectory, List steps, Properties properties, IbisContext ibisContext, Map writers) {
+	public static Map openQueues(String scenarioDirectory, List steps,
+			Properties properties, IbisContext ibisContext,
+			AppConstants appConstants, Map writers) {
 		Map queues = new HashMap();
 		debugMessage("Get all queue names", writers);
 		List jmsSenders = new ArrayList();
@@ -1361,7 +1405,7 @@ public class TestTool {
 					if (preDelete != null) {
 						FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						deleteQuerySender.setName("Test Tool pre delete query sender");
-						deleteQuerySender.setDatasourceName(AppConstants.getInstance().getResolvedProperty("jndiContextPrefix") + datasourceName);
+						deleteQuerySender.setDatasourceName(appConstants.getResolvedProperty("jndiContextPrefix") + datasourceName);
 						deleteQuerySender.setQueryType("delete");
 						deleteQuerySender.setQuery("delete from " + preDelete);
 						try {
@@ -1392,7 +1436,7 @@ public class TestTool {
 					if (prePostQuery != null) {
 						FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						prePostFixedQuerySender.setName("Test Tool query sender");
-						prePostFixedQuerySender.setDatasourceName(AppConstants.getInstance().getResolvedProperty("jndiContextPrefix") + datasourceName);
+						prePostFixedQuerySender.setDatasourceName(appConstants.getResolvedProperty("jndiContextPrefix") + datasourceName);
 						//prePostFixedQuerySender.setUsername(username);
 						//prePostFixedQuerySender.setPassword(password);
 						prePostFixedQuerySender.setQueryType("select");
@@ -1435,7 +1479,7 @@ public class TestTool {
 					if (readQuery != null) {
 						FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						readQueryFixedQuerySender.setName("Test Tool query sender");
-						readQueryFixedQuerySender.setDatasourceName(AppConstants.getInstance().getResolvedProperty("jndiContextPrefix") + datasourceName);
+						readQueryFixedQuerySender.setDatasourceName(appConstants.getResolvedProperty("jndiContextPrefix") + datasourceName);
 						//readQueryFixedQuerySender.setUsername(username);
 						//readQueryFixedQuerySender.setPassword(password);
 						
@@ -2893,10 +2937,21 @@ public class TestTool {
 
 	// Used by saveResultToFile.jsp
 	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, DocumentException, SenderException {
-		AppConstants appConstants = AppConstants.getInstance();
-		List scenariosRootDirectories = new ArrayList();
-		List scenariosRootDescriptions = new ArrayList();
-		String currentScenariosRootDirectory = initScenariosRootDirectories(appConstants, application, request, scenariosRootDirectories, scenariosRootDescriptions, null);
+		IbisContext ibisContext = getIbisContext(application);
+		AppConstants appConstants = getAppConstants(ibisContext);
+		String windiffCommand = appConstants.getResolvedProperty("larva.windiff.command");
+		if (windiffCommand == null) {
+			String servletPath = request.getServletPath();
+			int i = servletPath.lastIndexOf('/');
+			String realPath = application.getRealPath(servletPath.substring(0, i));
+			List scenariosRootDirectories = new ArrayList();
+			List scenariosRootDescriptions = new ArrayList();
+			String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
+					appConstants, realPath,
+					null, scenariosRootDirectories,
+					scenariosRootDescriptions, null);
+			windiffCommand = currentScenariosRootDirectory + "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
+		}
 		File tempFileResult = writeTempFile(expectedFileName, result);
 		File tempFileExpected = writeTempFile(expectedFileName, expected);
 		String command = windiffCommand + " " + tempFileResult + " " + tempFileExpected;
