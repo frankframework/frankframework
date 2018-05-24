@@ -219,7 +219,8 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if(!getMethodType().equalsIgnoreCase("POST"))
+
+		if(StringUtils.isEmpty(getContentType()) && !getMethodType().equalsIgnoreCase("POST"))
 			setContentType("text/html; charset="+getCharSet());
 	}
 
