@@ -61,4 +61,10 @@ public class ApiDispatchConfig {
 	public String getUriPattern() {
 		return uriPattern;
 	}
+
+	@Override
+	public String toString() {
+		return this.getClass().toString() + " methods" + 
+				getMethods().toString() + " uriPattern["+getUriPattern()+"]";
+	}
 }

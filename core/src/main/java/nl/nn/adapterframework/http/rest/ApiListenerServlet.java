@@ -307,16 +307,22 @@ public class ApiListenerServlet extends HttpServlet {
 			String result = listener.processRequest(null, body, messageContext);
 
 			/**
-			 * Calculate an etag over the processed result and store in cache
+			 * Calculate an eTag over the processed result and store in cache
 			 */
 			if(listener.getUpdateEtag()) {
+				String cleanPattern = listener.getCleanPattern();
 				if(result != null && method.equals("GET")) {
-					String eTag = ApiCacheManager.buildEtag(listener.getCleanPattern(), result.hashCode());
+					String eTag = ApiCacheManager.buildEtag(cleanPattern, result.hashCode());
 					cache.put(etagCacheKey, eTag);
 					response.addHeader("etag", eTag);
 				}
 				else {
 					cache.remove(etagCacheKey);
+
+					// Not only remove the eTag for the selected resources but also the collection
+					if((method.equals("PUT") || method.equals("DELETE")) && etagCacheKey.endsWith("/*")) {
+						cache.remove(etagCacheKey.substring(0, etagCacheKey.length() -2));
+					}
 				}
 			}
 

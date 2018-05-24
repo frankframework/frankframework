@@ -179,4 +179,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	public boolean getUpdateEtag() {
 		return updateEtag;
 	}
+
+	@Override
+	public String toString() {
+		return this.getClass().toString() + "["+getPhysicalDestinationName()+"] "
+				+ "contentType["+getContentType()+"] updateEtag["+getUpdateEtag()+"]";
+	}
 }
