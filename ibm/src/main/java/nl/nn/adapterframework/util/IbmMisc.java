@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.ibm.websphere.management.AdminService;
@@ -40,7 +41,6 @@ public class IbmMisc {
 	public static final String GETJMSDEST_XSLT = "xml/xsl/getJmsDestinations.xsl";
 
     public static String getApplicationDeploymentDescriptorPath() throws IOException {
-
         final String appName = ComponentMetaDataAccessorImpl.getComponentMetaDataAccessor().getComponentMetaData().getJ2EEName().getApplication();
         final AdminService adminService = AdminServiceFactory.getAdminService();
         final String cellName = adminService.getCellName();
@@ -63,6 +63,7 @@ public class IbmMisc {
                         + appName
                         + File.separator
                         + "META-INF";
+        LOG.debug("applicationDeploymentDescriptorPath [" + appPath + "]");
         return appPath;
     }
 
@@ -135,17 +136,41 @@ public class IbmMisc {
 		parameters.put("providerType", providerType);
 		parameters.put("jndiName", jndiName);
 		XmlUtils.setTransformerParameters(t, parameters);
-		return XmlUtils.transformXml(t, confResString);
+		String connectionPoolProperties = XmlUtils.transformXml(t, confResString);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("connectionPoolProperties ["
+					+ chomp(connectionPoolProperties, 100, true) + "]");
+		}
+		return connectionPoolProperties;
 	}
 
 	public static String getJmsDestinations(String confResString)
 			throws IOException, DomBuilderException, TransformerException {
-		URL url = ClassUtils.getResourceURL(Misc.class, GETJMSDEST_XSLT);
+		URL url = ClassUtils.getResourceURL(IbmMisc.class, GETJMSDEST_XSLT);
 		if (url == null) {
 			throw new IOException(
 					"cannot find resource [" + GETJMSDEST_XSLT + "]");
 		}
 		Transformer t = XmlUtils.createTransformer(url, true);
-		return XmlUtils.transformXml(t, confResString);
+		String jmsDestinations = XmlUtils.transformXml(t, confResString);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("jmsDestinations [" + chomp(jmsDestinations, 100, true)
+					+ "]");
+		}
+		return jmsDestinations;
+	}
+	
+	private static String chomp(String string, int length, boolean isEmpty) {
+		if (isEmpty && StringUtils.isEmpty(string)) {
+			return "[#EMPTY#]";
+		} else {
+			if (length > 0 && string.length() > length) {
+				String chompedString;
+				chompedString = string.substring(0, length) + "...("
+						+ (string.length() - length) + " characters more)";
+				return chompedString;
+			}
+		}
+		return string;
 	}
 }
