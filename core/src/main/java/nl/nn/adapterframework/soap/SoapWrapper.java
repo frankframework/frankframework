@@ -239,7 +239,7 @@ public class SoapWrapper {
 		return createSoapFaultMessage("soapenv:Server", faultstring);
 	}
 
-	public String signMessage(String soapMessage, String user, String password) throws SenderException {
+	public String signMessage(String soapMessage, String user, String password, boolean passwordDigest) throws SenderException {
 		try {
 			WSSecurityEngine secEngine = WSSecurityEngine.getInstance();
 			WSSConfig config = secEngine.getWssConfig();
@@ -263,7 +263,11 @@ public class SoapWrapper {
 
 			// add a UsernameToken
 			WSSecUsernameToken tokenBuilder = new WSSecUsernameToken();
-			tokenBuilder.setPasswordType(WSConstants.PASSWORD_DIGEST);
+			if (passwordDigest) {
+				tokenBuilder.setPasswordType(WSConstants.PASSWORD_DIGEST);
+			} else {
+				tokenBuilder.setPasswordType(WSConstants.PASSWORD_TEXT);
+			}
 			tokenBuilder.setUserInfo(user, password);
 			tokenBuilder.addNonce();
 			tokenBuilder.addCreated();

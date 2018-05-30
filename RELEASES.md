@@ -83,6 +83,7 @@ Upcoming
     - Show resources from schema, wsdl, fileName and schemaLocation attributes too in pipe description
 - Add LarvaPipe
 - Fix sub-resources eTag handling for ApiListener
+- Add wssPasswordDigest attribute to WebServiceSender
 
 
 

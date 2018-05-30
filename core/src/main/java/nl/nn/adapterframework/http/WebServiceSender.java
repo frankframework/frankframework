@@ -95,6 +95,7 @@ import org.apache.http.client.utils.URIBuilder;
  * <tr><td>{@link #setWssAuthAlias(String) wssAuthAlias}</td><td>alias used to obtain credentials for authentication to Web Services Security</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWssUserName(String) wssUserName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWssPassword(String) wssPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWssPasswordDigest(boolean) wssPasswordDigest}</td><td>when true, the password is sent digested. Otherwise it is sent in clear text</td><td>true</td></tr>
  * </table>
  * </p>
  * 
@@ -116,6 +117,7 @@ public class WebServiceSender extends HttpSender {
 	private String wssAuthAlias;
 	private String wssUserName;
 	private String wssPassword;
+	private boolean wssPasswordDigest = true;
 
 	private SoapWrapper soapWrapper;
 	private CredentialFactory wsscf=null;
@@ -187,7 +189,7 @@ public class WebServiceSender extends HttpSender {
 		}
 
 		if (wsscf!=null) {
-			soapmsg = soapWrapper.signMessage(soapmsg, wsscf.getUsername(), wsscf.getPassword());
+			soapmsg = soapWrapper.signMessage(soapmsg, wsscf.getUsername(), wsscf.getPassword(), isWssPasswordDigest());
 		}
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
 
@@ -326,5 +328,12 @@ public class WebServiceSender extends HttpSender {
 	}
 	public String getWssAuthAlias() {
 		return wssAuthAlias;
+	}
+
+	public void setWssPasswordDigest(boolean b) {
+		wssPasswordDigest = b;
+	}
+	public boolean isWssPasswordDigest() {
+		return wssPasswordDigest;
 	}
 }
