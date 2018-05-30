@@ -568,7 +568,7 @@ public class Misc {
 		try {
             return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getApplicationDeploymentDescriptorPath").invoke(null);
 		} catch (Exception e) {
-            log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: " + e.getMessage());
+            log.debug("Caught NoClassDefFoundError for getApplicationDeploymentDescriptorPath, just not on Websphere Application Server: " + e.getMessage());
             return null;
         }
 	}
@@ -588,7 +588,7 @@ public class Misc {
         try {
             return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationResources").invoke(null);
         } catch (Exception e) {
-            log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: " + e.getMessage());
+            log.debug("Caught NoClassDefFoundError for getConfigurationResources, just not on Websphere Application Server: " + e.getMessage());
             return null;
         }
 	}
@@ -597,7 +597,7 @@ public class Misc {
         try {
             return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServer").invoke(null);
         } catch (Exception e) {
-            log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: " + e.getMessage());
+            log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server: " + e.getMessage());
             return null;
         }
 	}
@@ -618,7 +618,7 @@ public class Misc {
 					.getMethod("getConnectionPoolProperties", args_types)
 					.invoke(null, args);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: "
+			log.debug("Caught NoClassDefFoundError for getConnectionPoolProperties, just not on Websphere Application Server: "
 					+ e.getMessage());
 			return null;
 		}
@@ -635,7 +635,7 @@ public class Misc {
 					.getMethod("getJmsDestinations", args_types)
 					.invoke(null, args);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError, just not on Websphere Application Server: "
+			log.debug("Caught NoClassDefFoundError for getJmsDestinations, just not on Websphere Application Server: "
 					+ e.getMessage());
 			return null;
 		}
