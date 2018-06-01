@@ -93,6 +93,24 @@ Upcoming
 
 
 
+7.0-RC3
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC2...v7.0-RC3)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-RC3)](https://travis-ci.org/ibissource/iaf)
+
+- Refactor ReplacerPipe replaceNonXmlChar and fix javadoc
+- Support Unicode supplementary characters (like a smiley) in replace/stripNonValidXmlCharacters (which is used in ReplacerPipe). In the old code a Unicode supplementary character like a smiley was seen as two characters which would both be replaced/stripped. To be backwards compatible the Unicode supplementary characters are still replaced/stripped (by one character instead of two) but can be allowed using allowUnicodeSupplementaryCharacters
+- Support document(), xsl:import, and xsl:include with config in database
+- Fix NPE in ApiEhCache after a full reload
+- Update to latest Ladybug Test Tool version
+    - Bugfix pipe description from old configuration (before reload) being showed
+    - Release old configuration objects when reloaded (new object was only used when pipe description not in cache)
+    - Bugfix pipe description being showed from other configuration when both configurations contain the same adapter and pipe name
+    - Show resources from schema, wsdl, fileName and schemaLocation attributes too in pipe description
+
+
+
 7.0-RC2
 ---
 
