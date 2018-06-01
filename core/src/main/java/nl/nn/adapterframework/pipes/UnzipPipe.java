@@ -246,9 +246,12 @@ public class UnzipPipe extends FixedForwardPipe {
 						fileOutputStream.close();
 					}
 					if (isCollectResults()) {
-						entryResults += "<result item=\"" + count + "\"><zipEntry>" + XmlUtils.encodeCdataString(filename) + "</zipEntry>";
+						entryResults += "<result item=\"" + count + "\"><zipEntry>"
+								+ XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(filename) + "</zipEntry>";
 						if (dir != null) {
-							entryResults += "<fileName>" + XmlUtils.encodeCdataString(tmpFile.getPath()) + "</fileName>";
+							entryResults += "<fileName>"
+									+ XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(tmpFile.getPath())
+									+ "</fileName>";
 						}
 						if (isCollectFileContents()) {
 							String fileContent;
