@@ -84,6 +84,7 @@ Upcoming
 - Add LarvaPipe
 - Fix sub-resources eTag handling for ApiListener
 - Add wssPasswordDigest attribute to WebServiceSender
+- Add collectFileContents(Base64Encoded) to UnzipPipe
 
 
 

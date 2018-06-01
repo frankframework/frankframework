@@ -16,14 +16,21 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -32,13 +39,13 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.lang.StringUtils;
-
 /**
- * Assumes input to be a ZIP archive, and unzips it to a directory.
+ * Assumes input to be the file name of a ZIP archive, and unzips it to a
+ * directory and/or an XML message.
  *
  * <br>
- * The output of each unzipped item is returned in XML as follows:
+ * The output of each unzipped item is returned in XML as follows when
+ * collectFileContents is false:
  * <pre>
  *  &lt;results count="num_of_items"&gt;
  *    &lt;result item="1"&gt;
@@ -48,6 +55,23 @@ import org.apache.commons.lang.StringUtils;
  *    &lt;result item="2"&gt;
  *      &lt;zipEntry&gt;name in ZIP archive of second item&lt;/zipEntry&gt;
  *      &lt;fileName&gt;filename of second item&lt;/fileName&gt;
+ *    &lt;/result&gt;
+ *       ...
+ *  &lt;/results&gt;
+ * </pre>
+ *
+ * <br>
+ * The output of each unzipped item is returned in XML as follows when
+ * collectFileContents is true:
+ * <pre>
+ *  &lt;results count="num_of_items"&gt;
+ *    &lt;result item="1"&gt;
+ *      &lt;zipEntry&gt;name in ZIP archive of first item&lt;/zipEntry&gt;
+ *      &lt;fileContent&gt;content of first item&lt;/fileContent&gt;
+ *    &lt;/result&gt;
+ *    &lt;result item="2"&gt;
+ *      &lt;zipEntry&gt;name in ZIP archive of second item&lt;/zipEntry&gt;
+ *      &lt;fileContent&gt;content of second item&lt;/fileContent&gt;
  *    &lt;/result&gt;
  *       ...
  *  &lt;/results&gt;
@@ -63,9 +87,11 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setDirectory(String) directory}</td> <td>directory to extract the archive to</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirectorySessionKey(String) directorySessionKey}</td> <td>SessionKey with a directory value to extract the archive to</td><td>&nbsp;</td></tr> 
  * <tr><td>{@link #setDeleteOnExit(boolean) deleteOnExit}</td><td>when true, file is automatically deleted upon normal JVM termination</td><td>true</td></tr>
- * <tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>if set <code>false</code>, only a small summary is returned</td><td>true</td></tr>
+ * <tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>if set <code>false</code>, only a small summary (count of items in zip) is returned</td><td>true</td></tr>
+ * <tr><td>{@link #setCollectFileContents(boolean) collectFileContents}</td><td>if set <code>true</code>, the content of the files in the zip is returned in the result xml message of this pipe. Please note this can consume a lot of memory for large files or a large number of files</td><td>false</td></tr>
+ * <tr><td>{@link #setCollectFileContentsBase64Encoded(String) collectFileContentsBase64Encoded}</td><td>comma separated list of file extensions. Files with an extension which is part of this list will be base64 encoded. All other files are assumed to have UTF-8 when reading it from the zip and are added as escaped xml with non-unicode-characters being replaced by inverted question mark appended with #, the character number and ;</td><td>false</td></tr>
  * <tr><td>{@link #setKeepOriginalFileName(boolean) keepOriginalFileName}</td><td>if set <code>false</code>, a suffix is added to the original filename to be sure it is unique</td><td>false</td></tr>
- * <tr><td>{@link #setCreateSubdirectories(boolean) createSubdirectories}</td><td>if set <code>true</code>, subdirectories in the zip file are supported</td><td>false</td></tr>
+ * <tr><td>{@link #setCreateSubdirectories(boolean) createSubdirectories}</td><td>if set <code>true</code>, subdirectories in the zip file are created in the directory to extract the archive to</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -85,20 +111,22 @@ public class UnzipPipe extends FixedForwardPipe {
 	private String directorySessionKey;
 	private boolean deleteOnExit=true;
 	private boolean collectResults=true;
+	private boolean collectFileContents=false;
+	private String collectFileContentsBase64Encoded;
 	private boolean keepOriginalFileName=false;
 	private boolean createSubdirectories=false;
 
 	private File dir; // File representation of directory
+	private List<String> base64Extensions;
 
 
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getDirectory())) {
-			if (StringUtils.isEmpty(getDirectorySessionKey())) {
+			if (StringUtils.isEmpty(getDirectorySessionKey()) && !isCollectFileContents()) {
 				throw new ConfigurationException(getLogPrefix(null)+"directory or directorySessionKey must be specified");
 			}
-		}
-		else {
+		} else {
 			dir = new File(getDirectory());
 			if (!dir.exists()) {
 				throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] does not exist");
@@ -106,6 +134,11 @@ public class UnzipPipe extends FixedForwardPipe {
 			if (!dir.isDirectory()) {
 				throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] is not a directory");
 			}
+		}
+		if (StringUtils.isEmpty(getCollectFileContentsBase64Encoded())) {
+			base64Extensions = new ArrayList<String>();
+		} else {
+			base64Extensions = Arrays.asList(getCollectFileContentsBase64Encoded().split(","));
 		}
 	}
 
@@ -122,17 +155,22 @@ public class UnzipPipe extends FixedForwardPipe {
 			}
 		}
 
+		File dir = this.dir;
 		if (StringUtils.isEmpty(getDirectory())) {
 			String directory = (String) session.get(getDirectorySessionKey());
-			if(StringUtils.isEmpty(directory))
-				throw new PipeRunException(this, "directorySessionKey is empty");
-
-			dir = new File(directory);
-			if (!dir.exists()) {
-				throw new PipeRunException(this, "directorySessionKey ["+directory+"] does not exist");
-			}
-			if (!dir.isDirectory()) {
-				throw new PipeRunException(this, "directorySessionKey ["+directory+"] is not a directory");
+			if (StringUtils.isEmpty(directory)) {
+				if (!isCollectFileContents()) {
+					throw new PipeRunException(this, "directorySessionKey is empty");
+				}
+			} else {
+				dir = new File(directory);
+				if (!dir.exists()) {
+					if (!isCollectFileContents()) {
+						throw new PipeRunException(this, "directorySessionKey ["+directory+"] does not exist");
+					}
+				} else if (!dir.isDirectory()) {
+					throw new PipeRunException(this, "directorySessionKey ["+directory+"] is not a directory");
+				}
 			}
 		}
 
@@ -143,7 +181,7 @@ public class UnzipPipe extends FixedForwardPipe {
 			ZipEntry ze;
 			while ((ze=zis.getNextEntry())!=null) {
 				if (ze.isDirectory()) {
-					if (isCreateSubdirectories()) {
+					if (isCreateSubdirectories() && dir != null) {
 						File tmpFile = new File(dir, ze.getName());
 						if (!tmpFile.exists()) {
 							if (tmpFile.mkdirs()) {
@@ -155,7 +193,7 @@ public class UnzipPipe extends FixedForwardPipe {
 							log.debug(getLogPrefix(session)+"directory entry ["+tmpFile.getPath()+"] already exists");
 						}
 					} else {
-						log.warn(getLogPrefix(session)+"skipping directory entry ["+ze.getName()+"]");
+						log.debug(getLogPrefix(session)+"skipping directory entry ["+ze.getName()+"]");
 					}
 				} else {
 					String filename=ze.getName();
@@ -169,36 +207,60 @@ public class UnzipPipe extends FixedForwardPipe {
 					} else {
 						basename=filename;
 					}
-					File tmpFile;
-					if (isKeepOriginalFileName()) {
-						tmpFile = new File(dir, filename);
-						if (tmpFile.exists()) {
-							throw new PipeRunException(this, "file [" + tmpFile.getAbsolutePath() + "] already exists"); 
-						}
+					InputStream inputStream;
+					byte[] fileContentBytes = null;
+					if (isCollectFileContents()) {
+						fileContentBytes = Misc.streamToBytes(zis);
+						inputStream = new ByteArrayInputStream(fileContentBytes);
 					} else {
-						tmpFile = File.createTempFile(basename, extension, dir);
+						inputStream = zis;
 					}
-					if (isDeleteOnExit()) {
-						tmpFile.deleteOnExit();
-					}
-					if (isCreateSubdirectories()) {
-						//extra check
-						File tmpDir = tmpFile.getParentFile();
-						if (!tmpDir.exists()) {
-							if (tmpDir.mkdirs()) {
-								log.debug(getLogPrefix(session)+"created directory ["+tmpDir.getPath()+"]");
-							} else {
-								log.warn(getLogPrefix(session)+"directory ["+tmpDir.getPath()+"] could not be created");
+					File tmpFile = null;
+					if (dir != null) {
+						if (isKeepOriginalFileName()) {
+							tmpFile = new File(dir, filename);
+							if (tmpFile.exists()) {
+								throw new PipeRunException(this, "file [" + tmpFile.getAbsolutePath() + "] already exists"); 
+							}
+						} else {
+							tmpFile = File.createTempFile(basename, extension, dir);
+						}
+						if (isDeleteOnExit()) {
+							tmpFile.deleteOnExit();
+						}
+						if (isCreateSubdirectories()) {
+							//extra check
+							File tmpDir = tmpFile.getParentFile();
+							if (!tmpDir.exists()) {
+								if (tmpDir.mkdirs()) {
+									log.debug(getLogPrefix(session)+"created directory ["+tmpDir.getPath()+"]");
+								} else {
+									log.warn(getLogPrefix(session)+"directory ["+tmpDir.getPath()+"] could not be created");
+								}
 							}
 						}
+						FileOutputStream fileOutputStream = new FileOutputStream(tmpFile);
+						log.debug(getLogPrefix(session)+"writing ZipEntry ["+filename+"] to file ["+tmpFile.getPath()+"]");
+						count++;
+						Misc.streamToStream(inputStream, fileOutputStream, false);
+						fileOutputStream.close();
 					}
-					FileOutputStream fos = new FileOutputStream(tmpFile);
-					log.debug(getLogPrefix(session)+"writing ZipEntry ["+ze.getName()+"] to file ["+tmpFile.getPath()+"]");
-					count++;
-					Misc.streamToStream(zis,fos,false);
-					fos.close();
 					if (isCollectResults()) {
-						entryResults += "<result item=\"" + count + "\"><zipEntry>" + XmlUtils.encodeCdataString(ze.getName()) + "</zipEntry><fileName>" + XmlUtils.encodeCdataString(tmpFile.getPath()) + "</fileName></result>";
+						entryResults += "<result item=\"" + count + "\"><zipEntry>" + XmlUtils.encodeCdataString(filename) + "</zipEntry>";
+						if (dir != null) {
+							entryResults += "<fileName>" + XmlUtils.encodeCdataString(tmpFile.getPath()) + "</fileName>";
+						}
+						if (isCollectFileContents()) {
+							String fileContent;
+							if (base64Extensions.contains(extension)) {
+								fileContent = new String(Base64.encodeBase64Chunked(fileContentBytes));
+							} else {
+								fileContent = new String(fileContentBytes, Misc.DEFAULT_INPUT_STREAM_ENCODING);
+								fileContent = XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(fileContent);
+							}
+							entryResults += "<fileContent>" + fileContent + "</fileContent>";
+						}
+						entryResults += "</result>";
 					}
 				}
 			}
@@ -241,6 +303,20 @@ public class UnzipPipe extends FixedForwardPipe {
 	}
 	public boolean isCollectResults() {
 		return collectResults;
+	}
+
+	public void setCollectFileContents(boolean b) {
+		collectFileContents = b;
+	}
+	public boolean isCollectFileContents() {
+		return collectFileContents;
+	}
+
+	public void setCollectFileContentsBase64Encoded(String string) {
+		collectFileContentsBase64Encoded = string;
+	}
+	public String getCollectFileContentsBase64Encoded() {
+		return collectFileContentsBase64Encoded;
 	}
 
 	public void setKeepOriginalFileName(boolean b) {

@@ -900,6 +900,11 @@ public class XmlUtils {
 		string.getChars(0, length, characters, 0);
 		return encodeChars(characters,0,length);
 	}
+
+	public static String encodeCharsAndReplaceNonValidXmlCharacters(String string) {
+		return encodeChars(replaceNonValidXmlCharacters(string));
+	}
+
 	/**
 	 * Translates special characters to xml equivalents
 	 * like <b>&gt;</b> and <b>&amp;</b>. Please note that non valid xml chars
