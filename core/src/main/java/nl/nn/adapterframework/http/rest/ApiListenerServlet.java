@@ -220,6 +220,7 @@ public class ApiListenerServlet extends HttpServlet {
 					}
 				}
 			}
+			messageContext.put("updateEtag", listener.getUpdateEtag());
 
 			/**
 			 * Check authorization
@@ -309,7 +310,7 @@ public class ApiListenerServlet extends HttpServlet {
 			/**
 			 * Calculate an eTag over the processed result and store in cache
 			 */
-			if(listener.getUpdateEtag()) {
+			if(messageContext.get("updateEtag") != null && Boolean.parseBoolean(messageContext.get("updateEtag").toString())) {
 				String cleanPattern = listener.getCleanPattern();
 				if(result != null && method.equals("GET")) {
 					String eTag = ApiCacheManager.buildEtag(cleanPattern, result.hashCode());

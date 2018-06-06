@@ -85,6 +85,7 @@ Upcoming
 - Fix sub-resources eTag handling for ApiListener
 - Add wssPasswordDigest attribute to WebServiceSender
 - Add collectFileContents(Base64Encoded) to UnzipPipe
+- Add updateEtag sessionKey to the ApiListener so it can be changed at runtime
 
 
 
