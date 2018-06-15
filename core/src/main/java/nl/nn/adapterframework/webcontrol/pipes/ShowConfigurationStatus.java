@@ -56,6 +56,7 @@ import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Prepare the main screen of the IbisConsole.
@@ -668,7 +669,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		XmlBuilder adapterMessages = new XmlBuilder("adapterMessages");
 		for (int t = 0; t < adapter.getMessageKeeper().size(); t++) {
 			XmlBuilder adapterMessage = new XmlBuilder("adapterMessage");
-			String msg = adapter.getMessageKeeper().getMessage(t).getMessageText();
+			String msg = XmlUtils.replaceNonValidXmlCharacters(adapter.getMessageKeeper().getMessage(t).getMessageText());
 			if (MAX_MESSAGE_SIZE > 0 && msg.length() > MAX_MESSAGE_SIZE) {
 				msg = msg.substring(0, MAX_MESSAGE_SIZE) + "...(" + (msg.length() - MAX_MESSAGE_SIZE)
 						+ " characters more)";
