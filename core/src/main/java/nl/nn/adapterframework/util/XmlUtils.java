@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -68,10 +69,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
-import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
@@ -95,6 +92,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
+import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 
 /**
  * Some utilities for working with XML.
@@ -124,6 +126,7 @@ public class XmlUtils {
 	private static Boolean autoReload = null;
 	private static Integer buffersize=null;
 
+	private static ConcurrentHashMap<String,TransformerPool> utilityTPs = new ConcurrentHashMap<String,TransformerPool>();
 	public static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
@@ -164,6 +167,24 @@ public class XmlUtils {
 	public XmlUtils() {
 		super();
 	}
+
+	private static TransformerPool getUtilityTransformerPool(String xslt, String key, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
+		String fullKey=key+"-"+omitXmlDeclaration+"-"+indent;
+		TransformerPool result = utilityTPs.get(fullKey);
+		if (result==null) {
+			try {
+				TransformerPool newtp=TransformerPool.getInstance(xslt);
+				result=utilityTPs.put(fullKey, newtp);
+				if (result==null) {
+					result=newtp;
+				}
+			} catch (TransformerConfigurationException te) {
+				throw new ConfigurationException("Could not create TransformerPool for ["+key+"]", te);
+			}
+		}
+		return result;
+	}
+	
 	public static String makeSkipEmptyTagsXslt(boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
@@ -179,6 +200,11 @@ public class XmlUtils {
 			+ "</xsl:stylesheet>";
 	}
 
+	public static TransformerPool getSkipEmptyTagsTransformerPool(boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
+		String xslt = makeSkipEmptyTagsXslt(omitXmlDeclaration,indent);
+		return getUtilityTransformerPool(xslt,"skipEmptyTags",omitXmlDeclaration,indent);
+	}
+	
 	public static String makeRemoveNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
@@ -199,6 +225,11 @@ public class XmlUtils {
 			+ "</xsl:stylesheet>";
 	}
 
+	public static TransformerPool getRemoveNamespacesTransformerPool(boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
+		String xslt = makeRemoveNamespacesXslt(omitXmlDeclaration,indent);
+		return getUtilityTransformerPool(xslt,"RemoveNamespaces",omitXmlDeclaration,indent);
+	}
+
 	public static String makeGetIbisContextXslt() {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
@@ -215,6 +246,11 @@ public class XmlUtils {
 			+ "</xsl:stylesheet>";
 	}
 
+	public static TransformerPool getGetIbisContextTransformerPool() throws ConfigurationException {
+		String xslt = makeGetIbisContextXslt();
+		return getUtilityTransformerPool(xslt,"GetIbisContext",true,false);
+	}
+
 	public static String makeGetRootNamespaceXslt() {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
@@ -223,6 +259,11 @@ public class XmlUtils {
 			+ "<xsl:value-of select=\"namespace-uri()\"/>"
 			+ "</xsl:template>"
 			+ "</xsl:stylesheet>";
+	}
+
+	public static TransformerPool getGetRootNamespaceTransformerPool() throws ConfigurationException {
+		String xslt = makeGetRootNamespaceXslt();
+		return getUtilityTransformerPool(xslt,"GetRootNamespace",true,false);
 	}
 
 	public static String makeAddRootNamespaceXslt(String namespace, boolean omitXmlDeclaration, boolean indent) {
@@ -257,6 +298,11 @@ public class XmlUtils {
 			+ "</xsl:stylesheet>";
 	}
 
+	public static TransformerPool getAddRootNamespaceTransformerPool(String namespace, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
+		String xslt = makeAddRootNamespaceXslt(namespace,omitXmlDeclaration,indent);
+		return getUtilityTransformerPool(xslt,"AddRootNamespace["+namespace+"]",omitXmlDeclaration,indent);
+	}
+
 	public static String makeChangeRootXslt(String root, boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
@@ -272,6 +318,11 @@ public class XmlUtils {
 			+ "</xsl:stylesheet>";
 	}
 
+	public static TransformerPool getChangeRootTransformerPool(String root, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
+		String xslt = makeChangeRootXslt(root,omitXmlDeclaration,indent);
+		return getUtilityTransformerPool(xslt,"ChangeRoot["+root+"]",omitXmlDeclaration,indent);
+	}
+
 	public static String makeRemoveUnusedNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
@@ -285,6 +336,11 @@ public class XmlUtils {
 			+ "<xsl:copy/>"
 			+ "</xsl:template>"
 			+ "</xsl:stylesheet>";
+	}
+
+	public static TransformerPool getRemoveUnusedNamespacesTransformerPool(boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
+		String xslt = makeRemoveUnusedNamespacesXslt(omitXmlDeclaration,indent);
+		return getUtilityTransformerPool(xslt,"RemoveUnusedNamespaces",omitXmlDeclaration,indent);
 	}
 
 	public static String makeRemoveUnusedNamespacesXslt2(boolean omitXmlDeclaration, boolean indent) {
@@ -337,6 +393,12 @@ public class XmlUtils {
 				+ "<xsl:copy-of select=\""
 				+ xpath + "\"/>" + "</xsl:template>" + "</xsl:stylesheet>";
 	}
+
+	public static TransformerPool getCopyOfSelectTransformerPool(String xpath, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
+		String xslt = makeCopyOfSelectXslt(xpath,omitXmlDeclaration,indent);
+		return getUtilityTransformerPool(xslt,"CopyOfSelect["+xpath+"]",omitXmlDeclaration,indent);
+	}
+
 
 	public static synchronized boolean isNamespaceAwareByDefault() {
 		if (namespaceAwareByDefault==null) {
