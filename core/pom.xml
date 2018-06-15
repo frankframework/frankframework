@@ -475,5 +475,13 @@
 		<version>2.3.5</version>
 		<scope>test</scope>
 	</dependency>
+	<!--  2018-06-15 GvB: local copy of com.sun.net.ssl.jar, to be able to compile with IBM JDK -->
+	<dependency>
+	    <groupId>com.sun.net</groupId>
+	    <artifactId>com.sun.net.ssl</artifactId>
+	    <version>0.1</version>
+	    <scope>system</scope>
+	    <systemPath>${basedir}/com.sun.net.ssl.jar</systemPath>
+	</dependency>
   </dependencies>
 </project>
