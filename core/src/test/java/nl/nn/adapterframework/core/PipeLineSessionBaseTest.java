@@ -1,0 +1,112 @@
+package nl.nn.adapterframework.core;
+
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+
+public class PipeLineSessionBaseTest {
+
+	@Mock
+	private PipeLineSessionBase session = new PipeLineSessionBase();
+
+	private static final double DELTA = 1e-15;
+	private static final Object TEST_OBJECT = new Object();
+
+	@Before
+	public void setup() {
+		session.put("boolean1", true);
+		session.put("boolean2", false);
+		session.put("boolean3", "true");
+		session.put("boolean4", "false");
+
+		session.put("string1", "test");
+		session.put("string2", true);
+		session.put("string3", "");
+		session.put("string4", "null");
+		session.put("string5", null);
+
+		session.put("int1", 0);
+		session.put("int2", 1);
+		session.put("int3", -1);
+
+		session.put("double1", 1.0);
+		session.put("double2", 1.23);
+		session.put("double3", 0d);
+		session.put("double4", 0.0d);
+		session.put("double5", 123.456d);
+
+		session.put("long1", 1L);
+		session.put("long2", -1L);
+		session.put("long3", 12345678910L);
+
+		session.put("object1", TEST_OBJECT);
+	}
+
+	@Test
+	public void testBoolean() {
+		assertEquals(true, session.get("boolean1", true));
+		assertEquals(true, session.get("boolean1", false));
+		assertEquals(false, session.get("boolean2", true));
+		assertEquals(false, session.get("boolean2", false));
+		assertEquals(true, session.get("boolean3", true));
+		assertEquals(true, session.get("boolean3", false));
+		assertEquals(false, session.get("boolean4", false));
+		assertEquals(false, session.get("boolean4", true));
+	}
+
+	@Test
+	public void testString() {
+		assertEquals("test", session.get("string1", ""));
+		assertEquals("test", session.get("string1", "not test"));
+		assertEquals("true", session.get("string2", ""));
+		assertEquals("true", session.get("string2", "false"));
+		assertEquals("", session.get("string3", ""));
+		assertEquals("", session.get("string3", "not empty"));
+		assertEquals("null", session.get("string4", "null"));
+		assertEquals("null", session.get("string4", "not null"));
+		assertEquals(null, session.get("string5", null));
+		assertEquals("", session.get("string5", new String()));
+	}
+
+	@Test
+	public void testInt() {
+		assertEquals(0, session.get("int1", 0));
+		assertEquals(0, session.get("int1", -123));
+		assertEquals(1, session.get("int2", 0));
+		assertEquals(1, session.get("int2", -123));
+		assertEquals(-1, session.get("int3", 0));
+		assertEquals(-1, session.get("int3", -123));
+	}
+
+	@Test
+	public void testDouble() {
+		assertEquals(1.0, session.get("double1", 0d), DELTA);
+		assertEquals(1, session.get("double1", -123d), DELTA);
+		assertEquals(1.23, session.get("double2", 0d), DELTA);
+		assertEquals(1.23, session.get("double2", -123d), DELTA);
+		assertEquals(0, session.get("double3", 0d), DELTA);
+		assertEquals(0, session.get("double3", -123d), DELTA);
+		assertEquals(0, session.get("double4", 0d), DELTA);
+		assertEquals(0, session.get("double4", -123d), DELTA);
+		assertEquals(123.456, session.get("double5", 0d), DELTA);
+		assertEquals(123.456, session.get("double5", -123d), DELTA);
+	}
+
+	@Test
+	public void testLong() {
+		assertEquals(1L, session.get("long1", 0L));
+		assertEquals(1L, session.get("long1", -123L));
+		assertEquals(-1L, session.get("long2", 0L));
+		assertEquals(-1L, session.get("long2", -123L));
+		assertEquals(12345678910L, session.get("long3", 0L));
+		assertEquals(12345678910L, session.get("long3", -123L));
+	}
+
+	@Test
+	public void testObject() {
+		assertEquals(TEST_OBJECT, session.get("object1"));
+		assertEquals(TEST_OBJECT.toString(), session.get("object1", "dummy"));
+	}
+}

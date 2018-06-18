@@ -60,15 +60,16 @@ public interface IPipeLineSession extends Map<String,Object> {
 	 */
 	public String getOriginalMessage();
 
-	/*
-	 * Sets securitHandler. SecurityHandler can also be set via key in PipeLineSession.
+	/**
+	 * Set a SecurityHandler. NOTE: It can also be set via key in PipeLineSession.
+	 * @param handler ISecurityHandler to set
 	 */
 	public void setSecurityHandler(ISecurityHandler handler);
 
 	public ISecurityHandler getSecurityHandler();
 
 	public boolean isUserInRole(String role);
-	
+
 	public Principal getPrincipal();
 
 }

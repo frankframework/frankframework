@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
@@ -66,12 +65,11 @@ public class ApiListenerServlet extends HttpServlet {
 		/**
 		 * Initiate and populate messageContext
 		 */
-		IPipeLineSession messageContext = new PipeLineSessionBase();
+		PipeLineSessionBase messageContext = new PipeLineSessionBase();
 		messageContext.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
 		messageContext.put(IPipeLineSession.HTTP_RESPONSE_KEY, response);
 		messageContext.put(IPipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
-		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
-		messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
+		messageContext.setSecurityHandler(new HttpSecurityHandler(request));
 
 		try {
 			String uri = request.getPathInfo();
