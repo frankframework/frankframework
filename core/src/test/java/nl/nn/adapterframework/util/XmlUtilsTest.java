@@ -14,7 +14,7 @@ public class XmlUtilsTest {
 
 	public void testTransformerPool(TransformerPool tp, String input, String expected, boolean namespaceAware) throws DomBuilderException, TransformerException, IOException {
 		String actual=tp.transform(input, null, namespaceAware);
-		assertEquals(expected,actual);
+		assertEquals(expected.trim(),actual.trim());
 	}
 
 	public void testTransformerPool(TransformerPool tp, String input, String expected) throws DomBuilderException, TransformerException, IOException {
