@@ -137,14 +137,16 @@ angular.module('iaf.beheerconsole')
 		});
 		dimension('application.version', appConstants["application.version"]);
 
-		Api.Get("server/warnings", function(warnings) {
-			for(i in warnings) {
-				var warning = warnings[i];
-				var type = "warning";
-				if(warning.type && (warning.type == "exception" || warning.type == "severe")) {
-					type = "danger";
+		Api.Get("server/warnings", function(configurations) {
+			for(i in configurations) {
+				var configuration = configurations[i];
+				if(configuration.exception)
+					$scope.addAlert("danger", "Configuration: "+i+" - "+configuration.exception);
+				if(configuration.warnings) {
+					for(x in configuration.warnings) {
+						$scope.addAlert("warning", "Configuration: "+i+" - "+configuration.warnings[x]);
+					}
 				}
-				$scope.addAlert(type, warning.message);
 			}
 		});
 
