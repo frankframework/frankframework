@@ -308,7 +308,7 @@ public class ApiListenerServlet extends HttpServlet {
 			/**
 			 * Calculate an eTag over the processed result and store in cache
 			 */
-			if(messageContext.get("updateEtag") != null && Boolean.parseBoolean(messageContext.get("updateEtag").toString())) {
+			if(messageContext.get("updateEtag", true)) {
 				String cleanPattern = listener.getCleanPattern();
 				if(result != null && method.equals("GET")) {
 					String eTag = ApiCacheManager.buildEtag(cleanPattern, result.hashCode());
@@ -332,16 +332,14 @@ public class ApiListenerServlet extends HttpServlet {
 
 			String contentType = listener.getContentType() + "; charset=utf-8";
 			if(listener.getProduces().equals("ANY")) {
-				contentType = (String) messageContext.get("contentType");
+				contentType = messageContext.get("contentType", contentType);
 			}
 			response.setHeader("Content-Type", contentType);
 
 			/**
 			 * Check if an exitcode has been defined or if a statuscode has been added to the messageContext.
 			 */
-			int statusCode = 0;
-			if(messageContext.containsKey("exitcode"))
-				statusCode = Integer.parseInt( ""+ messageContext.get("exitcode"));
+			int statusCode = messageContext.get("exitcode", 0);
 			if(statusCode > 0)
 				response.setStatus(statusCode);
 

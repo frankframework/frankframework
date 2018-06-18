@@ -30,6 +30,9 @@ public class PipeLineSessionBaseTest {
 		session.put("int1", 0);
 		session.put("int2", 1);
 		session.put("int3", -1);
+		session.put("int4", "0");
+		session.put("int5", "1");
+		session.put("int6", "-1");
 
 		session.put("double1", 1.0);
 		session.put("double2", 1.23);
@@ -54,6 +57,13 @@ public class PipeLineSessionBaseTest {
 		assertEquals(true, session.get("boolean3", false));
 		assertEquals(false, session.get("boolean4", false));
 		assertEquals(false, session.get("boolean4", true));
+
+		assertEquals(false, session.get("string3", true));
+		assertEquals(false, session.get("string4", true));
+		assertEquals(true, session.get("string5", true));
+
+		assertEquals(false, session.get("object1", true));
+		assertEquals(false, session.get("object1", false));
 	}
 
 	@Test
@@ -78,6 +88,13 @@ public class PipeLineSessionBaseTest {
 		assertEquals(1, session.get("int2", -123));
 		assertEquals(-1, session.get("int3", 0));
 		assertEquals(-1, session.get("int3", -123));
+		assertEquals(0, session.get("int4", 0));
+		assertEquals(0, session.get("int4", -123));
+		assertEquals(1, session.get("int5", 0));
+		assertEquals(1, session.get("int5", -123));
+		assertEquals(-1, session.get("int6", 0));
+		assertEquals(-1, session.get("int6", -123));
+		assertEquals(123, session.get("non-existing-key", 123));
 	}
 
 	@Test
