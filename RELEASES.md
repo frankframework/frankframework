@@ -89,6 +89,7 @@ Upcoming
 - Modify HttpSender logging to only give warnings for 4xx (client errors) and 5xx (server errors)
 - Fix javax.net.ssl.SSLSocketFactory.getDefault() SSLSocketFactory as default fallback when no keystore or truststore has been configured
 - Fix IllegalDataException in ShowConfigurationStatus for non legal XML character in adapter message
+- Add wss* attributes to SoapWrapperPipe
 
 
 

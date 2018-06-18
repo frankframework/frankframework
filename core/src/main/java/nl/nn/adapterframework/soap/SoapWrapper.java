@@ -26,6 +26,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -181,11 +182,13 @@ public class SoapWrapper {
 
 	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace,
 			String soapHeader, String namespaceDefs) {
-		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, soapHeader, namespaceDefs, null);
+		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, soapHeader, namespaceDefs, null, null,
+				false);
 	}
 
 	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace,
-			String soapHeaderInitial, String namespaceDefs, String soapNamespace) {
+			String soapHeaderInitial, String namespaceDefs, String soapNamespace, CredentialFactory wsscf,
+			boolean passwordDigest) {
 		String soapHeader = "";
 		String encodingStyle = "";
 		String targetObjectNamespaceClause = "";
@@ -218,10 +221,13 @@ public class SoapWrapper {
 		if (StringUtils.isNotEmpty(soapNamespace)) {
 			soapns = soapNamespace;
 		}
-		return "<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
+		message = "<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
 				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(message)
 				+ "</soapenv:Body>" + "</soapenv:Envelope>";
-
+		if (wsscf != null) {
+			message = signMessage(message, wsscf.getUsername(), wsscf.getPassword(), passwordDigest);
+		}
+		return message;
 	}
 
 	public String putInEnvelope(String message, String encodingStyleUri) {
@@ -239,7 +245,7 @@ public class SoapWrapper {
 		return createSoapFaultMessage("soapenv:Server", faultstring);
 	}
 
-	public String signMessage(String soapMessage, String user, String password, boolean passwordDigest) throws SenderException {
+	public String signMessage(String soapMessage, String user, String password, boolean passwordDigest) {
 		try {
 			WSSecurityEngine secEngine = WSSecurityEngine.getInstance();
 			WSSConfig config = secEngine.getWssConfig();
@@ -292,7 +298,7 @@ public class SoapWrapper {
 			return DOM2Writer.nodeToString(signedDoc);
 
 		} catch (Exception e) {
-			throw new SenderException(e);
+			throw new RuntimeException("Could not sign message", e);
 		}
 	}
 }
