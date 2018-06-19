@@ -25,6 +25,33 @@
     </license>
   </licenses>
 
+  <developers>
+    <developer>
+      <name>Jaco de Groot</name>
+      <email>jaco@ibissource.org</email>
+      <organization>Ibissource</organization>
+      <organizationUrl>https://ibissource.org</organizationUrl>
+    </developer>
+    <developer>
+      <name>Niels Meijer</name>
+      <email>niels@ibissource.org</email>
+      <organization>Ibissource</organization>
+      <organizationUrl>https://ibissource.org</organizationUrl>
+    </developer>
+    <developer>
+      <name>Peter Leeuwenburgh</name>
+      <email>peter@ibissource.org</email>
+      <organization>Ibissource</organization>
+      <organizationUrl>https://ibissource.org</organizationUrl>
+    </developer>
+    <developer>
+      <name>Gerrit van Brakel</name>
+      <email>gerrit@ibissource.org</email>
+      <organization>Ibissource</organization>
+      <organizationUrl>https://ibissource.org</organizationUrl>
+    </developer>
+  </developers>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
