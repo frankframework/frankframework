@@ -52,7 +52,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/common/content.html",
 	})
 	.state('pages.status', {
-		url: "/status?configuration",
+		url: "/status?configuration&filter&search",
 		templateUrl: "views/ShowConfigurationStatus.html",
 		controller: 'StatusCtrl as status',
 		data: {
@@ -61,6 +61,8 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		},
 		params: {
 			configuration: { value: 'All', squash: true},
+			filter: { value: 'started+stopped+warning', squash: true},
+			search: { value: '', squash: true},
 		},
 		//parent: "pages"
 	})

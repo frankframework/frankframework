@@ -3826,11 +3826,14 @@ code {
 
 .adapters .ibox-title {
   cursor: pointer;
-  min-height: 40px;
-  padding: 10px 15px 7px;
+  min-height: 0px;
+  padding: 10px 15px 5px;
 }
 .adapters .ibox {
-  margin-bottom: 15px;
+  margin-bottom: 10px;
+}
+.row .ibox {
+	box-shadow: 2px 2px 1px 0px rgba(103,106,108,0.4);
 }
 .adapters:last-child .ibox {
   margin-bottom: 25px;

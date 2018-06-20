@@ -13,7 +13,7 @@
             </ul> 
         </div>
         <div class="col-lg-12">
-            <div class="float-e-margins">
+            <div class="ibox float-e-margins m-n">
                 <div class="ibox-title summary">
                     <h4>Configuration summary</h4>
                 </div>
@@ -110,8 +110,8 @@
                         </div>
                         <div class="ibox-stretch">
                             <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Search ..." ng-model="searchText" ng-model-options="{debounce: 500}" name="search" />
-                                <i ng-show="searchText.length" ng-click="searchText = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true"/>
+                                <input type="text" class="form-control" placeholder="Search ..." ng-model="searchText" ng-model-options="{debounce: 500}" name="search" ng-change="updateQueryParams();"/>
+                                <i ng-show="searchText.length" ng-click="searchText = ''; updateQueryParams();" class="fa fa-times input-group-closeSearch" aria-hidden="true"/>
                                 <span class="input-group-addon">
                                     <i class="fa fa-search" aria-hidden="true"></i>
                                 </span>

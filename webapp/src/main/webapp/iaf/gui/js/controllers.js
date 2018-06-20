@@ -453,9 +453,37 @@ angular.module('iaf.beheerconsole')
 	$scope.filter = this.filter;
 	$scope.applyFilter = function(filter) {
 		$scope.filter = filter;
+		$scope.updateQueryParams();
 	};
+	if($state.params.filter != "") {
+		var filter = $state.params.filter.split("+");
+		for(f in $scope.filter) {
+			$scope.filter[f] = (filter.indexOf(f) > -1);
+		}
+	}
+	$scope.searchText = "";
+	if($state.params.search != "") {
+		$scope.searchText = $state.params.search;
+	}
+
 	$scope.reload = false;
 	$scope.selectedConfiguration = "All";
+
+	$scope.updateQueryParams = function() {
+		var filterStr = [];
+		for(f in $scope.filter) {
+			if($scope.filter[f])
+				filterStr.push(f);
+		}
+		var transitionObj = {};
+		transitionObj.filter = filterStr.join("+");
+		if($scope.selectedConfiguration != "All")
+			transitionObj.configuration = $scope.selectedConfiguration;
+		if($scope.searchText.length > 0)
+			transitionObj.search = $scope.searchText;
+
+		$state.transitionTo('pages.status', transitionObj, { notify: false, reload: false });
+	};
 
 	$scope.collapseAll = function() {
 		$(".adapters").each(function(i,e) {
@@ -508,9 +536,9 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.changeConfiguration = function(name) {
-		$state.transitionTo('pages.status', {configuration: name}, { notify: false, reload: false });
 		$scope.selectedConfiguration = name;
 		$scope.updateAdapterSummary(name);
+		$scope.updateQueryParams();
 	};
 	if($state.params.configuration != "All")
 		$scope.changeConfiguration($state.params.configuration);
