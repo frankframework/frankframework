@@ -211,7 +211,6 @@ import org.htmlcleaner.TagNode;
 //TODO: Fix javadoc!
 
 public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBase implements HasPhysicalDestination {
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String url;
 	private String urlParam = "url";
@@ -357,14 +356,14 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 			URL truststoreUrl = null;
 	
 			if (!StringUtils.isEmpty(getCertificate())) {
-				certificateUrl = ClassUtils.getResourceURL(classLoader, getCertificate());
+				certificateUrl = ClassUtils.getResourceURL(getClassLoader(), getCertificate());
 				if (certificateUrl == null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for certificate resource ["+getCertificate()+"]");
 				}
 				log.info(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
 			}
 			if (!StringUtils.isEmpty(getTruststore())) {
-				truststoreUrl = ClassUtils.getResourceURL(classLoader, getTruststore());
+				truststoreUrl = ClassUtils.getResourceURL(getClassLoader(), getTruststore());
 				if (truststoreUrl == null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for truststore resource ["+getTruststore()+"]");
 				}
@@ -460,7 +459,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
 			try {
-				URL stylesheetURL = ClassUtils.getResourceURL(classLoader, getStyleSheetName());
+				URL stylesheetURL = ClassUtils.getResourceURL(getClassLoader(), getStyleSheetName());
 				if (stylesheetURL == null) {
 					throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet ["+getStyleSheetName()+"]");
 				}

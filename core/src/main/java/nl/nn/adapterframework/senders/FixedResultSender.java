@@ -70,7 +70,6 @@ import org.apache.commons.lang.SystemUtils;
  * @since   4.9
  */
 public class FixedResultSender extends SenderWithParametersBase {
-	protected ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String fileName;
 	private String returnString;
@@ -92,7 +91,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 	    
 		if (StringUtils.isNotEmpty(fileName)) {
 			try {
-				returnString = Misc.resourceToString(ClassUtils.getResourceURL(classLoader, fileName), SystemUtils.LINE_SEPARATOR);
+				returnString = Misc.resourceToString(ClassUtils.getResourceURL(getClassLoader(), fileName), SystemUtils.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+fileName+"]", e);
 			}
@@ -127,7 +126,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 		}
 
 		if (StringUtils.isNotEmpty(styleSheetName)) {
-			URL xsltSource = ClassUtils.getResourceURL(classLoader, styleSheetName);
+			URL xsltSource = ClassUtils.getResourceURL(getClassLoader(), styleSheetName);
 			if (xsltSource!=null) {
 				try{
 					String xsltResult = null;

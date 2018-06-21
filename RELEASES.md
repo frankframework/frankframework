@@ -90,6 +90,7 @@ Upcoming
 - Fix javax.net.ssl.SSLSocketFactory.getDefault() SSLSocketFactory as default fallback when no keystore or truststore has been configured
 - Fix IllegalDataException in ShowConfigurationStatus for non legal XML character in adapter message
 - Add wss* attributes to SoapWrapperPipe
+- Add configuration ClassLoader to SenderBase
 
 
 

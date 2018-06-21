@@ -51,7 +51,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since   4.9
  */
 public class XsltSender extends SenderWithParametersBase {
-	protected ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String xpathExpression=null;
 	private String namespaceDefs = null; 
@@ -73,7 +72,7 @@ public class XsltSender extends SenderWithParametersBase {
 	public void configure() throws ConfigurationException {
 		super.configure();
 	
-		transformerPool = TransformerPool.configureTransformer(getLogPrefix(), classLoader, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), paramList);
+		transformerPool = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), paramList);
 		if (isSkipEmptyTags()) {
 			String skipEmptyTags_xslt = XmlUtils.makeSkipEmptyTagsXslt(isOmitXmlDeclaration(),isIndentXml());
 			log.debug("test [" + skipEmptyTags_xslt + "]");
