@@ -1136,6 +1136,9 @@ public class TestTool {
 		Iterator iterator = properties.keySet().iterator();
 		while (iterator.hasNext()) {
 			String property = (String)iterator.next();
+			if(property.equalsIgnoreCase("configurations.directory"))
+				continue;
+
 			if (property.endsWith(".read") || property.endsWith(".write")
 					|| property.endsWith(".directory")
 					|| property.endsWith(".filename")
@@ -1143,7 +1146,9 @@ public class TestTool {
 					|| property.endsWith(".valuefileinputstream")) {
 				String absolutePathProperty = property + ".absolutepath";
 				String value = getAbsolutePath(propertiesDirectory, (String)properties.get(property));
-				absolutePathProperties.put(absolutePathProperty, value);
+				if (value != null) {
+					absolutePathProperties.put(absolutePathProperty, value);
+				}
 			}
 		}
 		properties.putAll(absolutePathProperties);

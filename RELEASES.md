@@ -91,6 +91,7 @@ Upcoming
 - Fix IllegalDataException in ShowConfigurationStatus for non legal XML character in adapter message
 - Add wss* attributes to SoapWrapperPipe
 - Add configuration ClassLoader to SenderBase
+- Fix NPE in larva testtool when trying to resolve nonessential property: configurations.directory
 
 
 
