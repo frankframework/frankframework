@@ -127,10 +127,30 @@
         <div ng-repeat="adapter in adapters | configurationFilter:this | searchFilter:this" class="col-lg-12 adapters">
             <div ng-init="showContent = (adapter.status == 'stopped')" ibox-expand class="ibox float-e-margins" id="{{adapter.name}}">
                 <div class="ibox-title {{adapter.started ? ((adapter.status=='warning') ? 'warning' : 'primary') : 'danger'}}" title="Double-click to open">
-                    <h5>{{adapter.name}} <small class="m-l-sm">&nbsp;{{adapter.description}}</small></h5>
-                    <div>
-                        <div class="ibox-tools">
-                            <a ng-click="showContent = !showContent"> <i class="fa fa-chevron-{{(showContent) ? 'down' : 'left' }}"></i></a>
+                    <div class="ibox-tools pull-right">
+                        <a ng-click="showContent = !showContent"> <i class="fa fa-chevron-{{(showContent) ? 'down' : 'left' }}"></i></a>
+                    </div>
+                    <div class="row full-width">
+                        <div class="col-lg-6 col-md-12 clear">
+                            <h5>{{adapter.name}} <small class="m-l-sm">&nbsp;{{adapter.description}}</small></h5>
+                        </div>
+                        <div class="col-lg-6 col-md-12">
+                            <div class="row">
+                                <div class="col-sm-5" ng-if="adapter.upSince > 0" title="Uptime">
+                                    <span to-date time="{{adapter.upSince}}"></span> (<span time-since time="{{adapter.upSince}}"></span>)
+                                </div>
+                                <div class="col-sm-5" ng-if="adapter.upSince == 0">
+                                </div>
+                                <div class="col-sm-5" ng-if="adapter.lastMessage > 0" title="Last Message">
+                                    <span to-date time="{{adapter.lastMessage}}"></span> (<span time-since time="{{adapter.lastMessage}}"></span>)
+                                </div>
+                                <div class="col-sm-5" ng-if="!adapter.lastMessage > 0">
+                                </div>
+                                <div class="col-sm-2" title="Messages Processed">{{adapter.messagesProcessed}}
+                                    <span ng-if="adapter.messagesInProcess > 0">({{adapter.messagesInProcess}} <i class="fa fa-cog fa-spin" aria-hidden="true"></i>)</span>
+                                    <span ng-if="adapter.messagesInError > 0">| {{adapter.messagesInError}} <i class="fa fa-exclamation-triangle" aria-hidden="true"></i></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
