@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -47,12 +48,14 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.PipeAware;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
+import org.apache.chemistry.opencmis.client.SessionParameterMap;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.Folder;
@@ -66,12 +69,10 @@ import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.api.SessionFactory;
 import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
-import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.Action;
-import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -131,6 +132,7 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * 
  * <tr><td>{@link #setBridgeSender(boolean) isBridgeSender}</td><td>when a cmisListener is used, this specifies where non-bypassed requests should be send to</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOverrideEntryPointWSDL(String) overrideEntryPointWSDL}</td><td>override entrypoint wsdl by reading it from the classpath, overrides url attribute</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>NOTE:</b></p>
@@ -147,6 +149,9 @@ import org.w3c.dom.Node;
  * <tr><td>password</td><td>string</td><td>When a parameter with name password is present, it is used instead of the password specified by the attribute</td></tr>
  * </table>
  * </p>
+ * <p><b>NOTE:</b></p>
+ * <p>These parameters are incompatible when the sender is configured as a BridgeSender!</p>
+ * <p></p>
  * 
  * <p>
  * When <code>action=get</code> the input (string) indicates the id of the document to get. This input is mandatory.
@@ -288,9 +293,13 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 
 	public final static String FORMATSTRING_BY_DEFAULT = "yyyy-MM-dd HH:mm:ss";
 
+	public final static String OVERRIDE_WSDL_URL = "http://fake.url";
+	public final static String OVERRIDE_WSDL_KEY = "override_wsdl_key";
+	private String overrideEntryPointWSDL;
+
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(getUrl())) {
+		if (StringUtils.isEmpty(getUrl()) && getOverrideEntryPointWSDL() == null) {
 			throw new ConfigurationException("CmisSender [" + getName()
 					+ "] has no url configured");
 		}
@@ -301,6 +310,10 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		if (!bindingTypes.contains(getBindingType())) {
 			throw new ConfigurationException("illegal value for bindingType ["
 					+ getBindingType() + "], must be " + bindingTypes.toString());
+		}
+		if(getOverrideEntryPointWSDL() != null && !"webservices".equalsIgnoreCase(getBindingType())) {
+			throw new ConfigurationException("illegal value for bindingtype ["
+					+ getBindingType() + "], overrideEntryPointWSDL only supports webservices");
 		}
 		if (!actions.contains(getAction())) {
 			throw new ConfigurationException("illegal value for action ["
@@ -328,7 +341,7 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		}
 	}
 
-	public Session getSession() {
+	public Session getSession() throws SenderException {
 		if (session == null || !isKeepSession()) {
 			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
 			session = connect(cf.getUsername(), cf.getPassword());
@@ -851,79 +864,85 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 		return object.getId();
 	}
 
-	private Session connect(String userName, String password) {
+	private Session connect(String userName, String password) throws SenderException {
 		log.debug(getLogPrefix() + "connecting with url [" + getUrl() + "] repository [" + getRepository() + "]");
 
 		SessionFactory sessionFactory = SessionFactoryImpl.newInstance();
-		Map<String, String> parameter = new HashMap<String, String>();
-		parameter.put(SessionParameter.USER, userName);
-		parameter.put(SessionParameter.PASSWORD, password);
+		SessionParameterMap parameterMap = new SessionParameterMap();
+
+		parameterMap.setBasicAuthentication(userName, password);
 
 		if (getBindingType().equalsIgnoreCase("atompub")) {
-			parameter.put(SessionParameter.ATOMPUB_URL, getUrl());
-			parameter.put(SessionParameter.BINDING_TYPE, BindingType.ATOMPUB.value());
+			parameterMap.setAtomPubBindingUrl(getUrl());
 		} else if (getBindingType().equalsIgnoreCase("browser")) {
-			parameter.put(SessionParameter.BROWSER_URL, getUrl());
-			parameter.put(SessionParameter.BINDING_TYPE, BindingType.BROWSER.value());
+			parameterMap.setBrowserBindingUrl(getUrl());
 		} else {
-			parameter.put(SessionParameter.WEBSERVICES_REPOSITORY_SERVICE,
-					getUrl() + "/RepositoryService.svc?wsdl");
-			parameter.put(SessionParameter.WEBSERVICES_NAVIGATION_SERVICE,
-					getUrl() + "/NavigationService.svc?wsdl");
-			parameter.put(SessionParameter.WEBSERVICES_OBJECT_SERVICE, getUrl()
-					+ "/ObjectService.svc?wsdl");
-			parameter.put(SessionParameter.WEBSERVICES_VERSIONING_SERVICE,
-					getUrl() + "/VersioningService.svc?wsdl");
-			parameter.put(SessionParameter.WEBSERVICES_DISCOVERY_SERVICE,
-					getUrl() + "/DiscoveryService.svc?wsdl");
-			parameter.put(SessionParameter.WEBSERVICES_RELATIONSHIP_SERVICE,
-					getUrl() + "/RelationshipService.svc?wsdl");
-			parameter.put(SessionParameter.WEBSERVICES_MULTIFILING_SERVICE,
-					getUrl() + "/MultiFilingService.svc?wsdl");
-			parameter.put(SessionParameter.WEBSERVICES_POLICY_SERVICE, getUrl()
-					+ "/PolicyService.svc?wsdl");
-			parameter.put(SessionParameter.WEBSERVICES_ACL_SERVICE, getUrl()
-					+ "/ACLService.svc?wsdl");
-			parameter.put(SessionParameter.BINDING_TYPE,
-					BindingType.WEBSERVICES.value());
+			// OpenCMIS requires an entrypoint url (wsdl), if this url has been secured and is not publicly accessible,
+			// we can manually override this wsdl by reading it from the classpath.
+			//TODO: Does this work with any binding type?
+			if(getOverrideEntryPointWSDL() != null) {
+				URL url = ClassUtils.getResourceURL(getClassLoader(), getOverrideEntryPointWSDL());
+				if(url != null) {
+					try {
+						parameterMap.put(OVERRIDE_WSDL_KEY, Misc.streamToString(url.openStream()));
+						//We need to setup a fake URL in order to initialize the CMIS Session
+						parameterMap.setWebServicesBindingUrl(OVERRIDE_WSDL_URL);
+					} catch (IOException e) {
+						throw new SenderException(e);
+					}
+				}
+			}
+			else {
+				parameterMap.setWebServicesBindingUrl(getUrl());
+			}
 		}
-		parameter.put(SessionParameter.REPOSITORY_ID, getRepository());
+		parameterMap.setRepositoryId(getRepository());
 
 		//SSL
 		if (getCertificate()!=null || getTruststore()!=null || isAllowSelfSignedCertificates()) {
 			CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
 			CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
 
-			parameter.put("certificateUrl", getCertificate());
-			parameter.put("certificatePassword", certificateCf.getPassword());
-			parameter.put("keystoreType", getKeystoreType());
-			parameter.put("keyManagerAlgorithm", getKeyManagerAlgorithm());
-			parameter.put("truststoreUrl", getTruststore());
-			parameter.put("truststorePassword", truststoreCf.getPassword());
-			parameter.put("truststoreType", getTruststoreType());
-			parameter.put("trustManagerAlgorithm", getTrustManagerAlgorithm());
+			parameterMap.put("certificateUrl", getCertificate());
+			parameterMap.put("certificatePassword", certificateCf.getPassword());
+			parameterMap.put("keystoreType", getKeystoreType());
+			parameterMap.put("keyManagerAlgorithm", getKeyManagerAlgorithm());
+			parameterMap.put("truststoreUrl", getTruststore());
+			parameterMap.put("truststorePassword", truststoreCf.getPassword());
+			parameterMap.put("truststoreType", getTruststoreType());
+			parameterMap.put("trustManagerAlgorithm", getTrustManagerAlgorithm());
 		}
 
 		// SSL+
-		parameter.put("isAllowSelfSignedCertificates", "" + isAllowSelfSignedCertificates());
-		parameter.put("isVerifyHostname", "" + isVerifyHostname());
-		parameter.put("isIgnoreCertificateExpiredException", "" + isIgnoreCertificateExpiredException());
+		parameterMap.put("isAllowSelfSignedCertificates", "" + isAllowSelfSignedCertificates());
+		parameterMap.put("isVerifyHostname", "" + isVerifyHostname());
+		parameterMap.put("isIgnoreCertificateExpiredException", "" + isIgnoreCertificateExpiredException());
 
 		// PROXY
 		if (StringUtils.isNotEmpty(getProxyHost())) {
 			CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
-			parameter.put("proxyHost", getProxyHost());
-			parameter.put("proxyPort", "" + getProxyPort());
-			parameter.put("proxyUserName", pcf.getUsername());
-			parameter.put("proxyPassword", pcf.getPassword());
+			parameterMap.put("proxyHost", getProxyHost());
+			parameterMap.put("proxyPort", "" + getProxyPort());
+			parameterMap.put("proxyUserName", pcf.getUsername());
+			parameterMap.put("proxyPassword", pcf.getPassword());
 		}
 
 		// Custom IBIS HttpSender to support ssl connections and proxies
-		parameter.put(SessionParameter.HTTP_INVOKER_CLASS, "nl.nn.adapterframework.extensions.cmis.CmisHttpInvoker");
+		parameterMap.setHttpInvoker(nl.nn.adapterframework.extensions.cmis.CmisHttpInvoker.class);
 
-		Session session = sessionFactory.createSession(parameter);
+		Session session = sessionFactory.createSession(parameterMap);
 		log.debug(getLogPrefix() + "connected with repository [" + getRepositoryInfo(session) + "]");
 		return session;
+	}
+
+	public void setOverrideEntryPointWSDL(String overrideEntryPointWSDL) {
+		if(!overrideEntryPointWSDL.isEmpty())
+			this.overrideEntryPointWSDL = overrideEntryPointWSDL;
+	}
+
+	public String getOverrideEntryPointWSDL() {
+		// never return an empty string, always null!
+		return overrideEntryPointWSDL;
 	}
 
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {

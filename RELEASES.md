@@ -92,7 +92,7 @@ Upcoming
 - Add wss* attributes to SoapWrapperPipe
 - Add configuration ClassLoader to SenderBase
 - Fix NPE in larva testtool when trying to resolve nonessential property: configurations.directory
-
+- Add overrideEntryPointWSDL property to CmisSender so the initial WSDL can be retrieved from the classpath opposed to a http call
 
 
 ### Non backwards compatible changes

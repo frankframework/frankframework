@@ -15,6 +15,9 @@
  */
 package nl.nn.adapterframework.extensions.cmis;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +27,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 import org.apache.chemistry.opencmis.client.bindings.impl.ClientVersion;
 import org.apache.chemistry.opencmis.client.bindings.impl.CmisBindingsHelper;
@@ -156,6 +160,18 @@ public class CmisHttpInvoker implements HttpInvoker {
 			Output writer, BindingSession session, BigInteger offset, BigInteger length) {
 
 		log.debug("Session "+session.getSessionId()+": "+method+" "+url);
+
+		if(url.toString().equals(CmisSender.OVERRIDE_WSDL_URL)) {
+			try {
+				Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
+				String wsdl = (String) session.get(CmisSender.OVERRIDE_WSDL_KEY);
+				InputStream inputStream = new ByteArrayInputStream(wsdl.getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING));
+				return new Response(200, "ok", headerFields, inputStream, null);
+			} catch (UnsupportedEncodingException e) {
+				// This should never happen, but in case it does...
+				throw new CmisConnectionException("unable to open or read WSDL", e);
+			}
+		}
 
 		Response response = null;
 
