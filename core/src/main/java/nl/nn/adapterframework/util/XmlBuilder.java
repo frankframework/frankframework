@@ -17,6 +17,7 @@ package nl.nn.adapterframework.util;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -57,7 +58,8 @@ public class XmlBuilder {
 				element.setNamespace(Namespace.getNamespace(value));
 			} else if (StringUtils.startsWithIgnoreCase(name, "xmlns:")) {
 				String prefix = name.substring(6);
-				element.setNamespace(Namespace.getNamespace(prefix, value));
+				element.addNamespaceDeclaration(
+						Namespace.getNamespace(prefix, value));
 			} else {
 				element.setAttribute(new Attribute(name, value));
 			}
@@ -79,12 +81,23 @@ public class XmlBuilder {
 	public void addSubElement(XmlBuilder newElement, boolean adoptNamespace) {
 		if (newElement != null) {
 			if (adoptNamespace
-					&& StringUtils.isNotEmpty(element.getNamespaceURI())
-					&& StringUtils
-							.isEmpty(newElement.element.getNamespaceURI())) {
-				newElement.element.setNamespace(element.getNamespace());
+					&& StringUtils.isNotEmpty(element.getNamespaceURI())) {
+				addNamespaceRecursive(newElement.element,
+						element.getNamespace());
 			}
 			element.addContent(newElement.element);
+		}
+	}
+
+	private void addNamespaceRecursive(Element element, Namespace namespace) {
+		if (StringUtils.isEmpty(element.getNamespaceURI())) {
+			element.setNamespace(namespace);
+			List<Element> childList = element.getChildren();
+			if (!childList.isEmpty()) {
+				for (Element child : childList) {
+					addNamespaceRecursive(child, namespace);
+				}
+			}
 		}
 	}
 
