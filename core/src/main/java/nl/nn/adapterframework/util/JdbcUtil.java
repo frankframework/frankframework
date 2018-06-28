@@ -1210,6 +1210,12 @@ public class JdbcUtil {
 			} else {
 				statement.setInt(parameterIndex, (Integer) value);
 			}
+		} else if (Parameter.TYPE_BOOLEAN.equals(paramType)) {
+			if (value == null) {
+				statement.setNull(parameterIndex, Types.BOOLEAN);
+			} else {
+				statement.setBoolean(parameterIndex, (Boolean) value);
+			}
 		} else if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
 			if (value instanceof FileInputStream) {
 				FileInputStream fis = (FileInputStream) value;
