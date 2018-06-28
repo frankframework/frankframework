@@ -280,7 +280,7 @@ public final class ShowConfigurationStatus extends Base {
 
 		return response.build();
 	}
-	
+
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{adapterName}/receivers/{receiverName}")
@@ -291,8 +291,13 @@ public final class ShowConfigurationStatus extends Base {
 
 		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
 
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
+		if(adapter == null) {
+			throw new ApiException("Adapter ["+adapterName+"] not found!");
+		}
+
+		IReceiver receiver = adapter.getReceiverByName(receiverName);
+		if(receiver == null) {
+			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
 		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
@@ -313,7 +318,7 @@ public final class ShowConfigurationStatus extends Base {
 
 		return response.build();
 	}
-	
+
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/pipes")
@@ -333,7 +338,7 @@ public final class ShowConfigurationStatus extends Base {
 
 		return Response.status(Response.Status.CREATED).entity(adapterInfo).build();
 	}
-	
+
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/messages")
@@ -351,7 +356,7 @@ public final class ShowConfigurationStatus extends Base {
 
 		return Response.status(Response.Status.CREATED).entity(adapterInfo).build();
 	}
-	
+
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/receivers")
