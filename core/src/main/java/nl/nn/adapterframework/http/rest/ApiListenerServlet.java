@@ -197,7 +197,8 @@ public class ApiListenerServlet extends HttpServlet {
 				return;
 			}
 
-			String etagCacheKey = ApiCacheManager.buildCacheKey(config.getUriPattern());
+			String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
+			log.debug("Evaluating preconditions for listener["+listener.getName()+"] etagKey["+etagCacheKey+"]");
 			if(cache.containsKey(etagCacheKey)) {
 				String cachedEtag = (String) cache.get(etagCacheKey);
 
@@ -319,8 +320,10 @@ public class ApiListenerServlet extends HttpServlet {
 					cache.remove(etagCacheKey);
 
 					// Not only remove the eTag for the selected resources but also the collection
-					if((method.equals("PUT") || method.equals("DELETE")) && etagCacheKey.endsWith("/*")) {
-						cache.remove(etagCacheKey.substring(0, etagCacheKey.length() -2));
+					String key = ApiCacheManager.getParentCacheKey(listener, uri);
+					if(key != null) {
+						log.debug("remove parent etagKey["+key+"]");
+						cache.remove(key);
 					}
 				}
 			}
