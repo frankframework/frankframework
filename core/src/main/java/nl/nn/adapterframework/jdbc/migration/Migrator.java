@@ -39,6 +39,10 @@ public class Migrator extends JdbcFacade {
 	public Migrator() {
 	}
 
+	public void configure() throws ConfigurationException {
+		configure(null, null, null);
+	}
+
 	public void configure(String configurationName) throws ConfigurationException {
 		configure(configurationName, null, null);
 	}
@@ -48,8 +52,6 @@ public class Migrator extends JdbcFacade {
 	}
 
 	public synchronized void configure(String configurationName, ClassLoader classLoader, String changeLogFile) throws ConfigurationException {
-		if(configurationName == null)
-			throw new ConfigurationException("configurationName cannot be null");
 
 		AppConstants appConstants = AppConstants.getInstance(classLoader);
 
@@ -58,7 +60,11 @@ public class Migrator extends JdbcFacade {
 
 		LiquibaseClassLoader cl = new LiquibaseClassLoader(classLoader);
 		if(cl.getResource(changeLogFile) == null) {
-			log.debug("unable to find database changelog file ["+changeLogFile+"] configuration ["+configurationName+"]");
+			String msg = "unable to find database changelog file ["+changeLogFile+"]";
+			if(configurationName != null)
+				msg += " configuration ["+configurationName+"]";
+
+			log.debug(msg);
 		}
 		else {
 			String dataSource = appConstants.getString("jdbc.migrator.dataSource", "jdbc/" + appConstants.getResolvedProperty("instance.name.lc"));
