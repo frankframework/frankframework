@@ -1,20 +1,20 @@
 <root>
   <configurations>
       <configuration nameUC="0*ALL*">*ALL*</configuration>
-      <configuration nameUC="1IAF*UTIL">IAF_Util</configuration>
       <configuration nameUC="1IAF*WEBCONTROL">IAF_WebControl</configuration>
       <configuration nameUC="1IBIS4EXAMPLE">Ibis4Example</configuration>
       <configuration nameUC="1NOTEXISTINGCONFIG">NotExistingConfig</configuration>
+      <configuration nameUC="1IAF*UTIL">IAF_Util</configuration>
   </configurations>
   <registeredAdapters all="true">
       <configurationMessages>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Application [Ibis4Example] startup /springContext.xml in 0 ms</configurationMessage>
-         <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [IAF_Util] LiquiBase applied [5] change(s) and added tag [IAF_Util:5:Niels Meijer]</configurationMessage>
-         <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [IAF_Util] startup in 0 ms</configurationMessage>
+         <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [IAF_WebControl] LiquiBase applied [5] change(s) and added tag [IAF_Util:5:Niels Meijer]</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [IAF_WebControl] startup in 0 ms</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [Ibis4Example] LiquiBase applying change [Ibis4Example:1:Niels Meijer] description [insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE; insert tableName=IBISSTORE] tag [Ibis4Example:1:Niels Meijer]</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [Ibis4Example] startup in 0 ms</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="ERROR">Configuration [NotExistingConfig]  exception: error during unmarshalling configuration from file [NotExistingConfig/Configuration.xml] with digester-rules-file [digester-rules.xml] in element []: Configuration file not found: NotExistingConfig/Configuration.xml</configurationMessage>
+         <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Configuration [IAF_Util] startup in 0 ms</configurationMessage>
          <configurationMessage date="0000-00-00 00:00:00.000" level="INFO">Application [Ibis4Example] startup in 0 ms</configurationMessage>
       </configurationMessages>
       <exceptions>
@@ -23,46 +23,6 @@
       <warnings>
          <warning config="Ibis4Example" severe="true">Errorlog contains 6 records. Service Management should check whether these records have to be resent or deleted</warning>
       </warnings>
-      <adapter config="IAF_Util"
-               configUC="IAF*UTIL"
-               configured="true"
-               description="Manage the database"
-               lastMessageDate="-"
-               messagesInError="0"
-               messagesInProcess="0"
-               messagesProcessed="0"
-               name="ManageDatabase"
-               nameUC="MANAGEDATABASE"
-               started="true"
-               state="Started"
-               stateAlert="false"
-               upSince="0000-00-00 00:00:00"
-               upSinceAge="-">
-         <receivers>
-            <receiver class="GenericReceiver"
-                      isStarted="true"
-                      messagesReceived="0"
-                      messagesRejected="0"
-                      messagesRetried="0"
-                      name="ManageDatabase"
-                      state="Started"/>
-            <receiver class="GenericReceiver"
-                      isStarted="true"
-                      messagesReceived="0"
-                      messagesRejected="0"
-                      messagesRetried="0"
-                      name="ManageDatabase-ws"
-                      state="Started"/>
-            <receiver class="GenericReceiver"
-                      isStarted="true"
-                      messagesReceived="0"
-                      messagesRejected="0"
-                      messagesRetried="0"
-                      name="ManageDatabase-ws"
-                      state="Started"/>
-         </receivers>
-         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
-      </adapter>
       <adapter config="IAF_WebControl"
                configUC="IAF*WEBCONTROL"
                configured="true"
@@ -354,6 +314,46 @@
                       messagesRejected="0"
                       messagesRetried="0"
                       name="HelloWorlds"
+                      state="Started"/>
+         </receivers>
+         <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
+      </adapter>
+      <adapter config="IAF_Util"
+               configUC="IAF*UTIL"
+               configured="true"
+               description="Manage the database"
+               lastMessageDate="-"
+               messagesInError="0"
+               messagesInProcess="0"
+               messagesProcessed="0"
+               name="ManageDatabase"
+               nameUC="MANAGEDATABASE"
+               started="true"
+               state="Started"
+               stateAlert="false"
+               upSince="0000-00-00 00:00:00"
+               upSinceAge="-">
+         <receivers>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="ManageDatabase"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="ManageDatabase-ws"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      isStarted="true"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="ManageDatabase-ws"
                       state="Started"/>
          </receivers>
          <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>

@@ -1,10 +1,10 @@
 <root>
   <configurations>
       <configuration nameUC="0*ALL*">*ALL*</configuration>
-      <configuration nameUC="1IAF*UTIL">IAF_Util</configuration>
       <configuration nameUC="1IAF*WEBCONTROL">IAF_WebControl</configuration>
       <configuration nameUC="1IBIS4EXAMPLE">Ibis4Example</configuration>
       <configuration nameUC="1NOTEXISTINGCONFIG">NotExistingConfig</configuration>
+      <configuration nameUC="1IAF*UTIL">IAF_Util</configuration>
   </configurations>
   <registeredAdapters all="false">
       <configurationMessages>
