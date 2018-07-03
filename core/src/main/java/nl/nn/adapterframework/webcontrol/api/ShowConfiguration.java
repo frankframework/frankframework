@@ -83,9 +83,9 @@ public final class ShowConfiguration extends Base {
 
 		for (Configuration configuration : ibisManager.getConfigurations()) {
 			if (loadedConfiguration) {
-				result = result + configuration.getOriginalConfiguration();
-			} else {
 				result = result + configuration.getLoadedConfiguration();
+			} else {
+				result = result + configuration.getOriginalConfiguration();
 			}
 		}
 
@@ -132,9 +132,9 @@ public final class ShowConfiguration extends Base {
 		}
 
 		if (loadedConfiguration) {
-			result = configuration.getOriginalConfiguration();
-		} else {
 			result = configuration.getLoadedConfiguration();
+		} else {
+			result = configuration.getOriginalConfiguration();
 		}
 
 		return Response.status(Response.Status.CREATED).entity(result).build();
