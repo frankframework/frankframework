@@ -95,6 +95,7 @@ Upcoming
 - Add overrideEntryPointWSDL property to CmisSender so the initial WSDL can be retrieved from the classpath opposed to a http call
 - Add Boolean datatype to parameters
 - Fix eTag handling bug in ApiListener
+- Remove jmsRealm from IAF_Util, and make IAF_Util depend on the default configuration in which a database must be specified.
 
 
 ### Non backwards compatible changes

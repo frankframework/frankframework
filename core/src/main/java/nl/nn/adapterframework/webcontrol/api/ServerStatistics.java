@@ -17,6 +17,7 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,6 +42,7 @@ import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -79,7 +81,7 @@ public class ServerStatistics extends Base {
 		initBase(servletConfig);
 
 		for (Configuration configuration : ibisManager.getConfigurations()) {
-			Map<String, Object> cfg = new HashMap<String, Object>();
+			Map<String, String> cfg = new HashMap<String, String>();
 			cfg.put("name", configuration.getName());
 			cfg.put("version", configuration.getVersion());
 			cfg.put("type", configuration.getClassLoaderType());
@@ -95,6 +97,16 @@ public class ServerStatistics extends Base {
 			}
 			configurations.add(cfg);
 		}
+
+		Collections.sort(configurations, new Comparator<Map<String, String>>() {
+			@Override
+			public int compare(Map<String, String> lhs, Map<String, String> rhs) {
+				String name1 = lhs.get("name");
+				String name2 = rhs.get("name");
+				return name1.startsWith("IAF_") ? -1 : name2.startsWith("IAF_") ? 1 : name1.compareTo(name2);
+			}
+		});
+
 		returnMap.put("configurations", configurations);
 
 		returnMap.put("version", ibisContext.getFrameworkVersion());
