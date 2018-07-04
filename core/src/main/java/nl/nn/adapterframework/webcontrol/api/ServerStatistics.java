@@ -95,7 +95,12 @@ public class ServerStatistics extends Base {
 				cfg.put("created", ((DatabaseClassLoader) classLoader).getCreationDate());
 				cfg.put("user", ((DatabaseClassLoader) classLoader).getUser());
 			}
-			configurations.add(cfg);
+
+			String parentConfig = AppConstants.getInstance().getString("configurations." + configuration.getName() + ".parentConfig", null);
+			if(parentConfig != null)
+				cfg.put("parent", parentConfig);
+
+				configurations.add(cfg);
 		}
 
 		Collections.sort(configurations, new Comparator<Map<String, String>>() {

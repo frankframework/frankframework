@@ -18,6 +18,7 @@
 								<th>Name</th>
 								<th>Version</th>
 								<th>Type</th>
+								<th>Parent</th>
 								<th>Filename</th>
 								<th>Created At</th>
 								<th>User</th>
@@ -29,6 +30,7 @@
 								<td ng-if="conf.type != 'DatabaseClassLoader'">{{conf.name}}</td>
 								<td ng-if="conf.version">{{conf.version}}</td><td ng-if="!conf.version">-</td>
 								<td>{{conf.type}}</td>
+								<td ng-if="conf.parent">{{conf.parent}}</td><td ng-if="!conf.parent">-</td>
 								<td ng-if="conf.filename">{{conf.filename}}</td><td ng-if="!conf.filename">-</td>
 								<td ng-if="conf.created">{{conf.created}}</td><td ng-if="!conf.created">-</td>
 								<td ng-if="conf.user">{{conf.user}}</td><td ng-if="!conf.user">-</td>

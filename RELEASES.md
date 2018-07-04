@@ -96,6 +96,7 @@ Upcoming
 - Add Boolean datatype to parameters
 - Fix eTag handling bug in ApiListener
 - Remove jmsRealm from IAF_Util, and make IAF_Util depend on the default configuration in which a database must be specified.
+- Add WebAppClassLoader as default configuration classloader
 
 
 ### Non backwards compatible changes

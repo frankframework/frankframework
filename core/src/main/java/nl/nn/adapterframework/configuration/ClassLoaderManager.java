@@ -27,6 +27,7 @@ import nl.nn.adapterframework.configuration.classloaders.DummyClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
 import nl.nn.adapterframework.configuration.classloaders.ServiceClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.WebAppClassLoader;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -50,8 +51,8 @@ public class ClassLoaderManager {
 
 	private ClassLoader createClassloader(String configurationName, String configurationFile, ClassLoader parentClassLoader) throws ConfigurationException {
 
-		String classLoaderType = APP_CONSTANTS.getResolvedProperty(
-				"configurations." + configurationName + ".classLoaderType");
+		String classLoaderType = APP_CONSTANTS.getString(
+				"configurations." + configurationName + ".classLoaderType", "WebAppClassLoader");
 
 		ClassLoader classLoader = null;
 		if ("DirectoryClassLoader".equals(classLoaderType)) {
@@ -95,6 +96,8 @@ public class ClassLoaderManager {
 			}
 		} else if ("DummyClassLoader".equals(classLoaderType)) {
 			classLoader = new DummyClassLoader(configurationName, configurationFile);
+		} else if ("WebAppClassLoader".equals(classLoaderType) || "".equals(classLoaderType)) {
+			classLoader = new WebAppClassLoader(parentClassLoader);
 		} else if (classLoaderType != null) {
 			throw new ConfigurationException("Invalid classLoaderType: " + classLoaderType);
 		}
