@@ -990,8 +990,10 @@ public class JdbcUtil {
 	}
 
 	public static synchronized void resetJdbcProperties() {
-		jdbcProperties.clear();
-		jdbcProperties = null;
+		if(jdbcProperties != null) {
+			jdbcProperties.clear();
+			jdbcProperties = null;
+		}
 		retrieveJdbcPropertiesFromDatabase();
 	}
 
