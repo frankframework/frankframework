@@ -98,6 +98,9 @@ Upcoming
 - Remove jmsRealm from IAF_Util, and make IAF_Util depend on the default configuration in which a database must be specified.
 - Add WebAppClassLoader as default configuration classloader
 - Add forgotten struts2rest services to web.xml LoginFilter
+- Upgrade Bitronix to version 3.0.0-MK1
+    The latest version has fixed the possiblity to set a dataSource bean on poolingDataSource and a connectionFactory bean on poolingConnectionFactory instead of using driverProperties.
+    As well as many other bugfixes and improvements, see https://github.com/bitronix/btm for more info.
 
 
 ### Non backwards compatible changes
