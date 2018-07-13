@@ -104,6 +104,8 @@ Upcoming
 - LCM update quartz scheduler to use a slightly newer version
     Version 1.7.2 requires java 1.5.x, which is probably the reason the older version 1.6.6 was used. Version 1.6.6 is not hosted on maven central, which is the reason for this LCM upgrade.
     For the Quartz release notes see: https://web.archive.org/web/20100721184042/http://quartz-scheduler.org:80/
+- Remove custom ibis modules
+    These modules were introduced due to java 4 and 5 compilation issues and runtime issues on WAS4 and WAS5.
 
 
 ### Non backwards compatible changes
