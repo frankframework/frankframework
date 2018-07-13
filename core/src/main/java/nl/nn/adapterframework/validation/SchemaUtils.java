@@ -76,7 +76,7 @@ public class SchemaUtils {
 	public static final QName NAMESPACE		 = new QName(null, "namespace");
 	public static final QName NAME			 = new QName(null, "name");
 
-	public static final nl.nn.javax.xml.namespace.QName WSDL_SCHEMA = new nl.nn.javax.xml.namespace.QName(XSD, "schema", "");
+	public static final javax.xml.namespace.QName WSDL_SCHEMA = new javax.xml.namespace.QName(XSD, "schema", "");
 
 	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds)
 			throws ConfigurationException {
@@ -448,18 +448,18 @@ public class SchemaUtils {
 
 
 	public static InputStream toInputStream(
-			nl.nn.javax.wsdl.Definition wsdlDefinition,
-			nl.nn.javax.wsdl.extensions.schema.Schema wsdlSchema
-			) throws nl.nn.javax.wsdl.WSDLException,
+			javax.wsdl.Definition wsdlDefinition,
+			javax.wsdl.extensions.schema.Schema wsdlSchema
+			) throws javax.wsdl.WSDLException,
 			UnsupportedEncodingException {
 		return new ByteArrayInputStream(
 				toString(wsdlDefinition, wsdlSchema).getBytes("UTF-8"));
 	}
 
 	public static String toString(
-			nl.nn.javax.wsdl.Definition wsdlDefinition,
-			nl.nn.javax.wsdl.extensions.schema.Schema wsdlSchema
-			) throws nl.nn.javax.wsdl.WSDLException {
+			javax.wsdl.Definition wsdlDefinition,
+			javax.wsdl.extensions.schema.Schema wsdlSchema
+			) throws javax.wsdl.WSDLException {
 		StringWriter w = new StringWriter();
 		PrintWriter res = new PrintWriter(w);
 		/*
@@ -467,8 +467,8 @@ public class SchemaUtils {
 		 * https://issues.apache.org/jira/browse/AXIS2-4517)
 		 */
 		synchronized (wsdlDefinition) {
-			nl.nn.com.ibm.wsdl.extensions.schema.SchemaSerializer schemaSerializer =
-					new nl.nn.com.ibm.wsdl.extensions.schema.SchemaSerializer();
+			com.ibm.wsdl.extensions.schema.SchemaSerializer schemaSerializer =
+					new com.ibm.wsdl.extensions.schema.SchemaSerializer();
 			schemaSerializer.marshall(Object.class, WSDL_SCHEMA, wsdlSchema, res,
 					wsdlDefinition, wsdlDefinition.getExtensionRegistry());
 		}
