@@ -74,6 +74,9 @@ public class FxfListener extends EsbJmsListener {
 			Map threadContext) throws ListenerException {
 		super.afterMessageProcessed(plr, rawMessage, threadContext);
 
+		//TODO plr.getState() may return null when there is an error.
+		// The message will be placed in the errorstore due to this, 
+		// when solving the NPE this no longer happens
 		if (isMoveProcessedFile() && plr.getState().equalsIgnoreCase("success")) {
 			File srcFile = null;
 			File dstFile = null;
