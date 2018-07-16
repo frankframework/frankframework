@@ -14,29 +14,6 @@
 		<param-name>restListenerPathPrefix</param-name>
 		<param-value>rest</param-value>
 	</context-param>
-	<context-param>
-		<param-name>resteasy.resources</param-name>
-		<param-value>
-			nl.nn.adapterframework.webcontrol.api.Init,
-			nl.nn.adapterframework.webcontrol.api.ExecuteJdbcQuery,
-			nl.nn.adapterframework.webcontrol.api.ServerStatistics,
-			nl.nn.adapterframework.webcontrol.api.ShowConfiguration,
-			nl.nn.adapterframework.webcontrol.api.ShowConfigurationStatus,
-			nl.nn.adapterframework.webcontrol.api.ShowEnvironmentVariables,
-			nl.nn.adapterframework.webcontrol.api.TestPipeline,
-			nl.nn.adapterframework.webcontrol.api.TestServiceListener,
-			nl.nn.adapterframework.webcontrol.api.ShowSecurityItems,
-			nl.nn.adapterframework.webcontrol.api.BrowseJdbcTable,
-			nl.nn.adapterframework.webcontrol.api.ShowIbisstoreSummary,
-			nl.nn.adapterframework.webcontrol.api.ShowMonitors,
-			nl.nn.adapterframework.webcontrol.api.ShowAdapterStatistics,
-			nl.nn.adapterframework.webcontrol.api.ShowScheduler,
-			nl.nn.adapterframework.webcontrol.api.ShowLogging,
-			nl.nn.adapterframework.webcontrol.api.Webservices,
-			nl.nn.adapterframework.webcontrol.api.BrowseQueue,
-			nl.nn.adapterframework.webcontrol.api.SendJmsMessage,
-		</param-value>
-	</context-param>
 
 	<filter>
 		<filter-name>LoginFilter</filter-name>
@@ -65,23 +42,18 @@
 	</filter>
 
 	<filter>
-		<filter-name>CorsFilter</filter-name>
-		<filter-class>nl.nn.adapterframework.webcontrol.api.CorsFilter</filter-class>
-	</filter>
-
-	<filter>
 		<filter-name>CacheControlFilter</filter-name>
 		<filter-class>nl.nn.adapterframework.http.CacheControlFilter</filter-class>
 	</filter>
 
 	<filter-mapping>
-		<filter-name>CorsFilter</filter-name>
-		<url-pattern>/iaf/api/*</url-pattern>
+		<filter-name>CacheControlFilter</filter-name>
+		<url-pattern>/rest/*</url-pattern>
 	</filter-mapping>
 
 	<filter-mapping>
 		<filter-name>CacheControlFilter</filter-name>
-		<url-pattern>/rest/*</url-pattern>
+		<url-pattern>/api/*</url-pattern>
 	</filter-mapping>
 
 	<filter-mapping>
@@ -339,6 +311,29 @@
 			<param-value>
 				nl.nn.adapterframework.webcontrol.api.ApiExceptionHandler,
 				nl.nn.adapterframework.webcontrol.api.AuthorizationFilter
+			</param-value>
+		</init-param>
+		<init-param>
+			<param-name>resteasy.resources</param-name>
+			<param-value>
+				nl.nn.adapterframework.webcontrol.api.Init,
+				nl.nn.adapterframework.webcontrol.api.ExecuteJdbcQuery,
+				nl.nn.adapterframework.webcontrol.api.ServerStatistics,
+				nl.nn.adapterframework.webcontrol.api.ShowConfiguration,
+				nl.nn.adapterframework.webcontrol.api.ShowConfigurationStatus,
+				nl.nn.adapterframework.webcontrol.api.ShowEnvironmentVariables,
+				nl.nn.adapterframework.webcontrol.api.TestPipeline,
+				nl.nn.adapterframework.webcontrol.api.TestServiceListener,
+				nl.nn.adapterframework.webcontrol.api.ShowSecurityItems,
+				nl.nn.adapterframework.webcontrol.api.BrowseJdbcTable,
+				nl.nn.adapterframework.webcontrol.api.ShowIbisstoreSummary,
+				nl.nn.adapterframework.webcontrol.api.ShowMonitors,
+				nl.nn.adapterframework.webcontrol.api.ShowAdapterStatistics,
+				nl.nn.adapterframework.webcontrol.api.ShowScheduler,
+				nl.nn.adapterframework.webcontrol.api.ShowLogging,
+				nl.nn.adapterframework.webcontrol.api.Webservices,
+				nl.nn.adapterframework.webcontrol.api.BrowseQueue,
+				nl.nn.adapterframework.webcontrol.api.SendJmsMessage,
 			</param-value>
 		</init-param>
 	</servlet>

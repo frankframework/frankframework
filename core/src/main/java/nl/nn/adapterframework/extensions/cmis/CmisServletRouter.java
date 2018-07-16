@@ -26,7 +26,7 @@ public class CmisServletRouter extends HttpServlet {
 		String servletClass = config.getInitParameter("servlet-class");
 		String version = config.getInitParameter("cmisVersion");
 
-		log.debug("init CMIS servlet class[" + servletClass + "] version[" + version + "] name[" +config.getServletName()+"]");
+		log.debug("initialize CMIS servlet class[" + servletClass + "] version[" + version + "] name[" +config.getServletName()+"]");
 
 		try {
 			servlet = (HttpServlet) ClassUtils.newInstance(servletClass);
