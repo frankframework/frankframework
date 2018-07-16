@@ -128,11 +128,11 @@ public class Browse extends ActionBase {
 		if (StringUtils.isNotEmpty(endDateStr)) {
 			try {
 				endDate=DateUtils.parseAnyDate(endDateStr);
-				if (startDate==null) {
+				if (endDate==null) {
 					warn("could not parse date from ["+endDateStr+"]");
 				}
 			} catch (CalendarParserException e) {
-				warn("could not parse date from ["+startDateStr+"]", e);
+				warn("could not parse date from ["+endDateStr+"]", e);
 			}
 		}
 		
