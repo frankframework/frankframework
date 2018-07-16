@@ -35,8 +35,8 @@ public interface IMessageBrowsingIteratorItem {
 	String getCommentString() throws ListenerException;
 	String getLabel() throws ListenerException;
 	
-	/*
-	 * release must be called, in a finally clause, after the item is not used anymore, 
+	/**
+	 * Release must be called, in a finally clause, after the item is not used anymore, 
 	 * to allow to free resources.
 	 */
 	void release();
