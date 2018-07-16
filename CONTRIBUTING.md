@@ -122,6 +122,9 @@ In some cases you might want/need to:
   will result in java.lang.NoClassDefFoundError:
   org/aspectj/lang/ProceedingJoinPoint when starting Tomcat. Remove the jar file
   from the repository to make Maven download the file again.
+- When changing IAF versions Eclipse doesn't always automatically clean the 
+  tomcat deploy folder (wtpwebapps). Rightclick project, Run As, Maven Clean, followed by 
+  Right click Tomcat v7.0 Server at localhost, Clean...
 
 
 
