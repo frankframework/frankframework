@@ -233,8 +233,6 @@
                                             <th>Retried</th>
                                             <th>Received</th>
                                             <th>Rejected</th>
-                                            <th><i class="fa fa-envelope-o"></i></th>
-                                            <th><i class="fa fa-times-circle"></i></th>
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -245,13 +243,22 @@
                                             <td>{{receiver.messages.retried}}</td>
                                             <td>{{receiver.messages.received}}</td>
                                             <td>{{receiver.messages.rejected}}</td>
-                                            <td><span ng-show="{{receiver.hasMessageLog}}">{{receiver.messageLogCount}}</span></td>
-                                            <td><span ng-show="{{receiver.hasErrorStorage}}">{{receiver.errorStorageCount}}</span></td>
                                             <td>
                                                 <span class="pull-right">
                                                     <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
                                                     <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
                                                     <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state !='started' && receiver.state !='stopped'" type="button"><i class="fa fa-cog fa-spin"></i></button>
+
+                                                    <span class="text-danger">
+                                                        <button ng-show="{{receiver.hasErrorStorage}}" ui-sref="pages.errorstorage({adapter: adapter.name, receiver: receiver.name, count: receiver.errorStorageCount})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                            <i class="fa fa-times-circle"></i> ({{receiver.errorStorageCount}})
+                                                        </button>
+                                                    </span>
+                                                    <span class="text-success">
+                                                        <button ng-show="{{receiver.hasMessageLog}}" ui-sref="pages.messagelog({adapter: adapter.name, receiver: receiver.name, count: receiver.messageLogCount})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                            <i class="fa fa-envelope-o"></i> ({{receiver.messageLogCount}})
+                                                        </button>
+                                                    </span>
                                                 </span>
                                             </td>
                                         </tr>

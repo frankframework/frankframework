@@ -81,6 +81,32 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			id: 0,
 		},
 	})
+	.state('pages.errorstorage', {
+		url: "/adapter/:adapter/:receiver/errorstorage",
+		templateUrl: "views/adapter_errorstorage.html",
+		data: {
+			pageTitle: 'Adapter',
+			breadcrumbs: 'Adapter > ErrorStorage'
+		},
+		params: {
+			adapter: { value: '', squash: true},
+			receiver: { value: '', squash: true},
+			count: 0
+		},
+	})
+	.state('pages.messagelog', {
+		url: "/adapter/:adapter/:receiver/messagelog",
+		templateUrl: "views/adapter_messagelog.html",
+		data: {
+			pageTitle: 'Adapter',
+			breadcrumbs: 'Adapter > MessageLog'
+		},
+		params: {
+			adapter: { value: '', squash: true},
+			receiver: { value: '', squash: true},
+			count: 0
+		},
+	})
 	.state('pages.notifications', {
 		url: "/notifications",
 		templateUrl: "views/notifications.html",

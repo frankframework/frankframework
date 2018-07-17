@@ -1,0 +1,56 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content animated fadeInRight" ng-controller="AdapterErrorStorageCtrl">
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h4>Browse ErrorStorage of receiver [{{receiverName}}] of adapter [{{adapterName}}]<span ng-if="count>0"> ({{count}})</span></h4>
+				</div>
+				<div class="ibox-content">
+<!--
+					<div class="col-md-12">
+						max num of messages displayed {{messageCount}} out of {{totalMessages}} <br/>
+						skip first messages {{skipMessages}} <br/>
+					</div>
+-->
+					<div class="col-md-12">
+						<table class="table table-striped">
+							<thead>
+								<tr>
+									<th>&nbsp;</th>
+									<th>#</th>
+									<th>Timestamp</th>
+									<th>Type</th>
+									<th>Host</th>
+									<th>Current ID</th>
+									<th>Original ID</th>
+									<th>Correlation ID</th>
+									<th>Comment</th>
+									<th>Expires</th>
+									<th>Label</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="message in messages">
+									<td>&nbsp;</td>
+									<td>{{message.pos}}</td>
+									<td to-date time="{{message.insertDate}}"></td>
+									<td>{{message.type}}</td>
+									<td>{{message.host}}</td>
+									<td>{{message.id}}</td>
+									<td>{{message.originalId}}</td>
+									<td>{{message.correlationId}}</td>
+									<td>{{message.comment}}</td>
+									<td to-date time="{{message.expiryDate}}"></td>
+									<td>{{message.label}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -804,6 +804,40 @@ angular.module('iaf.beheerconsole')
 	});
 }])
 
+.controller('AdapterErrorStorageCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', function($scope, Api, $stateParams, SweetAlert) {
+	$scope.adapterName = $stateParams.adapter;
+	if(!$scope.adapterName)
+		return SweetAlert.Warning("Adapter not found!");
+	$scope.receiverName = $stateParams.receiver;
+	if(!$scope.receiverName)
+		return SweetAlert.Warning("Receiver not found!");
+	$scope.count = $stateParams.count || 0;
+
+	//TODO
+	$scope.messages = [];
+	var url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
+	Api.Get(url, function(data) {
+		$.extend($scope, data);
+	});
+}])
+
+.controller('AdapterMessageLogCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', function($scope, Api, $stateParams, SweetAlert) {
+	$scope.adapterName = $stateParams.adapter;
+	if(!$scope.adapterName)
+		return SweetAlert.Warning("Adapter not found!");
+	$scope.receiverName = $stateParams.receiver;
+	if(!$scope.receiverName)
+		return SweetAlert.Warning("Receiver not found!");
+	$scope.totalMessages = $stateParams.count || 0;
+
+	//TODO
+	$scope.messages = [];
+	var url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/messagelog";
+	Api.Get(url, function(data) {
+		$.extend($scope, data);
+	});
+}])
+
 .controller('WebservicesCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
 	$scope.rootURL = Misc.getServerPath() + 'rest/';
 	Api.Get("webservices", function(data) {
