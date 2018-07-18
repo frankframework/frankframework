@@ -16,7 +16,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public class CmisServletRouter extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private final Logger log = LogUtil.getLogger(CmisServletRouter.class);
+	private final Logger log = LogUtil.getLogger(this);
 	private HttpServlet servlet;
 
 	@Override
@@ -26,13 +26,15 @@ public class CmisServletRouter extends HttpServlet {
 		String servletClass = config.getInitParameter("servlet-class");
 		String version = config.getInitParameter("cmisVersion");
 
-		log.debug("initialize CMIS servlet class[" + servletClass + "] version[" + version + "] name[" +config.getServletName()+"]");
-
 		try {
 			servlet = (HttpServlet) ClassUtils.newInstance(servletClass);
 			servlet.init(config);
+
+			log.debug("initialize CMIS servlet class[" + servletClass + "] version[" + version + "] name[" +config.getServletName()+"]");
 		} catch (ClassNotFoundException e) {
 			log.debug("unable to initialize cmis servlet ["+servletClass+"]", e);
+		} catch (UnsupportedClassVersionError e) {
+			log.error("CMIS was found on the classpath but requires Java 1.7 or higher to run. Unabled to initialize servlet ["+servletClass+"]");
 		} catch (Exception e) {
 			log.error("unhandled exception occured while loading or initiating cmis servlet ["+servletClass+"]", e);
 		}
