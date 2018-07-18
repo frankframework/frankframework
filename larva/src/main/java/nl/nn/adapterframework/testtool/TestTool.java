@@ -3631,7 +3631,7 @@ public class TestTool {
 	 * @param properties
 	 * @param property
 	 * @param writers
-	 * @return
+	 * @return A map with parameters
 	 */
 	private static Map createParametersMapFromParamProperties(Properties properties, String property, Map writers, boolean createParameterObjects, ParameterResolutionContext parameterResolutionContext) {
 		debugMessage("Search parameters for property '" + property + "'", writers);

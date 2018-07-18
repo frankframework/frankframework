@@ -26,7 +26,7 @@ public class FileListener {
 	 * Read the message from the specified file. If the file doesn't exist,
 	 * this methods waits a specified time before it attempts to read the file.
 	 * 
-	 * @return
+	 * @return The message read from the specified file
 	 * @throws TimeOutException
 	 * @throws ListenerException
 	 */
@@ -124,7 +124,7 @@ public class FileListener {
 	 * When used, filename and filename2 are binary compared (returns 'true' or
 	 * 'false' instead of the file content).
 	 * 
-	 * @param filename
+	 * @param filename2
 	 */
 	public void setFilename2(String filename2) {
 		this.filename2 = filename2;
@@ -146,7 +146,7 @@ public class FileListener {
 	/**
 	 * Set the wildcard to find the file to read the message from.
 	 * 
-	 * @param wildcard
+	 * @param wildcard to search for files in a directory
 	 */
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
@@ -172,9 +172,8 @@ public class FileListener {
 	}
 
 	/**
-	 * Get the time out in milliseconds waiting for creation of the file.
-	 * 
-	 * @return
+	 * the time out in milliseconds waiting for creation of the file.
+	 * @return the timeout in milliseconds
 	 */
 	public long getTimeOut() {
 		return timeOut;

@@ -111,7 +111,7 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setResultOnNotFound(String) resultOnNotFound}</td><td>(only used when <code>action=get</code>) result returned when no document was found for the given id (e.g. "[NOT_FOUND]"). If empty an exception is thrown</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeepSession(boolean) keepSession}</td><td>if true, the session is not closed at the end and it will be used in the next call</td><td>true</td></tr>
  * 
- * <tr><td>{@link #setCertificate(String) certificate}</td><td>resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCertificateUrl(String) certificate}</td><td>resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCertificateAuthAlias(String) certificateAuthAlias}</td><td>alias used to obtain certificate password</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeystoreType(String) keystoreType}</td><td>&nbsp;</td><td>pkcs12</td></tr>
