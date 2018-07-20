@@ -319,12 +319,6 @@
       <version>1.4</version>
     </dependency>
     <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-webspheremq</artifactId>
-      <version>1.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>xmlunit</groupId>
       <artifactId>xmlunit</artifactId>
       <version>1.2</version>
