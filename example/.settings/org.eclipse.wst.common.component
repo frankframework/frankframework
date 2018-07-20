@@ -6,6 +6,9 @@
         <dependent-module archiveName="ibis-adapterframework-core-7.1-B2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-core/iaf-core">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="ibis-adapterframework-ladybug-7.1-B2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ladybug/iaf-ladybug">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <dependent-module archiveName="ibis-adapterframework-larva-7.1-B2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-larva/iaf-larva">
             <dependency-type>uses</dependency-type>
         </dependent-module>
