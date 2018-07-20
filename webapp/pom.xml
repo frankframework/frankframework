@@ -31,28 +31,6 @@
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-ladybug</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-echo2</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjlib</artifactId>
-      <version>1.6.2</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjweaver</artifactId>
-      <version>1.6.2</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
       <groupId>com.github.marcus-nl.btm</groupId>
       <artifactId>btm</artifactId>
       <version>3.0.0-mk1</version>

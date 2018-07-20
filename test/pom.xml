@@ -38,6 +38,10 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-cmis</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-ladybug</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -64,33 +68,6 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.2</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-ladybug</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-ladybug</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-echo2</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjlib</artifactId>
-			<version>1.6.2</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjweaver</artifactId>
-			<version>1.6.2</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -154,6 +131,10 @@
 				<dependency>
 					<groupId>org.ibissource</groupId>
 					<artifactId>ibis-adapterframework-cmis</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.ibissource</groupId>
+					<artifactId>ibis-adapterframework-ladybug</artifactId>
 				</dependency>
 			</dependencies>
 		</profile>

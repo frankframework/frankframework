@@ -106,6 +106,7 @@ Upcoming
     For the Quartz release notes see: https://web.archive.org/web/20100721184042/http://quartz-scheduler.org:80/
 - Remove custom ibis modules
     These modules were introduced due to java 4 and 5 compilation issues and runtime issues on WAS4 and WAS5.
+- Mavenize Ladybug
 
 
 ### Non backwards compatible changes

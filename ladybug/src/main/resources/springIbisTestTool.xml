@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd"
+	>
+
+	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:nl/nn/ibistesttool/IbisTestTool.properties</value>
+				<!-- Other properties like ibistesttool.* are provided by IAF (AppConstants is added as PropertySources to the Spring configuration) -->
+			</list>
+		</property>
+	</bean>
+
+	<bean class="nl.nn.ibistesttool.DeploymentSpecificsBeanPostProcessor"/>
+
+	<bean name="configName" class="java.lang.String">
+		<constructor-arg value="Ibis Test Tool"/>
+	</bean>
+
+	<bean name="configVersion" class="java.lang.String">
+		<constructor-arg value="${version.implementation} ${version.timestamp}"/>
+	</bean>
+
+	<bean name="maxCheckpoints" class="java.lang.Integer">
+		<constructor-arg value="${ibistesttool.maxCheckpoints}"/>
+	</bean>
+
+	<bean name="regexFilter" class="java.lang.String">
+		<constructor-arg value="${ibistesttool.regexFilter}"/>
+	</bean>
+
+	<bean name="testTool" class="nl.nn.testtool.TestTool" autowire="byName">
+		<property name="configName"><ref bean="configName"/></property>
+		<property name="configVersion"><ref bean="configVersion"/></property>
+		<property name="maxCheckpoints"><ref bean="maxCheckpoints"/></property>
+		<property name="regexFilter"><ref bean="regexFilter"/></property>
+<!--property name="loggingStorage"><ref bean="runStorage"/></property-->
+	</bean>
+
+	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
+		<property name="extraMetadataFieldExtractors">
+			<list>
+				<bean class="nl.nn.ibistesttool.metadata.StatusExtractor"/>
+			</list>
+		</property>
+	</bean>
+
+<!-- TODO hernoemen naar debugStorage? wordt autowired op (o.a.?) testTool? -->
+	<bean name="logStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName" init-method="init">
+		<property name="name" value="Logging"/>
+		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
+		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
+		<!-- property name="reportsFilename" value="C:\Program Files\Apache Software Foundation\Tomcat 6.0\logs\testtool4${instance.name.lc}.tts"/>
+		<property name="metadataFilename" value="C:\Program Files\Apache Software Foundation\Tomcat 6.0\logs\testtool4${instance.name.lc}.ttm"/ -->
+		<property name="persistentMetadata">
+			<list>
+				<value>storageId</value>
+				<value>storageSize</value>
+				<value>endTime</value>
+				<value>duration</value>
+				<value>name</value>
+				<value>correlationId</value>
+				<value>status</value>
+				<value>numberOfCheckpoints</value>
+				<value>estimatedMemoryUsage</value>
+			</list>
+		</property>
+	</bean>
+
+<!--
+ergens documentern dat storageId en storageSize verplicht zijn?
+en/of beter foutmelding geven, nu in log: Invalid header in metadata file 'E:\nn\software\installed\Tomcat\apache-tomcat-6.0.30\..\..\..\..\logdir\testtool4ija_bipa_run.ttm'
+of zorgen dat die altijd aanwezig zijn en je ze niet via spring hoeft/kan zetten?
+
+path gewoon in name field doen?!
+testStorage noemen?
+-->
+	<bean name="runStorage" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName" init-method="init">
+		<property name="name" value="Test"/>
+		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
+		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
+		<property name="persistentMetadata">
+			<list>
+				<value>storageId</value>
+				<value>storageSize</value>
+				<value>path</value>
+				<value>name</value>
+			</list>
+		</property>
+	</bean>
+	<!-- bean name="runStorage" class="nl.nn.testtool.storage.diff.Storage" autowire="byName" init-method="init">
+		<property name="name" value="Run"/>
+		<!- - property name="reportsFilename" value="${rootRealPath}/../TestTool/reports.xml"/ - ->
+		<!- - property name="reportsFilename" value="${log.dir}/reports.xml"/ - ->
+		<property name="reportsDirectory" value="${rootRealPath}/../TestTool"/>
+	</bean -->
+	<!-- bean name="runStorage" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName" init-method="init">
+		<property name="name" value="Run"/>
+		<property name="reportsFilename" value="C:/Temp/testtool4${instance.name.lc}.tts"/>
+		<property name="metadataFilename" value="C:/Temp/testtool4${instance.name.lc}.ttm"/>
+		<property name="persistentMetadata">
+			<list>
+				<value>storageId</value>
+				<value>storageSize</value>
+				<value>path</value>
+				<value>name</value>
+			</list>
+		</property>
+	</bean -->
+
+	<bean name="whiteBoxViewMetadataNames" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<value>storageId</value>
+				<value>endTime</value>
+				<value>duration</value>
+				<value>name</value>
+				<value>correlationId</value>
+				<value>status</value>
+				<value>numberOfCheckpoints</value>
+				<value>estimatedMemoryUsage</value>
+				<value>storageSize</value>
+			</list>
+		</constructor-arg>
+	</bean>
+	
+	<bean name="whiteBoxView" class="nl.nn.testtool.filter.View" scope="prototype">
+		<property name="name" value="White box"/>
+		<property name="storage">
+			<ref bean="logStorage"/>
+		</property>
+		<property name="metadataNames">
+			<ref bean="whiteBoxViewMetadataNames"/>
+		</property>
+	</bean>
+
+	<bean name="grayBoxView" class="nl.nn.testtool.filter.View" parent="whiteBoxView">
+		<property name="name" value="Gray box"/>
+		<property name="checkpointMatchers">
+			<list>
+				<bean class="nl.nn.testtool.filter.CheckpointSearcher">
+					<property name="nameSearch" value="Pipeline *"/>
+				</bean>
+				<bean class="nl.nn.testtool.filter.CheckpointSearcher">
+					<property name="nameSearch" value="Sender *"/>
+				</bean>
+				<bean class="nl.nn.ibistesttool.filter.FtpFileRetrieverPipe"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="blackBoxView" class="nl.nn.testtool.filter.View" parent="whiteBoxView">
+		<property name="name" value="Black box"/>
+		<property name="checkpointMatchers">
+			<list>
+				<bean class="nl.nn.ibistesttool.filter.BlackBox"/>
+				<bean class="nl.nn.ibistesttool.filter.FtpFileRetrieverPipe"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="views" class="nl.nn.testtool.filter.Views" scope="prototype">
+		<property name="views">
+			<list>
+				<ref bean="whiteBoxView"/>
+				<ref bean="grayBoxView"/>
+				<ref bean="blackBoxView"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="reportXmlTransformer" class="nl.nn.testtool.transform.ReportXmlTransformer">
+		<property name="xsltResource" value="${ibistesttool.reportTransformation}"/>
+	</bean>
+
+	<bean name="treePane" class="nl.nn.testtool.echo2.reports.TreePane" autowire="byName" init-method="initBean" scope="prototype"/>
+
+	<bean name="reportsComponent" class="nl.nn.testtool.echo2.reports.ReportsComponent" autowire="byName" init-method="initBean" scope="prototype">
+		<property name="changeReportGeneratorEnabledRoles">
+			<list>
+				<value>IbisTester</value>
+				<value>IbisAdmin</value>
+				<value>IbisDataAdmin</value>
+			</list>
+		</property>
+		<property name="testTool">
+			<ref bean="testTool"/>
+		</property>
+		<property name="views">
+			<ref bean="views"/>
+		</property>
+		<property name="metadataExtractor">
+			<ref bean="metadataExtractor"/>
+		</property>
+	</bean>
+
+	<bean name="debugPane" class="nl.nn.testtool.echo2.DebugPane" init-method="initBean" scope="prototype">
+		<property name="reportsTreeCellRenderer">
+			<ref bean="reportsTreeCellRenderer"/>
+		</property>
+		<property name="testTool">
+			<ref bean="testTool"/>
+		</property>
+		<property name="runStorage">
+			<ref bean="runStorage"/>
+		</property>
+		<property name="reportsComponent">
+			<ref bean="reportsComponent"/>
+		</property>
+		<property name="treePane">
+			<ref bean="treePane"/>
+		</property>
+		<property name="reportXmlTransformer">
+			<ref bean="reportXmlTransformer"/>
+		</property>
+	</bean>
+
+	<bean name="runPane" class="nl.nn.testtool.echo2.RunPane" init-method="initBean" scope="prototype">
+		<property name="treePane">
+			<bean class="nl.nn.testtool.echo2.run.TreePane" autowire="byName" init-method="initBean" >
+				<property name="storage">
+					<ref bean="runStorage"/>
+				</property>
+			</bean>
+		</property>
+		<property name="infoPane">
+			<bean class="nl.nn.testtool.echo2.run.InfoPane" init-method="initBean">
+				<property name="runComponent">
+					<bean class="nl.nn.testtool.echo2.run.RunComponent" init-method="initBean">
+						<property name="testTool">
+							<ref bean="testTool"/>
+						</property>
+						<property name="debugStorage">
+							<ref bean="logStorage"/>
+						</property>
+						<property name="runStorage">
+							<ref bean="runStorage"/>
+						</property>
+						<property name="reportXmlTransformer">
+							<ref bean="reportXmlTransformer"/>
+						</property>
+					</bean>
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+	<bean name="comparePane" class="nl.nn.testtool.echo2.ComparePane" init-method="initBean" scope="prototype">
+		<property name="reportsTreeCellRenderer">
+			<ref bean="reportsTreeCellRenderer"/>
+		</property>
+		<property name="testTool">
+			<ref bean="testTool"/>
+		</property>
+		<property name="runStorage">
+			<ref bean="runStorage"/>
+		</property>
+		<property name="reportsComponent1">
+			<bean parent="reportsComponent">
+				<property name="addCompareButton" value="true"/>
+				<property name="addSeparateOptionsRow" value="true"/>
+				<property name="focusMaxMetadataTableSize" value="false"/>
+			</bean>
+		</property>
+		<property name="reportsComponent2">
+			<bean parent="reportsComponent">
+				<property name="addCompareButton" value="true"/>
+				<property name="addSeparateOptionsRow" value="true"/>
+				<property name="focusMaxMetadataTableSize" value="false"/>
+			</bean>
+		</property>
+		<property name="treePane1">
+			<ref bean="treePane"/>
+		</property>
+		<property name="treePane2">
+			<ref bean="treePane"/>
+		</property>
+		<property name="reportXmlTransformer">
+			<ref bean="reportXmlTransformer"/>
+		</property>
+	</bean>
+
+	<bean name="tabs" class="nl.nn.testtool.echo2.Tabs" scope="prototype">
+		<property name="tabs">
+			<list>
+				<ref bean="debugPane"/>
+				<ref bean="runPane"/>
+				<ref bean="comparePane"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="echo2Application" class="nl.nn.testtool.echo2.Echo2Application" autowire="byName" init-method="initBean" scope="prototype">
+		<property name="contentPane">
+			<bean class="nextapp.echo2.app.ContentPane"/>
+		</property>
+		<property name="reportsTreeCellRenderer">
+			<ref bean="reportsTreeCellRenderer"/>
+		</property>
+		<property name="tabs">
+			<ref bean="tabs"/>
+		</property>
+	</bean>
+
+	<bean name="reportsTreeCellRenderer" class="nl.nn.testtool.echo2.reports.ReportsTreeCellRenderer"/>
+
+	<bean name="pipeDescriptionProvider" class="nl.nn.ibistesttool.PipeDescriptionProvider" autowire="byName"/>
+
+	<bean name="rerunRoles" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<value>IbisTester</value>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean name="debugger,ibisDebugger" class="nl.nn.ibistesttool.Debugger" autowire="byName"/>
+
+	<bean name="messageTransformer" class="nl.nn.ibistesttool.transform.HideRegexMessageTransformer"/>
+
+	<import resource="springIbisDebuggerAdvice.xml"/>
+
+</beans>

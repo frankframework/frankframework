@@ -58,28 +58,6 @@
       <artifactId>ibis-adapterframework-ladybug</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-ladybug</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-echo2</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjlib</artifactId>
-      <version>1.6.2</version>
-		<scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjweaver</artifactId>
-      <version>1.6.2</version>
-		<scope>test</scope>
-    </dependency>
   </dependencies>
   <build>
     <plugins>

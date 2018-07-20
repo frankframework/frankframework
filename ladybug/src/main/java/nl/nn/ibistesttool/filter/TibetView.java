@@ -1,0 +1,61 @@
+package nl.nn.ibistesttool.filter;
+
+import java.util.List;
+
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.ibistesttool.tibet2.Storage;
+import nl.nn.testtool.echo2.BeanParent;
+import nl.nn.testtool.echo2.Echo2Application;
+import nl.nn.testtool.filter.View;
+
+public class TibetView extends View {
+	private static final String AUTHORISATION_CHECK_ADAPTER = "AuthorisationCheck";
+	protected IbisManager ibisManager;
+
+	/**
+	 * Loaded via bean, see springIbisTestToolTibet2.xml
+	 */
+	public void setIbisManager(IbisManager ibisManager) {
+		this.ibisManager = ibisManager;
+	}
+
+	/**
+	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
+	 */
+	public void initBean(BeanParent beanParent) {
+		super.initBean(beanParent);
+		Storage storage = (Storage)getStorage();
+		storage.setSecurityContext(getEcho2Application());
+	}
+
+	@Override
+	public String isOpenReportAllowed(Object StorageId) {
+		return isOpenReportAllowedViaAdapter(StorageId);
+	}
+
+	public String isOpenReportAllowedViaAdapter(Object StorageId) {
+		Echo2Application app = getEcho2Application();
+		IAdapter adapter = ibisManager.getRegisteredAdapter(AUTHORISATION_CHECK_ADAPTER);
+		if(adapter == null) {
+			return "Not allowed. Could not find adapter " + AUTHORISATION_CHECK_ADAPTER;
+		} else {
+			IPipeLineSession pipeLineSession = new PipeLineSessionBase();
+			pipeLineSession.put("principal", app.getUserPrincipal());
+			pipeLineSession.put("StorageId", StorageId);
+			pipeLineSession.put("View", getName());
+			PipeLineResult processResult = adapter.processMessage(null, "<dummy/>", pipeLineSession);
+			if ((processResult.getState().equalsIgnoreCase("success"))) {
+				return "Allowed";
+			} else {
+				return "Not allowed. Result of adapter "
+						+ AUTHORISATION_CHECK_ADAPTER + ": "
+						+ processResult.getResult();
+			}
+		}
+	}
+
+}

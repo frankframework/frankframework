@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd"
+	>
+
+	<import resource="springIbisTestTool.xml"/>
+
+	<bean name="configName" class="java.lang.String">
+		<constructor-arg value="Ibis Test Tool Baco"/>
+	</bean>
+
+	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
+		<property name="extraMetadataFieldExtractors">
+			<list> <!--  StartAge, EndAge, firstAmount, lastAmount -->
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="startAge"/>
+					<property name="label" value="Start age"/>
+					<property name="xpath" value="SimulateClaimRLY/Resultaat/Claim[1]/StartAge"/>
+					<property name="extractFrom" value="last"/>
+				</bean>
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="endAge"/>
+					<property name="label" value="End age"/>
+					<property name="xpath" value="SimulateClaimRLY/Resultaat/Claim[1]/EndAge"/>
+					<property name="extractFrom" value="last"/>
+				</bean>
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="lastAmount"/>
+					<property name="label" value="Last amount"/>
+					<property name="xpath" value="SimulateClaimRLY/Resultaat/Claim[position() = last()]/Amount"/>
+					<property name="extractFrom" value="last"/>
+				</bean>
+				
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="conversationId"/>
+					<property name="label" value="ConversationId"/>
+					<property name="xpath" value="/*[local-name()='Envelope']/*[local-name()='Header']/*[local-name()='MessageHeader']/*[local-name()='HeaderFields']/*[local-name()='ConversationId']"/>
+					<property name="extractFrom" value="first"/>
+				</bean>
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="detailCode1"/>
+					<property name="label" value="DetailCode1"/>
+					<property name="xpath" value="/*[local-name()='Envelope']/*[local-name()='Body']/*[local-name()='NotifyEmployeeBenefitsAgreementStatus_Action']/*[local-name()='Result']/*[local-name()='ErrorList']/*[local-name()='Error']/*[local-name()='DetailList']/*[local-name()='Detail'][1]/*[local-name()='Code']"/>					
+					<property name="extractFrom" value="all"/>
+				</bean>
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="detailCode2"/>
+					<property name="label" value="DetailCode2"/>
+					<property name="xpath" value="/*[local-name()='Envelope']/*[local-name()='Body']/*[local-name()='NotifyEmployeeBenefitsAgreementStatus_Action']/*[local-name()='Result']/*[local-name()='ErrorList']/*[local-name()='Error']/*[local-name()='DetailList']/*[local-name()='Detail'][2]/*[local-name()='Code']"/>
+					<property name="extractFrom" value="all"/>
+				</bean>
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="detailCode3"/>
+					<property name="label" value="DetailCode3"/>
+					<property name="xpath" value="/*[local-name()='Envelope']/*[local-name()='Body']/*[local-name()='NotifyEmployeeBenefitsAgreementStatus_Action']/*[local-name()='Result']/*[local-name()='ErrorList']/*[local-name()='Error']/*[local-name()='DetailList']/*[local-name()='Detail'][3]/*[local-name()='Code']"/>
+					<property name="extractFrom" value="all"/>
+				</bean>
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="detailCode4"/>
+					<property name="label" value="DetailCode4"/>
+					<property name="xpath" value="/*[local-name()='Envelope']/*[local-name()='Body']/*[local-name()='NotifyEmployeeBenefitsAgreementStatus_Action']/*[local-name()='Result']/*[local-name()='ErrorList']/*[local-name()='Error']/*[local-name()='DetailList']/*[local-name()='Detail'][4]/*[local-name()='Code']"/>
+					<property name="extractFrom" value="all"/>
+				</bean>
+				<bean class="nl.nn.ibistesttool.metadata.StatusExtractor"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="simulateClaimView" parent="blackBoxView">
+		<property name="name" value="SimulateClaim"/>
+		<property name="metadataNames">
+			<list>
+				<value>storageId</value>
+				<value>startTime</value>
+				<value>duration</value>
+				<value>name</value>
+				<value>correlationId</value>
+				<value>status</value>
+				<value>startAge</value>
+				<value>endAge</value>
+				<value>lastAmount</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean name="b2bView" parent="blackBoxView">
+		<property name="name" value="B2BView"/>
+		<property name="metadataNames">
+			<list>
+				<value>storageId</value>
+				<value>startTime</value>
+				<value>duration</value>
+				<value>name</value>
+				<value>correlationId</value>
+				<value>status</value>
+				<value>conversationId</value>
+				<value>detailCode1</value>
+				<value>detailCode2</value>
+				<value>detailCode3</value>
+				<value>detailCode4</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean name="views" class="nl.nn.testtool.filter.Views">
+		<property name="views">
+			<list>
+				<ref bean="whiteBoxView"/>
+				<ref bean="grayBoxView"/>
+				<ref bean="blackBoxView"/>
+				<ref bean="simulateClaimView"/>
+				<ref bean="b2bView"/>
+			</list>
+		</property>
+	</bean>
+
+</beans>
