@@ -15,6 +15,9 @@
         <dependent-module archiveName="ibis-adapterframework-cmis-7.1-B2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-cmis/iaf-cmis">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="ibis-adapterframework-ladybug-7.1-B2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ladybug/iaf-ladybug">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <dependent-module archiveName="ibis-adapterframework-ifsa-7.1-B2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/iaf-ifsa/iaf-ifsa">
             <dependency-type>uses</dependency-type>
         </dependent-module>
