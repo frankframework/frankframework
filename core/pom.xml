@@ -314,9 +314,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>nl.nn.adapterframework</groupId>
+      <groupId>org.ibissource</groupId>
       <artifactId>service-dispatcher</artifactId>
-      <version>1.4</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>xmlunit</groupId>
