@@ -1206,10 +1206,15 @@ angular.module('iaf.beheerconsole')
 		}
 		$scope.file = files[0]; //Can only parse 1 file!
 	};
+	$scope.processingMessage = false;
+
 	$scope.submit = function(formData) {
 		$scope.result = "";
 		$scope.state = [];
-		if(!formData) return;
+		if(!formData) {
+			$scope.addNote("warning", "Please specify an adapter and message!");
+			return;
+		}
 
 		var fd = new FormData();
 		if(formData.adapter && formData.adapter != "")
@@ -1220,11 +1225,7 @@ angular.module('iaf.beheerconsole')
 			fd.append("message", formData.message);
 		if($scope.file)
 			fd.append("file", $scope.file, $scope.file.name);
-		
-		if(!formData) {
-			$scope.addNote("warning", "Please specify an adapter and message!");
-			return;
-		}
+
 		if(!formData.adapter) {
 			$scope.addNote("warning", "Please specify an adapter!");
 			return;
@@ -1233,14 +1234,18 @@ angular.module('iaf.beheerconsole')
 			$scope.addNote("warning", "Please specify a file or message!");
 			return;
 		}
+
+		$scope.processingMessage = true;
 		Api.Post("test-pipeline", fd, { 'Content-Type': undefined }, function(returnData) {
 			var warnLevel = "success";
 			if(returnData.state == "ERROR") warnLevel = "danger";
 			$scope.addNote(warnLevel, returnData.state);
 			$scope.result = (returnData.result);
+			$scope.processingMessage = false;
 		}, function(returnData) {
 			$scope.addNote("danger", returnData.state);
 			$scope.result = (returnData.result);
+			$scope.processingMessage = false;
 		});
 	};
 }])
@@ -1258,10 +1263,15 @@ angular.module('iaf.beheerconsole')
 		}
 		$scope.file = files[0]; //Can only parse 1 file!
 	};
+	$scope.processingMessage = false;
+
 	$scope.submit = function(formData) {
 		$scope.result = "";
 		$scope.state = [];
-		if(!formData) return;
+		if(!formData) {
+			$scope.addNote("warning", "Please specify a service and message!");
+			return;
+		}
 
 		var fd = new FormData();
 		if(formData.service && formData.service != "")
@@ -1272,11 +1282,7 @@ angular.module('iaf.beheerconsole')
 			fd.append("message", formData.message);
 		if($scope.file)
 			fd.append("file", $scope.file, $scope.file.name);
-		
-		if(!formData) {
-			$scope.addNote("warning", "Please specify a service and message!");
-			return;
-		}
+
 		if(!formData.adapter) {
 			$scope.addNote("warning", "Please specify a service!");
 			return;
@@ -1285,14 +1291,18 @@ angular.module('iaf.beheerconsole')
 			$scope.addNote("warning", "Please specify a file or message!");
 			return;
 		}
+
+		$scope.processingMessage = true;
 		Api.Post("test-servicelistener", fd, function(returnData) {
 			var warnLevel = "success";
 			if(returnData.state == "ERROR") warnLevel = "danger";
 			$scope.addNote(warnLevel, returnData.state);
 			$scope.result = (returnData.result);
+			$scope.processingMessage = false;
 		}, function(returnData) {
 			$scope.addNote("danger", returnData.state);
 			$scope.result = (returnData.result);
+			$scope.processingMessage = false;
 		});
 	};
 }]);

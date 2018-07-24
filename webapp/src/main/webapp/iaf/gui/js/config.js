@@ -1,5 +1,5 @@
-angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider', '$urlRouterProvider', '$ocLazyLoadProvider', 'IdleProvider', 'KeepaliveProvider', 'appConstants',
-	function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLoadProvider, IdleProvider, KeepaliveProvider, appConstants) {
+angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider', '$urlRouterProvider', '$ocLazyLoadProvider', 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider',
+	function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLoadProvider, IdleProvider, KeepaliveProvider, appConstants, laddaProvider) {
 
 	if(appConstants["console.idle.time"] && appConstants["console.idle.time"] > 0) {
 		IdleProvider.idle(appConstants["console.idle.time"]);
@@ -17,6 +17,10 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		],
 		// Set to true if you want to see what and when is dynamically loaded
 		debug: true
+	});
+
+	laddaProvider.setOption({
+		style: 'expand-right'
 	});
 
 	$stateProvider
