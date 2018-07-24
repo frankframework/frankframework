@@ -23,7 +23,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.apache.log4j.Logger;
+
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +37,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.transform.Transformer;
+
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -114,83 +117,86 @@ public final class BrowseJdbcTable extends Base {
 
 		//We have all info we need, lets execute the query!
 		Map<String, Object> fieldDef = new HashMap<String, Object>();
-		DirectQuerySender qs;
 		String result = "";
 		String query = null;
+
+		DirectQuerySender qs;
 		try {
-			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-			try {
-				qs.setName("QuerySender");
-				qs.setJmsRealm(realm);
-
-				//if (form_numberOfRowsOnly || qs.getDatabaseType() == DbmsSupportFactory.DBMS_ORACLE) {
-					qs.setQueryType("select");
-					qs.setBlobSmartGet(true);
-					qs.setIncludeFieldDefinition(true);
-					qs.configure(true);
-					qs.open();
-
-					ResultSet rs = qs.getConnection().getMetaData().getColumns(null, null, tableName, null);
-					if (!rs.isBeforeFirst()) {
-						rs = qs.getConnection().getMetaData().getColumns(null, null, tableName.toUpperCase(), null);
-					}
-					
-					String fielddefinition = "<fielddefinition>";
-					while(rs.next()) {
-						String field = "<field name=\""
-								+ rs.getString(4)
-								+ "\" type=\""
-								+ DB2XMLWriter.getFieldType(rs.getInt(5))
-								+ "\" size=\""
-								+ rs.getInt(7)
-								+ "\"/>";
-						fielddefinition = fielddefinition + field;
-						fieldDef.put(rs.getString(4), DB2XMLWriter.getFieldType(rs.getInt(5)) + "("+rs.getInt(7)+")");
-					}
-					fielddefinition = fielddefinition + "</fielddefinition>";
-
-					String browseJdbcTableExecuteREQ =
-						"<browseJdbcTableExecuteREQ>"
-							+ "<dbmsName>"
-							+ qs.getDbmsSupport().getDbmsName()
-							+ "</dbmsName>"
-							+ "<tableName>"
-							+ tableName
-							+ "</tableName>"
-							+ "<where>"
-							+ XmlUtils.encodeChars(where)
-							+ "</where>"
-							+ "<numberOfRowsOnly>"
-							+ rowNumbersOnly
-							+ "</numberOfRowsOnly>"
-							+ "<order>"
-							+ order
-							+ "</order>"
-							+ "<rownumMin>"
-							+ minRow
-							+ "</rownumMin>"
-							+ "<rownumMax>"
-							+ maxRow
-							+ "</rownumMax>"
-							+ fielddefinition
-							+ "<maxColumnSize>1000</maxColumnSize>"
-							+ "</browseJdbcTableExecuteREQ>";
-					URL url = ClassUtils.getResourceURL(this, DB2XML_XSLT);
-					if (url != null) {
-						Transformer t = XmlUtils.createTransformer(url);
-						query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
-					}
-					result = qs.sendMessage("dummy", query);
-				//} else {
-					//error("errors.generic","This function only supports oracle databases",null);
-				//}
-			} catch (Throwable t) {
-				throw new ApiException("An error occured on executing jdbc query: "+t.toString(), 400);
-			} finally {
-				qs.close();
-			}
+			qs = (DirectQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 		} catch (Exception e) {
-			throw new ApiException("An error occured on creating or closing the connection: "+e.toString(), 400);
+			log.error(e);
+			throw new ApiException("An error occured on creating or closing the connection!", 500);
+		}
+		
+		try {
+			qs.setName("QuerySender");
+			qs.setJmsRealm(realm);
+
+			//if (form_numberOfRowsOnly || qs.getDatabaseType() == DbmsSupportFactory.DBMS_ORACLE) {
+				qs.setQueryType("select");
+				qs.setBlobSmartGet(true);
+				qs.setIncludeFieldDefinition(true);
+				qs.configure(true);
+				qs.open();
+
+				ResultSet rs = qs.getConnection().getMetaData().getColumns(null, null, tableName, null);
+				if (!rs.isBeforeFirst()) {
+					rs = qs.getConnection().getMetaData().getColumns(null, null, tableName.toUpperCase(), null);
+				}
+				
+				String fielddefinition = "<fielddefinition>";
+				while(rs.next()) {
+					String field = "<field name=\""
+							+ rs.getString(4)
+							+ "\" type=\""
+							+ DB2XMLWriter.getFieldType(rs.getInt(5))
+							+ "\" size=\""
+							+ rs.getInt(7)
+							+ "\"/>";
+					fielddefinition = fielddefinition + field;
+					fieldDef.put(rs.getString(4), DB2XMLWriter.getFieldType(rs.getInt(5)) + "("+rs.getInt(7)+")");
+				}
+				fielddefinition = fielddefinition + "</fielddefinition>";
+
+				String browseJdbcTableExecuteREQ =
+					"<browseJdbcTableExecuteREQ>"
+						+ "<dbmsName>"
+						+ qs.getDbmsSupport().getDbmsName()
+						+ "</dbmsName>"
+						+ "<tableName>"
+						+ tableName
+						+ "</tableName>"
+						+ "<where>"
+						+ XmlUtils.encodeChars(where)
+						+ "</where>"
+						+ "<numberOfRowsOnly>"
+						+ rowNumbersOnly
+						+ "</numberOfRowsOnly>"
+						+ "<order>"
+						+ order
+						+ "</order>"
+						+ "<rownumMin>"
+						+ minRow
+						+ "</rownumMin>"
+						+ "<rownumMax>"
+						+ maxRow
+						+ "</rownumMax>"
+						+ fielddefinition
+						+ "<maxColumnSize>1000</maxColumnSize>"
+						+ "</browseJdbcTableExecuteREQ>";
+				URL url = ClassUtils.getResourceURL(this, DB2XML_XSLT);
+				if (url != null) {
+					Transformer t = XmlUtils.createTransformer(url);
+					query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
+				}
+				result = qs.sendMessage("dummy", query);
+			//} else {
+				//error("errors.generic","This function only supports oracle databases",null);
+			//}
+		} catch (Throwable t) {
+			throw new ApiException("An error occured on executing jdbc query: "+t.toString(), 400);
+		} finally {
+			qs.close();
 		}
 
 		List<Map<String, String>> resultMap = null;
