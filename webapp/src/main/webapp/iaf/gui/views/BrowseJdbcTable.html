@@ -78,8 +78,14 @@
                 <div class="ibox-content">
                     <table class="table jdbcBrowse">
                         <thead>
+                            <tr>
+                                <th ng-repeat="columnName in columnNames | orderBy:'id'" title="{{columnName.desc}}">{{columnName.name}}</th>
+                            </tr>
                         </thead>
                         <tbody>
+                            <tr ng-repeat="row in result">
+                                <td ng-repeat="columnName in row">{{columnName}}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

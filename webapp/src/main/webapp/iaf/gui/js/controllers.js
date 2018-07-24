@@ -1126,10 +1126,7 @@ angular.module('iaf.beheerconsole')
 	$scope.jmsRealms = {};
 	$scope.resultTypes = {};
 	$scope.error = "";
-	var orderedGroups = ['rare', 'uncommon', 'common'];
-	$scope.groupComparator = function(item) {
-		return orderedGroups.indexOf(item.group);
-	};
+
 	Api.Get("jdbc", function(data) {
 		$scope.jmsRealms = data.jmsRealms;
 	});
@@ -1141,37 +1138,43 @@ angular.module('iaf.beheerconsole')
 		if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
 		if(!formData.resultType) formData.resultType = $scope.resultTypes[0] || false;
 
+		$scope.columnNames = [{
+			id: 0,
+			name: "RNUM",
+			desc: "Row Number"
+		}];
+		var columnNameArray = ["RNUM"];
+		$scope.result = [];
+
 		Api.Post("jdbc/browse", JSON.stringify(formData), function(returnData) {
 			$scope.error = "";
 			$scope.query = returnData.query;
-			$timeout(function(){
-				var thead = angular.element("table.jdbcBrowse thead");
-				var tbody = angular.element("table.jdbcBrowse tbody");
-				thead = thead.empty().append("<tr></tr>").find("tr");
-				tbody.empty();
-				var index = [];
-				thead.append("<th>RNUM</th>");
-				index.push("RNUM");
-				for(x in returnData.fielddefinition) {
-					index.push(x);
-					if(formData.minRow == undefined && formData.maxRow == undefined)
-						x = x + " " + returnData.fielddefinition[x];
-					thead.append("<th>"+x+"</th>");
-				}
-				for(x in returnData.result) {
-					var tableRow = $("<tr></tr>");
-					var row = returnData.result[x];
-					for(def in row) {
-						var p = "";
-						if(returnData.result.length == 1 && def.indexOf("LENGTH ") == 0) {
-							def.replace("LENGTH ", "");
-							p = " (length)";
-						}
-						tableRow.append("<td>"+row[def] + p+"</td>");
+
+			var i = 0;
+			for(x in returnData.fielddefinition) {
+				$scope.columnNames.push({
+					id: i++,
+					name: x,
+					desc: returnData.fielddefinition[x]
+				});
+				columnNameArray.push(x);
+			}
+
+			for(x in returnData.result) {
+				var row = returnData.result[x];
+				var orderedRow = [];
+				for(columnName in row) {
+					var index = columnNameArray.indexOf(columnName);
+					var value = row[columnName];
+
+					if(index == -1 && columnName.indexOf("LENGTH ") > -1) {
+						value += " (length)";
+						index = columnNameArray.indexOf(columnName.replace("LENGTH ", ""));
 					}
-					tbody.append(tableRow);
-				};
-			}, 100);
+					orderedRow[index] = value;
+				}
+				$scope.result.push(orderedRow);
+			}
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData.error) ? errorData.error : errorMsg;
 			$scope.error = error;
@@ -1179,7 +1182,8 @@ angular.module('iaf.beheerconsole')
 		});
 	};
 	$scope.reset = function() {
-		$scope.result = "";
+		$scope.query = "";
+		$scope.error = "";
 	};
 }])
 
