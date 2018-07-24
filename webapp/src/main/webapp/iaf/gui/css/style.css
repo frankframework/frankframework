@@ -70,6 +70,7 @@ h5 {
 }
 .navbar-top-links li {
   display: inline-block;
+  vertical-align: middle;
 }
 .navbar-top-links li:last-child {
   margin-right: 40px;
@@ -509,6 +510,10 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
 }
 .navbar .dropdown-menu {
   margin-top: 0;
+}
+.navbar .stage {
+  font-size: 25px;
+  font-weight: bold;
 }
 .top-navigation .navbar-brand {
   background: #1ab394;

@@ -54,6 +54,7 @@ angular.module('iaf.beheerconsole')
 			Api.Get("environmentvariables", function(data) {
 				if(data["Application Constants"]) {
 					appConstants = $.extend(appConstants, data["Application Constants"]);
+					$rootScope.otapStage = appConstants["otap.stage"];
 					Hooks.call("appConstants", appConstants);
 					var idleTime = (parseInt(appConstants["console.idle.time"]) > 0) ? parseInt(appConstants["console.idle.time"]) : false;
 					if(idleTime > 0) {
