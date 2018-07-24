@@ -13,6 +13,15 @@
 				</div>
 				<div class="ibox-content" ng-if="!viewFile">
 					<div class="col-md-12">
+						<div class="ibox-stretch">
+							<div class="input-group">
+								<input type="text" class="form-control" placeholder="Search ..." ng-model="fileName" ng-model-options="{debounce: 500}" name="search" />
+								<i ng-show="fileName.length" ng-click="fileName = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true"/>
+								<span class="input-group-addon">
+									<i class="fa fa-search" aria-hidden="true"></i>
+								</span>
+							</div>
+						</div>
 						<table class="table table-striped">
 							<thead>
 								<tr>
@@ -23,7 +32,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-repeat="file in list">
+								<tr ng-repeat="file in list | filter:{name:fileName}">
 									<td>{{file.name}}</td>
 									<td><span ng-if="file.type=='file'">{{file.size}}</span></td>
 									<td to-date time="{{file.lastModified}}"></td>
