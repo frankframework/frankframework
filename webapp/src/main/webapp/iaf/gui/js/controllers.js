@@ -758,11 +758,41 @@ angular.module('iaf.beheerconsole')
 	getConfiguration();
 }])
 
+.filter('variablesFilter', [function() {
+	return function(variables, filterText) {
+		var returnArray = new Array();
+
+		filterText = filterText.toLowerCase();
+		for(i in variables) {
+			var variable = variables[i];
+			if(JSON.stringify(variable).toLowerCase().indexOf(filterText) > -1) {
+				returnArray.push(variable);
+			}
+		}
+
+		return returnArray;
+	};
+}])
+
 .controller('EnvironmentVariablesCtrl', ['$scope', 'Api', 'appConstants', '$timeout', function($scope, Api, appConstants, $timeout) {
 	$scope.state = [];
-	$scope.variables = [];
+	$scope.variables = {};
+	$scope.searchFilter = "";
+
 	Api.Get("environmentvariables", function(data) {
-		$scope.variables = data;
+		for(propertyListType in data) {
+			var propertyList = data[propertyListType];
+			var tmp = new Array();
+
+			for(variableName in propertyList) {
+				tmp.push({
+					key: variableName,
+					val: propertyList[variableName]
+				});
+			}
+
+			$scope.variables[propertyListType] = tmp;
+		}
 	});
 	Api.Get("server/log", function(data) {
 		$scope.form = data;
