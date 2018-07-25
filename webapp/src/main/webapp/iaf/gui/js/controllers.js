@@ -338,6 +338,10 @@ angular.module('iaf.beheerconsole')
 			resolve: {rating: function() { return rating; }},
 		});
 	};
+	
+	$scope.openOldGui = function() {
+		location.href = Misc.getServerPath();
+	};
 }])
 
 .controller('InformationCtrl', ['$scope', '$uibModalInstance', 'Api', function($scope, $uibModalInstance, Api) {
