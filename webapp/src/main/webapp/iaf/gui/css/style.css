@@ -2889,12 +2889,6 @@ a.forum-item-title:hover {
 .tabs-container .tabs-right .tab-pane .panel-body {
   border-top: 1px solid #e7eaec;
 }
-.tabs-container .nav-tabs > li a:hover,
-.tabs-container .nav-tabs > li div:hover {
-  background: transparent;
-  border-color: transparent;
-  cursor: pointer;
-}
 .tabs-container .tabs-below > .nav-tabs,
 .tabs-container .tabs-right > .nav-tabs,
 .tabs-container .tabs-left > .nav-tabs {
