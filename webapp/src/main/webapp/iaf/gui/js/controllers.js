@@ -178,6 +178,9 @@ angular.module('iaf.beheerconsole')
 					if(!adapter.started)
 						adapter.status = "stopped";
 
+					//Add flow diagrams
+					adapter.flow = Misc.getServerPath() + 'rest/showFlowDiagram/' + adapter.name;
+
 					$rootScope.adapters[adapter.name] = adapter;
 
 					$scope.updateAdapterSummary();
@@ -445,7 +448,9 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
-.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', '$state', function($scope, Hooks, Api, SweetAlert, Poller, $filter, $state) {
+.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', '$state', 'Misc',
+		function($scope, Hooks, Api, SweetAlert, Poller, $filter, $state, Misc) {
+
 	this.filter = {
 		"started": true,
 		"stopped": true,
@@ -533,7 +538,12 @@ angular.module('iaf.beheerconsole')
 		});
 	};
 	$scope.showReferences = function() {
-		SweetAlert.Info("Method not yet implemented!");
+		var config = $scope.selectedConfiguration;
+		if(config == "All")
+			config = "*All*";
+
+		var url = Misc.getServerPath() + 'rest/showFlowDiagram?configuration=' + config;
+		window.open(url);
 	};
 
 	$scope.changeConfiguration = function(name) {

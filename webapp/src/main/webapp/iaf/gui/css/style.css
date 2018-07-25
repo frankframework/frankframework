@@ -5101,6 +5101,17 @@ dd.project-people {
 .flow {
   width: 250px;
 }
+.flow a {
+  display: block;
+  position: relative;
+  padding-bottom: 100%;
+  overflow: hidden;
+}
+.flow img {
+  position: absolute;
+  max-height: 100%;
+  max-width: 100%;
+}
 @media (min-width: 1200px) {
   .messages {
     width: calc(100% - 250px);
