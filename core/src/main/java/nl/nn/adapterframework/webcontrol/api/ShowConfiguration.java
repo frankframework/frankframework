@@ -142,7 +142,7 @@ public final class ShowConfiguration extends Base {
 			result = configuration.getOriginalConfiguration();
 		}
 
-		return Response.status(Response.Status.CREATED).entity(result).build();
+		return Response.status(Response.Status.OK).entity(result).build();
 	}
 
 	@GET
@@ -214,7 +214,7 @@ public final class ShowConfiguration extends Base {
 				else
 					config.put("loaded", false);
 			}
-			return Response.status(Response.Status.CREATED).entity(configs).build();
+			return Response.status(Response.Status.OK).entity(configs).build();
 		}
 
 		return Response.status(Response.Status.NO_CONTENT).build();
