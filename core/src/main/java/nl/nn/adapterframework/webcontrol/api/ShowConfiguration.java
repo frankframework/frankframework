@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2018 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -76,20 +76,25 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations")
 	@Produces(MediaType.APPLICATION_XML)
-	public Response getXMLConfiguration(@QueryParam("loadedConfiguration") boolean loadedConfiguration) throws ApiException {
+	public Response getXMLConfiguration(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") boolean flow) throws ApiException {
 		initBase(servletConfig);
 
 		String result = "";
 
-		for (Configuration configuration : ibisManager.getConfigurations()) {
-			if (loadedConfiguration) {
-				result = result + configuration.getLoadedConfiguration();
-			} else {
-				result = result + configuration.getOriginalConfiguration();
+		if(flow) {
+			result = getFlow(ibisManager.getConfigurations());
+		}
+		else {
+			for (Configuration configuration : ibisManager.getConfigurations()) {
+				if (loaded) {
+					result = result + configuration.getLoadedConfiguration();
+				} else {
+					result = result + configuration.getOriginalConfiguration();
+				}
 			}
 		}
 
-		return Response.status(Response.Status.CREATED).entity(result).build();
+		return Response.status(Response.Status.OK).entity(result).build();
 	}
 
 	@PUT
@@ -138,6 +143,22 @@ public final class ShowConfiguration extends Base {
 		}
 
 		return Response.status(Response.Status.CREATED).entity(result).build();
+	}
+
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/flow")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response getAdapterFlow(@PathParam("configuration") String configurationName) throws ApiException {
+		initBase(servletConfig);
+
+		Configuration configuration = ibisManager.getConfiguration(configurationName);
+
+		if(configuration == null){
+			throw new ApiException("Configuration not found!");
+		}
+
+		return Response.status(Response.Status.OK).entity(getFlow(configuration)).build();
 	}
 
 	@PUT

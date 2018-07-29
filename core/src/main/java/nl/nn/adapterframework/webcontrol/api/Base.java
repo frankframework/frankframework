@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2018 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.StringReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,11 +25,17 @@ import java.util.Map;
 import javax.servlet.ServletConfig;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
 
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.log4j.Logger;
@@ -52,6 +59,9 @@ public abstract class Base {
 	protected IbisManager ibisManager = null;
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
 
+	private static final String ADAPTER2DOT_XSLT = "/IAF_WebControl/GenerateFlowDiagram/xsl/config2dot.xsl";
+	private static final String CONFIGURATION2DOT_XSLT = "/IAF_WebControl/GenerateFlowDiagram/xsl/ibis2dot.xsl";
+
 	/**
 	 * Retrieves ibisContext and ibisManager from <code>servletConfig</code>.
 	 *
@@ -68,6 +78,41 @@ public abstract class Base {
 			String msg = "Could not retrieve ibisManager from context";
 			log.warn(msg);
 			throw new ApiException(msg);
+		}
+	}
+
+	protected String getFlow(IAdapter adapter) {
+		try {
+			return generateFlow(adapter.getAdapterConfigurationAsString(), ADAPTER2DOT_XSLT);
+		} catch (ConfigurationException e) {
+			throw new ApiException(e);
+		}
+	}
+
+	protected String getFlow(Configuration config) {
+		return generateFlow(config.getLoadedConfiguration(), CONFIGURATION2DOT_XSLT);
+	}
+
+	protected String getFlow(List<Configuration> configurations) {
+		String dotInput = "<configs>";
+		for (Configuration configuration : configurations) {
+			dotInput = dotInput + XmlUtils.skipXmlDeclaration(configuration.getLoadedConfiguration());
+		}
+		dotInput = dotInput + "</configs>";
+
+		return generateFlow(dotInput, CONFIGURATION2DOT_XSLT);
+	}
+
+	private String generateFlow(String dotInput, String xslt) {
+		try {
+			URL xsltSource = ClassUtils.getResourceURL(this, xslt);
+			Transformer transformer = XmlUtils.createTransformer(xsltSource);
+			String dotOutput = XmlUtils.transformXml(transformer, dotInput);
+
+			return dotOutput;
+		}
+		catch (Exception e) {
+			throw new ApiException(e);
 		}
 	}
 

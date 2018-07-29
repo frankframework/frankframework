@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017 Integration Partners B.V.
+Copyright 2016-2018 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -377,6 +377,22 @@ public final class ShowConfigurationStatus extends Base {
 		ArrayList<Object> receiverInfo = mapAdapterReceivers(adapter, showPendingMsgCount);
 
 		return Response.status(Response.Status.CREATED).entity(receiverInfo).build();
+	}
+
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/adapters/{name}/flow")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response getAdapterFlow(@PathParam("name") String adapterName) throws ApiException {
+		initBase(servletConfig);
+
+		IAdapter adapter = ibisManager.getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		return Response.status(Response.Status.OK).entity(getFlow(adapter)).build();
 	}
 
 	private Map<String, Object> addCertificateInfo(WebServiceSender s) {
