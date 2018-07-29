@@ -145,7 +145,7 @@ public final class ShowConfigurationStatus extends Base {
 			return response.tag(etag).build();
 		}
 		
-		response = Response.status(Response.Status.CREATED).entity(adapterList).tag(etag);
+		response = Response.status(Response.Status.OK).entity(adapterList).tag(etag);
 		return response.build();
 	}
 
@@ -197,7 +197,7 @@ public final class ShowConfigurationStatus extends Base {
 			return response.tag(etag).build();
 		}
 		
-		response = Response.status(Response.Status.CREATED).entity(adapterInfo).tag(etag);
+		response = Response.status(Response.Status.OK).entity(adapterInfo).tag(etag);
 		return response.build();
 	}
 
@@ -336,7 +336,7 @@ public final class ShowConfigurationStatus extends Base {
 		if(adapterInfo == null)
 			throw new ApiException("Adapter not configured!");
 
-		return Response.status(Response.Status.CREATED).entity(adapterInfo).build();
+		return Response.status(Response.Status.OK).entity(adapterInfo).build();
 	}
 
 	@GET
@@ -354,7 +354,7 @@ public final class ShowConfigurationStatus extends Base {
 
 		ArrayList<Object> adapterInfo = mapAdapterMessages(adapter);
 
-		return Response.status(Response.Status.CREATED).entity(adapterInfo).build();
+		return Response.status(Response.Status.OK).entity(adapterInfo).build();
 	}
 
 	@GET
@@ -376,7 +376,7 @@ public final class ShowConfigurationStatus extends Base {
 
 		ArrayList<Object> receiverInfo = mapAdapterReceivers(adapter, showPendingMsgCount);
 
-		return Response.status(Response.Status.CREATED).entity(receiverInfo).build();
+		return Response.status(Response.Status.OK).entity(receiverInfo).build();
 	}
 
 	@GET
