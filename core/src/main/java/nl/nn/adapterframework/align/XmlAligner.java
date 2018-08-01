@@ -361,7 +361,6 @@ public class XmlAligner extends XMLFilterImpl {
 
 	@Override
 	public void setFeature(String feature, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
-		log.warn("setting feature ["+feature+"] to ["+value+"]");
 		if (feature.equals(FEATURE_NAMESPACES)) {
 			if (!value) {
 				throw new SAXNotSupportedException("Cannot set feature ["+feature+"] to ["+value+"]");
@@ -373,7 +372,9 @@ public class XmlAligner extends XMLFilterImpl {
 				throw new SAXNotSupportedException("Cannot set feature ["+feature+"] to ["+value+"]");
 			}
 			return;
-		} 
+		}
+
+		log.debug("setting feature ["+feature+"] to ["+value+"]");
 		super.setFeature(feature, value);
 	}
 
