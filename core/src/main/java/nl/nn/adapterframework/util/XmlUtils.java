@@ -900,14 +900,7 @@ public class XmlUtils {
 			factory.setErrorListener(new TransformerErrorListener());
 			return factory;
 		} else {
-			// Use a Xalan version with different package names to prevent the
-			// WebSphere Xalan version being used and prevent differences
-			// in XML transformations between WebSphere 5 and WebSphere 6.
-			if (IbisContext.getApplicationServerType().startsWith("WAS")) {
-				return new nl.nn.org.apache.xalan.processor.TransformerFactoryImpl();
-			} else {
-				return new org.apache.xalan.processor.TransformerFactoryImpl();
-			}
+			return new org.apache.xalan.processor.TransformerFactoryImpl();
 		}
 	}
 
@@ -1585,12 +1578,7 @@ public class XmlUtils {
 		}
 
 		try {
-			String xalanVersion;
-			if (IbisContext.getApplicationServerType().startsWith("WAS")) {
-				xalanVersion = nl.nn.org.apache.xalan.Version.getVersion();
-			} else {
-				xalanVersion = org.apache.xalan.Version.getVersion();
-			}
+			String xalanVersion = org.apache.xalan.Version.getVersion();
  			sb.append("Xalan-Version=" + xalanVersion + SystemUtils.LINE_SEPARATOR);
 		}  catch (Throwable t) {
 			sb.append("Xalan-Version not found (").append(t.getClass().getName()).append(": ").append(t.getMessage()).append(")").append(SystemUtils.LINE_SEPARATOR);
