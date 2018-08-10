@@ -57,10 +57,10 @@
                                 <input class="form-control m-b" name="maxrow" type="text" ng-model="form.maxRow"/>
                             </div>
                         </div>
-                        <div class="col-lg-3 m-t-md">
+                        <div class="col-sm-3 m-t-md">
                             <button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
                         </div>
-                        <div class="col-lg-9 m-t-md">
+                        <div class="col-sm-9 m-t-md">
                             <button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
                         </div>
                     </form>
@@ -78,8 +78,14 @@
                 <div class="ibox-content">
                     <table class="table jdbcBrowse">
                         <thead>
+                            <tr>
+                                <th ng-repeat="columnName in columnNames | orderBy:'id'" title="{{columnName.desc}}">{{columnName.name}}</th>
+                            </tr>
                         </thead>
                         <tbody>
+                            <tr ng-repeat="row in result">
+                                <td ng-repeat="columnName in row">{{columnName}}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

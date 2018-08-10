@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.ibissource</groupId>
     <artifactId>ibis-adapterframework-parent</artifactId>
-    <version>7.1-B1-SNAPSHOT</version>
+    <version>7.1-B3-SNAPSHOT</version>
   </parent>
 
   <artifactId>ibis-adapterframework-example</artifactId>
@@ -57,28 +57,6 @@
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-ladybug</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-ladybug</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-echo2</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjlib</artifactId>
-      <version>1.6.2</version>
-		<scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjweaver</artifactId>
-      <version>1.6.2</version>
-		<scope>test</scope>
     </dependency>
   </dependencies>
   <build>
@@ -140,6 +118,10 @@
         <dependency>
           <groupId>org.ibissource</groupId>
           <artifactId>ibis-adapterframework-cmis</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.ibissource</groupId>
+          <artifactId>ibis-adapterframework-ladybug</artifactId>
         </dependency>
       </dependencies>
     </profile>

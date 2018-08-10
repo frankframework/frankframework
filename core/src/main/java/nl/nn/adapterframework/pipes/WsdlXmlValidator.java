@@ -41,14 +41,14 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.XSD;
-import nl.nn.javax.wsdl.Definition;
-import nl.nn.javax.wsdl.WSDLException;
-import nl.nn.javax.wsdl.extensions.ExtensibilityElement;
-import nl.nn.javax.wsdl.extensions.schema.Schema;
-import nl.nn.javax.wsdl.factory.WSDLFactory;
-import nl.nn.javax.wsdl.xml.WSDLLocator;
-import nl.nn.javax.wsdl.xml.WSDLReader;
-import nl.nn.javax.xml.namespace.QName;
+import javax.wsdl.Definition;
+import javax.wsdl.WSDLException;
+import javax.wsdl.extensions.ExtensibilityElement;
+import javax.wsdl.extensions.schema.Schema;
+import javax.wsdl.factory.WSDLFactory;
+import javax.wsdl.xml.WSDLLocator;
+import javax.wsdl.xml.WSDLReader;
+import javax.xml.namespace.QName;
 
 /**
  * XmlValidator that will read the XSD's to use from a WSDL. As it extends the

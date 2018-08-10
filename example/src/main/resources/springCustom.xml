@@ -31,6 +31,16 @@
 		<property name="url" value="jdbc:hsqldb:mem:test"/>
 	</bean-->
 
+	<!--bean
+		id="defaultDataSource"
+		class="oracle.jdbc.pool.OracleDataSource"
+		>
+		<property name="dataSourceName" value="${instance.name.lc}"/>
+		<property name="URL" value="jdbc:oracle:thin:@localhost:1521:xe"/>
+		<property name="user" value="username"/>
+		<property name="password" value="password"/>
+	</bean-->
+
 	<bean
 		id="defaultDataSource"
 		class="org.apache.commons.dbcp.BasicDataSource"

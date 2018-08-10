@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.senders;
 
+import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
@@ -38,6 +39,7 @@ import org.apache.log4j.Logger;
 public abstract class SenderBase implements ISender {
 	protected Logger log = LogUtil.getLogger(this);
 	private String name;
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	public void configure() throws ConfigurationException {
 	}
@@ -65,4 +67,11 @@ public abstract class SenderBase implements ISender {
 		return name;
 	}
 
+	/**
+	 * This ClassLoader is set upon creation of the sender, used to retrieve files from Ibis specific ClassLoaders.
+	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
+	 */
+	public ClassLoader getClassLoader() {
+		return classLoader;
+	}
 }

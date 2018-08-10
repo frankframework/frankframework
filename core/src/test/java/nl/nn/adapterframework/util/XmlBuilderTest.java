@@ -59,31 +59,95 @@ public class XmlBuilderTest {
 		summaryXML.addSubElement(messagesXML);
 
 		StringBuilder sb = new StringBuilder("<summary>");
-		sb.append("<adapterState started=\"9\" stopped=\"1&#39;&gt;&amp;quot;\" error=\"3\"/>");
-		// sb.append("<adapterState started=\"9\" stopped=\"1'&gt;&amp;quot;\" error=\"3\"/>");
+		sb.append(
+				"<adapterState started=\"9\" stopped=\"1&#39;&gt;&amp;quot;\" error=\"3\"/>");
 		sb.append("<messages>");
 		sb.append("<message>hello</message>");
 		sb.append("<message><![CDATA[<xml>world</xml>]]></message>");
 		sb.append("<message><xml>world</xml></message>");
-		sb.append("<message>&quot;quot&quot; &#39;apos&#39; &gt;gt&gt;</message>");
-		// sb.append("<message>\"quot\" 'apos' >gt></message>");
+		sb.append(
+				"<message>&quot;quot&quot; &#39;apos&#39; &gt;gt&gt;</message>");
 		sb.append("<message>\"quot\" 'apos' >gt></message>");
 		sb.append("<message xmlns=\"http://nn.nl/XmlBuilder\">");
 		sb.append("<subMessage>hello</subMessage>");
 		sb.append("</message>");
-		sb.append("<xb:message xmlns:xb=\"http://nn.nl/XmlBuilder\">");
-		sb.append("<xb:subMessage>hello</xb:subMessage>");
-		sb.append("</xb:message>");
+		sb.append("<message xmlns:xb=\"http://nn.nl/XmlBuilder\">");
+		sb.append("<subMessage>hello</subMessage>");
+		sb.append("</message>");
 		sb.append("</messages>");
 		sb.append("</summary>");
 
 		compareXML(sb.toString(), summaryXML.toXML());
 	}
 
+	@Test
+	public void test2() throws Exception {
+		XmlBuilder schema = new XmlBuilder("schema");
+		schema.addAttribute("xmlns", "http://www.w3.org/2001/XMLSchema");
+		schema.addAttribute("targetNamespace",
+				"http://schemas.ibissource.org/Adapter.xsd");
+		schema.addAttribute("xmlns:tns",
+				"http://schemas.ibissource.org/Adapter.xsd");
+		schema.addAttribute("elementFormDefault", "qualified");
+		XmlBuilder complexType = new XmlBuilder("complexType");
+		complexType.addAttribute("name", "IOS-AdapteringType");
+		XmlBuilder sequence = new XmlBuilder("sequence");
+		XmlBuilder element = new XmlBuilder("element");
+		element.addAttribute("name", "adapter");
+		element.addAttribute("type", "tns:adapterType");
+		sequence.addSubElement(element);
+		complexType.addSubElement(sequence);
+		schema.addSubElement(complexType);
+
+		StringBuilder sb = new StringBuilder(
+				"<schema xmlns=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.ibissource.org/Adapter.xsd\" xmlns:tns=\"http://schemas.ibissource.org/Adapter.xsd\" elementFormDefault=\"qualified\">");
+		sb.append("<complexType name=\"IOS-AdapteringType\">");
+		sb.append("<sequence>");
+		sb.append("<element name=\"adapter\" type=\"tns:adapterType\"/>");
+		sb.append("</sequence>");
+		sb.append("</complexType>");
+		sb.append("</schema>");
+
+		compareXML(sb.toString(), schema.toXML());
+	}
+
+	@Test
+	// test3 equals test2 except that 'addSubElement' is done directly after
+	// creating instead of at the end.
+	public void test3() throws Exception {
+		XmlBuilder schema = new XmlBuilder("schema");
+		schema.addAttribute("xmlns", "http://www.w3.org/2001/XMLSchema");
+		schema.addAttribute("targetNamespace",
+				"http://schemas.ibissource.org/Adapter.xsd");
+		schema.addAttribute("xmlns:tns",
+				"http://schemas.ibissource.org/Adapter.xsd");
+		schema.addAttribute("elementFormDefault", "qualified");
+		XmlBuilder complexType = new XmlBuilder("complexType");
+		schema.addSubElement(complexType);
+		complexType.addAttribute("name", "IOS-AdapteringType");
+		XmlBuilder sequence = new XmlBuilder("sequence");
+		complexType.addSubElement(sequence);
+		XmlBuilder element = new XmlBuilder("element");
+		sequence.addSubElement(element);
+		element.addAttribute("name", "adapter");
+		element.addAttribute("type", "tns:adapterType");
+
+		StringBuilder sb = new StringBuilder(
+				"<schema xmlns=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.ibissource.org/Adapter.xsd\" xmlns:tns=\"http://schemas.ibissource.org/Adapter.xsd\" elementFormDefault=\"qualified\">");
+		sb.append("<complexType name=\"IOS-AdapteringType\">");
+		sb.append("<sequence>");
+		sb.append("<element name=\"adapter\" type=\"tns:adapterType\"/>");
+		sb.append("</sequence>");
+		sb.append("</complexType>");
+		sb.append("</schema>");
+
+		compareXML(sb.toString(), schema.toXML());
+	}
+
 	private void compareXML(String expected, String actual)
 			throws SAXException, IOException {
-//		System.out.println(expected);
-//		System.out.println(actual);
+		// System.out.println(expected);
+		// System.out.println(actual);
 		Diff diff = XMLUnit.compareXML(expected, actual);
 		assertTrue(diff.toString(), diff.identical());
 	}

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd"
+	>
+
+	<import resource="springIbisTestTool.xml"/>
+
+	<bean name="configName" class="java.lang.String">
+		<constructor-arg value="Ibis Test Tool Api"/>
+	</bean>
+
+	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
+		<property name="extraMetadataFieldExtractors">
+			<list>
+				<bean class="nl.nn.testtool.metadata.SessionKeyMetadataFieldExtractor">
+					<property name="name" value="operation"/>
+					<property name="label" value="Operation"/>
+					<property name="sessionKey" value="operation"/>
+				</bean>
+				<bean class="nl.nn.testtool.metadata.SessionKeyMetadataFieldExtractor">
+					<property name="name" value="domain"/>
+					<property name="label" value="Domain"/>
+					<property name="sessionKey" value="domain"/>
+				</bean>
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="rootElement"/>
+					<property name="label" value="RootElement"/>
+					<property name="xpath" value="local-name(/*[local-name()='Envelope']/*[local-name()='Body']/*)"/>
+				</bean>
+				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
+					<property name="name" value="namespace"/>
+					<property name="label" value="Namespace"/>
+					<property name="xpath" value="namespace-uri(/*[local-name()='Envelope']/*[local-name()='Body']/*)"/>
+				</bean>
+				<bean class="nl.nn.ibistesttool.metadata.StatusExtractor"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="soapView" parent="whiteBoxView">
+		<property name="name" value="SOAP"/>
+		<property name="metadataNames">
+			<list>
+				<value>storageId</value>
+				<value>startTime</value>
+				<value>duration</value>
+				<value>name</value>
+				<value>operation</value>
+				<value>domain</value>
+				<value>rootElement</value>
+				<value>namespace</value>
+				<value>status</value>
+				<value>numberOfCheckpoints</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean name="views" class="nl.nn.testtool.filter.Views">
+		<property name="views">
+			<list>
+				<ref bean="whiteBoxView"/>
+				<ref bean="grayBoxView"/>
+				<ref bean="blackBoxView"/>
+				<ref bean="soapView"/>
+			</list>
+		</property>
+	</bean>
+
+</beans>

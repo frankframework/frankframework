@@ -144,6 +144,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	public final static String TYPE_XMLDATETIME="xmldatetime";
 	public final static String TYPE_NUMBER="number";
 	public final static String TYPE_INTEGER="integer";
+	public final static String TYPE_BOOLEAN="boolean";
 	public final static String TYPE_INPUTSTREAM="inputstream";
 	public final static String TYPE_LIST="list";
 	public final static String TYPE_MAP="map";
@@ -478,6 +479,15 @@ public class Parameter implements INamedObject, IWithParameters {
 				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to integer" );
 				try {
 					Integer i = Integer.parseInt((String)result);
+					result = i;
+				} catch (NumberFormatException e) {
+					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to integer",e);
+				}
+			}
+			if (TYPE_BOOLEAN.equals(getType())) {
+				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to boolean" );
+				try {
+					Boolean i = Boolean.parseBoolean((String)result);
 					result = i;
 				} catch (NumberFormatException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to integer",e);

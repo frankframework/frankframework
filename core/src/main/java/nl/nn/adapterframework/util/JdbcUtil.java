@@ -990,8 +990,10 @@ public class JdbcUtil {
 	}
 
 	public static synchronized void resetJdbcProperties() {
-		jdbcProperties.clear();
-		jdbcProperties = null;
+		if(jdbcProperties != null) {
+			jdbcProperties.clear();
+			jdbcProperties = null;
+		}
 		retrieveJdbcPropertiesFromDatabase();
 	}
 
@@ -1209,6 +1211,12 @@ public class JdbcUtil {
 				statement.setNull(parameterIndex, Types.INTEGER);
 			} else {
 				statement.setInt(parameterIndex, (Integer) value);
+			}
+		} else if (Parameter.TYPE_BOOLEAN.equals(paramType)) {
+			if (value == null) {
+				statement.setNull(parameterIndex, Types.BOOLEAN);
+			} else {
+				statement.setBoolean(parameterIndex, (Boolean) value);
 			}
 		} else if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
 			if (value instanceof FileInputStream) {

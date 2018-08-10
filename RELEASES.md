@@ -9,8 +9,48 @@ Upcoming
 --------
 
 [JavaDocs](http://maven.ibissource.org/iaf/apidocs/index.html)
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC2...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.1-B2...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+- Many IAF GUI 3.0 improvements
+- Fix Ladybug
+
+
+7.1-B2
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.1-B1...v7.1-B2)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1-B2)](https://travis-ci.org/ibissource/iaf)
+
+- Add updateEtag sessionKey to the ApiListener so it can be changed at runtime
+- Modify HttpSender logging to only give warnings for 4xx (client errors) and 5xx (server errors)
+- Fix javax.net.ssl.SSLSocketFactory.getDefault() SSLSocketFactory as default fallback when no keystore or truststore has been configured
+- Fix IllegalDataException in ShowConfigurationStatus for non legal XML character in adapter message
+- Add wss* attributes to SoapWrapperPipe
+- Add configuration ClassLoader to SenderBase
+- Fix NPE in larva testtool when trying to resolve nonessential property: configurations.directory
+- Add overrideEntryPointWSDL property to CmisSender so the initial WSDL can be retrieved from the classpath opposed to a http call
+- Add Boolean datatype to parameters
+- Fix eTag handling bug in ApiListener
+- Remove jmsRealm from IAF_Util, and make IAF_Util depend on the default configuration in which a database must be specified.
+- Add WebAppClassLoader as default configuration classloader
+- Add forgotten struts2rest services to web.xml LoginFilter
+- Upgrade Bitronix to version 3.0.0-MK1
+    The latest version has fixed the possiblity to set a dataSource bean on poolingDataSource and a connectionFactory bean on poolingConnectionFactory instead of using driverProperties.
+    As well as many other bugfixes and improvements, see https://github.com/bitronix/btm for more info.
+- LCM update quartz scheduler to use a slightly newer version
+    Version 1.7.2 requires java 1.5.x, which is probably the reason the older version 1.6.6 was used. Version 1.6.6 is not hosted on maven central, which is the reason for this LCM upgrade.
+    For the Quartz release notes see: https://web.archive.org/web/20100721184042/http://quartz-scheduler.org:80/
+- Remove custom ibis modules
+    These modules were introduced due to java 4 and 5 compilation issues and runtime issues on WAS4 and WAS5.
+- Mavenize Ladybug
+
+
+7.1-B1
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC3...v7.1-B1)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1-B1)](https://travis-ci.org/ibissource/iaf)
 
 - Move 'Dynamic parameters' from showConfiguration to showEnvironmentVariables
 - Show provided JmsDestinations with usage in showSecurityItems
@@ -85,11 +125,6 @@ Upcoming
 - Fix sub-resources eTag handling for ApiListener
 - Add wssPasswordDigest attribute to WebServiceSender
 - Add collectFileContents(Base64Encoded) to UnzipPipe
-- Add updateEtag sessionKey to the ApiListener so it can be changed at runtime
-- Modify HttpSender logging to only give warnings for 4xx (client errors) and 5xx (server errors)
-- Fix javax.net.ssl.SSLSocketFactory.getDefault() SSLSocketFactory as default fallback when no keystore or truststore has been configured
-- Fix IllegalDataException in ShowConfigurationStatus for non legal XML character in adapter message
-
 
 
 ### Non backwards compatible changes

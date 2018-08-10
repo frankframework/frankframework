@@ -1,8 +1,10 @@
 package nl.nn.adapterframework.extensions.cmis.server;
 
+import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.spi.CmisBinding;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.extensions.cmis.CmisListener;
 import nl.nn.adapterframework.extensions.cmis.CmisSender;
 
@@ -52,6 +54,10 @@ public class CmisServletDispatcher {
 	}
 
 	public CmisBinding getCmisBinding() {
-		return getCmisSender().getSession().getBinding();
+		try {
+			return getCmisSender().getSession().getBinding();
+		} catch (SenderException e) {
+			throw new CmisConnectionException("unable to retreive a CMIS binding from the CmisSender", e);
+		}
 	}
 }

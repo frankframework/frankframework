@@ -25,7 +25,7 @@
 		<property name="uniqueName" value="${instance.name.lc}.defaultXAConnectionFactory"/>
 		<property name="maxPoolSize" value="100"/>
 		<property name="allowLocalTransactions" value="true"/>
-		<property name="resource">
+		<property name="XaConnectionFactory">
 			<ref bean="esbFFConnectionFactory"/>
 		</property>
 	</bean>

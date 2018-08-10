@@ -70,6 +70,7 @@ h5 {
 }
 .navbar-top-links li {
   display: inline-block;
+  vertical-align: middle;
 }
 .navbar-top-links li:last-child {
   margin-right: 40px;
@@ -509,6 +510,10 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
 }
 .navbar .dropdown-menu {
   margin-top: 0;
+}
+.navbar .stage {
+  font-size: 25px;
+  font-weight: bold;
 }
 .top-navigation .navbar-brand {
   background: #1ab394;
@@ -2884,12 +2889,6 @@ a.forum-item-title:hover {
 .tabs-container .tabs-right .tab-pane .panel-body {
   border-top: 1px solid #e7eaec;
 }
-.tabs-container .nav-tabs > li a:hover,
-.tabs-container .nav-tabs > li div:hover {
-  background: transparent;
-  border-color: transparent;
-  cursor: pointer;
-}
 .tabs-container .tabs-below > .nav-tabs,
 .tabs-container .tabs-right > .nav-tabs,
 .tabs-container .tabs-left > .nav-tabs {
@@ -3826,11 +3825,14 @@ code {
 
 .adapters .ibox-title {
   cursor: pointer;
-  min-height: 40px;
-  padding: 10px 15px 7px;
+  min-height: 0px;
+  padding: 10px 15px 5px;
 }
 .adapters .ibox {
-  margin-bottom: 15px;
+  margin-bottom: 10px;
+}
+.row .ibox {
+	box-shadow: 2px 2px 1px 0px rgba(103,106,108,0.4);
 }
 .adapters:last-child .ibox {
   margin-bottom: 25px;
@@ -5093,6 +5095,17 @@ dd.project-people {
 .flow {
   width: 250px;
 }
+.flow a {
+  display: block;
+  position: relative;
+  padding-bottom: 100%;
+  overflow: hidden;
+}
+.flow img {
+  position: absolute;
+  max-height: 100%;
+  max-width: 100%;
+}
 @media (min-width: 1200px) {
   .messages {
     width: calc(100% - 250px);
@@ -5764,6 +5777,9 @@ body.body-small .vote-icon {
 }
 .metismenu .fa-github {
   color: #fff;
+}
+.metismenu .fa-backward {
+  color: #fe41ff;
 }
 /*
  *  Usage:

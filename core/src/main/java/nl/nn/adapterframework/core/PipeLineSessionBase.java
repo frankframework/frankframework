@@ -82,7 +82,7 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	@Override
 	public void setSecurityHandler(ISecurityHandler handler) {
 		securityHandler = handler;
-		put(securityHandlerKey,handler);
+		put(securityHandlerKey, handler);
 	}
 
 	@Override
@@ -99,7 +99,7 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	@Override
 	public boolean isUserInRole(String role) throws NotImplementedException {
 		ISecurityHandler handler = getSecurityHandler();
-		return handler.isUserInRole(role,this);
+		return handler.isUserInRole(role, this);
 	}
 
 	@Override
@@ -108,4 +108,90 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		return handler.getPrincipal(this);
 	}
 
+	private String getString(String key) {
+		try {
+			return (String) get(key);
+		}
+		catch(Exception e) {
+			return get(key).toString();
+		}
+	}
+
+
+	/**
+	 * Retrieves a <code>String</code> value from the PipeLineSession
+	 * @param key the referenced key
+	 * @param defaultValue the value to return when the key cannot be found
+	 * @return String
+	 */
+	public String get(String key, String defaultValue) {
+		String ob = this.getString(key);
+	
+		if (ob == null) return defaultValue;
+		return ob;
+	}
+
+	/**
+	 * Retrieves a <code>boolean</code> value from the PipeLineSession
+	 * @param key the referenced key
+	 * @param defaultValue the value to return when the key cannot be found
+	 * @return boolean
+	 */
+	public boolean get(String key, boolean defaultValue) {
+		Object ob = this.get(key);
+		if (ob == null) return defaultValue;
+
+		if(ob instanceof Boolean)
+			return (Boolean) ob;
+		else
+			return this.getString(key).equalsIgnoreCase("true");
+	}
+
+	/**
+	 * Retrieves an <code>int</code> value from the PipeLineSession
+	 * @param key the referenced key
+	 * @param defaultValue the value to return when the key cannot be found
+	 * @return int
+	 */
+	public int get(String key, int defaultValue) {
+		Object ob = this.get(key);
+		if (ob == null) return defaultValue;
+
+		if(ob instanceof Integer)
+			return (Integer) ob;
+		else
+			return Integer.parseInt(this.getString(key));
+	}
+
+	/**
+	 * Retrieves a <code>long</code> value from the PipeLineSession
+	 * @param key the referenced key
+	 * @param defaultValue the value to return when the key cannot be found
+	 * @return long
+	 */
+	public long get(String key, long defaultValue) {
+		Object ob = this.get(key);
+		if (ob == null) return defaultValue;
+
+		if(ob instanceof Long)
+			return (Long) ob;
+		else
+			return Long.parseLong(this.getString(key));
+	}
+
+	/**
+	 * Retrieves a <code>double</code> value from the PipeLineSession
+	 * @param key the referenced key
+	 * @param defaultValue the value to return when the key cannot be found
+	 * @return double
+	 */
+	 public double get(String key, double defaultValue) {
+		Object ob = this.get(key);
+		if (ob == null) return defaultValue;
+
+		if(ob instanceof Double)
+			return (Double) ob;
+		else
+			return Double.parseDouble(this.getString(key));
+	 }
 }

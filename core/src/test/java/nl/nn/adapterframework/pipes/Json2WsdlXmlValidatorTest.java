@@ -15,7 +15,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 import nl.nn.adapterframework.validation.XmlValidatorException;
-import nl.nn.javax.wsdl.WSDLException;
+import javax.wsdl.WSDLException;
 
 @RunWith(value=JUnit4.class)
 public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {

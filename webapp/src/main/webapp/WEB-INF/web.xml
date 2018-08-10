@@ -14,29 +14,6 @@
 		<param-name>restListenerPathPrefix</param-name>
 		<param-value>rest</param-value>
 	</context-param>
-	<context-param>
-		<param-name>resteasy.resources</param-name>
-		<param-value>
-			nl.nn.adapterframework.webcontrol.api.Init,
-			nl.nn.adapterframework.webcontrol.api.ExecuteJdbcQuery,
-			nl.nn.adapterframework.webcontrol.api.ServerStatistics,
-			nl.nn.adapterframework.webcontrol.api.ShowConfiguration,
-			nl.nn.adapterframework.webcontrol.api.ShowConfigurationStatus,
-			nl.nn.adapterframework.webcontrol.api.ShowEnvironmentVariables,
-			nl.nn.adapterframework.webcontrol.api.TestPipeline,
-			nl.nn.adapterframework.webcontrol.api.TestServiceListener,
-			nl.nn.adapterframework.webcontrol.api.ShowSecurityItems,
-			nl.nn.adapterframework.webcontrol.api.BrowseJdbcTable,
-			nl.nn.adapterframework.webcontrol.api.ShowIbisstoreSummary,
-			nl.nn.adapterframework.webcontrol.api.ShowMonitors,
-			nl.nn.adapterframework.webcontrol.api.ShowAdapterStatistics,
-			nl.nn.adapterframework.webcontrol.api.ShowScheduler,
-			nl.nn.adapterframework.webcontrol.api.ShowLogging,
-			nl.nn.adapterframework.webcontrol.api.Webservices,
-			nl.nn.adapterframework.webcontrol.api.BrowseQueue,
-			nl.nn.adapterframework.webcontrol.api.SendJmsMessage,
-		</param-value>
-	</context-param>
 
 	<filter>
 		<filter-name>LoginFilter</filter-name>
@@ -47,7 +24,7 @@
 		</init-param>
 		<init-param>
 			<param-name>allowedObserverPaths</param-name>
-			<param-value>/index.jsp /showConfigurationStatus.do /showConfiguration.do /configHandler.do /showAdapterStatistics.do /showLogging.do /browseQueue.do /browseQueueExecute.do /browseJdbcTable.do /showSchedulerStatus.do /FileViewerServlet /DumpIbisConsole /showEnvironmentVariables.do /browser.do /showSecurityItems.do /showMonitors.do /showEvents.do /editMonitor.do /editTrigger.do /showIbisstoreSummary.do /Download /testtool /jsp/view.jsp /rest/webservices</param-value>
+			<param-value>/index.jsp /rest/showConfigurationStatus /rest/showConfiguration /configHandler.do /showAdapterStatistics.do /showLogging.do /browseQueue.do /browseQueueExecute.do /browseJdbcTable.do /showSchedulerStatus.do /FileViewerServlet /DumpIbisConsole /rest/showEnvironmentVariables /browser.do /showSecurityItems.do /showMonitors.do /showEvents.do /editMonitor.do /editTrigger.do /showIbisstoreSummary.do /Download /testtool /jsp/view.jsp /rest/webservices</param-value>
 		</init-param>
 		<init-param>
 			<param-name>allowedDataAdminPaths</param-name>
@@ -55,7 +32,7 @@
 		</init-param>
 		<init-param>
 			<param-name>allowedTesterPaths</param-name>
-			<param-value>/sendJmsMessage.do /sendJmsMessageExecute.do /testPipeLine.do /testPipeLineExecute.do /testIfsaService.do /testIfsaServiceExecute.do /testService.do /testServiceExecute.do /executeJdbcQuery.do /executeJdbcQueryExecute.do /testtool</param-value>
+			<param-value>/sendJmsMessage.do /sendJmsMessageExecute.do /rest/testPipeLine /rest/testIfsaService /testService.do /testServiceExecute.do /executeJdbcQuery.do /executeJdbcQueryExecute.do /testtool</param-value>
 		</init-param>
 	</filter>
 
@@ -65,23 +42,18 @@
 	</filter>
 
 	<filter>
-		<filter-name>CorsFilter</filter-name>
-		<filter-class>nl.nn.adapterframework.webcontrol.api.CorsFilter</filter-class>
-	</filter>
-
-	<filter>
 		<filter-name>CacheControlFilter</filter-name>
 		<filter-class>nl.nn.adapterframework.http.CacheControlFilter</filter-class>
 	</filter>
 
 	<filter-mapping>
-		<filter-name>CorsFilter</filter-name>
-		<url-pattern>/iaf/api/*</url-pattern>
+		<filter-name>CacheControlFilter</filter-name>
+		<url-pattern>/rest/*</url-pattern>
 	</filter-mapping>
 
 	<filter-mapping>
 		<filter-name>CacheControlFilter</filter-name>
-		<url-pattern>/rest/*</url-pattern>
+		<url-pattern>/api/*</url-pattern>
 	</filter-mapping>
 
 	<filter-mapping>
@@ -339,6 +311,30 @@
 			<param-value>
 				nl.nn.adapterframework.webcontrol.api.ApiExceptionHandler,
 				nl.nn.adapterframework.webcontrol.api.AuthorizationFilter
+			</param-value>
+		</init-param>
+		<init-param>
+			<param-name>resteasy.resources</param-name>
+			<param-value>
+				nl.nn.adapterframework.webcontrol.api.Init,
+				nl.nn.adapterframework.webcontrol.api.ExecuteJdbcQuery,
+				nl.nn.adapterframework.webcontrol.api.ServerStatistics,
+				nl.nn.adapterframework.webcontrol.api.ShowConfiguration,
+				nl.nn.adapterframework.webcontrol.api.ShowConfigurationStatus,
+				nl.nn.adapterframework.webcontrol.api.ShowEnvironmentVariables,
+				nl.nn.adapterframework.webcontrol.api.TestPipeline,
+				nl.nn.adapterframework.webcontrol.api.TestServiceListener,
+				nl.nn.adapterframework.webcontrol.api.ShowSecurityItems,
+				nl.nn.adapterframework.webcontrol.api.BrowseJdbcTable,
+				nl.nn.adapterframework.webcontrol.api.ShowIbisstoreSummary,
+				nl.nn.adapterframework.webcontrol.api.ShowMonitors,
+				nl.nn.adapterframework.webcontrol.api.ShowAdapterStatistics,
+				nl.nn.adapterframework.webcontrol.api.ShowScheduler,
+				nl.nn.adapterframework.webcontrol.api.ShowLogging,
+				nl.nn.adapterframework.webcontrol.api.Webservices,
+				nl.nn.adapterframework.webcontrol.api.BrowseQueue,
+				nl.nn.adapterframework.webcontrol.api.SendJmsMessage,
+				nl.nn.adapterframework.webcontrol.api.TransactionalStorage,
 			</param-value>
 		</init-param>
 	</servlet>

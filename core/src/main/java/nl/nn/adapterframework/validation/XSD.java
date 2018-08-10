@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.javax.wsdl.WSDLException;
+import javax.wsdl.WSDLException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -58,8 +58,8 @@ public class XSD implements Schema, Comparable<XSD> {
 	private static final Logger LOG = LogUtil.getLogger(XSD.class);
 
 	private ClassLoader classLoader;
-	private nl.nn.javax.wsdl.Definition wsdlDefinition;
-	private nl.nn.javax.wsdl.extensions.schema.Schema wsdlSchema;
+	private javax.wsdl.Definition wsdlDefinition;
+	private javax.wsdl.extensions.schema.Schema wsdlSchema;
 	private String resource;
 	private String resourceInternalReference;
 	private URL url;
@@ -86,8 +86,8 @@ public class XSD implements Schema, Comparable<XSD> {
 	}
 
 	public void setWsdlSchema(
-			nl.nn.javax.wsdl.Definition wsdlDefinition,
-			nl.nn.javax.wsdl.extensions.schema.Schema wsdlSchema) {
+			javax.wsdl.Definition wsdlDefinition,
+			javax.wsdl.extensions.schema.Schema wsdlSchema) {
 		this.wsdlDefinition = wsdlDefinition;
 		this.wsdlSchema = wsdlSchema;
 	}

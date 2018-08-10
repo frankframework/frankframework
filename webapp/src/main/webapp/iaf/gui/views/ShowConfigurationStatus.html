@@ -2,7 +2,7 @@
 <div ui-view></div>
 
 <div class="wrapper wrapper-content animated fadeInRight">
-    <uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.message}}</uib-alert>
+    <uib-alert ng-repeat="alert in alerts | orderBy:'type'" type="{{alert.type}}" close="closeAlert($index)">{{alert.message}}</uib-alert>
     <div class="row">
         <div class="col-lg-12 tabs-container ">
             <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
@@ -13,7 +13,7 @@
             </ul> 
         </div>
         <div class="col-lg-12">
-            <div class="float-e-margins">
+            <div class="ibox float-e-margins m-n">
                 <div class="ibox-title summary">
                     <h4>Configuration summary</h4>
                 </div>
@@ -110,8 +110,8 @@
                         </div>
                         <div class="ibox-stretch">
                             <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Search ..." ng-model="searchText" ng-model-options="{debounce: 500}" name="search" />
-                                <i ng-show="searchText.length" ng-click="searchText = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true"/>
+                                <input type="text" class="form-control" placeholder="Search ..." ng-model="searchText" ng-model-options="{debounce: 500}" name="search" ng-change="updateQueryParams();"/>
+                                <i ng-show="searchText.length" ng-click="searchText = ''; updateQueryParams();" class="fa fa-times input-group-closeSearch" aria-hidden="true"/>
                                 <span class="input-group-addon">
                                     <i class="fa fa-search" aria-hidden="true"></i>
                                 </span>
@@ -127,10 +127,30 @@
         <div ng-repeat="adapter in adapters | configurationFilter:this | searchFilter:this" class="col-lg-12 adapters">
             <div ng-init="showContent = (adapter.status == 'stopped')" ibox-expand class="ibox float-e-margins" id="{{adapter.name}}">
                 <div class="ibox-title {{adapter.started ? ((adapter.status=='warning') ? 'warning' : 'primary') : 'danger'}}" title="Double-click to open">
-                    <h5>{{adapter.name}} <small class="m-l-sm">&nbsp;{{adapter.description}}</small></h5>
-                    <div>
-                        <div class="ibox-tools">
-                            <a ng-click="showContent = !showContent"> <i class="fa fa-chevron-{{(showContent) ? 'down' : 'left' }}"></i></a>
+                    <div class="ibox-tools pull-right">
+                        <a ng-click="showContent = !showContent"> <i class="fa fa-chevron-{{(showContent) ? 'down' : 'left' }}"></i></a>
+                    </div>
+                    <div class="row full-width">
+                        <div class="col-lg-6 col-md-12 clear">
+                            <h5>{{adapter.name}} <small class="m-l-sm">&nbsp;{{adapter.description}}</small></h5>
+                        </div>
+                        <div class="col-lg-6 col-md-12">
+                            <div class="row">
+                                <div class="col-sm-5" ng-if="adapter.upSince > 0" title="Uptime">
+                                    <span to-date time="{{adapter.upSince}}"></span> (<span time-since time="{{adapter.upSince}}"></span>)
+                                </div>
+                                <div class="col-sm-5" ng-if="adapter.upSince == 0">
+                                </div>
+                                <div class="col-sm-5" ng-if="adapter.lastMessage > 0" title="Last Message">
+                                    <span to-date time="{{adapter.lastMessage}}"></span> (<span time-since time="{{adapter.lastMessage}}"></span>)
+                                </div>
+                                <div class="col-sm-5" ng-if="!adapter.lastMessage > 0">
+                                </div>
+                                <div class="col-sm-2" title="Messages Processed">{{adapter.messagesProcessed}}
+                                    <span ng-if="adapter.messagesInProcess > 0">({{adapter.messagesInProcess}} <i class="fa fa-cog fa-spin" aria-hidden="true"></i>)</span>
+                                    <span ng-if="adapter.messagesInError > 0">| {{adapter.messagesInError}} <i class="fa fa-exclamation-triangle" aria-hidden="true"></i></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -213,8 +233,6 @@
                                             <th>Retried</th>
                                             <th>Received</th>
                                             <th>Rejected</th>
-                                            <th><i class="fa fa-envelope-o"></i></th>
-                                            <th><i class="fa fa-times-circle"></i></th>
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -225,13 +243,22 @@
                                             <td>{{receiver.messages.retried}}</td>
                                             <td>{{receiver.messages.received}}</td>
                                             <td>{{receiver.messages.rejected}}</td>
-                                            <td><span ng-show="{{receiver.hasMessageLog}}">{{receiver.messageLogCount}}</span></td>
-                                            <td><span ng-show="{{receiver.hasErrorStorage}}">{{receiver.errorStorageCount}}</span></td>
                                             <td>
                                                 <span class="pull-right">
                                                     <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
                                                     <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
                                                     <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state !='started' && receiver.state !='stopped'" type="button"><i class="fa fa-cog fa-spin"></i></button>
+
+                                                    <span class="text-danger">
+                                                        <button ng-show="{{receiver.hasErrorStorage}}" ui-sref="pages.errorstorage({adapter: adapter.name, receiver: receiver.name, count: receiver.errorStorageCount})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                            <i class="fa fa-times-circle"></i> ({{receiver.errorStorageCount}})
+                                                        </button>
+                                                    </span>
+                                                    <span class="text-success">
+                                                        <button ng-show="{{receiver.hasMessageLog}}" ui-sref="pages.messagelog({adapter: adapter.name, receiver: receiver.name, count: receiver.messageLogCount})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                            <i class="fa fa-envelope-o"></i> ({{receiver.messageLogCount}})
+                                                        </button>
+                                                    </span>
                                                 </span>
                                             </td>
                                         </tr>
@@ -292,7 +319,7 @@
                         </div>
                         <div class="col-lg-3 col-md-0 flow">
                             <h4>Flow</h4>
-                            <canvas class="pull-right" style="width: 220px; height: 280px;"></canvas>
+                            <a ng-href="{{adapter.flow}}" target="_blank"><img ng-src="{{adapter.flow}}" alt="Flow diagram"></a>
                         </div>
                     </div>
                 </div>

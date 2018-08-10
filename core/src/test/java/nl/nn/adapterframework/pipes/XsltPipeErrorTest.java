@@ -179,7 +179,7 @@ public class XsltPipeErrorTest {
 		System.setErr(new PrintStream(errorOutputStream));
 		XsltPipe xsltPipe = new XsltPipe();
 		xsltPipe.registerForward(createPipeSuccessForward());
-		xsltPipe.setStyleSheetName("/Xslt/importNotFound/root.xsl");
+		xsltPipe.setStyleSheetName("/Xslt/importNotFound/root.no-validate-xsl");
 		xsltPipe.setXslt2(false);
 		xsltPipe.configure();
 		assertEquals(false, errorOutputStream.isEmpty());
@@ -196,7 +196,7 @@ public class XsltPipeErrorTest {
 		System.setErr(new PrintStream(errorOutputStream));
 		XsltPipe xsltPipe = new XsltPipe();
 		xsltPipe.registerForward(createPipeSuccessForward());
-		xsltPipe.setStyleSheetName("/Xslt/importNotFound/root2.xsl");
+		xsltPipe.setStyleSheetName("/Xslt/importNotFound/root2.no-validate-xsl");
 		xsltPipe.setXslt2(true);
 		String errorMessage = null;
 		try {

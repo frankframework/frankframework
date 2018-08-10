@@ -8,9 +8,6 @@
 	<!ENTITY RecoverAdapters SYSTEM "./ConfigurationRecoverAdapters.xml">
 ]>
 <configuration name="IAF_Util">
-	<jmsRealms>
-		<jmsRealm realmName="jdbc" datasourceName="jdbc/${instance.name.lc}"/>
-	</jmsRealms>
 	<!-- include configuration for managing the database -->
 	&ManageDatabase;
 	<!-- include configuration for reloading configurations -->

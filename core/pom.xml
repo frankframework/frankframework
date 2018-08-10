@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.ibissource</groupId>
     <artifactId>ibis-adapterframework-parent</artifactId>
-    <version>7.1-B1-SNAPSHOT</version>
+    <version>7.1-B3-SNAPSHOT</version>
   </parent>
 
   <artifactId>ibis-adapterframework-core</artifactId>
@@ -250,14 +250,14 @@
       <version>2.3.1</version>
     </dependency>
     <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-wsdl4j</artifactId>
+      <groupId>wsdl4j</groupId>
+      <artifactId>wsdl4j</artifactId>
       <version>1.6.2</version>
     </dependency>
     <dependency>
       <groupId>org.quartz-scheduler</groupId>
       <artifactId>quartz</artifactId>
-      <version>1.6.6</version>
+      <version>1.7.2</version>
     </dependency>
     <dependency>
       <groupId>sshtools</groupId>
@@ -294,30 +294,18 @@
     <dependency>
       <groupId>xalan</groupId>
       <artifactId>xalan</artifactId>
-      <version>2.7.1</version>
-      <scope>provided</scope>
+      <version>2.7.2</version>
     </dependency>
     <dependency>
       <groupId>xalan</groupId>
       <artifactId>serializer</artifactId>
-      <version>2.7.1</version>
-      <scope>provided</scope>
+      <version>2.7.2</version>
       <exclusions>
         <exclusion><!-- Exclude 1.3.04 as 1.4.01 is already included by xerces. -->
-			<groupId>xml-apis</groupId>
-			<artifactId>xml-apis</artifactId>
-		</exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-xalan</artifactId>
-      <version>2.7.1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-xalan-serializer</artifactId>
-      <version>2.7.1.1</version>
     </dependency>
     <dependency>
       <groupId>com.sun.org.apache</groupId>
@@ -326,15 +314,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>nl.nn.adapterframework</groupId>
-      <artifactId>service-dispatcher</artifactId>
-      <version>1.4</version>
-    </dependency>
-    <dependency>
       <groupId>org.ibissource</groupId>
-      <artifactId>ibis-webspheremq</artifactId>
-      <version>1.0</version>
-      <scope>provided</scope>
+      <artifactId>service-dispatcher</artifactId>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>xmlunit</groupId>
@@ -381,9 +363,9 @@
 		<version>2.7</version>
 	</dependency>
     <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-btm</artifactId>
-      <version>2.1.3</version>
+      <groupId>com.github.marcus-nl.btm</groupId>
+      <artifactId>btm</artifactId>
+      <version>3.0.0-mk1</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -474,14 +456,6 @@
 		<artifactId>unboundid-ldapsdk</artifactId>
 		<version>2.3.5</version>
 		<scope>test</scope>
-	</dependency>
-	<!--  2018-06-15 GvB: local copy of com.sun.net.ssl.jar, to be able to compile with IBM JDK -->
-	<dependency>
-	    <groupId>com.sun.net</groupId>
-	    <artifactId>com.sun.net.ssl</artifactId>
-	    <version>0.1</version>
-	    <scope>system</scope>
-	    <systemPath>${basedir}/com.sun.net.ssl.jar</systemPath>
 	</dependency>
   </dependencies>
 </project>

@@ -52,4 +52,18 @@ public class ApiCacheManager {
 	public static String buildEtag(String uriPattern, int hash) {
 		return Integer.toOctalString(instanceName.hashCode()) + "_" +Integer.toHexString(uriPattern.hashCode()) + "_" + hash;
 	}
+
+	public static String getParentCacheKey(ApiListener listener, String uri) {
+		String method = listener.getMethod();
+		// Not only remove the eTag for the selected resources but also the collection
+		if((method.equals("PUT") || method.equals("DELETE")) && listener.getCleanPattern().endsWith("/*")) {
+			//Check the amount of asterisks, if there is only 1, this will return false
+			if(listener.getCleanPattern().indexOf("*") < listener.getCleanPattern().lastIndexOf("*")) {
+				//Get collection uri
+				String parentUri = uri.substring(0, uri.lastIndexOf("/"));
+				return buildCacheKey(parentUri);
+			}
+		}
+		return null;
+	}
 }

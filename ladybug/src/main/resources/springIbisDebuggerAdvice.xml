@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation=
+		"
+		http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/aop classpath:xml/xsd/spring-aop-3.2.xsd
+		"
+	>
+
+	<bean
+		name="ibisDebuggerAdvice"
+		class="nl.nn.ibistesttool.IbisDebuggerAdvice"
+		autowire="byName"
+	/>
+
+	<aop:config proxy-target-class="true">
+		<aop:aspect ref="ibisDebuggerAdvice">
+			<!-- Param firstPipe was added with IAF v4_12_a11 -->
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.processors.CorePipeLineProcessor.processPipeLine(
+							..
+						)
+					)
+					and
+					args(pipeLine, correlationId, message, pipeLineSession, ..)
+					"
+				method="debugPipeLineInputOutputAbort"
+				arg-names="pipeLine, correlationId, message, pipeLineSession"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.processors.InputOutputPipeProcessor.processPipe(
+							nl.nn.adapterframework.core.PipeLine,
+							nl.nn.adapterframework.core.IPipe, String, Object,
+							nl.nn.adapterframework.core.IPipeLineSession
+						)
+					)
+					and
+					args(pipeLine, pipe, messageId, message, pipeLineSession)
+					"
+				method="debugPipeInputOutputAbort"
+				arg-names="pipeLine, pipe, messageId, message, pipeLineSession"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor.processPipe(
+							nl.nn.adapterframework.core.PipeLine,
+							nl.nn.adapterframework.core.IPipe, String, Object,
+							nl.nn.adapterframework.core.IPipeLineSession
+						)
+					)
+					and
+					args(pipeLine, pipe, messageId, message, pipeLineSession)
+					"
+				method="debugPipeGetInputFrom"
+				arg-names="pipeLine, pipe, messageId, message, pipeLineSession"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.core.ISender.sendMessage(
+							String, String
+						)
+					)
+					and
+					args(correlationId, message)
+					"
+				method="debugSenderInputOutputAbort"
+				arg-names="correlationId, message"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.core.ISenderWithParameters.sendMessage(
+							String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext
+						)
+					)
+					and
+					args(correlationId, message, parameterResolutionContext)
+					"
+				method="debugSenderWithParametersInputOutputAbort"
+				arg-names="correlationId, message, parameterResolutionContext"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.processors.CacheSenderWrapperProcessor.sendMessage(
+							nl.nn.adapterframework.senders.SenderWrapperBase, String, String, nl.nn.adapterframework.parameters.ParameterResolutionContext
+						)
+					)
+					and
+					args(senderWrapperBase, correlationId, message, parameterResolutionContext)
+					"
+				method="debugSenderGetInputFrom"
+				arg-names="senderWrapperBase, correlationId, message, parameterResolutionContext"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.processors.CoreListenerProcessor.getMessage(
+							nl.nn.adapterframework.core.ICorrelatedPullingListener,
+							String, nl.nn.adapterframework.core.IPipeLineSession
+						)
+					)
+					and
+					args(listener, correlationId, pipeLineSession)
+					"
+				method="debugReplyListenerInputOutputAbort"
+				arg-names="listener, correlationId, pipeLineSession"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						org.springframework.core.task.TaskExecutor.execute(
+							Runnable
+						)
+					)
+					and
+					args(runnable)
+					"
+				method="debugThreadCreateStartEndAbort"
+				arg-names="runnable"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.parameters.Parameter.getValue(
+							nl.nn.adapterframework.parameters.ParameterValueList,
+							nl.nn.adapterframework.parameters.ParameterResolutionContext
+						)
+					)
+					and
+					args(alreadyResolvedParameters, parameterResolutionContext)
+					"
+				method="debugParameterResolvedTo"
+				arg-names="alreadyResolvedParameters, parameterResolutionContext"
+			/>
+		</aop:aspect>
+	</aop:config>
+
+</beans>

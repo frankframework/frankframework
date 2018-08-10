@@ -43,15 +43,15 @@ public class ApiMemcached implements IApiCache {
 
 	final ConnectionObserver obs = new ConnectionObserver() {
 		public void connectionEstablished(SocketAddress sa, int reconnectCount) {
-			String msg = "successfully established a memcache connection ["+sa+"]";
+			String msg = "successfully established a memcache connection to ["+sa+"]";
 			if(reconnectCount > 1)
-				msg += " reconnectCount ["+reconnectCount+"]";
-			ConfigurationWarnings.getInstance().add(log, msg);
+				msg += " after ["+reconnectCount+"] retries";
+			log.info(msg);
 		}
 
 		public void connectionLost(SocketAddress sa) {
 			String msg = "lost memcached connection [" + sa + "] reconnecting...";
-			ConfigurationWarnings.getInstance().add(log, msg);
+			log.error(msg);
 		}
 	};
 

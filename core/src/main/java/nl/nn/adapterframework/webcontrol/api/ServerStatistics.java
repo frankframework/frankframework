@@ -17,6 +17,7 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -40,19 +41,20 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.lf5.LogLevel;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
-import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
 
@@ -66,6 +68,7 @@ import nl.nn.adapterframework.util.ProcessMetrics;
 @Path("/")
 public class ServerStatistics extends Base {
 	@Context ServletConfig servletConfig;
+	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 
 	@GET
 	@PermitAll
@@ -78,18 +81,37 @@ public class ServerStatistics extends Base {
 		initBase(servletConfig);
 
 		for (Configuration configuration : ibisManager.getConfigurations()) {
-			Map<String, Object> cfg = new HashMap<String, Object>();
+			Map<String, String> cfg = new HashMap<String, String>();
 			cfg.put("name", configuration.getName());
 			cfg.put("version", configuration.getVersion());
 			cfg.put("type", configuration.getClassLoaderType());
+
+			if(configuration.getConfigurationException() != null)
+				cfg.put("exception", configuration.getConfigurationException().getMessage());
+
 			ClassLoader classLoader = configuration.getClassLoader().getParent();
 			if(classLoader instanceof DatabaseClassLoader) {
 				cfg.put("filename", ((DatabaseClassLoader) classLoader).getFileName());
 				cfg.put("created", ((DatabaseClassLoader) classLoader).getCreationDate());
 				cfg.put("user", ((DatabaseClassLoader) classLoader).getUser());
 			}
-			configurations.add(cfg);
+
+			String parentConfig = AppConstants.getInstance().getString("configurations." + configuration.getName() + ".parentConfig", null);
+			if(parentConfig != null)
+				cfg.put("parent", parentConfig);
+
+				configurations.add(cfg);
 		}
+
+		Collections.sort(configurations, new Comparator<Map<String, String>>() {
+			@Override
+			public int compare(Map<String, String> lhs, Map<String, String> rhs) {
+				String name1 = lhs.get("name");
+				String name2 = rhs.get("name");
+				return name1.startsWith("IAF_") ? -1 : name2.startsWith("IAF_") ? 1 : name1.compareTo(name2);
+			}
+		});
+
 		returnMap.put("configurations", configurations);
 
 		returnMap.put("version", ibisContext.getFrameworkVersion());
@@ -116,80 +138,100 @@ public class ServerStatistics extends Base {
 	public Response getServerConfiguration() throws ApiException {
 
 		initBase(servletConfig);
+		Map<String, Object> returnMap = new HashMap<String, Object>();
 		ConfigurationWarnings globalConfigWarnings = ConfigurationWarnings.getInstance();
 
-		List<Object> warnings = new ArrayList<Object>(); //(globalConfigWarnings.size() + 1); //Add 1 for ESR
+		long totalErrorStoreCount = 0;
 		boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
+		if(!showCountErrorStore)
+			totalErrorStoreCount = -1;
 
-		List<IAdapter> registeredAdapters = ibisManager.getRegisteredAdapters();
+		for (Configuration configuration : ibisManager.getConfigurations()) {
+			Map<String, Object> configurationsMap = new HashMap<String, Object>();
 
-		long esr = 0;
-		if (showCountErrorStore) {
-			for(Iterator<IAdapter> adapterIt=registeredAdapters.iterator(); adapterIt.hasNext();) {
-				Adapter adapter = (Adapter)adapterIt.next();
-				for(Iterator<?> receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
-					ReceiverBase receiver=(ReceiverBase)receiverIt.next();
-					ITransactionalStorage errorStorage=receiver.getErrorStorage();
-					if (errorStorage!=null) {
-						try {
-							esr += errorStorage.getMessageCount();
-						} catch (Exception e) {
-							//error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
-							log.warn("Assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+			//Configuration specific exceptions
+			if (configuration.getConfigurationException()!=null) {
+				String message = configuration.getConfigurationException().getMessage();
+				configurationsMap.put("exception", message);
+			}
+
+			//ErrorStore count
+			if (showCountErrorStore) {
+				long esr = 0;
+				for (IAdapter adapter : configuration.getAdapterService().getAdapters().values()) {
+					for(Iterator<?> receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
+						ReceiverBase receiver = (ReceiverBase) receiverIt.next();
+						ITransactionalStorage errorStorage = receiver.getErrorStorage();
+						if (errorStorage != null) {
+							try {
+								esr += errorStorage.getMessageCount();
+							} catch (Exception e) {
+								//error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
+								log.warn("Assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+							}
 						}
 					}
 				}
+				totalErrorStoreCount =+ esr;
+				configurationsMap.put("errorStoreCount", esr);
 			}
-		} else {
-			esr = -1;
-		}
 
-		if (esr!=0) {
-			Map<String, Object> messageObj = new HashMap<String, Object>(2);
-			String message;
-			if (esr==-1) {
-				message = "Errorlog might contain records. This is unknown because errorStore.count.show is not set to true";
-			} else if (esr==1) {
-				message = "Errorlog contains 1 record. Service management should check whether this record has to be resent or deleted";
-			} else {
-				message = "Errorlog contains "+esr+" records. Service Management should check whether these records have to be resent or deleted";
-			}
-			messageObj.put("message", message);
-			messageObj.put("type", "severe");
-			warnings.add(messageObj);
-		}
-
-		for (Configuration config : ibisManager.getConfigurations()) {
-			if (config.getConfigurationException()!=null) {
-				Map<String, Object> messageObj = new HashMap<String, Object>(2);
-				String message = config.getConfigurationException().getMessage();
-				messageObj.put("message", message);
-				messageObj.put("type", "exception");
-				warnings.add(messageObj);
-			}
-		}
-
-		//Configuration specific warnings
-		for (Configuration configuration : ibisManager.getConfigurations()) {
+			//Configuration specific warnings
 			BaseConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
+			List<Object> warnings = new ArrayList<Object>();
 			for (int j = 0; j < configWarns.size(); j++) {
-				Map<String, Object> messageObj = new HashMap<String, Object>(1);
-				messageObj.put("message", configWarns.get(j));
-				messageObj.put("configuration", configuration.getName());
-				warnings.add(messageObj);
+				warnings.add(configWarns.get(j));
 			}
+			if(warnings.size() > 0)
+				configurationsMap.put("warnings", warnings);
+
+			//Configuration specific messages
+			MessageKeeper messageKeeper = ibisManager.getIbisContext().getMessageKeeper(configuration.getName());
+			List<Object> messages = mapMessageKeeperMessages(messageKeeper);
+			if(messages.size() > 0)
+				configurationsMap.put("messages", messages);
+
+			returnMap.put(configuration.getName(), configurationsMap);
 		}
+
+		//Total ErrorStore Count
+		returnMap.put("totalErrorStoreCount", totalErrorStoreCount);
 
 		//Global warnings
 		if (globalConfigWarnings.size()>0) {
+			List<Object> warnings = new ArrayList<Object>();
 			for (int j=0; j<globalConfigWarnings.size(); j++) {
-				Map<String, Object> messageObj = new HashMap<String, Object>(1);
-				messageObj.put("message", globalConfigWarnings.get(j));
-				warnings.add(messageObj);
+				warnings.add(globalConfigWarnings.get(j));
 			}
+			returnMap.put("warnings", warnings);
 		}
 
-		return Response.status(Response.Status.CREATED).entity(warnings).build();
+		//Global messages
+		MessageKeeper messageKeeper = ibisManager.getIbisContext().getMessageKeeper();
+		List<Object> messages = mapMessageKeeperMessages(messageKeeper);
+		if(messages.size() > 0)
+			returnMap.put("messages", messages);
+
+		return Response.status(Response.Status.CREATED).entity(returnMap).build();
+	}
+
+	private List<Object> mapMessageKeeperMessages(MessageKeeper messageKeeper) {
+		List<Object> messages = new ArrayList<Object>();
+		for (int t = 0; t < messageKeeper.size(); t++) {
+			Map<String, Object> configurationMessage = new HashMap<String, Object>();
+			String msg = messageKeeper.getMessage(t).getMessageText();
+			if (MAX_MESSAGE_SIZE > 0 && msg.length() > MAX_MESSAGE_SIZE) {
+				msg = msg.substring(0, MAX_MESSAGE_SIZE) + "...(" + (msg.length() - MAX_MESSAGE_SIZE)
+						+ " characters more)";
+			}
+			configurationMessage.put("message", msg);
+			Date date = messageKeeper.getMessage(t).getMessageDate();
+			configurationMessage.put("date", DateUtils.format(date, DateUtils.FORMAT_FULL_GENERIC));
+			String level = messageKeeper.getMessage(t).getMessageLevel();
+			configurationMessage.put("level", level);
+			messages.add(configurationMessage);
+		}
+		return messages;
 	}
 
 	@GET

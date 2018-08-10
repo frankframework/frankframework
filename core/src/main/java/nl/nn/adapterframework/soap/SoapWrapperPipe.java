@@ -22,19 +22,21 @@ import javax.xml.soap.SOAPException;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
@@ -64,6 +66,10 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>(only used when <code>direction=wrap</code>) namespace of the SOAP Envelope</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
  * <tr><td>{@link #setRoot(String) root}</td><td>when not empty, the root element in the SOAP Body is changed to this value</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIgnoreSoapFault(boolean) ignoreSoapFault}</td><td>(only used when <code>direction=unwrap</code>) when <code>false</code> and the SOAP Body contains a SOAP Fault, a PipeRunException is thrown</td><td>false</td></tr>
+ * <tr><td>{@link #setWssAuthAlias(String) wssAuthAlias}</td><td>alias used to obtain credentials for authentication to Web Services Security</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWssUserName(String) wssUserName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWssPassword(String) wssPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWssPasswordDigest(boolean) wssPasswordDigest}</td><td>when true, the password is sent digested. Otherwise it is sent in clear text</td><td>true</td></tr>
  * <table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -94,6 +100,12 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	private String soapNamespace = null;
 	private String root = null;
 	private boolean ignoreSoapFault = false;
+
+	private CredentialFactory wssCredentialFactory = null;
+	private String wssAuthAlias;
+	private String wssUserName;
+	private String wssPassword;
+	private boolean wssPasswordDigest = true;
 
 	private SoapWrapper soapWrapper = null;
 
@@ -138,6 +150,11 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer", e);
+		}
+		if (StringUtils.isNotEmpty(getWssAuthAlias()) || StringUtils.isNotEmpty(getWssUserName())) {
+			wssCredentialFactory = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
+			log.debug(getLogPrefix(null) + "created CredentialFactory for username=["
+					+ wssCredentialFactory.getUsername()+"]");
 		}
 	}
 
@@ -274,8 +291,9 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 		return soapWrapper.getBody(messageText);
 	}
 
-	protected String wrapMessage(String message, String soapHeader) throws DomBuilderException, TransformerException, IOException {
-		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader, null, getSoapNamespace());
+	protected String wrapMessage(String message, String soapHeader) throws DomBuilderException, TransformerException, IOException, SenderException {
+		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader, null,
+				getSoapNamespace(), wssCredentialFactory, isWssPasswordDigest());
 	}
 
 	public String getDirection() {
@@ -360,5 +378,33 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	}
 	public boolean isIgnoreSoapFault() {
 		return ignoreSoapFault;
+	}
+
+	public void setWssUserName(String string) {
+		wssUserName = string;
+	}
+	public String getWssUserName() {
+		return wssUserName;
+	}
+
+	public void setWssPassword(String string) {
+		wssPassword = string;
+	}
+	public String getWssPassword() {
+		return wssPassword;
+	}
+
+	public void setWssAuthAlias(String string) {
+		wssAuthAlias = string;
+	}
+	public String getWssAuthAlias() {
+		return wssAuthAlias;
+	}
+
+	public void setWssPasswordDigest(boolean b) {
+		wssPasswordDigest = b;
+	}
+	public boolean isWssPasswordDigest() {
+		return wssPasswordDigest;
 	}
 }

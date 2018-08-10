@@ -319,7 +319,11 @@ public class Configuration {
 	}
 
 	public String getClassLoaderType() {
-		return classLoader.getParent().getClass().getSimpleName();
+		return AppConstants.getInstance().getString("configurations." + getName() + ".classLoaderType", classLoader.getParent().getClass().getSimpleName());
+
+		//TODO Make this work again by removing the reload() method from all classloader constructors. The constructor it selves must not throw an expection/
+		//TODO Refactor ClassLoaderManager.createClassloader()
+//		return classLoader.getParent().getClass().getSimpleName();
 	}
 
 	public void setIbisManager(IbisManager ibisManager) {

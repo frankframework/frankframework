@@ -1,5 +1,5 @@
-angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider', '$urlRouterProvider', '$ocLazyLoadProvider', 'IdleProvider', 'KeepaliveProvider', 'appConstants',
-	function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLoadProvider, IdleProvider, KeepaliveProvider, appConstants) {
+angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider', '$urlRouterProvider', '$ocLazyLoadProvider', 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider',
+	function config($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLoadProvider, IdleProvider, KeepaliveProvider, appConstants, laddaProvider) {
 
 	if(appConstants["console.idle.time"] && appConstants["console.idle.time"] > 0) {
 		IdleProvider.idle(appConstants["console.idle.time"]);
@@ -17,6 +17,10 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		],
 		// Set to true if you want to see what and when is dynamically loaded
 		debug: true
+	});
+
+	laddaProvider.setOption({
+		style: 'expand-right'
 	});
 
 	$stateProvider
@@ -52,7 +56,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/common/content.html",
 	})
 	.state('pages.status', {
-		url: "/status?configuration",
+		url: "/status?configuration&filter&search",
 		templateUrl: "views/ShowConfigurationStatus.html",
 		controller: 'StatusCtrl as status',
 		data: {
@@ -61,6 +65,8 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		},
 		params: {
 			configuration: { value: 'All', squash: true},
+			filter: { value: 'started+stopped+warning', squash: true},
+			search: { value: '', squash: true},
 		},
 		//parent: "pages"
 	})
@@ -77,6 +83,32 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		},
 		params: {
 			id: 0,
+		},
+	})
+	.state('pages.errorstorage', {
+		url: "/adapter/:adapter/:receiver/errorstorage",
+		templateUrl: "views/adapter_errorstorage.html",
+		data: {
+			pageTitle: 'Adapter',
+			breadcrumbs: 'Adapter > ErrorStorage'
+		},
+		params: {
+			adapter: { value: '', squash: true},
+			receiver: { value: '', squash: true},
+			count: 0
+		},
+	})
+	.state('pages.messagelog', {
+		url: "/adapter/:adapter/:receiver/messagelog",
+		templateUrl: "views/adapter_messagelog.html",
+		data: {
+			pageTitle: 'Adapter',
+			breadcrumbs: 'Adapter > MessageLog'
+		},
+		params: {
+			adapter: { value: '', squash: true},
+			receiver: { value: '', squash: true},
+			count: 0
 		},
 	})
 	.state('pages.notifications', {

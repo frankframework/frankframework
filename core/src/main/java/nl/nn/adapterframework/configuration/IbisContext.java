@@ -15,6 +15,10 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -183,6 +187,7 @@ public class IbisContext {
 			classLoaderManager = new ClassLoaderManager(this);
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
+			registerApplicationModules();
 			load();
 			getMessageKeeper().setMaxSize(Math.max(messageKeeperSize, getMessageKeeper().size()));
 
@@ -201,6 +206,57 @@ public class IbisContext {
 	}
 
 	Thread ibisContextReconnectThread = null;
+
+	public void registerApplicationModules() {
+		List<String> iafModules = new ArrayList<String>();
+
+		iafModules.add("ibis-adapterframework-akamai");
+		iafModules.add("ibis-adapterframework-cmis");
+		iafModules.add("ibis-adapterframework-coolgen");
+		iafModules.add("ibis-adapterframework-core");
+		iafModules.add("ibis-adapterframework-ibm");
+		iafModules.add("ibis-adapterframework-idin");
+		iafModules.add("ibis-adapterframework-ifsa");
+		iafModules.add("ibis-adapterframework-ladybug");
+		iafModules.add("ibis-adapterframework-larva");
+		iafModules.add("ibis-adapterframework-sap");
+		iafModules.add("ibis-adapterframework-tibco");
+		iafModules.add("ibis-adapterframework-webapp");
+
+		registerApplicationModules(iafModules);
+	}
+
+	public void registerApplicationModules(List<String> iafModules) {
+		AppConstants appConstants = AppConstants.getInstance();
+		for(String module: iafModules) {
+			String version = getModuleVersion(module);
+
+			if(version != null)
+				appConstants.put(module+".version", version);
+		}
+	}
+
+	public String getModuleVersion(String module) {
+		ClassLoader classLoader = this.getClass().getClassLoader();
+		String basePath = "META-INF/maven/org.ibissource/";
+		URL pomProperties = classLoader.getResource(basePath+module+"/pom.properties");
+
+		if(pomProperties != null) {
+			try {
+				InputStream is = pomProperties.openStream();
+				Properties props = new Properties();
+				props.load(is);
+				return (String) props.get("version");
+			} catch (IOException e) {
+				LOG.warn("unable to read pom.properties file for module["+module+"]", e);
+
+				return "unknown";
+			}
+		}
+
+		// unable to find module, assume it's not on the classpath
+		return null;
+	}
 
 	public synchronized void destroy() {
 		long start = System.currentTimeMillis();

@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
@@ -49,7 +48,7 @@ public class ApiListenerServlet extends HttpServlet {
 	private IApiCache cache = null;
 	private int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 	private String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
-	private String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "ETag, Content-Disposition");
+	private String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 
 	public void init() throws ServletException {
 		if (dispatcher == null) {
@@ -66,12 +65,11 @@ public class ApiListenerServlet extends HttpServlet {
 		/**
 		 * Initiate and populate messageContext
 		 */
-		IPipeLineSession messageContext = new PipeLineSessionBase();
+		PipeLineSessionBase messageContext = new PipeLineSessionBase();
 		messageContext.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
 		messageContext.put(IPipeLineSession.HTTP_RESPONSE_KEY, response);
 		messageContext.put(IPipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
-		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
-		messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
+		messageContext.setSecurityHandler(new HttpSecurityHandler(request));
 
 		try {
 			String uri = request.getPathInfo();
@@ -199,7 +197,8 @@ public class ApiListenerServlet extends HttpServlet {
 				return;
 			}
 
-			String etagCacheKey = ApiCacheManager.buildCacheKey(config.getUriPattern());
+			String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
+			log.debug("Evaluating preconditions for listener["+listener.getName()+"] etagKey["+etagCacheKey+"]");
 			if(cache.containsKey(etagCacheKey)) {
 				String cachedEtag = (String) cache.get(etagCacheKey);
 
@@ -310,7 +309,7 @@ public class ApiListenerServlet extends HttpServlet {
 			/**
 			 * Calculate an eTag over the processed result and store in cache
 			 */
-			if(messageContext.get("updateEtag") != null && Boolean.parseBoolean(messageContext.get("updateEtag").toString())) {
+			if(messageContext.get("updateEtag", true)) {
 				String cleanPattern = listener.getCleanPattern();
 				if(result != null && method.equals("GET")) {
 					String eTag = ApiCacheManager.buildEtag(cleanPattern, result.hashCode());
@@ -321,8 +320,10 @@ public class ApiListenerServlet extends HttpServlet {
 					cache.remove(etagCacheKey);
 
 					// Not only remove the eTag for the selected resources but also the collection
-					if((method.equals("PUT") || method.equals("DELETE")) && etagCacheKey.endsWith("/*")) {
-						cache.remove(etagCacheKey.substring(0, etagCacheKey.length() -2));
+					String key = ApiCacheManager.getParentCacheKey(listener, uri);
+					if(key != null) {
+						log.debug("remove parent etagKey["+key+"]");
+						cache.remove(key);
 					}
 				}
 			}
@@ -334,16 +335,14 @@ public class ApiListenerServlet extends HttpServlet {
 
 			String contentType = listener.getContentType() + "; charset=utf-8";
 			if(listener.getProduces().equals("ANY")) {
-				contentType = (String) messageContext.get("contentType");
+				contentType = messageContext.get("contentType", contentType);
 			}
 			response.setHeader("Content-Type", contentType);
 
 			/**
 			 * Check if an exitcode has been defined or if a statuscode has been added to the messageContext.
 			 */
-			int statusCode = 0;
-			if(messageContext.containsKey("exitcode"))
-				statusCode = Integer.parseInt( ""+ messageContext.get("exitcode"));
+			int statusCode = messageContext.get("exitcode", 0);
 			if(statusCode > 0)
 				response.setStatus(statusCode);
 
