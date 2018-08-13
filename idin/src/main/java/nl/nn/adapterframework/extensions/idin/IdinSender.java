@@ -101,7 +101,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 			idinConfig.setMerchantID(getMerchantID());
 		if(getMerchantSubID() > 0)
 			idinConfig.setMerchantSubID(getMerchantSubID());
-		if(StringUtils.isNotEmpty(getMerchantID()))
+		if(StringUtils.isNotEmpty(getMerchantReturnUrl()))
 			idinConfig.setMerchantReturnUrl(getMerchantReturnUrl());
 
 		if(StringUtils.isNotEmpty(getAcquirerDirectoryUrl()))
