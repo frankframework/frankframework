@@ -295,7 +295,8 @@ public class TransactionalStorage extends Base {
 				returnObj.put("messages", messages);
 			}
 			finally {
-				iterator.close();
+				if(iterator != null)
+					iterator.close();
 			}
 		}
 		catch (ListenerException e) {
