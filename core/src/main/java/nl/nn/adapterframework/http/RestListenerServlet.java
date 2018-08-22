@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
@@ -44,6 +45,8 @@ import org.apache.log4j.Logger;
  */
 public class RestListenerServlet extends HttpServlet {
 	protected Logger log=LogUtil.getLogger(this);
+	private String CorsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
+	private String CorsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 	
 	private RestServiceDispatcher sd=null;
 	
@@ -61,11 +64,11 @@ public class RestListenerServlet extends HttpServlet {
 		String body = "";
 		
 		if(restPath.contains("rest-public")) {
-			response.setHeader("Access-Control-Allow-Origin", "*");
+			response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
 			String headers = request.getHeader("Access-Control-Request-Headers");
 			if (headers != null)
 				response.setHeader("Access-Control-Allow-Headers", headers);
-			response.setHeader("Access-Control-Expose-Headers", "ETag, Content-Disposition");
+			response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
 
 			String pattern = sd.findMatchingPattern(path);
 			if(pattern!=null) {
