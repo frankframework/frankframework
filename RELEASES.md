@@ -14,6 +14,7 @@ Upcoming
 
 - Many IAF GUI 3.0 improvements
 - Fix Ladybug
+- Add serviceNameSessionKey to IbisJavaSender so you can runtime determine the javaListener to dispatch to.
 
 
 7.1-B2
