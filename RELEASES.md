@@ -14,6 +14,7 @@ Upcoming
 
 - Many IAF GUI 3.0 improvements
 - Fix Ladybug
+- Add security logging for enabling/disabling Ladybug TestTool Report Generator
 
 
 7.1-B2
