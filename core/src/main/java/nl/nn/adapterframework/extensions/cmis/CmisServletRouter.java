@@ -1,3 +1,18 @@
+/*
+   Copyright 2018 Nationale-Nederlanden
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.extensions.cmis;
 
 import java.io.IOException;
@@ -32,7 +47,7 @@ public class CmisServletRouter extends HttpServlet {
 
 			log.debug("initialize CMIS servlet class[" + servletClass + "] version[" + version + "] name[" +config.getServletName()+"]");
 		} catch (ClassNotFoundException e) {
-			log.debug("unable to initialize cmis servlet ["+servletClass+"]", e);
+			log.debug("CMIS not found, skipping cmis servlet ["+servletClass+"]");
 		} catch (UnsupportedClassVersionError e) {
 			log.error("CMIS was found on the classpath but requires Java 1.7 or higher to run. Unabled to initialize servlet ["+servletClass+"]");
 		} catch (Exception e) {
