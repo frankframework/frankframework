@@ -201,6 +201,7 @@ public class ApiListenerServlet extends HttpServlet {
 			log.debug("Evaluating preconditions for listener["+listener.getName()+"] etagKey["+etagCacheKey+"]");
 			if(cache.containsKey(etagCacheKey)) {
 				String cachedEtag = (String) cache.get(etagCacheKey);
+				log.debug("found etag value["+cachedEtag+"] for key["+etagCacheKey+"]");
 
 				if(method.equals("GET")) {
 					String ifNoneMatch = request.getHeader("If-None-Match");
@@ -310,19 +311,22 @@ public class ApiListenerServlet extends HttpServlet {
 			 * Calculate an eTag over the processed result and store in cache
 			 */
 			if(messageContext.get("updateEtag", true)) {
+				log.debug("calculating etags over processed result");
 				String cleanPattern = listener.getCleanPattern();
 				if(result != null && method.equals("GET")) {
 					String eTag = ApiCacheManager.buildEtag(cleanPattern, result.hashCode());
+					log.debug("adding/overwriting etag with key["+etagCacheKey+"] value["+eTag+"]");
 					cache.put(etagCacheKey, eTag);
 					response.addHeader("etag", eTag);
 				}
 				else {
+					log.debug("removing etag with key["+etagCacheKey+"]");
 					cache.remove(etagCacheKey);
 
 					// Not only remove the eTag for the selected resources but also the collection
 					String key = ApiCacheManager.getParentCacheKey(listener, uri);
 					if(key != null) {
-						log.debug("remove parent etagKey["+key+"]");
+						log.debug("removing parent etag with key["+key+"]");
 						cache.remove(key);
 					}
 				}
