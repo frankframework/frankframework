@@ -39,10 +39,15 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 	private PlatformTransactionManager realTxManager;
 
 	private boolean trace=false;
-	
+
+	/**
+	 * @param txOption e.q. TransactionDefinition.PROPAGATION_REQUIRES_NEW
+	 * @param timeout Set the timeout to apply in seconds. Default timeout is {@link org.springframework.transaction.TransactionDefinition#TIMEOUT_DEFAULT TIMEOUT_DEFAULT} (-1).
+	 * @return IbisTransaction
+	 */
 	public static TransactionDefinition getTransactionDefinition(int txOption, int timeout) {
 		DefaultTransactionDefinition result=new DefaultTransactionDefinition(txOption);
-		if (timeout>0) {
+		if (timeout > 0) {
 			result.setTimeout(timeout);
 		}
 		return result; 
