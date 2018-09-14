@@ -82,7 +82,6 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 	@Override
 	protected boolean doReceiveAndExecute(Object invoker, Session session, MessageConsumer consumer, TransactionStatus txStatus) throws JMSException {
 		log.trace("doReceiveAndExecute() - destination["+getDestinationName()+"] clientId["+getClientId()+"] session["+session+"]");
-//System.out.println("doReceiveAndExecute() - destination["+getDestinationName()+"] clientId["+getClientId()+"] session["+session+"]");
 		boolean messageReceived = super.doReceiveAndExecute(invoker, session, consumer, txStatus);
 		if (getMessageListener() instanceof SpringJmsConnector) {
 			SpringJmsConnector springJmsConnector = (SpringJmsConnector)getMessageListener();

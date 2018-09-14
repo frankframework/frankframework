@@ -97,9 +97,9 @@
 		<level value="INFO"/>
 		<appender-ref ref="heartbeat"/>
 	</logger>
-	
+
 	<!-- Debug JMS polling on local development machine -->
-	<appender name="stdout-local-development" class="org.apache.log4j.ConsoleAppender">
+	<!-- appender name="stdout-local-development" class="org.apache.log4j.ConsoleAppender">
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
 			<param name="ConversionPattern" value="%m%n"/>
 		</layout>
@@ -111,6 +111,6 @@
 	<logger name="nl.nn.adapterframework.jms.IbisMessageListenerContainer">
 		<level value="TRACE"/>
 		<appender-ref ref="stdout-local-development"/>
-	</logger>
+	</logger -->
 
 </log4j:configuration>
