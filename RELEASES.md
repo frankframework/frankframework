@@ -17,6 +17,9 @@ Upcoming
 - Add serviceNameSessionKey to IbisJavaSender so you can runtime determine the javaListener to dispatch to
 - Fix Ibis-Struts which was missing some DTD files causing the xml parser to look those up online instead
 - Add security logging for enabling/disabling Ladybug TestTool Report Generator
+- Add poll guard which will stop and start the JMS listener when polling has stopped
+- Make JMS receive timeout configurable
+- Destroy JMS container when JMS listener is stopped
 
 
 7.1-B2

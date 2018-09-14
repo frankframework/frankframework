@@ -56,7 +56,8 @@ public class IfsaProviderListener extends IfsaEjbBase implements IPortConnectedL
 
     public void configure() throws ConfigurationException {
         super.configure();
-        listenerPortConnector.configureEndpointConnection(this, null, null, getExceptionListener(), null, Session.AUTO_ACKNOWLEDGE, false, null);
+        listenerPortConnector.configureEndpointConnection(this, null, null, getExceptionListener(), null,
+                Session.AUTO_ACKNOWLEDGE, false, null, timeOut, -1);
     }
 
     public void open() throws ListenerException {

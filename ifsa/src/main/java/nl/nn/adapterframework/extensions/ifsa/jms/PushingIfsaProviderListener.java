@@ -77,7 +77,7 @@ import com.ing.ifsa.IFSAServicesProvided;
  *   <li>in transacted receivers: CACHE_NONE</li>
  *   <li>in non transacted receivers: CACHE_CONSUMER</li>
  * </ul></td></tr>
- * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000</td></tr>
+ * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receive timeout, in milliseconds</td><td>3000</td></tr>
  * </table>
  * The following session keys are set for each message:
  * <ul>
@@ -154,7 +154,9 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			throw new ConfigurationException(getLogPrefix()+"could not get Destination",e);
 		}
 		try {
-			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), destination, getExceptionListener(), getCacheMode(), getAckMode(), isJmsTransacted(), getProviderSelector());
+			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), destination,
+					getExceptionListener(), getCacheMode(), getAckMode(), isJmsTransacted(), getProviderSelector(),
+					getTimeOut(), -1);
 		} catch (Exception e) {
 			throw new ConfigurationException(e);
 		}
