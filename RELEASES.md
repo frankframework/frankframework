@@ -19,7 +19,9 @@ Upcoming
 - Add security logging for enabling/disabling Ladybug TestTool Report Generator
 - Add poll guard which will stop and start the JMS listener when polling has stopped
 - Make JMS receive timeout configurable
-- Destroy JMS container when JMS listener is stopped
+- Destroy JMS container when JMS listener is being stopped
+- Restore destroy application context on full reload
+
 
 
 7.1-B2

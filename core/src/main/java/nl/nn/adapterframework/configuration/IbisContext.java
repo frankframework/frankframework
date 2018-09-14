@@ -264,6 +264,7 @@ public class IbisContext {
 			ibisManager.shutdown();
 		if(ibisContextReconnectThread != null)
 			ibisContextReconnectThread.interrupt();
+		destroyApplicationContext();
 		log("shutdown in " + (System.currentTimeMillis() - start) + " ms");
 	}
 
