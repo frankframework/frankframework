@@ -6806,6 +6806,10 @@ body.body-small .vote-icon {
   padding: 0px 15px;
 }
 
+.messagelog div.col-md-12 {
+  padding: 0;
+}
+
 .messagelog ul {
   list-style: none;
   padding: 0;
@@ -6821,9 +6825,12 @@ body.body-small .vote-icon {
 
 .messagelog ul > li i {
   margin-right: 10px;
-  margin-left: -10px;
 }
 
 .messagelog ul > li:last-child {
   border-bottom: unset;
+}
+
+.messagelog ul > li:nth-of-type(odd) {
+  background-color: hsl(0, 0%, 98%);
 }
