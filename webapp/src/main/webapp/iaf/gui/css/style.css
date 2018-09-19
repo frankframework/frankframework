@@ -6791,3 +6791,39 @@ body.body-small .vote-icon {
     display: inline-block;
   }
 }
+
+/* MESSAGE LOG */
+
+.ibox-title.message h4 {
+  display: inline-block;
+}
+
+.ibox-title.message .ibox-tools a {
+  line-height: 33px;
+}
+
+.messagelog {
+  padding: 0px 15px;
+}
+
+.messagelog ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.messagelog ul > li {
+  line-height: 35px;
+  border-bottom: 1px solid;
+  border-color: hsl(204, 12%, 92%);
+  padding-left: 20px;
+}
+
+.messagelog ul > li i {
+  margin-right: 10px;
+  margin-left: -10px;
+}
+
+.messagelog ul > li:last-child {
+  border-bottom: unset;
+}

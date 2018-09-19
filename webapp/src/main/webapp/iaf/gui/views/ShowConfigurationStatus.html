@@ -122,6 +122,30 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins" ng-init="msgBox.expanded = true">
+                <div class="ibox-title message">
+                    <h4>Messages</h4>
+                    <div class="ibox-tools pull-right">
+                        <a ng-click="msgBox.expanded = !msgBox.expanded"> <i class="fa fa-chevron-{{(msgBox.expanded) ? 'down' : 'left' }}"></i></a>
+                    </div>
+                </div>
+                <div class="ibox-content messagelog" ng-if="msgBox.expanded">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <ul>
+                                <li ng-repeat="message in messageLog[selectedConfiguration].messages">
+                                    <i ng-if="message.level == 'INFO'" class="fa fa-info"></i>
+                                    {{message.date}}  -  {{message.message}}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>  
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="row">
         <div ng-repeat="adapter in adapters | configurationFilter:this | searchFilter:this" class="col-lg-12 adapters">

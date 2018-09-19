@@ -148,7 +148,25 @@ angular.module('iaf.beheerconsole')
 						$scope.addAlert("warning", "Configuration: "+i+" - "+configuration.warnings[x]);
 					}
 				}
+				if(configuration.errorStoreCount > 1){
+					$scope.addAlert("danger", "Configuration: "+i+" - Errorlog might contain records. This is unknown because errorStore.count.show is not set to true");
+				}
+				if(configuration.errorStoreCount == 1){
+					$scope.addAlert("danger", "Configuration: "+i+" - Errorlog contains 1 record. Service management should check whether this record has to be resent or deleted");
+				}
+				if(configuration.errorStoreCount == -1){
+					$scope.addAlert("danger", "Configuration: "+i+" - Errorlog might contain records. This is unknown because errorStore.count.show is not set to true");
+				}
 			}
+
+			var messageLog = configurations;
+			messageLog['All'] = {messages:configurations.messages};
+			delete messageLog.messages;
+
+			messageLog['All'].errorStoreCount = messageLog.totalErrorStoreCount;
+			delete messageLog.totalErrorStoreCount; //todo
+
+			$scope.messageLog = messageLog;
 		});
 
 		Poller.add("adapters?expanded=all", function(allAdapters) {
