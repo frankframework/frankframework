@@ -9,8 +9,16 @@ Upcoming
 --------
 
 [JavaDocs](http://maven.ibissource.org/iaf/apidocs/index.html)
-[Commits](https://github.com/ibissource/iaf/compare/v7.1-B2...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.1-B3...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+
+
+7.1-B3
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.1-B2...v7.1-B3)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1-B3)](https://travis-ci.org/ibissource/iaf)
 
 - Many IAF GUI 3.0 improvements
 - Fix Ladybug
