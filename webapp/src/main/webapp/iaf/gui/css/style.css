@@ -4172,6 +4172,9 @@ a.close-canvas-menu:hover {
   line-height: 32px;
 }
 /* MARGINS & PADDINGS */
+.p-b-none {
+  padding-bottom: 0;
+}
 .p-xxs {
   padding: 5px;
 }

@@ -81,6 +81,12 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.alerts = [];
+	$scope.alertsCount = {
+		danger : 0,
+		warning : 0
+	};
+	$scope.primaryAlert;
+	$scope.secondaryAlert;
 
 	$scope.addAlert = function(type, message) {
 		var exists = false;
@@ -90,6 +96,18 @@ angular.module('iaf.beheerconsole')
 		}
 		if(!exists)
 			$scope.alerts.push({type: type, message: message});
+
+		$scope.alertsCount[type]++
+		if($scope.alertsCount['danger'] > 0){
+			$scope.primaryAlert = 'danger';
+
+			if($scope.alertsCount['warning'] > 0){
+				$scope.secondaryAlert = 'warning';
+			}
+		}
+		else {
+			$scope.primaryAlert = 'warning';
+		}
 	};
 
 	$scope.closeAlert = function(index) {
