@@ -6827,6 +6827,16 @@ body.body-small .vote-icon {
   margin-right: 10px;
 }
 
+.messagelog ul > li i.fa.fa-times {
+  margin-left: -3px;
+  margin-right: 8px;
+}
+
+.messagelog ul > li i.fa.fa-warning {
+  margin-left: -3px;
+  margin-right: 5px;
+}
+
 .messagelog ul > li:last-child {
   border-bottom: unset;
 }

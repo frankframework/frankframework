@@ -136,7 +136,11 @@
                         <div class="col-md-12">
                             <ul>
                                 <li ng-repeat="message in messageLog[selectedConfiguration].messages">
-                                    <i ng-if="message.level == 'INFO'" class="fa fa-info"></i>
+                                    <i class="fa" ng-class="{
+                                        'fa-info': message.level == 'INFO',
+                                        'fa-warning' : message.level == 'WARNING',
+                                        'fa-times' : message.level == 'ERROR'
+                                    }"></i>
                                     <span to-date time="{{message.date}}"></span>
                                     &nbsp; - &nbsp; {{message.message}}
                                 </li>
