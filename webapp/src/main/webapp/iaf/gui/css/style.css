@@ -3837,10 +3837,10 @@ code {
 .adapters:last-child .ibox {
   margin-bottom: 25px;
 }
-.ibox-title.summary {
+.ibox-title.no-border {
   border: none;
 }
-.ibox-content.summary {
+.ibox-content.no-border {
   overflow: visible;
   padding-bottom: 10px;
   padding-top:10px;
@@ -6794,12 +6794,6 @@ body.body-small .vote-icon {
 
 /* MESSAGE LOG */
 
-.ibox-title.message h4 {
-  display: inline-block;
-}
-.ibox-title.message .ibox-tools a {
-  line-height: 33px;
-}
 .messagelog {
   padding: 0px 15px;
 }
@@ -6839,4 +6833,12 @@ body.body-small .vote-icon {
 .messagelog ul > li i.fa.fa-warning {
   margin-left: -3px;
   margin-right: 5px;
+}
+
+/* Collapseable ibox-title */
+.ibox-title.collapseable h4 {
+  display: inline-block;
+}
+.ibox-title.collapseable .ibox-tools a {
+  line-height: 28px;
 }
