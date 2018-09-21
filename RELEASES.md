@@ -29,6 +29,8 @@ Upcoming
 - Make JMS receive timeout configurable
 - Destroy JMS container when JMS listener is being stopped
 - Restore destroy application context on full reload
+- Fix CMIS CXF bus not using the IbisContext
+- Fix NPE in IAF API when fetching errorstore count with a faulty database/table
 
 
 
