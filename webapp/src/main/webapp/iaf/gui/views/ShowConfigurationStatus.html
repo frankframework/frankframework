@@ -124,9 +124,9 @@
     </div>
     <div class="row">
         <div class="col-lg-12">
-            <div class="ibox float-e-margins" ng-init="msgBox.expanded = true">
-                <div class="ibox-title message">
-                    <h4>Messages</h4>
+            <div class="ibox float-e-margins" ng-init="msgBox.expanded = false">
+                <div class="ibox-title collapseable">
+                    <h4>Configuration messages</h4>
                     <div class="ibox-tools pull-right">
                         <a ng-click="msgBox.expanded = !msgBox.expanded"> <i class="fa fa-chevron-{{(msgBox.expanded) ? 'down' : 'left' }}"></i></a>
                     </div>
@@ -135,7 +135,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <ul>
-                                <li ng-repeat="message in messageLog[selectedConfiguration].messages">
+                                <li ng-repeat="message in messageLog[selectedConfiguration].messages" ng-class="message.level.toLowerCase()">
                                     <i class="fa" ng-class="{
                                         'fa-info': message.level == 'INFO',
                                         'fa-warning' : message.level == 'WARNING',
