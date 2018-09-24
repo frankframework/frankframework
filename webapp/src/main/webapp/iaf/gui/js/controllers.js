@@ -173,13 +173,13 @@ angular.module('iaf.beheerconsole')
 							adapter.hasSender = true;
 						}
 					}
-					//If last message is WARN or ERROR change adapter status to warning.
+/*					//If last message is WARN or ERROR change adapter status to warning.
 					if(adapter.messages.length > 0 && adapter.status != 'stopped') {
 						var message = adapter.messages[adapter.messages.length -1];
 						if(message.level != "INFO")
 							adapter.status = 'warning';
 					}
-
+*/
 					if(!adapter.started)
 						adapter.status = "stopped";
 
