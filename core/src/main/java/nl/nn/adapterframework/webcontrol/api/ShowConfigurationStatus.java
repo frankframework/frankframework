@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
@@ -102,12 +103,12 @@ public final class ShowConfigurationStatus extends Base {
 			throw new ApiException("Config not found!");
 		}
 
-		Map<String, Object> adapterList = new HashMap<String, Object>();
+		TreeMap<String, Object> adapterList = new TreeMap<String, Object>();
 		List<IAdapter> registeredAdapters = ibisManager.getRegisteredAdapters();
-		
+
 		for(Iterator<IAdapter> adapterIt=registeredAdapters.iterator(); adapterIt.hasNext();) {
 			Adapter adapter = (Adapter)adapterIt.next();
-			
+
 			Map<String, Object> adapterInfo = mapAdapter(adapter);
 			if(expanded != null && !expanded.isEmpty()) {
 				if(expanded.equalsIgnoreCase("all")) {
@@ -128,7 +129,7 @@ public final class ShowConfigurationStatus extends Base {
 					throw new ApiException("Invalid value ["+expanded+"] for parameter expanded supplied!");
 				}
 			}
-			
+
 			adapterList.put((String) adapterInfo.get("name"), adapterInfo);
 		}
 
