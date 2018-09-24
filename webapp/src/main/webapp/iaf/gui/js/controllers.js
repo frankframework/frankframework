@@ -160,8 +160,12 @@ angular.module('iaf.beheerconsole')
 					adapter.status = "started";
 
 					for(x in adapter.receivers) {
-						if(adapter.receivers[x].started == false)
+						var adapterReceiver = adapter.receivers[x];
+						if(adapterReceiver.started == false)
 							adapter.status = 'warning';
+
+						if(adapterReceiver.hasErrorStorage && adapterReceiver.errorStorageCount > 0)
+							adapter.status = 'stopped';
 					}
 					adapter.hasSender = false;
 					for(x in adapter.pipes) {
@@ -169,7 +173,8 @@ angular.module('iaf.beheerconsole')
 							adapter.hasSender = true;
 						}
 					}
-					if(adapter.messages.length > 0) {
+					//If last message is WARN or ERROR change adapter status to warning.
+					if(adapter.messages.length > 0 && adapter.status != 'stopped') {
 						var message = adapter.messages[adapter.messages.length -1];
 						if(message.level != "INFO")
 							adapter.status = 'warning';
@@ -850,6 +855,14 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('AdapterErrorStorageCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', function($scope, Api, $stateParams, SweetAlert) {
+	$scope.notes = [];
+	$scope.addNote = function(type, message, removeQueue) {
+		$scope.notes.push({type:type, message: message});
+	};
+	$scope.closeNote = function(index) {
+		$scope.notes.splice(index, 1);
+	};
+
 	$scope.adapterName = $stateParams.adapter;
 	if(!$scope.adapterName)
 		return SweetAlert.Warning("Adapter not found!");
@@ -860,10 +873,43 @@ angular.module('iaf.beheerconsole')
 
 	//TODO
 	$scope.messages = [];
-	var url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
-	Api.Get(url, function(data) {
-		$.extend($scope, data);
-	});
+	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
+	function getErrorStoreMessages() {
+		Api.Get(base_url, function(data) {
+			$.extend($scope, data);
+		});
+	}
+	getErrorStoreMessages();
+
+	$scope.deleteMessage = function(message) {
+		message.deleting = true;
+
+		Api.Delete(base_url+"/"+message.id, function() {
+			for(x in $scope.messages) {
+				if($scope.messages[x].id == message.id) {
+					$scope.messages.splice(x, 1);
+				}
+			}
+		}, function() {
+			message.deleting = false;
+			$scope.addNote("danger", "Unable to delete messages with ID: "+message.id);
+		});
+	};
+
+	$scope.resendMessage = function(message) {
+		message.resending = true;
+
+		Api.Put(base_url+"/"+message.id, false, function() {
+			for(x in $scope.messages) {
+				if($scope.messages[x].id == message.id) {
+					$scope.messages.splice(x, 1);
+				}
+			}
+		}, function() {
+			message.resending = false;
+			$scope.addNote("danger", "Unable to resend messages with ID: "+message.id);
+		});
+	};
 }])
 
 .controller('AdapterMessageLogCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', function($scope, Api, $stateParams, SweetAlert) {
@@ -878,6 +924,23 @@ angular.module('iaf.beheerconsole')
 	//TODO
 	$scope.messages = [];
 	var url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/messagelog";
+	Api.Get(url, function(data) {
+		$.extend($scope, data);
+	});
+}])
+
+.controller('PipeMessageLogCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', function($scope, Api, $stateParams, SweetAlert) {
+	$scope.pipeName = $stateParams.pipe;
+	if(!$scope.pipeName)
+		return SweetAlert.Warning("Pipe not found!");
+	$scope.adapterName = $stateParams.adapter;
+	if(!$scope.adapterName)
+		return SweetAlert.Warning("Adapter not found!");
+	$scope.totalMessages = $stateParams.count || 0;
+
+	//TODO
+	$scope.messages = [];
+	var url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messagelog";
 	Api.Get(url, function(data) {
 		$.extend($scope, data);
 	});

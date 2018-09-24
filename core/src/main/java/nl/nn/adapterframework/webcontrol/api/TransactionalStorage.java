@@ -1,13 +1,33 @@
+/*
+Copyright 2018 Integration Partners B.V.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -19,9 +39,16 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -35,8 +62,42 @@ import nl.nn.adapterframework.util.DateUtils;
 @Path("/")
 public class TransactionalStorage extends Base {
 
+	protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
 	@Context ServletConfig servletConfig;
 	@Context Request request;
+
+	@GET
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/{storageType:messagelog|errorstorage}/{messageId}")
+	public Response browseReceiverMessage(
+				@PathParam("adapterName") String adapterName,
+				@PathParam("receiverName") String receiverName,
+				@PathParam("storageType") String storageType,
+				@PathParam("messageId") String messageId
+			) throws ApiException {
+
+		initBase(servletConfig);
+		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		if(receiver == null) {
+			throw new ApiException("Receiver ["+receiverName+"] not found!");
+		}
+
+		//StorageType
+		IMessageBrowser storage;
+		if(storageType.equals("messagelog"))
+			storage = receiver.getMessageLog();
+		else
+			storage = receiver.getErrorStorage();
+
+		return getMessage(storage, receiver.getListener(), messageId);
+	}
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -75,7 +136,7 @@ public class TransactionalStorage extends Base {
 		}
 
 		//StorageType
-		ITransactionalStorage storage;
+		IMessageBrowser storage;
 		if(storageType.equals("messagelog"))
 			storage = receiver.getMessageLog();
 		else
@@ -95,19 +156,21 @@ public class TransactionalStorage extends Base {
 		filter.setEndDateMask(endDateStr);
 	
 		if("desc".equalsIgnoreCase(sort))
-				filter.setSortDescending();
+			filter.setSortDescending();
 
 		return Response.status(Response.Status.OK).entity(getMessages(storage, filter)).build();
 	}
 
-	@GET
+	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/browse/{messageId}")
-	public Response browseReceiverMessage(
-				@PathParam("adapterName") String adapterName,
-				@PathParam("receiverName") String receiverName,
-				@PathParam("messageId") String messageId
-			) throws ApiException {
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage/{messageId}")
+	@Relation("pipeline")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response resendReceiverMessage(
+			@PathParam("adapterName") String adapterName,
+			@PathParam("receiverName") String receiverName,
+			@PathParam("messageId") String messageId
+		) throws ApiException {
 
 		initBase(servletConfig);
 		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
@@ -121,33 +184,146 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
-		ITransactionalStorage storage = receiver.getMessageLog();
+		resendMessage(receiver, messageId);
 
-		String msg = null;
-		try {
-			Object rawmsg = storage.browseMessage(messageId);
-	
-			if (receiver.getListener() != null) {
-				msg = receiver.getListener().getStringFromRawMessage(rawmsg, null);
-			} else {
-				msg = (String) rawmsg;
+		return Response.status(Response.Status.OK).build();
+	}
+
+	@POST
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage")
+	@Relation("pipeline")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response resendReceiverMessages(
+			@PathParam("adapterName") String adapterName,
+			@PathParam("receiverName") String receiverName,
+			MultipartFormDataInput input
+		) throws ApiException {
+
+		initBase(servletConfig);
+		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		if(receiver == null) {
+			throw new ApiException("Receiver ["+receiverName+"] not found!");
+		}
+
+		String[] messageIds = getMessages(input);
+
+		List<String> errorMessages = new ArrayList<String>();
+		for(int i=0; i < messageIds.length; i++) {
+			try {
+				resendMessage(receiver, messageIds[i]);
 			}
-		} catch (ListenerException e) {
-			throw new ApiException(e);
+			catch(Exception e) {
+				errorMessages.add(e.getMessage());
+			}
 		}
 
-		MediaType type = MediaType.TEXT_PLAIN_TYPE;
-		if (StringUtils.isEmpty(msg)) {
-			throw new ApiException("message not found");
-		}
-		else {
-			if(msg.startsWith("<"))
-				type = MediaType.APPLICATION_XML_TYPE;
-			if(msg.startsWith("{"))
-				type = MediaType.APPLICATION_JSON_TYPE;
+		if(errorMessages.size() == 0)
+			return Response.status(Response.Status.OK).build();
+
+		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
+	}
+
+	@DELETE
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage/{messageId}")
+	@Relation("pipeline")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response deleteReceiverMessage(
+			@PathParam("adapterName") String adapterName,
+			@PathParam("receiverName") String receiverName,
+			@PathParam("messageId") String messageId
+		) throws ApiException {
+
+		initBase(servletConfig);
+		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
 		}
 
-		return Response.status(Response.Status.OK).type(type).entity(msg).build();
+		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		if(receiver == null) {
+			throw new ApiException("Receiver ["+receiverName+"] not found!");
+		}
+
+		deleteMessage(receiver.getErrorStorage(), messageId);
+
+		return Response.status(Response.Status.OK).build();
+	}
+
+	@DELETE
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage")
+	@Relation("pipeline")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response deleteReceiverMessages(
+			@PathParam("adapterName") String adapterName,
+			@PathParam("receiverName") String receiverName,
+			MultipartFormDataInput input
+		) throws ApiException {
+
+		initBase(servletConfig);
+		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		if(receiver == null) {
+			throw new ApiException("Receiver ["+receiverName+"] not found!");
+		}
+
+		String[] messageIds = getMessages(input);
+
+		List<String> errorMessages = new ArrayList<String>();
+		for(int i=0; i < messageIds.length; i++) {
+			try {
+				deleteMessage(receiver.getErrorStorage(), messageIds[i]);
+			}
+			catch(Exception e) {
+				errorMessages.add(e.getMessage());
+			}
+		}
+
+		if(errorMessages.size() == 0)
+			return Response.status(Response.Status.OK).build();
+
+		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
+	}
+
+	@GET
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/adapters/{adapterName}/pipes/{pipeName}/messagelog/{messageId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response browsePipeMessage(
+				@PathParam("adapterName") String adapterName,
+				@PathParam("pipeName") String pipeName,
+				@PathParam("messageId") String messageId
+			) throws ApiException {
+
+		initBase(servletConfig);
+		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(pipeName);
+		if(pipe == null) {
+			throw new ApiException("Pipe ["+pipeName+"] not found!");
+		}
+
+		return getMessage(pipe.getMessageLog(), messageId);
 	}
 
 	@GET
@@ -185,7 +361,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Pipe ["+pipeName+"] not found!");
 		}
 
-		ITransactionalStorage storage = pipe.getMessageLog();
+		IMessageBrowser storage = pipe.getMessageLog();
 
 		//Apply filters
 		MessageBrowsingFilter filter = new MessageBrowsingFilter(maxMessages, skipMessages);
@@ -206,45 +382,93 @@ public class TransactionalStorage extends Base {
 		return Response.status(Response.Status.OK).entity(getMessages(storage, filter)).build();
 	}
 
-	@GET
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/pipes/{pipeName}/browse/{messageId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response browsePipeMessage(
-				@PathParam("adapterName") String adapterName,
-				@PathParam("pipeName") String pipeName,
-				@PathParam("messageId") String messageId
-			) throws ApiException {
-
-		initBase(servletConfig);
-		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
-		MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(pipeName);
-		if(pipe == null) {
-			throw new ApiException("Pipe ["+pipeName+"] not found!");
-		}
-
-		ITransactionalStorage storage = pipe.getMessageLog();
-
-		return Response.status(Response.Status.OK).entity(getMessage(storage)).build();
+	private String[] getMessages(MultipartFormDataInput input) {
+//		try {
+			Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
+			if(inputDataMap.get("messageIds") != null)
+				return (String[]) inputDataMap.get("messageIds").toArray();
+//		} catch (IOException e) {
+//			throw new ApiException(e);
+//		}
+		return null;
 	}
 
-	private Map<String, Object> getMessage(ITransactionalStorage transactionalStorage) {
-		Map<String, Object> returnObj = new HashMap<String, Object>(3);
-		
-		return returnObj;
+	private void deleteMessage(IMessageBrowser storage, String messageId) {
+		PlatformTransactionManager transactionManager = ibisManager.getTransactionManager();
+		TransactionStatus txStatus = null;
+		try {
+			txStatus = transactionManager.getTransaction(TXNEW);
+			storage.deleteMessage(messageId);
+		} catch (Exception e) {
+			txStatus.setRollbackOnly(); 
+			throw new ApiException(e);
+		} finally { 
+			transactionManager.commit(txStatus);
+		}
 	}
 
-	private Map<String, Object> getMessages(ITransactionalStorage transactionalStorage, MessageBrowsingFilter filter) {
+	private void resendMessage(ReceiverBase receiver, String messageId) {
+		try {
+			receiver.retryMessage(messageId);
+		} catch (ListenerException e) {
+			throw new ApiException(e);
+		}
+	}
+
+	private Response getMessage(IMessageBrowser messageBrowser, String messageId) {
+		return getMessage(messageBrowser, null, messageId);
+	}
+
+	private Response getMessage(IMessageBrowser messageBrowser, IListener listener, String messageId) {
+		return buildResponse(getRawMessage(messageBrowser, listener, messageId));
+	}
+
+	private String getRawMessage(IMessageBrowser messageBrowser, IListener listener, String messageId) {
+		try {
+			Object rawmsg = messageBrowser.browseMessage(messageId);
+	
+			String msg = null;
+			if (listener != null) {
+				msg = listener.getStringFromRawMessage(rawmsg, null);
+			} else {
+				msg = (String) rawmsg;
+			}
+			if (StringUtils.isEmpty(msg)) {
+				msg = "<no message found>";
+			}
+	
+			return msg;
+		}
+		catch(ListenerException e) {
+			throw new ApiException(e);
+		}
+	}
+
+	private MediaType getMediaType(String msg) {
+		MediaType type = MediaType.TEXT_PLAIN_TYPE;
+		if (StringUtils.isEmpty(msg)) {
+			throw new ApiException("message not found");
+		}
+		else {
+			if(msg.startsWith("<"))
+				type = MediaType.APPLICATION_XML_TYPE;
+			if(msg.startsWith("{"))
+				type = MediaType.APPLICATION_JSON_TYPE;
+		}
+		return type;
+	}
+
+	private Response buildResponse(String msg) {
+		return Response.status(Response.Status.OK).type(getMediaType(msg)).entity(msg).build();
+	}
+
+	private Map<String, Object> getMessages(IMessageBrowser transactionalStorage, MessageBrowsingFilter filter) {
 		int messageCount = 0;
 		try {
-			messageCount = transactionalStorage.getMessageCount();
+			messageCount = ((ITransactionalStorage) transactionalStorage).getMessageCount();
 		} catch (Exception e) {
 			log.warn(e);
+			messageCount = -1;
 		}
 
 		Map<String, Object> returnObj = new HashMap<String, Object>(3);
@@ -322,7 +546,7 @@ public class TransactionalStorage extends Base {
 		private int skipMessages = 0;
 
 		private boolean sortDescending = false;
-		private ITransactionalStorage storage = null;
+		private IMessageBrowser storage = null;
 		private IListener listener = null;
 
 		public MessageBrowsingFilter() {
@@ -439,11 +663,11 @@ public class TransactionalStorage extends Base {
 			return true;
 		}
 
-		public void setMessageMask(String messageMask, ITransactionalStorage storage) {
+		public void setMessageMask(String messageMask, IMessageBrowser storage) {
 			setMessageMask(messageMask, storage, null);
 		}
 
-		public void setMessageMask(String messageMask, ITransactionalStorage storage, IListener listener) {
+		public void setMessageMask(String messageMask, IMessageBrowser storage, IListener listener) {
 			if(StringUtils.isNotEmpty(messageMask)) {
 				this.message = messageMask;
 				this.storage = storage;

@@ -99,7 +99,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		},
 	})
 	.state('pages.messagelog', {
-		url: "/adapter/:adapter/:receiver/messagelog",
+		url: "/adapter/:adapter/r/:receiver/messagelog",
 		templateUrl: "views/adapter_messagelog.html",
 		data: {
 			pageTitle: 'Adapter',
@@ -108,6 +108,19 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		params: {
 			adapter: { value: '', squash: true},
 			receiver: { value: '', squash: true},
+			count: 0
+		},
+	})
+	.state('pages.pipemessagelog', {
+		url: "/adapter/:adapter/p/:pipe/messagelog",
+		templateUrl: "views/pipe_messagelog.html",
+		data: {
+			pageTitle: 'Adapter',
+			breadcrumbs: 'Adapter > MessageLog'
+		},
+		params: {
+			adapter: { value: '', squash: true},
+			pipe: { value: '', squash: true},
 			count: 0
 		},
 	})
