@@ -313,7 +313,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			$scope.url = Misc.getServerPath() + "testtool";
 			var iframe = angular.element("iframe");
 			var container = iframe.parent();
-			container.css({"margin-left":"-15px", "margin-right":"-15px", "padding-bottom":"50px", "background-color":"#b4e2ff"});
+			container.css({"margin-left":"-15px", "margin-right":"-15px", "padding-bottom":"50px", "background-color":"rgb(202, 214, 223)"});
 			iframe.css({"height":"800px"});
 			iframe[0].onload = function() {
 				var iframeBody = $(iframe[0].contentWindow.document.body);
