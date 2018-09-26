@@ -12,6 +12,8 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.1-B3...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
+- Prevent poll guard to stop and start listener when recovering
+
 
 
 7.1-B3
