@@ -346,14 +346,7 @@
                       messagesReceived="0"
                       messagesRejected="0"
                       messagesRetried="0"
-                      name="ManageDatabase-ws"
-                      state="Started"/>
-            <receiver class="GenericReceiver"
-                      isStarted="true"
-                      messagesReceived="0"
-                      messagesRejected="0"
-                      messagesRetried="0"
-                      name="ManageDatabase-ws"
+                      name="ManageDatabase"
                       state="Started"/>
          </receivers>
          <adapterMessages error="0" info="10" lastMessageLevel="info" warn="0"/>
@@ -365,7 +358,7 @@
                        stopped="0"
                        stopping="0"/>
          <receiverState error="0"
-                        started="22"
+                        started="21"
                         starting="0"
                         stopped="0"
                         stopping="0"/>

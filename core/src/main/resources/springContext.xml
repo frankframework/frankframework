@@ -2,11 +2,15 @@
 <beans
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd"
 	>
+
 	<import resource="springUnmanagedDeployment.xml"/>
 	<import resource="springCommon.xml"/>
 	<import resource="spring${application.server.type}${application.server.type.custom}.xml"/>
 	<import resource="springIbisTestTool${ibistesttool.custom}.xml"/>
 	<import resource="springCustom.xml"/>
+
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 </beans>

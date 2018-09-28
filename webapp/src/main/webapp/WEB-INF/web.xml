@@ -226,6 +226,17 @@
 		</init-param>
 	</servlet>
 
+	<!-- CXF Soap Router -->
+	<servlet>
+		<display-name>Apache CXF Endpoint</display-name>
+		<servlet-name>jaxwsRouter</servlet-name>
+		<servlet-class>nl.nn.adapterframework.extensions.cxf.CXFServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>jaxwsRouter</servlet-name>
+		<url-pattern>/services/*</url-pattern>
+	</servlet-mapping>
 
 	<!-- Action Servlet Configuration -->
 	<servlet>
@@ -393,7 +404,7 @@
 
 	<!-- SOAP Servlet mappings -->
 	<servlet-mapping>
-		<servlet-name>rpcrouter</servlet-name>
+		<servlet-name>jaxwsRouter</servlet-name>
 		<url-pattern>/servlet/rpcrouter/*</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
