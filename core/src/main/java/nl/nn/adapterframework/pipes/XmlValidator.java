@@ -158,19 +158,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getSoapBody", te);
 				}
 	
-				String getRootNamespace_xslt = XmlUtils.makeGetRootNamespaceXslt();
-				try {
-					transformerPoolGetRootNamespace = TransformerPool.getInstance(getRootNamespace_xslt, true);
-				} catch (TransformerConfigurationException te) {
-					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getRootNamespace", te);
-				}
-		
-				String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
-				try {
-					transformerPoolRemoveNamespaces = TransformerPool.getInstance(removeNamespaces_xslt);
-				} catch (TransformerConfigurationException te) {
-					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
-				}
+				transformerPoolGetRootNamespace = XmlUtils.getGetRootNamespaceTransformerPool();
+				transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
 			}
 	
 			if (!isForwardFailureToSuccess() && !isThrowException()){
@@ -219,6 +208,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 	}
 
+	@Override
 	public ConfigurationException getConfigurationException() {
 		return configurationException;
 	}
@@ -372,6 +362,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
     public void setSchema(String schema) {
         setNoNamespaceSchemaLocation(schema);
     }
+	@Override
 	public String getSchema() {
 		return getNoNamespaceSchemaLocation();
 	}
@@ -393,6 +384,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		this.schemaLocation = schemaLocation;
 	}
 
+	@Override
 	public String getSchemaLocation() {
 		return schemaLocation;
 	}
@@ -571,6 +563,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return null;
 	}
 
+	@Override
 	public Set<XSD> getXsds() throws ConfigurationException {
 		Set<XSD> xsds = new HashSet<XSD>();
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
@@ -797,9 +790,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		if (schemaSessionKey != null) {
 			if (session.containsKey(schemaSessionKey)) {
 				return session.get(schemaSessionKey).toString();
-			} else {
-				throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
-			}
+			} 
+			throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
 		}
 		return null;
 	}

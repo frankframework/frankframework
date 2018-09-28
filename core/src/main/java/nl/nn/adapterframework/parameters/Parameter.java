@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.xml.transform.Source;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
@@ -218,12 +217,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 	    }
 		if (isRemoveNamespaces()) {
-			String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
-			try {
-				transformerPoolRemoveNamespaces = TransformerPool.getInstance(removeNamespaces_xslt);
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException("Got error creating transformer from removeNamespaces", te);
-			}
+			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true,false);
 		}
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
 			transformerPoolSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", classLoader, getNamespaceDefs(), getSessionKeyXPath(), null,"text",false,null);
@@ -289,9 +283,8 @@ public class Parameter implements INamedObject, IWithParameters {
 			if (log.isDebugEnabled()) { if (result!=null) log.debug("Returning Node result ["+result.getClass().getName()+"]["+result+"]: "+ ToStringBuilder.reflectionToString(result)); } 
 			return result;
 
-		} else {
-			return pool.transform(xmlSource,prc.getValueMap(paramList));
-		}
+		} 
+		return pool.transform(xmlSource,prc.getValueMap(paramList));
 	}
 
 	/**

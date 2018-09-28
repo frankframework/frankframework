@@ -185,7 +185,7 @@ public class XmlUtils {
 		return result;
 	}
 	
-	public static String makeSkipEmptyTagsXslt(boolean omitXmlDeclaration, boolean indent) {
+	protected static String makeSkipEmptyTagsXslt(boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
@@ -205,7 +205,7 @@ public class XmlUtils {
 		return getUtilityTransformerPool(xslt,"skipEmptyTags",omitXmlDeclaration,indent);
 	}
 	
-	public static String makeRemoveNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
+	protected static String makeRemoveNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
@@ -230,7 +230,7 @@ public class XmlUtils {
 		return getUtilityTransformerPool(xslt,"RemoveNamespaces",omitXmlDeclaration,indent);
 	}
 
-	public static String makeGetIbisContextXslt() {
+	protected static String makeGetIbisContextXslt() {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
 			+ "<xsl:output method=\"text\"/>"
@@ -251,7 +251,7 @@ public class XmlUtils {
 		return getUtilityTransformerPool(xslt,"GetIbisContext",true,false);
 	}
 
-	public static String makeGetRootNamespaceXslt() {
+	protected static String makeGetRootNamespaceXslt() {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"text\"/>"
@@ -266,7 +266,7 @@ public class XmlUtils {
 		return getUtilityTransformerPool(xslt,"GetRootNamespace",true,false);
 	}
 
-	public static String makeAddRootNamespaceXslt(String namespace, boolean omitXmlDeclaration, boolean indent) {
+	protected static String makeAddRootNamespaceXslt(String namespace, boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns=\""+namespace+"\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
@@ -303,7 +303,7 @@ public class XmlUtils {
 		return getUtilityTransformerPool(xslt,"AddRootNamespace["+namespace+"]",omitXmlDeclaration,indent);
 	}
 
-	public static String makeChangeRootXslt(String root, boolean omitXmlDeclaration, boolean indent) {
+	protected static String makeChangeRootXslt(String root, boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
@@ -323,7 +323,7 @@ public class XmlUtils {
 		return getUtilityTransformerPool(xslt,"ChangeRoot["+root+"]",omitXmlDeclaration,indent);
 	}
 
-	public static String makeRemoveUnusedNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
+	protected static String makeRemoveUnusedNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
@@ -380,8 +380,7 @@ public class XmlUtils {
 				+ "<xsl:copy/>" + "</xsl:template>" + "</xsl:stylesheet>";
 	}
 
-	public static String makeCopyOfSelectXslt(String xpath,
-			boolean omitXmlDeclaration, boolean indent) {
+	protected static String makeCopyOfSelectXslt(String xpath, boolean omitXmlDeclaration, boolean indent) {
 		return "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 				+ "<xsl:output method=\"xml\" indent=\""
 				+ (indent ? "yes" : "no")

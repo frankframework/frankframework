@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import javax.xml.transform.Source;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
@@ -111,22 +110,10 @@ public class XsltPipe extends FixedForwardPipe {
 	
 		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), classLoader, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), isXslt2());
 		if (isSkipEmptyTags()) {
-			String skipEmptyTags_xslt = XmlUtils.makeSkipEmptyTagsXslt(isOmitXmlDeclaration(),isIndentXml());
-			log.debug("test [" + skipEmptyTags_xslt + "]");
-			try {
-				transformerPoolSkipEmptyTags = TransformerPool.getInstance(skipEmptyTags_xslt);
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from skipEmptyTags", te);
-			}
+			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
 		}
 		if (isRemoveNamespaces()) {
-			String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(isOmitXmlDeclaration(),isIndentXml());
-			log.debug("test [" + removeNamespaces_xslt + "]");
-			try {
-				transformerPoolRemoveNamespaces = TransformerPool.getInstance(removeNamespaces_xslt);
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
-			}
+			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(isOmitXmlDeclaration(),isIndentXml());
 		}
 
 		if (isXslt2()) {
