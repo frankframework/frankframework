@@ -9,11 +9,31 @@ Upcoming
 --------
 
 [JavaDocs](http://maven.ibissource.org/iaf/apidocs/index.html)
-[Commits](https://github.com/ibissource/iaf/compare/v7.1-B2...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.1-B3...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+- Prevent poll guard to stop and start listener when recovering
+
+
+
+7.1-B3
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.1-B2...v7.1-B3)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1-B3)](https://travis-ci.org/ibissource/iaf)
 
 - Many IAF GUI 3.0 improvements
 - Fix Ladybug
+- Add serviceNameSessionKey to IbisJavaSender so you can runtime determine the javaListener to dispatch to
+- Fix Ibis-Struts which was missing some DTD files causing the xml parser to look those up online instead
+- Add security logging for enabling/disabling Ladybug TestTool Report Generator
+- Add poll guard which will stop and start the JMS listener when polling has stopped
+- Make JMS receive timeout configurable
+- Destroy JMS container when JMS listener is being stopped
+- Restore destroy application context on full reload
+- Fix CMIS CXF bus not using the IbisContext
+- Fix NPE in IAF API when fetching errorstore count with a faulty database/table
+
 
 
 7.1-B2

@@ -68,6 +68,10 @@
 		<appender-ref ref="file"/>
 		<appender-ref ref="XML"/>
 	</appender>
+	<root>
+		<level value="${log.level}"/>
+		<appender-ref ref="appwrap"/>
+	</root>
 	<logger name="nl.nn.adapterframework.testtool">
 		<level value="WARN"/>
 	</logger>
@@ -93,8 +97,20 @@
 		<level value="INFO"/>
 		<appender-ref ref="heartbeat"/>
 	</logger>
-	<root>
-		<level value="${log.level}"/>
-		<appender-ref ref="appwrap"/>
-	</root>
+
+	<!-- Debug JMS polling on local development machine -->
+	<!-- appender name="stdout-local-development" class="org.apache.log4j.ConsoleAppender">
+		<layout class="org.apache.log4j.EnhancedPatternLayout">
+			<param name="ConversionPattern" value="%m%n"/>
+		</layout>
+	</appender>
+	<logger name="nl.nn.adapterframework.unmanaged">
+		<level value="TRACE"/>
+		<appender-ref ref="stdout-local-development"/>
+	</logger>
+	<logger name="nl.nn.adapterframework.jms.IbisMessageListenerContainer">
+		<level value="TRACE"/>
+		<appender-ref ref="stdout-local-development"/>
+	</logger -->
+
 </log4j:configuration>

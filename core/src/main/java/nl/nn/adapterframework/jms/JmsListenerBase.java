@@ -79,7 +79,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class JmsListenerBase extends JMSFacade implements HasSender {
 
-	private int timeOut = 3000;
+	private long timeOut = 1000; // Same default value as Spring: https://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/jms/listener/AbstractPollingMessageListenerContainer.html#setReceiveTimeout(long)
 	private boolean useReplyTo=true;
 	private String replyMessageType=null;
 	private long replyMessageTimeToLive=0;
@@ -349,10 +349,10 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 		return commitOnState;
 	}
 
-	public void setTimeOut(int newTimeOut) {
+	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
 	}
-	public int getTimeOut() {
+	public long getTimeOut() {
 		return timeOut;
 	}
 

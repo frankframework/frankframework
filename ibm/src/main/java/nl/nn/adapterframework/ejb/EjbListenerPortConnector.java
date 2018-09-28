@@ -55,7 +55,10 @@ public class EjbListenerPortConnector implements IListenerConnector {
         return destination;
     }
 
-    public void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener, String cacheMode, int acknowledgeMode, boolean sessionTransacted, String selector) throws ConfigurationException {
+    public void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory,
+            Destination destination, IbisExceptionListener exceptionListener, String cacheMode, int acknowledgeMode,
+            boolean sessionTransacted, String selector, long timeOut, long pollGuardInterval)
+            throws ConfigurationException {
         try {
             this.listener = listener;
             this.listenerPortMBean = lookupListenerPortMBean(listener);

@@ -73,6 +73,7 @@ import org.apache.commons.lang.StringUtils;
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
 	private String name;
 	private String serviceName;
+	private String serviceNameSessionKey;
 	private String returnedSessionKeys = null;
 	private boolean multipartResponse = false;
 	private String multipartResponseContentType = "application/octet-stream";
@@ -81,13 +82,17 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(getServiceName())) {
+		if (StringUtils.isEmpty(getServiceName()) && StringUtils.isEmpty(getServiceNameSessionKey())) {
 			throw new ConfigurationException(getLogPrefix()+"must specify serviceName");
 		}
 	}
 
 	public String getPhysicalDestinationName() {
-		return "JavaListener "+getServiceName();
+		if (StringUtils.isNotEmpty(getServiceNameSessionKey())) {
+			return "JavaListenerSessionKey "+getServiceNameSessionKey();
+		} else {
+			return "JavaListener "+getServiceName();
+		}
 	}
 
 	public boolean isSynchronous() {
@@ -119,7 +124,14 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				dm = (DispatcherManager) getDispatcherManager.invoke(null, (Object[])null);
 			}
 
-			result = dm.processRequest(getServiceName(),correlationID, message, context);
+			String serviceName;
+			if (StringUtils.isNotEmpty(getServiceNameSessionKey())) {
+				serviceName = (String)prc.getSession().get(getServiceNameSessionKey());
+			} else {
+				serviceName = getServiceName();
+			}
+
+			result = dm.processRequest(serviceName, correlationID, message, context);
 			if (isMultipartResponse()) {
 				return HttpSender.handleMultipartResponse(multipartResponseContentType,
 						new ByteArrayInputStream(result.getBytes(multipartResponseCharset)),
@@ -129,7 +141,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"exception processing message using request processor ["+getServiceName()+"]",e);
+			throw new SenderException(getLogPrefix()+"exception processing message using request processor ["+serviceName+"]",e);
 		} finally {
 			if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
@@ -178,8 +190,15 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		else
 			ConfigurationWarnings.getInstance().add(log, getLogPrefix()+" the attribute 'setDispatchType' only supports the value 'DLL'");
 	}
-	
+
 	public String getDispatchType() {
 		return dispatchType;
+	}
+
+	public void setServiceNameSessionKey(String string) {
+		serviceNameSessionKey = string;
+	}
+	public String getServiceNameSessionKey() {
+		return serviceNameSessionKey;
 	}
 }

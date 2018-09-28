@@ -95,7 +95,7 @@
 		</init-param>
 		<init-param>
 			<param-name>servlet-class</param-name>
-			<param-value>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</param-value>
+			<param-value>nl.nn.adapterframework.extensions.cmis.server.WebServicesServlet</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
@@ -110,7 +110,7 @@
 		</init-param>
 		<init-param>
 			<param-name>servlet-class</param-name>
-			<param-value>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</param-value>
+			<param-value>nl.nn.adapterframework.extensions.cmis.server.WebServicesServlet</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>

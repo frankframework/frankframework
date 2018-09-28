@@ -15,8 +15,12 @@
 */
 package nl.nn.adapterframework.unmanaged;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -25,16 +29,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IListenerConnector;
-import nl.nn.adapterframework.core.IPortConnectedListener;
-import nl.nn.adapterframework.core.IThreadCountControllable;
-import nl.nn.adapterframework.core.IbisExceptionListener;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.util.Counter;
-import nl.nn.adapterframework.util.DateUtils;
-
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -45,6 +41,19 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IListenerConnector;
+import nl.nn.adapterframework.core.IPortConnectedListener;
+import nl.nn.adapterframework.core.IThreadCountControllable;
+import nl.nn.adapterframework.core.IbisExceptionListener;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.jms.IbisMessageListenerContainer;
+import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
  * Configure a Spring JMS Container from a {@link nl.nn.adapterframework.jms.PushingJmsListener}.
@@ -75,11 +84,21 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	
 //	public static final int MAX_MESSAGES_PER_TASK=100;
 	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
- 
+
+	private String cacheMode;
+	private int acknowledgeMode;
+	private boolean sessionTransacted;
+	private String messageSelector;
+	private long receiveTimeout;
+
 	private TransactionDefinition TX = null;
 
 	final Counter threadsProcessing = new Counter(0);
-    
+
+	private long lastPollFinishedTime;
+	private long pollGuardInterval;
+	private Timer pollGuardTimer;
+
 	protected DefaultMessageListenerContainer createMessageListenerContainer() throws ConfigurationException {
 		try {
 			Class klass = Class.forName(messageListenerClassName);
@@ -92,17 +111,28 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.configuration.IListenerConnector#configureReceiver(nl.nn.adapterframework.jms.PushingJmsListener)
 	 */
-	public void configureEndpointConnection(final IPortConnectedListener jmsListener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener, String cacheMode, int acknowledgeMode, boolean sessionTransacted, String messageSelector) throws ConfigurationException {
+	public void configureEndpointConnection(final IPortConnectedListener jmsListener,
+			ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener,
+			String cacheMode, int acknowledgeMode, boolean sessionTransacted, String messageSelector,
+			long receiveTimeout, long pollGuardInterval) throws ConfigurationException {
 		super.configureEndpointConnection(jmsListener, connectionFactory, destination, exceptionListener);
-        
+		this.cacheMode = cacheMode;
+		this.acknowledgeMode = acknowledgeMode;
+		this.sessionTransacted = sessionTransacted;
+		this.messageSelector = messageSelector;
+		this.receiveTimeout = receiveTimeout;
+		this.pollGuardInterval = pollGuardInterval;
+		configureEndpointConnection();
+	}
+
+	private void configureEndpointConnection() throws ConfigurationException {
 		// Create the Message Listener Container manually.
 		// This is needed, because otherwise the Spring Factory will
 		// call afterPropertiesSet() on the object which will validate
 		// that all required properties are set before we get a chance
 		// to insert our dynamic values from the config. file.
-		this.jmsContainer = createMessageListenerContainer();
-		
-        
+		jmsContainer = createMessageListenerContainer();
+
 		if (getReceiver().isTransacted()) {
 			log.debug(getLogPrefix()+"setting transction manager to ["+txManager+"]");
 			jmsContainer.setTransactionManager(txManager);
@@ -110,6 +140,11 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				jmsContainer.setTransactionTimeout(getReceiver().getTransactionTimeout());
 			}
 			TX = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
+			if (receiveTimeout > TX.getTimeout() && TX.getTimeout() != -1) {
+				throw new ConfigurationException(getLogPrefix() + "receive timeout [" + receiveTimeout
+						+ "] should be smaller than transaction timeout [" + TX.getTimeout()
+						+ "] as the receive time is part of the total transaction time");
+			}
 		} else { 
 			log.debug(getLogPrefix()+"setting no transction manager");
 		}
@@ -119,7 +154,8 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		if (StringUtils.isNotEmpty(messageSelector)) {
 			jmsContainer.setMessageSelector(messageSelector);
 		}
-		
+		jmsContainer.setReceiveTimeout(receiveTimeout);
+
 		// Initialize with a number of dynamic properties which come from the configuration file
 		jmsContainer.setConnectionFactory(getConnectionFactory());
 		jmsContainer.setDestination(getDestination());
@@ -166,9 +202,22 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	public void start() throws ListenerException {
 		log.debug(getLogPrefix()+"starting");
+		if (jmsContainer == null) {
+			try {
+				configureEndpointConnection();
+			} catch (ConfigurationException e) {
+				throw new ListenerException(e);
+			}
+		}
 		if (jmsContainer!=null) {
 			try {
 				jmsContainer.start();
+				if (pollGuardInterval != -1 && jmsContainer instanceof IbisMessageListenerContainer) {
+					PollerGuard pollerGuard = new PollerGuard();
+					pollerGuard.setSpringJmsConnector(this);
+					pollGuardTimer = new Timer(true);
+					pollGuardTimer.schedule(pollerGuard, pollGuardInterval, pollGuardInterval);
+				}
 			} catch (Exception e) {
 				throw new ListenerException(getLogPrefix()+"cannot start", e);
 			}
@@ -181,7 +230,14 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		log.debug(getLogPrefix()+"stopping");
 		if (jmsContainer!=null) {
 			try {
+				if (pollGuardTimer != null) {
+					pollGuardTimer.cancel();
+					pollGuardTimer = null;
+				}
 				jmsContainer.stop();
+				jmsContainer.destroy();
+				jmsContainer = null;
+				log.debug(getLogPrefix()+"jmsContainer is destroyed");
 			} catch (Exception e) {
 				throw new ListenerException(getLogPrefix()+"Exception while trying to stop", e);
 			}
@@ -327,6 +383,65 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	}
 	public String getMessageListenerClassName() {
 		return messageListenerClassName;
+	}
+
+	public void setLastPollFinishedTime(long lastPollFinishedTime) {
+		this.lastPollFinishedTime = lastPollFinishedTime;
+	}
+	public long getLastPollFinishedTime() {
+		return lastPollFinishedTime;
+	}
+
+}
+
+class PollerGuard extends TimerTask {
+	private Logger log = LogUtil.getLogger(this);
+	private SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+	private SpringJmsConnector springJmsConnector;
+	private long lastCheck;
+	private long lastPollFinishedTimeToIgnore;
+
+	PollerGuard() {
+		lastCheck = System.currentTimeMillis();
+	}
+
+	public void setSpringJmsConnector(SpringJmsConnector springJmsConnector) {
+		this.springJmsConnector = springJmsConnector;
+	}
+
+	public void run() {
+		long lastPollFinishedTime = springJmsConnector.getLastPollFinishedTime();
+		if (log.isTraceEnabled()) {
+			log.trace(springJmsConnector.getLogPrefix() + "check last poll finished time "
+					+ simpleDateFormat.format(new Date(lastPollFinishedTime)));
+		}
+		if (lastPollFinishedTime < lastCheck
+				&& lastPollFinishedTime != lastPollFinishedTimeToIgnore
+				&& springJmsConnector.threadsProcessing.getValue() == 0
+				&& springJmsConnector.getReceiver().getRunState() == RunStateEnum.STARTED
+				&& !springJmsConnector.getJmsContainer().isRecovering()) {
+			lastPollFinishedTimeToIgnore = lastPollFinishedTime;
+			error("last poll finished at " + simpleDateFormat.format(new Date(lastPollFinishedTime))
+					+ ", an attempt will be made to stop and start listener");
+			try {
+				springJmsConnector.getListener().close();
+			} catch (ListenerException e) {
+				springJmsConnector.getReceiver().setRunState(RunStateEnum.ERROR);
+				error("could not stop listener");
+			}
+			try {
+				springJmsConnector.getListener().open();
+			} catch (ListenerException e) {
+				springJmsConnector.getReceiver().setRunState(RunStateEnum.ERROR);
+				error("could not start listener");
+			}
+		}
+		lastCheck = System.currentTimeMillis();
+	}
+
+	private void error(String message) {
+		log.error(springJmsConnector.getLogPrefix() + message);
+		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeperMessage.ERROR_LEVEL);
 	}
 
 }

@@ -138,24 +138,6 @@ public class DefaultIbisManager implements IbisManager {
 				log.warn("Interrupted waiting for stop threads to end", e);
 			}
 		}
-		//destroy all jmsContainers
-		for (int i = 0; i < configuration.getRegisteredAdapters().size(); i++) {
-			IAdapter adapter = configuration.getRegisteredAdapter(i);
-			Iterator recIt = adapter.getReceiverIterator();
-			if (recIt.hasNext()) {
-				while (recIt.hasNext()) {
-					IReceiver receiver = (IReceiver) recIt.next();
-					if (receiver instanceof ReceiverBase) {
-						ReceiverBase rb = (ReceiverBase) receiver;
-						IListener listener = rb.getListener();
-						if (listener instanceof PushingJmsListener) {
-							PushingJmsListener pjl = (PushingJmsListener) listener;
-							pjl.destroy();
-						}
-					}
-				}
-			}
-		}
 		while (configuration.getRegisteredAdapters().size() > 0) {
 			IAdapter adapter = configuration.getRegisteredAdapter(0);
 			AdapterService adapterService = configuration.getAdapterService();

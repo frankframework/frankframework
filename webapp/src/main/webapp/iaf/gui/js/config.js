@@ -99,7 +99,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		},
 	})
 	.state('pages.messagelog', {
-		url: "/adapter/:adapter/:receiver/messagelog",
+		url: "/adapter/:adapter/r/:receiver/messagelog",
 		templateUrl: "views/adapter_messagelog.html",
 		data: {
 			pageTitle: 'Adapter',
@@ -108,6 +108,19 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		params: {
 			adapter: { value: '', squash: true},
 			receiver: { value: '', squash: true},
+			count: 0
+		},
+	})
+	.state('pages.pipemessagelog', {
+		url: "/adapter/:adapter/p/:pipe/messagelog",
+		templateUrl: "views/pipe_messagelog.html",
+		data: {
+			pageTitle: 'Adapter',
+			breadcrumbs: 'Adapter > MessageLog'
+		},
+		params: {
+			adapter: { value: '', squash: true},
+			pipe: { value: '', squash: true},
 			count: 0
 		},
 	})
@@ -300,7 +313,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 			$scope.url = Misc.getServerPath() + "testtool";
 			var iframe = angular.element("iframe");
 			var container = iframe.parent();
-			container.css({"margin-left":"-15px", "margin-right":"-15px", "padding-bottom":"50px", "background-color":"#b4e2ff"});
+			container.css({"margin-left":"-15px", "margin-right":"-15px", "padding-bottom":"50px", "background-color":"rgb(202, 214, 223)"});
 			iframe.css({"height":"800px"});
 			iframe[0].onload = function() {
 				var iframeBody = $(iframe[0].contentWindow.document.body);

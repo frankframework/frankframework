@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
@@ -102,12 +103,12 @@ public final class ShowConfigurationStatus extends Base {
 			throw new ApiException("Config not found!");
 		}
 
-		Map<String, Object> adapterList = new HashMap<String, Object>();
+		TreeMap<String, Object> adapterList = new TreeMap<String, Object>();
 		List<IAdapter> registeredAdapters = ibisManager.getRegisteredAdapters();
-		
+
 		for(Iterator<IAdapter> adapterIt=registeredAdapters.iterator(); adapterIt.hasNext();) {
 			Adapter adapter = (Adapter)adapterIt.next();
-			
+
 			Map<String, Object> adapterInfo = mapAdapter(adapter);
 			if(expanded != null && !expanded.isEmpty()) {
 				if(expanded.equalsIgnoreCase("all")) {
@@ -128,7 +129,7 @@ public final class ShowConfigurationStatus extends Base {
 					throw new ApiException("Invalid value ["+expanded+"] for parameter expanded supplied!");
 				}
 			}
-			
+
 			adapterList.put((String) adapterInfo.get("name"), adapterInfo);
 		}
 
@@ -584,7 +585,7 @@ public final class ShowConfigurationStatus extends Base {
 
 	private ArrayList<Object> mapAdapterReceivers(Adapter adapter, boolean showPendingMsgCount) {
 		ArrayList<Object> receivers = new ArrayList<Object>();
-		
+
 		Iterator<?> recIt=adapter.getReceiverIterator();
 		if (recIt.hasNext()){
 			while (recIt.hasNext()){
@@ -678,15 +679,17 @@ public final class ShowConfigurationStatus extends Base {
 					boolean isEsbJmsFFListener = false;
 					if (listener instanceof EsbJmsListener) {
 						EsbJmsListener ejl = (EsbJmsListener) listener;
-						if (ejl.getMessageProtocol().equalsIgnoreCase("FF")) {
-							isEsbJmsFFListener = true;
-						}
-						if(showPendingMsgCount) {
-							String esbNumMsgs = EsbUtils.getQueueMessageCount(ejl);
-							if (esbNumMsgs == null) {
-								esbNumMsgs = "?";
+						if(ejl.getMessageProtocol() != null) {
+							if (ejl.getMessageProtocol().equalsIgnoreCase("FF")) {
+								isEsbJmsFFListener = true;
 							}
-							receiverInfo.put("esbPendingMessagesCount", esbNumMsgs);
+							if(showPendingMsgCount) {
+								String esbNumMsgs = EsbUtils.getQueueMessageCount(ejl);
+								if (esbNumMsgs == null) {
+									esbNumMsgs = "?";
+								}
+								receiverInfo.put("esbPendingMessagesCount", esbNumMsgs);
+							}
 						}
 					}
 					receiverInfo.put("isEsbJmsFFListener", isEsbJmsFFListener);
