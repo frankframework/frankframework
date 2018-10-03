@@ -84,6 +84,9 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		if(StringUtils.isEmpty(getAddress()) && isMtomEnabled())
 			throw new ConfigurationException("can only use MTOM when address attribute has been set");
 
+		if(StringUtils.isNotEmpty(getAddress()) && getAddress().contains(":"))
+			throw new ConfigurationException("address cannot contain colon ( : ) character");
+
 		if (StringUtils.isNotEmpty(getAttachmentSessionKeys())) {
 			StringTokenizer stringTokenizer = new StringTokenizer(getAttachmentSessionKeys(), " ,;");
 			while (stringTokenizer.hasMoreTokens()) {

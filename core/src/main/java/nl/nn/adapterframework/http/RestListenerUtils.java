@@ -84,7 +84,7 @@ public class RestListenerUtils {
 			String url = request.getScheme() + "://" + request.getServerName();
 			if(!(request.getScheme().equalsIgnoreCase("http") && request.getServerPort() == 80) && !(request.getScheme().equalsIgnoreCase("https") && request.getServerPort() == 443))
 				url += ":" + request.getServerPort();
-			url += request.getContextPath() + "/servlet/rpcrouter/";
+			url += request.getContextPath() + "/services/";
 			return url;
 		}
 		return null;

@@ -586,6 +586,7 @@
 			<description>collection of url's for webservice access</description>
 			<url-pattern>/servlet/rpcrouter/*</url-pattern>
 			<url-pattern>/servlet/messagerouter</url-pattern>
+			<url-pattern>/services/*</url-pattern>
 			<url-pattern>/HttpListener</url-pattern>
 			<url-pattern>/rest/*</url-pattern>
 			<url-pattern>/cmis/*</url-pattern>

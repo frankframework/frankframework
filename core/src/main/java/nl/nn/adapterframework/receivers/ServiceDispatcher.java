@@ -46,7 +46,7 @@ public class ServiceDispatcher  {
 
 	private Map<String, ServiceClient> registeredListeners = new HashMap<String, ServiceClient>();
 	private static ServiceDispatcher self = null;
-	private Endpoint rpcrouterEndpoint = null;
+	private Endpoint namespaceRouter = null;
 
 	/**
 	 * Use this method to get hold of the <code>ServiceDispatcher</code>
@@ -120,7 +120,7 @@ public class ServiceDispatcher  {
 	 * This allows for backwards compatibility for those services.
 	 */
 	private synchronized void publish() {
-		if(rpcrouterEndpoint == null)
-			rpcrouterEndpoint = Endpoint.publish("/", new NamespaceUriProvider());
+		if(namespaceRouter == null)
+			namespaceRouter = Endpoint.publish("/", new NamespaceUriProvider());
 	}
 }
