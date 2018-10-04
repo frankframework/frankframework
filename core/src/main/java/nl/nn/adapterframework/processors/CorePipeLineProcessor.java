@@ -17,15 +17,13 @@ package nl.nn.adapterframework.processors;
 import java.io.IOException;
 import java.util.Iterator;
 
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -36,10 +34,10 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -150,16 +148,14 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 		if (pipeLine.isStoreOriginalMessageWithoutNamespaces()) {
 			if (XmlUtils.isWellFormed(message)) {
-				String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,true);
 				try{
-					String xsltResult = null;
-					Transformer transformer = XmlUtils.createTransformer(removeNamespaces_xslt);
-					xsltResult = XmlUtils.transformXml(transformer, message);
+					TransformerPool tpRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true,true);
+					String xsltResult = tpRemoveNamespaces.transform(message,null);
 					pipeLineSession.put("originalMessageWithoutNamespaces", xsltResult);
 				} catch (IOException e) {
 					throw new PipeRunException(pipeToRun,"cannot retrieve removeNamespaces", e);
-				} catch (TransformerConfigurationException te) {
-					throw new PipeRunException(pipeToRun,"got error creating transformer from removeNamespaces", te);
+				} catch (ConfigurationException ce) {
+					throw new PipeRunException(pipeToRun,"got error creating transformer for removeNamespaces", ce);
 				} catch (TransformerException te) {
 					throw new PipeRunException(pipeToRun,"got error transforming removeNamespaces", te);
 				} catch (DomBuilderException te) {

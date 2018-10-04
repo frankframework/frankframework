@@ -17,8 +17,6 @@ package nl.nn.adapterframework.senders;
 
 import java.util.Map;
 
-import javax.xml.transform.TransformerConfigurationException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
@@ -69,21 +67,17 @@ public class XsltSender extends SenderWithParametersBase {
 	 * XSL. If the stylesheetname cannot be accessed, a ConfigurationException is thrown.
 	 * @throws ConfigurationException
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 	
 		transformerPool = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), paramList);
 		if (isSkipEmptyTags()) {
-			String skipEmptyTags_xslt = XmlUtils.makeSkipEmptyTagsXslt(isOmitXmlDeclaration(),isIndentXml());
-			log.debug("test [" + skipEmptyTags_xslt + "]");
-			try {
-				transformerPoolSkipEmptyTags = TransformerPool.getInstance(skipEmptyTags_xslt);
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException(getLogPrefix() + "got error creating transformer from skipEmptyTags", te);
-			}
+			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
 		}
 	}
 
+	@Override
 	public void open() throws SenderException {
 		super.open();
 		if (transformerPool!=null) {
@@ -102,6 +96,7 @@ public class XsltSender extends SenderWithParametersBase {
 		}
 	}
 
+	@Override
 	public void close() throws SenderException {
 		super.close();
 		if (transformerPool!=null) {
@@ -117,6 +112,7 @@ public class XsltSender extends SenderWithParametersBase {
 	 * corrupt when a not-well formed xml was handled. The transformer is then re-initialized
 	 * via the configure() and start() methods.
 	 */
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		String stringResult = null;
 		if (message==null) {
@@ -157,6 +153,7 @@ public class XsltSender extends SenderWithParametersBase {
 		return stringResult;
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		return true;
 	}

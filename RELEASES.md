@@ -13,7 +13,7 @@ Upcoming
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 - Prevent poll guard to stop and start listener when recovering
-
+- Upgrade Ladybug to fix rerun, title tag and rerun of saved test report
 
 
 7.1-B3
