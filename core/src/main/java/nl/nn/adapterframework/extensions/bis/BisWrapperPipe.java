@@ -262,12 +262,10 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			bisErrorXe = bisErrorXe + " or string-length(" + soapBodyXPath + "/" + soapErrorXPath + ")&gt;0";
 			bisErrorTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisErrorNd, bisErrorXe, "text"));
 			if (isRemoveOutputNamespaces()) {
-				String removeOutputNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true, false);
-				removeOutputNamespacesTp = TransformerPool.getInstance(removeOutputNamespaces_xslt);
+				removeOutputNamespacesTp = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
 			}
 			if (isAddOutputNamespace()) {
-				String addOutputNamespace_xslt = XmlUtils.makeAddRootNamespaceXslt(getOutputNamespace(), true, false);
-				addOutputNamespaceTp = TransformerPool.getInstance(addOutputNamespace_xslt);
+				addOutputNamespaceTp = XmlUtils.getAddRootNamespaceTransformerPool(getOutputNamespace(), true, false);
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer", e);

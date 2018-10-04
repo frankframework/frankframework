@@ -52,6 +52,7 @@ import nl.nn.adapterframework.jms.IbisMessageListenerContainer;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
@@ -409,27 +410,38 @@ class PollerGuard extends TimerTask {
 	}
 
 	public void run() {
-		log.trace(springJmsConnector.getLogPrefix() + "check last poll finished time");
 		long lastPollFinishedTime = springJmsConnector.getLastPollFinishedTime();
+		if (log.isTraceEnabled()) {
+			log.trace(springJmsConnector.getLogPrefix() + "check last poll finished time "
+					+ simpleDateFormat.format(new Date(lastPollFinishedTime)));
+		}
 		if (lastPollFinishedTime < lastCheck
 				&& lastPollFinishedTime != lastPollFinishedTimeToIgnore
 				&& springJmsConnector.threadsProcessing.getValue() == 0
-				&& springJmsConnector.getReceiver().getRunState() == RunStateEnum.STARTED) {
+				&& springJmsConnector.getReceiver().getRunState() == RunStateEnum.STARTED
+				&& !springJmsConnector.getJmsContainer().isRecovering()) {
 			lastPollFinishedTimeToIgnore = lastPollFinishedTime;
-			log.error(springJmsConnector.getLogPrefix() + "last poll finished at "
-					+ simpleDateFormat.format(new Date(lastPollFinishedTime))
+			error("last poll finished at " + simpleDateFormat.format(new Date(lastPollFinishedTime))
 					+ ", an attempt will be made to stop and start listener");
 			try {
 				springJmsConnector.getListener().close();
 			} catch (ListenerException e) {
-				log.error(springJmsConnector.getLogPrefix() + "could not stop listener");
+				springJmsConnector.getReceiver().setRunState(RunStateEnum.ERROR);
+				error("could not stop listener");
 			}
 			try {
 				springJmsConnector.getListener().open();
 			} catch (ListenerException e) {
-				log.error(springJmsConnector.getLogPrefix() + "could not start listener");
+				springJmsConnector.getReceiver().setRunState(RunStateEnum.ERROR);
+				error("could not start listener");
 			}
 		}
 		lastCheck = System.currentTimeMillis();
 	}
+
+	private void error(String message) {
+		log.error(springJmsConnector.getLogPrefix() + message);
+		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeperMessage.ERROR_LEVEL);
+	}
+
 }
