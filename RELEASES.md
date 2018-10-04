@@ -15,6 +15,7 @@ Upcoming
 - Prevent poll guard to stop and start listener when recovering
 - Upgrade Ladybug to fix rerun, title tag and rerun of saved test report
 - Replace old Apache RPCRouter with CXF WebService provider
+- Make rowlock optional in MS SQL prepareQueryTextForWorkQueueReading
 
 
 ### Non backwards compatible changes

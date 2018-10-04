@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -82,10 +83,11 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		// see http://www.mssqltips.com/tip.asp?tip=1257
 		String result=selectQuery.substring(0,KEYWORD_SELECT.length())+(batchSize>0?" TOP "+batchSize:"")+selectQuery.substring(KEYWORD_SELECT.length());
 		int wherePos=result.toLowerCase().indexOf("where");
+		boolean rowlock = AppConstants.getInstance().getBoolean("dbmssupport.mssql.queuereading.rowlock", true);
 		if (wherePos<0) {
-			result+=" WITH (rowlock,updlock,readpast)";
+			result+=" WITH ("+(rowlock ? "rowlock," : "")+"updlock,readpast)";
 		} else {
-			result=result.substring(0,wherePos)+" WITH (rowlock,updlock,readpast) "+result.substring(wherePos);
+			result=result.substring(0,wherePos)+" WITH ("+(rowlock ? "rowlock," : "")+"updlock,readpast) "+result.substring(wherePos);
 		}
 		return result;
 	}
