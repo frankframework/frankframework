@@ -164,7 +164,7 @@ angular.module('iaf.beheerconsole')
 			delete messageLog.messages;
 
 			messageLog['All'].errorStoreCount = messageLog.totalErrorStoreCount;
-			delete messageLog.totalErrorStoreCount; //todo
+			delete messageLog.totalErrorStoreCount;
 
 			$scope.messageLog = messageLog;
 		});
@@ -592,6 +592,26 @@ angular.module('iaf.beheerconsole')
 	$scope.stopReceiver = function(adapter, receiver) {
 		receiver.state = 'loading';
 		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "stop"});
+	};
+
+	$scope.messageLevel = {};
+	$scope.setMessageLevel = function(level){
+		level = level.toLowerCase();
+		var currentLevel = $scope.messageLevel[$state.params.configuration];
+
+		var currentPriority = currentLevel == 'info' ? 0 : currentLevel == 'warning' ? 1 : currentLevel == 'danger' ? 2 : -1; 
+		var priority = level == 'info' ? 0 : level == 'warning' ? 1 : level == 'error' ? 2 : -1;
+		
+		if(priority > currentPriority){
+			switch(priority){
+				case 1:
+					$scope.messageLevel[$state.params.configuration] = 'warning';
+					break;
+				case 2:
+					$scope.messageLevel[$state.params.configuration] = 'danger'
+					break;
+			}
+		}
 	};
 }])
 
