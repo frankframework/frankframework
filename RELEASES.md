@@ -14,6 +14,13 @@ Upcoming
 
 - Prevent poll guard to stop and start listener when recovering
 - Upgrade Ladybug to fix rerun, title tag and rerun of saved test report
+- Replace old Apache RPCRouter with CXF WebService provider
+
+
+### Non backwards compatible changes
+
+- In order for CXF to use the Java standard WebServices it requires the `javax.xml.ws.WebServicePermission publishEndpoint` permission!
+
 
 
 7.1-B3

@@ -196,36 +196,33 @@
 	</servlet-mapping>
 	<!-- END CMIS -->
 
-	<!-- SOAP servlets -->
+	<!-- START Soap Router -->
 	<servlet>
-		<display-name>Apache-SOAP RPC Router (modified: invalidates sessions)</display-name>
-		<servlet-name>rpcrouter</servlet-name>
-		<servlet-class>org.apache.soap.server.http.RPCRouterServlet</servlet-class>
+		<display-name>Apache CXF Endpoint</display-name>
+		<servlet-name>jaxwsRouter</servlet-name>
+		<servlet-class>nl.nn.adapterframework.extensions.cxf.CXFServlet</servlet-class>
 		<init-param>
-			<param-name>faultListener</param-name>
-			<param-value>org.apache.soap.server.DOMFaultListener</param-value>
+			<param-name>hide-service-list-page</param-name>
+			<param-value>true</param-value>
 		</init-param>
-		<init-param>
-			<param-name>ConfigFile</param-name>
-			<!-- Apache SOAP 2.2: param-value van ConfigFile kan alleen in root, subdirectory wordt niet opgepikt -->
-			<param-value>soap.xml</param-value>
-		</init-param>
-	</servlet>
-	<servlet>
-		<display-name>Apache-SOAP Message Router</display-name>
-		<servlet-name>messagerouter</servlet-name>
-		<servlet-class>org.apache.soap.server.http.MessageRouterServlet</servlet-class>
-		<init-param>
-			<param-name>faultListener</param-name>
-			<param-value>org.apache.soap.server.DOMFaultListener</param-value>
-		</init-param>
-		<init-param>
-			<param-name>ConfigFile</param-name>
-			<!-- Apache SOAP 2.2: param-value van ConfigFile kan alleen in root, subdirectory wordt niet opgepikt -->
-			<param-value>soap.xml</param-value>
-		</init-param>
+		<load-on-startup>1</load-on-startup>
 	</servlet>
 
+	<servlet-mapping>
+		<servlet-name>jaxwsRouter</servlet-name>
+		<url-pattern>/services/*</url-pattern>
+	</servlet-mapping>
+
+	<!-- legacy; to be removed in the year 2020 -->
+	<servlet-mapping>
+		<servlet-name>jaxwsRouter</servlet-name>
+		<url-pattern>/servlet/rpcrouter/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>jaxwsRouter</servlet-name>
+		<url-pattern>/servlet/messagerouter</url-pattern>
+	</servlet-mapping>
+	<!-- END Soap Router -->
 
 	<!-- Action Servlet Configuration -->
 	<servlet>
@@ -389,16 +386,6 @@
 	<servlet-mapping>
 		<servlet-name>action</servlet-name>
 		<url-pattern>*.do</url-pattern>
-	</servlet-mapping>
-
-	<!-- SOAP Servlet mappings -->
-	<servlet-mapping>
-		<servlet-name>rpcrouter</servlet-name>
-		<url-pattern>/servlet/rpcrouter/*</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>messagerouter</servlet-name>
-		<url-pattern>/servlet/messagerouter</url-pattern>
 	</servlet-mapping>
 
 	<!-- Test Tool Servlet Mapping -->
@@ -599,6 +586,7 @@
 			<description>collection of url's for webservice access</description>
 			<url-pattern>/servlet/rpcrouter/*</url-pattern>
 			<url-pattern>/servlet/messagerouter</url-pattern>
+			<url-pattern>/services/*</url-pattern>
 			<url-pattern>/HttpListener</url-pattern>
 			<url-pattern>/rest/*</url-pattern>
 			<url-pattern>/cmis/*</url-pattern>

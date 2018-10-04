@@ -86,7 +86,7 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	}
 
 	protected String getEndPoint() {
-		return "http://"+getIbisHost()+"/"+getIbisInstance()+"/servlet/rpcrouter";
+		return "http://"+getIbisHost()+"/"+getIbisInstance()+"/services";
 	}
 
 	public String getPhysicalDestinationName() {
