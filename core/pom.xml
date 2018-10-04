@@ -439,6 +439,11 @@
       </exclusion>
     </exclusions>
   </dependency>
+  <dependency>
+    <groupId>org.apache.cxf</groupId>
+    <artifactId>cxf-rt-transports-http</artifactId>
+    <version>3.0.12</version>
+  </dependency>
 <!-- Add the excluded files from the CXF dependency explicitly which prevents duplicates in war files -->
   <dependency>
     <groupId>com.sun.xml.bind</groupId>
