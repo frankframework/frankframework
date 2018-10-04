@@ -12,6 +12,7 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.1-B3...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
+- Upgrade Ladybug to fix rerun, title tag and rerun of saved test report
 
 
 7.1-B3
