@@ -107,7 +107,7 @@ angular.module('iaf.beheerconsole')
 		restrict: 'A',
 		controller: function ($scope, $element) {
 			var iboxTitle = $element.find(".ibox-title");
-			iboxTitle.bind('dblclick', function() {
+			iboxTitle.bind('click', function() {
 				$scope.showContent = !$scope.showContent;
 			});
 		}
