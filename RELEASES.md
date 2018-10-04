@@ -9,8 +9,17 @@ Upcoming
 --------
 
 [JavaDocs](http://maven.ibissource.org/iaf/apidocs/index.html)
-[Commits](https://github.com/ibissource/iaf/compare/v7.1-B3...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.1-B4...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+
+
+7.1-B4
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.1-B3...v7.1-B4)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1-B4)](https://travis-ci.org/ibissource/iaf)
+
 
 - Prevent poll guard to stop and start listener when recovering
 - Upgrade Ladybug to fix rerun, title tag and rerun of saved test report
