@@ -8,5 +8,6 @@ bin
 .classpath
 .settings
 .apt_generated
+.factorypath
 
 META-INF
