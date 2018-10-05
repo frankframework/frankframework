@@ -2,4 +2,11 @@
 *.iml
 target
 lib
-/.settings
+bin
+
+# Eclipse
+.classpath
+.settings
+.apt_generated
+
+META-INF
