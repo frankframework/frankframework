@@ -131,7 +131,7 @@ public class ShadowSender extends ParallelSenders {
 			// XsltSender and IbisLocalSender).
 			ParameterResolutionContext newPrc = new ParameterResolutionContext(
 					prc.getInput(), prc.getSession(), prc.isNamespaceAware(),
-					prc.isXslt2(), false);
+					false, false);
 			guard.addResource();
 			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender,
 					correlationID, message, newPrc, guard,
