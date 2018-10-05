@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.jms.JNDIBase</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.jms.JNDIBase</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProviderURL(String) providerURL}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInitialContextFactoryName(String) initialContextFactoryName}</td><td>class to use as initial context factory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuthentication(String) authentication}</td><td>maps to the field Context.SECURITY_AUTHENTICATION</td><td>&nbsp;</td></tr>

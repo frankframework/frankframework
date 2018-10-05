@@ -40,7 +40,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * <p><b>Configuration </b><i>(where deviating from FixedQuerySender)</i><b>:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.ResultSet2FileSender</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.ResultSet2FileSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setQuery(String) query}</td><td>query that returns a row to be processed. Must contain a message field (1) which is written to a file and optionally a status field (2) and a group field (3)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStatusFieldType(String) statusFieldType}</td><td>type of the optional status field which is set after the row is written to the file: timestamp</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFileNameSessionKey(String) fileNameSessionKey}</td><td>the session key that contains the name of the file to use</td><td>&nbsp;</td></tr>

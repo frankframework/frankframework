@@ -38,7 +38,7 @@ import org.apache.commons.lang.StringUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.ibis4fundation.XComSender</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.ibis4fundation.XComSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWorkingDirName(String) workingDirName}</td><td>directory in which to run the xcomtcp command</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXcomtcp(String) xcomtcp}</td><td>Path to xcomtcp command</td><td>&nbsp;</td></tr>

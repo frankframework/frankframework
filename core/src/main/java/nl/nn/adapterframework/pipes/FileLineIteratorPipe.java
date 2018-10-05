@@ -34,7 +34,7 @@ import org.apache.commons.lang.StringUtils;
  * <p><b>Configuration </b><i>(where deviating from IteratingPipe)</i><b>:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.pipes.FileLineIteratorPipe</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FileLineIteratorPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2dirAfterTransform(String) move2dirAfterTransform}</td><td>Directory in which the transformed file(s) is stored</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2dirAfterError(String) move2dirAfterError}</td><td>Directory to which the inputfile is moved in case an error occurs</td><td>&nbsp;</td></tr>
  * </table>
