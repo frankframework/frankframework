@@ -68,10 +68,6 @@
 		<appender-ref ref="file"/>
 		<appender-ref ref="XML"/>
 	</appender>
-	<root>
-		<level value="${log.level}"/>
-		<appender-ref ref="appwrap"/>
-	</root>
 	<logger name="nl.nn.adapterframework.testtool">
 		<level value="WARN"/>
 	</logger>
@@ -113,4 +109,9 @@
 		<appender-ref ref="stdout-local-development"/>
 	</logger -->
 
+	<!-- Add root below loggers because: The content of element type "log4j:configuration" must match "(renderer*,throwableRenderer?,appender*,plugin*,(category|logger)*,root?,(categoryFactory|loggerFactory)?)". -->
+	<root>
+		<level value="${log.level}"/>
+		<appender-ref ref="appwrap"/>
+	</root>
 </log4j:configuration>
