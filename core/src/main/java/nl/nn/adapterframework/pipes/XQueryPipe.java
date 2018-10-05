@@ -116,7 +116,7 @@ public class XQueryPipe extends FixedForwardPipe {
 			// We already specifically use Saxon in this pipe, hence set xslt2
 			// to true to make XmlUtils use the Saxon
 			// DocumentBuilderFactoryImpl.
-			ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, isNamespaceAware(), true);
+			ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, isNamespaceAware());
 			Map parametervalues = null;
 			if (getParameterList() != null) {
 				parametervalues = prc.getValueMap(getParameterList());

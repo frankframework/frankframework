@@ -434,7 +434,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 			if (TYPE_DOMDOC.equals(getType())) {
 				try {
-					result=XmlUtils.buildDomDocument((String)result,prc.isNamespaceAware(),prc.isXslt2());
+					result=XmlUtils.buildDomDocument((String)result,prc.isNamespaceAware(),isXslt2());
 					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 				} catch (DomBuilderException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML document",e);

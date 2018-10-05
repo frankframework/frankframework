@@ -49,7 +49,6 @@ public class ParameterResolutionContext {
 	private Source xmlSource;
 	private boolean cacheXmlSource;
 	private boolean namespaceAware;
-	private boolean xslt2;
 
 	/**
 	 * Construct ParameterResolutionContext with the specified parameters.
@@ -70,23 +69,15 @@ public class ParameterResolutionContext {
 	 *                       Disable caching when the ParameterResolutionContext
 	 *                       is used by multiple threads.
 	 */
-	public ParameterResolutionContext(String input, IPipeLineSession session,
-			boolean namespaceAware, boolean xslt2, boolean cacheXmlSource) {
+	public ParameterResolutionContext(String input, IPipeLineSession session, boolean namespaceAware, boolean xslt2NotUsed, boolean cacheXmlSource) {
 		this.input = input;
 		this.session = session;
 		this.namespaceAware = namespaceAware;
-		this.xslt2 = xslt2;
 		this.cacheXmlSource = cacheXmlSource;
 	}
 
-	public ParameterResolutionContext(String input, IPipeLineSession session,
-			boolean namespaceAware, boolean xslt2) {
+	public ParameterResolutionContext(String input, IPipeLineSession session, boolean namespaceAware) {
 		this(input, session, namespaceAware, false, true);
-	}
-
-	public ParameterResolutionContext(String input, IPipeLineSession session,
-			boolean namespaceAware) {
-		this(input, session, namespaceAware, false);
 	}
 
 	public ParameterResolutionContext(String input, IPipeLineSession session) {
@@ -194,14 +185,6 @@ public class ParameterResolutionContext {
 	public String getInput() {
 		return input;
 	}
-
-	/**
-	 * @return hashtable with session variables
-	 */
-	public IPipeLineSession getSession() {
-		return session;
-	}
-
 	/**
 	 * @param input the (xml formatted) input message
 	 */
@@ -211,33 +194,20 @@ public class ParameterResolutionContext {
 	}
 
 	/**
-	 * @param session
+	 * @return hashtable with session variables
 	 */
+	public IPipeLineSession getSession() {
+		return session;
+	}
 	public void setSession(IPipeLineSession session) {
 		this.session = session;
 	}
 
-	/**
-	 */
 	public boolean isNamespaceAware() {
 		return namespaceAware;
 	}
-
-	/**
-	 * @param b
-	 */
 	public void setNamespaceAware(boolean b) {
 		namespaceAware = b;
 	}
 
-	public boolean isXslt2() {
-		return xslt2;
-	}
-
-	/**
-	 * @param b
-	 */
-	public void setXslt2(boolean b) {
-		xslt2 = b;
-	}
 }

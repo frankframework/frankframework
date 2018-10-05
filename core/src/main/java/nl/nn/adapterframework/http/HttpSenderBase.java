@@ -732,7 +732,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 
 				if (transformerPool != null) {
 					log.debug(getLogPrefix() + " transforming result [" + result + "]");
-					ParameterResolutionContext prc_xslt = new ParameterResolutionContext(result, null, true, true);
+					ParameterResolutionContext prc_xslt = new ParameterResolutionContext(result, null, true);
 					try {
 						result = transformerPool.transform(prc_xslt.getInputSource(), null);
 					} catch (Exception e) {

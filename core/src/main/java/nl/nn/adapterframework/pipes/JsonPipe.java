@@ -137,7 +137,7 @@ public class JsonPipe extends FixedForwardPipe {
 			if ("xml2json".equalsIgnoreCase(actualDirection)) {
 				if ("2".equals(actualVersion)) {
 					stringResult = (String) input;
-					ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, true, true);
+					ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, true);
 					TransformerPool transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), classLoader, null, null,
 							"/xml/xsl/xml2json.xsl", null, false, null, true);
 					stringResult = transformerPool.transform(prc.getInputSource(), null);

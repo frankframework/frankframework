@@ -242,7 +242,7 @@ public class Json2XmlValidator extends XmlValidator {
 			aligner.setFailOnWildcards(isFailOnWildcards());
 			ParameterList parameterList = getParameterList();
 			if (parameterList!=null) {
-				ParameterResolutionContext prc = new ParameterResolutionContext(messageToValidate, session, isNamespaceAware(), false);
+				ParameterResolutionContext prc = new ParameterResolutionContext(messageToValidate, session, isNamespaceAware());
 				Map<String,Object> parametervalues = null;
 				parametervalues = prc.getValueMap(parameterList);
 				aligner.setOverrideValues(parametervalues);
