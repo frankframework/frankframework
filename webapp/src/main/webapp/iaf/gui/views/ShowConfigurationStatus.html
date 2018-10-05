@@ -12,10 +12,18 @@
                         <a ng-click="warningsExpanded = !warningsExpanded"> <i class="fa fa-chevron-{{(warningsExpanded) ? 'up' : 'down' }}"></i></a>
                     </div>
                 </div>
-                <div class="ibox-content p-b-none" ng-if="warningsExpanded">
+                <div class="ibox-content p-b-none messagelog" ng-if="warningsExpanded">
                     <div class="row">
                         <div class="col-md-12">
-                            <uib-alert ng-repeat="alert in alerts | orderBy:'type'" type="{{alert.type}}" close="closeAlert($index)">{{alert.message}}</uib-alert>
+                            <ul>
+                                <li ng-repeat="alert in alerts | orderBy:'type'" ng-class="alert.type.toLowerCase()">
+                                    <i class="fa" ng-class="{
+                                        'fa-warning' : alert.type == 'warning',
+                                        'fa-times' : alert.type == 'danger'
+                                    }"></i>
+                                    {{alert.message}}
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>

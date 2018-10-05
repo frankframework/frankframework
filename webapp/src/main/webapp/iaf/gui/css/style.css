@@ -6794,3 +6794,52 @@ body.body-small .vote-icon {
     display: inline-block;
   }
 }
+
+/* Collapseable ibox-title */
+.ibox-title.collapseable h4 {
+  display: inline-block;
+}
+.ibox-title.collapseable .ibox-tools a {
+  line-height: 28px;
+}
+.messagelog {
+  padding: 0px 15px;
+}
+.messagelog div.col-md-12 {
+  padding: 0;
+}
+.messagelog ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.messagelog ul > li {
+  line-height: 35px;
+  border-bottom: 1px solid;
+  border-color: hsl(204, 12%, 92%);
+  padding-left: 20px;
+}
+.messagelog ul > li.warning {
+  color: hsl(32, 92%, 63%);
+}
+.messagelog ul > li.error,
+.messagelog ul > li.danger {
+  color: hsl(354, 81%, 60%);
+}
+.messagelog ul > li:last-child {
+  border-bottom: unset;
+}
+.messagelog ul > li:nth-of-type(odd) {
+  background-color: hsl(0, 0%, 98%);
+}
+.messagelog ul > li i {
+  margin-right: 10px;
+}
+.messagelog ul > li i.fa.fa-times {
+  margin-left: -3px;
+  margin-right: 8px;
+}
+.messagelog ul > li i.fa.fa-warning {
+  margin-left: -3px;
+  margin-right: 5px;
+}
