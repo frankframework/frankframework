@@ -6,8 +6,8 @@
         <div class="col-lg-12">
             <div class="ibox alertbox" ng-init="warningsExpanded = false">
                 <div class="ibox-title collapseable" ng-class="primaryAlert">
-                    <h4>{{alertsCount[primaryAlert]}} {{primaryAlert == 'danger' ? 'Error' : 'Warning'}}{{alertsCount[primaryAlert] > 1 ? 's' : ''}}</h4>
-                    <h4 ng-if="secondaryAlert.length > 0">& {{alertsCount[secondaryAlert]}} {{secondaryAlert == 'danger' ? 'Error' : 'Warning'}}{{alertsCount[secondaryAlert] > 1 ? 's' : ''}}</h4>
+                    <h4>{{alertsCount[primaryAlert]}} {{primaryAlert == 'danger' ? 'Exception' : 'Warning'}}{{alertsCount[primaryAlert] > 1 ? 's' : ''}}</h4>
+                    <h4 ng-if="secondaryAlert.length > 0">& {{alertsCount[secondaryAlert]}} {{secondaryAlert == 'danger' ? 'Exception' : 'Warning'}}{{alertsCount[secondaryAlert] > 1 ? 's' : ''}}</h4>
                     <div class="ibox-tools pull-right">
                         <a ng-click="warningsExpanded = !warningsExpanded"> <i class="fa fa-chevron-{{(warningsExpanded) ? 'up' : 'down' }}"></i></a>
                     </div>
