@@ -19,6 +19,7 @@
       <groupId>nl.nn</groupId>
       <artifactId>coolgen</artifactId>
       <version>0</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 
