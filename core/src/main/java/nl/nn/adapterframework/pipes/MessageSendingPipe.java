@@ -21,9 +21,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
@@ -36,6 +42,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -52,7 +59,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.processors.PipeProcessor;
 import nl.nn.adapterframework.senders.MailSender;
-import nl.nn.adapterframework.soap.WsdlUtils;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -63,11 +69,6 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.MsgLogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
-import org.apache.log4j.Logger;
 
 /**
  * Sends a message using a {@link nl.nn.adapterframework.core.ISender sender} and optionally receives a reply from the same sender, or 
@@ -751,13 +752,19 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		String sendResult = null;
 		String exitState = null;
 		try {
-			if (getPresumedTimeOutInterval()>=0 && !ConfigurationUtils.stubConfiguration()) {
-				long lastExitIsTimeoutDate = getPipeLine().getAdapter().getLastExitIsTimeoutDate(getName());
-				if (lastExitIsTimeoutDate>0) {
-					long duration = startTime - lastExitIsTimeoutDate;
-					if (duration < (1000L * getPresumedTimeOutInterval())) {
-						exitState = PRESUMED_TIMEOUT_FORWARD;
-						throw new TimeOutException(getLogPrefix(session)+exitState);
+			PipeLine pipeline = getPipeLine();
+			if  (pipeline!=null) {
+				Adapter adapter = pipeline.getAdapter();
+				if (adapter!=null) {
+					if (getPresumedTimeOutInterval()>=0 && !ConfigurationUtils.stubConfiguration()) {
+						long lastExitIsTimeoutDate = adapter.getLastExitIsTimeoutDate(getName());
+						if (lastExitIsTimeoutDate>0) {
+							long duration = startTime - lastExitIsTimeoutDate;
+							if (duration < (1000L * getPresumedTimeOutInterval())) {
+								exitState = PRESUMED_TIMEOUT_FORWARD;
+								throw new TimeOutException(getLogPrefix(session)+exitState);
+							}
+						}
 					}
 				}
 			}
@@ -786,14 +793,20 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			if (exitState==null) {
 				exitState = SUCCESS_FORWARD;
 			}
-			if (getPresumedTimeOutInterval()>=0 && !ConfigurationUtils.stubConfiguration()) {
-				if (!PRESUMED_TIMEOUT_FORWARD.equals(exitState)) {
-					getPipeLine().getAdapter().setLastExitState(getName(), System.currentTimeMillis(), exitState);
+			PipeLine pipeline = getPipeLine();
+			if  (pipeline!=null) {
+				Adapter adapter = pipeline.getAdapter();
+				if (adapter!=null) {
+					if (getPresumedTimeOutInterval()>=0 && !ConfigurationUtils.stubConfiguration()) {
+						if (!PRESUMED_TIMEOUT_FORWARD.equals(exitState)) {
+							adapter.setLastExitState(getName(), System.currentTimeMillis(), exitState);
+						}
+					}
+					if (MsgLogUtil.getMsgLogLevelNum(adapter.getMsgLogLevel())>=MsgLogUtil.MSGLOG_LEVEL_TERSE) {
+						String durationString = Misc.getAge(startTime);
+						msgLog.info("Sender [" + sender.getName() + "] class [" + sender.getClass().getSimpleName() + "] correlationID [" + correlationID + "] duration [" + durationString + "] got exit-state [" + exitState + "]");
+					}
 				}
-			}
-			if (MsgLogUtil.getMsgLogLevelNum(getPipeLine().getAdapter().getMsgLogLevel())>=MsgLogUtil.MSGLOG_LEVEL_TERSE) {
-				String durationString = Misc.getAge(startTime);
-				msgLog.info("Sender [" + sender.getName() + "] class [" + sender.getClass().getSimpleName() + "] correlationID [" + correlationID + "] duration [" + durationString + "] got exit-state [" + exitState + "]");
 			}
 		}
 		return sendResult;

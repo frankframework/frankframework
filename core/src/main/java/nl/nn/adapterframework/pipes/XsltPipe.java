@@ -80,7 +80,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class XsltPipe extends FixedForwardPipe {
 
-	private TransformerPool transformerPool;
 	private String xpathExpression=null;
 	private String namespaceDefs = null; 
 	private String outputType="text";
@@ -92,6 +91,7 @@ public class XsltPipe extends FixedForwardPipe {
 	private boolean removeNamespaces=false;
 	private boolean xslt2=false;
 
+	private TransformerPool transformerPool;
 	private TransformerPool transformerPoolSkipEmptyTags;
 	private TransformerPool transformerPoolRemoveNamespaces;
 
@@ -130,13 +130,6 @@ public class XsltPipe extends FixedForwardPipe {
 	@Override
 	public void start() throws PipeStartException {
 		super.start();
-		if (transformerPoolRemoveNamespaces!=null) {
-			try {
-				transformerPoolRemoveNamespaces.open();
-			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start TransformerPool RemoveNamespaces", e);
-			}
-		}
 		if (transformerPool!=null) {
 			try {
 				transformerPool.open();
@@ -151,19 +144,26 @@ public class XsltPipe extends FixedForwardPipe {
 				throw new PipeStartException(getLogPrefix(null)+"cannot start TransformerPool SkipEmptyTags", e);
 			}
 		}
+		if (transformerPoolRemoveNamespaces!=null) {
+			try {
+				transformerPoolRemoveNamespaces.open();
+			} catch (Exception e) {
+				throw new PipeStartException(getLogPrefix(null)+"cannot start TransformerPool RemoveNamespaces", e);
+			}
+		}
 	}
 	
 	@Override
 	public void stop() {
 		super.stop();
-		if (transformerPoolRemoveNamespaces!=null) {
-			transformerPoolRemoveNamespaces.close();
-		}
 		if (transformerPool!=null) {
 			transformerPool.close();
 		}
 		if (transformerPoolSkipEmptyTags!=null) {
 			transformerPoolSkipEmptyTags.close();
+		}
+		if (transformerPoolRemoveNamespaces!=null) {
+			transformerPoolRemoveNamespaces.close();
 		}
 	}
 	
@@ -174,10 +174,13 @@ public class XsltPipe extends FixedForwardPipe {
 			input = transformerPoolRemoveNamespaces.transform(prc_RemoveNamespaces.getInputSource(), null); 
 			log.debug(getLogPrefix(session)+ " output message after removing namespaces [" + input + "]");
 		}
-		return new ParameterResolutionContext(input, session, isNamespaceAware(), isXslt2());
+		return new ParameterResolutionContext(input, session, isNamespaceAware());
 	}
 
-	protected String transform(TransformerPool tp, Source source, Map parametervalues) throws TransformerException, IOException {
+	/*
+	 * Allow to override transformation, so JsonXslt can prefix and suffix...
+	 */
+	protected String transform(TransformerPool tp, Source source, Map<String,Object> parametervalues) throws TransformerException, IOException {
 		return tp.transform(source, parametervalues);
 	}
 	/**
@@ -188,13 +191,10 @@ public class XsltPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		if (input==null) {
-			throw new PipeRunException(this,
-				getLogPrefix(session)+"got null input");
+			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
  	    if (!(input instanceof String)) {
-	        throw new PipeRunException(this,
-	            getLogPrefix(session)+"got an invalid type as input, expected String, got "
-	                + input.getClass().getName());
+	        throw new PipeRunException(this, getLogPrefix(session)+"got an invalid type as input, expected String, got " + input.getClass().getName());
 	    }
 		String stringResult =(String) input;
 
@@ -202,7 +202,7 @@ public class XsltPipe extends FixedForwardPipe {
 	    try {
 
 			ParameterResolutionContext prc = getInput(stringResult, session);
-			Map parametervalues = null;
+			Map<String,Object> parametervalues = null;
 			ParameterList parameterList = getParameterList();
 			if (parameterList!=null) {
 				parametervalues = prc.getValueMap(parameterList);
@@ -216,7 +216,7 @@ public class XsltPipe extends FixedForwardPipe {
 				//URL xsltSource = ClassUtils.getResourceURL( this, skipEmptyTags_xslt);
 				//Transformer transformer = XmlUtils.createTransformer(xsltSource);
 				//stringResult = XmlUtils.transformXml(transformer, stringResult);
-				ParameterResolutionContext prc_SkipEmptyTags = new ParameterResolutionContext(stringResult, session, true, true); 
+				ParameterResolutionContext prc_SkipEmptyTags = new ParameterResolutionContext(stringResult, session, true); 
 				stringResult = transformerPoolSkipEmptyTags.transform(prc_SkipEmptyTags.getInputSource(), null); 
 			}
 

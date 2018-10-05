@@ -27,12 +27,6 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		return new JsonXsltPipe();
 	}
 
-	@Override
-	@Test
-	public void basicNoAdditionalConfig() throws ConfigurationException {
-		exception.expect(ConfigurationException.class);
-		super.basicNoAdditionalConfig();
-	}
 
 //	@Test
 //	public void testGetInput() throws ConfigurationException, PipeStartException, IOException, PipeRunException, DomBuilderException, TransformerException {

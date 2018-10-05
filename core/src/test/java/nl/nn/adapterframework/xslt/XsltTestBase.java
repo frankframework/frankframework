@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.pipes;
+package nl.nn.adapterframework.xslt;
 
 import static org.junit.Assert.assertEquals;
 
@@ -8,26 +8,26 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.pipes.PipeTestBase;
 
-public class XsltPipeTest extends PipeTestBase<XsltPipe> {
+public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 
 	@Mock
-	private IPipeLineSession session;
+	private IPipeLineSession session = new PipeLineSessionBase();
 
-	@Override
-	public XsltPipe createPipe() {
-		return new XsltPipe();
-	}
-
+	protected abstract void setStyleSheetName(String styleSheetName);
+	protected abstract void setXslt2(boolean xslt2);
 	
 	@Test
 	public void basic() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		pipe.setStyleSheetName("/Xslt3/orgchart.xslt");
-		pipe.setXslt2(true);
+		setStyleSheetName("/Xslt3/orgchart.xslt");
+		setXslt2(true);
 		pipe.configure();
 		pipe.start();
 		String input=getFile("/Xslt3/employees.xml");

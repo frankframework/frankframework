@@ -15,12 +15,21 @@
 */
 package nl.nn.adapterframework.senders;
 
+import java.io.IOException;
 import java.util.Map;
 
+import javax.xml.transform.TransformerException;
+
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -38,6 +47,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr>
  * <tr><td>{@link #setSkipEmptyTags(boolean) skipEmptyTags}</td><td>when set <code>true</code> empty tags in the output are removed</td><td>false</td></tr>
  * <tr><td>{@link #setIndentXml(boolean) indentXml}</td><td>when set <code>true</code>, result is pretty-printed. (only used when <code>skipEmptyTags="true"</code>)</td><td>true</td></tr>
+ * <tr><td>{@link #setRemoveNamespaces(boolean) removeNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the input message are removed</td><td>false</td></tr>
+ * <tr><td>{@link #setXslt2(boolean) xslt2}</td><td>when set <code>true</code> XSLT processor 2.0 (net.sf.saxon) will be used, otherwise XSLT processor 1.0 (org.apache.xalan)</td><td>false</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -57,9 +68,12 @@ public class XsltSender extends SenderWithParametersBase {
 	private boolean omitXmlDeclaration=true;
 	private boolean indentXml=true;
 	private boolean skipEmptyTags=false;
+	private boolean removeNamespaces=false;
+	private boolean xslt2=false;
 
 	private TransformerPool transformerPool;
 	private TransformerPool transformerPoolSkipEmptyTags;
+	private TransformerPool transformerPoolRemoveNamespaces;
 
 	
 	/**
@@ -71,9 +85,24 @@ public class XsltSender extends SenderWithParametersBase {
 	public void configure() throws ConfigurationException {
 		super.configure();
 	
-		transformerPool = TransformerPool.configureTransformer(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), paramList);
+		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), paramList, isXslt2());
 		if (isSkipEmptyTags()) {
 			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
+		}
+		if (isRemoveNamespaces()) {
+			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(isOmitXmlDeclaration(),isIndentXml());
+		}
+
+		if (isXslt2()) {
+			ParameterList parameterList = getParameterList();
+			if (parameterList!=null) {
+				for (int i=0; i<parameterList.size(); i++) {
+					Parameter parameter = parameterList.getParameter(i);
+					if (StringUtils.isNotEmpty(parameter.getType()) && "node".equalsIgnoreCase(parameter.getType())) {
+						throw new ConfigurationException(getLogPrefix() + "type \"node\" is not permitted in combination with XSLT 2.0, use type \"domdoc\"");
+					}
+				}
+			}
 		}
 	}
 
@@ -94,6 +123,13 @@ public class XsltSender extends SenderWithParametersBase {
 				throw new SenderException(getLogPrefix()+"cannot start TransformerPool SkipEmptyTags", e);
 			}
 		}
+		if (transformerPoolRemoveNamespaces!=null) {
+			try {
+				transformerPoolRemoveNamespaces.open();
+			} catch (Exception e) {
+				throw new SenderException(getLogPrefix()+"cannot start TransformerPool RemoveNamespaces", e);
+			}
+		}
 	}
 
 	@Override
@@ -105,8 +141,21 @@ public class XsltSender extends SenderWithParametersBase {
 		if (transformerPoolSkipEmptyTags!=null) {
 			transformerPoolSkipEmptyTags.close();
 		}
+		if (transformerPoolRemoveNamespaces!=null) {
+			transformerPoolRemoveNamespaces.close();
+		}
 	}
-	
+
+	protected ParameterResolutionContext adaptInput(String input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
+		if (isRemoveNamespaces()) {
+			log.debug(getLogPrefix()+ " removing namespaces from input message");
+			ParameterResolutionContext prc_RemoveNamespaces = new ParameterResolutionContext(input, prc.getSession(), prc.isNamespaceAware()); 
+			input = transformerPoolRemoveNamespaces.transform(prc_RemoveNamespaces.getInputSource(), null); 
+			log.debug(getLogPrefix()+ " output message after removing namespaces [" + input + "]");
+		}
+		return new ParameterResolutionContext(input, prc.getSession(), prc.isNamespaceAware());
+	}
+
 	/**
 	 * Here the actual transforming is done. Under weblogic the transformer object becomes
 	 * corrupt when a not-well formed xml was handled. The transformer is then re-initialized
@@ -123,6 +172,7 @@ public class XsltSender extends SenderWithParametersBase {
 //		}
 
 		try {
+			prc=adaptInput(message, prc);
 			Map parametervalues = null;
 			if (paramList!=null) {
 				parametervalues = prc.getValueMap(paramList);
@@ -147,7 +197,7 @@ public class XsltSender extends SenderWithParametersBase {
 //			}
 		} 
 		catch (Exception e) {
-			log.warn(getLogPrefix()+"intermediate exception logging",e);
+			//log.warn(getLogPrefix()+"intermediate exception logging",e);
 			throw new SenderException(getLogPrefix()+" Exception on transforming input", e);
 		} 
 		return stringResult;
@@ -215,6 +265,21 @@ public class XsltSender extends SenderWithParametersBase {
 	}
 	public boolean isIndentXml() {
 		return indentXml;
+	}
+
+	public void setRemoveNamespaces(boolean b) {
+		removeNamespaces = b;
+	}
+	public boolean isRemoveNamespaces() {
+		return removeNamespaces;
+	}
+
+	public boolean isXslt2() {
+		return xslt2;
+	}
+
+	public void setXslt2(boolean b) {
+		xslt2 = b;
 	}
 
 }

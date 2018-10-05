@@ -43,27 +43,25 @@ public class TransformerErrorListener implements ErrorListener {
 		this.throwException = throwException;
 	}
 
-	public void error(TransformerException transformerException)
-			throws TransformerException {
+	@Override
+	public void error(TransformerException transformerException) throws TransformerException {
 		if (throwException) {
 			throw transformerException;
 		}
-		log.warn("Nonfatal transformation error: "
-				+ transformerException.getMessage());
+		log.warn("Nonfatal transformation error: " + transformerException.getMessage());
 	}
 
-	public void fatalError(TransformerException transformerException)
-			throws TransformerException {
+	@Override
+	public void fatalError(TransformerException transformerException) throws TransformerException {
 		if (throwException) {
 			throw transformerException;
 		}
 		this.setFatalTransformerException(transformerException);
 	}
 
-	public void warning(TransformerException transformerException)
-			throws TransformerException {
-		log.warn("Nonfatal transformation warning: "
-				+ transformerException.getMessage());
+	@Override
+	public void warning(TransformerException transformerException) throws TransformerException {
+		log.warn("Nonfatal transformation warning: "+ transformerException.getMessage());
 	}
 
 	public void setFatalTransformerException(
