@@ -568,7 +568,11 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 				BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 				boolean lastPart = mimeMultipart.getCount() == i + 1;
 				if (i == 0) {
-					String charset = ContentType.parse(bodyPart.getContentType()).getCharset().name();
+					String charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+					ContentType contentType = ContentType.parse(bodyPart.getContentType());
+					if(contentType.getCharset() != null)
+						charset = contentType.getCharset().name();
+
 					InputStream bodyPartInputStream = bodyPart.getInputStream();
 					result = Misc.streamToString(bodyPartInputStream, charset);
 					if (lastPart) {
