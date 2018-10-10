@@ -18,6 +18,8 @@ package nl.nn.adapterframework.pipes;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -78,8 +80,12 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * to be handled by the caller of this object.
  */
 public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-	Object result=session.get(getSessionKey());
-	
+	String key = getSessionKey();
+	if(StringUtils.isEmpty(key))
+		key = (String) input;
+
+	Object result=session.get(key);
+
 	if (result==null) {
 		log.warn(getLogPrefix(session)+"got null value from session under key ["+getSessionKey()+"]");
 		} else {

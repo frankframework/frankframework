@@ -13,6 +13,7 @@ Upcoming
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 - Fix NPE in HttpSender when no charset is supplied in multipart response
+- Modify GetFromSession to get key from input as well as sessionKey
 
 
 
