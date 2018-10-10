@@ -1,0 +1,3 @@
+POST http://127.0.0.1/ HTTP/1.1
+
+nameOfTheFirstContentId=%3Cxml%3Einput%3C%2Fxml%3E&key=value&otherKey=otherValue

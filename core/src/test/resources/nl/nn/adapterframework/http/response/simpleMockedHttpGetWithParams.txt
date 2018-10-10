@@ -1,0 +1,2 @@
+GET /?key=value&otherKey=otherValue HTTP/1.1
+Content-Type: text/html; charset=UTF-8

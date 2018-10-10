@@ -321,10 +321,10 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 			HttpPost hmethod = new HttpPost(uri.build());
 
 			if (!isMultipart() && StringUtils.isEmpty(getMultipartXmlSessionKey())) {
-				List<NameValuePair> Parameters = new ArrayList<NameValuePair>();
+				List<NameValuePair> requestFormElements = new ArrayList<NameValuePair>();
 
 				if (StringUtils.isNotEmpty(getInputMessageParam())) {
-					Parameters.add(new BasicNameValuePair(getInputMessageParam(),message));
+					requestFormElements.add(new BasicNameValuePair(getInputMessageParam(),message));
 					log.debug(getLogPrefix()+"appended parameter ["+getInputMessageParam()+"] with value ["+message+"]");
 				}
 				if (parameters!=null) {
@@ -336,13 +336,13 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 							hmethod.addHeader(name,value);
 							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended header ["+name+"] with value ["+value+"]");
 						} else {
-							Parameters.add(new BasicNameValuePair(name,value));
+							requestFormElements.add(new BasicNameValuePair(name,value));
 							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
 						}
 					}
 				}
 				try {
-					hmethod.setEntity(new UrlEncodedFormEntity(Parameters));
+					hmethod.setEntity(new UrlEncodedFormEntity(requestFormElements));
 				} catch (UnsupportedEncodingException e) {
 					throw new SenderException(getLogPrefix()+"unsupported encoding for one or more post parameters");
 				}
