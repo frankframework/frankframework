@@ -273,20 +273,42 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/iFrame.html",
 		data: {
 			pageTitle: 'Larva',
-			breadcrumbs: 'Test > Larva'
+			breadcrumbs: 'Test > Larva',
+			specialClass: 'no-scrollbar',
+			hideFooter : true,
+			hideHeader : true
 		},
 		controller: function($scope, Misc, $interval){
 			$scope.url = Misc.getServerPath() + "larva";
 			var iframe = angular.element("iframe");
 			var container = iframe.parent();
 			container.css({"margin-left":"-15px", "margin-right":"-15px"});
-			iframe.css({"height":"800px"});
-			/*iframe[0].onload = function() {
-				$interval(function(){
-					var height = iframe[0].contentWindow.document.body.clientHeight + 50;
-					iframe.css("height", height);
-				}, 50);
-			};*/
+
+			var buffer = 0; //scroll bar buffer
+			var iframe = document.getElementById('ifm');
+
+			function pageY(elem) {
+				return elem.offsetParent ? (elem.offsetTop + pageY(elem.offsetParent)) : elem.offsetTop;
+			}
+
+			function resizeIframe() {
+				var height = document.documentElement.clientHeight;
+				height -= pageY(document.getElementById('ifm'))+ buffer ;
+				height = (height < 0) ? 0 : height;
+				document.getElementById('ifm').style.height = height + 'px';
+			}
+
+			if (iframe.attachEvent) {
+				iframe.attachEvent("onload", resizeIframe);
+			} else {
+				iframe.onload=resizeIframe;
+			}
+
+			window.onresize = resizeIframe;
+
+			$scope.$on('$destroy', function() {
+				window.onresize = null;
+			});
 		}
 	})
 	.state('pages.ladybug', {
@@ -294,21 +316,42 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		templateUrl: "views/iFrame.html",
 		data: {
 			pageTitle: 'Ladybug',
-			breadcrumbs: 'Test > Ladybug'
+			breadcrumbs: 'Test > Ladybug',
+			specialClass: 'no-scrollbar',
+			hideFooter : true,
+			hideHeader : true
 		},
 		controller: function($scope, Misc, $timeout){
 			$scope.url = Misc.getServerPath() + "testtool";
 			var iframe = angular.element("iframe");
 			var container = iframe.parent();
 			container.css({"margin-left":"-15px", "margin-right":"-15px","background-color":"#b4e2ff"});
-			iframe.css({"height":"800px"});
-			iframe[0].onload = function() {
-				var iframeBody = $(iframe[0].contentWindow.document.body);
-				$timeout(function() {
-					var c_13_content_c_14 = iframeBody.children("form").find("#c_13_content_c_14");
-					c_13_content_c_14.css("padding-right", "12px");
-				}, 500);
-			};
+
+			var buffer = 0; //scroll bar buffer
+			var iframe = document.getElementById('ifm');
+
+			function pageY(elem) {
+				return elem.offsetParent ? (elem.offsetTop + pageY(elem.offsetParent)) : elem.offsetTop;
+			}
+
+			function resizeIframe() {
+				var height = document.documentElement.clientHeight;
+				height -= pageY(document.getElementById('ifm'))+ buffer ;
+				height = (height < 0) ? 0 : height;
+				document.getElementById('ifm').style.height = height + 'px';
+			}
+
+			if (iframe.attachEvent) {
+				iframe.attachEvent("onload", resizeIframe);
+			} else {
+				iframe.onload=resizeIframe;
+			}
+
+			window.onresize = resizeIframe;
+
+			$scope.$on('$destroy', function() {
+				window.onresize = null;
+			});
 		}
 	})
 	.state('pages.empty_page', {
