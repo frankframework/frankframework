@@ -14,6 +14,7 @@ Upcoming
 
 - Fix NPE in HttpSender when no charset is supplied in multipart response
 - Modify GetFromSession to get key from input as well as sessionKey
+- Refactor Base64 pipe to handle string, bytes and streams as both input and output
 
 
 
