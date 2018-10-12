@@ -172,7 +172,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		}
 	}
 
-	public List<List<String>> getMetadata(int maxNumberOfRecords,
+	public List<List<Object>> getMetadata(int maxNumberOfRecords,
 			final List<String> metadataNames, List<String> searchValues,
 			int metadataValueType) throws StorageException {
 		// According to SimpleDateFormat javadoc it needs to be synchronised
