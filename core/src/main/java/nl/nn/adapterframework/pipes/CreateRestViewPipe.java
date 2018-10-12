@@ -150,9 +150,10 @@ public class CreateRestViewPipe extends XsltPipe {
 
 	AppConstants appConstants;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		ParameterList parameterList = getParameterList();
-		if (parameterList.findParameter(SRCPREFIX) == null) {
+		if (parameterList==null || parameterList.findParameter(SRCPREFIX) == null) {
 			Parameter p = new Parameter();
 			p.setName(SRCPREFIX);
 			p.setSessionKey(SRCPREFIX);
@@ -162,6 +163,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		super.configure();
 	}
 
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(IPipeLineSession.HTTP_REQUEST_KEY);
 		String requestURL = httpServletRequest.getRequestURL().toString();
@@ -182,8 +184,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		ServletContext servletContext = (ServletContext) session.get(IPipeLineSession.SERVLET_CONTEXT_KEY);
 
 		try {
-			Map parameters = retrieveParameters(httpServletRequest,
-					servletContext, srcPrefix);
+			Map<String,Object> parameters = retrieveParameters(httpServletRequest, servletContext, srcPrefix);
 			newResult = XmlUtils.getAdapterSite(result, parameters);
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session)
@@ -197,12 +198,12 @@ public class CreateRestViewPipe extends XsltPipe {
 		return new PipeRunResult(getForward(), newResult);
 	}
 
-	private Map retrieveParameters(HttpServletRequest httpServletRequest,
+	private Map<String,Object> retrieveParameters(HttpServletRequest httpServletRequest,
 			ServletContext servletContext, String srcPrefix)
 			throws DomBuilderException {
 		String attributeKey = AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_CONTEXT);
 		IbisContext ibisContext = (IbisContext) servletContext.getAttribute(attributeKey);
-		Map parameters = new Hashtable();
+		Map<String,Object> parameters = new Hashtable<String,Object>();
 		String requestInfoXml = "<requestInfo>" + "<servletRequest>"
 				+ "<serverInfo><![CDATA[" + servletContext.getServerInfo()
 				+ "]]></serverInfo>" + "<serverName>"
