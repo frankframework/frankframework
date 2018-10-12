@@ -396,9 +396,9 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * Add a parameter to the list of parameters
 	 * @param rhs the PipeParameter.
 	 */
-	public void addParameter(Parameter rhs) {
-		log.debug("Pipe ["+getName()+"] added parameter ["+rhs.toString()+"]");
-		parameterList.add(rhs);
+	public void addParameter(Parameter param) {
+		log.debug("Pipe ["+getName()+"] added parameter ["+param.toString()+"]");
+		parameterList.add(param);
 	}
 
 	/**
