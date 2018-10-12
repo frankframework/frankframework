@@ -15,10 +15,6 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.IOException;
-import java.util.Map;
-
-import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
@@ -28,12 +24,11 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.senders.XsltSender;
 
 
 /**
@@ -80,20 +75,9 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class XsltPipe extends FixedForwardPipe {
 
-	private String xpathExpression=null;
-	private String namespaceDefs = null; 
-	private String outputType="text";
-	private String styleSheetName;
-	private boolean omitXmlDeclaration=true;
-	private boolean indentXml=true;
 	private String sessionKey=null;
-	private boolean skipEmptyTags=false;
-	private boolean removeNamespaces=false;
-	private boolean xslt2=false;
-
-	private TransformerPool transformerPool;
-	private TransformerPool transformerPoolSkipEmptyTags;
-	private TransformerPool transformerPoolRemoveNamespaces;
+	
+	private XsltSender sender = new XsltSender();
 
 	{
 		setSizeStatistics(true);
@@ -107,81 +91,61 @@ public class XsltPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 	    super.configure();
-	
-		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), classLoader, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), isXslt2());
-		if (isSkipEmptyTags()) {
-			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
-		}
-		if (isRemoveNamespaces()) {
-			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(isOmitXmlDeclaration(),isIndentXml());
-		}
-
-		if (isXslt2()) {
-			ParameterList parameterList = getParameterList();
-			for (int i=0; i<parameterList.size(); i++) {
-				Parameter parameter = parameterList.getParameter(i);
-				if (StringUtils.isNotEmpty(parameter.getType()) && "node".equalsIgnoreCase(parameter.getType())) {
-					throw new ConfigurationException(getLogPrefix(null) + "type \"node\" is not permitted in combination with XSLT 2.0, use type \"domdoc\"");
-				}
-			}
-		}
+	    sender.setName(getName());
+	    sender.configure();
 	}
 
 	@Override
 	public void start() throws PipeStartException {
 		super.start();
-		if (transformerPool!=null) {
-			try {
-				transformerPool.open();
-			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start TransformerPool", e);
-			}
-		}
-		if (transformerPoolSkipEmptyTags!=null) {
-			try {
-				transformerPoolSkipEmptyTags.open();
-			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start TransformerPool SkipEmptyTags", e);
-			}
-		}
-		if (transformerPoolRemoveNamespaces!=null) {
-			try {
-				transformerPoolRemoveNamespaces.open();
-			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start TransformerPool RemoveNamespaces", e);
-			}
+		try {
+			sender.open();
+		} catch (SenderException e) {
+			throw new PipeStartException(e);
 		}
 	}
 	
 	@Override
 	public void stop() {
+		try {
+			sender.close();
+		} catch (SenderException e) {
+			log.warn(getLogPrefix(null)+"exception closing XsltSender",e);
+		}
 		super.stop();
-		if (transformerPool!=null) {
-			transformerPool.close();
-		}
-		if (transformerPoolSkipEmptyTags!=null) {
-			transformerPoolSkipEmptyTags.close();
-		}
-		if (transformerPoolRemoveNamespaces!=null) {
-			transformerPoolRemoveNamespaces.close();
-		}
 	}
 	
-	protected ParameterResolutionContext getInput(String input, IPipeLineSession session) throws PipeRunException, DomBuilderException, TransformerException, IOException {
-		if (isRemoveNamespaces()) {
-			log.debug(getLogPrefix(session)+ " removing namespaces from input message");
-			ParameterResolutionContext prc_RemoveNamespaces = new ParameterResolutionContext(input, session, isNamespaceAware()); 
-			input = transformerPoolRemoveNamespaces.transform(prc_RemoveNamespaces.getInputSource(), null); 
-			log.debug(getLogPrefix(session)+ " output message after removing namespaces [" + input + "]");
-		}
-		return new ParameterResolutionContext(input, session, isNamespaceAware());
-	}
+//	protected ParameterResolutionContext getInput(String input, IPipeLineSession session) throws PipeRunException, DomBuilderException, TransformerException, IOException {
+//		if (isRemoveNamespaces()) {
+//			log.debug(getLogPrefix(session)+ " removing namespaces from input message");
+//			ParameterResolutionContext prc_RemoveNamespaces = new ParameterResolutionContext(input, session, isNamespaceAware()); 
+//			input = transformerPoolRemoveNamespaces.transform(prc_RemoveNamespaces.getInputSource(), null); 
+//			log.debug(getLogPrefix(session)+ " output message after removing namespaces [" + input + "]");
+//		}
+//		return new ParameterResolutionContext(input, session, isNamespaceAware());
+//	}
 
+	/**
+	 * @param input  
+	 * @param session  
+	 */
+	protected String getInputXml(Object input, IPipeLineSession session) throws TransformerException {
+		return (String)input;
+	}
+	
+//	/*
+//	 * Allow to override transformation, so JsonXslt can prefix and suffix...
+//	 */
+//	protected String transform(TransformerPool tp, Source source, Map<String,Object> parametervalues) throws TransformerException, IOException {
+//		return tp.transform(source, parametervalues);
+//	}
 	/*
 	 * Allow to override transformation, so JsonXslt can prefix and suffix...
 	 */
-	protected String transform(TransformerPool tp, Source source, Map<String,Object> parametervalues) throws TransformerException, IOException {
-		return tp.transform(source, parametervalues);
+	protected String transform(Object input, IPipeLineSession session) throws SenderException, TransformerException {
+ 	    String inputXml=getInputXml(input, session);
+		ParameterResolutionContext prc = new ParameterResolutionContext(inputXml, session, isNamespaceAware()); 
+		return sender.sendMessage(null, inputXml, prc);
 	}
 	/**
 	 * Here the actual transforming is done. Under weblogic the transformer object becomes
@@ -196,30 +160,10 @@ public class XsltPipe extends FixedForwardPipe {
  	    if (!(input instanceof String)) {
 	        throw new PipeRunException(this, getLogPrefix(session)+"got an invalid type as input, expected String, got " + input.getClass().getName());
 	    }
-		String stringResult =(String) input;
 
-		//ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session, isNamespaceAware()); 
 	    try {
-
-			ParameterResolutionContext prc = getInput(stringResult, session);
-			Map<String,Object> parametervalues = null;
-			ParameterList parameterList = getParameterList();
-			if (parameterList!=null) {
-				parametervalues = prc.getValueMap(parameterList);
-			}
-			
-	        //stringResult = transformerPool.transform(prc.getInputSource(), parametervalues); 
-	        stringResult = transform(transformerPool,prc.getInputSource(), parametervalues);
-
-			if (isSkipEmptyTags()) {
-				log.debug(getLogPrefix(session)+ " skipping empty tags from result [" + stringResult + "]");
-				//URL xsltSource = ClassUtils.getResourceURL( this, skipEmptyTags_xslt);
-				//Transformer transformer = XmlUtils.createTransformer(xsltSource);
-				//stringResult = XmlUtils.transformXml(transformer, stringResult);
-				ParameterResolutionContext prc_SkipEmptyTags = new ParameterResolutionContext(stringResult, session, true); 
-				stringResult = transformerPoolSkipEmptyTags.transform(prc_SkipEmptyTags.getInputSource(), null); 
-			}
-
+	    	String stringResult = transform(input, session);
+		
 			if (StringUtils.isEmpty(getSessionKey())){
 				return new PipeRunResult(getForward(), stringResult);
 			}
@@ -234,36 +178,36 @@ public class XsltPipe extends FixedForwardPipe {
 	/**
 	 * Specify the stylesheet to use
 	 */
-	public void setStyleSheetName(String stylesheetName){
-		this.styleSheetName=stylesheetName;
+	public void setStyleSheetName(String stylesheetName) {
+		sender.setStyleSheetName(stylesheetName);
 	}
 	public String getStyleSheetName() {
-		return styleSheetName;
+		return sender.getStyleSheetName();
 	}
 
 	/**
 	 * set the "omit xml declaration" on the transfomer. Defaults to true.
 	 */
 	public void setOmitXmlDeclaration(boolean b) {
-		omitXmlDeclaration = b;
+		sender.setOmitXmlDeclaration(b);
 	}
 	public boolean isOmitXmlDeclaration() {
-		return omitXmlDeclaration;
+		return sender.isOmitXmlDeclaration();
 	}
 
 
 	public void setXpathExpression(String string) {
-		xpathExpression = string;
+		sender.setXpathExpression(string);
 	}
 	public String getXpathExpression() {
-		return xpathExpression;
+		return sender.getXpathExpression();
 	}
 
 	public void setNamespaceDefs(String namespaceDefs) {
-		this.namespaceDefs = namespaceDefs;
+		sender.setNamespaceDefs(namespaceDefs);
 	}
 	public String getNamespaceDefs() {
-		return namespaceDefs;
+		return sender.getNamespaceDefs();
 	}
 
 	/**
@@ -279,39 +223,49 @@ public class XsltPipe extends FixedForwardPipe {
 
 
 	public void setOutputType(String string) {
-		outputType = string;
+		sender.setOutputType(string);
 	}
 	public String getOutputType() {
-		return outputType;
+		return sender.getOutputType();
 	}
 
 
 	public void setSkipEmptyTags(boolean b) {
-		skipEmptyTags = b;
+		sender.setSkipEmptyTags(b);
 	}
 	public boolean isSkipEmptyTags() {
-		return skipEmptyTags;
+		return sender.isSkipEmptyTags();
 	}
 
 	public void setIndentXml(boolean b) {
-		indentXml = b;
+		sender.setIndentXml(b);
 	}
 	public boolean isIndentXml() {
-		return indentXml;
+		return sender.isIndentXml();
 	}
 
 	public void setRemoveNamespaces(boolean b) {
-		removeNamespaces = b;
+		sender.setRemoveNamespaces(b);
 	}
 	public boolean isRemoveNamespaces() {
-		return removeNamespaces;
+		return sender.isRemoveNamespaces();
 	}
 
 	public boolean isXslt2() {
-		return xslt2;
+		return sender.isXslt2();
 	}
 
 	public void setXslt2(boolean b) {
-		xslt2 = b;
+		sender.setXslt2(b);
+	}
+
+	@Override
+	public ParameterList getParameterList() {
+		return sender.getParameterList();
+	}
+
+	@Override
+	public void addParameter(Parameter rhs) {
+		sender.addParameter(rhs);
 	}
 }

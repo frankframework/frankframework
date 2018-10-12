@@ -18,6 +18,7 @@ package nl.nn.adapterframework.senders;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
@@ -70,6 +71,7 @@ public class XsltSender extends SenderWithParametersBase {
 	private boolean skipEmptyTags=false;
 	private boolean removeNamespaces=false;
 	private boolean xslt2=false;
+	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 
 	private TransformerPool transformerPool;
 	private TransformerPool transformerPoolSkipEmptyTags;
@@ -85,7 +87,7 @@ public class XsltSender extends SenderWithParametersBase {
 	public void configure() throws ConfigurationException {
 		super.configure();
 	
-		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), paramList, isXslt2());
+		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), isXslt2());
 		if (isSkipEmptyTags()) {
 			transformerPoolSkipEmptyTags = XmlUtils.getSkipEmptyTagsTransformerPool(isOmitXmlDeclaration(),isIndentXml());
 		}
@@ -146,14 +148,14 @@ public class XsltSender extends SenderWithParametersBase {
 		}
 	}
 
-	protected ParameterResolutionContext adaptInput(String input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
+	protected Source adaptInput(String input, ParameterResolutionContext prc) throws PipeRunException, DomBuilderException, TransformerException, IOException {
 		if (isRemoveNamespaces()) {
 			log.debug(getLogPrefix()+ " removing namespaces from input message");
-			ParameterResolutionContext prc_RemoveNamespaces = new ParameterResolutionContext(input, prc.getSession(), prc.isNamespaceAware()); 
-			input = transformerPoolRemoveNamespaces.transform(prc_RemoveNamespaces.getInputSource(), null); 
+			input = transformerPoolRemoveNamespaces.transform(prc.getInputSource(isNamespaceAware()), null); 
 			log.debug(getLogPrefix()+ " output message after removing namespaces [" + input + "]");
+			return XmlUtils.stringToSourceForSingleUse(input, isNamespaceAware());
 		}
-		return new ParameterResolutionContext(input, prc.getSession(), prc.isNamespaceAware());
+		return prc.getInputSource(isNamespaceAware());
 	}
 
 	/**
@@ -172,8 +174,8 @@ public class XsltSender extends SenderWithParametersBase {
 //		}
 
 		try {
-			prc=adaptInput(message, prc);
-			Map parametervalues = null;
+			Source inputMsg=adaptInput(message, prc);
+			Map<String,Object> parametervalues = null;
 			if (paramList!=null) {
 				parametervalues = prc.getValueMap(paramList);
 			}
@@ -182,15 +184,14 @@ public class XsltSender extends SenderWithParametersBase {
 //				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
 //			}
 			
-			stringResult = transformerPool.transform(prc.getInputSource(), parametervalues); 
+			stringResult = transformerPool.transform(inputMsg, parametervalues); 
 
 			if (isSkipEmptyTags()) {
 				log.debug(getLogPrefix()+ " skipping empty tags from result [" + stringResult + "]");
 				//URL xsltSource = ClassUtils.getResourceURL( this, skipEmptyTags_xslt);
 				//Transformer transformer = XmlUtils.createTransformer(xsltSource);
 				//stringResult = XmlUtils.transformXml(transformer, stringResult);
-				ParameterResolutionContext prc_SkipEmptyTags = new ParameterResolutionContext(stringResult, prc.getSession(), prc.isNamespaceAware()); 
-				stringResult = transformerPoolSkipEmptyTags.transform(prc_SkipEmptyTags.getInputSource(), null); 
+				stringResult = transformerPoolSkipEmptyTags.transform(XmlUtils.stringToSourceForSingleUse(stringResult, isNamespaceAware()), null); 
 			}
 //			if (log.isDebugEnabled()) {
 //				log.debug(getLogPrefix()+" transformed input ["+message+"] to ["+stringResult+"]");
@@ -280,6 +281,13 @@ public class XsltSender extends SenderWithParametersBase {
 
 	public void setXslt2(boolean b) {
 		xslt2 = b;
+	}
+
+	public void setNamespaceAware(boolean b) {
+		namespaceAware = b;
+	}
+	public boolean isNamespaceAware() {
+		return namespaceAware;
 	}
 
 }

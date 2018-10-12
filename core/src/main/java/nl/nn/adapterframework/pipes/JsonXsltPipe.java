@@ -15,10 +15,8 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Map;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -32,11 +30,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JsonXmlReader;
-import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlJsonWriter;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -99,6 +95,19 @@ public class JsonXsltPipe extends XsltPipe {
         return writer.toString();
 	}
 
+	private String xml2Json(String xml) throws TransformerException, DomBuilderException {
+
+		Source source=XmlUtils.stringToSourceForSingleUse(xml);
+        SAXResult result = new SAXResult();
+		XmlJsonWriter xjw = new XmlJsonWriter();
+		result.setHandler(xjw);
+        TransformerFactory tf = XmlUtils.getTransformerFactory(false);
+        Transformer transformer = tf.newTransformer();
+        transformer.transform(source, result);
+		return xjw.toString();
+
+	}
+
 //	private Node jsonToDom(String json) throws TransformerException, DomBuilderException {
 //		XMLReader reader=new JsonXmlReader();
 //		Source source=new SAXSource(reader, new InputSource(new StringReader(json)));
@@ -110,10 +119,10 @@ public class JsonXsltPipe extends XsltPipe {
 //	}
 
 	@Override
-	protected ParameterResolutionContext getInput(String input, IPipeLineSession session) throws PipeRunException, DomBuilderException, TransformerException, IOException {
+	protected String getInputXml(Object input, IPipeLineSession session) throws TransformerException {
 		//TODO: GvB: use SAXSource for primary transformation, instead of first converting to XML String. However, there appears to be a problem with that currently.
-		String xml=jsonToXml(input);
-		return super.getInput(xml, session);
+		return jsonToXml(super.getInputXml(input, session));
+//		return super.getInput(xml, session);
 
 //		Node node = jsonToDom(input);
 ////		System.out.println("node: "+ToStringBuilder.reflectionToString(node));
@@ -126,12 +135,20 @@ public class JsonXsltPipe extends XsltPipe {
 	}
 	
 	@Override
-	protected String transform(TransformerPool tp, Source source, Map parametervalues) throws TransformerException, IOException {
-		SAXResult result = new SAXResult();
-		XmlJsonWriter xjw = new XmlJsonWriter();
-		result.setHandler(xjw);
-		tp.transform(source, result, parametervalues);
-		return xjw.toString();
+	protected String transform(Object input, IPipeLineSession session) throws SenderException, TransformerException {
+		String xmlResult=super.transform(input, session);
+		try {
+			return xml2Json(xmlResult);
+		} catch (DomBuilderException e) {
+			throw new TransformerException(e);
+		}
 	}
+//	protected String transform(TransformerPool tp, Source source, Map parametervalues) throws TransformerException, IOException {
+//		SAXResult result = new SAXResult();
+//		XmlJsonWriter xjw = new XmlJsonWriter();
+//		result.setHandler(xjw);
+//		tp.transform(source, result, parametervalues);
+//		return xjw.toString();
+//	}
 	
 }

@@ -20,6 +20,27 @@ public class XsltSenderTest extends XsltErrorTestBase<GenericMessageSendingPipe>
 	protected void setStyleSheetName(String styleSheetName) {
 		sender.setStyleSheetName(styleSheetName);		
 	}
+	
+	@Override
+	protected void setOmitXmlDeclaration(boolean omitXmlDeclaration) {
+		sender.setOmitXmlDeclaration(omitXmlDeclaration);
+	}
+
+	@Override
+	protected void setIndent(boolean indent) {
+		sender.setIndentXml(indent);
+	}
+
+	@Override
+	protected void setSkipEmptyTags(boolean skipEmptyTags) {
+		sender.setSkipEmptyTags(skipEmptyTags);
+	}
+
+	@Override
+	protected void setRemoveNamespaces(boolean removeNamespaces) {
+		sender.setRemoveNamespaces(removeNamespaces);
+	}
+
 
 	@Override
 	protected void setXslt2(boolean xslt2) {

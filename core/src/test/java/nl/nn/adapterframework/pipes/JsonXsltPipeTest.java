@@ -67,6 +67,7 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 
 	public void assertJsonEqual(String description, String jsonExp, String jsonAct) {
 		JsonStructure jExp=string2Json(jsonExp);
+		log.debug("jsonAct: ["+jsonAct+"]");
 		JsonStructure jAct=string2Json(jsonAct);
 		assertEquals(description,jExp.toString(),jAct.toString());
 		//assertEquals(description,inputJson,jsonOut);

@@ -21,6 +21,26 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 	}
 
 	@Override
+	protected void setOmitXmlDeclaration(boolean omitXmlDeclaration) {
+		pipe.setOmitXmlDeclaration(omitXmlDeclaration);
+	}
+
+	@Override
+	protected void setIndent(boolean indent) {
+		pipe.setIndentXml(indent);
+	}
+
+	@Override
+	protected void setSkipEmptyTags(boolean skipEmptyTags) {
+		pipe.setSkipEmptyTags(skipEmptyTags);
+	}
+
+	@Override
+	protected void setRemoveNamespaces(boolean removeNamespaces) {
+		pipe.setRemoveNamespaces(removeNamespaces);
+	}
+
+	@Override
 	protected void setXslt2(boolean xslt2) {
 		pipe.setXslt2(xslt2);
 	}
