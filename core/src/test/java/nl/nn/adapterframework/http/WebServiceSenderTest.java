@@ -18,38 +18,38 @@ package nl.nn.adapterframework.http;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.Misc;
 
 import org.junit.Test;
 
-public class HttpSenderTest extends BaseHttpSender<HttpSender> {
+public class WebServiceSenderTest extends BaseHttpSender<WebServiceSender> {
 
 	@Override
-	public HttpSender createSender() {
-		return spy(new HttpSender());
+	public WebServiceSender createSender() {
+		WebServiceSender sender = spy(new WebServiceSender());
+		sender.setSoap(false);
+		return sender;
 	}
 
 	@Test
-	public void simpleMockedHttpGet() throws Throwable {
-		HttpSender sender = getSender();
-		String input = "hallo";
+	public void simpleMockedWss() throws Throwable {
+		WebServiceSender sender = getSender();
+		String input = "<hallo/>";
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase();
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
-			sender.setMethodType("GET");
-
 			sender.configure();
 			sender.open();
 
 			String result = sender.sendMessage(null, input, prc);
-			assertEquals(Misc.streamToString(getFile("simpleMockedHttpGet.txt")), result);
+			assertEquals(Misc.streamToString(getFile("simpleMockedWss.txt")), result);
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -60,31 +60,21 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 	}
 
 	@Test
-	public void simpleMockedHttpGetWithParams() throws Throwable {
-		HttpSender sender = getSender();
-		String input = "hallo";
+	public void simpleMockedWssSoapAction() throws Throwable {
+		WebServiceSender sender = getSender();
+		String input = "<hallo/>";
 
 		try {
 			IPipeLineSession pls = new PipeLineSessionBase();
 			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
 
-			Parameter param1 = new Parameter();
-			param1.setName("key");
-			param1.setValue("value");
-			sender.addParameter(param1);
-
-			Parameter param2 = new Parameter();
-			param2.setName("otherKey");
-			param2.setValue("otherValue");
-			sender.addParameter(param2);
-
-			sender.setMethodType("GET");
+			sender.setSoapAction(sender.getUrl());
 
 			sender.configure();
 			sender.open();
 
 			String result = sender.sendMessage(null, input, prc);
-			assertEquals(Misc.streamToString(getFile("simpleMockedHttpGetWithParams.txt")), result);
+			assertEquals(Misc.streamToString(getFile("simpleMockedWssSoapAction.txt")), result);
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -95,45 +85,8 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 	}
 
 	@Test
-	public void simpleMockedHttpPost() throws Throwable {
-		HttpSender sender = getSender();
-		String input = "<xml>input</xml>";
-
-		try {
-			IPipeLineSession pls = new PipeLineSessionBase();
-			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
-
-			Parameter param1 = new Parameter();
-			param1.setName("key");
-			param1.setValue("value");
-			sender.addParameter(param1);
-
-			Parameter param2 = new Parameter();
-			param2.setName("otherKey");
-			param2.setValue("otherValue");
-			sender.addParameter(param2);
-
-			sender.setMethodType("POST");
-			sender.setParamsInUrl(false);
-			sender.setInputMessageParam("nameOfTheFirstContentId");
-
-			sender.configure();
-			sender.open();
-
-			String result = sender.sendMessage(null, input, prc);
-			assertEquals(Misc.streamToString(getFile("simpleMockedHttpPost.txt")), result);
-		} catch (SenderException e) {
-			throw e.getCause();
-		} finally {
-			if (sender != null) {
-				sender.close();
-			}
-		}
-	}
-
-	@Test
-	public void simpleMockedHttpMultipart() throws Throwable {
-		HttpSender sender = getSender();
+	public void simpleMockedWssMultipart() throws Throwable {
+		WebServiceSender sender = getSender();
 		String input = "<xml>input</xml>";
 
 		try {
@@ -156,7 +109,7 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 			sender.open();
 
 			String result = sender.sendMessage(null, input, prc);
-			assertEquals(Misc.streamToString(getFile("simpleMockedHttpMultipart.txt")), result);
+			assertEquals(Misc.streamToString(getFile("simpleMockedWssMultipart.txt")), result);
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -167,8 +120,45 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 	}
 
 	@Test
-	public void simpleMockedHttpMtom() throws Throwable {
-		HttpSender sender = getSender();
+	public void simpleMockedWssMultipart2() throws Throwable {
+		WebServiceSender sender = getSender();
+		String input = "<xml>input</xml>";
+
+		try {
+			IPipeLineSession pls = new PipeLineSessionBase();
+			ParameterResolutionContext prc = new ParameterResolutionContext(input, pls);
+
+			sender.setMethodType("POST");
+			sender.setParamsInUrl(false);
+			sender.setInputMessageParam("request");
+
+			String xmlMultipart = "<parts>"
+					+ "<part type=\"file\" name=\"document1.pdf\" sessionKey=\"part_file1\" mimeType=\"application/pdf\"/>"
+					+ "<part type=\"file\" name=\"document2.pdf\" sessionKey=\"part_file2\" mimeType=\"application/pdf\"/>"
+					+ "</parts>";
+			pls.put("multipartXml", xmlMultipart);
+			pls.put("part_file1", new ByteArrayInputStream("<dummy pdf file/>".getBytes()));
+			pls.put("part_file2", new ByteArrayInputStream("<dummy pdf file/>".getBytes()));
+
+			sender.setMultipartXmlSessionKey("multipartXml");
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(null, input, prc);
+			assertEquals(Misc.streamToString(getFile("simpleMockedWssMultipart2.txt")), result);
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void simpleMockedWssMtom() throws Throwable {
+		WebServiceSender sender = getSender();
 		String input = "<xml>input</xml>";
 
 		try {
@@ -192,7 +182,7 @@ public class HttpSenderTest extends BaseHttpSender<HttpSender> {
 			sender.open();
 
 			String result = sender.sendMessage(null, input, prc);
-			assertEquals(Misc.streamToString(getFile("simpleMockedHttpMtom.txt")), result);
+			assertEquals(Misc.streamToString(getFile("simpleMockedWssMtom.txt")), result);
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
