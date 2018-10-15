@@ -151,7 +151,7 @@ public class HttpSenderResultTest extends Mockito {
 
 			//Use InputStream 'content' as result.
 			String result = sender.sendMessage(null, "", prc);
-			assertEquals("PGR1bW15IHJlc3VsdC8+", result);
+			assertEquals("PGR1bW15IHJlc3VsdC8+", result.trim());
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -165,7 +165,7 @@ public class HttpSenderResultTest extends Mockito {
 	public void testBase64Decoder() throws IOException {
 		HttpSender sender = createHttpSender();
 		InputStream content = new ByteArrayInputStream("<dummy result/>".getBytes());
-		String result = sender.getResponseBodyAsBase64(content);
+		String result = sender.getResponseBodyAsBase64(content).trim();
 		assertEquals("PGR1bW15IHJlc3VsdC8+", result);
 	}
 
@@ -187,7 +187,7 @@ public class HttpSenderResultTest extends Mockito {
 
 			//Use InputStream 'content' as result.
 			String result = sender.sendMessage(null, "tralala", prc);
-			assertEquals("PGR1bW15IHJlc3VsdC8+", result);
+			assertEquals("PGR1bW15IHJlc3VsdC8+", result.trim());
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

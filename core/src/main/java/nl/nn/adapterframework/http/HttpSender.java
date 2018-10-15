@@ -33,7 +33,6 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletResponse;
 
-import jcifs.util.Base64;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -48,6 +47,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
+import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -548,12 +548,10 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	}
 
 	public String getResponseBodyAsBase64(InputStream is) throws IOException {
-		byte[] bytes = Misc.streamToBytes(is);
-		if (bytes == null) {
-			return null;
-		}
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"base64 encodes response body");
-		return Base64.encode(bytes);
+		InputStream base64 = new Base64InputStream(is, true);
+
+		return Misc.streamToString(base64);
 	}
 
 	public static String handleMultipartResponse(HttpResponseHandler httpHandler, ParameterResolutionContext prc) throws IOException, SenderException {
