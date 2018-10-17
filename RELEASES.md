@@ -16,6 +16,7 @@ Upcoming
 - Modify GetFromSession to get key from input as well as sessionKey
 - Refactor Base64Pipe to handle string, bytes and streams as both input and output
 - Upgrade ibis-ladybug to latest version. See ladybug [releases.md](https://github.com/ibissource/ibis-ladybug/blob/master/RELEASES.md) for more info
+- Add SambaSender to retrieve, upload and modify files through the SMB protocol
 
 
 
