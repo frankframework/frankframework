@@ -79,16 +79,13 @@ public class ShadowSender extends ParallelSenders {
 			if(sender.getName() != null && sender.getName().equalsIgnoreCase(getOriginalSender())) {
 				if(hasOriginalSender)
 					throw new ConfigurationException("originalSender can only be defined once");
-				else
-					hasOriginalSender = true;
+				hasOriginalSender = true;
 			}
 			else if(sender.getName() != null && sender.getName().equalsIgnoreCase(getResultSender())) {
 				if(hasResultSender)
 					throw new ConfigurationException("resultSender can only be defined once");
-				else {
-					hasResultSender = true;
-					resultISender = sender;
-				}
+				hasResultSender = true;
+				resultISender = sender;
 			}
 			else
 				hasShadowSender = true;
@@ -116,22 +113,22 @@ public class ShadowSender extends ParallelSenders {
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();
 
+		// Create a new ParameterResolutionContext to be thread safe, see
+		// documentation on constructor of ParameterResolutionContext
+		// (parameter cacheXmlSource).
+		// Testing also showed that disabling caching is better for
+		// performance. At least when testing with a lot of large messages
+		// in parallel. This might be due to the fact that objects can be
+		// garbage collected earlier. OutOfMemoryErrors occur much
+		// faster when caching is enabled. Testing was done by sending 10
+		// messages of 1 MB concurrently to a pipeline which will process
+		// the message in parallel with 10 SenderWrappers (containing a
+		// XsltSender and IbisLocalSender).
+		ParameterResolutionContext newPrc = new ParameterResolutionContext(
+				prc.getInput(), prc.getSession(), prc.isNamespaceAware(),
+				false, false);
 		for (Iterator<ISender> it = getExecutableSenders(); it.hasNext();) {
 			ISender sender = it.next();
-			// Create a new ParameterResolutionContext to be thread safe, see
-			// documentation on constructor of ParameterResolutionContext
-			// (parameter cacheXmlSource).
-			// Testing also showed that disabling caching is better for
-			// performance. At least when testing with a lot of large messages
-			// in parallel. This might be due to the fact that objects can be
-			// garbage collected earlier. OutOfMemoryErrors occur much
-			// faster when caching is enabled. Testing was done by sending 10
-			// messages of 1 MB concurrently to a pipeline which will process
-			// the message in parallel with 10 SenderWrappers (containing a
-			// XsltSender and IbisLocalSender).
-			ParameterResolutionContext newPrc = new ParameterResolutionContext(
-					prc.getInput(), prc.getSession(), prc.isNamespaceAware(),
-					false, false);
 			guard.addResource();
 			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender,
 					correlationID, message, newPrc, guard,
@@ -157,7 +154,7 @@ public class ShadowSender extends ParallelSenders {
 		// First loop through all (Shadow)Senders and handle their results
 		for (Iterator<ISender> it = getExecutableSenders(); it.hasNext();) {
 			ISender sender = it.next();
-			ParallelSenderExecutor pse = (ParallelSenderExecutor) executorMap.get(sender);
+			ParallelSenderExecutor pse = executorMap.get(sender);
 
 			XmlBuilder resultXml;
 			if(sender.getName() != null && sender.getName().equalsIgnoreCase(getOriginalSender())) {
@@ -200,8 +197,8 @@ public class ShadowSender extends ParallelSenders {
 		//The messages have been processed, now the results need to be stored somewhere.
 		try {
 			if(resultISender instanceof ISenderWithParameters) {
-				ParameterResolutionContext newPrc = new ParameterResolutionContext(resultsXml.toXML(), prc.getSession());
-				((ISenderWithParameters) resultISender).sendMessage(correlationID, resultsXml.toXML(), newPrc);
+				ParameterResolutionContext newPrc2 = new ParameterResolutionContext(resultsXml.toXML(), prc.getSession());
+				((ISenderWithParameters) resultISender).sendMessage(correlationID, resultsXml.toXML(), newPrc2);
 			}
 			else {
 				resultISender.sendMessage(correlationID, resultsXml.toXML());
@@ -214,9 +211,7 @@ public class ShadowSender extends ParallelSenders {
 		if (originalSender.getThrowable() != null) {
 			throw new SenderException(originalSender.getThrowable());
 		}
-		else {
-			return originalSender.getReply().toString();
-		}
+		return originalSender.getReply().toString();
 	}
 
 	protected Iterator<ISender> getExecutableSenders() {

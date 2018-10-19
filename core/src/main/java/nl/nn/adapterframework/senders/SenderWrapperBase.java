@@ -32,7 +32,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Baseclasse for Wrappers for senders, that allows to get input from a session variable, and to store output in a session variable.
+ * Baseclass for Wrappers for senders, that allows to get input from a session variable, and to store output in a session variable.
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -97,7 +97,10 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	public abstract String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException; 
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		return senderWrapperProcessor.sendMessage(this, correlationID, message, prc);
+		if (senderWrapperProcessor!=null) {
+			return senderWrapperProcessor.sendMessage(this, correlationID, message, prc);
+		}
+		return doSendMessage(correlationID, message, prc);
 	}
 
 	public String getLogPrefix() {
