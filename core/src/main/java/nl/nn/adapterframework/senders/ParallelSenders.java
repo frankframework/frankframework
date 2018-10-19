@@ -57,27 +57,29 @@ public class ParallelSenders extends SenderSeries {
 
 	private int maxConcurrentThreads = 0;
 
+	@Override
 	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();
 
+		// Create a new ParameterResolutionContext to be thread safe, see
+		// documentation on constructor of ParameterResolutionContext
+		// (parameter cacheXmlSource).
+		// Testing also showed that disabling caching is better for
+		// performance. At least when testing with a lot of large messages
+		// in parallel. This might be due to the fact that objects can be
+		// garbage collected earlier. OutOfMemoryErrors occur much
+		// faster when caching is enabled. Testing was done by sending 10
+		// messages of 1 MB concurrently to a pipeline which will process
+		// the message in parallel with 10 SenderWrappers (containing a
+		// XsltSender and IbisLocalSender).
+		ParameterResolutionContext newPrc = new ParameterResolutionContext(
+				prc.getInput(), prc.getSession(), prc.isNamespaceAware(),
+				false, false);
+		
 		for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
 			ISender sender = it.next();
-			// Create a new ParameterResolutionContext to be thread safe, see
-			// documentation on constructor of ParameterResolutionContext
-			// (parameter cacheXmlSource).
-			// Testing also showed that disabling caching is better for
-			// performance. At least when testing with a lot of large messages
-			// in parallel. This might be due to the fact that objects can be
-			// garbage collected earlier. OutOfMemoryErrors occur much
-			// faster when caching is enabled. Testing was done by sending 10
-			// messages of 1 MB concurrently to a pipeline which will process
-			// the message in parallel with 10 SenderWrappers (containing a
-			// XsltSender and IbisLocalSender).
-			ParameterResolutionContext newPrc = new ParameterResolutionContext(
-					prc.getInput(), prc.getSession(), prc.isNamespaceAware(),
-					false, false);
 			guard.addResource();
 			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender,
 					correlationID, message, newPrc, guard,
@@ -95,7 +97,7 @@ public class ParallelSenders extends SenderSeries {
 		XmlBuilder resultsXml = new XmlBuilder("results");
 		for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
 			ISender sender = it.next();
-			ParallelSenderExecutor pse = (ParallelSenderExecutor) executorMap.get(sender);
+			ParallelSenderExecutor pse = executorMap.get(sender);
 			XmlBuilder resultXml = new XmlBuilder("result");
 			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
 			resultXml.addAttribute("senderName", sender.getName());
@@ -117,6 +119,7 @@ public class ParallelSenders extends SenderSeries {
 		return resultsXml.toXML();
 	}
 
+	@Override
 	public void setSynchronous(boolean value) {
 		if (!isSynchronous()) {
 			super.setSynchronous(value); 

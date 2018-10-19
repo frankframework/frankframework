@@ -23,8 +23,7 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 	
 	public static final String IDENTITY_STYLESHEET="/Xslt/identity.xslt";
 
-	@Mock
-	private IPipeLineSession session = new PipeLineSessionBase();
+	private IPipeLineSession session;
 
 	protected abstract void setStyleSheetName(String styleSheetName);
 	protected abstract void setOmitXmlDeclaration(boolean omitXmlDeclaration);
@@ -32,6 +31,16 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 	protected abstract void setSkipEmptyTags(boolean skipEmptyTags);
 	protected abstract void setRemoveNamespaces(boolean removeNamespaces);
 	protected abstract void setXslt2(boolean xslt2);
+	
+	@Override
+	public void setup() throws ConfigurationException {
+		super.setup();
+		session = new PipeLineSessionBase();
+	}
+
+	protected void assertResultsAreCorrect(String expected, String actual, IPipeLineSession session) {
+		assertEquals(expected,actual);	
+	}
 	
 	protected void testXslt(String styleSheetName, String input, String expected, Boolean omitXmlDeclaration, Boolean indent, Boolean skipEmptyTags, Boolean removeNamespaces, Boolean xslt2) throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		setStyleSheetName(styleSheetName);
@@ -54,8 +63,7 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 		pipe.start();
 		PipeRunResult prr = pipe.doPipe(input,session);
 		String xmlOut=(String)prr.getResult();
-		assertEquals(expected,xmlOut.trim());
-		
+		assertResultsAreCorrect(expected,xmlOut.trim(),session);
 	}
 	
 	@Test
@@ -117,7 +125,4 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 //		String lineSeparator=System.getProperty("line.separator");
 //		testRemoveNamespaces("<root><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"<a>a</a>"+lineSeparator+"<b/>"+lineSeparator+"<c/>"+lineSeparator+"</root>",true,true);
 //	}
-	
-	
-	
 }

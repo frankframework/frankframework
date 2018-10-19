@@ -36,6 +36,10 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 	private TestAppender testAppender;
 	private ErrorOutputStream errorOutputStream;
 
+	protected int getMultiplicity() {
+		return 1;
+	}
+	
 	private class ErrorOutputStream extends OutputStream {
 		private StringBuilder line = new StringBuilder();
 
@@ -132,7 +136,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		pipe.start();
 		assertThat(errorOutputStream.toString(),isEmptyString());
 		assertThat(testAppender.toString(),containsString("is included or imported more than once"));
-		assertEquals(1, testAppender.getNumberOfAlerts());
+		assertEquals(getMultiplicity(), testAppender.getNumberOfAlerts());
 	}
 
 	public void duplicateImportErrorProcessing(boolean xslt2) throws SenderException, TimeOutException, ConfigurationException, IOException, PipeRunException, PipeStartException {
@@ -147,7 +151,8 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 
 		PipeRunResult prr=pipe.doPipe(input, session);
 
-		assertEquals(expected.replaceAll("\\s",""), prr.getResult().toString().replaceAll("\\s",""));
+		//assertResultsAreCorrect(expected, prr.getResult().toString(),session);
+		assertResultsAreCorrect(expected.replaceAll("\\s",""), prr.getResult().toString().replaceAll("\\s",""),session);
 	}
 
 	
@@ -166,6 +171,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 		redirectErrorOutput();
 		setStyleSheetName("/Xslt/documentNotFound/root.xsl");
 		setXslt2(false);
+		setIndent(true);
 		pipe.configure();
 		pipe.start();
 		String input = getFile("/Xslt/documentNotFound/in.xml");
@@ -183,7 +189,7 @@ public abstract class XsltErrorTestBase<P extends IPipe> extends XsltTestBase<P>
 	}
 
 	@Test
-	public void documentNotFoundXlt2() throws Exception {
+	public void documentNotFoundXslt2() throws Exception {
 		// error not during configure(), but during doPipe()
 		redirectErrorOutput();
 		setStyleSheetName("/Xslt/documentNotFound/root2.xsl");
