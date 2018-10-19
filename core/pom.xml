@@ -501,5 +501,14 @@
 			<version>2.3.5</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- Gerrit says: required when compiling with IBM JDK -->
+		<dependency>
+			<groupId>com.sun.net.ssl</groupId>
+			<artifactId>com.sun.net.ssl</artifactId>
+			<version>1</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/com.sun.net.ssl.jar</systemPath>
+		</dependency>
 	</dependencies>
 </project>
