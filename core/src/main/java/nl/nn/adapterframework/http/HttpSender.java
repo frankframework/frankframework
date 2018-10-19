@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -548,10 +548,13 @@ public class HttpSender extends HttpSenderBase implements HasPhysicalDestination
 	}
 
 	public String getResponseBodyAsBase64(InputStream is) throws IOException {
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"base64 encodes response body");
-		InputStream base64 = new Base64InputStream(is, true);
+		byte[] bytes = Misc.streamToBytes(is);
+		if (bytes == null) {
+			return null;
+		}
 
-		return Misc.streamToString(base64);
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"base64 encodes response body");
+		return Base64.encodeBase64String(bytes);
 	}
 
 	public static String handleMultipartResponse(HttpResponseHandler httpHandler, ParameterResolutionContext prc) throws IOException, SenderException {
