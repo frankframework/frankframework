@@ -17,6 +17,8 @@ Upcoming
 - Refactor Base64Pipe to handle string, bytes and streams as both input and output
 - Upgrade ibis-ladybug to latest version. See ladybug [releases.md](https://github.com/ibissource/ibis-ladybug/blob/master/RELEASES.md) for more info
 - Add SambaSender to retrieve, upload and modify files through the SMB protocol
+- Add parameters to JmsListeners to add JMS headers to the response message
+- Add attribute to JmsSenders to read JMS headers and add them to the pipeline session
 
 
 

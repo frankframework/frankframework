@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,10 @@
 package nl.nn.adapterframework.jms;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -71,6 +75,7 @@ import nl.nn.adapterframework.util.DomBuilderException;
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapHeaderParam(String) soapHeaderParam}</td><td>name of parameter containing SOAP header</td><td>soapHeader</td></tr>
  * <tr><td>{@link #setReplySoapHeaderSessionKey(String) replySoapHeaderSessionKey}</td><td>session key to store SOAP header of reply</td><td>soapHeader</td></tr>
+ * <tr><td>{@link #setResponseHeadersToSessionKeys(String) responseHeaders}</td><td>a list with JMS Headers to add to the IPipeLineSession</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -100,7 +105,9 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	private String linkMethod="MESSAGEID";
 	
 	protected ParameterList paramList = null;
-	private SoapWrapper soapWrapper=null;
+	private SoapWrapper soapWrapper = null;
+	private String responseHeaders = null;
+	private List<String> responseHeadersList = new ArrayList<String>();
 
 	/**
 	 * Configures the sender
@@ -122,6 +129,13 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 			//String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
 			//configWarnings.add(log, msg);
 			soapWrapper=SoapWrapper.getInstance();
+		}
+
+		if (responseHeaders != null) {
+			StringTokenizer st = new StringTokenizer(responseHeaders, ",");
+			while (st.hasMoreElements()) {
+				responseHeadersList.add(st.nextToken());
+			}
 		}
 	}
 
@@ -254,6 +268,15 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 					Message rawReplyMsg = mc.receive(getReplyTimeout());
 					if (rawReplyMsg==null) {
 						throw new TimeOutException("did not receive reply on [" + replyQueue + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] within ["+getReplyTimeout()+"] ms");
+					}
+					if(getResponseHeadersList().size() > 0) {
+						Enumeration<?> propertyNames = rawReplyMsg.getPropertyNames();
+						while(propertyNames.hasMoreElements()) {
+							String jmsProperty = (String) propertyNames.nextElement();
+							if(getResponseHeadersList().contains(jmsProperty)) {
+								prc.getSession().put(jmsProperty, rawReplyMsg.getObjectProperty(jmsProperty));
+							}
+						}
 					}
 					return getStringFromRawMessage(rawReplyMsg, prc!=null?prc.getSession():null, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
 				} finally {
@@ -447,4 +470,10 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return linkMethod;
 	}
 
+	public void setResponseHeadersToSessionKeys(String responseHeaders) {
+		this.responseHeaders = responseHeaders;
+	}
+	public List<String> getResponseHeadersList() {
+		return responseHeadersList;
+	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -87,10 +87,11 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		super.configure();
 	}
 
-	protected String retrieveIdFromMessage(Message message, Map threadContext) throws ListenerException {
+	@Override
+	protected String retrieveIdFromMessage(Message message, Map<String, Object> threadContext) throws ListenerException {
 		String id = super.retrieveIdFromMessage(message, threadContext);
 		if (isCopyAEProperties()) {
-			Enumeration propertyNames = null;
+			Enumeration<?> propertyNames = null;
 			try {
 				propertyNames = message.getPropertyNames();
 			} catch (JMSException e) {
@@ -133,7 +134,8 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		return id;
 	}
 
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {
+	@Override
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		super.afterMessageProcessed(plr, rawMessage, threadContext);
 		if (getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY)) {
 			Destination replyTo = (Destination) threadContext.get("replyTo");
@@ -143,24 +145,28 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		}
 	}
 
-	public Map getMessagePropertiesToSet(Map threadContext) {
+	@Override
+	protected Map<String, Object> getMessageProperties(Map<String, Object> threadContext) {
+		Map<String, Object> properties = super.getMessageProperties(threadContext);
+
 		if (isCopyAEProperties()) {
-			Map properties = new HashMap();
-			if (threadContext!=null) {
-				for (Iterator it = threadContext.keySet().iterator(); it.hasNext();) {
-					String key = (String)it.next();
+			if(properties == null)
+				properties = new HashMap<String, Object>();
+
+			if (threadContext != null) {
+				for (Iterator<String> it = threadContext.keySet().iterator(); it.hasNext();) {
+					String key = it.next();
 					if (key.startsWith("ae_")) {
 						Object value = threadContext.get(key);
 						properties.put(key, value);
 					}
 				}
 			}
-			return properties;
-		} else {
-			return null;
 		}
+
+		return properties;
 	}
-	
+
 	public void setMessageProtocol(String string) {
 		messageProtocol = string;
 	}

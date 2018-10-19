@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -558,7 +558,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException) throws NamingException, JMSException, SenderException {
 		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, ignoreInvalidDestinationException, null);
 	}
-	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map properties) throws NamingException, JMSException, SenderException {
+	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws NamingException, JMSException, SenderException {
 		TextMessage msg = createTextMessage(session, correlationId, message);
 		MessageProducer mp;
 		try {
@@ -598,8 +598,8 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 			mp.setTimeToLive(timeToLive);
 		}
 		if (properties!=null) {
-			for (Iterator it = properties.keySet().iterator(); it.hasNext();) {
-				String key = (String)it.next();
+			for (Iterator<String> it = properties.keySet().iterator(); it.hasNext();) {
+				String key = it.next();
 				Object value = properties.get(key);
 				log.debug("setting property ["+name+"] to value ["+value+"]");
 				msg.setObjectProperty(key, value);

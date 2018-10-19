@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -176,9 +176,11 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 	}
 
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {
+
+	@Override
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		String cid     = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
-		Session session= (Session) threadContext.get(jmsConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
+		Session session= (Session) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PushingJmsListener.afterMessageProcessed()");
 		try {
@@ -204,7 +206,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 						}
 					}
 				}
-				Map properties = getMessagePropertiesToSet(threadContext);
+				Map<String, Object> properties = getMessageProperties(threadContext);
 				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} else {
 				if (getSender()==null) {
@@ -239,10 +241,6 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 				throw new ListenerException(e);
 			}
 		}
-	}
-
-	public Map getMessagePropertiesToSet(Map threadContext) {
-		return null;
 	}
 
     public void setJmsConnector(IListenerConnector configurator) {

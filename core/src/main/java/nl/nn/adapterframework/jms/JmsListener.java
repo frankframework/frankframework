@@ -76,6 +76,8 @@ package nl.nn.adapterframework.jms;
  * specified {@link #setSender(ISender) Sender}, that in turn sends the message to
  * whatever it is configured to.</p>
  * 
+ * <p>You can add parameters to the JmsListener, the values will be added as Headers to the JMS response message.</p>
+ * 
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
  * <code>javax.jms.TextMessage</code>s <br/><br/>
  * </p>

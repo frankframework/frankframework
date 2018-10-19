@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.jms;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -29,9 +30,12 @@ import javax.jms.TextMessage;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -77,7 +81,7 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class JmsListenerBase extends JMSFacade implements HasSender {
+public class JmsListenerBase extends JMSFacade implements HasSender, IWithParameters {
 
 	private long timeOut = 1000; // Same default value as Spring: https://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/jms/listener/AbstractPollingMessageListenerContainer.html#setReceiveTimeout(long)
 	private boolean useReplyTo=true;
@@ -104,6 +108,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 	
 	private SoapWrapper soapWrapper=null;
 
+	private ParameterList paramList = null;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -118,6 +123,10 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 			sender.configure();
 		}
 		configurexPathLogging();
+
+		if (paramList!=null) {
+			paramList.configure();
+		}
 	}
 	
 	protected Map<String, String> getxPathLogMap() {
@@ -172,7 +181,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 	 * @param rawMessage - Original message received, can not be <code>null</code>
 	 * @param threadContext - Thread context to be populated, can not be <code>null</code>
 	 */
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
+	public String getIdFromRawMessage(Object rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		TextMessage message = null;
 		try {
 			message = (TextMessage) rawMessage;
@@ -200,7 +209,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 		return found;
 	}
 	
-	protected String retrieveIdFromMessage(Message message, Map threadContext) throws ListenerException {
+	protected String retrieveIdFromMessage(Message message, Map<String, Object> threadContext) throws ListenerException {
 		String cid = "unset";
 		String mode = "unknown";
 		String id = "unset";
@@ -321,6 +330,64 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 	}
 	public ISender getSender() {
 		return sender;
+	}
+
+	/**
+	 * Set additional message headers/properties on the JMS response, read after message has been processed!
+	 * @param threadContext which has been build during the pipeline
+	 * @return a map with headers to set to the JMS response
+	 */
+	protected Map<String, Object> getMessageProperties(Map<String, Object> threadContext) {
+		Map<String, Object> properties = null;
+
+		if (threadContext != null && paramList != null) {
+			if(properties == null) {
+				properties = new HashMap<String, Object>();
+			}
+			properties.putAll(evaluateParameters(threadContext));
+		}
+
+		return properties;
+	}
+
+	@Override
+	public void addParameter(Parameter p) {
+		if (paramList==null) {
+			paramList=new ParameterList();
+		}
+		paramList.add(p);
+	}
+
+	/**
+	 * return the Parameters
+	 */
+	public ParameterList getParameterList() {
+		return paramList;
+	}
+
+	/**
+	 * Retrieve JMS properties from the threadContext
+	 * @param threadContext used throughout the pipeline
+	 * @return a map with JMS headers to set
+	 */
+	private Map<String, Object> evaluateParameters(Map<String, Object> threadContext) {
+		Map<String, Object> result = new HashMap<String, Object>();
+		if (threadContext != null && paramList != null) {
+			for (Iterator<Parameter> parmIterator = paramList.iterator(); parmIterator.hasNext(); ) {
+				Parameter param = parmIterator.next();
+				Object value = param.getValue();
+
+				if(StringUtils.isNotEmpty(param.getSessionKey())) {
+					log.debug("trying to resolve sessionKey["+param.getSessionKey()+"]");
+					Object resolvedValue = threadContext.get(param.getSessionKey());
+					if(resolvedValue != null)
+						value = resolvedValue;
+				}
+
+				result.put(param.getName(), value);
+			}
+		}
+		return result;
 	}
 
 	/**
