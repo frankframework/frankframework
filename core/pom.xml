@@ -509,6 +509,5 @@
 		    <scope>system</scope>
 		    <systemPath>${basedir}/com.sun.net.ssl.jar</systemPath>
 		</dependency>
-		
 	</dependencies>
 </project>
