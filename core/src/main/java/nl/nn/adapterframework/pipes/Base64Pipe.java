@@ -59,6 +59,7 @@ public class Base64Pipe extends FixedForwardPipe {
 	private String lineSeparator = "auto";
 	private String charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 	private String outputType = "string";
+	private boolean convertToString = true;
 
 	private List<String> outputTypes = Arrays.asList("string", "bytes", "stream");
 
@@ -89,6 +90,15 @@ public class Base64Pipe extends FixedForwardPipe {
 			} else {
 				setLineSeparatorArray(getLineSeparator());
 			}
+		}
+
+		if(!convertToString) {
+			String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute convert2String is deprecated. Please specify an outputType instead";
+			ConfigurationWarnings.getInstance().add(log, msg, true);
+
+			//Allow this for backwards compatibility
+			if(getDirection().equals("decode"))
+				setOutputType("bytes");
 		}
 	}
 
@@ -146,15 +156,14 @@ public class Base64Pipe extends FixedForwardPipe {
 		return direction;
 	}
 
-	//Legacy adapters
-	//If true and decoding, result is returned as a string, otherwise as a byte array.
-	//If true and encoding, input is read as a string, otherwise as a byte array.	
+	/**
+	 * If true and decoding, result is returned as a string, otherwise as a byte array.
+	 * If true and encoding, input is read as a string, otherwise as a byte array.
+	 * @deprecated please use outputType instead
+	 * @param b convert result to string or outputStream depending on the direction used
+	 */
 	public void setConvert2String(boolean b) {
-		String msg = ClassUtils.nameOf(this) +": the attribute convert2String is deprecated. Please specify an outputType instead";
-		ConfigurationWarnings.getInstance().add(log, msg, true);
-
-		if(getDirection().equals("decode") && !b)
-			setOutputType("bytes");
+		convertToString = b;
 	}
 
 	public void setOutputType(String outputType) {

@@ -102,8 +102,8 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		pipe.start();
 
 		PipeRunResult prr = pipe.doPipe(output, session);
-		String result = (String) prr.getResult();
-		assertEquals(input, result.trim());
+		byte[] result = (byte[]) prr.getResult();
+		assertEquals(input, new String(result).trim());
 	}
 
 	//String input encode
