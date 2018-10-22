@@ -19,6 +19,7 @@ Upcoming
 - Add SambaSender to retrieve, upload and modify files through the SMB protocol
 - Add parameters to JmsListeners to add JMS headers to the response message
 - Add attribute to JmsSenders to read JMS headers and add them to the pipeline session
+- Fix NPE in ErrorMessageFormatter when used with dynamic configurations
 
 
 

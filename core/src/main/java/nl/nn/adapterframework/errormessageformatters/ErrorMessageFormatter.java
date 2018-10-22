@@ -49,7 +49,8 @@ import org.apache.log4j.Logger;
  */
 public class ErrorMessageFormatter implements IErrorMessageFormatter {
     protected Logger log = LogUtil.getLogger(this);
-	
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
 	/**
 	 * Format the available parameters into a XML-message.
 	 *
@@ -112,5 +113,13 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 			}
 		}
 		return message;
+	}
+
+	/**
+	 * Get ClassLoader to resolve files
+	 * @return runtime ClassLoader of the loaded configuration
+	 */
+	protected ClassLoader getClassLoader() {
+		return this.classLoader;
 	}
 }

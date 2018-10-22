@@ -1,11 +1,11 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.errormessageformatters;
 
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Map;
 
 import javax.xml.transform.Transformer;
@@ -59,44 +60,39 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 
 	protected ParameterList paramList = null;
 
-    private String styleSheet;
+	private String styleSheet;
 	private String xpathExpression;
 
 	@Override
-	public String format(
-	    String message,
-	    Throwable t,
-	    INamedObject location,
-	    String originalMessage,
-	    String messageId,
-	    long receivedTime) {
-	
+	public String format(String message, Throwable t, INamedObject location, String originalMessage, String messageId, long receivedTime) {
+
 		String result = super.format(message, t, location, originalMessage, messageId, receivedTime);
-	
-	    if (StringUtils.isNotEmpty(getStyleSheet()) || StringUtils.isNotEmpty(getXpathExpression())) {
-	
-	        try {
-	            Transformer errorTransformer;
-	            
-	            if (StringUtils.isNotEmpty(getStyleSheet())) {
-					errorTransformer = XmlUtils.createTransformer(ClassUtils.getResourceURL(this, styleSheet));
-	            } else {
-	            	String xpath = getXpathExpression();
-//	            	if (StringUtils.isEmpty(xpath)) {
-//	            		xpath="/errorMessage/@message";
-//	            	}
+
+		if (StringUtils.isNotEmpty(getStyleSheet()) || StringUtils.isNotEmpty(getXpathExpression())) {
+			try {
+				Transformer errorTransformer;
+
+				if (StringUtils.isNotEmpty(getStyleSheet())) {
+					URL url = ClassUtils.getResourceURL(getClassLoader(), styleSheet);
+					errorTransformer = XmlUtils.createTransformer(url);
+				}
+				else {
+					String xpath = getXpathExpression();
+//					if (StringUtils.isEmpty(xpath)) {
+//						xpath="/errorMessage/@message";
+//					}
 					errorTransformer = XmlUtils.createTransformer(XmlUtils.createXPathEvaluatorSource(xpath));
-	            }
+				}
 
 				ParameterList params = getParameterList();
-				if (params!=null) {
+				if (params != null) {
 					try {
 						params.configure();
 					} catch (ConfigurationException e) {
 						log.error("exception while configuring parameters",e);
 					}
-						ParameterResolutionContext prc = new ParameterResolutionContext(message, new PipeLineSessionBase());
 
+					ParameterResolutionContext prc = new ParameterResolutionContext(message, new PipeLineSessionBase());
 					Map<String, Object> parametervalues = null;
 					try {
 						parametervalues = prc.getValueMap(params);
@@ -106,20 +102,20 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 
 					XmlUtils.setTransformerParameters(errorTransformer, parametervalues );
 				}
-	            result = XmlUtils.transformXml(errorTransformer, result);
-	        } catch (IOException e) {
-	            log.error(" cannot retrieve [" + styleSheet + "]", e);
-	        } catch (javax.xml.transform.TransformerConfigurationException te) {
-	            log.error("got error creating transformer from file [" + styleSheet + "]", te);
-	        } catch (Exception tfe) {
-	            log.error(
-	                "could not transform [" + result + "] using stylesheet [" + styleSheet + "]",
-	                tfe);
-	        }
-	    } else
-	        log.warn("no stylesheet defined for XslErrorMessageFormatter");
-	    return result;
-		    
+				result = XmlUtils.transformXml(errorTransformer, result);
+			} catch (IOException e) {
+				log.error(" cannot retrieve [" + styleSheet + "]", e);
+			} catch (javax.xml.transform.TransformerConfigurationException te) {
+				log.error("got error creating transformer from file [" + styleSheet + "]", te);
+			} catch (Exception tfe) {
+				log.error("could not transform [" + result + "] using stylesheet [" + styleSheet + "]", tfe);
+			}
+		}
+		else {
+			log.warn("no stylesheet defined for XslErrorMessageFormatter");
+		}
+
+		return result;
 	}
 
 	public void addParameter(Parameter p) {
@@ -132,7 +128,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	public ParameterList getParameterList() {
 		return paramList;
 	}
-	
+
 	/**
 	 * URL to the stylesheet used to transform the output of the standard {@link ErrorMessageFormatter} 
 	 */
@@ -149,5 +145,4 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	public String getXpathExpression() {
 		return xpathExpression;
 	}
-
 }
