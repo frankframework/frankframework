@@ -501,14 +501,22 @@
 			<version>2.3.5</version>
 			<scope>test</scope>
 		</dependency>
-
-		<!-- Gerrit says: required when compiling with IBM JDK -->
-		<dependency>
-			<groupId>com.sun.net.ssl</groupId>
-			<artifactId>com.sun.net.ssl</artifactId>
-			<version>1</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/com.sun.net.ssl.jar</systemPath>
-		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>ibm-jdk</id>
+			<dependencies>
+				<!-- Gerrit says: required when compiling with IBM JDK -->
+				<!-- Niels says: The POM for org.ibissource:ibis-adapterframework-core:jar is invalid! -->
+				<dependency>
+					<groupId>com.sun.net</groupId>
+					<artifactId>ssl</artifactId>
+					<version>1</version>
+					<scope>provided</scope>
+					<optional>true</optional>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
 </project>
