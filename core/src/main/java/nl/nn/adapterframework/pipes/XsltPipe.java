@@ -251,6 +251,15 @@ public class XsltPipe extends FixedForwardPipe {
 		return sender.isRemoveNamespaces();
 	}
 
+	@Override
+	public void setNamespaceAware(boolean b) {
+		sender.setNamespaceAware(b);
+	}
+	@Override
+	public boolean isNamespaceAware() {
+		return sender.isNamespaceAware();
+	}
+
 	public boolean isXslt2() {
 		return sender.isXslt2();
 	}
