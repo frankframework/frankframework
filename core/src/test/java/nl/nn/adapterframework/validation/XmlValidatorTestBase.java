@@ -22,6 +22,13 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
     	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_ERR,false,MSG_CANNOT_FIND_DECLARATION);
     }
 
+//    @Test
+//    public void straighforwardInEnvelope() throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
+//    	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_OK_IN_ENVELOPE,false,null);
+//    	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_INVALID_CONTENT);
+//    	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_OK_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
+//    	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
+//    }
 
     @Test
     public void addTargetNamespace() throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
@@ -48,10 +55,19 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 
     @Test
     public void missingMandatoryElement() throws Exception {
-        validate(ROOT_NAMESPACE_GPBDB,
-        		SCHEMA_LOCATION_SOAP_ENVELOPE,
-				INPUT_FILE_GPBDB_NOBODY,MSG_IS_NOT_COMPLETE);
+        validate(ROOT_NAMESPACE_GPBDB, SCHEMA_LOCATION_SOAP_ENVELOPE, INPUT_FILE_GPBDB_NOBODY,MSG_IS_NOT_COMPLETE);
     }
+
+    public String getExpectedErrorForPlainText() {
+    	return "Content is not allowed in prolog";
+    }
+    
+    @Test
+    public void validatePlainText() throws Exception {
+    	String inputFile=INPUT_FILE_BASIC_PLAIN_TEXT;
+    	validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK,inputFile,getExpectedErrorForPlainText());
+    }
+
 
 
 	
@@ -137,4 +153,6 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
         validate(ROOT_NAMESPACE_GPBDB,SCHEMA_LOCATION_SOAP_ENVELOPE, INPUT_FILE_GPBDB_OK,MSG_UNKNOWN_NAMESPACE);
     }
 
+
+    
 }

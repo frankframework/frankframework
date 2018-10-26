@@ -1,17 +1,20 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.mockito.Mockito.mock;
+
+import java.io.IOException;
+
+import javax.wsdl.WSDLException;
+
+import org.junit.Test;
+import org.xml.sax.SAXException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.validation.ValidatorTestBase;
 import nl.nn.adapterframework.validation.XmlValidatorException;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
-import javax.wsdl.WSDLException;
-import java.io.IOException;
-
-import static org.mockito.Mockito.mock;
 
 
 /**
@@ -21,10 +24,10 @@ import static org.mockito.Mockito.mock;
 
 public class WsdlXmlValidatorTest {
 
-    private static final String SIMPLE                = "validation/SimpleWsdl/simple.wsdl";
-    private static final String SIMPLE_WITH_INCLUDE   = "validation/SimpleWsdl/simple_withinclude.wsdl";
-    private static final String SIMPLE_WITH_REFERENCE = "validation/SimpleWsdl/simple_withreference.wsdl";
-    private static final String TIBCO                 = "Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1.wsdl";
+    private static final String SIMPLE                = "WsdlValidation/SimpleWsdl/simple.wsdl";
+    private static final String SIMPLE_WITH_INCLUDE   = "WsdlValidation/SimpleWsdl/simple_withinclude.wsdl";
+    private static final String SIMPLE_WITH_REFERENCE = "WsdlValidation/SimpleWsdl/simple_withreference.wsdl";
+    private static final String TIBCO                 = ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1.wsdl";
 
 
     private IPipeLineSession session = mock(IPipeLineSession.class);

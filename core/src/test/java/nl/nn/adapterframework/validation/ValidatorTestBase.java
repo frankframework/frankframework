@@ -27,30 +27,36 @@ public abstract class ValidatorTestBase extends TestCase {
 	public String MSG_SCHEMA_NOT_FOUND="Cannot find";
 	public String MSG_CANNOT_RESOLVE="Cannot resolve the name";
 	public String MSG_IS_NOT_COMPLETE="is not complete";
-	
+
+	public static String BASE_DIR_VALIDATION="/Validation";
+
 	public String ROOT_NAMESPACE_GPBDB="http://schemas.xmlsoap.org/soap/envelope/";
-	public String SCHEMA_LOCATION_SOAP_ENVELOPE ="http://schemas.xmlsoap.org/soap/envelope/ /Tibco/xsd/soap/envelope.xsd";
-	public String SCHEMA_LOCATION_GPBDB_MESSAGE ="http://www.ing.com/CSP/XSD/General/Message_2 /Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/Message_2.xsd";
-	public String SCHEMA_LOCATION_GPBDB_AFDTYPES="http://ing.nn.afd/AFDTypes /Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/AFDTypes.xsd";
-	public String SCHEMA_LOCATION_GPBDB_REQUEST ="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01 /Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/bankingcustomer_generate_01_getpartybasicdatabanking_request_01.xsd";
-	public String SCHEMA_LOCATION_GPBDB_RESPONSE="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01 /Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/bankingcustomer_generate_01_getpartybasicdatabanking_response_01.xsd";
-	public String SCHEMA_LOCATION_GPBDB_GPBDB   ="http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01 /Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/getpartybasicdatabanking_01.xsd";
+	public String SCHEMA_LOCATION_SOAP_ENVELOPE ="http://schemas.xmlsoap.org/soap/envelope/ "+		BASE_DIR_VALIDATION+"/Tibco/xsd/soap/envelope.xsd";
+	public static String SCHEMA_LOCATION_GPBDB_MESSAGE ="http://www.ing.com/CSP/XSD/General/Message_2 "+	BASE_DIR_VALIDATION+"/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/Message_2.xsd";
+	public static String SCHEMA_LOCATION_GPBDB_AFDTYPES="http://ing.nn.afd/AFDTypes "+						BASE_DIR_VALIDATION+"/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/AFDTypes.xsd";
+	public static String SCHEMA_LOCATION_GPBDB_REQUEST ="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01 "+	BASE_DIR_VALIDATION+"/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/bankingcustomer_generate_01_getpartybasicdatabanking_request_01.xsd";
+	public static String SCHEMA_LOCATION_GPBDB_RESPONSE="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_response_01 "+	BASE_DIR_VALIDATION+"/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/bankingcustomer_generate_01_getpartybasicdatabanking_response_01.xsd";
+	public static String SCHEMA_LOCATION_GPBDB_GPBDB   ="http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01 "+			BASE_DIR_VALIDATION+"/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/getpartybasicdatabanking_01.xsd";
 	
-	public String INPUT_FILE_GPBDB_NOBODY="/Tibco/in/noBody";
-	public String INPUT_FILE_GPBDB_OK="/Tibco/in/step5";
-	public String INPUT_FILE_GPBDB_ERR1="/Tibco/in/step5error_unknown_namespace";
-	public String INPUT_FILE_GPBDB_ERR2="/Tibco/in/step5error_wrong_tag";
+	public String INPUT_FILE_GPBDB_NOBODY=BASE_DIR_VALIDATION+"/Tibco/in/noBody";
+	public String INPUT_FILE_GPBDB_OK=BASE_DIR_VALIDATION+"/Tibco/in/step5";
+	public String INPUT_FILE_GPBDB_ERR1=BASE_DIR_VALIDATION+"/Tibco/in/step5error_unknown_namespace";
+	public String INPUT_FILE_GPBDB_ERR2=BASE_DIR_VALIDATION+"/Tibco/in/step5error_wrong_tag";
+	
 	
 	public String ROOT_NAMESPACE_BASIC="http://www.ing.com/testxmlns";
-	public String SCHEMA_LOCATION_BASIC_A_OK                            ="http://www.ing.com/testxmlns /Basic/xsd/A_correct.xsd"	;
-	public String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE            ="http://www.ing.com/testxmlns /Basic/xsd/A_without_targetnamespace.xsd";
-	public String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE_MISMATCH   ="http://www.ing.com/testxmlns_mismatch /Basic/xsd/A_without_targetnamespace.xsd";
+	public String SCHEMA_LOCATION_BASIC_A_OK                            ="http://www.ing.com/testxmlns "+BASE_DIR_VALIDATION+"/Basic/xsd/A_correct.xsd"	;
+	public String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE            ="http://www.ing.com/testxmlns "+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
+	public String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE_MISMATCH   ="http://www.ing.com/testxmlns_mismatch "+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
+	
+	public String INPUT_FILE_BASIC_A_OK=BASE_DIR_VALIDATION+"/Basic/in/ok";
+	public String INPUT_FILE_BASIC_A_OK_IN_ENVELOPE=BASE_DIR_VALIDATION+"/Basic/in/ok-in-envelope";
+	public String INPUT_FILE_BASIC_A_ERR=BASE_DIR_VALIDATION+"/Basic/in/with_errors";
+	public String INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE=BASE_DIR_VALIDATION+"/Basic/in/with_errors-in-envelope";
+	public String INPUT_FILE_BASIC_A_ENTITY_EXPANSION=BASE_DIR_VALIDATION+"/Basic/in/entityExpansion";
+	public String INPUT_FILE_BASIC_PLAIN_TEXT=BASE_DIR_VALIDATION+"/Basic/in/plainText";
 
 	
-	public String INPUT_FILE_BASIC_A_OK="/Basic/in/ok";
-	public String INPUT_FILE_BASIC_A_ERR="/Basic/in/with_errors";
-	public String INPUT_FILE_BASIC_A_ENTITY_EXPANSION="/Basic/in/entityExpansion";
-
 	public String SCHEMA_LOCATION_ARRAYS                            	="urn:arrays /Arrays/arrays.xsd";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON		="/Arrays/arrays-compact";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_FULL_JSON			="/Arrays/arrays-full";
@@ -65,10 +71,14 @@ public abstract class ValidatorTestBase extends TestCase {
     	validate(rootNamespace, schemaLocation, false, false, inputFile, expectedFailureReasons);
     }
 
-    protected void validation(String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
+    protected void validation(String rootElement, String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
     	String expected[]={ expectedFailureReason };
     	if (expectedFailureReason==null) expected=null;
-    	validate(rootNamespace,schemaLocation,addNamespaceToSchema,false,inputfile, expected);
+    	validate(rootElement, rootNamespace,schemaLocation,addNamespaceToSchema,false,inputfile, expected);
+    }
+
+    protected void validation(String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
+    	validation(null,rootNamespace,schemaLocation,inputfile,addNamespaceToSchema, expectedFailureReason);
     }
 
     public void validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, String inputFile, String expectedFailureReason) throws Exception {
@@ -87,7 +97,10 @@ public abstract class ValidatorTestBase extends TestCase {
     	validate(rootNamespace, schemaLocation, false, false, inputFile, expected );
     }
 
-    public abstract String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException, PipeRunException, IOException;
+    public abstract String validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException, PipeRunException, IOException;
+    public String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException, PipeRunException, IOException {
+    	return validate(null, rootNamespace, schemaLocation, addNamespaceToSchema, ignoreUnknownNamespaces, inputFile, expectedFailureReasons);
+    }
 
     public void evaluateResult(String event, IPipeLineSession session, Exception e, String[] expectedFailureReasons) {
         String failureReason=(String)(session.get("failureReason"));

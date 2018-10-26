@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<Envelope xmlns="http://www.ing.com/testxmlns">
+               <Body>
+                              <A>
+  <!-- this XML is valid according to /src/test/resources/GetIntermediaryAgreementDetails/xsd/A_without_targetnamespace.xsd -->
+  <B xmlns="http://xmlns/b"/>
+</A>
+               </Body>
+</Envelope>

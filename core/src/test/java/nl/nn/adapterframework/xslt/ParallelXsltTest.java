@@ -9,6 +9,7 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.GenericMessageSendingPipe;
 import nl.nn.adapterframework.senders.ParallelSenders;
 import nl.nn.adapterframework.senders.SenderSeries;
@@ -43,6 +44,10 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 			XsltSender sender = new XsltSender();
 			//sender.setSessionKey("out"+i);
 			sender.setOmitXmlDeclaration(true);
+			Parameter param = new Parameter();
+			param.setName("header");
+			param.setValue("header"+i);
+			sender.addParameter(param);
 			psenders.setSender(sender);
 			xsltSenders.add(sender);
 		}
@@ -66,7 +71,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 		String combinedExpected="<results>";
 	
 		for (int i=0;i<NUM_SENDERS;i++) {
-			combinedExpected+="\n<result senderClass=\"XsltSender\" type=\"String\">"+expected+"\n</result>";
+			combinedExpected+="\n<result senderClass=\"XsltSender\" type=\"String\">"+expected.replaceFirst(">header<", ">header"+i+"<")+"\n</result>";
 		}
 		combinedExpected+="\n</results>";
 //		super.assertResultsAreCorrect(

@@ -25,7 +25,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
     private IPipeLineSession session = new PipeLineSessionBase();
 	
 	@Override
-	public String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
+	public String validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
 			boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons)
 			throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException,
 			PipeRunException, IOException {

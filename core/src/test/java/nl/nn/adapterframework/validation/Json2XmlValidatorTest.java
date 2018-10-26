@@ -1,8 +1,12 @@
 package nl.nn.adapterframework.validation;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.junit.Ignore;
@@ -66,7 +70,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 	}
 
 	@Override
-	public String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
+	public String validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
 			boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws IOException, ConfigurationException, PipeRunException {
 		init();
         PipeLineSessionBase session = new PipeLineSessionBase();
@@ -81,6 +85,9 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         instance.registerForward(new PipeForward("failure",null));
         instance.registerForward(new PipeForward("parserError",null));
         instance.configure(null);
+        if (rootelement!=null) { 
+        	instance.setRoot(rootelement);
+        }
         validator.setSchemasProvider(getSchemasProvider(schemaLocation, addNamespaceToSchema));
         validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
         validator.configure("setup");
@@ -108,7 +115,16 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         	}
         	evaluateResult(event, session, null, expectedFailureReasons);
             try {
-    	        String validationResult=validator.validate(result, session, "check result", null, null, false);
+    	        Set<List<String>> rootvalidations=null;
+    	        if (rootelement!=null) {
+    	        	List<String> rootvalidation=new ArrayList<String>();
+    	        	rootvalidation.add("Envelope");
+    	        	rootvalidation.add("Body");
+    	        	rootvalidation.add(rootelement);
+    	        	rootvalidations=new HashSet<List<String>>();
+    	        	rootvalidations.add(rootvalidation);
+    	        }
+    	        String validationResult=validator.validate(result, session, "check result", rootvalidations, null, false);
     	        evaluateResult(validationResult, session, null, expectedFailureReasons);
     	        return result;
             } catch (Exception e) {
@@ -122,6 +138,11 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		return null;
 	}
 	
+    @Override
+	public String getExpectedErrorForPlainText() {
+    	return "Message is not XML or JSON";
+    }
+
     @Test
     public void jsonStructs() throws Exception {
         validate(null,SCHEMA_LOCATION_ARRAYS, true ,INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON,null);

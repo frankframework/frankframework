@@ -1,9 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified"
            xmlns:b="http://xmlns/b"
-           targetNamespace="http://www.ing.com/testxmlns"
+           targetNamespace="http://www.ing.com/testxmlns" xmlns:a="http://www.ing.com/testxmlns"
     >
   <xs:import namespace="http://xmlns/b" schemaLocation="B.xsd" />
+  <xs:element name="Envelope">
+    <xs:complexType>
+      <xs:sequence>
+		  <xs:element name="Body">
+		    <xs:complexType>
+		      <xs:sequence>
+		        <xs:element ref="a:A" />
+		      </xs:sequence>
+		    </xs:complexType>
+		  </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="A">
     <xs:complexType>
       <xs:sequence>

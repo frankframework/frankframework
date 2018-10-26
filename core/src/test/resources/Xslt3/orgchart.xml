@@ -1,29 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<j:array xmlns:j="http://www.w3.org/2013/XSL/json">
-   <j:map>
-      <j:string key="key">cx103</j:string>
-      <j:string key="firstname">Charles</j:string>
-      <j:string key="surname">Xavier</j:string>
-      <j:array key="team">
-         <j:map>
-            <j:string key="key">jh104</j:string>
-            <j:string key="firstname">James</j:string>
-            <j:string key="surname">Howlett</j:string>
-            <j:array key="team">
-               <j:map>
-                  <j:string key="key">kp102</j:string>
-                  <j:string key="firstname">Kitty</j:string>
-                  <j:string key="surname">Pride</j:string>
-                  <j:array key="team">
-                     <j:map>
-                        <j:string key="key">jd101</j:string>
-                        <j:string key="firstname">Jane</j:string>
-                        <j:string key="surname">Doe</j:string>
-                     </j:map>
-                  </j:array>
-               </j:map>
-            </j:array>
-         </j:map>
-      </j:array>
-   </j:map>
-</j:array>
+<j:map xmlns:j="http://www.w3.org/2013/XSL/json">
+   <j:string key="header">header</j:string>
+   <j:array key="data">
+      <j:map>
+         <j:string key="key">cx103</j:string>
+         <j:string key="firstname">Charles</j:string>
+         <j:string key="surname">Xavier</j:string>
+         <j:array key="team">
+            <j:map>
+               <j:string key="key">jh104</j:string>
+               <j:string key="firstname">James</j:string>
+               <j:string key="surname">Howlett</j:string>
+               <j:array key="team">
+                  <j:map>
+                     <j:string key="key">kp102</j:string>
+                     <j:string key="firstname">Kitty</j:string>
+                     <j:string key="surname">Pride</j:string>
+                     <j:array key="team">
+                        <j:map>
+                           <j:string key="key">jd101</j:string>
+                           <j:string key="firstname">Jane</j:string>
+                           <j:string key="surname">Doe</j:string>
+                        </j:map>
+                     </j:array>
+                  </j:map>
+               </j:array>
+            </j:map>
+         </j:array>
+      </j:map>
+   </j:array>
+</j:map>
