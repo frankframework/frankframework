@@ -20,11 +20,15 @@ import nl.nn.adapterframework.validation.ValidatorTestBase;
  */
 public class SoapValidatorTest {
 
-	public String INPUT_FILE_GPBDB_VALID_SOAP=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/valid_soap.xml";
-	public String INPUT_FILE_GPBDB_VALID_SOAP_1_2=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/valid_soap_1.2.xml";
-	public String INPUT_FILE_GPBDB_INVALID_SOAP=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/invalid_soap.xml";
-	public String INPUT_FILE_GPBDB_INVALID_SOAP_BODY=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/invalid_soap_body.xml";
-	public String INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/unknown_namespace_soap_body.xml";
+	public String SCHEMALOCATION_SET_GPBDB = ValidatorTestBase.SCHEMA_LOCATION_GPBDB_MESSAGE+" "+
+			ValidatorTestBase.SCHEMA_LOCATION_GPBDB_GPBDB+" "+
+			ValidatorTestBase.SCHEMA_LOCATION_GPBDB_RESPONSE+" "+
+            ValidatorTestBase.SCHEMA_LOCATION_GPBDB_REQUEST;
+	public String INPUT_FILE_GPBDB_VALID_SOAP					=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/valid_soap.xml";
+	public String INPUT_FILE_GPBDB_VALID_SOAP_1_2				=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/valid_soap_1.2.xml";
+	public String INPUT_FILE_GPBDB_INVALID_SOAP					=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/invalid_soap.xml";
+	public String INPUT_FILE_GPBDB_INVALID_SOAP_BODY			=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/invalid_soap_body.xml";
+	public String INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY	=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/unknown_namespace_soap_body.xml";
 	
 
     @Test
@@ -45,37 +49,42 @@ public class SoapValidatorTest {
         validator.setSchemaLocation("http://www.ing.com/pim test.xsd");
         validator.setSoapBody("a");
 //		WTF assertEquals(new QName("http://www.ing.com/pim", "a"), validator.getSoapBodyTags().iterator().next());
-
     }
 
     @Test
     public void validate11() throws ConfigurationException, IOException, PipeRunException {
         XmlValidator xml = getSoapValidator(true);
+    	xml.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
+    	xml.configure();
         xml.doPipe(getTestXml(INPUT_FILE_GPBDB_VALID_SOAP), new PipeLineSessionBase());
-
     }
 
     @Test
     public void validate12() throws ConfigurationException, IOException, PipeRunException {
     	SoapValidator xml = getSoapValidator(true);
+    	xml.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
+    	xml.configure();
         System.out.println("1 " + new Date());
         xml.doPipe(getTestXml(INPUT_FILE_GPBDB_VALID_SOAP), new PipeLineSessionBase());
         System.out.println("2" + new Date());
         xml.doPipe(getTestXml(INPUT_FILE_GPBDB_VALID_SOAP), new PipeLineSessionBase());
         System.out.println("3" + new Date());
-
     }
 
     @Test
     public void validate12_explicitversion() throws ConfigurationException, IOException, PipeRunException {
     	SoapValidator xml = getSoapValidator(true, "1.2");
+    	xml.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
+    	xml.configure();
         xml.doPipe(getTestXml(INPUT_FILE_GPBDB_VALID_SOAP_1_2), new PipeLineSessionBase());
     }
 
     @Test(expected = PipeRunException.class)
     public void validate12_invalid() throws ConfigurationException, IOException, PipeRunException {
         SoapValidator xml = getSoapValidator();
+    	xml.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
         xml.setSoapVersion("1.2");
+    	xml.configure();
         xml.doPipe(getTestXml(INPUT_FILE_GPBDB_INVALID_SOAP), new PipeLineSessionBase());
 
     }
@@ -83,19 +92,24 @@ public class SoapValidatorTest {
     @Test(expected = PipeRunException.class)
     public void validate12_invalid_body() throws ConfigurationException, IOException, PipeRunException {
         SoapValidator xml = getSoapValidator();
+    	xml.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
         xml.setSoapVersion("1.1");
+    	xml.configure();
         xml.doPipe(getTestXml(INPUT_FILE_GPBDB_INVALID_SOAP_BODY), new PipeLineSessionBase());
-
     }
 
     @Test(expected = PipeRunException.class)
     public void validate12_unknown_namespace_body() throws ConfigurationException, IOException, PipeRunException {
         SoapValidator xml = getSoapValidator();
+    	xml.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
         xml.setSoapVersion("1.1");
+    	xml.configure();
         xml.doPipe(getTestXml(INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY), new PipeLineSessionBase());
-
     }
 
+ 
+    
+    
     private String getTestXml(String testxml) throws IOException {
         BufferedReader buf = new BufferedReader(new InputStreamReader(XmlValidator.class.getResourceAsStream(testxml)));
         StringBuilder string = new StringBuilder();
@@ -131,17 +145,11 @@ public class SoapValidatorTest {
         if (soapVersion != null) {
             validator.setSoapVersion(soapVersion);
         }
-        validator.setSchemaLocation(
-        		ValidatorTestBase.SCHEMA_LOCATION_GPBDB_MESSAGE+" "+
-				ValidatorTestBase.SCHEMA_LOCATION_GPBDB_GPBDB+" "+
-				ValidatorTestBase.SCHEMA_LOCATION_GPBDB_RESPONSE+" "+
-                ValidatorTestBase.SCHEMA_LOCATION_GPBDB_REQUEST);
         validator.setSoapHeader("MessageHeader");
         validator.setSoapBody("Request");
         validator.registerForward(getSuccess());
         validator.setThrowException(true);
         validator.setFullSchemaChecking(true);
-        validator.configure();
         return validator;
     }
 }
