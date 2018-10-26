@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -13,6 +14,8 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.JavaxXmlValidator;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
@@ -87,25 +90,66 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
     
 
     
-    
+   protected String runAndEvaluate(XmlValidator validator, String inputfile, String[] expectedFailureReasons) throws IOException  {
+	   System.out.println("inputfile ["+inputfile+"]");
+       String testXml=inputfile!=null?getTestXml(inputfile+".xml"):null;
+  		IPipeLineSession session=new PipeLineSessionBase();
+       try {
+    	   PipeForward forward=validator.validate(testXml, session);
+	        evaluateResult(forward.getName(), session, null, expectedFailureReasons);
+       } catch (Exception e) {
+	        evaluateResult(null, session, e, expectedFailureReasons);
+	    	return "Invalid XML";
+       }
+       return null;
+   }
+   
     
     @Override
 	public String validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
 			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws ConfigurationException, InstantiationException,
 			IllegalAccessException, XmlValidatorException, PipeRunException, IOException {
-        String testXml=inputfile!=null?getTestXml(inputfile+".xml"):null;
-   		IPipeLineSession session=new PipeLineSessionBase();
-        try {
-        	XmlValidator validator =getValidator(schemaLocation, addNamespaceToSchema, implementation);
-        	//validator.setRoot(rootelement);
-       		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
-       		PipeForward forward=validator.validate(testXml, session);
-	        evaluateResult(forward.getName(), session, null, expectedFailureReasons);
-        } catch (Exception e) {
-	        evaluateResult(null, session, e, expectedFailureReasons);
-	    	return "Invalid XML";
-        }
-        return null;
+    	XmlValidator validator =getValidator(schemaLocation, addNamespaceToSchema, implementation);
+    	if (rootelement!=null) validator.setRoot(rootelement);
+   		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
+   		validator.configure();
+    	return runAndEvaluate(validator, inputfile, expectedFailureReasons);
     }
+
+//	@Test
+//	public void straighforwardInEnvelope() throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
+//		validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_OK_IN_ENVELOPE,false,null);
+//	 	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_INVALID_CONTENT);
+//	 	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_OK_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
+//		validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
+//	}
+
+	public void testNoTargetNamespace(String schema, String root, String inputFile) throws ConfigurationException, IOException, PipeRunException, XmlValidatorException, PipeStartException {
+        XmlValidator validator = new XmlValidator();
+
+        validator.registerForward(getSuccess());
+        validator.setThrowException(true);
+        validator.setFullSchemaChecking(true);
+		validator.setRoot(root);
+		validator.setSoapNamespace("http://www.w3.org/2003/05/soap-envelope");
+		validator.setSchema(schema);
+		validator.configure();
+		validator.start();
+
+		String testXml=inputFile!=null?getTestXml(inputFile+".xml"):null;
+   		IPipeLineSession session=new PipeLineSessionBase();
+   		PipeRunResult result=validator.doPipe(testXml, session);
+   		String output=(String)result.getResult();
+   		assertEquals(testXml,output);
+   		assertEquals("success",result.getPipeForward().getName());
+
+		//assertNull(runAndEvaluate(validator, inputFile, null));
+	}
+
+	@Test
+	public void noTargetNamespace() throws ConfigurationException, IOException, PipeRunException, XmlValidatorException, PipeStartException {
+		testNoTargetNamespace(NO_NAMESPACE_SCHEMA,NO_NAMESPACE_SOAP_MSGROOT,NO_NAMESPACE_SOAP_FILE);
+	}
+
 
 }

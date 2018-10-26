@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Version V1.0 R0.1 14-06-2010 -Nico Vos-->
+<!-- Version V1.0 R0.2 12-07-2010 -Nico Vos-->
+<!-- Version V1.1 R0.1 17-11-2010 -Ruud van der Kleij: versionnr and releasenr changed according to FSD-->
+<!-- version V1.0 R0.3 05-01-2011 - Auto 2.0 terug draaien versie Nico Vos -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="GetVehicleTypeDetailsREQ">
+		<xs:complexType>
+			<xs:all>
+				<xs:element name="Body" minOccurs="0">
+					<xs:complexType>
+						<xs:all>
+							<xs:element name="bouwmnd">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:minLength value="1"/>
+										<xs:maxLength value="2"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="bouwjr">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:length value="4"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="uitvoeringCode" type="xs:string"/>
+						</xs:all>
+					</xs:complexType>
+				</xs:element>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

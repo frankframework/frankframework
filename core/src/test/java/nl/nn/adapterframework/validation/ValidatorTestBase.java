@@ -45,17 +45,21 @@ public abstract class ValidatorTestBase extends TestCase {
 	
 	
 	public String ROOT_NAMESPACE_BASIC="http://www.ing.com/testxmlns";
-	public String SCHEMA_LOCATION_BASIC_A_OK                            ="http://www.ing.com/testxmlns "+BASE_DIR_VALIDATION+"/Basic/xsd/A_correct.xsd"	;
-	public String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE            ="http://www.ing.com/testxmlns "+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
-	public String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE_MISMATCH   ="http://www.ing.com/testxmlns_mismatch "+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
+	public String SCHEMA_LOCATION_BASIC_A_OK                            =ROOT_NAMESPACE_BASIC+" "			+BASE_DIR_VALIDATION+"/Basic/xsd/A_correct.xsd"	;
+	public String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE            =ROOT_NAMESPACE_BASIC+" "			+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
+	public String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE_MISMATCH   =ROOT_NAMESPACE_BASIC+"_mismatch "	+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
 	
-	public String INPUT_FILE_BASIC_A_OK=BASE_DIR_VALIDATION+"/Basic/in/ok";
-	public String INPUT_FILE_BASIC_A_OK_IN_ENVELOPE=BASE_DIR_VALIDATION+"/Basic/in/ok-in-envelope";
-	public String INPUT_FILE_BASIC_A_ERR=BASE_DIR_VALIDATION+"/Basic/in/with_errors";
-	public String INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE=BASE_DIR_VALIDATION+"/Basic/in/with_errors-in-envelope";
-	public String INPUT_FILE_BASIC_A_ENTITY_EXPANSION=BASE_DIR_VALIDATION+"/Basic/in/entityExpansion";
-	public String INPUT_FILE_BASIC_PLAIN_TEXT=BASE_DIR_VALIDATION+"/Basic/in/plainText";
+	public String INPUT_FILE_BASIC_A_OK					=BASE_DIR_VALIDATION+"/Basic/in/ok";
+	public String INPUT_FILE_BASIC_A_OK_IN_ENVELOPE		=BASE_DIR_VALIDATION+"/Basic/in/ok-in-envelope";
+	public String INPUT_FILE_BASIC_A_ERR				=BASE_DIR_VALIDATION+"/Basic/in/with_errors";
+	public String INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE	=BASE_DIR_VALIDATION+"/Basic/in/with_errors-in-envelope";
+	public String INPUT_FILE_BASIC_A_ENTITY_EXPANSION	=BASE_DIR_VALIDATION+"/Basic/in/entityExpansion";
+	public String INPUT_FILE_BASIC_PLAIN_TEXT			=BASE_DIR_VALIDATION+"/Basic/in/plainText";
 
+	public String NO_NAMESPACE_SCHEMA        = BASE_DIR_VALIDATION+"/GetVehicleTypeDetails/XSD_GetVehicleTypeDetails_Request.xsd";
+	public String NO_NAMESPACE_SOAP_FILE     = BASE_DIR_VALIDATION+"/GetVehicleTypeDetails/in";
+	public String NO_NAMESPACE_SOAP_MSGROOT  = "GetVehicleTypeDetailsREQ";
+	
 	
 	public String SCHEMA_LOCATION_ARRAYS                            	="urn:arrays /Arrays/arrays.xsd";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON		="/Arrays/arrays-compact";
