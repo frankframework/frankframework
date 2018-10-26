@@ -65,6 +65,7 @@ public class Base64Pipe extends FixedForwardPipe {
 
 	private byte lineSeparatorArray[];
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		String dir=getDirection();
@@ -106,6 +107,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		lineSeparatorArray = separator.getBytes();
 	}
 
+	@Override
 	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
 		InputStream binaryInputStream;
 

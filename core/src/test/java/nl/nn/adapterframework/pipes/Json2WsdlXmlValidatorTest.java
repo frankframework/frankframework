@@ -104,23 +104,23 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	
     @Test
     public void wsdlJsonValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
-    	String wsdl="/GetPolicyDetailsTravel/wsdl/GetPolicyDetailsTravel.wsdl";
+    	String wsdl=BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetailsTravel/GetPolicyDetailsTravel.wsdl";
     	String soapBody="GetPolicyDetailsTravel_Response";
-    	String soapFile="/GetPolicyDetailsTravel/response1soap.xml";
-    	String xmlFile="/GetPolicyDetailsTravel/response1body.xml";
+    	String soapFile=BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetailsTravel/response1soap.xml";
+    	String xmlFile=BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetailsTravel/response1body.xml";
     	String targetContent1="childDateOfBirth";
     	//String targetContent2="€ 19,82"; // The Euro sign is somehow escaped, sometimes. Disabled it, because it breaks the build.
     	String targetContent2="";
     	
     	
-    	String jsonFileStraight="/GetPolicyDetailsTravel/response1full.json";
-    	String jsonFileCompact="/GetPolicyDetailsTravel/response1compact.json";
+    	String jsonFileStraight=BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetailsTravel/response1full.json";
+    	String jsonFileCompact=BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetailsTravel/response1compact.json";
     	    	
     	wsdlValidate(wsdl,soapBody,soapFile,xmlFile,jsonFileStraight, jsonFileCompact, targetContent1, targetContent2);
     }
 
     public void validatePlainText(String input, String expectedError) throws Exception {
-    	String wsdl="/GetPolicyDetailsTravel/wsdl/GetPolicyDetailsTravel.wsdl";
+    	String wsdl=BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetailsTravel/GetPolicyDetailsTravel.wsdl";
     	String soapBody="GetPolicyDetailsTravel_Response";
     	WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(wsdl);

@@ -24,9 +24,9 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 
 public class WsdlXmlValidatorTest {
 
-    private static final String SIMPLE                = "WsdlValidation/SimpleWsdl/simple.wsdl";
-    private static final String SIMPLE_WITH_INCLUDE   = "WsdlValidation/SimpleWsdl/simple_withinclude.wsdl";
-    private static final String SIMPLE_WITH_REFERENCE = "WsdlValidation/SimpleWsdl/simple_withreference.wsdl";
+    private static final String SIMPLE                = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/SimpleWsdl/simple.wsdl";
+    private static final String SIMPLE_WITH_INCLUDE   = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/SimpleWsdl/simple_withinclude.wsdl";
+    private static final String SIMPLE_WITH_REFERENCE = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/SimpleWsdl/simple_withreference.wsdl";
     private static final String TIBCO                 = ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1.wsdl";
 
 

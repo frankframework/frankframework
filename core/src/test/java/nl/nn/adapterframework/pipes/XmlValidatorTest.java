@@ -95,7 +95,8 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
        String testXml=inputfile!=null?getTestXml(inputfile+".xml"):null;
   		IPipeLineSession session=new PipeLineSessionBase();
        try {
-    	   PipeForward forward=validator.validate(testXml, session);
+      		PipeRunResult result=validator.doPipe(testXml, session);
+      		PipeForward forward=result.getPipeForward();
 	        evaluateResult(forward.getName(), session, null, expectedFailureReasons);
        } catch (Exception e) {
 	        evaluateResult(null, session, e, expectedFailureReasons);
@@ -116,15 +117,21 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
     	return runAndEvaluate(validator, inputfile, expectedFailureReasons);
     }
 
-//	@Test
-//	public void straighforwardInEnvelope() throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
-//		validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_OK_IN_ENVELOPE,false,null);
-//	 	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_INVALID_CONTENT);
-//	 	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_OK_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
-//		validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
-//	}
 
-	public void testNoTargetNamespace(String schema, String root, String inputFile) throws ConfigurationException, IOException, PipeRunException, XmlValidatorException, PipeStartException {
+	/*
+	 * <tr> <td>{@link #setSoapNamespace(String) soapNamespace}</td> <td>the
+	 * namespace of the SOAP Envelope, when this property has a value and the
+	 * input message is a SOAP Message the content of the SOAP Body is used for
+	 * validation, hence the SOAP Envelope and SOAP Body elements are not
+	 * considered part of the message to validate. Please note that this
+	 * functionality is deprecated, using {@link
+	 * nl.nn.adapterframework.soap.SoapValidator} is now the preferred solution
+	 * in case a SOAP Message needs to be validated, in other cases give this
+	 * property an empty
+	 * value</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
+	 * 
+	 */
+	public void testSoapNamespaceFeature(String schema, String root, String inputFile) throws ConfigurationException, IOException, PipeRunException, XmlValidatorException, PipeStartException {
         XmlValidator validator = new XmlValidator();
 
         validator.registerForward(getSuccess());
@@ -136,20 +143,20 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		validator.configure();
 		validator.start();
 
-		String testXml=inputFile!=null?getTestXml(inputFile+".xml"):null;
-   		IPipeLineSession session=new PipeLineSessionBase();
-   		PipeRunResult result=validator.doPipe(testXml, session);
-   		String output=(String)result.getResult();
-   		assertEquals(testXml,output);
-   		assertEquals("success",result.getPipeForward().getName());
-
-		//assertNull(runAndEvaluate(validator, inputFile, null));
+		assertNull(runAndEvaluate(validator, inputFile, null));
 	}
 
 	@Test
 	public void noTargetNamespace() throws ConfigurationException, IOException, PipeRunException, XmlValidatorException, PipeStartException {
-		testNoTargetNamespace(NO_NAMESPACE_SCHEMA,NO_NAMESPACE_SOAP_MSGROOT,NO_NAMESPACE_SOAP_FILE);
+		testSoapNamespaceFeature(NO_NAMESPACE_SCHEMA,NO_NAMESPACE_SOAP_MSGROOT,NO_NAMESPACE_SOAP_FILE);
 	}
 
+//	@Test
+//	public void straighforwardInEnvelope() throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
+//		validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_OK_IN_ENVELOPE,false,null);
+//	 	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_INVALID_CONTENT);
+//	 	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_OK_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
+//		validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
+//	}
 
 }

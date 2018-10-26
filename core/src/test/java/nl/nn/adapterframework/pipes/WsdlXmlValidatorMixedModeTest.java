@@ -14,8 +14,8 @@ import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator;
+import nl.nn.adapterframework.validation.ValidatorTestBase;
 
 
 /**
@@ -25,9 +25,9 @@ import nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator;
 
 public class WsdlXmlValidatorMixedModeTest {
 
-    private static final String WSDL     = "MixedMode/GetPolicyDetails.wsdl";
-    private static final String REQUEST  = "/MixedMode/GetPolicyDetails-Request.xml";
-    private static final String RESPONSE = "/MixedMode/GetPolicyDetails-Response.xml";
+    private static final String WSDL     = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl";
+    private static final String REQUEST  = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetails-Request.xml";
+    private static final String RESPONSE = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetails-Response.xml";
 
     private static final String REQUEST_SOAP_BODY  = "GetPolicyDetails_Request";
     private static final String RESPONSE_SOAP_BODY  = "GetPolicyDetails_Response";
