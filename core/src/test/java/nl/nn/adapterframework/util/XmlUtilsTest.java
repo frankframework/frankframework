@@ -22,12 +22,16 @@ public class XmlUtilsTest {
 	}
 	
 	public void testXslt(String xslt, String input, String expected) throws DomBuilderException, TransformerException, IOException {
-		TransformerPool tp = TransformerPool.getInstance(xslt);
+		testXslt(xslt, input, expected, false);
+	}
+	
+	public void testXslt(String xslt, String input, String expected, boolean xslt2) throws DomBuilderException, TransformerException, IOException {
+		TransformerPool tp = TransformerPool.getInstance(xslt,xslt2);
 		testTransformerPool(tp,input,expected);
 	}
 	
 	public void testSkipEmptyTags(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws DomBuilderException, TransformerException, IOException, ConfigurationException {
-		testXslt(XmlUtils.makeSkipEmptyTagsXslt(omitXmlDeclaration, indent),input,expected);
+		testXslt(XmlUtils.makeSkipEmptyTagsXslt(omitXmlDeclaration, indent),input,expected,true);
 		testTransformerPool(XmlUtils.getSkipEmptyTagsTransformerPool(omitXmlDeclaration, indent),input,expected);
 	}
 	
@@ -63,11 +67,12 @@ public class XmlUtilsTest {
 
 	@Test
 	public void testSkipEmptyTags() throws DomBuilderException, TransformerException, IOException, ConfigurationException {
-		String lineSeparator=System.getProperty("line.separator");
+//		String lineSeparator=System.getProperty("line.separator");
+		String lineSeparator="\n";
 		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a></root>",false,false);
-		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>"+lineSeparator+"<a>a</a>"+lineSeparator+"</root>",false,true);
+		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+lineSeparator+"<root>"+lineSeparator+"   <a>a</a>"+lineSeparator+"</root>",false,true);
 		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<root><a>a</a></root>",true,false);
-		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"<a>a</a>"+lineSeparator+"</root>",true,true);
+		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"   <a>a</a>"+lineSeparator+"</root>",true,true);
 	}
 
 	@Test

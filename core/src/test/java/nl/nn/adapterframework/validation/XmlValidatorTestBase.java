@@ -1,6 +1,9 @@
 package nl.nn.adapterframework.validation;
 
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
+
 import java.io.IOException;
 
 import org.junit.Ignore;
@@ -108,9 +111,13 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 
     @Test
     public void unresolvableSchema() throws Exception {
-        validate(ROOT_NAMESPACE_GPBDB,
-            "http://www.ing.com/BESTAATNIET /Bestaatniet.xsd ",null,MSG_SCHEMA_NOT_FOUND);
+    	try {
+    		validate(ROOT_NAMESPACE_GPBDB, "http://www.ing.com/BESTAATNIET /Bestaatniet.xsd ",null,MSG_SCHEMA_NOT_FOUND);
+    	} catch (ConfigurationException e) {
+    		assertThat(e.getMessage(),containsString(MSG_SCHEMA_NOT_FOUND));
+    	}
     }
+    
     @Test // step4errorr1.xml uses the namespace xmlns="http://www.ing.com/BESTAATNIET
     public void step5ValidationErrorUnknownNamespace() throws Exception {
         validateIgnoreUnknownNamespacesOff(ROOT_NAMESPACE_GPBDB,

@@ -94,8 +94,9 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 
 	@Test
 	public void testSkipEmptyTagsNoOmitIndent() throws DomBuilderException, TransformerException, IOException, ConfigurationException, PipeStartException, PipeRunException {
-		String lineSeparator=System.getProperty("line.separator");
-		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>"+lineSeparator+"<a>a</a>"+lineSeparator+"</root>",false,true);
+//		String lineSeparator=System.getProperty("line.separator");
+		String lineSeparator="\n";
+		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+lineSeparator+"<root>"+lineSeparator+"   <a>a</a>"+lineSeparator+"</root>",false,true);
 	}
 	@Test
 	public void testSkipEmptyTagsOmitNoIndent() throws DomBuilderException, TransformerException, IOException, ConfigurationException, PipeStartException, PipeRunException {
@@ -103,8 +104,9 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 	}
 	@Test
 	public void testSkipEmptyTagsOmitIndent() throws DomBuilderException, TransformerException, IOException, ConfigurationException, PipeStartException, PipeRunException {
-		String lineSeparator=System.getProperty("line.separator");
-		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"<a>a</a>"+lineSeparator+"</root>",true,true);
+//		String lineSeparator=System.getProperty("line.separator");
+		String lineSeparator="\n";
+		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"   <a>a</a>"+lineSeparator+"</root>",true,true);
 	}
 	
 	@Test
