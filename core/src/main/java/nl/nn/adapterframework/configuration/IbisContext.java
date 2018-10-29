@@ -167,7 +167,7 @@ public class IbisContext {
 	 * @see ClassUtils#getResourceURL(ClassLoader, String)
 	 * @see AppConstants#getInstance(ClassLoader)
 	 *
-	 * @param reconnect automatically try to reconnect to a datasource
+	 * @param reconnect retry startup when failures occur
 	 */
 	public synchronized void init(boolean reconnect) {
 		try {
@@ -207,6 +207,9 @@ public class IbisContext {
 
 	Thread ibisContextReconnectThread = null;
 
+	/**
+	 * Register all IBIS modules that can be found on the classpath
+	 */
 	public void registerApplicationModules() {
 		List<String> iafModules = new ArrayList<String>();
 
@@ -226,6 +229,10 @@ public class IbisContext {
 		registerApplicationModules(iafModules);
 	}
 
+	/**
+	 * Register IBIS modules that can be found on the classpath
+	 * @param iafModules list with modules to register
+	 */
 	public void registerApplicationModules(List<String> iafModules) {
 		AppConstants appConstants = AppConstants.getInstance();
 		for(String module: iafModules) {
@@ -236,6 +243,11 @@ public class IbisContext {
 		}
 	}
 
+	/**
+	 * Get IBIS module version
+	 * @param module name of the module to fetch the version
+	 * @return module version or null if not found
+	 */
 	public String getModuleVersion(String module) {
 		ClassLoader classLoader = this.getClass().getClassLoader();
 		String basePath = "META-INF/maven/org.ibissource/";
@@ -258,6 +270,11 @@ public class IbisContext {
 		return null;
 	}
 
+	/**
+	 * Shuts down the IbisContext, and therefore the Spring context
+	 * 
+	 * @see #destroyApplicationContext()
+	 */
 	public synchronized void destroy() {
 		long start = System.currentTimeMillis();
 		if(ibisManager != null)
@@ -292,6 +309,12 @@ public class IbisContext {
 		load(configurationName);
 	}
 
+	/**
+	 * Completely rebuilds the ibisContext and therefore also the Spring context
+	 * 
+	 * @see #destroy()
+	 * @see #init()
+	 */
 	public synchronized void fullReload() {
 		destroy();
 		Set<String> javaListenerNames = JavaListener.getListenerNames();
@@ -319,11 +342,6 @@ public class IbisContext {
 	 * Create the Spring Bean Factory using the supplied <code>springContext</code>,
 	 * if not <code>null</code>.
 	 *
-	 * @param springContext Spring Context to create. If <code>null</code>,
-	 * use the default spring context.
-	 * The spring context is loaded as a spring ClassPathResource from
-	 * the class path.
-	 *
 	 * @return The Spring XML Bean Factory.
 	 * @throws BeansException If the Factory can not be created.
 	 *
@@ -339,19 +357,33 @@ public class IbisContext {
 		propertySources.addFirst(new PropertiesPropertySource("ibis", APP_CONSTANTS));
 		applicationContext.setConfigLocation(springContext);
 		applicationContext.refresh();
-		log("startup " + springContext + " in "
-				+ (System.currentTimeMillis() - start) + " ms");
+		log("startup " + springContext + " in " + (System.currentTimeMillis() - start) + " ms");
 		return applicationContext;
 	}
 
+	/**
+	 * Destroys the Spring context
+	 */
 	private void destroyApplicationContext() {
 		((ConfigurableApplicationContext)applicationContext).close();
 	}
 
+	/**
+	 * Load all registered configurations
+	 * @see #load(String)
+	 */
 	public void load() {
 		load(null);
 	}
 
+	/**
+	 * Loads, digests and starts a specified configuration
+	 * 
+	 * @param configurationName name of the configuration to load or null when you want to load all configurations
+	 * 
+	 * @see ClassLoaderManager#get(String)
+	 * @see #digestClassLoaderConfiguration(ClassLoader, ConfigurationDigester, String, ConfigurationException)
+	 */
 	public void load(String configurationName) {
 		boolean configFound = false;
 
@@ -593,10 +625,19 @@ public class IbisContext {
 	 * Get MessageKeeper for a specific configuration. The MessageKeeper is not
 	 * stored at the Configuration object instance to prevent messages being
 	 * lost after configuration reload.
+	 * @return MessageKeeper for '*ALL*' configurations
 	 */
 	public MessageKeeper getMessageKeeper() {
 		return getMessageKeeper("*ALL*");
 	}
+
+	/**
+	 * Get MessageKeeper for a specific configuration. The MessageKeeper is not
+	 * stored at the Configuration object instance to prevent messages being
+	 * lost after configuration reload.
+	 * @param configurationName configuration name to get the MessageKeeper object from
+	 * @return MessageKeeper for specified configurations
+	 */
 	public MessageKeeper getMessageKeeper(String configurationName) {
 		return messageKeepers.get(configurationName);
 	}
