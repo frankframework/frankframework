@@ -154,7 +154,19 @@ import org.w3c.dom.Node;
  * <p></p>
  * 
  * <p>
- * When <code>action=get</code> the input (string) indicates the id of the document to get. This input is mandatory.
+ * When <code>action=get</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
+ * </p>
+ * <p>
+ * <b>example:</b>
+ * <code>
+ * <pre>
+ *   &lt;cmis&gt;
+ *      &lt;id&gt;
+ *         documentId
+ *      &lt;/id&gt;
+ *   &lt;/cmis&gt;
+ * </pre>
+ * </code>
  * </p>
  * <p>
  * When <code>action=create</code> the input (xml string) indicates document properties to set. This input is optional.
