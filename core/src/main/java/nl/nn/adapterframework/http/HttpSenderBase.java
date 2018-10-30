@@ -131,15 +131,8 @@ import org.htmlcleaner.TagNode;
  * <tr><td>{@link #setIgnoreCertificateExpiredException(boolean) ignoreCertificateExpiredException}</td><td>when true, the CertificateExpiredException is ignored</td><td>false</td></tr>
  * <tr><td>{@link #setXhtml(boolean) xhtml}</td><td>when true, the html response is transformed to xhtml</td><td>false</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>>(only used when <code>xhtml=true</code>) stylesheet to apply to the html response</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMultipart(boolean) multipart}</td><td>when true and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body</td><td>false</td></tr>
- * <tr><td>{@link #setMultipartResponse(boolean) multipartResponse}</td><td>when true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href="https://docs.oracle.com/javaee/7/api/javax/xml/soap/SOAPMessage.html">https://docs.oracle.com/javaee/7/api/javax/xml/soap/SOAPMessage.html</a>). The first part will be returned as result of this sender. Other parts are returned as streams in sessionKeys with names multipart1, multipart2, etc. The http connection is held open until the last stream is read.</td><td>false</td></tr>
- * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)</td><td>false</td></tr>
- * <tr><td>{@link #setBase64(boolean) base64}</td><td>when true, the result is base64 encoded</td><td>false</td></tr>
  * <tr><td>{@link #setProtocol(String) protocol}</td><td>Secure socket protocol (such as "SSL" and "TLS") to use when a SSLContext object is generated. If empty the protocol "SSL" is used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStreamResultToFileNameSessionKey(String) streamResultToFileNameSessionKey}</td><td>if set, the result is streamed to a file (instead of passed as a String)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStoreResultAsStreamInSessionKey(String) storeResultAsStreamInSessionKey}</td><td>if set, a pointer to an input stream of the result is put in the specified sessionKey (as the sender interface only allows a sender to return a string a sessionKey is used instead to return the stream)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setResultStatusCodeSessionKey(String) resultStatusCodeSessionKey}</td><td>if set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMultipartXmlSessionKey(String) multipartXmlSessionKey}</td><td>if set and <code>methodeType=POST</code> and <code>paramsInUrl=false</code>, a multipart/form-data entity is created instead of a request body. For each part element in the session key a part in the multipart entity is created</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Parameters:</b></p>
@@ -384,7 +377,7 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 			javax.net.ssl.SSLSocketFactory socketfactory = (javax.net.ssl.SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();
 			sslSocketFactory = new SSLConnectionSocketFactory(socketfactory, hostnameVerifier);
 
-			if (certificateUrl != null || truststoreUrl != null || allowSelfSignedCertificates) {
+			if (certificateUrl != null || truststoreUrl != null || isAllowSelfSignedCertificates()) {
 				try {
 					CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
 					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());

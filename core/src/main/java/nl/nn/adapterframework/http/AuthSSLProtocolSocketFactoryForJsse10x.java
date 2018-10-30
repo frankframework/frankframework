@@ -65,9 +65,22 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
      *        authentication is not to be used.
      * @param keystorePassword Password to unlock the keystore. IMPORTANT: this implementation
      *        assumes that the same password is used to protect the key and the keystore itself.
+     * @param keystoreType type of the keystore to use, e.q. PKCS12/JKS
+     * @param keyManagerAlgorithm KeyManagerFactory algorithm, if not specified it uses the default algorithm
      * @param truststoreUrl URL of the truststore file. May be <tt>null</tt> if HTTPS server
      *        authentication is not to be used.
      * @param truststorePassword Password to unlock the truststore.
+     * @param truststoreType type of the truststore to use, e.q. PKCS12/JKS
+     * @param trustManagerAlgorithm TrustManagerFactory algorithm, if not specified it uses the default algorithm
+     * @param allowSelfSignedCertificates when true, self signed certificates are accepted
+     * @param verifyHostname  The host name verification flag. If set to 
+     * 		  <code>true</code> the SSL sessions server host name will be compared
+     * 		  to the host name returned in the server certificates "Common Name" 
+     * 		  field of the "SubjectDN" entry.  If these names do not match a
+     * 		  Exception is thrown to indicate this.  Enabling host name verification 
+     * 		  will help to prevent man-in-the-middle attacks.  If set to 
+     * 		  <code>false</code> host name verification is turned off.
+     * @param ignoreCertificateExpiredException when true, the CertificateExpiredException is ignored
      */
 	public AuthSSLProtocolSocketFactoryForJsse10x(
 			final URL keystoreUrl, final String keystorePassword, final String keystoreType, final String keyManagerAlgorithm,
@@ -153,7 +166,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
 	}
 
     /**
-     * @see SecureProtocolSocketFactory#createSocket(java.lang.String,int,java.net.InetAddress,int)
+     * @see javax.net.ssl.SSLSocketFactory#createSocket(String, int, InetAddress, int)
      */
     public Socket createSocket(String host, int port, InetAddress clientHost, int clientPort) throws IOException, UnknownHostException {
 		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(host,port,clientHost,clientPort);
@@ -162,7 +175,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
     }
 
     /**
-     * @see SecureProtocolSocketFactory#createSocket(java.lang.String,int)
+     * @see javax.net.ssl.SSLSocketFactory#createSocket(String, int)
      */
     public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
 		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(host,port);
@@ -171,7 +184,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
     }
 
     /**
-     * @see SecureProtocolSocketFactory#createSocket(java.net.Socket,java.lang.String,int,boolean)
+     * @see javax.net.ssl.SSLSocketFactory#createSocket(Socket, String, int, boolean)
      */
     public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException, UnknownHostException {
 		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(socket,host,port,autoClose);
@@ -180,7 +193,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
     }
 
 	/**
-	 * @see AuthSSLProtocolSocketFactoryBase#createSocket(InetAddress, int)
+	 * @see javax.net.ssl.SSLSocketFactory#createSocket(InetAddress, int)
 	 */
 	public Socket createSocket(InetAddress adress, int port) throws IOException {
 		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(adress, port);
@@ -189,7 +202,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
 	}
 
 	/**
-	 * @see AuthSSLProtocolSocketFactoryBase#createSocket(InetAddress, int, InetAddress, int)
+	 * @see javax.net.ssl.SSLSocketFactory#createSocket(InetAddress, int)
 	 */
 	public Socket createSocket(InetAddress adress, int port, InetAddress localAdress, int localPort) throws IOException {
 		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(adress, port, localAdress, localPort);
@@ -220,8 +233,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
 	 * @throws UnknownHostException if the IP address of the host cannot be
 	 * determined
 	 * 
-	 * @author Copied from HttpClient 3.0.1 SSLProtocolSocketFactory
-	 * @since 3.0
+	 * Copied from HttpClient 3.0.1 SSLProtocolSocketFactory
 	 */
 	public Socket createSocket(final String host, final int port, final InetAddress localAddress, final int localPort, final HttpConnectionParams params) throws IOException, UnknownHostException, ConnectTimeoutException {
 		if (params == null) {
@@ -244,9 +256,8 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
 
 	/**
 	 * Helper class for testing certificates that are not verified by an 
-	 * authorized organisation
+	 * authorized organization
 	 * 
-	 * @author John Dekker
 	 */
 	class AuthSslTrustManager implements X509TrustManager {
 		private X509TrustManager trustManager = null;

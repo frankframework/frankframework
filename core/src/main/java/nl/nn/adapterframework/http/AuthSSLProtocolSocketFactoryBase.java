@@ -172,9 +172,14 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
      *        authentication is not to be used.
      * @param keystorePassword Password to unlock the keystore. IMPORTANT: this implementation
      *        assumes that the same password is used to protect the key and the keystore itself.
+     * @param keystoreType type of the keystore to use, e.q. PKCS12/JKS
+     * @param keyManagerAlgorithm KeyManagerFactory algorithm, if not specified it uses the default algorithm
      * @param truststoreUrl URL of the truststore file. May be <tt>null</tt> if HTTPS server
      *        authentication is not to be used.
      * @param truststorePassword Password to unlock the truststore.
+     * @param truststoreType type of the truststore to use, e.q. PKCS12/JKS
+     * @param trustManagerAlgorithm TrustManagerFactory algorithm, if not specified it uses the default algorithm
+     * @param allowSelfSignedCertificates when true, self signed certificates are accepted
      *
      * @param verifyHostname  The host name verification flag. If set to 
      * 		  <code>true</code> the SSL sessions server host name will be compared
@@ -183,6 +188,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
      * 		  Exception is thrown to indicate this.  Enabling host name verification 
      * 		  will help to prevent man-in-the-middle attacks.  If set to 
      * 		  <code>false</code> host name verification is turned off.
+     * @param ignoreCertificateExpiredException when true, the CertificateExpiredException is ignored
      */
     public AuthSSLProtocolSocketFactoryBase (
     		final URL keystoreUrl, final String keystorePassword, final String keystoreType, final String keyManagerAlgorithm,
