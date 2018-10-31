@@ -82,14 +82,18 @@ angular.module('iaf.beheerconsole')
 
 	$scope.alerts = [];
 
-	$scope.addAlert = function(type, message) {
-		var exists = false;
-		for(alert in $scope.alerts) {
-			if( $scope.alerts[alert].message == message)
-				exists = true;
-		}
-		if(!exists)
-			$scope.alerts.push({type: type, message: message});
+	$scope.addAlert = function(type, configuration, message) {
+		$scope.alerts.push({
+			type: type,
+			configuration: configuration,
+			message: message
+		});
+	};
+	$scope.addWarning = function(configuration, message) {
+		$scope.addAlert("warning", configuration, message);
+	};
+	$scope.addException = function(configuration, message) {
+		$scope.addAlert("danger", configuration, message);
 	};
 
 	$scope.closeAlert = function(index) {
@@ -139,16 +143,33 @@ angular.module('iaf.beheerconsole')
 		dimension('application.version', appConstants["application.version"]);
 
 		Api.Get("server/warnings", function(configurations) {
+			configurations['All'] = {messages:configurations.messages};
+			delete configurations.messages;
+
+			configurations['All'].errorStoreCount = configurations.totalErrorStoreCount;
+			delete configurations.totalErrorStoreCount;
+
 			for(i in configurations) {
 				var configuration = configurations[i];
 				if(configuration.exception)
-					$scope.addAlert("danger", "Configuration: "+i+" - "+configuration.exception);
+					$scope.addException(i, configuration.exception);
 				if(configuration.warnings) {
 					for(x in configuration.warnings) {
-						$scope.addAlert("warning", "Configuration: "+i+" - "+configuration.warnings[x]);
+						$scope.addWarning(i, configuration.warnings[x]);
 					}
 				}
+
+				configuration.messageLevel = "INFO";
+				for(x in configuration.messages) {
+					var level = configuration.messages[x].level;
+					if(level == "WARN" && configuration.messageLevel != "ERROR")
+						configuration.messageLevel = "WARN";
+					if(level == "ERROR")
+						configuration.messageLevel = "ERROR";
+				}
 			}
+
+ 			$scope.messageLog = configurations;
 		});
 
 		Poller.add("adapters?expanded=all", function(allAdapters) {
