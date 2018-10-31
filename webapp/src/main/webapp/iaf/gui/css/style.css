@@ -68,6 +68,9 @@ h5 {
   background-color: transparent;
   border-color: #2f4050;
 }
+.navbar-top-links {
+  margin-top: 13px;
+}
 .navbar-top-links li {
   display: inline-block;
   vertical-align: middle;
