@@ -6791,3 +6791,7 @@ body.body-small .vote-icon {
     display: inline-block;
   }
 }
+
+.pointer {
+  cursor: pointer;
+}

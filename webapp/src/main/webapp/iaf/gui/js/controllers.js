@@ -1070,6 +1070,17 @@ angular.module('iaf.beheerconsole')
 			$.extend($scope, data);
 		});
 	};
+
+	$scope.getFileType = function (fileName){
+		if(fileName.indexOf('-stats_') >= 0)
+			return 'stats';
+		else if(fileName.indexOf('_xml.log') >= 0)
+			return 'log4j';
+		else if(fileName.indexOf('-stats_') >= 0 || fileName.indexOf('_xml.log') >= 0)
+			return 'xml';
+		else if(fileName.indexOf('-stats_') < 0 && fileName.indexOf('_xml.log') < 0)
+			return 'html';
+	};
 }])
 
 .controller('IBISstoreSummaryCtrl', ['$scope', 'Api', function($scope, Api) {
