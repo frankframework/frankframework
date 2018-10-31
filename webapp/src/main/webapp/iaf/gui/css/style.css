@@ -199,10 +199,10 @@ h5 {
   float: right;
 }
 .fa.arrow:before {
-  content: "\f104";
+  content: "\f107";
 }
 .active > a > .fa.arrow:before {
-  content: "\f107";
+  content: "\f106";
 }
 .nav-second-level li,
 .nav-third-level li {
@@ -3683,6 +3683,9 @@ body.body-small .footer.fixed {
 .full-width {
   width: 100% !important;
 }
+.almost-full-width {
+  width: 99% !important;
+}
 .link-block {
   font-size: 12px;
   padding: 10px;
@@ -5696,10 +5699,10 @@ body.body-small .vote-icon {
   content: "\e114";
 }
 .metismenu .fa.arrow:before {
-  content: "\f104";
+  content: "\f107";
 }
 .metismenu .active > a > .fa.arrow:before {
-  content: "\f107";
+  content: "\f106";
 }
 .metismenu .ion.arrow:before {
   content: "\f3d2";
@@ -6796,4 +6799,9 @@ body.body-small .vote-icon {
     text-align: left;
     display: inline-block;
   }
+}
+
+.fa-size-up {
+  margin-top: 3px;
+  font-size: 16px;
 }
