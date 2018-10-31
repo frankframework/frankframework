@@ -148,7 +148,7 @@
     <div class="row">
         <div class="col-lg-12">
             <div ng-init="msgBox.expanded = false;" class="ibox float-e-margins">
-                <div ng-click="msgBox.expanded = !msgBox.expanded" class="ibox-title" ng-class="{
+                <div ng-click="msgBox.expanded = !msgBox.expanded" class="ibox-title pointer" ng-class="{
                     'warning': messageLog[selectedConfiguration].messageLevel=='WARN',
                     'danger': messageLog[selectedConfiguration].messageLevel=='ERROR'
                 }
@@ -195,7 +195,7 @@
     <div class="row">
         <div ng-repeat="adapter in adapters | configurationFilter:this | searchFilter:this" class="col-lg-12 adapters">
             <div ng-init="showContent = (adapter.status == 'stopped')" class="ibox float-e-margins" id="{{adapter.name}}">
-                <div ng-click="showContent = !showContent" class="ibox-title {{(adapter.status=='warning') ? 'warning' : ((adapter.status=='stopped') ? 'danger' : 'primary')}}" title="Double-click to open">
+                <div ng-click="showContent = !showContent" class="ibox-title {{(adapter.status=='warning') ? 'warning' : ((adapter.status=='stopped') ? 'danger' : 'primary')}}" title="Click to open">
                     <div class="ibox-tools pull-right">
                         <a> <i class="fa fa-chevron-{{(showContent) ? 'up' : 'down' }}"></i></a>
                     </div>
