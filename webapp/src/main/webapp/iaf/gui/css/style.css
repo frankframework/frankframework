@@ -6794,3 +6794,8 @@ body.body-small .vote-icon {
     display: inline-block;
   }
 }
+
+.fa-size-up {
+  margin-top: 3px;
+  font-size: 16px;
+}
