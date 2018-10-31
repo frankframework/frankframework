@@ -102,18 +102,6 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.directive('iboxExpand', function() {
-	return {
-		restrict: 'A',
-		controller: function ($scope, $element) {
-			var iboxTitle = $element.find(".ibox-title");
-			iboxTitle.bind('click', function() {
-				$scope.showContent = !$scope.showContent;
-			});
-		}
-	};
-})
-
 .directive('iboxToolsClose', ['$timeout', function($timeout) {
 	return {
 		restrict: 'A',
