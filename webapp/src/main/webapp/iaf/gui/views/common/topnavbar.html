@@ -38,15 +38,15 @@
                             </div>
                         </a>
                     </li>
-                    <li ng-repeat-end class="divider"></li>
-                    <li>
+                    <li ng-repeat-end class="divider" ng-if="!$last"></li>
+                    <!-- <li>
                         <div class="text-center link-block">
                             <a ui-sref="pages.notifications({id: 0})">
                                 <strong>See All Alerts</strong>
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         </div>
-                    </li>
+                    </li> -->
                 </ul>
             </li>
             <li ng-if="loggedin">
