@@ -172,12 +172,14 @@ angular.module('iaf.beheerconsole')
  			$scope.messageLog = configurations;
 		});
 
+		var raw_adapter_data = {};
 		Poller.add("adapters?expanded=all", function(allAdapters) {
 			for(adapterName in allAdapters) {
 				var adapter = allAdapters[adapterName];
 
-				var oldAdapterData = $rootScope.adapters[adapter.name];
-				if(JSON.stringify(oldAdapterData) != JSON.stringify(adapter)) {
+				if(raw_adapter_data[adapter.name] != JSON.stringify(adapter)) {
+					raw_adapter_data[adapter.name] = JSON.stringify(adapter);
+
 					adapter.status = "started";
 
 					for(x in adapter.receivers) {
