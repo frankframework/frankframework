@@ -15,7 +15,6 @@
  */
 package nl.nn.adapterframework.extensions.cmis;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +39,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
@@ -153,8 +153,7 @@ public class CmisHttpSender extends HttpSenderBase {
 				responseStream = responseHandler.getResponse();
 			}
 			else {
-				errorStream = new ByteArrayInputStream("ERROR".getBytes());
-				responseHandler.close();
+				errorStream = responseHandler.getResponse();
 			}
 			Response response = new Response(responseCode, statusline.toString(), headerFields, responseStream, errorStream);
 			prc.getSession().put("response", response);
