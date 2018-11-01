@@ -73,6 +73,7 @@ import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.Action;
+import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -619,24 +620,15 @@ public class CmisSender extends SenderWithParametersBase implements PipeAware {
 			mediaType = getDefaultMediaType();
 		}
 
+		ContentStream contentStream = session.getObjectFactory().createContentStream(fileName, fileLength, mediaType, inputStream);
 		if (isUseRootFolder()) {
 			Folder folder = session.getRootFolder();
-			ContentStream contentStream = session.getObjectFactory()
-					.createContentStream(fileName, fileLength, mediaType,
-							inputStream);
-			Document document = folder.createDocument(props, contentStream,
-					null);
-			log.debug(getLogPrefix() + "created new document [ "
-					+ document.getId() + "]");
+			Document document = folder.createDocument(props, contentStream, VersioningState.NONE);
+			log.debug(getLogPrefix() + "created new document [ " + document.getId() + "]");
 			return document.getId();
 		} else {
-			ContentStream contentStream = session.getObjectFactory()
-					.createContentStream(fileName, fileLength, mediaType,
-							inputStream);
-			ObjectId objectId = session.createDocument(props, null,
-					contentStream, null);
-			log.debug(getLogPrefix() + "created new document [ "
-					+ objectId.getId() + "]");
+			ObjectId objectId = session.createDocument(props, null, contentStream, VersioningState.NONE);
+			log.debug(getLogPrefix() + "created new document [ " + objectId.getId() + "]");
 			return objectId.getId();
 		}
 	}
