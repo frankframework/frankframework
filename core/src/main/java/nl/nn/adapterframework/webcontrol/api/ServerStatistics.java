@@ -172,7 +172,7 @@ public class ServerStatistics extends Base {
 						}
 					}
 				}
-				totalErrorStoreCount =+ esr;
+				totalErrorStoreCount += esr;
 				configurationsMap.put("errorStoreCount", esr);
 			}
 
