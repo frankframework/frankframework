@@ -1295,8 +1295,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			throw new ListenerException("cannot read context",e);
 		}
 	}
-    
-    
+
 	public Object browseMessage(String messageId) throws ListenerException {
 		Connection conn;
 		try {
@@ -1305,7 +1304,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			throw new ListenerException(e);
 		}
 		try {
-			PreparedStatement stmt = conn.prepareStatement(selectDataQuery);			
+			PreparedStatement stmt = conn.prepareStatement(selectDataQuery);
 			applyStandardParameters(stmt, messageId, true);
 			ResultSet rs =  stmt.executeQuery();
 
@@ -1313,7 +1312,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				throw new ListenerException("could not retrieve message for messageid ["+ messageId+"]");
 			}
 			return retrieveObject(rs,1);
-			
+
+		} catch (ListenerException e) { //Don't catch ListenerExceptions, unnecessarily and ungly
+			throw e;
 		} catch (Exception e) {
 			throw new ListenerException("cannot deserialize message",e);
 		} finally {

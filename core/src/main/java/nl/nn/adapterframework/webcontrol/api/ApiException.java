@@ -23,6 +23,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
+import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.log4j.Logger;
+
 /**
  * Custom errors for the API.
  * 
@@ -33,13 +37,20 @@ import javax.ws.rs.core.Response.Status;
 public class ApiException extends WebApplicationException implements Serializable
 {
 	private static final long serialVersionUID = 1L;
+	private Logger log = LogUtil.getLogger(this);
 
 	public ApiException() {
 		super();
 	}
 
 	public ApiException(Exception e) {
-		super(e);
+		this(e, 500);
+	}
+
+	public ApiException(Exception e, int status) {
+		super(e, formatException(e.getMessage(), Status.fromStatusCode(status), MediaType.APPLICATION_JSON));
+
+		log.error(e.getMessage(), e);
 	}
 
 	public ApiException(String msg) {

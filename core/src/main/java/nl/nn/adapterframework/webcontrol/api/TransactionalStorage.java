@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -221,7 +222,12 @@ public class TransactionalStorage extends Base {
 				resendMessage(receiver, messageIds[i]);
 			}
 			catch(Exception e) {
-				errorMessages.add(e.getMessage());
+				if(e instanceof ApiException) {
+					//The message of an ApiException is wrapped in HTML, try to get the original message instead!
+					errorMessages.add(e.getCause().getMessage());
+				}
+				else
+					errorMessages.add(e.getMessage());
 			}
 		}
 
@@ -291,7 +297,12 @@ public class TransactionalStorage extends Base {
 				deleteMessage(receiver.getErrorStorage(), messageIds[i]);
 			}
 			catch(Exception e) {
-				errorMessages.add(e.getMessage());
+				if(e instanceof ApiException) {
+					//The message of an ApiException is wrapped in HTML, try to get the original message instead!
+					errorMessages.add(e.getCause().getMessage());
+				}
+				else
+					errorMessages.add(e.getMessage());
 			}
 		}
 
@@ -383,24 +394,33 @@ public class TransactionalStorage extends Base {
 	}
 
 	private String[] getMessages(MultipartFormDataInput input) {
-//		try {
+		try {
 			Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
-			if(inputDataMap.get("messageIds") != null)
-				return (String[]) inputDataMap.get("messageIds").toArray();
-//		} catch (IOException e) {
-//			throw new ApiException(e);
-//		}
+			if(inputDataMap.get("messageIds") != null) {
+				String messageIds = inputDataMap.get("messageIds").get(0).getBodyAsString();
+				return messageIds.split(",");
+			}
+		} catch (IOException e) {
+			throw new ApiException(e);
+		}
 		return null;
 	}
 
 	private void deleteMessage(IMessageBrowser storage, String messageId) {
+		try {
+			storage.browseMessage(messageId);
+		}
+		catch(ListenerException e) {
+			throw new ApiException(e, 404);
+		}
+
 		PlatformTransactionManager transactionManager = ibisManager.getTransactionManager();
 		TransactionStatus txStatus = null;
 		try {
 			txStatus = transactionManager.getTransaction(TXNEW);
 			storage.deleteMessage(messageId);
 		} catch (Exception e) {
-			txStatus.setRollbackOnly(); 
+			txStatus.setRollbackOnly();
 			throw new ApiException(e);
 		} finally { 
 			transactionManager.commit(txStatus);
@@ -424,9 +444,15 @@ public class TransactionalStorage extends Base {
 	}
 
 	private String getRawMessage(IMessageBrowser messageBrowser, IListener listener, String messageId) {
+		Object rawmsg = null;
 		try {
-			Object rawmsg = messageBrowser.browseMessage(messageId);
-	
+			rawmsg = messageBrowser.browseMessage(messageId);
+		}
+		catch(ListenerException e) {
+			throw new ApiException(e, 404);
+		}
+
+		try {
 			String msg = null;
 			if (listener != null) {
 				msg = listener.getStringFromRawMessage(rawmsg, null);
@@ -434,7 +460,7 @@ public class TransactionalStorage extends Base {
 				msg = (String) rawmsg;
 			}
 			if (StringUtils.isEmpty(msg)) {
-				msg = "<no message found>";
+				msg = "<no message found/>";
 			}
 	
 			return msg;
