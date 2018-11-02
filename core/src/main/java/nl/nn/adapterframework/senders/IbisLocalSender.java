@@ -17,6 +17,9 @@ package nl.nn.adapterframework.senders;
 
 import java.util.HashMap;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -26,15 +29,10 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
-import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
 
 /**
  * Posts a message to another IBIS-adapter in the same IBIS instance.
@@ -97,11 +95,8 @@ import org.apache.commons.lang.exception.ExceptionUtils;
  * @author Gerrit van Brakel
  * @since  4.2
  */
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, PipeAware {
+public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, ConfigurationAware {
 	
-	private String name;
-	private AbstractPipe pipe;
-	private SenderWrapper senderWrapper;
 	private Configuration configuration;
 	private String serviceName;
 	private String javaListener;
@@ -114,6 +109,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	private IsolatedServiceCaller isolatedServiceCaller;
 	private boolean throwJavaListenerNotFoundException = true;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!isSynchronous()) {
@@ -129,21 +125,9 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 						|| StringUtils.isNotEmpty(getJavaListenerSessionKey()))) {
 			throw new ConfigurationException(getLogPrefix()+"serviceName and javaListener cannot be specified both");
 		}
-		if (configuration == null) {
-			if (pipe != null) {
-				configuration = pipe.getPipeLine().getAdapter()
-						.getConfiguration();
-			} else {
-				if (senderWrapper != null) {
-					if (senderWrapper instanceof PipeAware) {
-						configuration = ((PipeAware) senderWrapper).getPipe()
-								.getPipeLine().getAdapter().getConfiguration();
-					}
-				}
-			}
-		}
 	}
 
+	@Override
 	public void open() throws SenderException {
 		super.open();
 		if (StringUtils.isNotEmpty(getJavaListener()) && isCheckDependency()) {
@@ -171,6 +155,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		}
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		if (StringUtils.isNotEmpty(getServiceName())) {
 			return "WebServiceListener "+getServiceName();
@@ -181,9 +166,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		}
 	}
 
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String result = null;
-		HashMap context = null;
+		HashMap<String,Object> context = null;
 		if (paramList!=null) {
 			try {
 				context = (HashMap) prc.getValueMap(paramList);
@@ -213,9 +199,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			} catch (ListenerException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
 					throw new TimeOutException(getLogPrefix()+"timeout calling service ["+getServiceName()+"]",e);
-				} else {
-					throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);
 				}
+				throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
@@ -237,10 +222,9 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					String msg = "could not find JavaListener ["+javaListener+"]";
 					if (isThrowJavaListenerNotFoundException()) {
 						throw new SenderException(msg);
-					} else {
-						log.info(getLogPrefix()+msg);
-						return "<error>"+msg+"</error>";
 					}
+					log.info(getLogPrefix()+msg);
+					return "<error>"+msg+"</error>";
 				}
 				if (isIsolated()) {
 					if (isSynchronous()) {
@@ -258,9 +242,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			} catch (ListenerException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
 					throw new TimeOutException(getLogPrefix()+"timeout calling JavaListener ["+javaListener+"]",e);
-				} else {
-					throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+javaListener+"]",e);
 				}
+				throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+javaListener+"]",e);
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
@@ -274,26 +257,13 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
-	public void setName(String name) {
-		this.name=name;
-	}
-	public String getName() {
-		return name;
-	}
-
-	public void setPipe(AbstractPipe pipe) {
-		this.pipe = pipe;
-	}
-	public AbstractPipe getPipe() {
-		return pipe;
-	}
-
-	public void setSenderWrapper(SenderWrapper senderWrapper) {
-		this.senderWrapper = senderWrapper;
-	}
-	
+	@Override
 	public void setConfiguration(Configuration configuration) {
 		this.configuration = configuration;
+	}
+	@Override
+	public Configuration getConfiguration() {
+		return configuration;
 	}
 	
 	/**
@@ -337,6 +307,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}
+	@Override
 	public boolean isSynchronous() {
 		return synchronous;
 	}

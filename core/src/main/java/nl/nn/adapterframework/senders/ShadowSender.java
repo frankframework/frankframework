@@ -144,7 +144,6 @@ public class ShadowSender extends ParallelSenders {
 		ParallelSenderExecutor originalSender = null;
 		XmlBuilder resultsXml = new XmlBuilder("results");
 		resultsXml.addAttribute("correlationID", correlationID);
-		resultsXml.addAttribute("adapter", getPipe().getAdapter().getName());
 
 		XmlBuilder originalMessageXml = new XmlBuilder("originalMessage");
 		originalMessageXml.setValue(XmlUtils.skipXmlDeclaration(message),false);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,6 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 
@@ -50,30 +47,34 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class SenderWrapper extends SenderWrapperBase implements PipeAware {
+public class SenderWrapper extends SenderWrapperBase {
 	private ISender sender;
-	private AbstractPipe pipe;
 	
+	@Override
 	protected boolean isSenderConfigured() {
 		return getSender()!=null;
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (getSender() instanceof PipeAware) {
-			((PipeAware)getSender()).setPipe(getPipe());
+		if (getSender() instanceof ConfigurationAware) {
+			((ConfigurationAware)getSender()).setConfiguration(getConfiguration());
 		}
 		getSender().configure();
 	}
+	@Override
 	public void open() throws SenderException {
 		getSender().open();
 		super.open();
 	}
+	@Override
 	public void close() throws SenderException {
 		super.close();
 		getSender().close();
 	}
 
+	@Override
 	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String result;
 		if (sender instanceof ISenderWithParameters) {
@@ -84,23 +85,19 @@ public class SenderWrapper extends SenderWrapperBase implements PipeAware {
 		return result;
 	}
 
+	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		if (getSender() instanceof HasStatistics) {
 			((HasStatistics)getSender()).iterateOverStatistics(hski,data,action);
 		}
 	}
 
-	public void setPipe(AbstractPipe pipe) {
-		this.pipe = pipe;
-	}
-	public AbstractPipe getPipe() {
-		return pipe;
-	}
-
+	@Override
 	public boolean isSynchronous() {
 		return getSender().isSynchronous();
 	}
 
+	@Override
 	public void setSender(ISender sender) {
 		this.sender=sender;
 	}

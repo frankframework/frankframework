@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -61,15 +60,17 @@ public class SenderSeries extends SenderWrapperBase {
 	private Map<ISender, StatisticsKeeper> statisticsMap = new HashMap<ISender, StatisticsKeeper>();
 	private boolean synchronous=true;
 
+	@Override
 	protected boolean isSenderConfigured() {
 		return senderList.size()!=0;
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
 			ISender sender = it.next();
-			if (sender instanceof PipeAware) {
-				((PipeAware)sender).setPipe(getPipe());
+			if (sender instanceof ConfigurationAware) {
+				((ConfigurationAware)sender).setConfiguration(getConfiguration());
 			}
 			sender.configure();
 		}
@@ -77,6 +78,7 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 
+	@Override
 	public void open() throws SenderException {
 		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
 			ISender sender = it.next();
@@ -84,6 +86,7 @@ public class SenderSeries extends SenderWrapperBase {
 		}
 		super.open();
 	}
+	@Override
 	public void close() throws SenderException {
 		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
 			ISender sender = it.next();
@@ -92,6 +95,7 @@ public class SenderSeries extends SenderWrapperBase {
 		super.close();
 	}
 
+	@Override
 	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		long t1 = System.currentTimeMillis();
 		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
@@ -110,6 +114,7 @@ public class SenderSeries extends SenderWrapperBase {
 		return message;
 	}
 
+	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		//Object senderData=hski.openGroup(data,getName(),"sender");
 		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
@@ -122,10 +127,12 @@ public class SenderSeries extends SenderWrapperBase {
 		//hski.closeGroup(senderData);
 	}
 
+	@Override
 	public String getLogPrefix() {
 		return ClassUtils.nameOf(this)+" ["+getName()+"] ";
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		return synchronous;
 	}
@@ -133,6 +140,7 @@ public class SenderSeries extends SenderWrapperBase {
 		synchronous = value;
 	}
 
+	@Override
 	public void setSender(ISender sender) {
 		senderList.add(sender);
 		setSynchronous(sender.isSynchronous()); // set synchronous to isSynchronous of the last Sender added

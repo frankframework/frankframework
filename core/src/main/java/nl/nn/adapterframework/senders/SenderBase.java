@@ -15,14 +15,13 @@
 */
 package nl.nn.adapterframework.senders;
 
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.log4j.Logger;
 
 /**
  * Baseclass for senders.
@@ -41,17 +40,21 @@ public abstract class SenderBase implements ISender {
 	private String name;
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
+
+	@Override
 	public void configure() throws ConfigurationException {
 	}
 
+	@Override
 	public void open() throws SenderException {
 	}
 
+	@Override
 	public void close() throws SenderException {
 	}
 
-	public abstract String sendMessage(String correlationID, String message) throws SenderException, TimeOutException;
 
+	@Override
 	public boolean isSynchronous() {
 		return true;
 	}
@@ -60,9 +63,11 @@ public abstract class SenderBase implements ISender {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name=name;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}

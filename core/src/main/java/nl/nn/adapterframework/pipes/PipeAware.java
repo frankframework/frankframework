@@ -15,17 +15,22 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import nl.nn.adapterframework.senders.ConfigurationAware;
 
 /**
  * When a sender implements this interface it will get a reference to it's
  * parent pipe.
+ * @deprecated Please do not use PipeAware, but use {@link ConfigurationAware} instead
  * 
  * @author Jaco de Groot
  *
  */
+@Deprecated
 public interface PipeAware {
 
+	@Deprecated
 	public void setPipe(AbstractPipe pipe);
+	@Deprecated
 	public AbstractPipe getPipe();
 
 }

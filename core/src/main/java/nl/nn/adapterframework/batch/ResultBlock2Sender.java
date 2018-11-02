@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,16 +20,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.pipes.PipeAware;
+import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.util.ClassUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * ResultHandler that collects a number of records and sends them together to a sender.
@@ -60,11 +61,12 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  * @since   4.7  
  */
-public class ResultBlock2Sender extends Result2StringWriter implements PipeAware {
+public class ResultBlock2Sender extends Result2StringWriter implements ConfigurationAware {
 
 	private ISender sender = null; 
-	private Map counters = new HashMap();
-	private Map levels = new HashMap();
+	private Map<String,Integer> counters = new HashMap<String,Integer>();
+	private Map<String,Integer> levels = new HashMap<String,Integer>();
+	private Configuration configuration;
 	
 	public ResultBlock2Sender() {
 		super();
@@ -72,6 +74,7 @@ public class ResultBlock2Sender extends Result2StringWriter implements PipeAware
 		setOnCloseDocument(null);
 	}
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (sender==null) {
@@ -80,15 +83,17 @@ public class ResultBlock2Sender extends Result2StringWriter implements PipeAware
 		if (StringUtils.isEmpty(sender.getName())) {
 			sender.setName("sender of "+getName());
 		}
-		if (getSender() instanceof PipeAware) {
-			((PipeAware)getSender()).setPipe(getPipe());
+		if (getSender() instanceof ConfigurationAware) {
+			((ConfigurationAware)getSender()).setConfiguration(getConfiguration());
 		}
 		sender.configure();		
 	}
+	@Override
 	public void open() throws SenderException {
 		super.open();
 		sender.open();		
 	}
+	@Override
 	public void close() throws SenderException {
 		super.close();
 		sender.close();	
@@ -96,11 +101,13 @@ public class ResultBlock2Sender extends Result2StringWriter implements PipeAware
 		levels.clear();
 	}
 
+	@Override
 	public void openDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
 		counters.put(streamId,new Integer(0));
 		levels.put(streamId,new Integer(0));
 		super.openDocument(session, streamId, prc);
 	}
+	@Override
 	public void closeDocument(IPipeLineSession session, String streamId, ParameterResolutionContext prc) {
 		super.closeDocument(session,streamId, prc);
 		counters.remove(streamId);
@@ -109,14 +116,14 @@ public class ResultBlock2Sender extends Result2StringWriter implements PipeAware
 
 
 	protected int getCounter(String streamId) throws SenderException {
-		Integer counter = (Integer)counters.get(streamId);
+		Integer counter = counters.get(streamId);
 		if (counter==null) {
 			throw new SenderException("no counter found for stream ["+streamId+"]");
 		}
 		return counter.intValue();
 	}
 	protected int incCounter(String streamId) throws SenderException {
-		Integer counter = (Integer)counters.get(streamId);
+		Integer counter = counters.get(streamId);
 		if (counter==null) {
 			throw new SenderException("no counter found for stream ["+streamId+"]");
 		}
@@ -126,14 +133,14 @@ public class ResultBlock2Sender extends Result2StringWriter implements PipeAware
 	}
 
 	public int getLevel(String streamId) throws SenderException {
-		Integer level = (Integer)levels.get(streamId);
+		Integer level = levels.get(streamId);
 		if (level==null) {
 			throw new SenderException("no level found for stream ["+streamId+"]");
 		}
 		return level.intValue();
 	}
 	protected int incLevel(String streamId) throws SenderException {
-		Integer level = (Integer)levels.get(streamId);
+		Integer level = levels.get(streamId);
 		if (level==null) {
 			throw new SenderException("no level found for stream ["+streamId+"]");
 		}
@@ -142,7 +149,7 @@ public class ResultBlock2Sender extends Result2StringWriter implements PipeAware
 		return result;
 	}
 	protected int decLevel(String streamId) throws SenderException {
-		Integer level = (Integer)levels.get(streamId);
+		Integer level = levels.get(streamId);
 		if (level==null) {
 			throw new SenderException("no level found for stream ["+streamId+"]");
 		}
@@ -153,10 +160,12 @@ public class ResultBlock2Sender extends Result2StringWriter implements PipeAware
 
 
 
+	@Override
 	public void openBlock(IPipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception {
 		super.openBlock(session,streamId,blockName, prc);
 		incLevel(streamId);
 	}
+	@Override
 	public void closeBlock(IPipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception {
 		super.closeBlock(session,streamId,blockName, prc);
 		int level=decLevel(streamId);
@@ -183,6 +192,15 @@ public class ResultBlock2Sender extends Result2StringWriter implements PipeAware
 	}
 	public ISender getSender() {
 		return sender;
+	}
+
+	@Override
+	public void setConfiguration(Configuration configuration) {
+		this.configuration = configuration;
+	}
+	@Override
+	public Configuration getConfiguration() {
+		return configuration;
 	}
 
 

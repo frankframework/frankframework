@@ -31,26 +31,32 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
  */
 public class GenericReceiver extends ReceiverBase {
 
+	@Override
 	public void setListener(IListener listener) {
 		super.setListener(listener);
 	}
+	@Override
 	public void setInProcessStorage(ITransactionalStorage inProcessStorage) {
 		super.setInProcessStorage(inProcessStorage);
 	}
+	@Override
 	public void setErrorSender(ISender errorSender) {
 		super.setErrorSender(errorSender);
 	}			
+	@Override
 	public void setErrorStorage(ITransactionalStorage errorStorage) {
 		super.setErrorStorage(errorStorage);
 	}
+	@Override
 	public void setMessageLog(ITransactionalStorage messageLog) {
 		super.setMessageLog(messageLog);
 	}
 	
+	@Override
 	public void setSender(ISender sender) {
 		super.setSender(sender);
-	}
-    
+	}    
+	@Override
     public IAdapter getAdapter() {
         return super.getAdapter();
     }

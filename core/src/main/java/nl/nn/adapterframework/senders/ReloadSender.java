@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -49,9 +47,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author	Lars Sinke
  * @author	Niels Meijer
  */
-public class ReloadSender extends SenderWithParametersBase implements PipeAware {
+public class ReloadSender extends SenderWithParametersBase implements ConfigurationAware {
 
-	private AbstractPipe pipe;
+	private Configuration configuration;
 	private boolean forceReload = false;
 
 	@Override
@@ -89,8 +87,7 @@ public class ReloadSender extends SenderWithParametersBase implements PipeAware 
 			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression activeVersion", e);
 		}
 
-		Configuration configuration = getPipe().getAdapter().getConfiguration()
-				.getIbisManager().getConfiguration(configName);
+		Configuration configuration = getConfiguration().getIbisManager().getConfiguration(configName);
 
 		if (configuration != null) {
 			String latestVersion = configuration.getVersion();
@@ -98,23 +95,21 @@ public class ReloadSender extends SenderWithParametersBase implements PipeAware 
 				IbisContext ibisContext = configuration.getIbisManager().getIbisContext();
 				ibisContext.reload(configName);
 				return "Reload " + configName + " succeeded";
-			} else {
-				return "Reload " + configName + " skipped";
 			}
-		} else {
-			log.warn("Configuration [" + configName + "] not loaded yet");
-			return "Reload " + configName + " skipped"; 
+			return "Reload " + configName + " skipped";
 		}
+		log.warn("Configuration [" + configName + "] not loaded yet");
+		return "Reload " + configName + " skipped"; 
 	}
 
 	@Override
-	public void setPipe(AbstractPipe pipe) {
-		this.pipe = pipe;
+	public void setConfiguration(Configuration configuration) {
+		this.configuration = configuration;
 	}
 
 	@Override
-	public AbstractPipe getPipe() {
-		return pipe;
+	public Configuration getConfiguration() {
+		return configuration;
 	}
 
 	public void setForceReload(boolean forceReload) {

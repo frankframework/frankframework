@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IPipe;
@@ -58,6 +59,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.processors.PipeProcessor;
+import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -297,13 +299,17 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		} else {
 			propagateName();
 			if (getSender() == null) {
-				throw new ConfigurationException(
-					getLogPrefix(null) + "no sender defined ");
+				throw new ConfigurationException(getLogPrefix(null) + "no sender defined ");
 			}
 	
 			try {
-				if (getSender() instanceof PipeAware) {
-					((PipeAware)getSender()).setPipe(this);
+				if (getSender() instanceof ConfigurationAware) {
+					IAdapter adapter=getAdapter();
+					if (adapter!=null) {
+						((ConfigurationAware)getSender()).setConfiguration(getAdapter().getConfiguration());
+					} else {
+						log.debug("No Adapter to set Configuration from");
+					}
 				}
 				getSender().configure();
 			} catch (ConfigurationException e) {

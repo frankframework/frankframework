@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -35,11 +37,9 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.pipes.PipeAware;
+import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe for transforming a stream with records. Records in the stream must be separated
@@ -151,8 +151,8 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		for (Iterator it = registeredRecordHandlers.keySet().iterator(); it.hasNext();) {
 			String recordHandlerName = (String)it.next();
 			IRecordHandler handler = getRecordHandler(recordHandlerName);
-			if(handler instanceof PipeAware) {
-				((PipeAware)handler).setPipe(this);
+			if(handler instanceof ConfigurationAware) {
+				((ConfigurationAware)handler).setConfiguration(getAdapter().getConfiguration());
 			}
 			handler.configure();
 		}

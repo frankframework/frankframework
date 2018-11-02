@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,21 +15,20 @@
 */
 package nl.nn.adapterframework.senders;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.pipes.PipeAware;
 import nl.nn.adapterframework.processors.SenderWrapperProcessor;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.util.ClassUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Baseclass for Wrappers for senders, that allows to get input from a session variable, and to store output in a session variable.
@@ -52,7 +51,7 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled, PipeAware {
+public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled, ConfigurationAware {
 
 	private String getInputFromSessionKey; 
 	private String getInputFromFixedValue=null;
@@ -60,7 +59,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	private boolean preserveInput=false; 
 	protected SenderWrapperProcessor senderWrapperProcessor;
 	private ICacheAdapter cache=null;
-	private AbstractPipe pipe;
+	private Configuration configuration;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -160,12 +159,12 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	}
 
 	@Override
-	public void setPipe(AbstractPipe pipe) {
-		this.pipe = pipe;
+	public void setConfiguration(Configuration configuration) {
+		this.configuration = configuration;
 	}
 	@Override
-	public AbstractPipe getPipe() {
-		return pipe;
+	public Configuration getConfiguration() {
+		return configuration;
 	}
 
 }

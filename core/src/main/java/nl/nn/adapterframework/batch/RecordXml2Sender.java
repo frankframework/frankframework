@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,14 +17,14 @@ package nl.nn.adapterframework.batch;
 
 import java.util.List;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.pipes.PipeAware;
+import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -56,39 +56,42 @@ import nl.nn.adapterframework.util.ClassUtils;
  * 
  * @author  John Dekker
  */
-public class RecordXml2Sender extends RecordXmlTransformer implements PipeAware {
+public class RecordXml2Sender extends RecordXmlTransformer implements ConfigurationAware {
 
 	private ISender sender = null;
-	private AbstractPipe parentPipe; 
+	private Configuration configuration; 
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (sender==null) {
 			throw new ConfigurationException(ClassUtils.nameOf(this)+" has no sender");
 		}
-		if (sender instanceof PipeAware) {
-			((PipeAware)sender).setPipe(parentPipe);
+		if (sender instanceof ConfigurationAware) {
+			((ConfigurationAware)sender).setConfiguration(getConfiguration());
 		}
 		sender.configure();
 	}
+	@Override
 	public void open() throws SenderException {
 		super.open();
 		sender.open();
 	}
+	@Override
 	public void close() throws SenderException {
 		super.close();
 		sender.close();
 	}
 
+	@Override
 	public Object handleRecord(IPipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
 		String xml = (String)super.handleRecord(session,parsedRecord,prc);
 		ISender sender = getSender();
 		if (sender instanceof ISenderWithParameters) {
 			ISenderWithParameters psender = (ISenderWithParameters)sender;
 			return psender.sendMessage(session.getMessageId(), xml,prc); 
-		} else {
-			return sender.sendMessage(session.getMessageId(), xml); 
 		}
+		return sender.sendMessage(session.getMessageId(), xml); 
 	}
 	
 
@@ -100,12 +103,13 @@ public class RecordXml2Sender extends RecordXmlTransformer implements PipeAware 
 		return sender;
 	}
 
-	public AbstractPipe getPipe() {
-		return parentPipe;
+	@Override
+	public void setConfiguration(Configuration configuration) {
+		this.configuration = configuration;
 	}
-
-	public void setPipe(AbstractPipe pipe) {
-		this.parentPipe = pipe;
+	@Override
+	public Configuration getConfiguration() {
+		return configuration;
 	}
 
 }

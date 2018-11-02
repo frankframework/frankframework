@@ -126,7 +126,7 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	protected TaskExecutor createTaskExecutor() {
-		ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) getPipe().getAdapter().getConfiguration().getIbisManager().getIbisContext().getBean("concurrentTaskExecutor");
+		ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) getConfiguration().getIbisManager().getIbisContext().getBean("concurrentTaskExecutor");
 		executor.setCorePoolSize(getMaxConcurrentThreads());
 		return executor;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,20 @@ import java.util.StringTokenizer;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.log4j.Logger;
+import org.apache.log4j.NDC;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -63,6 +77,7 @@ import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -82,20 +97,6 @@ import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * This {@link IReceiver Receiver} may be used as a base-class for developing receivers.
@@ -542,6 +543,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		}
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {		
 		configurationSucceeded = false;
 		try {
@@ -649,6 +651,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				if (sender instanceof HasPhysicalDestination) {
 					info(getLogPrefix()+"has answer-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
 				}
+				if (sender instanceof ConfigurationAware) {
+					((ConfigurationAware)sender).setConfiguration(getAdapter().getConfiguration());
+				}
+				
 			}
 			
 			ISender errorSender = getErrorSender();
@@ -656,6 +662,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				errorSender.configure();
 				if (errorSender instanceof HasPhysicalDestination) {
 					info(getLogPrefix()+"has errorSender to "+((HasPhysicalDestination)errorSender).getPhysicalDestinationName());
+				}
+				if (errorSender instanceof ConfigurationAware) {
+					((ConfigurationAware)errorSender).setConfiguration(getAdapter().getConfiguration());
 				}
 			}
 			ITransactionalStorage errorStorage = getErrorStorage();
@@ -731,6 +740,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 
 
+	@Override
 	public void startRunning() {
 		try {
 			// if this receiver is on an adapter, the StartListening method
@@ -787,6 +797,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		}
 	}
 	
+	@Override
 	public void stopRunning() {
 		// See also Adapter.stopRunning()
 		synchronized (runState) {
@@ -911,18 +922,22 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * Process the received message with {@link #processRequest(IListener, String, String)}.
 	 * A messageId is generated that is unique and consists of the name of this listener and a GUID
 	 */
+	@Override
 	public String processRequest(IListener origin, String message) throws ListenerException {
 		return processRequest(origin, null, message, null, -1);
 	}
 
+	@Override
 	public String processRequest(IListener origin, String correlationId, String message)  throws ListenerException{
 		return processRequest(origin, correlationId, message, null, -1);
 	}
 
+	@Override
 	public String processRequest(IListener origin, String correlationId, String message, Map context) throws ListenerException {
 		return processRequest(origin, correlationId, message, context, -1);
 	}
 
+	@Override
 	public String processRequest(IListener origin, String correlationId, String message, Map context, long waitingTime) throws ListenerException {
 		if (getRunState() != RunStateEnum.STARTED) {
 			throw new ListenerException(getLogPrefix()+"is not started");
@@ -941,13 +956,16 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 
 
+	@Override
 	public void processRawMessage(IListener origin, Object message) throws ListenerException {
 		processRawMessage(origin, message, null, -1);
 	}
+	@Override
 	public void processRawMessage(IListener origin, Object message, Map context) throws ListenerException {
 		processRawMessage(origin, message, context, -1);
 	}
 
+	@Override
 	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingDuration) throws ListenerException {
 		processRawMessage(origin, rawMessage, threadContext, waitingDuration, false);
 	}
@@ -1370,6 +1388,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return false;
 	}
 
+	@Override
 	public void exceptionThrown(INamedObject object, Throwable t) {
 		String msg = getLogPrefix()+"received exception ["+t.getClass().getName()+"] from ["+object.getName()+"]";
 		if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
@@ -1385,6 +1404,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		}
 	}
 
+	@Override
 	public String getEventSourceName() {
 		return getLogPrefix().trim();
 	}
@@ -1440,6 +1460,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 	
 
+	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		Object recData=hski.openGroup(data,getName(),"receiver");
 		hski.handleScalar(recData,"messagesReceived", getMessagesReceived());
@@ -1490,6 +1511,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 
 
+	@Override
 	public boolean isThreadCountReadable() {
 		if (getListener() instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
@@ -1501,6 +1523,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		}
 		return false;
 	}
+	@Override
 	public boolean isThreadCountControllable() {
 		if (getListener() instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
@@ -1513,6 +1536,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return false;
 	}
 
+	@Override
 	public int getCurrentThreadCount() {
 		if (getListener() instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
@@ -1525,6 +1549,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return -1;
 	}
 
+	@Override
 	public int getMaxThreadCount() {
 		if (getListener() instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
@@ -1537,6 +1562,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return -1;
 	}
 
+	@Override
 	public void increaseThreadCount() {
 		if (getListener() instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
@@ -1548,6 +1574,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		}
 	}
 
+	@Override
 	public void decreaseThreadCount() {
 		if (getListener() instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
@@ -1573,6 +1600,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		/**
 		 * Get the {@link RunStateEnum runstate} of this receiver.
 		 */
+	@Override
 	public RunStateEnum getRunState() {
 		return runState.getRunState();
 	}
@@ -1620,6 +1648,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * Returns an iterator over the process-statistics
 	 * @return iterator
 	 */
+	@Override
 	public Iterator getProcessStatisticsIterator() {
 		return processStatistics.iterator();
 	}
@@ -1628,6 +1657,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * Returns an iterator over the idle-statistics
 	 * @return iterator
 	 */
+	@Override
 	public Iterator getIdleStatisticsIterator() {
 		return idleStatistics.iterator();
 	}
@@ -1638,6 +1668,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return queueingStatistics.iterator();
 	}		
 	
+	@Override
 	public ISender getSender() {
 		return sender;
 	}
@@ -1646,6 +1677,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		this.sender = sender;
 	}
 
+	@Override
 	public void setAdapter(IAdapter adapter) {
 		this.adapter = adapter;
 	}
@@ -1743,6 +1775,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * Get the number of messages received.
 	  * @return long
 	 */
+	@Override
 	public long getMessagesReceived() {
 		return numReceived.getValue();
 	}
@@ -1751,6 +1784,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * Get the number of messages retried.
 	  * @return long
 	 */
+	@Override
 	public long getMessagesRetried() {
 		return numRetried.getValue();
 	}
@@ -1759,6 +1793,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * Get the number of messages rejected (discarded or put in errorstorage).
 	  * @return long
 	 */
+	@Override
 	public long getMessagesRejected() {
 		return numRejected.getValue();
 	}
@@ -1780,12 +1815,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
+	@Override
 	public void setName(String newName) {
 		name = newName;
 		propagateName();
 	}
-
-
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -1841,6 +1876,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public boolean isOnErrorContinue() {
 		return ONERROR_CONTINUE.equalsIgnoreCase(getOnError());
 	}
+	@Override
 	public IAdapter getAdapter() {
 		return adapter;
 	}
@@ -1851,6 +1887,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 *
 	 * @return    Description of the Return Value
 	 */
+	@Override
 	public String toString() {
 		String result = super.toString();
 		ToStringBuilder ts=new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
@@ -1871,6 +1908,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return numThreads;
 	}
 
+	@Override
 	public String formatException(String extrainfo, String correlationId, String message, Throwable t) {
 		return getAdapter().formatErrorMessage(extrainfo,t,message,correlationId,null,0);
 	}
@@ -1964,6 +2002,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return beanFactory;
 	}
 
+	@Override
 	public void setBeanFactory(BeanFactory beanFactory) {
 		this.beanFactory = beanFactory;
 	}
