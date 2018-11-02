@@ -124,12 +124,11 @@ public class ShadowSender extends ParallelSenders {
 		// messages of 1 MB concurrently to a pipeline which will process
 		// the message in parallel with 10 SenderWrappers (containing a
 		// XsltSender and IbisLocalSender).
-		ParameterResolutionContext newPrc = new ParameterResolutionContext(
-				prc.getInput(), prc.getSession(), prc.isNamespaceAware(),
-				false, false);
 		for (Iterator<ISender> it = getExecutableSenders(); it.hasNext();) {
 			ISender sender = it.next();
 			guard.addResource();
+			ParameterResolutionContext newPrc = new ParameterResolutionContext(
+					prc.getInput(), prc.getSession());
 			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender,
 					correlationID, message, newPrc, guard,
 					getStatisticsKeeper(sender));

@@ -62,6 +62,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	private ICacheAdapter cache=null;
 	private AbstractPipe pipe;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!isSenderConfigured()) {
@@ -75,6 +76,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 		}
 	}
 
+	@Override
 	public void open() throws SenderException {
 		if (cache!=null) {
 			cache.open();
@@ -82,6 +84,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 		super.open();
 	}
 
+	@Override
 	public void close() throws SenderException {
 		try {
 			super.close();
@@ -96,6 +99,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	public abstract String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException; 
 
+	@Override
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		if (senderWrapperProcessor!=null) {
 			return senderWrapperProcessor.sendMessage(this, correlationID, message, prc);
@@ -103,18 +107,22 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 		return doSendMessage(correlationID, message, prc);
 	}
 
+	@Override
 	public String getLogPrefix() {
 		return ClassUtils.nameOf(this)+" ["+getName()+"] ";
 	}
 
+	@Override
 	public void registerCache(ICacheAdapter cache) {
 		this.cache=cache;
 	}
+	@Override
 	public ICacheAdapter getCache() {
 		return cache;
 	}
 
 	
+	@Override
 	public abstract boolean isSynchronous() ;
 
 	public abstract void setSender(ISender sender);
@@ -151,9 +159,11 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 		this.senderWrapperProcessor = senderWrapperProcessor;
 	}
 
+	@Override
 	public void setPipe(AbstractPipe pipe) {
 		this.pipe = pipe;
 	}
+	@Override
 	public AbstractPipe getPipe() {
 		return pipe;
 	}
