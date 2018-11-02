@@ -67,15 +67,14 @@ public class ForEachChildElementPipe extends IteratingPipe {
 	private boolean processFile=false;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
-	private TransformerPool identityTp;
 	private TransformerPool extractElementsTp=null;
 	private boolean xslt2=false;
 
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		try {
-			identityTp=TransformerPool.getInstance(XmlUtils.IDENTITY_TRANSFORM);
 			if (StringUtils.isNotEmpty(getElementXPathExpression())) {
 				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression()), isXslt2());
 			}
@@ -84,18 +83,22 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		}
 	}
 
+	@Override
 	public void start() throws PipeStartException  {
 		try {
-			identityTp.open();
+			if (extractElementsTp!=null) {
+				extractElementsTp.open();
+			}
 		} catch (Exception e) {
 			throw new PipeStartException(e);
 		}
 		super.start();
 	}
 
+	@Override
 	public void stop()   {
-		if (identityTp!=null) {
-			identityTp.close();
+		if (extractElementsTp!=null) {
+			extractElementsTp.close();
 		}
 		super.stop();
 	}
@@ -130,6 +133,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 			}
 		}
 		
+		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
 			checkInterrupt();
 			if (elementLevel>1) {
@@ -141,6 +145,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 			}
 		}
 
+		@Override
 		public void endElement(String uri, String localName, String qname) throws SAXException {
 			checkInterrupt();
 			if (elementLevel>1) {
@@ -185,6 +190,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		}
 
 
+		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
 			checkInterrupt();
 			if (elementLevel>1 && !contentSeen) {
@@ -199,9 +205,6 @@ public class ForEachChildElementPipe extends IteratingPipe {
 			}
 		}
 
-		public Exception getRootException() {
-			return rootException;	
-		}
 		public boolean isStopRequested() {
 			return stopRequested;
 		}
@@ -212,6 +215,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 	}
 
 
+	@Override
 	protected void iterateInput(Object input, IPipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		Reader reader=null;
 		try {
@@ -363,9 +367,6 @@ public class ForEachChildElementPipe extends IteratingPipe {
 
 	protected TransformerPool getExtractElementsTp() {
 		return extractElementsTp;
-	}
-	protected TransformerPool getIdentityTp() {
-		return identityTp;
 	}
 
 
