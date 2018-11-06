@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Integration Partners B.V.
+Copyright 2017 - 2018 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
+import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -96,8 +97,11 @@ public class ApiListenerServlet extends HttpServlet {
 
 			/**
 			 * Handle Cross-Origin Resource Sharing
+			 * TODO make this work behind loadbalancers/reverse proxies
+			 * TODO check if request ip/origin header matches allowOrigin property
 			 */
-			if(method.equals("OPTIONS")) {
+			String origin = request.getHeader("Origin");
+			if(method.equals("OPTIONS") || origin != null) {
 				response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
 				String headers = request.getHeader("Access-Control-Request-Headers");
 				if (headers != null)
@@ -109,9 +113,13 @@ public class ApiListenerServlet extends HttpServlet {
 					methods.append(", ").append(mtd);
 				}
 				response.setHeader("Access-Control-Allow-Methods", methods.toString());
-				response.setStatus(200);
-				log.trace("Aborting preflight request with status [200], method ["+method+"]");
-				return;
+
+				//Only cut off OPTIONS (aka preflight) requests
+				if(method.equals("OPTIONS")) {
+					response.setStatus(200);
+					log.trace("Aborting preflight request with status [200], method ["+method+"]");
+					return;
+				}
 			}
 
 			/**
