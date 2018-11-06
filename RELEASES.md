@@ -2,12 +2,12 @@ Ibis AdapterFramework release notes
 ===================================
 
 [Tags](https://github.com/ibissource/iaf/releases)
+[JavaDocs](https://javadoc.ibissource.org/latest/)
 
 
 7.2-B1
 --------
 
-[JavaDocs](https://javadoc.ibissource.org/latest/)
 [Commits](https://github.com/ibissource/iaf/compare/v7.1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
