@@ -21,6 +21,14 @@ Upcoming
 - Add attribute to JmsSenders to read JMS headers and add them to the pipeline session
 - Fix NPE in ErrorMessageFormatter when used with dynamic configurations
 - Fix some bugs in CMIS error handling
+- Update to latest Ladybug Test Tool version
+    - Refactor code for errorLabel, okayLabel and getReport
+    - Fix NPE on Open report (from Test tab), Edit, Save 
+    - Show reports in child folders too in Test tab
+    - Run reports in Test tab in background
+    - Add (de)select all to Test tab
+    - Make it possible to search case sensitive
+    - Add ProgressBar to Test tab
 
 
 
