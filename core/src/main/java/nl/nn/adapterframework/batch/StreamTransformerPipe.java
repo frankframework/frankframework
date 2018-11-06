@@ -159,6 +159,9 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		for (Iterator it = registeredResultHandlers.keySet().iterator(); it.hasNext();) {
 			String resultHandlerName = (String)it.next();
 			IResultHandler handler = getResultHandler(resultHandlerName);
+			if (handler instanceof ConfigurationAware) {
+				((ConfigurationAware)handler).setConfiguration(getAdapter().getConfiguration());
+			}
 			handler.configure();
 		}
 	}

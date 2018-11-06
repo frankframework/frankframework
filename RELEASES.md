@@ -4,13 +4,21 @@ Ibis AdapterFramework release notes
 [Tags](https://github.com/ibissource/iaf/releases)
 
 
+7.2-B1
+--------
+
+[JavaDocs](https://javadoc.ibissource.org/latest/)
+[Commits](https://github.com/ibissource/iaf/compare/v7.1...HEAD)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+- Fix NPE in BatchFileTransformerPipe when using an IbisLocalSender
+
 
 7.1
 --------
 
-[JavaDocs](http://maven.ibissource.org/iaf/apidocs/index.html)
-[Commits](https://github.com/ibissource/iaf/compare/v7.1-B4...HEAD)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/ibissource/iaf/compare/v7.1-B4...v7.1)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1)](https://travis-ci.org/ibissource/iaf)
 
 - Fix NPE in HttpSender when no charset is supplied in multipart response
 - Modify GetFromSession to get key from input as well as sessionKey
