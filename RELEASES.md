@@ -5,7 +5,7 @@ Ibis AdapterFramework release notes
 
 
 
-Upcoming
+7.1
 --------
 
 [JavaDocs](http://maven.ibissource.org/iaf/apidocs/index.html)
