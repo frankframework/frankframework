@@ -371,7 +371,7 @@
           <url>https://nexus.ibissource.org/content/repositories/releases</url>
         </repository>
         <snapshotRepository>
-          <id>nexusIbissource</id>
+          <id>ibissource</id>
           <url>https://nexus.ibissource.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <site>
