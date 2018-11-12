@@ -50,6 +50,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -67,6 +68,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String attachmentXmlSessionKey = null;
+	private MessageFactory factory = null;
 
 	public SOAPProviderBase() {
 		log.debug("initiating SOAP Service Provider");
@@ -82,6 +84,8 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	public SOAPMessage invoke(SOAPMessage request) {
 		String result;
 		PipeLineSessionBase pipelineSession = new PipeLineSessionBase();
+		String correlationId = Misc.createSimpleUUID();
+		log.debug(getLogPrefix(correlationId)+"received message");
 
 		if (request == null) {
 			String faultcode = "soap:Server";
@@ -121,6 +125,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 					sessionKey.setValue("attachment" + i);
 					attachment.addSubElement(sessionKey);
 					pipelineSession.put("attachment" + i, attachmentPart.getInputStream());
+					log.debug(getLogPrefix(correlationId)+"adding attachment [attachment" + i+"] to session");
 
 					@SuppressWarnings("unchecked")
 					Iterator<MimeHeader> attachmentMimeHeaders = attachmentPart.getAllMimeHeaders();
@@ -137,6 +142,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 			String message;
 			try {
 				message = XmlUtils.nodeToString(request.getSOAPPart());
+				log.debug(getLogPrefix(correlationId)+"transforming from SOAP message");
 			} catch (TransformerException e) {
 				String m = "Could not transform SOAP message to string";
 				log.error(m, e);
@@ -152,7 +158,8 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 					.get(MessageContext.SERVLET_RESPONSE));
 
 			try {
-				result = processRequest(request.getSOAPPart().getContentId(), message, pipelineSession);
+				log.debug(getLogPrefix(correlationId)+"processing message");
+				result = processRequest(correlationId, message, pipelineSession);
 			}
 			catch (ListenerException e) {
 				String m = "Could not process SOAP message: " + e.getMessage();
@@ -164,8 +171,8 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 		// Transform result string to SOAP message
 		SOAPMessage soapMessage = null;
 		try {
-			MessageFactory factory = MessageFactory.newInstance();
-			soapMessage = factory.createMessage();
+			log.debug(getLogPrefix(correlationId)+"transforming to SOAP message");
+			soapMessage = getMessageFactory().createMessage();
 			StreamSource streamSource = new StreamSource(new StringReader(result));
 			soapMessage.getSOAPPart().setContent(streamSource);
 		} catch (SOAPException e) {
@@ -175,7 +182,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 		}
 
 		String multipartXml = (String) pipelineSession.get(attachmentXmlSessionKey);
-		log.debug("building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
+		log.debug(getLogPrefix(correlationId)+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
 		if (StringUtils.isNotEmpty(multipartXml)) {
 			Element partsElement;
 			try {
@@ -188,7 +195,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 			}
 			Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
 			if (parts==null || parts.size()==0) {
-				log.warn("no part(s) in multipart xml [" + multipartXml + "]");
+				log.warn(getLogPrefix(correlationId)+"no part(s) in multipart xml [" + multipartXml + "]");
 			}
 			else {
 				Iterator<Node> iter = parts.iterator();
@@ -214,7 +221,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						attachmentPart.setContentId(partName);
 						soapMessage.addAttachmentPart(attachmentPart);
 
-						log.debug("appended filepart ["+partSessionKey+"] with value ["+partObject+"] and name ["+partName+"]");
+						log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] with value ["+partObject+"] and name ["+partName+"]");
 					}
 					else { //String
 						String partValue = (String) partObject;
@@ -224,7 +231,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						attachmentPart.setContentId(partName);
 						soapMessage.addAttachmentPart(attachmentPart);
 
-						log.debug("appended stringpart ["+partSessionKey+"] with value ["+partValue+"]");
+						log.debug(getLogPrefix(correlationId)+"appended stringpart ["+partSessionKey+"] with value ["+partValue+"]");
 					}
 				}
 			}
@@ -233,6 +240,37 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 		return soapMessage;
 	}
 
+	/**
+	 * Create a MessageFactory singleton
+	 * @return previously initialized or newly created MessageFactory
+	 * @throws SOAPException
+	 */
+	private synchronized MessageFactory getMessageFactory() throws SOAPException {
+		if(factory == null) {
+			log.debug("creating new MessageFactory");
+			factory = MessageFactory.newInstance();
+		}
+
+		return factory;
+	}
+
+	/**
+	 * Add log prefix to make it easier to debug
+	 * @param correlationId message identifier
+	 * @return
+	 */
+	protected String getLogPrefix(String correlationId) {
+		return "correlationId["+correlationId+"] ";
+	}
+
+	/**
+	 * Actually process the request
+	 * @param correlationId message identifier
+	 * @param message message that was received
+	 * @param pipelineSession messageContext (containing attachments if available)
+	 * @return response to send back
+	 * @throws ListenerException
+	 */
 	abstract String processRequest(String correlationId, String message, IPipeLineSession pipelineSession) throws ListenerException;
 
 	/**
