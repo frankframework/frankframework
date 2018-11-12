@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.extensions.cxf;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 
 /**
@@ -37,7 +37,7 @@ public class MessageProvider extends SOAPProviderBase {
 	}
 
 	@Override
-	String processRequest(String correlationId, String message, PipeLineSessionBase pipelineSession) throws ListenerException {
+	String processRequest(String correlationId, String message, IPipeLineSession pipelineSession) throws ListenerException {
 		return listener.processRequest(null, message, pipelineSession);
 	}
 }

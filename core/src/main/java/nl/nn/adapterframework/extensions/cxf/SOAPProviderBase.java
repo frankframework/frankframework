@@ -233,7 +233,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 		return soapMessage;
 	}
 
-	abstract String processRequest(String correlationId, String message, PipeLineSessionBase pipelineSession) throws ListenerException;
+	abstract String processRequest(String correlationId, String message, IPipeLineSession pipelineSession) throws ListenerException;
 
 	/**
 	 * SessionKey containing attachment information, or null if no attachments

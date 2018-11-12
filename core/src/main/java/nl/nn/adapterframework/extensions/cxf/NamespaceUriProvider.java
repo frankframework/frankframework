@@ -20,10 +20,12 @@ import java.util.Iterator;
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Node;
@@ -52,7 +54,7 @@ public class NamespaceUriProvider extends SOAPProviderBase {
 	}
 
 	@Override
-	String processRequest(String correlationId, String message, PipeLineSessionBase pipelineSession) throws ListenerException {
+	String processRequest(String correlationId, String message, IPipeLineSession pipelineSession) throws ListenerException {
 		String serviceName = findNamespaceUri();
 		log.debug("found namespace["+serviceName+"]");
 		return sd.dispatchRequest(serviceName, null, message, pipelineSession);
