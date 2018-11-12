@@ -69,16 +69,12 @@ public class Base64Pipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		String dir=getDirection();
-		if (dir==null) {
-			throw new ConfigurationException(getLogPrefix(null)+"direction must be set");
-		}
+		if (!dir.equalsIgnoreCase("encode") && !dir.equalsIgnoreCase("decode"))
+			throw new ConfigurationException(getLogPrefix(null)+"illegal value for direction ["+dir+"], must be 'encode' or 'decode'");
 
 		if(outputTypes != null && !outputTypes.contains(outputType))
 			throw new ConfigurationException("unknown outputType ["+outputType+"] supported attributes are "+outputTypes.toString()+"");
 
-		if (!dir.equalsIgnoreCase("encode") && !dir.equalsIgnoreCase("decode")) {
-			throw new ConfigurationException(getLogPrefix(null)+"illegal value for direction ["+dir+"], must be 'encode' or 'decode'");
-		}
 		if (dir.equalsIgnoreCase("encode")) {
 			if (StringUtils.isEmpty(getLineSeparator())) {
 				setLineSeparatorArray("");

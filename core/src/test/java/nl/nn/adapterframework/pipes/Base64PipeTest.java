@@ -45,6 +45,14 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
+	public void noDirection() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		exception.expect(ConfigurationException.class);
+
+		pipe.setDirection("");
+		pipe.configure();
+	}
+
+	@Test
 	public void wrongDirection() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		exception.expect(ConfigurationException.class);
 
@@ -58,6 +66,28 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 
 		pipe.setOutputType("not string or stream or bytes");
 		pipe.configure();
+	}
+
+	@Test
+	public void wrongInputEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		exception.expect(PipeRunException.class);
+
+		pipe.setCharset("test123");
+		pipe.configure();
+		pipe.start();
+
+		pipe.doPipe(input, session);
+	}
+
+	@Test
+	public void wrongOutputEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		exception.expect(PipeRunException.class);
+
+		pipe.setCharset("test123");
+		pipe.configure();
+		pipe.start();
+
+		pipe.doPipe(input.getBytes(), session);
 	}
 
 	@Test
