@@ -60,8 +60,24 @@ angular.module('iaf.beheerconsole')
 			}, function(response){ errorException(response, error); });
 		};
 
-		this.Delete = function (uri, callback, error) {
-			return $http({url:buildURI(uri), method: "delete" }).then(function(response){
+		this.Delete = function () { // (uri, callback, error) || (uri, data, headers, callback, error)
+			var args = Array.prototype.slice.call(arguments);
+			var uri = args.shift();
+			if(args.length > 2){
+				var object = (args.shift() || {});
+				var headers = args.shift();
+			}
+			var callback = args.shift();
+			var error = args.shift();
+
+			var options = { url: buildURI(uri), method: "delete"};
+
+			if(Array.prototype.slice.call(arguments).length > 2){
+				options.data = object;
+				options.headers = headers;
+			}
+					
+			return $http(options).then(function(response){
 				if(callback && typeof callback === 'function') {
 					etags[uri] = response.headers("etag");
 					callback(response.data);

@@ -5,9 +5,42 @@
 	<uib-alert ng-repeat="alert in notes | orderBy:'type'" type="{{alert.type}}" close="closeNote($index)">{{alert.message}}</uib-alert>
 	<div class="row">
 		<div class="col-lg-12">
-			<div class="ibox float-e-margins">
+			<div class="ibox">
 				<div class="ibox-title">
-					<h4>Browse ErrorStorage of receiver [{{receiverName}}] of adapter [{{adapterName}}]<span ng-if="count>0"> ({{count}})</span></h4>
+					<h4 class="i-b">Apply filters</h4>
+					<button class="btn btn-xs btn-info pull-right m-r-md-l" type="button" ng-click="applyFilters()">Apply Filters</button>
+				</div>
+				<div class="ibox-content">
+					<div class="col-md-12">
+						<table class="table no-border-top">
+							<tr>
+								<td><label>Max num of messages displayed</label></td>
+								<td><input class="form-control" type="number" ng-model="filters.max" name="maxMessages" value="100" class="m-r-lg" /></td>
+							</tr>
+							<tr>
+								<td><label>Skip first messages</label></td> 
+								<td><input class="form-control" type="number" ng-model="filters.skip" name="skipMessages" value="0" class="m-r-lg"/></td>
+							</tr>
+							<tr>
+								<td><label>Filter on message text</label></td> 
+								<td><input class="form-control" type="text" ng-model="filters.text" name="textFilter" class="m-r-lg"/></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins m-n">
+				<div class="ibox-title">
+					<h4 class="i-b">Browse ErrorStorage of receiver [{{receiverName}}] of adapter [{{adapterName}}]<span ng-if="count>0"> ({{count}})</span></h4>
+					<div class="pull-right m-r-md">
+						<button class="btn btn-xs btn-info m-r-xs" type="button" ng-click="resendSelected()">Resend selected</button>
+						<button class="btn btn-xs btn-info m-r-xs" type="button" ng-click="deleteSelected()">Delete selected</button>
+						<!-- <button class="btn btn-xs btn-info m-r-xs" type="button" ng-click="exportSelected()">Export selected</button> -->
+					</div>
 				</div>
 				<div class="ibox-content">
 <!--
@@ -20,7 +53,9 @@
 						<table class="table table-striped">
 							<thead>
 								<tr>
-									<th width="100px">&nbsp;</th>
+									<th width="100px">
+										<input type="checkbox" class="resend pull-right" ng-click="selectAll($event)"/>
+									</th>
 									<th>#</th>
 									<th>Timestamp</th>
 									<th>Type</th>
@@ -38,6 +73,7 @@
 									<td>
 										<button ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-info btn-xs" type="button"><i class="fa fa-repeat"></i></button>
 										<button ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i></button>
+										<input type="checkbox" class="resend errorMsg" value="{{message.id}}"/>
 									</td>
 									<td>{{message.pos}}</td>
 									<td to-date time="{{message.insertDate}}"></td>

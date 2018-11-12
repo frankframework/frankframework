@@ -897,12 +897,12 @@ angular.module('iaf.beheerconsole')
 	//TODO
 	$scope.messages = [];
 	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
-	function getErrorStoreMessages() {
-		Api.Get(base_url, function(data) {
+	function getErrorStoreMessages(url) {
+		Api.Get(url, function(data) {
 			$.extend($scope, data);
 		});
 	}
-	getErrorStoreMessages();
+	getErrorStoreMessages(base_url);
 
 	$scope.deleteMessage = function(message) {
 		message.deleting = true;
@@ -932,6 +932,111 @@ angular.module('iaf.beheerconsole')
 			message.resending = false;
 			$scope.addNote("danger", "Unable to resend messages with ID: "+message.id);
 		});
+	};
+
+	$scope.selectAll = function($event){
+		$event.stopPropagation();
+		var selected = $event.currentTarget.checked;
+		angular.element("input[type='checkbox'].resend.errorMsg").each(function(k,v) {
+			$(v).prop("checked", selected);
+		});
+	};
+
+	$scope.resendSelected = function(){
+		var messageIds = getSelectedMessages();
+		setSelectedMessagesProperty(messageIds, "resending", true);
+
+		var url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
+		var formData = new FormData();
+		formData.append("messageIds", messageIds);
+
+		Api.Post(url, formData, { 'Content-Type': undefined }, function() {
+			deleteSelectedMessages(messageIds);
+		}, function(){
+			setSelectedMessagesProperty(messageIds, "resending", false);
+		});
+	};
+
+	$scope.deleteSelected = function(){
+		var messageIds = getSelectedMessages();
+		setSelectedMessagesProperty(messageIds, "deleting", true);
+
+		var url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
+		var formData = new FormData();
+		formData.append("messageIds", messageIds);
+
+		Api.Delete(url, formData, { 'Content-Type': undefined }, function() {
+			deleteSelectedMessages(messageIds);
+		}, function(){
+			setSelectedMessagesProperty(messageIds, "deleting", false);
+		});
+	};
+	// TODO
+	$scope.exportSelected = function(){
+		var messageIds = getSelectedMessages();
+		var url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
+	};
+
+	$scope.filters = {
+		max: 100,
+		skip: 0,
+		text: ''
+	};
+
+	$scope.applyFilters = function(){
+		var max = $scope.filters.max;
+		var skip = $scope.filters.skip;
+		var name = $scope.filters.text;
+
+		var url = angular.copy(base_url);
+		var addedFirstQueryParameter = false; 
+	
+		if(angular.isDefined(max) && max > -1){
+			url += addedFirstQueryParameter ? "&" : "?" + "max=" + max;
+			addedFirstQueryParameter = true;
+		}
+
+		if(angular.isDefined(skip) && skip > -1){
+			url += addedFirstQueryParameter ? "&" : "?" + "skip=" + skip;
+			addedFirstQueryParameter = true;
+		}
+
+		if(angular.isDefined(name)){
+			url += addedFirstQueryParameter ? "&" : "?" + "message=" + name;
+			addedFirstQueryParameter = true;
+		}
+
+		getErrorStoreMessages(url);
+	};
+
+	function getSelectedMessages(){
+		var messageIds = [];
+		angular.element("input[type='checkbox'].resend.errorMsg:checked").each(function(k,v){
+			messageIds.push(v.value);
+		});
+
+		return messageIds;
+	};
+
+	function setSelectedMessagesProperty(messageIds, property, value){
+		for(var x in messageIds){
+			var id = messageIds[x];
+			for(var y in $scope.messages){
+				if($scope.messages[y].id == id ){
+					$scope.messages[y][property] = value;
+				}
+			}
+		}
+	};
+
+	function deleteSelectedMessages(messageIds){
+		var messages = [];
+		for(x in $scope.messages) {
+			if(messageIds.indexOf($scope.messages[x].id) == -1){
+				messages.push($scope.messages[x]);
+			}
+		}
+		$scope.messages = messages;
 	};
 }])
 
