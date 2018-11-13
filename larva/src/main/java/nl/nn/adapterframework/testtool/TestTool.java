@@ -93,7 +93,7 @@ import com.sun.syndication.io.XmlReader;
  */
 public class TestTool {
 	private static Logger logger = LogUtil.getLogger(TestTool.class);
-	private static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [totals], [error]";
+	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
 	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
 	protected static final int DEFAULT_TIMEOUT = 30000;
 	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
@@ -858,7 +858,7 @@ public class TestTool {
 	}
 
 	public static void scenarioFailedMessage(String message, Map writers) {
-		String method = "scenario passed/failed";
+		String method = "scenario failed";
 		writeLog("<h2 class='failed'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
 	}
 
