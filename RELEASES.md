@@ -12,6 +12,7 @@ Ibis AdapterFramework release notes
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 - Fix NPE in BatchFileTransformerPipe when using an IbisLocalSender
+- Various bugfixes en performance improvements in SOAPProviders (WebServiceListener)
 
 
 7.1
