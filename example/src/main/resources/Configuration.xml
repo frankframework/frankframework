@@ -1,6 +1,7 @@
 <!DOCTYPE configuration [
 	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
 	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
+	<!ENTITY HelloBeatifulWorld SYSTEM "ConfigurationHelloBeatifulWorld.xml">
 ]>
 <configuration name="Ibis4Example">
 	<jmsRealms>
@@ -9,4 +10,5 @@
 	</jmsRealms>
 	&HelloWorld;
 	&HelloWorlds;
+	&HelloBeatifulWorld;
 </configuration>

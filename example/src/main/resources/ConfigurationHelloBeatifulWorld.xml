@@ -1,0 +1,31 @@
+<!--
+Download ibisdoc.xsd from the Ibis console (via /rest/webservices). You can
+refer to it directly in the xsi:noNamespaceSchemaLocation attribute but it is
+better to refer to it using Eclipse, Window, Preferences, XML, XML Catalog,
+Add..., Location: path/to/ibisdoc.xsd, Key:
+http://schemas.ibissource.org/ibisdoc.xsd, OK
+-->
+<Configuration
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://schemas.ibissource.org/ibisdoc.xsd"
+	name="My first beatiful configuration"
+	>
+	<Adapter name="HelloBeatifulWorld" active="${HelloBeatifulWorld.active}">
+		<Receiver
+			name="HelloBeatifulWorld"
+			>
+			<JavaListener
+				name="HelloBeatifulWorld"
+			/>
+		</Receiver>
+		<Pipeline firstPipe="HelloBeatifulWorld">
+			<FixedResultPipe
+				name="HelloBeatifulWorld"
+				returnString="Hello Beatiful World"
+				>
+				<Forward name="success" path="EXIT"/>
+			</FixedResultPipe>
+			<Exit path="EXIT" state="success"/>
+		</Pipeline>
+	</Adapter>
+</Configuration>

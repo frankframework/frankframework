@@ -1,0 +1,37 @@
+<module>
+	<adapter name="IbisDoc" active="${ibisDoc.active}">
+		<receiver
+			name="IbisDoc"
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			>
+			<listener
+				name="IbisDoc"
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibisdoc"
+			/>
+		</receiver>
+		<receiver
+			name="IbisDoc"
+			className="nl.nn.adapterframework.receivers.GenericReceiver"
+			>
+			<listener
+				name="IbisDoc"
+				className="nl.nn.adapterframework.http.RestListener"
+				uriPattern="ibisdoc"
+				method="GET"
+			/>
+		</receiver>
+		<pipeline firstPipe="IbisDoc">
+			<pipe
+				name="IbisDoc"
+				className="nl.nn.adapterframework.doc.IbisDocPipe"
+				>
+				<param name="uri" sessionKey="uri" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+		</pipeline>
+	</adapter>
+</module>

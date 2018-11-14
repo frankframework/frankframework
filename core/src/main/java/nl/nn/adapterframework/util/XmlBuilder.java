@@ -52,6 +52,10 @@ public class XmlBuilder {
 		element = new Element(tagName);
 	}
 
+	public XmlBuilder(String tagName, String prefix, String uri) {
+		element = new Element(tagName, prefix, uri);
+	}
+
 	public void addAttribute(String name, String value) {
 		if (value != null) {
 			if (name.equalsIgnoreCase("xmlns")) {

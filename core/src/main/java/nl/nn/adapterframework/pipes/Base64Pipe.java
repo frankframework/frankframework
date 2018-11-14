@@ -22,16 +22,17 @@ import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe that performs base64 encoding and decoding.
@@ -146,6 +147,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 
+	@IbisDoc({"either encode or decode", "encode"})
 	public void setDirection(String string) {
 		direction = string.toLowerCase();
 	}
@@ -163,14 +165,15 @@ public class Base64Pipe extends FixedForwardPipe {
 	public void setConvert2String(boolean b) {
 		convertToString = b;
 	}
-
 	public void setOutputType(String outputType) {
 		this.outputType = outputType.toLowerCase();
 	}
+
 	public String getOutputType() {
 		return outputType;
 	}
 
+	@IbisDoc({"character encoding to be used to encode or decode message to or from string. (only used when convert2String=true)", "UTF-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}

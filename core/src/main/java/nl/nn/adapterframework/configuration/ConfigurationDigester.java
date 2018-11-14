@@ -205,6 +205,8 @@ public class ConfigurationDigester {
 			}
 			String loaded = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()));
 			String loadedHide = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()), null, propsToHide);
+			loaded = ConfigurationUtils.getUglifiedConfiguration(configuration, loaded);
+			loadedHide = ConfigurationUtils.getUglifiedConfiguration(configuration, loadedHide);
 			loaded = ConfigurationUtils.getActivatedConfiguration(configuration, loaded);
 			loadedHide = ConfigurationUtils.getActivatedConfiguration(configuration, loadedHide);
 			if (ConfigurationUtils.stubConfiguration()) {

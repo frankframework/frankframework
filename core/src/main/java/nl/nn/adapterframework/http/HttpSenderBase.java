@@ -39,6 +39,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.core.TimeoutGuardSenderWithParametersBase;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -773,8 +774,8 @@ public abstract class HttpSenderBase extends TimeoutGuardSenderWithParametersBas
 	/**
 	 * Type of method to be executed 
 	 * @param string one of; GET, POST, PUT, DELETE, HEAD or REPORT
-	 * @IbisDoc.default GET
 	 */
+	@IbisDoc({"type of method to be executed, either 'GET', 'POST', 'PUT', 'DELETE', 'HEAD' or 'REPORT'", "GET"})
 	public void setMethodType(String string) {
 		methodType = string;
 	}

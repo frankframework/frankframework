@@ -52,9 +52,10 @@ public class ConfigurationUtils {
 	private static Logger log = LogUtil.getLogger(ConfigurationUtils.class);
 
 	private static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
+	private static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
 	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
-	private static final String VALIDATORS_DISABLED_KEY = "validators.disabled";
+	private static final String UGLIFY_XSLT = "/xml/xsl/uglify.xsl";
 
 	public static boolean stubConfiguration() {
 		return AppConstants.getInstance().getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
@@ -64,12 +65,16 @@ public class ConfigurationUtils {
 		Map<String, Object> parameters = new Hashtable<String, Object>();
 		// Parameter disableValidators has been used to test the impact of
 		// validators on memory usage.
-		parameters.put("disableValidators", AppConstants.getInstance().getBoolean(VALIDATORS_DISABLED_KEY, false));
+		parameters.put("disableValidators", AppConstants.getInstance().getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
 		return getTweakedConfiguration(configuration, originalConfig, STUB4TESTTOOL_XSLT, parameters);
 	}
 
 	public static String getActivatedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
 		return getTweakedConfiguration(configuration, originalConfig, ACTIVE_XSLT, null);
+	}
+
+	public static String getUglifiedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
+		return getTweakedConfiguration(configuration, originalConfig, UGLIFY_XSLT, null);
 	}
 
 	public static String getTweakedConfiguration(Configuration configuration,
