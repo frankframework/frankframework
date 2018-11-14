@@ -198,10 +198,66 @@
             <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloWorlds] starts listening</adapterMessage>
          </adapterMessages>
       </adapter>
+      <adapter config="Ibis4Example"
+               configUC="IBIS4EXAMPLE"
+               configured="true"
+               lastMessageDate="-"
+               messagesInError="0"
+               messagesInProcess="0"
+               messagesProcessed="0"
+               name="HelloBeatifulWorld"
+               nameUC="HELLOBEATIFULWORLD"
+               started="true"
+               state="Started"
+               stateAlert="false"
+               upSince="0000-00-00 00:00:00"
+               upSinceAge="-">
+         <receivers>
+            <receiver class="GenericReceiver"
+                      hasErrorStorage="false"
+                      hasMessageLog="false"
+                      isEsbJmsFFListener="false"
+                      isRestListener="false"
+                      isStarted="true"
+                      listenerClass="JavaListener"
+                      listenerDestination="internal: HelloBeatifulWorld"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="HelloBeatifulWorld"
+                      state="Started"/>
+            <receiver class="GenericReceiver"
+                      hasErrorStorage="false"
+                      hasMessageLog="false"
+                      isEsbJmsFFListener="false"
+                      isRestListener="false"
+                      isStarted="true"
+                      listenerClass="JavaListener"
+                      listenerDestination="external: testtool-HelloBeatifulWorld"
+                      messagesReceived="0"
+                      messagesRejected="0"
+                      messagesRetried="0"
+                      name="HelloBeatifulWorld"
+                      state="Started"/>
+         </receivers>
+         <pipes/>
+         <adapterMessages>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Adapter [HelloBeatifulWorld] pipeline successfully configured</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] has listener on internal: HelloBeatifulWorld</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] initialization complete</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] successfully configured</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] has listener on external: testtool-HelloBeatifulWorld</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] initialization complete</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] successfully configured</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Adapter [HelloBeatifulWorld] up and running</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] starts listening</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloBeatifulWorld] starts listening</adapterMessage>
+         </adapterMessages>
+      </adapter>
       <summary>
-         <adapterState error="0" started="3" starting="0" stopped="0" stopping="0"/>
-         <receiverState error="0" started="6" starting="0" stopped="0" stopping="0"/>
-         <messageLevel error="0" info="30" warn="0"/>
+         <adapterState error="0" started="4" starting="0" stopped="0" stopping="0"/>
+         <receiverState error="0" started="8" starting="0" stopped="0" stopping="0"/>
+         <messageLevel error="0" info="40" warn="0"/>
       </summary>
   </registeredAdapters>
 </root>
