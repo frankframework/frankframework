@@ -1031,8 +1031,27 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('LoggingCtrl', ['$scope', 'Api', 'Misc', '$timeout', function($scope, Api, Misc, $timeout) {
+.controller('LoggingCtrl', ['$scope', 'Api', 'Misc', '$timeout', '$state','$stateParams', function($scope, Api, Misc, $timeout, $state, $stateParams) {
 	$scope.viewFile = false;
+
+	if($stateParams.file && $stateParams.file.length > 0){
+		$scope.viewFile = $stateParams.URL;
+		$scope.loading = true;
+		$scope.directory = $stateParams.directory;
+
+		$timeout(function() {
+            var iframe = angular.element("iframe");
+            $scope.origDirectory = $scope.directory;
+            $scope.directory = $stateParams.file;
+
+            iframe[0].onload = function() {
+                $scope.loading = false;
+                var iframeBody = $(iframe[0].contentWindow.document.body);
+                iframeBody.css({"background-color": "rgb(243, 243, 244)"});
+                iframe.css({"height": iframeBody.height() + 50});
+            };
+        }, 50);
+	}
 
 	Api.Get("logging", function(data) {
 		$.extend($scope, data);
@@ -1062,20 +1081,7 @@ angular.module('iaf.beheerconsole')
 			return;
 		}
 
-		$scope.viewFile = URL;
-		$scope.loading = true;
-		$timeout(function() {
-			var iframe = angular.element("iframe");
-			$scope.origDirectory = $scope.directory;
-			$scope.directory = file.path;
-
-			iframe[0].onload = function() {
-				$scope.loading = false;
-				var iframeBody = $(iframe[0].contentWindow.document.body);
-				iframeBody.css({"background-color": "rgb(243, 243, 244)"});
-				iframe.css({"height": iframeBody.height() + 50});
-			};
-		}, 50);
+		$state.transitionTo("pages.logging", {file: file.path, URL: URL, directory: $scope.directory});
 	};
 
 	$scope.closeFile = function () {
@@ -1092,6 +1098,10 @@ angular.module('iaf.beheerconsole')
 		Api.Get("logging?directory="+file.path, function(data) {
 			$.extend($scope, data);
 		});
+	};
+
+	$scope.changeDirectory = function(){
+		$scope.openDirectory({path: $scope.directory});
 	};
 }])
 

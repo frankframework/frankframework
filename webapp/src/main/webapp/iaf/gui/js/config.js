@@ -178,11 +178,16 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		}
 	})
 	.state('pages.logging', {
-		url: "/logging",
+		url: "/logging?file",
 		templateUrl: "views/ShowLogging.html",
 		data: {
 			pageTitle: 'Logging',
 			breadcrumbs: 'Show Logging'
+		},
+		params : {
+			file : { value: null, squash : true },
+			URL : null,
+			directory : null
 		}
 	})
 	.state('pages.send_message', {

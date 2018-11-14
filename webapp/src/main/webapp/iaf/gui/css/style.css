@@ -4295,6 +4295,9 @@ a.close-canvas-menu:hover {
 .m-t-xs {
   margin-top: 5px;
 }
+.m-t-sm-1px {
+  margin-top: 9px;
+}
 .m-t-sm {
   margin-top: 10px;
 }
@@ -6804,4 +6807,26 @@ body.body-small .vote-icon {
 .fa-size-up {
   margin-top: 3px;
   font-size: 16px;
+}
+
+.logging-inputbar-container {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+  padding-right: 100px;
+}
+
+.logging-inputbar-container div.input-group {
+  margin-left: 48px;
+  width: 100%;
+}
+
+@media (max-width: 1170px){
+  .logging-inputbar-container {
+    padding-right: 30px;
+  }
+
+  .logging-inputbar-container div.input-group {
+    margin-left: 5px;
+  }
 }
