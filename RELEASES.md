@@ -13,6 +13,19 @@ Ibis AdapterFramework release notes
 
 - Fix NPE in BatchFileTransformerPipe when using an IbisLocalSender
 - Various bugfixes en performance improvements in SOAPProviders (WebServiceListener)
+- Update to latest Ladybug Test Tool version
+    - Prevent error on reselect node after Delete and Replace
+    - Refresh after upload
+    - Limit the use of special chars in normalized path
+    - Normalize path on save in report component
+    - Don't show null in path label
+    - Make report xml read-only in Edit mode
+    - Show line numbers on report description too
+    - Don't use TextArea for description in Read-only mode
+    - Don't log all error messages to log file
+    - Fix ClassCastException in Test tab for reports with description
+    - Prevent losing typed data in edit mode on close or select node in tree
+    - Copy report name from original report on Replace
 
 
 7.1
