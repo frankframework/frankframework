@@ -9,3 +9,6 @@ bin
 .settings
 .apt_generated
 .factorypath
+
+**/META-INF/maven
+**/META-INF/MANIFEST.MF
