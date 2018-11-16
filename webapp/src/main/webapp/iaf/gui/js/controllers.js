@@ -4,8 +4,8 @@
  *
  */
 angular.module('iaf.beheerconsole')
-.controller('MainCtrl', ['$scope', '$rootScope', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', '$timeout',
-	function($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert, $timeout) {
+.controller('MainCtrl', ['$scope', '$rootScope', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', '$timeout', 'Privacy',
+	function($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert, $timeout, Privacy) {
 	$scope.loading = true;
 	$rootScope.adapters = {};
 	Pace.on("done", function() {
@@ -140,7 +140,7 @@ angular.module('iaf.beheerconsole')
 				});
 			}
 		});
-		dimension('application.version', appConstants["application.version"]);
+		Privacy.dimension('application.version', appConstants["application.version"]);
 
 		Api.Get("server/warnings", function(configurations) {
 			configurations['All'] = {messages:configurations.messages};
@@ -370,6 +370,15 @@ angular.module('iaf.beheerconsole')
 	$scope.openOldGui = function() {
 		location.href = Misc.getServerPath();
 	};
+
+	$scope.handleCookies = function(options){
+		Privacy.setSettings(options);
+		Privacy.resendCache();
+
+		$scope.showCookieNotification = false;
+	};
+
+	$scope.showCookieNotification = Privacy.showCookieNotification();
 }])
 
 .controller('InformationCtrl', ['$scope', '$uibModalInstance', 'Api', function($scope, $uibModalInstance, Api) {

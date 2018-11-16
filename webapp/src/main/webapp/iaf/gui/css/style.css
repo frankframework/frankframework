@@ -6803,5 +6803,98 @@ body.body-small .vote-icon {
 
 .fa-size-up {
   margin-top: 3px;
+  z-index: 2001;
   font-size: 16px;
+}
+
+
+@media (max-width: 1170px) {
+  .ibox-notify {
+    padding: 1em 20px;
+  }
+}
+
+.ibox-notify {
+  position: fixed;
+  padding: 1em 0px 0 50px;
+  z-index: 1000;
+  height: 170px;
+  background: #ffffff;
+  box-shadow: 1px -2px 4px 1px rgba(103,106,108,0.4);
+  border: 1px solid rgba(103,106,108,0.4);
+  border-radius: 3px;
+  left: 50%;
+  bottom: 0;
+  margin-left: -375px; /* 50% of width */
+  width: 700px;
+  z-index: 5000;
+}
+
+.ibox-notify .content .logo {
+  display: inline-block;
+  width: 60px;
+  position: absolute;
+}
+
+.ibox-notify .content .logo img {
+  height: 60px;
+  width: 60px;
+}
+
+.ibox-notify .content .msg {
+  display: inline-block;
+  width: 85%;
+  margin-left: 70px;
+}
+
+.ibox-notify .content .msg .title {
+  width: 94%;
+  border-bottom: 1px solid rgba(103,106,108,0.4);
+}
+.ibox-notify .content .msg .description {
+  margin-top: 5px;
+  width: 94%;
+}
+
+.ibox-notify .actions {
+  display: flex;
+  margin-top: 10px;
+}
+.ibox-notify .actions > div {
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  height: 30px;
+}
+.ibox-notify .actions .selections {
+  width: 83%;
+  padding: 0.3em 1em;
+  height: 30px;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  display: inline-flex;
+  justify-content: space-between;
+}
+
+.ibox-notify .actions .details {
+  border-left: none;
+  height: 30px;
+  padding: 0.3em 1em;
+  width: 21%;
+  text-align: center;
+  background-color: #f3f3f4;
+}
+
+.ibox-notify .actions button {
+  height: 30px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-left: none;
+}
+
+.ibox-notify .actions .selections .selection {
+  display: flex;
+}
+
+.ibox-notify .actions .selections .selection label {
+  margin: 0 5px;
 }

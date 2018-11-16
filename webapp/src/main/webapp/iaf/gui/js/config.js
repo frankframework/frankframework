@@ -346,7 +346,7 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 
 	$locationProvider.html5Mode(false);
 
-}]).run(['$rootScope', '$state', 'Debug', function($rootScope, $state, Debug) {
+}]).run(['$rootScope', '$state', 'Debug', 'Privacy', function($rootScope, $state, Debug, Privacy) {
 	$rootScope.$state = $state;
 
 	$rootScope.foist = function(callback) {
@@ -367,10 +367,12 @@ angular.module('iaf.beheerconsole').config(['$locationProvider', '$stateProvider
 		if(url.indexOf("?") > 0)
 			url = url.substring(0, url.indexOf("?"));
 
-		gtag('config', 'UA-111373008-1', {
-			'page_path': url,
-			'page_title': state.data.pageTitle
-		});
+		if(Privacy.getSettings().analytical){
+			gtag('config', 'UA-111373008-1', {
+				'page_path': url,
+				'page_title': state.data.pageTitle
+			});
+		}
 	});
 
 	// Set this asap on localhost to capture all debug data

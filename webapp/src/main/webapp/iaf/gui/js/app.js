@@ -20,7 +20,8 @@
 		'pascalprecht.translate',       // Angular Translate
 		'ngIdle',                       // Idle timer
 		'ngSanitize',                   // ngSanitize
-		'angular-ladda'                 // Ladda
+		'angular-ladda',                // Ladda
+		'ngCookies'                    	// Angular Cookies
 	]).constant("appConstants", {
 		//Configure these in the server AppConstants!!!
 		//The settings here are defaults and will be overwritten upon set in any .properties file.

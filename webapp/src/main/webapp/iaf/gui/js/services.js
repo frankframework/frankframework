@@ -339,7 +339,62 @@ angular.module('iaf.beheerconsole')
 					this.remove(key);
 			}
 		};
-	}]).service('Session', ['Debug', function(Debug) {
+	}]).service('Privacy', ['Cookies', function(Cookies) {
+		var settings = Cookies.get("cookieSettings") || {necessary: false, functional: false, analytical: false, personalization : false};
+		var cookieCache = [];
+		var sentDefault = false;
+		this.getSettings = function(){
+			return settings;
+		};
+		this.setSettings = function(options){
+			settings = options;
+			Cookies.set("cookieSettings", options);
+		};
+		this.dimension = function(name, label, value, non_interaction){
+			if(settings.analytical){
+				gtag('event', name, {
+					'event_label': label,
+					'value': (value == undefined || value < 0) ? 1 : value,
+					'non_interaction': (non_interaction == undefined || non_interaction == false) ? false : true
+				});
+			}
+			else {
+				cookieCache.push({name:name, label:label, value:value, non_interaction:non_interaction});
+			}
+		};
+		this.resendCache = function(){
+			for(var x in cookieCache){
+				var cachedItem = cookieCache[x];
+				this.dimension(cachedItem.name, cachedItem.label, cachedItem.value, cachedItem.non_interaction);
+			}
+
+			if(settings.analytical && !sentDefault){
+				this.sendDefaultAnalytics();
+			}
+		
+			cookieCache = []; // clear cookie cache
+		};
+		this.showCookieNotification = function(){
+			return typeof Cookies.get("cookieSettings") == 'undefined'; 
+		};
+		this.sendDefaultAnalytics = function(){
+			gtag('js', new Date());
+
+			gtag('config', 'UA-111373008-1', {
+				'send_page_view': false,
+				'custom_map': {
+					'dimension1': 'application.version'
+				}
+			});
+
+			sentDefault = true;
+		};
+
+		if(settings.analytical){
+			this.sendDefaultAnalytics();
+		}
+	}])
+	.service('Session', ['Debug', function(Debug) {
 		this.get = function(key) {
 			//Debug.log(key, sessionStorage.getItem(key), sessionStorage.getItem(key) == null, sessionStorage.getItem(key) == "null");
 			return JSON.parse(sessionStorage.getItem(key));

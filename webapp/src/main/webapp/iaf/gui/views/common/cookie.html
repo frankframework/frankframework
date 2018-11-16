@@ -1,0 +1,36 @@
+<div class="ibox-notify" ng-if="showCookieNotification">
+    <div class="content">
+        <div class="logo">
+            <img src="https://i.imgur.com/oVsl8xc.png"/>
+        </div>
+        <div class="msg">
+            <div class="title">
+                <h4><b>This website uses cookies</b></h4>
+            </div>
+            <div class="description">
+                <p>We use cookies to personalize content and ads to provide social media features and to analyze our traffic. You consent to our cookies if you continue to use our website.</p>
+            </div>
+        </div>
+    </div>
+    <div class="actions">
+        <div class="selections">
+            <div class="selection" ng-init="cookies.necessary = true">
+                <input type="checkbox" ng-model="cookies.necessary" id="necessary"/> 
+                <label for="necessary">Necessary</label>
+            </div>
+            <div class="selection">
+                <input type="checkbox" ng-model="cookies.functional" id="functional"/> 
+                <label for="functional">Functional</label>
+            </div>
+            <div class="selection">
+                <input type="checkbox" ng-model="cookies.analytical" id="analytical"/> 
+                <label for="analytical">Analytical</label>
+            </div>
+            <div class="selection">                    
+                <input type="checkbox" ng-model="cookies.personalization" id="personalization"/> 
+                <label for="personalization">Personalization</label>
+            </div>
+        </div>
+        <button title="Ok" class="btn btn-primary" type="button" ng-click="handleCookies(cookies)">OK</button>
+    </div>
+</div>
