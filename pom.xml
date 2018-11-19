@@ -376,7 +376,7 @@
       <id>proprietary</id>
       <activation>
         <property>
-          <name>active</name>
+          <name>proprietary.modules.active</name>
           <value>true</value>
         </property>
       </activation>
