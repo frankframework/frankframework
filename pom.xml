@@ -8,7 +8,6 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <ibissource.maven.repository.proprietary.file>file:../mvn-repo-proprietary</ibissource.maven.repository.proprietary.file>
   </properties>
 
   <name>Ibis AdapterFramework parent</name>
@@ -283,13 +282,6 @@
     </plugins>
   </build>
 
-  <repositories>
-    <repository>
-      <id>ibis-mvn-repo-proprietary</id>
-      <url>${ibissource.maven.repository.proprietary.file}/releases</url>
-    </repository>
-  </repositories>
-
   <reporting>
     <plugins>
       <plugin>
@@ -381,13 +373,15 @@
       </distributionManagement>
     </profile>
     <profile>
-      <id>iaf-without-proprietary-dependencies</id>
+      <id>proprietary</id>
       <activation>
-        <file>
-          <missing>../mvn-repo-proprietary/.project</missing>
-        </file>
+        <property>
+          <name>active</name>
+          <value>true</value>
+        </property>
       </activation>
       <modules>
+        <!-- Default modules -->
         <module>core</module>
         <module>example</module>
         <module>larva</module>
@@ -396,29 +390,34 @@
         <module>webapp</module>
         <module>test</module>
         <module>ladybug</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>iaf-with-proprietary-dependencies</id>
-      <activation>
-        <file>
-          <exists>../mvn-repo-proprietary/.project</exists>
-        </file>
-      </activation>
-      <modules>
+        <!-- Proprietary modules -->
         <module>coolgen</module>
-        <module>core</module>
-        <module>example</module>
         <module>ibm</module>
         <module>ifsa</module>
+        <module>sap</module>
+        <module>tibco</module>
+        <module>idin</module>
+      </modules>
+      <repositories>
+        <repository>
+          <id>proprietary</id>
+          <url>https://nexus.ibissource.org/content/repositories/private/</url>
+        </repository>
+      </repositories>
+    </profile>
+    <profile>
+      <id>default-modules</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>core</module>
+        <module>example</module>
         <module>larva</module>
         <module>akamai</module>
         <module>cmis</module>
-        <module>sap</module>
-        <module>tibco</module>
         <module>webapp</module>
         <module>test</module>
-        <module>idin</module>
         <module>ladybug</module>
       </modules>
     </profile>
