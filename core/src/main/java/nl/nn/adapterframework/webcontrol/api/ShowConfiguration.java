@@ -252,7 +252,7 @@ public final class ShowConfiguration extends Base {
 	}
 
 	@POST
-	@RolesAllowed({"IbisTester"})
+	@RolesAllowed({"IbisTester", "IbisAdmin", "IbisDataAdmin"})
 	@Path("configurations")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response uploadConfiguration(MultipartFormDataInput input) throws ApiException {
