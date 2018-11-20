@@ -32,6 +32,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
@@ -61,17 +62,16 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Jaco de Groot
  */
 public class IbisDocPipe extends FixedForwardPipe {
-	private static List<String> excludeFilters = new ArrayList<String>();
+	private static Set<String> excludeFilters = new TreeSet<String>();
 	static {
-		// Exclude classes that will give FileNotFoundException / NoClassDefFoundError because of
-		// <scope>provided</scope> unless available on the application server classpath
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.ejb\\..*");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\..*");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\..*");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\..*");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.coolgen\\..*");
 		// Exclude classes that will give conflicts with existing, non-compatible bean definition of same name and class
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.esb\\.WsdlGeneratorPipe");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.IfsaRequesterSender");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.ifsa\\.IfsaProviderListener");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapSender");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapListener");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\.SapSender");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\.SapListener");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.CommandSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.EchoSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.FixedResultSender");
@@ -141,6 +141,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 	}
 	// Cache groups for better performance, don't use it directly, use getGroups()
 	private static Map<String, TreeSet<IbisBean>> cachedGroups;
+	private static Map<String, String> errors = new HashMap<String, String>();
 
 	private static synchronized Map<String, TreeSet<IbisBean>> getGroups() {
 		if (cachedGroups == null) {
@@ -180,7 +181,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 	private static void addIbisBeans(String group, Class<?> clazz, String nameLastPartToReplaceWithGroupName,
 			Map<String, TreeSet<IbisBean>> groups) {
 		TreeSet<IbisBean> ibisBeans = new TreeSet<IbisBean>();
-		if (clazz.isInterface()) {
+		if (clazz != null && clazz.isInterface()) {
 			Set<SpringBean> springBeans = getSpringBeans(clazz);
 			for (SpringBean springBean : springBeans) {
 				addIbisBean(group, toUpperCamelCase(springBean.getName()), nameLastPartToReplaceWithGroupName,
@@ -228,25 +229,48 @@ public class IbisDocPipe extends FixedForwardPipe {
 		scanner.setIncludeAnnotationConfig(false);
 		scanner.addIncludeFilter(new AssignableTypeFilter(interfaze));
 		for (String excludeFilter : excludeFilters) {
-			scanner.addExcludeFilter(new RegexPatternTypeFilter(Pattern.compile(excludeFilter)));
+			addExcludeFilter(scanner, excludeFilter);
 		}
-		scanner.scan("nl.nn.adapterframework");
+		boolean success = false;
+		int maxTries = 100;
+		int tryCount = 0;
+		while (!success && tryCount < maxTries) {
+			tryCount++;
+			try {
+				scanner.scan("nl.nn.adapterframework");
+				success = true;
+			} catch(BeanDefinitionStoreException e) {
+				String excludeFilter = e.getMessage();
+				excludeFilter = excludeFilter.substring(excludeFilter.indexOf(".jar!/") + 6);
+				excludeFilter = excludeFilter.substring(0, excludeFilter.indexOf(".class"));
+				excludeFilter = excludeFilter.replaceAll("/", "\\\\.");
+				excludeFilter = excludeFilter.substring(0, excludeFilter.lastIndexOf('.') + 1) + ".*";
+				excludeFilters.add(excludeFilter);
+				addExcludeFilter(scanner, excludeFilter);
+				errors.put(excludeFilter, e.getMessage());
+			}
+		}
 		String[] beans = beanDefinitionRegistry.getBeanDefinitionNames();
 		for (int i = 0; i < beans.length; i++) {
 			String name = beans[i];
 			String className = beanDefinitionRegistry.getBeanDefinition(name).getBeanClassName();
 			Class<?> clazz = getClass(className);
-			if (clazz.getModifiers() == Modifier.PUBLIC) {
+			if (clazz != null && clazz.getModifiers() == Modifier.PUBLIC) {
 				result.add(new SpringBean(beans[i], clazz));
 			}
 		}
 		return result;
 	}
 
+	private static void addExcludeFilter(ClassPathBeanDefinitionScanner scanner, String excludeFilter) {
+		scanner.addExcludeFilter(new RegexPatternTypeFilter(Pattern.compile(excludeFilter)));
+	}
+
 	private static Class<?> getClass(String className) {
 		try {
 			return Class.forName(className);
-		} catch (ClassNotFoundException e) {
+		} catch (Throwable t) {
+			errors.put(className, t.getClass() + ": " + t.getMessage());
 			return null;
 		}
 	}
@@ -316,6 +340,18 @@ public class IbisDocPipe extends FixedForwardPipe {
 				StringBuffer allHtml = new StringBuffer();
 				getMenuHtml(null, allHtml, null);
 				result = allHtml.toString();
+			} else if ("/ibisdoc/excludes.html".equals(uri)) {
+				StringBuffer excludesHtml = new StringBuffer();
+				for (String exclude : excludeFilters) {
+					excludesHtml.append("<p> " + exclude + "</p>\n");
+				}
+				result = excludesHtml.toString();
+			} else if ("/ibisdoc/errors.html".equals(uri)) {
+				StringBuffer errorsHtml = new StringBuffer();
+				for (String key : errors.keySet()) {
+					errorsHtml.append("<p> " + key + ": " + errors.get(key) + "</p>\n");
+				}
+				result = errorsHtml.toString();
 			} else {
 				if (uri.length() > "/ibisdoc/".length() && uri.indexOf(".") != -1) {
 					Map<String, TreeSet<IbisBean>> groups = getGroups();
@@ -678,9 +714,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 				submenuHtml.append("<a href='" + ibisBean.getName()
 						+ ".html' target='contentFrame'>" + ibisBean.getName() + "</a>");
 				submenuHtml.append("&nbsp;[");
-				submenuHtml.append("<a href='http://maven.ibissource.org/iaf/apidocs/"
-				// Switch to new location when javadoc for proprietary classes is working on new location
-				// submenuHtml.append("<a href='https://javadoc.ibissource.org/latest/"
+				submenuHtml.append("<a href='https://javadoc.ibissource.org/latest/"
 						+ ibisBean.getClazz().getName().replaceAll("\\.", "/") + ".html' target='contentFrame'>"
 						+ "javadoc</a>");
 				submenuHtml.append("]<br/>\n");
@@ -689,6 +723,11 @@ public class IbisDocPipe extends FixedForwardPipe {
 			allHtml.append(submenuHtml.toString());
 		}
 		topmenuHtml.append("<a href='all.html' target='submenuFrame'>All</a><br/>\n");
+		topmenuHtml.append("<br/>\n");
+		topmenuHtml.append("<a href='excludes.html' target='contentFrame'>Excludes</a><br/>\n");
+		if (errors.size() > 0) {
+			topmenuHtml.append("<a href='errors.html' target='contentFrame'>Errors</a><br/>\n");
+		}
 	}
 
 	private static String getBeanHtml(String beanName) {
