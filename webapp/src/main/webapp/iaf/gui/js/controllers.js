@@ -992,17 +992,17 @@ angular.module('iaf.beheerconsole')
 		var addedFirstQueryParameter = false; 
 	
 		if(angular.isDefined(max) && max > -1){
-			url += addedFirstQueryParameter ? "&" : "?" + "max=" + max;
+			url += (addedFirstQueryParameter ? "&" : "?") + "max=" + max;
 			addedFirstQueryParameter = true;
 		}
 
 		if(angular.isDefined(skip) && skip > -1){
-			url += addedFirstQueryParameter ? "&" : "?" + "skip=" + skip;
+			url += (addedFirstQueryParameter ? "&" : "?") + "skip=" + skip;
 			addedFirstQueryParameter = true;
 		}
 
-		if(angular.isDefined(name)){
-			url += addedFirstQueryParameter ? "&" : "?" + "message=" + name;
+		if(angular.isDefined(name) && name !== ''){
+			url += (addedFirstQueryParameter ? "&" : "?") + "message=" + name;
 			addedFirstQueryParameter = true;
 		}
 
