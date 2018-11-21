@@ -6805,3 +6805,15 @@ body.body-small .vote-icon {
   margin-top: 3px;
   font-size: 16px;
 }
+
+.fa.fa-stop-circle.colored,
+.fa.fa-stop-circle-o.colored {
+  color: #ea394c;
+}
+.fa.fa-check-square.colored,
+.fa.fa-check-square-o.colored {
+  color: #1ab394;
+}
+.fa.fa-warning.colored {
+  color: #f7a54a;
+}

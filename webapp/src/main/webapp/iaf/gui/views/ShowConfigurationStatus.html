@@ -45,11 +45,21 @@
                                 <thead>
                                     <tr>
                                         <th><strong>State</strong></th>
-                                        <th title="Started"><i class="fa fa-check-square"></i></th>
-                                        <th title="Starting"><i class="fa fa-check-square-o"></i></th>
-                                        <th title="Stopped"><i class="fa fa-stop-circle"></i></th>
-                                        <th title="Stopping"><i class="fa fa-stop-circle-o"></i></th>
-                                        <th title="Error"><i class="fa fa-warning"></i></th>
+                                        <th title="Started">
+                                            <i class="fa fa-check-square" ng-class="{'colored': adapterSummary.started > 0 }"></i>
+                                        </th>
+                                        <th title="Starting">
+                                            <i class="fa fa-check-square-o" ng-class="{'colored': adapterSummary.starting > 0 }"></i>
+                                        </th>
+                                        <th title="Stopped">
+                                            <i class="fa fa-stop-circle" ng-class="{'colored': adapterSummary.stopped > 0 }"></i>
+                                        </th>
+                                        <th title="Stopping">
+                                            <i class="fa fa-stop-circle-o" ng-class="{'colored': adapterSummary.stopping > 0 }"></i>
+                                        </th>
+                                        <th title="Error">
+                                            <i class="fa fa-warning" ng-class="{'colored': adapterSummary.error > 0 }"></i>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
