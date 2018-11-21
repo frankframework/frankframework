@@ -50,6 +50,11 @@
     <ClassName>nl.nn.adapterframework.http.HttpListener</ClassName>
   </Element>
   <Element>
+    <Name>IfsaSimulatorJmsListener</Name>
+    <Type>listener</Type>
+    <ClassName>nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsListener</ClassName>
+  </Element>
+  <Element>
     <Name>JavaListener</Name>
     <Type>listener</Type>
     <ClassName>nl.nn.adapterframework.receivers.JavaListener</ClassName>
@@ -213,6 +218,16 @@
     <Name>IbisWebServiceSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.http.IbisWebServiceSender</ClassName>
+  </Element>
+  <Element>
+    <Name>IdocSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.extensions.sap.jco3.IdocSender</ClassName>
+  </Element>
+  <Element>
+    <Name>IfsaSimulatorJmsSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsSender</ClassName>
   </Element>
   <Element>
     <Name>JmsSender</Name>
@@ -745,6 +760,11 @@
     <ClassName>nl.nn.adapterframework.pipes.RhinoPipe</ClassName>
   </Element>
   <Element>
+    <Name>SapLUWManagerPipe</Name>
+    <Type>pipe</Type>
+    <ClassName>nl.nn.adapterframework.extensions.sap.jco3.SapLUWManager</ClassName>
+  </Element>
+  <Element>
     <Name>ScanTibcoSolutionPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.extensions.svn.ScanTibcoSolutionPipe</ClassName>
@@ -1078,6 +1098,16 @@
     <Name>IbisWebServiceErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.http.IbisWebServiceSender</ClassName>
+  </Element>
+  <Element>
+    <Name>IdocErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.extensions.sap.jco3.IdocSender</ClassName>
+  </Element>
+  <Element>
+    <Name>IfsaSimulatorJmsErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsSender</ClassName>
   </Element>
   <Element>
     <Name>JmsErrorSender</Name>
