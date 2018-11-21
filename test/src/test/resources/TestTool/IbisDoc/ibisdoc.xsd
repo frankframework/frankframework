@@ -1090,6 +1090,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -1400,6 +1402,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -3354,6 +3358,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -3819,6 +3825,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -4919,6 +4927,36 @@
     <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="serviceName" type="xs:string" />
   </xs:complexType>
+  <xs:complexType name="IdocErrorSenderType">
+    <xs:sequence>
+      <xs:element name="Param" type="ParamType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="correlationIdFieldIndex" type="xs:string" />
+    <xs:attribute name="correlationIdFieldName" type="xs:string" />
+    <xs:attribute name="luwHandleSessionKey" type="xs:string" />
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="replyFieldIndex" type="xs:string" />
+    <xs:attribute name="replyFieldName" type="xs:string" />
+    <xs:attribute name="requestFieldIndex" type="xs:string" />
+    <xs:attribute name="requestFieldName" type="xs:string" />
+    <xs:attribute name="sapSystemName" type="xs:string" />
+    <xs:attribute name="sapSystemNameParam" type="xs:string" />
+  </xs:complexType>
+  <xs:complexType name="IdocSenderType">
+    <xs:sequence>
+      <xs:element name="Param" type="ParamType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="correlationIdFieldIndex" type="xs:string" />
+    <xs:attribute name="correlationIdFieldName" type="xs:string" />
+    <xs:attribute name="luwHandleSessionKey" type="xs:string" />
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="replyFieldIndex" type="xs:string" />
+    <xs:attribute name="replyFieldName" type="xs:string" />
+    <xs:attribute name="requestFieldIndex" type="xs:string" />
+    <xs:attribute name="requestFieldName" type="xs:string" />
+    <xs:attribute name="sapSystemName" type="xs:string" />
+    <xs:attribute name="sapSystemNameParam" type="xs:string" />
+  </xs:complexType>
   <xs:complexType name="IfMultipartPipeType">
     <xs:sequence>
       <xs:element name="Locker" type="LockerType" minOccurs="0" />
@@ -4950,6 +4988,143 @@
     <xs:attribute name="transactionAttributeNum" type="xs:string" />
     <xs:attribute name="transactionTimeout" type="xs:string" />
     <xs:attribute name="writeToSecLog" type="xs:string" />
+  </xs:complexType>
+  <xs:complexType name="IfsaSimulatorJmsErrorSenderType">
+    <xs:sequence>
+      <xs:element name="Param" type="ParamType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="ackMode" type="xs:string" />
+    <xs:attribute name="acknowledgeMode" type="xs:string" />
+    <xs:attribute name="authAlias" type="xs:string" />
+    <xs:attribute name="authentication" type="xs:string" />
+    <xs:attribute name="correlationIdMaxLength" type="xs:string" />
+    <xs:attribute name="correlationIdToHex" type="xs:string" />
+    <xs:attribute name="credentials" type="xs:string" />
+    <xs:attribute name="deliveryMode" type="xs:string" />
+    <xs:attribute name="destinationName" type="xs:string" />
+    <xs:attribute name="destinationType" type="xs:string" />
+    <xs:attribute name="encodingStyleURI" type="xs:string" />
+    <xs:attribute name="initialContextFactoryName" type="xs:string" />
+    <xs:attribute name="jmsTransacted" type="xs:string" />
+    <xs:attribute name="jndiAuthAlias" type="xs:string" />
+    <xs:attribute name="jndiContextPrefix" type="xs:string" />
+    <xs:attribute name="jndiProperties" type="xs:string" />
+    <xs:attribute name="linkMethod" type="xs:string" />
+    <xs:attribute name="lookupDestination" type="xs:string" />
+    <xs:attribute name="messageSelector" type="xs:string" />
+    <xs:attribute name="messageTimeToLive" type="xs:string" />
+    <xs:attribute name="messageType" type="xs:string" />
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="persistent" type="xs:string" />
+    <xs:attribute name="principal" type="xs:string" />
+    <xs:attribute name="priority" type="xs:string" />
+    <xs:attribute name="providerURL" type="xs:string" />
+    <xs:attribute name="queueConnectionFactoryName" type="xs:string" />
+    <xs:attribute name="replySoapHeaderSessionKey" type="xs:string" />
+    <xs:attribute name="replyTimeout" type="xs:string" />
+    <xs:attribute name="securityProtocol" type="xs:string" />
+    <xs:attribute name="serviceNamespaceURI" type="xs:string" />
+    <xs:attribute name="soap" type="xs:string" />
+    <xs:attribute name="soapAction" type="xs:string" />
+    <xs:attribute name="soapHeaderParam" type="xs:string" />
+    <xs:attribute name="subscriberType" type="xs:string" />
+    <xs:attribute name="synchronous" type="xs:string" />
+    <xs:attribute name="topicConnectionFactoryName" type="xs:string" />
+    <xs:attribute name="transacted" type="xs:string" />
+    <xs:attribute name="urlPkgPrefixes" type="xs:string" />
+  </xs:complexType>
+  <xs:complexType name="IfsaSimulatorJmsListenerType">
+    <xs:sequence>
+      <xs:element name="Param" type="ParamType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="ackMode" type="xs:string" />
+    <xs:attribute name="acknowledgeMode" type="xs:string" />
+    <xs:attribute name="authAlias" type="xs:string" />
+    <xs:attribute name="authentication" type="xs:string" />
+    <xs:attribute name="cacheMode" type="xs:string" />
+    <xs:attribute name="commitOnState" type="xs:string" />
+    <xs:attribute name="correlationIdMaxLength" type="xs:string" />
+    <xs:attribute name="correlationIdToHex" type="xs:string" />
+    <xs:attribute name="credentials" type="xs:string" />
+    <xs:attribute name="destinationName" type="xs:string" />
+    <xs:attribute name="destinationType" type="xs:string" />
+    <xs:attribute name="forceMessageIdAsCorrelationId" type="xs:string" />
+    <xs:attribute name="initialContextFactoryName" type="xs:string" />
+    <xs:attribute name="jmsTransacted" type="xs:string" />
+    <xs:attribute name="jndiAuthAlias" type="xs:string" />
+    <xs:attribute name="jndiContextPrefix" type="xs:string" />
+    <xs:attribute name="jndiProperties" type="xs:string" />
+    <xs:attribute name="listenerPort" type="xs:string" />
+    <xs:attribute name="lookupDestination" type="xs:string" />
+    <xs:attribute name="messageSelector" type="xs:string" />
+    <xs:attribute name="messageTimeToLive" type="xs:string" />
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="persistent" type="xs:string" />
+    <xs:attribute name="pollGuardInterval" type="xs:string" />
+    <xs:attribute name="principal" type="xs:string" />
+    <xs:attribute name="providerURL" type="xs:string" />
+    <xs:attribute name="queueConnectionFactoryName" type="xs:string" />
+    <xs:attribute name="replyDeliveryMode" type="xs:string" />
+    <xs:attribute name="replyEncodingStyleURI" type="xs:string" />
+    <xs:attribute name="replyMessageTimeToLive" type="xs:string" />
+    <xs:attribute name="replyMessageType" type="xs:string" />
+    <xs:attribute name="replyNamespaceURI" type="xs:string" />
+    <xs:attribute name="replyPriority" type="xs:string" />
+    <xs:attribute name="replySoapAction" type="xs:string" />
+    <xs:attribute name="securityProtocol" type="xs:string" />
+    <xs:attribute name="soap" type="xs:string" />
+    <xs:attribute name="soapHeaderSessionKey" type="xs:string" />
+    <xs:attribute name="subscriberType" type="xs:string" />
+    <xs:attribute name="timeOut" type="xs:string" />
+    <xs:attribute name="topicConnectionFactoryName" type="xs:string" />
+    <xs:attribute name="transacted" type="xs:string" />
+    <xs:attribute name="urlPkgPrefixes" type="xs:string" />
+    <xs:attribute name="useReplyTo" type="xs:string" />
+    <xs:attribute name="xPathLoggingKeys" type="xs:string" />
+  </xs:complexType>
+  <xs:complexType name="IfsaSimulatorJmsSenderType">
+    <xs:sequence>
+      <xs:element name="Param" type="ParamType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="ackMode" type="xs:string" />
+    <xs:attribute name="acknowledgeMode" type="xs:string" />
+    <xs:attribute name="authAlias" type="xs:string" />
+    <xs:attribute name="authentication" type="xs:string" />
+    <xs:attribute name="correlationIdMaxLength" type="xs:string" />
+    <xs:attribute name="correlationIdToHex" type="xs:string" />
+    <xs:attribute name="credentials" type="xs:string" />
+    <xs:attribute name="deliveryMode" type="xs:string" />
+    <xs:attribute name="destinationName" type="xs:string" />
+    <xs:attribute name="destinationType" type="xs:string" />
+    <xs:attribute name="encodingStyleURI" type="xs:string" />
+    <xs:attribute name="initialContextFactoryName" type="xs:string" />
+    <xs:attribute name="jmsTransacted" type="xs:string" />
+    <xs:attribute name="jndiAuthAlias" type="xs:string" />
+    <xs:attribute name="jndiContextPrefix" type="xs:string" />
+    <xs:attribute name="jndiProperties" type="xs:string" />
+    <xs:attribute name="linkMethod" type="xs:string" />
+    <xs:attribute name="lookupDestination" type="xs:string" />
+    <xs:attribute name="messageSelector" type="xs:string" />
+    <xs:attribute name="messageTimeToLive" type="xs:string" />
+    <xs:attribute name="messageType" type="xs:string" />
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="persistent" type="xs:string" />
+    <xs:attribute name="principal" type="xs:string" />
+    <xs:attribute name="priority" type="xs:string" />
+    <xs:attribute name="providerURL" type="xs:string" />
+    <xs:attribute name="queueConnectionFactoryName" type="xs:string" />
+    <xs:attribute name="replySoapHeaderSessionKey" type="xs:string" />
+    <xs:attribute name="replyTimeout" type="xs:string" />
+    <xs:attribute name="securityProtocol" type="xs:string" />
+    <xs:attribute name="serviceNamespaceURI" type="xs:string" />
+    <xs:attribute name="soap" type="xs:string" />
+    <xs:attribute name="soapAction" type="xs:string" />
+    <xs:attribute name="soapHeaderParam" type="xs:string" />
+    <xs:attribute name="subscriberType" type="xs:string" />
+    <xs:attribute name="synchronous" type="xs:string" />
+    <xs:attribute name="topicConnectionFactoryName" type="xs:string" />
+    <xs:attribute name="transacted" type="xs:string" />
+    <xs:attribute name="urlPkgPrefixes" type="xs:string" />
   </xs:complexType>
   <xs:complexType name="IncreaseIntegerPipeType">
     <xs:sequence>
@@ -5273,6 +5448,7 @@
         <xs:element name="FtpListener" type="FtpListenerType" minOccurs="0" />
         <xs:element name="FxfListener" type="FxfListenerType" minOccurs="0" />
         <xs:element name="HttpListener" type="HttpListenerType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsListener" type="IfsaSimulatorJmsListenerType" minOccurs="0" />
         <xs:element name="JavaListener" type="JavaListenerType" minOccurs="0" />
         <xs:element name="JdbcListener" type="JdbcListenerType" minOccurs="0" />
         <xs:element name="JdbcQueryListener" type="JdbcQueryListenerType" minOccurs="0" />
@@ -6819,6 +6995,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -7063,6 +7241,7 @@
         <xs:element name="ReplacerPipe" type="ReplacerPipeType" minOccurs="0" />
         <xs:element name="ResultSetIteratingPipe" type="ResultSetIteratingPipeType" minOccurs="0" />
         <xs:element name="RhinoPipe" type="RhinoPipeType" minOccurs="0" />
+        <xs:element name="SapLUWManagerPipe" type="SapLUWManagerPipeType" minOccurs="0" />
         <xs:element name="ScanTibcoSolutionPipe" type="ScanTibcoSolutionPipeType" minOccurs="0" />
         <xs:element name="SendTibcoMessagePipe" type="SendTibcoMessagePipeType" minOccurs="0" />
         <xs:element name="SenderPipe" type="SenderPipeType" minOccurs="0" />
@@ -7149,6 +7328,7 @@
         <xs:element name="FtpListener" type="FtpListenerType" minOccurs="0" />
         <xs:element name="FxfListener" type="FxfListenerType" minOccurs="0" />
         <xs:element name="HttpListener" type="HttpListenerType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsListener" type="IfsaSimulatorJmsListenerType" minOccurs="0" />
         <xs:element name="JavaListener" type="JavaListenerType" minOccurs="0" />
         <xs:element name="JdbcListener" type="JdbcListenerType" minOccurs="0" />
         <xs:element name="JdbcQueryListener" type="JdbcQueryListenerType" minOccurs="0" />
@@ -7236,6 +7416,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -7277,6 +7459,7 @@
         <xs:element name="FtpListener" type="FtpListenerType" minOccurs="0" />
         <xs:element name="FxfListener" type="FxfListenerType" minOccurs="0" />
         <xs:element name="HttpListener" type="HttpListenerType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsListener" type="IfsaSimulatorJmsListenerType" minOccurs="0" />
         <xs:element name="JavaListener" type="JavaListenerType" minOccurs="0" />
         <xs:element name="JdbcListener" type="JdbcListenerType" minOccurs="0" />
         <xs:element name="JdbcQueryListener" type="JdbcQueryListenerType" minOccurs="0" />
@@ -7595,6 +7778,7 @@
         <xs:element name="FtpListener" type="FtpListenerType" minOccurs="0" />
         <xs:element name="FxfListener" type="FxfListenerType" minOccurs="0" />
         <xs:element name="HttpListener" type="HttpListenerType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsListener" type="IfsaSimulatorJmsListenerType" minOccurs="0" />
         <xs:element name="JavaListener" type="JavaListenerType" minOccurs="0" />
         <xs:element name="JdbcListener" type="JdbcListenerType" minOccurs="0" />
         <xs:element name="JdbcQueryListener" type="JdbcQueryListenerType" minOccurs="0" />
@@ -7630,6 +7814,8 @@
         <xs:element name="IbisJavaErrorSender" type="IbisJavaErrorSenderType" minOccurs="0" />
         <xs:element name="IbisLocalErrorSender" type="IbisLocalErrorSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceErrorSender" type="IbisWebServiceErrorSenderType" minOccurs="0" />
+        <xs:element name="IdocErrorSender" type="IdocErrorSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsErrorSender" type="IfsaSimulatorJmsErrorSenderType" minOccurs="0" />
         <xs:element name="JmsErrorSender" type="JmsErrorSenderType" minOccurs="0" />
         <xs:element name="LdapErrorSender" type="LdapErrorSenderType" minOccurs="0" />
         <xs:element name="LogErrorSender" type="LogErrorSenderType" minOccurs="0" />
@@ -7688,6 +7874,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -8220,6 +8408,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -8428,6 +8618,43 @@
     <xs:attribute name="requestFieldName" type="xs:string" />
     <xs:attribute name="synchronous" type="xs:string" />
   </xs:complexType>
+  <xs:complexType name="SapLUWManagerPipeType">
+    <xs:sequence>
+      <xs:element name="Locker" type="LockerType" minOccurs="0" />
+      <xs:element name="Param" type="ParamType" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="Forward" type="ForwardType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="action" type="xs:string" />
+    <xs:attribute name="active" type="xs:string" />
+    <xs:attribute name="chompCharSize" type="xs:string" />
+    <xs:attribute name="durationThreshold" type="xs:string" />
+    <xs:attribute name="elementToMove" type="xs:string" />
+    <xs:attribute name="elementToMoveChain" type="xs:string" />
+    <xs:attribute name="elementToMoveSessionKey" type="xs:string" />
+    <xs:attribute name="emptyInputReplacement" type="xs:string" />
+    <xs:attribute name="forwardName" type="xs:string" />
+    <xs:attribute name="getInputFromFixedValue" type="xs:string" />
+    <xs:attribute name="getInputFromSessionKey" type="xs:string" />
+    <xs:attribute name="hideRegex" type="xs:string" />
+    <xs:attribute name="ifParam" type="xs:string" />
+    <xs:attribute name="ifValue" type="xs:string" />
+    <xs:attribute name="logIntermediaryResults" type="xs:string" />
+    <xs:attribute name="luwHandleSessionKey" type="xs:string" />
+    <xs:attribute name="maxThreads" type="xs:string" />
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="namespaceAware" type="xs:string" />
+    <xs:attribute name="preserveInput" type="xs:string" />
+    <xs:attribute name="removeCompactMsgNamespaces" type="xs:string" />
+    <xs:attribute name="restoreMovedElements" type="xs:string" />
+    <xs:attribute name="sapSystemName" type="xs:string" />
+    <xs:attribute name="secLogSessionKeys" type="xs:string" />
+    <xs:attribute name="skipOnEmptyInput" type="xs:string" />
+    <xs:attribute name="storeResultInSessionKey" type="xs:string" />
+    <xs:attribute name="transactionAttribute" type="xs:string" />
+    <xs:attribute name="transactionAttributeNum" type="xs:string" />
+    <xs:attribute name="transactionTimeout" type="xs:string" />
+    <xs:attribute name="writeToSecLog" type="xs:string" />
+  </xs:complexType>
   <xs:complexType name="SapListenerType">
     <xs:attribute name="name" type="xs:string" use="required" />
   </xs:complexType>
@@ -8570,6 +8797,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -8611,6 +8840,7 @@
         <xs:element name="FtpListener" type="FtpListenerType" minOccurs="0" />
         <xs:element name="FxfListener" type="FxfListenerType" minOccurs="0" />
         <xs:element name="HttpListener" type="HttpListenerType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsListener" type="IfsaSimulatorJmsListenerType" minOccurs="0" />
         <xs:element name="JavaListener" type="JavaListenerType" minOccurs="0" />
         <xs:element name="JdbcListener" type="JdbcListenerType" minOccurs="0" />
         <xs:element name="JdbcQueryListener" type="JdbcQueryListenerType" minOccurs="0" />
@@ -8730,6 +8960,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -8790,6 +9022,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -8849,6 +9083,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -8912,6 +9148,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -9643,6 +9881,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -11048,6 +11288,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
@@ -11781,6 +12023,8 @@
         <xs:element name="IbisJavaSender" type="IbisJavaSenderType" minOccurs="0" />
         <xs:element name="IbisLocalSender" type="IbisLocalSenderType" minOccurs="0" />
         <xs:element name="IbisWebServiceSender" type="IbisWebServiceSenderType" minOccurs="0" />
+        <xs:element name="IdocSender" type="IdocSenderType" minOccurs="0" />
+        <xs:element name="IfsaSimulatorJmsSender" type="IfsaSimulatorJmsSenderType" minOccurs="0" />
         <xs:element name="JmsSender" type="JmsSenderType" minOccurs="0" />
         <xs:element name="LdapSender" type="LdapSenderType" minOccurs="0" />
         <xs:element name="LogSender" type="LogSenderType" minOccurs="0" />
