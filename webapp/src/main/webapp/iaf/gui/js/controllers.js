@@ -1031,12 +1031,8 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('LoggingCtrl', ['$scope', 'Api', 'Misc', '$timeout', function($scope, Api, Misc, $timeout) {
+.controller('LoggingCtrl', ['$scope', 'Api', 'Misc', '$timeout', '$state','$stateParams', function($scope, Api, Misc, $timeout, $state, $stateParams) {
 	$scope.viewFile = false;
-
-	Api.Get("logging", function(data) {
-		$.extend($scope, data);
-	});
 
 	var getFileType = function (fileName){
 		if(fileName.indexOf('-stats_') >= 0)
@@ -1049,7 +1045,7 @@ angular.module('iaf.beheerconsole')
 			return 'html';
 	};
 
-	$scope.view = function (file) {
+	var openFile = function (file) {
 		var resultType = "";
 		var params = "";
 		var as = getFileType(file.name);
@@ -1078,8 +1074,6 @@ angular.module('iaf.beheerconsole')
 		$scope.loading = true;
 		$timeout(function() {
 			var iframe = angular.element("iframe");
-			$scope.origDirectory = $scope.directory;
-			$scope.directory = file.path;
 
 			iframe[0].onload = function() {
 				$scope.loading = false;
@@ -1088,11 +1082,12 @@ angular.module('iaf.beheerconsole')
 				iframe.css({"height": iframeBody.height() + 50});
 			};
 		}, 50);
+		$state.transitionTo('pages.logging', {directory: $scope.directory, file: file.name}, { notify: false, reload: false });
 	};
 
 	$scope.closeFile = function () {
 		$scope.viewFile = false;
-		$scope.directory = $scope.origDirectory;
+		$state.transitionTo('pages.logging', {directory: $scope.directory});
 	};
 
 	$scope.download = function (file) {
@@ -1100,11 +1095,37 @@ angular.module('iaf.beheerconsole')
 		window.open(url, "_blank");
 	};
 
-	$scope.openDirectory = function (file) {
-		Api.Get("logging?directory="+file.path, function(data) {
+	var openDirectory = function (directory) {
+		var url = "logging";
+		if(directory) {
+			url = "logging?directory="+directory;
+		}
+
+		Api.Get(url, function(data) {
 			$.extend($scope, data);
+			$state.transitionTo('pages.logging', {directory: data.directory}, { notify: false, reload: false });
 		});
 	};
+
+	$scope.open = function(file) {
+		if(file.type == "directory")
+			openDirectory(file.path);
+		else
+			openFile(file);
+	};
+
+	//This is only false when the user opens the logging page
+	var directory = ($stateParams.directory && $stateParams.directory.length > 0) ? $stateParams.directory : false;
+	//The file param is only set when the user copy pastes an url in their browser
+	if($stateParams.file && $stateParams.file.length > 0) {
+		var file = $stateParams.file;
+
+		$scope.directory = directory;
+		openFile({path: directory+"/"+file, name: file});
+	}
+	else {
+		openDirectory(directory);
+	}
 }])
 
 .controller('IBISstoreSummaryCtrl', ['$scope', 'Api', function($scope, Api) {
