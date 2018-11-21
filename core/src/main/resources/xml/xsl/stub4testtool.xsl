@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />
 	<!-- Parameter disableValidators has been used to test the impact of validators on memory usage -->
 	<xsl:param name="disableValidators"/>
@@ -310,7 +310,7 @@
 			<xsl:when test="(name()='errorStorage' or name()='messageLog') and parent::*[name()='pipe'] and (@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage')=false() and (@className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage')=false()">
 				<xsl:call-template name="disable" />
 			</xsl:when>
-			<xsl:when test="$disableValidators='true' and (name()='inputValidator' or name()='outputValidator')">
+			<xsl:when test="$disableValidators=true and (name()='inputValidator' or name()='outputValidator')">
 				<xsl:call-template name="disable" />
 			</xsl:when>
 			<xsl:otherwise>

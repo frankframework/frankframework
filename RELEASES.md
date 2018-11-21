@@ -13,6 +13,7 @@ Ibis AdapterFramework release notes
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
 - Generate IbisDoc and XSD and support beautiful configuration xml. The XSD can be used for code completion of beautiful Ibis configurations in Eclipse
+- Use XSLT 2.0 instead of 1.0 for configuration tweaks (e.g. stub4testtool.xsl)
 
 
 
