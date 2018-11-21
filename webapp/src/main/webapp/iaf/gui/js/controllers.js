@@ -1038,9 +1038,21 @@ angular.module('iaf.beheerconsole')
 		$.extend($scope, data);
 	});
 
-	$scope.view = function (file, as) {
+	var getFileType = function (fileName){
+		if(fileName.indexOf('-stats_') >= 0)
+			return 'stats';
+		else if(fileName.indexOf('_xml.log') >= 0)
+			return 'log4j';
+		else if(fileName.indexOf('-stats_') >= 0 || fileName.indexOf('_xml.log') >= 0)
+			return 'xml';
+		else if(fileName.indexOf('-stats_') < 0 && fileName.indexOf('_xml.log') < 0)
+			return 'html';
+	};
+
+	$scope.view = function (file) {
 		var resultType = "";
 		var params = "";
+		var as = getFileType(file.name);
 		switch (as) {
 		case "stats":
 			resultType = "html";
