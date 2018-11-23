@@ -18,6 +18,8 @@ package nl.nn.adapterframework.senders;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -56,6 +58,14 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class ParallelSenders extends SenderSeries {
 
 	private int maxConcurrentThreads = 0;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (getParameterList()!=null && getParameterList().size()>0) {
+			log.warn("parameters of ParallelSenders ["+getName()+"] are not available for use by nested Senders");
+		}
+	}
 
 	@Override
 	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
