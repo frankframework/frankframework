@@ -3436,7 +3436,7 @@ video {
   background: #f8fafb;
 }
 .inmodal .modal-header {
-  padding: 30px 15px;
+  padding: 30px 15px 5px;
   text-align: center;
 }
 .animated.modal.fade .modal-dialog {
