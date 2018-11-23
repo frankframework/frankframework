@@ -1,4 +1,6 @@
-{ "header": "header",
+{ "header": "headerDefault",
+  "sessionKey": "sessionKeyDefault",
+  "sessionKeyGlobal": "sessionKeyGlobalDefault",
 "data": [
 	{
 		"key":"cx103"

@@ -7,7 +7,6 @@ import java.io.IOException;
 import javax.xml.transform.TransformerException;
 
 import org.junit.Test;
-import org.mockito.Mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipe;
@@ -23,7 +22,7 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 	
 	public static final String IDENTITY_STYLESHEET="/Xslt/identity.xslt";
 
-	private IPipeLineSession session;
+	protected IPipeLineSession session;
 
 	protected abstract void setStyleSheetName(String styleSheetName);
 	protected abstract void setOmitXmlDeclaration(boolean omitXmlDeclaration);
@@ -34,8 +33,8 @@ public abstract class XsltTestBase<P extends IPipe> extends PipeTestBase<P> {
 	
 	@Override
 	public void setup() throws ConfigurationException {
-		super.setup();
 		session = new PipeLineSessionBase();
+		super.setup();
 	}
 
 	protected void assertResultsAreCorrect(String expected, String actual, IPipeLineSession session) {

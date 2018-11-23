@@ -1,5 +1,8 @@
 package nl.nn.adapterframework.xslt;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertThat;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,13 +47,26 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 			XsltSender sender = new XsltSender();
 			//sender.setSessionKey("out"+i);
 			sender.setOmitXmlDeclaration(true);
-			Parameter param = new Parameter();
-			param.setName("header");
-			param.setValue("header"+i);
-			sender.addParameter(param);
+			
+			Parameter param1 = new Parameter();
+			param1.setName("header");
+			param1.setValue("header"+i);			
+			sender.addParameter(param1);
+			
+			Parameter param2 = new Parameter();
+			param2.setName("sessionKey");
+			param2.setSessionKey("sessionKey"+i);
+			session.put("sessionKey"+i,"sessionKeyValue"+i);
+			sender.addParameter(param2);
+			
 			psenders.setSender(sender);
 			xsltSenders.add(sender);
 		}
+		Parameter param = new Parameter();
+		param.setName("sessionKeyGlobal");
+		param.setSessionKey("sessionKeyGlobal");
+		session.put("sessionKeyGlobal","sessionKeyGlobalValue");
+		psenders.addParameter(param);
 		pipe.setSender(psenders);
 		return pipe;
 	}
@@ -71,17 +87,31 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 		String combinedExpected="<results>";
 	
 		for (int i=0;i<NUM_SENDERS;i++) {
-			combinedExpected+="\n<result senderClass=\"XsltSender\" type=\"String\">"+expected.replaceFirst(">header<", ">header"+i+"<")+"\n</result>";
+			combinedExpected+="\n<result senderClass=\"XsltSender\" type=\"String\">"
+					+expected.replaceFirst(">headerDefault<", ">header"+i+"<")
+							 .replaceFirst(">sessionKeyDefault<", ">sessionKeyValue"+i+"<")
+							 //.replaceFirst(">sessionKeyGlobalDefault<", ">sessionKeyGlobalValue<")
+							 +"\n</result>";
 		}
 		combinedExpected+="\n</results>";
 //		super.assertResultsAreCorrect(
 //				combinedExpected.replaceAll("\\r\\n","\n").replaceAll("  ","").replaceAll("\\n ","\n"), 
 //						  actual.replaceAll("\\r\\n","\n").replaceAll("  ","").replaceAll("\\n ","\n"), session);
+
+//		super.assertResultsAreCorrect(combinedExpected, actual, session);
+
 		super.assertResultsAreCorrect(
 		combinedExpected.replaceAll("\\s",""), 
 				  actual.replaceAll("\\s",""), session);
 	}
 
+	@Override
+	protected void checkTestAppender(int expectedSize, String expectedString) {
+		super.checkTestAppender(expectedSize+1,expectedString);
+		assertThat(testAppender.toString(),containsString("are not available for use by nested Senders"));
+	}
+
+	
 	@Override
 	protected int getMultiplicity() {
 		return NUM_SENDERS;
