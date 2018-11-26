@@ -41,6 +41,14 @@ public abstract class PipeTestBase<P extends IPipe> {
 		adapter.registerPipeLine(pipeline);
 	}
 
+	protected void configurePipe() throws ConfigurationException {
+		if (pipe instanceof AbstractPipe) {
+			((AbstractPipe) pipe).configure(pipeline);
+		} else {
+			pipe.configure();
+		}
+	}
+
 	
 	@Test
 	public void notConfigured() throws ConfigurationException {
