@@ -50,54 +50,65 @@
 						<th class="colHeader">Active config</th>
 						<th class="colHeader">Auto reload</th>
 					</tr>
-					<xsl:for-each select="result/rowset/row">
-						<xsl:variable name="class">
-							<xsl:choose>
-								<xsl:when test="position() mod 2 = 0">
-									<text>rowEven</text>
-								</xsl:when>
-								<xsl:otherwise>
-									<text>filterRow</text>
-								</xsl:otherwise>
-							</xsl:choose>
-						</xsl:variable>
-						<tr>
-							<xsl:attribute name="class">
-								<xsl:value-of select="$class" />
-							</xsl:attribute>
-							<td class="filterRow">
-								<imagelink type="showastext" newwindow="true">
-									<parameter name="jmsRealm">
-										<xsl:value-of select="$jr" />
-									</parameter>
-									<parameter name="name">
+					<xsl:choose>
+						<xsl:when test="error">
+							<tr>
+								<td colspan="8" style="color: red;">
+									<xsl:value-of select="error" />
+								</td>
+							</tr>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:for-each select="result/rowset/row">
+								<xsl:variable name="class">
+									<xsl:choose>
+										<xsl:when test="position() mod 2 = 0">
+											<text>rowEven</text>
+										</xsl:when>
+										<xsl:otherwise>
+											<text>filterRow</text>
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:variable>
+								<tr>
+									<xsl:attribute name="class">
+										<xsl:value-of select="$class" />
+									</xsl:attribute>
+									<td class="filterRow">
+										<imagelink type="showastext" newwindow="true">
+											<parameter name="jmsRealm">
+												<xsl:value-of select="$jr" />
+											</parameter>
+											<parameter name="name">
+												<xsl:value-of select="field[@name='NAME']" />
+											</parameter>
+										</imagelink>
+									</td>
+									<td class="filterRow">
 										<xsl:value-of select="field[@name='NAME']" />
-									</parameter>
-								</imagelink>
-							</td>
-							<td class="filterRow">
-								<xsl:value-of select="field[@name='NAME']" />
-							</td>
-							<td class="filterRow">
-								<xsl:value-of select="field[@name='VERSION']" />
-							</td>
-							<td class="filterRow">
-								<xsl:value-of select="field[@name='FILENAME']" />
-							</td>
-							<td class="filterRow">
-								<xsl:value-of select="field[@name='CRE_TYDST']" />
-							</td>
-							<td class="filterRow">
-								<xsl:value-of select="field[@name='RUSER']" />
-							</td>
-							<td class="filterRow">
-								<xsl:value-of select="field[@name='ACTIVECONFIG']" />
-							</td>
-							<td class="filterRow">
-								<xsl:value-of select="field[@name='AUTORELOAD']" />
-							</td>
-						</tr>
-					</xsl:for-each>
+									</td>
+									<td class="filterRow">
+										<xsl:value-of select="field[@name='VERSION']" />
+									</td>
+									<td class="filterRow">
+										<xsl:value-of select="field[@name='FILENAME']" />
+									</td>
+									<td class="filterRow">
+										<xsl:value-of select="field[@name='CRE_TYDST']" />
+									</td>
+									<td class="filterRow">
+										<xsl:value-of select="field[@name='RUSER']" />
+									</td>
+									<td class="filterRow">
+										<xsl:value-of select="field[@name='ACTIVECONFIG']" />
+									</td>
+									<td class="filterRow">
+										<xsl:value-of select="field[@name='AUTORELOAD']" />
+									</td>
+								</tr>
+							</xsl:for-each>
+						</xsl:otherwise>
+					</xsl:choose>
 				</table>
 			</xsl:for-each>
 		</page>
