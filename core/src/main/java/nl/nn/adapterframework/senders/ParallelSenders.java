@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -67,7 +68,8 @@ public class ParallelSenders extends SenderSeries {
 			for (int i=1;i<getParameterList().size();i++) {
 				paramList+=", "+getParameterList().get(i).getName();
 			}
-			log.warn("parameters ["+paramList+"] of ParallelSenders ["+getName()+"] are not available for use by nested Senders");
+			String msg = "parameters ["+paramList+"] of ParallelSenders ["+getName()+"] are not available for use by nested Senders";
+			ConfigurationWarnings.getInstance().add(log, msg, true);
 		}
 	}
 
