@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.FileHandler;
 
@@ -30,6 +31,7 @@ import nl.nn.adapterframework.util.FileHandler;
  */
 public class FileSender extends FileHandler implements ISenderWithParameters {
 	private String name;
+	protected ParameterList paramList = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -40,42 +42,61 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 					+ "sender doesn't support outputType ["
 					+ outputType + "], use file pipe instead");
 		}
+		if (paramList!=null) {
+			paramList.configure();
+		}
 	}
 
-	public String sendMessage(String correlationID, String message,
-			ParameterResolutionContext prc) throws SenderException,
-			TimeOutException {
+	@Override
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		try {
-			return (String)handle(message, prc.getSession());
+			return (String)handle(message, prc.getSession(),getParameterList());
 		} catch(Exception e) {
 			throw new SenderException(e);
 		}
 	}
 
-	public String sendMessage(String correlationID, String message)
-			throws SenderException, TimeOutException {
+	@Override
+	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
 		throw new SenderException("FileSender cannot be used without a session");
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void open() throws SenderException {
 	}
 
+	@Override
 	public void close() throws SenderException {
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		return true;
 	}
 
+	@Override
 	public void addParameter(Parameter p) {
+		if (paramList==null) {
+			paramList=new ParameterList();
+		}
+		paramList.add(p);
+	}
+
+	/**
+	 * return the Parameters
+	 */
+	public ParameterList getParameterList() {
+		return paramList;
 	}
 
 }

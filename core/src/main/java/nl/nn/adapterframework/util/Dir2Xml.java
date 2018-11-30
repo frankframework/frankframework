@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips IOS
  */
 public class Dir2Xml  {
-	protected Logger log = LogUtil.getLogger(this);
+	protected static Logger log = LogUtil.getLogger(Dir2Xml.class);
 	
   	private String path;
   	private String wildcard="*.*";
@@ -91,7 +91,7 @@ public class Dir2Xml  {
 		return dirXml.toXML();
 	}
 
-	private XmlBuilder getFileAsXmlBuilder(File file, String nameShown) {
+	public static XmlBuilder getFileAsXmlBuilder(File file, String nameShown) {
 	
 		XmlBuilder fileXml = new XmlBuilder("file");
 		fileXml.addAttribute("name", nameShown);

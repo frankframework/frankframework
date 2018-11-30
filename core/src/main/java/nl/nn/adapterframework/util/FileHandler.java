@@ -143,10 +143,10 @@ public class FileHandler {
 	public void configure() throws ConfigurationException {
 		// translation action seperated string to Transformers
 		transformers = new LinkedList();
-		if (StringUtils.isEmpty(actions))
+		if (StringUtils.isEmpty(getActions()))
 			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
 			
-		StringTokenizer tok = new StringTokenizer(actions, " ,\t\n\r\f");
+		StringTokenizer tok = new StringTokenizer(getActions(), " ,\t\n\r\f");
 		while (tok.hasMoreTokens()) {
 			String token = tok.nextToken();
 			
@@ -190,9 +190,9 @@ public class FileHandler {
 		eolArray = System.getProperty("line.separator").getBytes();
 	}
 	
-	public Object handle(Object input, IPipeLineSession session) throws Exception {
-		return handle(input, session, null);
-	}
+//	public Object handle(Object input, IPipeLineSession session) throws Exception {
+//		return handle(input, session, null);
+//	}
 	
 	public Object handle(Object input, IPipeLineSession session, ParameterList paramList) throws Exception {
 		Object output = null;
@@ -297,7 +297,7 @@ public class FileHandler {
 	}
 
 	private String getEffectiveFileName(byte[] in, IPipeLineSession session) {
-		String name = fileName;
+		String name = getFileName();
 		if (StringUtils.isEmpty(name)) {
 			name = (String)session.get(fileNameSessionKey);
 		}
@@ -457,7 +457,7 @@ public class FileHandler {
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				File file = new File(getDirectory());
-				if (!file.exists() && createDirectory) {
+				if (!file.exists() && isCreateDirectory()) {
 					if (!file.mkdirs()) {
 						throw new ConfigurationException(directory + " could not be created");
 					}
