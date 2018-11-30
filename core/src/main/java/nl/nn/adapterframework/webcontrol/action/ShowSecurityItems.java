@@ -144,6 +144,7 @@ public final class ShowSecurityItems extends ActionBase {
 	private void addRegisteredAdapters(XmlBuilder securityItems) {
 		XmlBuilder registeredAdapters = new XmlBuilder("registeredAdapters");
 		securityItems.addSubElement(registeredAdapters);
+		int countCertificate = 0;
 		for (IAdapter iAdapter : ibisManager.getRegisteredAdapters()) {
 			Adapter adapter = (Adapter)iAdapter;
 
@@ -190,6 +191,7 @@ public final class ShowSecurityItems extends ActionBase {
 						WebServiceSender s = (WebServiceSender) sender;
 						String certificate = s.getCertificate();
 						if (StringUtils.isNotEmpty(certificate)) {
+							countCertificate++;
 							XmlBuilder certElem = new XmlBuilder("certificate");
 							certElem.addAttribute("name", certificate);
 							String certificateAuthAlias = s.getCertificateAuthAlias();
@@ -215,6 +217,7 @@ public final class ShowSecurityItems extends ActionBase {
 							HttpSender s = (HttpSender) sender;
 							String certificate = s.getCertificate();
 							if (StringUtils.isNotEmpty(certificate)) {
+								countCertificate++;
 								XmlBuilder certElem = new XmlBuilder("certificate");
 								certElem.addAttribute("name", certificate);
 								String certificateAuthAlias = s.getCertificateAuthAlias();
@@ -240,6 +243,7 @@ public final class ShowSecurityItems extends ActionBase {
 								FtpSender s = (FtpSender) sender;
 								String certificate = s.getCertificate();
 								if (StringUtils.isNotEmpty(certificate)) {
+									countCertificate++;
 									XmlBuilder certElem = new XmlBuilder("certificate");
 									certElem.addAttribute("name", certificate);
 									String certificateAuthAlias = s.getCertificateAuthAlias();
@@ -265,6 +269,12 @@ public final class ShowSecurityItems extends ActionBase {
 					}
 				}
 			}
+		}
+		if (countCertificate==0) {
+			registeredAdapters.addAttribute("info", "true");
+			XmlBuilder text = new XmlBuilder("text");
+			text.setCdataValue("No certificate found");
+			registeredAdapters.addSubElement(text);
 		}
 	}
 
@@ -309,115 +319,130 @@ public final class ShowSecurityItems extends ActionBase {
 
 	private void addApplicationDeploymentDescriptor(XmlBuilder securityItems) {
 		XmlBuilder appDD = new XmlBuilder("applicationDeploymentDescriptor");
-		String appDDString = null;
 		try {
-			appDDString = Misc.getApplicationDeploymentDescriptor();
-			appDDString = XmlUtils.skipXmlDeclaration(appDDString);
-			appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
-			appDDString = XmlUtils.removeNamespaces(appDDString);
+			String appDDString = Misc.getApplicationDeploymentDescriptor();
+			if (appDDString == null) {
+				appDD.addAttribute("warn", "true");
+				appDD.setCdataValue("Deployment descriptor file not found or empty");
+			} else {
+				appDDString = XmlUtils.skipXmlDeclaration(appDDString);
+				appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
+				appDDString = XmlUtils.removeNamespaces(appDDString);
+				appDD.setValue(appDDString, false);
+			}
 		} catch (IOException e) {
-			appDDString = "*** ERROR ***";
+			appDD.addAttribute("error", "true");
+			appDD.setCdataValue(e.getMessage());
 		}
-		appDD.setValue(appDDString, false);
 		securityItems.addSubElement(appDD);
 	}
 
 	private void addSecurityRoleBindings(XmlBuilder securityItems) {
 		XmlBuilder appBnd = new XmlBuilder("securityRoleBindings");
-		String appBndString = null;
 		try {
-			appBndString = Misc.getDeployedApplicationBindings();
-			appBndString = XmlUtils.removeNamespaces(appBndString);
-		} catch (IOException e) {
-			appBndString = "*** ERROR ***";
+			String appBndString = Misc.getDeployedApplicationBindings();
+			if (appBndString == null) {
+				appBnd.addAttribute("warn", "true");
+				appBnd.setCdataValue("Application binding file not found or empty");
+			} else {
+				appBndString = XmlUtils.removeNamespaces(appBndString);
+				appBnd.setValue(appBndString, false);
+			}
+		} catch (Exception e) {
+			appBnd.addAttribute("error", "true");
+			appBnd.setCdataValue(e.getMessage());
 		}
-		appBnd.setValue(appBndString, false);
 		securityItems.addSubElement(appBnd);
 	}
 
 	private void addJmsRealms(XmlBuilder securityItems, String confResString) {
-		List jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		XmlBuilder jrs = new XmlBuilder("jmsRealms");
-		securityItems.addSubElement(jrs);
+		
+		List jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+		if (jmsRealms.size()==0) {
+			jrs.addAttribute("info", "true");
+			jrs.setCdataValue("No jmsRealm found");
+		} else {
+			for (int j = 0; j < jmsRealms.size(); j++) {
+				String jmsRealm = (String) jmsRealms.get(j);
 
-		for (int j = 0; j < jmsRealms.size(); j++) {
-			String jmsRealm = (String) jmsRealms.get(j);
+				String dsName = null;
+				String qcfName = null;
+				String tcfName = null;
+				String dsInfo = null;
+				String qcfInfo = null;
 
-			String dsName = null;
-			String qcfName = null;
-			String tcfName = null;
-			String dsInfo = null;
-			String qcfInfo = null;
-
-			DirectQuerySender qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-			qs.setJmsRealm(jmsRealm);
-			try {
-				dsName = qs.getDataSourceNameToUse();
-				dsInfo = qs.getDatasourceInfo();
-			} catch (JdbcException jdbce) {
-				// no datasource
-			}
-			if (StringUtils.isNotEmpty(dsName)) {
-				XmlBuilder jr = new XmlBuilder("jmsRealm");
-				jrs.addSubElement(jr);
-				jr.addAttribute("name", jmsRealm);
-				jr.addAttribute("datasourceName", dsName);
-				XmlBuilder infoElem = new XmlBuilder("info");
-				infoElem.setValue(dsInfo);
-				jr.addSubElement(infoElem);
-				if (confResString!=null) {
+				DirectQuerySender qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+				qs.setJmsRealm(jmsRealm);
+				try {
+					dsName = qs.getDataSourceNameToUse();
+					dsInfo = qs.getDatasourceInfo();
+				} catch (JdbcException jdbce) {
+					// no datasource
+				}
+				if (StringUtils.isNotEmpty(dsName)) {
+					XmlBuilder jr = new XmlBuilder("jmsRealm");
+					jrs.addSubElement(jr);
+					jr.addAttribute("name", jmsRealm);
+					jr.addAttribute("datasourceName", dsName);
+					XmlBuilder infoElem = new XmlBuilder("info");
+					infoElem.setValue(dsInfo);
+					jr.addSubElement(infoElem);
+					if (confResString!=null) {
 					String connectionPoolProperties;
 					try {
 						connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JDBC", dsName);
 					} catch (Exception e) {
 						connectionPoolProperties = "*** ERROR ***";
 					}
-					if (StringUtils.isNotEmpty(connectionPoolProperties)) {
-						infoElem = new XmlBuilder("info");
-						infoElem.setValue(connectionPoolProperties);
-						jr.addSubElement(infoElem);
+						if (StringUtils.isNotEmpty(connectionPoolProperties)) {
+							infoElem = new XmlBuilder("info");
+							infoElem.setValue(connectionPoolProperties);
+							jr.addSubElement(infoElem);
+						}
 					}
 				}
-			}
 
-			JmsSender js = new JmsSender();
-			js.setJmsRealm(jmsRealm);
-			try {
-				qcfName = js.getConnectionFactoryName();
-				qcfInfo = js.getConnectionFactoryInfo();
-			} catch (JmsException jmse) {
-				// no connectionFactory
-			}
-			if (StringUtils.isNotEmpty(qcfName)) {
-				XmlBuilder jr = new XmlBuilder("jmsRealm");
-				jrs.addSubElement(jr);
-				jr.addAttribute("name", jmsRealm);
-				jr.addAttribute("queueConnectionFactoryName", qcfName);
-				XmlBuilder infoElem = new XmlBuilder("info");
-				infoElem.setValue(qcfInfo);
-				jr.addSubElement(infoElem);
-				if (confResString!=null) {
+				JmsSender js = new JmsSender();
+				js.setJmsRealm(jmsRealm);
+				try {
+					qcfName = js.getConnectionFactoryName();
+					qcfInfo = js.getConnectionFactoryInfo();
+				} catch (JmsException jmse) {
+					// no connectionFactory
+				}
+				if (StringUtils.isNotEmpty(qcfName)) {
+					XmlBuilder jr = new XmlBuilder("jmsRealm");
+					jrs.addSubElement(jr);
+					jr.addAttribute("name", jmsRealm);
+					jr.addAttribute("queueConnectionFactoryName", qcfName);
+					XmlBuilder infoElem = new XmlBuilder("info");
+					infoElem.setValue(qcfInfo);
+					jr.addSubElement(infoElem);
+					if (confResString!=null) {
 					String connectionPoolProperties;
 					try {
 						connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JMS", qcfName);
 					} catch (Exception e) {
 						connectionPoolProperties = "*** ERROR ***";
 					}
-					if (StringUtils.isNotEmpty(connectionPoolProperties)) {
-						infoElem = new XmlBuilder("info");
-						infoElem.setValue(connectionPoolProperties);
-						jr.addSubElement(infoElem);
+						if (StringUtils.isNotEmpty(connectionPoolProperties)) {
+							infoElem = new XmlBuilder("info");
+							infoElem.setValue(connectionPoolProperties);
+							jr.addSubElement(infoElem);
+						}
 					}
 				}
-			}
-			tcfName = js.getTopicConnectionFactoryName();
-			if (StringUtils.isNotEmpty(tcfName)) {
-				XmlBuilder jr = new XmlBuilder("jmsRealm");
-				jrs.addSubElement(jr);
-				jr.addAttribute("name", jmsRealm);
-				jr.addAttribute("topicConnectionFactoryName", tcfName);
+				tcfName = js.getTopicConnectionFactoryName();
+				if (StringUtils.isNotEmpty(tcfName)) {
+					XmlBuilder jr = new XmlBuilder("jmsRealm");
+					jrs.addSubElement(jr);
+					jr.addAttribute("name", jmsRealm);
+					jr.addAttribute("topicConnectionFactoryName", tcfName);
+				}
 			}
 		}
+		securityItems.addSubElement(jrs);
 	}
 
 	private void addProvidedJmsDestinations(XmlBuilder securityItems,
@@ -533,6 +558,8 @@ public final class ShowSecurityItems extends ActionBase {
 	}
 	
 	private void addSapSystems(XmlBuilder securityItems) {
+		XmlBuilder sss = new XmlBuilder("sapSystems");
+
 		List sapSystems = null;
 		Object sapSystemFactory = null;
 		Method factoryGetSapSystemInfo = null;
@@ -547,9 +574,10 @@ public final class ShowSecurityItems extends ActionBase {
             log.debug("Caught NoClassDefFoundError, just no sapSystem available: " + t.getMessage());
 		}
 		
-        if (sapSystems!=null) {
-    		XmlBuilder sss = new XmlBuilder("sapSystems");
-    		securityItems.addSubElement(sss);
+        if (sapSystems==null || sapSystems.isEmpty()) {
+			sss.addAttribute("info", "true");
+			sss.setCdataValue("No sapSystem found");
+        } else {
     		Iterator iter = sapSystems.iterator();
     		while (iter.hasNext()) {
     			XmlBuilder ss = new XmlBuilder("sapSystem");
@@ -565,82 +593,77 @@ public final class ShowSecurityItems extends ActionBase {
    				ss.addSubElement(infoElem);
     		}
         }
+		securityItems.addSubElement(sss);
 	}
 
 	private void addAuthEntries(XmlBuilder securityItems) {
 		XmlBuilder aes = new XmlBuilder("authEntries");
-		securityItems.addSubElement(aes);
-		List entries = new ArrayList();
 		try {
-			URL url = ClassUtils.getResourceURL(this, AUTHALIAS_XSLT);
-			if (url != null) {
-				for (Configuration configuration : ibisManager.getConfigurations()) {
-					Transformer t = XmlUtils.createTransformer(url, true);
-					String configString = configuration.getLoadedConfiguration();
-					String authEntries = XmlUtils.transformXml(t, configString);
-					log.debug("authentication aliases for configuration ["
-							+ configuration.getName() + "] found ["
-							+ authEntries.trim() + "]");
-					Collection<String> c = XmlUtils.evaluateXPathNodeSet(authEntries, "authEntries/entry/@alias");
-					if (c != null && c.size() > 0) {
-						for (Iterator<String> cit = c.iterator(); cit.hasNext();) {
-							String entry = cit.next();
-							if (!entries.contains(entry)) {
-								entries.add(entry);
-							}
-						}						
+			List entries = new ArrayList();
+			for (Configuration configuration : ibisManager.getConfigurations()) {
+				String configString = configuration.getLoadedConfiguration();
+				Collection<String> c = XmlUtils.evaluateXPathNodeSet(configString, "//@*[starts-with(name(),'authAlias') or ends-with(name(),'AuthAlias')]");
+				if (c != null && !c.isEmpty()) {
+					for (Iterator<String> cit = c.iterator(); cit.hasNext();) {
+						String entry = cit.next();
+						if (!entries.contains(entry)) {
+							entries.add(entry);
+						}
+					}						
+				}
+			}
+			if (entries == null || entries.isEmpty()) {
+				aes.addAttribute("info", "true");
+				aes.setCdataValue("No authEntry found");
+			} else {
+				Collections.sort(entries);
+				Iterator iter = entries.iterator();
+				while (iter.hasNext()) {
+					String alias = (String) iter.next();
+					CredentialFactory cf = new CredentialFactory(alias, null, null);
+					XmlBuilder ae = new XmlBuilder("entry");
+					aes.addSubElement(ae);
+					ae.addAttribute("alias", alias);
+					String userName;
+					String passWord;
+					try {
+						userName = cf.getUsername();
+						passWord = StringUtils.repeat("*", cf.getPassword().length());
+		
+					} catch (Exception e) {
+						userName = "*** ERROR ***";
+						passWord = "*** ERROR ***";
 					}
+					ae.addAttribute("userName", userName);
+					ae.addAttribute("passWord", passWord);
 				}
 			}
 		} catch (Exception e) {
-			XmlBuilder ae = new XmlBuilder("entry");
-			aes.addSubElement(ae);
-			ae.addAttribute("alias", "*** ERROR ***");
+			aes.addAttribute("error", "true");
+			aes.setCdataValue(e.getMessage());
 		}
-
-		if (entries != null) {
-			Collections.sort(entries);
-			Iterator iter = entries.iterator();
-			while (iter.hasNext()) {
-				String alias = (String) iter.next();
-				CredentialFactory cf = new CredentialFactory(alias, null, null);
-				XmlBuilder ae = new XmlBuilder("entry");
-				aes.addSubElement(ae);
-				ae.addAttribute("alias", alias);
-				String userName;
-				String passWord;
-				try {
-					userName = cf.getUsername();
-					passWord = StringUtils.repeat("*", cf.getPassword().length());
-	
-				} catch (Exception e) {
-					userName = "*** ERROR ***";
-					passWord = "*** ERROR ***";
-				}
-				ae.addAttribute("userName", userName);
-				ae.addAttribute("passWord", passWord);
-			}
-		}
+		securityItems.addSubElement(aes);
 	}
 
 	private void addServerProps(XmlBuilder securityItems) {
 		XmlBuilder serverProps = new XmlBuilder("serverProps");
-			XmlBuilder transactionService = new XmlBuilder("transactionService");
-			serverProps.addSubElement(transactionService);
-			String totalTransactionLifetimeTimeout;
-			try {
-				totalTransactionLifetimeTimeout = Misc.getTotalTransactionLifetimeTimeout();
-			} catch (Exception e) {
-				totalTransactionLifetimeTimeout = "*** ERROR ***";
+		try {
+			String confSrvString = Misc.getConfigurationServer();
+			if (confSrvString == null) {
+				serverProps.addAttribute("warn", "true");
+				serverProps.setCdataValue("Configuration server file not found or empty");
+			} else {
+				XmlBuilder transactionService = new XmlBuilder("transactionService");
+				serverProps.addSubElement(transactionService);
+				String totalTransactionLifetimeTimeout = Misc.getTotalTransactionLifetimeTimeout(confSrvString);
+				transactionService.addAttribute("totalTransactionLifetimeTimeout", totalTransactionLifetimeTimeout);
+				String maximumTransactionTimeout = Misc.getMaximumTransactionTimeout(confSrvString);
+				transactionService.addAttribute("maximumTransactionTimeout", maximumTransactionTimeout);
 			}
-			transactionService.addAttribute("totalTransactionLifetimeTimeout", totalTransactionLifetimeTimeout);
-			String maximumTransactionTimeout;
-			try {
-				maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
-			} catch (Exception e) {
-				maximumTransactionTimeout = "*** ERROR ***";
-			}
-			transactionService.addAttribute("maximumTransactionTimeout", maximumTransactionTimeout);
+		} catch (Exception e) {
+			serverProps.addAttribute("error", "true");
+			serverProps.setCdataValue(e.getMessage());
+		}
 		securityItems.addSubElement(serverProps);
 	}
 }
