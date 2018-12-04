@@ -37,6 +37,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
@@ -48,6 +49,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.extensions.log4j.IbisAppenderWrapper;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -57,6 +59,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
+import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
  * Collection of server and application statistics and information.
@@ -333,5 +336,57 @@ public class ServerStatistics extends Base {
 		}
 
 		return Response.status(Response.Status.NO_CONTENT).build();
+	}
+
+	@GET
+	@PermitAll
+	@Path("/server/health")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getIbisHealth() throws ApiException {
+		initBase(servletConfig);
+
+		Map<String, Object> response = new HashMap<String, Object>();
+		List<IAdapter> adapters = ibisManager.getRegisteredAdapters();
+		Map<RunStateEnum, Integer> stateCount = new HashMap<RunStateEnum, Integer>();
+		List<String> errors = new ArrayList<String>();
+
+		for (IAdapter adapter : adapters) {
+			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+
+			if(state.equals(RunStateEnum.STARTED)) {
+				Iterator<IReceiver> receiverIterator = adapter.getReceiverIterator();
+				while (receiverIterator.hasNext()) {
+					IReceiver receiver = receiverIterator.next();
+					RunStateEnum rState = receiver.getRunState();
+	
+					if(!rState.equals(RunStateEnum.STARTED)) {
+						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
+						state = RunStateEnum.ERROR;
+					}
+				}
+			}
+			else {
+				errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
+				state = RunStateEnum.ERROR;
+			}
+
+			int count;
+			if(stateCount.containsKey(state))
+				count = stateCount.get(state);
+			else
+				count = 0;
+
+			stateCount.put(state, ++count);
+		}
+
+		Status status = Response.Status.OK;
+		if(stateCount.containsKey(RunStateEnum.ERROR))
+			status = Response.Status.SERVICE_UNAVAILABLE;
+
+		if(errors.size() > 0)
+			response.put("errors", errors);
+		response.put("status", status);
+
+		return Response.status(status).entity(response).build();
 	}
 }

@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
@@ -44,6 +45,7 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.Adapter;
@@ -158,7 +160,6 @@ public final class ShowConfigurationStatus extends Base {
 		initBase(servletConfig);
 
 		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(name);
-		
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
 		}
@@ -200,6 +201,51 @@ public final class ShowConfigurationStatus extends Base {
 		
 		response = Response.status(Response.Status.OK).entity(adapterInfo).tag(etag);
 		return response.build();
+	}
+
+	@GET
+	@PermitAll
+	@Path("/adapters/{name}/health")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getIbisHealth(@PathParam("name") String name) throws ApiException {
+		initBase(servletConfig);
+
+		Adapter adapter = (Adapter) ibisManager.getRegisteredAdapter(name);
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		Map<String, Object> response = new HashMap<String, Object>();
+		List<String> errors = new ArrayList<String>();
+
+		RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+
+		if(state.equals(RunStateEnum.STARTED)) {
+			Iterator<IReceiver> receiverIterator = adapter.getReceiverIterator();
+			while (receiverIterator.hasNext()) {
+				IReceiver receiver = receiverIterator.next();
+				RunStateEnum rState = receiver.getRunState();
+
+				if(!rState.equals(RunStateEnum.STARTED)) {
+					errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
+					state = RunStateEnum.ERROR;
+				}
+			}
+		}
+		else {
+			errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
+			state = RunStateEnum.ERROR;
+		}
+
+		Status status = Response.Status.OK;
+		if(state.equals(RunStateEnum.ERROR))
+			status = Response.Status.SERVICE_UNAVAILABLE;
+
+		if(errors.size() > 0)
+			response.put("errors", errors);
+		response.put("status", status);
+
+		return Response.status(status).entity(response).build();
 	}
 
 	@SuppressWarnings("unchecked")
