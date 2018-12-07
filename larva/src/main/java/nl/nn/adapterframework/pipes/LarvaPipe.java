@@ -43,6 +43,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>{@link #setLogLevel(String) logLevel}</td><td>the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]</td><td>wrong pipeline messages</td></tr>
  * <tr><td>{@link #setWriteToLog(boolean) writeToLog}</td><td></td><td>false</td></tr>
  * <tr><td>{@link #setWriteToSystemOut(boolean) writeToSystemOut}</td><td></td><td>false</td></tr>
+ * <tr><td>{@link #setTimeout(int) timeout}</td><td>the larva timeout</td>30000</tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -64,6 +65,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	private String execute;
 	private String logLevel=DEFAULT_LOG_LEVEL;
 	private String waitBeforeCleanup="100";
+	private int timeout=30000;
 	
 	
 
@@ -111,6 +113,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		out.setWriteToLog(writeToLog);
 		out.setWriteToSystemOut(writeToSystemOut);
 		boolean silent = true;
+		TestTool.setTimeout(getTimeout());
 		TestTool.runScenarios(ibisContext, appConstants, paramLogLevel,
 				paramAutoScroll, paramExecute,
 				paramWaitBeforeCleanUp, realPath,
@@ -144,6 +147,14 @@ public class LarvaPipe extends FixedForwardPipe {
 	}
 	public void setWaitBeforeCleanup(String waitBeforeCleanup) {
 		this.waitBeforeCleanup = waitBeforeCleanup;
+	}
+
+
+	public int getTimeout() {
+		return timeout;
+	}
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
 	}
 
 }

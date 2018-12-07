@@ -107,7 +107,13 @@ public class TestTool {
 	private static String zeefVijlNeem = "";
 	private static Writer silentOut = null;
 	private static boolean autoSaveDiffs = false;
+	
+	private static int globalTimeout=DEFAULT_TIMEOUT;
 
+	public static void setTimeout(int newTimeout) {
+		globalTimeout=newTimeout;
+	}
+	
 	public static IbisContext getIbisContext(ServletContext application) {
 		AppConstants appConstants = AppConstants.getInstance();
 		String ibisContextKey = appConstants.getResolvedProperty(ConfigurationServlet.KEY_CONTEXT);
@@ -1331,10 +1337,10 @@ public class TestTool {
 			String queue = (String)properties.get(queueName + ".queue");
 			String timeout = (String)properties.get(queueName + ".timeout");
 
-			int nTimeout = DEFAULT_TIMEOUT;
+			int nTimeout = globalTimeout;
 			if (timeout != null && timeout.length() > 0) {
 				nTimeout = Integer.parseInt(timeout);
-				debugMessage("Overriding default timeout setting of "+DEFAULT_TIMEOUT+" with "+ nTimeout, writers);
+				debugMessage("Overriding default timeout setting of "+globalTimeout+" with "+ nTimeout, writers);
 			}
 
 			if (queue == null) {
@@ -1654,6 +1660,8 @@ public class TestTool {
 				errorMessage("Could not find property '" + name + ".serviceNamespaceURI'", writers);
 			} else {
 				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
+				listenerMessageHandler.setRequestTimeOut(globalTimeout);
+				listenerMessageHandler.setResponseTimeOut(globalTimeout);
 				try {
 					long requestTimeOut = Long.parseLong((String)properties.get(name + ".requestTimeOut"));
 					listenerMessageHandler.setRequestTimeOut(requestTimeOut);
