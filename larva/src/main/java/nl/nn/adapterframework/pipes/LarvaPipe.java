@@ -33,6 +33,24 @@ import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * Call Larva Test Tool
+ *
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedForwardPipe</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWaitBeforeCleanup(String) waitBeforeCleanup}</td><td>ms</td><td>100</td></tr>
+ * <tr><td>{@link #setLogLevel(String) logLevel}</td><td>the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]</td><td>wrong pipeline messages</td></tr>
+ * <tr><td>{@link #setWriteToLog(boolean) writeToLog}</td><td></td><td>false</td></tr>
+ * <tr><td>{@link #setWriteToSystemOut(boolean) writeToSystemOut}</td><td></td><td>false</td></tr>
+ * </table>
+ * </p>
+ * <p><b>Exits:</b>
+ * <table border="1">
+ * <tr><th>state</th><th>condition</th></tr>
+ * <tr><td>"success"</td><td>default</td></tr>
+ * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
+ * </table>
  * 
  * @author Jaco de Groot
  *
