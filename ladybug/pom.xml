@@ -1,5 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  
   <parent>
     <groupId>org.ibissource</groupId>
     <artifactId>ibis-adapterframework-parent</artifactId>
@@ -12,11 +13,23 @@
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-ladybug</artifactId>
       <version>2.0.6</version>
+      <exclusions>
+      	<exclusion>
+      		<groupId>javax.servlet</groupId>
+      		<artifactId>servlet-api</artifactId>
+      	</exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-core</artifactId>
     </dependency>
+	<dependency>
+   		<groupId>javax.servlet</groupId>
+   		<artifactId>javax.servlet-api</artifactId>
+    	<!-- <version>3.0.1</version> -->
+   		<scope>provided</scope>
+	</dependency>
     <dependency>
       <groupId>org.aspectj</groupId>
       <artifactId>aspectjweaver</artifactId>
