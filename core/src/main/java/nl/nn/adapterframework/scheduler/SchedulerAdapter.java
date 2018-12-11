@@ -17,6 +17,9 @@ package nl.nn.adapterframework.scheduler;
 
 import java.text.DecimalFormat;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -32,11 +35,15 @@ import org.apache.log4j.Logger;
 import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerMetaData;
 import org.quartz.SimpleTrigger;
+import org.quartz.StatefulJob;
 import org.quartz.Trigger;
+import org.quartz.TriggerKey;
+import org.quartz.impl.matchers.GroupMatcher;
 /**
  * The SchedulerAdapter is an adapter for the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> <br/>
  * It transforms the information from the scheduler to XML.
@@ -58,35 +65,35 @@ public class SchedulerAdapter {
 
         try {
             // process groups
-            String[] jgnames = theScheduler.getJobGroupNames();
+            List<String> jgnames = theScheduler.getJobGroupNames();
 
-            for (int i = 0; i < jgnames.length; i++) {
+            for (int i = 0; i < jgnames.size(); i++) {
                 XmlBuilder el = new XmlBuilder("jobGroup");
-                el.addAttribute("name", jgnames[i]);
+                el.addAttribute("name", jgnames.get(i));
 
                 // process jobs within group
                 XmlBuilder jb = new XmlBuilder("jobs");
-                String[] jobNames = theScheduler.getJobNames(jgnames[i]);
+                Set<JobKey> jobKeys = theScheduler.getJobKeys(GroupMatcher.jobGroupEquals(jgnames.get(i)));
 
-                for (int j = 0; j < jobNames.length; j++) {
+                for (JobKey jobKey : jobKeys) {
                     XmlBuilder jn = new XmlBuilder("job");
-                    jn.addAttribute("name", jobNames[j]);
+                    jn.addAttribute("name", jobKey.getName());
 
                     // details for job
-                    XmlBuilder jd = jobDetailToXmlBuilder(theScheduler, jobNames[j], jgnames[i]);
+                    XmlBuilder jd = jobDetailToXmlBuilder(theScheduler, jobKey.getName(), jgnames.get(i));
                     jn.addSubElement(jd);
 
                     // get the triggers for this job
-                    XmlBuilder tr= getJobTriggers(theScheduler, jobNames[j], jgnames[i]);
+                    XmlBuilder tr= getJobTriggers(theScheduler, jobKey.getName(), jgnames.get(i));
                     jn.addSubElement(tr);
 
-                    XmlBuilder datamap = jobDataMapToXmlBuilder(theScheduler, jobNames[j], jgnames[i]);
+                    XmlBuilder datamap = jobDataMapToXmlBuilder(theScheduler, jobKey.getName(), jgnames.get(i));
                     jn.addSubElement(datamap);
                     jb.addSubElement(jn);
 
                     JobDef jobDef = null;
                     for (Configuration configuration : ibisManager.getConfigurations()) {
-                        jobDef = configuration.getScheduledJob(jobNames[j]);
+                        jobDef = configuration.getScheduledJob(jobKey.getName());
                         if (jobDef != null) {
                             break;
                         }
@@ -112,16 +119,16 @@ public class SchedulerAdapter {
         xbRoot.addAttribute("jobName", jobName);
         xbRoot.addAttribute("groupName", groupName);
         try {
-            String[] tgnames = theScheduler.getTriggerGroupNames();
+            List<String> tgnames = theScheduler.getTriggerGroupNames();
 
-            for (int i = 0; i < tgnames.length; i++) {
-                String[] triggerNames = theScheduler.getTriggerNames(tgnames[i]);
+            for (int i = 0; i < tgnames.size(); i++) {
+                Set<TriggerKey> triggerKeys = theScheduler.getTriggerKeys(GroupMatcher.triggerGroupEquals(tgnames.get(i)));
 
-                for (int s = 0; s < triggerNames.length; s++) {
-                    Trigger trigger = theScheduler.getTrigger(triggerNames[s], tgnames[i]);
+                for (TriggerKey triggerKey : triggerKeys) {
+                    Trigger trigger = theScheduler.getTrigger(TriggerKey.triggerKey(triggerKey.getName(), tgnames.get(i)));
 
-                    if ((trigger.getJobName().equals(jobName)) && (trigger.getJobGroup().equals(groupName))) {
-                        XmlBuilder tr = triggerToXmlBuilder(theScheduler, triggerNames[s], tgnames[i]);
+                    if ((trigger.getJobKey().getName().equals(jobName)) && (trigger.getJobKey().getGroup().equals(groupName))) {
+                        XmlBuilder tr = triggerToXmlBuilder(theScheduler, triggerKey.getName(), tgnames.get(i));
 
                         xbRoot.addSubElement(tr);
                     }
@@ -169,12 +176,12 @@ public class SchedulerAdapter {
         XmlBuilder xbRoot = new XmlBuilder("schedulerCalendars");
 
         try {
-            String[] names = theScheduler.getCalendarNames();
+            List<String> names = theScheduler.getCalendarNames();
 
-            for (int i = 0; i < names.length; i++) {
+            for (int i = 0; i < names.size(); i++) {
                 XmlBuilder el = new XmlBuilder("calendar");
 
-                el.setValue(names[i]);
+                el.setValue(names.get(i));
                 xbRoot.addSubElement(el);
             }
         } catch (org.quartz.SchedulerException se) {
@@ -196,7 +203,7 @@ public class SchedulerAdapter {
             xbRoot.addAttribute("isSchedulerRemote", (smd.isSchedulerRemote() ? "True" : "False"));
             xbRoot.addAttribute("isShutdown", (smd.isShutdown() ? "True" : "False"));
             xbRoot.addAttribute("isStarted", (smd.isStarted() ? "True" : "False"));
-            xbRoot.addAttribute("jobStoreSupportsPersistence", (smd.jobStoreSupportsPersistence() ? "True" : "False"));
+            xbRoot.addAttribute("jobStoreSupportsPersistence", (smd.isJobStoreSupportsPersistence() ? "True" : "False"));
             xbRoot.addAttribute("numJobsExecuted", Integer.toString(smd.getNumberOfJobsExecuted()));
             try {
                 Date runningSince = smd.getRunningSince();
@@ -221,24 +228,24 @@ public class SchedulerAdapter {
 
         try {
             // process groups
-            String[] tgnames = theScheduler.getTriggerGroupNames();
+            List<String> tgnames = theScheduler.getTriggerGroupNames();
 
-            for (int i = 0; i < tgnames.length; i++) {
+            for (int i = 0; i < tgnames.size(); i++) {
                 XmlBuilder el = new XmlBuilder("triggerGroup");
 
-                el.addAttribute("name", tgnames[i]);
+                el.addAttribute("name", tgnames.get(i));
 
                 // process jobs within group
                 XmlBuilder tgg = new XmlBuilder("triggers");
-                String[] triggerNames = theScheduler.getTriggerNames(tgnames[i]);
+                Set<TriggerKey> triggerKeys = theScheduler.getTriggerKeys(GroupMatcher.triggerGroupEquals(tgnames.get(i)));
 
-                for (int j = 0; j < triggerNames.length; j++) {
+                for (TriggerKey triggerKey : triggerKeys) {
                     XmlBuilder tn = new XmlBuilder("trigger");
-
-                    tn.addAttribute("name", triggerNames[j]);
+                    
+                    tn.addAttribute("name", triggerKey.getName());
 
                     //detail of trigger
-                    XmlBuilder td = triggerToXmlBuilder(theScheduler, triggerNames[j], tgnames[i]);
+                    XmlBuilder td = triggerToXmlBuilder(theScheduler, triggerKey.getName(), triggerKey.getName());
 
                     tn.addSubElement(td);
 
@@ -259,7 +266,7 @@ public class SchedulerAdapter {
         XmlBuilder xbRoot = new XmlBuilder("jobDataMap");
 
         try {
-            JobDataMap jd = theScheduler.getJobDetail(jobName, groupName).getJobDataMap();
+            JobDataMap jd = theScheduler.getJobDetail(JobKey.jobKey(jobName, groupName)).getJobDataMap();
 
             xbRoot.addAttribute("containsTransientData", (jd.containsTransientData() ? "True" : "False"));
             xbRoot.addAttribute("allowsTransientData", (jd.getAllowsTransientData() ? "True" : "False"));
@@ -296,20 +303,20 @@ public class SchedulerAdapter {
         XmlBuilder xbRoot = new XmlBuilder("jobDetail");
 
         try {
-            JobDetail jd = theScheduler.getJobDetail(jobName, groupName);
+            JobDetail jd = theScheduler.getJobDetail(JobKey.jobKey(jobName, groupName));
 
-            xbRoot.addAttribute("fullName", jd.getFullName());
-            xbRoot.addAttribute("jobName", jd.getName());
-            xbRoot.addAttribute("groupName", jd.getGroup());
+            xbRoot.addAttribute("fullName", jd.getKey().getGroup() + "." + jd.getKey().getName());
+            xbRoot.addAttribute("jobName", jd.getKey().getName());
+            xbRoot.addAttribute("groupName", jd.getKey().getGroup());
             String description="-";
             if (StringUtils.isNotEmpty(jd.getDescription()))
                 description=jd.getDescription();
 
             xbRoot.addAttribute("description", description);
-            xbRoot.addAttribute("isStateful", (jd.isStateful() ? "True" : "False"));
+            xbRoot.addAttribute("isStateful", (jd.isConcurrentExectionDisallowed() && jd.isPersistJobDataAfterExecution() ? "True" : "False"));
             xbRoot.addAttribute("isDurable", (jd.isDurable() ? "True" : "False"));
-            xbRoot.addAttribute("isVolatile", (jd.isVolatile() ? "True" : "False"));
             xbRoot.addAttribute("jobClass", jd.getJobClass().getName());
+            
         } catch (org.quartz.SchedulerException se) {
             log.error(se);
         }
@@ -320,11 +327,11 @@ public class SchedulerAdapter {
         XmlBuilder xbRoot = new XmlBuilder("triggerDetail");
 
         try {
-            Trigger trigger = theScheduler.getTrigger(triggerName, groupName);
+            Trigger trigger = theScheduler.getTrigger(TriggerKey.triggerKey(triggerName, groupName));
 
-            xbRoot.addAttribute("fullName", trigger.getFullName());
-            xbRoot.addAttribute("triggerName", trigger.getName());
-            xbRoot.addAttribute("triggerGroup", trigger.getGroup());
+            xbRoot.addAttribute("fullName", trigger.getKey().getGroup() + "." + trigger.getKey().getName());
+            xbRoot.addAttribute("triggerName", trigger.getKey().getName());
+            xbRoot.addAttribute("triggerGroup", trigger.getKey().getGroup());
             String cn = trigger.getCalendarName();
 
             xbRoot.addAttribute("calendarName", (cn == null ? "none" : cn));
@@ -361,9 +368,8 @@ public class SchedulerAdapter {
                 xbRoot.addAttribute("triggerType", "unknown");
             }
 
-            xbRoot.addAttribute("jobGroup", trigger.getJobGroup());
-            xbRoot.addAttribute("jobName", trigger.getJobName());
-            xbRoot.addAttribute("isVolatile", (trigger.isVolatile() ? "True" : "False"));
+            xbRoot.addAttribute("jobGroup", trigger.getJobKey().getGroup());
+            xbRoot.addAttribute("jobName", trigger.getJobKey().getName());
 
         } catch (SchedulerException se) {
             log.error(se);

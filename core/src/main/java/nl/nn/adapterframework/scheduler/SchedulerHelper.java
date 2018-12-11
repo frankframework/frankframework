@@ -24,10 +24,15 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
+import org.quartz.TriggerKey;
+import static org.quartz.TriggerBuilder.*;
+import static org.quartz.SimpleScheduleBuilder.*;
+import static org.quartz.CronScheduleBuilder.*;
 
 /**
  * The SchedulerHelper encapsulates the quarz scheduler.
@@ -48,32 +53,42 @@ public class SchedulerHelper {
 		Scheduler sched = getScheduler();
 
 		// if the job already exists, remove it.
-		if ((sched.getTrigger(jobDetail.getName(), jobDetail.getGroup())) != null) {
+		if ((sched.getTrigger(TriggerKey.triggerKey(jobDetail.getKey().getName(), jobDetail.getKey().getGroup()))) != null) {
 			if (overwrite)
-				sched.unscheduleJob(jobDetail.getName(), jobDetail.getGroup());
+				sched.unscheduleJob(TriggerKey.triggerKey(jobDetail.getKey().getName(), jobDetail.getKey().getGroup()));
 			else
-				throw new SchedulerException("Job with name [" + jobDetail.getName() + "] already exists");
+				throw new SchedulerException("Job with name [" + jobDetail.getKey().getName() + "] already exists");
 		}
  
 		if (StringUtils.isNotEmpty(cronExpression)) {
-			CronTrigger cronTrigger = new CronTrigger(jobDetail.getName(), jobDetail.getGroup());
-			cronTrigger.setCronExpression(cronExpression);
+			CronTrigger cronTrigger = newTrigger()
+					.withIdentity(jobDetail.getKey().getName(), jobDetail.getKey().getGroup())
+					.withSchedule(cronSchedule(cronExpression))
+					.build();
+			
 			sched.scheduleJob(jobDetail, cronTrigger);
 		} else if (interval > -1) {
-			SimpleTrigger simpleTrigger = new SimpleTrigger(jobDetail.getName(), jobDetail.getGroup());
-			if (interval == 0) {
-				// Keep trigger active to keep it available in GUI
-				simpleTrigger.setRepeatCount(1);
-				simpleTrigger.setRepeatInterval(1000L * 60L * 60L * 24L * 365L * 100L);
+			SimpleTrigger simpleTrigger;
+			
+			if(interval == 0) {
+				simpleTrigger = newTrigger()
+						.withIdentity(jobDetail.getKey().getName(), jobDetail.getKey().getGroup())
+						.withSchedule(simpleSchedule()
+								.withIntervalInSeconds(60 * 60 * 24 * 365 * 100)
+								.withRepeatCount(1))
+						.build();
 			} else {
-				// New Quartz version seems to have repeatForever(), for now set
-				// repeat count to Integer.MAX_VALUE.
-				simpleTrigger.setRepeatCount(Integer.MAX_VALUE);
-				simpleTrigger.setRepeatInterval(interval);
+				simpleTrigger = newTrigger()
+						.withIdentity(jobDetail.getKey().getName(), jobDetail.getKey().getGroup())
+						.withSchedule(simpleSchedule()
+								.withIntervalInSeconds((int)interval)
+								.repeatForever())
+						.build();
 			}
+			
 			sched.scheduleJob(jobDetail, simpleTrigger);
 		} else {
-			log.warn("no cronexpression or interval for job [" + jobDetail.getName() + "], cannot schedule");
+			log.warn("no cronexpression or interval for job [" + jobDetail.getKey().getName() + "], cannot schedule");
 		}
 	}
 
@@ -82,7 +97,7 @@ public class SchedulerHelper {
 	}
 
 	public Trigger getTrigger(String jobName, String jobGroup) throws SchedulerException {
-		return getScheduler().getTrigger(jobName, jobGroup);
+		return getScheduler().getTrigger(TriggerKey.triggerKey(jobName, jobGroup));
 	}
 
 	public JobDetail getJobForTrigger(String jobName) throws SchedulerException {
@@ -92,11 +107,11 @@ public class SchedulerHelper {
 	public JobDetail getJobForTrigger(String jobName, String jobGroup) throws SchedulerException {
 		Scheduler sched = getScheduler();
 
-		Trigger t = sched.getTrigger(jobName, jobGroup);
-		String name = t.getJobName();
-		String group = t.getJobGroup();
+		Trigger t = sched.getTrigger(TriggerKey.triggerKey(jobName, jobGroup));
+		String name = t.getJobKey().getName();
+		String group = t.getJobKey().getGroup();
 
-		return sched.getJobDetail(name, group);
+		return sched.getJobDetail(JobKey.jobKey(name, group));
 	}
 
 	public void deleteTrigger(String jobName) throws SchedulerException {
@@ -104,7 +119,7 @@ public class SchedulerHelper {
 	}
 
 	public void deleteTrigger(String jobName, String jobGroup) throws SchedulerException {
-		getScheduler().unscheduleJob(jobName, jobGroup);
+		getScheduler().unscheduleJob(TriggerKey.triggerKey(jobName, jobGroup));
 	}
 
 	public Scheduler getScheduler() throws SchedulerException {
