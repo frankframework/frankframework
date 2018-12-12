@@ -70,10 +70,68 @@
 	</adapter>
 	<scheduler>
 		<job
-			name="HelloWorlds"
+			name="1/5 - Cron expression test"
+			jobGroup="Tests"
 			adapterName="HelloWorlds"
 			receiverName="HelloWorlds"
 			cronExpression="0 55 2 * * ?"
+			function="sendMessage"
+			active="${HelloWorlds.active}"
+		/>
+		<job
+			name="2/5 - Interval test"
+			jobGroup="Tests"
+			adapterName="HelloWorlds"
+			receiverName="HelloWorlds"
+			interval="86340"
+			function="sendMessage"
+			active="${HelloWorlds.active}"
+		/>
+		<job
+			name="3/5 - Specific day test"
+			jobGroup="Tests"
+			adapterName="HelloWorlds"
+			receiverName="HelloWorlds"
+			cronExpression="59 59 23 ? * SUN"
+			function="sendMessage"
+			active="${HelloWorlds.active}"
+		/>
+		<job
+			name="4/5 - Duplicate test"
+			description="#1 (should not exist)"
+			jobGroup="Tests"
+			adapterName="HelloWorlds"
+			receiverName="HelloWorlds"
+			cronExpression="0 0 12 * * ?"
+			function="sendMessage"
+			active="${HelloWorlds.active}"
+		/>
+		<job
+			name="4/5 - Duplicate test"
+			description="#2 (should not exist)"
+			jobGroup="Tests"
+			adapterName="HelloWorlds"
+			receiverName="HelloWorlds"
+			cronExpression="0 0 12 * * ?"
+			function="sendMessage"
+			active="${HelloWorlds.active}"
+		/>
+		<job
+			name="4/5 - Duplicate test"
+			description="#3 (the right one)"
+			jobGroup="Tests"
+			adapterName="HelloWorlds"
+			receiverName="HelloWorlds"
+			cronExpression="0 0 15 * * ?"
+			function="sendMessage"
+			active="${HelloWorlds.active}"
+		/>
+		<job
+			name="5/5 - Pizza test"
+			jobGroup="Tests"
+			adapterName="HelloWorlds"
+			receiverName="HelloWorlds"
+			cronExpression="0 0 18 ? * 6L"
 			function="sendMessage"
 			active="${HelloWorlds.active}"
 		/>
