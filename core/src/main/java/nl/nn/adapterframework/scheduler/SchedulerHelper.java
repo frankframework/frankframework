@@ -59,7 +59,7 @@ public class SchedulerHelper {
 			else
 				throw new SchedulerException("Job with name [" + jobDetail.getKey().getName() + "] already exists");
 		}
- 
+
 		if (StringUtils.isNotEmpty(cronExpression)) {
 			CronTrigger cronTrigger = newTrigger()
 					.withIdentity(jobDetail.getKey().getName(), jobDetail.getKey().getGroup())
@@ -73,6 +73,7 @@ public class SchedulerHelper {
 			if(interval == 0) {
 				simpleTrigger = newTrigger()
 						.withIdentity(jobDetail.getKey().getName(), jobDetail.getKey().getGroup())
+						.forJob(jobDetail)
 						.withSchedule(simpleSchedule()
 								.withIntervalInSeconds(60 * 60 * 24 * 365 * 100)
 								.withRepeatCount(1))
@@ -80,6 +81,7 @@ public class SchedulerHelper {
 			} else {
 				simpleTrigger = newTrigger()
 						.withIdentity(jobDetail.getKey().getName(), jobDetail.getKey().getGroup())
+						.forJob(jobDetail)
 						.withSchedule(simpleSchedule()
 								.withIntervalInSeconds((int)interval)
 								.repeatForever())
@@ -126,9 +128,9 @@ public class SchedulerHelper {
 		return scheduler;
 	}
 
-    public void setScheduler(Scheduler scheduler) {
-        this.scheduler = scheduler;
-    }
+	public void setScheduler(Scheduler scheduler) {
+		this.scheduler = scheduler;
+	}
 
 	public void startScheduler() throws SchedulerException {
 		Scheduler scheduler = getScheduler();

@@ -60,58 +60,58 @@ public class SchedulerAdapter {
      * Get all jobgroups, jobs within this group, the jobdetail and the
      * associated triggers in XML format.
      */
-    public XmlBuilder getJobGroupNamesWithJobsToXml(Scheduler theScheduler, IbisManager ibisManager) {
-        XmlBuilder xbRoot = new XmlBuilder("jobGroups");
+	public XmlBuilder getJobGroupNamesWithJobsToXml(Scheduler theScheduler, IbisManager ibisManager) {
+		XmlBuilder xbRoot = new XmlBuilder("jobGroups");
 
-        try {
-            // process groups
-            List<String> jgnames = theScheduler.getJobGroupNames();
+		try {
+			// process groups
+			List<String> jgnames = theScheduler.getJobGroupNames();
 
-            for (int i = 0; i < jgnames.size(); i++) {
-                XmlBuilder el = new XmlBuilder("jobGroup");
-                el.addAttribute("name", jgnames.get(i));
+			for (int i = 0; i < jgnames.size(); i++) {
+				XmlBuilder el = new XmlBuilder("jobGroup");
+				el.addAttribute("name", jgnames.get(i));
 
-                // process jobs within group
-                XmlBuilder jb = new XmlBuilder("jobs");
-                Set<JobKey> jobKeys = theScheduler.getJobKeys(GroupMatcher.jobGroupEquals(jgnames.get(i)));
+				// process jobs within group
+				XmlBuilder jb = new XmlBuilder("jobs");
+				Set<JobKey> jobKeys = theScheduler.getJobKeys(GroupMatcher.jobGroupEquals(jgnames.get(i)));
 
-                for (JobKey jobKey : jobKeys) {
-                    XmlBuilder jn = new XmlBuilder("job");
-                    jn.addAttribute("name", jobKey.getName());
+				for (JobKey jobKey : jobKeys) {
+					XmlBuilder jn = new XmlBuilder("job");
+					jn.addAttribute("name", jobKey.getName());
 
-                    // details for job
-                    XmlBuilder jd = jobDetailToXmlBuilder(theScheduler, jobKey.getName(), jgnames.get(i));
-                    jn.addSubElement(jd);
+					// details for job
+					XmlBuilder jd = jobDetailToXmlBuilder(theScheduler, jobKey.getName(), jobKey.getGroup());
+					jn.addSubElement(jd);
 
-                    // get the triggers for this job
-                    XmlBuilder tr= getJobTriggers(theScheduler, jobKey.getName(), jgnames.get(i));
-                    jn.addSubElement(tr);
+					// get the triggers for this job
+					XmlBuilder tr= getJobTriggers(theScheduler, jobKey.getName(), jobKey.getGroup());
+					jn.addSubElement(tr);
 
-                    XmlBuilder datamap = jobDataMapToXmlBuilder(theScheduler, jobKey.getName(), jgnames.get(i));
-                    jn.addSubElement(datamap);
-                    jb.addSubElement(jn);
+					XmlBuilder datamap = jobDataMapToXmlBuilder(theScheduler, jobKey.getName(), jobKey.getGroup());
+					jn.addSubElement(datamap);
+					jb.addSubElement(jn);
 
-                    JobDef jobDef = null;
-                    for (Configuration configuration : ibisManager.getConfigurations()) {
-                        jobDef = configuration.getScheduledJob(jobKey.getName());
-                        if (jobDef != null) {
-                            break;
-                        }
-                    }
+					JobDef jobDef = null;
+					for (Configuration configuration : ibisManager.getConfigurations()) {
+						jobDef = configuration.getScheduledJob(jobKey.getName());
+						if (jobDef != null) {
+							break;
+						}
+					}
 					XmlBuilder ms= getJobMessages(jobDef);
 					jn.addSubElement(ms);
 					XmlBuilder jrs= getJobRunStatistics(jobDef);
 					jn.addSubElement(jrs);
-                }
-                el.addSubElement(jb);
-                xbRoot.addSubElement(el);
-            }
-        } catch (org.quartz.SchedulerException se) {
-           log.error(se);
-        }
-        return xbRoot;
-    }
-    
+				}
+				el.addSubElement(jb);
+				xbRoot.addSubElement(el);
+			}
+		} catch (org.quartz.SchedulerException se) {
+			log.error(se);
+		}
+		return xbRoot;
+	}
+
     public XmlBuilder getJobTriggers(Scheduler theScheduler, String jobName, String groupName) {
 
         XmlBuilder xbRoot = new XmlBuilder("triggersForJob");
