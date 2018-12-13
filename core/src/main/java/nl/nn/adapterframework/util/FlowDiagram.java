@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,120 +16,123 @@
 package nl.nn.adapterframework.util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.http.HttpSender;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.senders.CommandSender;
+import nl.nn.adapterframework.extensions.graphviz.Format;
+import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
+import nl.nn.adapterframework.extensions.graphviz.Options;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
  * Utility class to generate the flow diagram for an adapter or a configuration.
  * 
  * @author Peter Leeuwenburgh
- * @version $Id$
+ * @author Niels Meijer
+ * @version 2.0
  */
 
 public class FlowDiagram {
 	private static Logger log = LogUtil.getLogger(FlowDiagram.class);
 
-	private File adapterFlowDir = new File(AppConstants.getInstance()
-			.getResolvedProperty("flow.adapter.dir"));
-	private File configFlowDir = new File(AppConstants.getInstance()
-			.getResolvedProperty("flow.config.dir"));
+	private File adapterFlowDir = new File(AppConstants.getInstance().getResolvedProperty("flow.adapter.dir"));
+	private File configFlowDir = new File(AppConstants.getInstance().getResolvedProperty("flow.config.dir"));
 
 	private static final String CONFIG2DOT_XSLT = "/IAF_WebControl/GenerateFlowDiagram/xsl/config2dot.xsl";
 	private static final String IBIS2DOT_XSLT = "/IAF_WebControl/GenerateFlowDiagram/xsl/ibis2dot.xsl";
 
-	private String url;
-	private String format;
-	private String truststore;
-	private String truststorePassword;
+	private GraphvizEngine engine;
+	private Options options = Options.create();
+	private Format format = Format.SVG;
 
-	public FlowDiagram(String url) {
-		this(url, null, null, null);
+	public FlowDiagram() {
+		this(null);
 	}
 
-	public FlowDiagram(String url, String format, String truststore,
-			String truststorePassword) {
-		this.url = url;
-		this.format = format;
-		this.truststore = truststore;
-		this.truststorePassword = truststorePassword;
+	public FlowDiagram(String format) {
+		this(format, null);
+	}
 
+	public FlowDiagram(String format, String version) {
 		if (!adapterFlowDir.exists()) {
 			if (!adapterFlowDir.mkdirs()) {
-				throw new IllegalStateException(adapterFlowDir.getPath()
-						+ " could not be created");
+				throw new IllegalStateException(adapterFlowDir.getPath() + " does not exist and could not be created");
 			}
 		}
 
 		if (!configFlowDir.exists()) {
 			if (!configFlowDir.mkdirs()) {
-				throw new IllegalStateException(configFlowDir.getPath()
-						+ " could not be created");
+				throw new IllegalStateException(configFlowDir.getPath() + " does not exist and could not be created");
 			}
 		}
 
-		if (StringUtils.isEmpty(this.url)) {
-			throw new IllegalStateException("url must be specified");
+		engine = new GraphvizEngine(version);
+
+		if(format != null) {
+			try {
+				this.format = Format.valueOf(format.toUpperCase());
+			}
+			catch(IllegalArgumentException e) {
+				throw new IllegalArgumentException("unknown format["+format.toUpperCase()+"], must be one of "+Format.values());
+			}
 		}
 
-		if (StringUtils.isEmpty(this.format)) {
-			this.format = "svg";
-		}
+		options = options.format(this.format);
 	}
 
-	public void generate(IAdapter iAdapter) throws IOException,
-			DomBuilderException, TransformerException, ConfigurationException,
-			SenderException, TimeOutException {
-		File destFile = retrieveAdapterFlowFile(iAdapter);
-		destFile.delete();
+	public void generate(IAdapter adapter) throws ConfigurationException, IOException {
+		File destFile = retrieveAdapterFlowFile(adapter);
 
-		String dotInput = iAdapter.getAdapterConfigurationAsString();
+		if(destFile.exists()) //If the file exists, update it
+			destFile.delete();
 
-		URL xsltSource = ClassUtils.getResourceURL(this, CONFIG2DOT_XSLT);
-		Transformer transformer = XmlUtils.createTransformer(xsltSource);
-		String dotOutput = XmlUtils.transformXml(transformer, dotInput);
+		String dotInput = adapter.getAdapterConfigurationAsString();
+		String dotOutput = null;
 
-		String name = "adapter [" + iAdapter.getName() + "]";
+		try {
+			URL xsltSource = ClassUtils.getResourceURL(this, CONFIG2DOT_XSLT);
+			Transformer transformer = XmlUtils.createTransformer(xsltSource);
+			dotOutput = XmlUtils.transformXml(transformer, dotInput);
+		}
+		catch(Exception e) {
+			log.warn("failed to create dot file for adapter["+adapter.getName()+"]", e);
+		}
+
+		String name = "adapter[" + adapter.getName() + "]";
 		generateFlowDiagram(name, dotOutput, destFile);
 	}
 
-	public void generate(Configuration configuration) throws IOException,
-			DomBuilderException, TransformerException, ConfigurationException,
-			SenderException, TimeOutException {
+	public void generate(Configuration configuration) throws ConfigurationException, IOException {
 		File destFile = retrieveConfigurationFlowFile(configuration);
-		destFile.delete();
+
+		if(destFile.exists()) //If the file exists, update it
+			destFile.delete();
 
 		String dotInput = configuration.getLoadedConfiguration();
+		String dotOutput = null;
 
-		URL xsltSource = ClassUtils.getResourceURL(this, IBIS2DOT_XSLT);
-		Transformer transformer = XmlUtils.createTransformer(xsltSource);
-		String dotOutput = XmlUtils.transformXml(transformer, dotInput);
+		try {
+			URL xsltSource = ClassUtils.getResourceURL(this, IBIS2DOT_XSLT);
+			Transformer transformer = XmlUtils.createTransformer(xsltSource);
+			dotOutput = XmlUtils.transformXml(transformer, dotInput);
+		}
+		catch(Exception e) {
+			log.warn("failed to create dot file for configuration["+configuration.getName()+"]", e);
+		}
 
-		String name = "configuration [" + configuration.getName() + "]";
+		String name = "configuration[" + configuration.getName() + "]";
 		generateFlowDiagram(name, dotOutput, destFile);
 	}
 
-	public void generate(List<Configuration> configurations)
-			throws IOException, DomBuilderException, TransformerException,
-			ConfigurationException, SenderException, TimeOutException {
+	public void generate(List<Configuration> configurations) throws ConfigurationException, IOException {
 		File destFile = retrieveAllConfigurationsFlowFile();
 		destFile.delete();
 
@@ -140,172 +143,49 @@ public class FlowDiagram {
 							.getLoadedConfiguration());
 		}
 		dotInput = dotInput + "</configs>";
+		String dotOutput = null;
 
-		URL xsltSource = ClassUtils.getResourceURL(this, IBIS2DOT_XSLT);
-		Transformer transformer = XmlUtils.createTransformer(xsltSource);
-		String dotOutput = XmlUtils.transformXml(transformer, dotInput);
+		try {
+			URL xsltSource = ClassUtils.getResourceURL(this, IBIS2DOT_XSLT);
+			Transformer transformer = XmlUtils.createTransformer(xsltSource);
+			dotOutput = XmlUtils.transformXml(transformer, dotInput);
+		}
+		catch(Exception e) {
+			log.warn("failed to create dot file for configurations"+configurations.toString()+"", e);
+		}
 
-		String name = "configurations [*ALL*]";
+		String name = "configurations[*ALL*]";
 		generateFlowDiagram(name, dotOutput, destFile);
 	}
 
 	public File retrieveAdapterFlowFile(IAdapter iAdapter) {
-		String directoryName = adapterFlowDir.getPath();
-		String fileName = FileUtils.encodeFileName(iAdapter.getName()) + "."
-				+ format;
-		File file = new File(directoryName, fileName);
-		return file;
+		return retrieveFlowFile(adapterFlowDir, iAdapter.getName());
 	}
 
 	public File retrieveConfigurationFlowFile(Configuration configuration) {
-		String directoryName = configFlowDir.getPath();
-		String fileName = FileUtils.encodeFileName(configuration.getName())
-				+ "." + format;
-		File file = new File(directoryName, fileName);
-		return file;
+		return retrieveFlowFile(configFlowDir, configuration.getName());
 	}
 
 	public File retrieveAllConfigurationsFlowFile() {
-		String directoryName = configFlowDir.getPath();
-		String fileName = "_ALL_." + format;
-		File file = new File(directoryName, fileName);
-		return file;
+		return retrieveFlowFile(configFlowDir, "_ALL_");
 	}
 
-	private String generateFlowDiagram(String name, String dot, File destFile)
-			throws ConfigurationException, SenderException, TimeOutException {
-		GenerateFlowDiagramFlowRun generateFlowDiagramFlowRun = new GenerateFlowDiagramFlowRun(
-				name, dot, destFile);
-		Thread t = new Thread(generateFlowDiagramFlowRun);
-		t.start();
-
-		return null;
+	private File retrieveFlowFile(File parent, String fileName) {
+		String name = FileUtils.encodeFileName(fileName) + "." + format.fileExtension;
+		log.debug("retrieve flow file for name["+fileName+"] in folder["+parent.getPath()+"]");
+		return new File(parent, name);
 	}
 
-	private class GenerateFlowDiagramFlowRun implements Runnable {
-		String name;
-		String dot;
-		File destFile;
+	private void generateFlowDiagram(String name, String dot, File destFile) throws IOException {
+		log.debug("generating flow diagram for " + name);
+		long start = System.currentTimeMillis();
 
-		GenerateFlowDiagramFlowRun(String name, String dot, File destFile) {
-			this.name = name;
-			this.dot = dot;
-			this.destFile = destFile;
-		}
+		String flow = engine.execute(dot, options);
 
-		public void run() {
-			log.debug("start generating flow diagram for " + name);
-			try {
-				File tempOutFile = FileUtils.createTempFile(null, "." + format);
+		FileOutputStream outputStream = new FileOutputStream(destFile);
+		outputStream.write(flow.getBytes());
+		outputStream.close();
 
-				if (StringUtils.startsWithIgnoreCase(url, "http://")
-						|| StringUtils.startsWithIgnoreCase(url, "https://")) {
-					runHttpSender(tempOutFile);
-				} else {
-					File tempdotFile = FileUtils.createTempFile(null, ".dot");
-					Misc.stringToFile(dot, tempdotFile.getPath());
-					runCommandSender(tempdotFile, tempOutFile);
-					tempdotFile.delete();
-				}
-
-				if (FileUtils.moveFile(tempOutFile, destFile, 1, 0) == null) {
-					log.warn("could not rename file [" + tempOutFile.getPath()
-							+ "] to [" + destFile.getPath() + "]");
-				} else {
-					log.debug("renamed file [" + tempOutFile.getPath()
-							+ "] to [" + destFile.getPath() + "]");
-				}
-				log.debug("ended generating flow diagram for " + name);
-
-			} catch (Exception e) {
-				log.warn("exception on generating flow diagram for " + name, e);
-			}
-		}
-
-		private void runHttpSender(File outFile) throws ConfigurationException,
-				SenderException, TimeOutException {
-			HttpSender httpSender = null;
-			try {
-				IPipeLineSession pls = new PipeLineSessionBase();
-				pls.put("tempOutputFileName", outFile.getPath());
-
-				httpSender = new HttpSender();
-				httpSender.setUrl(url);
-				httpSender.setMethodType("POST");
-				if (StringUtils.isNotEmpty(truststore)) {
-					httpSender.setTruststore(truststore);
-					httpSender.setTruststorePassword(truststorePassword);
-				} else {
-					httpSender.setAllowSelfSignedCertificates(true);
-				}
-				httpSender.setParamsInUrl(false);
-				httpSender.setMultipart(true);
-				httpSender.setIgnoreRedirects(true);
-				httpSender.setVerifyHostname(false);
-				httpSender
-						.setStreamResultToFileNameSessionKey("tempOutputFileName");
-
-				Parameter p = new Parameter();
-				p.setName("outputFormat");
-				p.setValue(format);
-				httpSender.addParameter(p);
-
-				p = new Parameter();
-				p.setName("input");
-				p.setValue(dot);
-				httpSender.addParameter(p);
-
-				httpSender.configure();
-				httpSender.open();
-				ParameterResolutionContext prc = new ParameterResolutionContext(
-						"dummy", pls);
-				String result = httpSender.sendMessage(null, "", prc);
-			} finally {
-				if (httpSender != null) {
-					httpSender.close();
-				}
-			}
-		}
-	}
-
-	private void runCommandSender(File dotFile, File outFile)
-			throws SenderException, ConfigurationException, TimeOutException {
-		CommandSender commandSender = null;
-		try {
-			commandSender = new CommandSender();
-			commandSender.setCommand(url);
-			commandSender.setCommandWithArguments(true);
-			commandSender.setTimeOut(10);
-
-			Parameter p = new Parameter();
-			p.setName("arg1");
-			p.setValue("-T" + format);
-			commandSender.addParameter(p);
-
-			p = new Parameter();
-			p.setName("arg2");
-			p.setValue(dotFile.getPath());
-			commandSender.addParameter(p);
-
-			p = new Parameter();
-			p.setName("arg3");
-			p.setValue("-o");
-			commandSender.addParameter(p);
-
-			p = new Parameter();
-			p.setName("arg4");
-			p.setValue(outFile.getPath());
-			commandSender.addParameter(p);
-
-			commandSender.configure();
-			commandSender.open();
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					"dummy", new PipeLineSessionBase());
-			String result = commandSender.sendMessage(null, "", prc);
-		} finally {
-			if (commandSender != null) {
-				commandSender.close();
-			}
-		}
+		log.debug("finished generating flow diagram for "+ name +" in ["+ (System.currentTimeMillis()-start) +"] ms");
 	}
 }
