@@ -94,6 +94,8 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 
@@ -171,6 +173,7 @@ public class XmlUtils {
 		return getUtilityTransformerPool(xslt, key, omitXmlDeclaration, indent, 0);
 	}
 	
+
 	private static TransformerPool getUtilityTransformerPool(String xslt, String key, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
 		String fullKey=key+"-"+omitXmlDeclaration+"-"+indent;
 		TransformerPool result = utilityTPs.get(fullKey);
@@ -400,6 +403,11 @@ public class XmlUtils {
 				+ "</xsl:template>"
 				+ "<xsl:template match=\"comment() | processing-instruction() | text()\">"
 				+ "<xsl:copy/>" + "</xsl:template>" + "</xsl:stylesheet>";
+	}
+
+	public static TransformerPool getRemoveUnusedNamespacesXslt2TransformerPool(boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
+		String xslt = makeRemoveUnusedNamespacesXslt2(omitXmlDeclaration,indent);
+		return getUtilityTransformerPool(xslt,"RemoveUnusedNamespacesXslt2",omitXmlDeclaration,indent);
 	}
 
 	protected static String makeCopyOfSelectXslt(String xpath, boolean omitXmlDeclaration, boolean indent) {
@@ -699,6 +707,23 @@ public class XmlUtils {
 			}
 		}
 		return new String(source,offset,length,charset);
+	}
+
+	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
+		List<String> paramNames = null;
+		if (params!=null) {
+			paramNames = new ArrayList<String>();
+			Iterator<Parameter> iterator = params.iterator();
+			while (iterator.hasNext()) {
+				paramNames.add(iterator.next().getName());
+			}
+		}
+		try {
+			String xslt = createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames);
+			return getUtilityTransformerPool(xslt,"XPath:"+xPathExpression+"|"+outputType+"|"+namespaceDefs,!includeXmlDeclaration,false);
+		} catch (TransformerConfigurationException e) {
+			throw new ConfigurationException(e);
+		}
 	}
 
 
