@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.testtool.TestTool;
@@ -49,7 +50,8 @@ import nl.nn.adapterframework.util.AppConstants;
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
+ * <tr><td>"success"</td><td>no errors and all scenarios passed</td></tr>
+ * <tr><td>"fail"</td><td>errors or failed scenarios</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * 
@@ -59,6 +61,7 @@ import nl.nn.adapterframework.util.AppConstants;
 public class LarvaPipe extends FixedForwardPipe {
 	
 	public final String DEFAULT_LOG_LEVEL = "wrong pipeline messages";
+	public final String FORWARD_FAILURE="fail";
 	
 	private boolean writeToLog = false;
 	private boolean writeToSystemOut = false;
@@ -67,7 +70,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	private String waitBeforeCleanup="100";
 	private int timeout=30000;
 	
-	
+	private PipeForward failureForward;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -80,6 +83,10 @@ public class LarvaPipe extends FixedForwardPipe {
 			if (!Arrays.asList(LOG_LEVELS).contains("["+getLogLevel()+"]")) {
 				throw new ConfigurationException("illegal log level ["+getLogLevel()+"]");
 			}
+		}
+		failureForward=findForward(FORWARD_FAILURE);
+		if (failureForward==null) {
+			failureForward=getForward();
 		}
 	}
 
@@ -114,12 +121,13 @@ public class LarvaPipe extends FixedForwardPipe {
 		out.setWriteToSystemOut(writeToSystemOut);
 		boolean silent = true;
 		TestTool.setTimeout(getTimeout());
-		TestTool.runScenarios(ibisContext, appConstants, paramLogLevel,
-				paramAutoScroll, paramExecute,
-				paramWaitBeforeCleanUp, realPath,
-				paramScenariosRootDirectory,
-				out, silent);
-		return new PipeRunResult(getForward(), out.toString());
+		int numScenariosFailed=TestTool.runScenarios(ibisContext, appConstants, paramLogLevel,
+								paramAutoScroll, paramExecute,
+								paramWaitBeforeCleanUp, realPath,
+								paramScenariosRootDirectory,
+								out, silent);
+		PipeForward forward=numScenariosFailed==0? getForward(): failureForward;
+		return new PipeRunResult(forward, out.toString());
 	}
 
 	public void setWriteToLog(boolean writeToLog) {
