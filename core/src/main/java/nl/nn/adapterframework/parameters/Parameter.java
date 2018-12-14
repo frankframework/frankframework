@@ -210,7 +210,7 @@ public class Parameter implements INamedObject, IWithParameters {
 							  TYPE_DOMDOC.equalsIgnoreCase(getType())?"xml":"text";
 			boolean includeXmlDeclaration=false;
 			
-			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",classLoader,getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,isXslt2()?2:1);
+			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",classLoader,getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,isXslt2()?2:0);
 	    } else {
 			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
 				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
@@ -434,7 +434,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 			if (TYPE_DOMDOC.equals(getType())) {
 				try {
-					result=XmlUtils.buildDomDocument((String)result,prc.isNamespaceAware(),isXslt2());
+					result=XmlUtils.buildDomDocument((String)result,prc.isNamespaceAware());
 					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 				} catch (DomBuilderException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML document",e);

@@ -152,7 +152,14 @@ public class TestTool {
 				realPath, paramScenariosRootDirectory, out, silent);
 	}
 
-	public static void runScenarios(IbisContext ibisContext, AppConstants appConstants, String paramLogLevel,
+	public static final int ERROR_NO_SCENARIO_DIRECTORIES_FOUND=-1;
+	/**
+	 * 
+	 * @return negative: error condition
+	 * 		   0: all scenarios passed
+	 * 		   positive: number of scenarios that failed
+	 */
+	public static int runScenarios(IbisContext ibisContext, AppConstants appConstants, String paramLogLevel,
 			String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp,
 			String realPath, String paramScenariosRootDirectory,
 			Writer out, boolean silent) {
@@ -197,244 +204,245 @@ public class TestTool {
 			debugMessage("Stop logging to logbuffer", writers);
 			writers.put("uselogbuffer", "stop");
 			errorMessage("No scenarios root directories found", writers);
-		} else {
-			String appConstantsDirectory = appConstants.getResolvedProperty("larva.appconstants.directory");
-			if (appConstantsDirectory != null) {
-				appConstantsDirectory = getAbsolutePath(currentScenariosRootDirectory, appConstantsDirectory);
-				if (new File(currentScenariosRootDirectory).exists()) {
-					if (new File(appConstantsDirectory).exists()) {
-						debugMessage("Get AppConstants from directory: " + appConstantsDirectory, writers);
-						appConstants = AppConstants.getInstance(appConstantsDirectory);
-					} else {
-						errorMessage("Directory for AppConstans not found", writers);
-					}
+			return ERROR_NO_SCENARIO_DIRECTORIES_FOUND;
+		} 
+		String appConstantsDirectory = appConstants.getResolvedProperty("larva.appconstants.directory");
+		if (appConstantsDirectory != null) {
+			appConstantsDirectory = getAbsolutePath(currentScenariosRootDirectory, appConstantsDirectory);
+			if (new File(currentScenariosRootDirectory).exists()) {
+				if (new File(appConstantsDirectory).exists()) {
+					debugMessage("Get AppConstants from directory: " + appConstantsDirectory, writers);
+					appConstants = AppConstants.getInstance(appConstantsDirectory);
+				} else {
+					errorMessage("Directory for AppConstans not found", writers);
 				}
 			}
-			debugMessage("Read scenarios from directory '" + currentScenariosRootDirectory + "'", writers);
-			List allScenarioFiles = readScenarioFiles(appConstants, currentScenariosRootDirectory, writers);
-			debugMessage("Initialize 'wait before cleanup' variable", writers);
-			int waitBeforeCleanUp = 100;
-			if (paramWaitBeforeCleanUp != null) {
-				try {
-					waitBeforeCleanUp = Integer.parseInt(paramWaitBeforeCleanUp);
-				} catch(NumberFormatException e) {
-				}
+		}
+		debugMessage("Read scenarios from directory '" + currentScenariosRootDirectory + "'", writers);
+		List allScenarioFiles = readScenarioFiles(appConstants, currentScenariosRootDirectory, writers);
+		debugMessage("Initialize 'wait before cleanup' variable", writers);
+		int waitBeforeCleanUp = 100;
+		if (paramWaitBeforeCleanUp != null) {
+			try {
+				waitBeforeCleanUp = Integer.parseInt(paramWaitBeforeCleanUp);
+			} catch(NumberFormatException e) {
 			}
-			debugMessage("Write html form", writers);
-			printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
-			debugMessage("Stop logging to logbuffer", writers);
-			if (writers!=null) {
-				writers.put("uselogbuffer", "stop");
+		}
+		debugMessage("Write html form", writers);
+		printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
+		debugMessage("Stop logging to logbuffer", writers);
+		if (writers!=null) {
+			writers.put("uselogbuffer", "stop");
+		}
+		debugMessage("Start debugging to out", writers);
+		debugMessage("Execute scenario(s) if execute parameter present and scenarios root directory did not change", writers);
+		int scenariosFailed = 0;
+		if (paramExecute != null) {
+			String paramExecuteCanonicalPath;
+			String scenariosRootDirectoryCanonicalPath;
+			try {
+				paramExecuteCanonicalPath = new File(paramExecute).getCanonicalPath();
+				scenariosRootDirectoryCanonicalPath = new File(currentScenariosRootDirectory).getCanonicalPath();
+			} catch(IOException e) {
+				paramExecuteCanonicalPath = paramExecute;
+				scenariosRootDirectoryCanonicalPath = currentScenariosRootDirectory;
+				errorMessage("Could not get canonical path: " + e.getMessage(), e, writers);
 			}
-			debugMessage("Start debugging to out", writers);
-			debugMessage("Execute scenario(s) if execute parameter present and scenarios root directory did not change", writers);
-			if (paramExecute != null) {
-				String paramExecuteCanonicalPath;
-				String scenariosRootDirectoryCanonicalPath;
-				try {
-					paramExecuteCanonicalPath = new File(paramExecute).getCanonicalPath();
-					scenariosRootDirectoryCanonicalPath = new File(currentScenariosRootDirectory).getCanonicalPath();
-				} catch(IOException e) {
-					paramExecuteCanonicalPath = paramExecute;
-					scenariosRootDirectoryCanonicalPath = currentScenariosRootDirectory;
-					errorMessage("Could not get canonical path: " + e.getMessage(), e, writers);
-				}
-				if (paramExecuteCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
+			if (paramExecuteCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
 
-					debugMessage("Initialize XMLUnit", writers);
-					XMLUnit.setIgnoreWhitespace(true);
-					debugMessage("Initialize 'scenario files' variable", writers);
-					debugMessage("Param execute: " + paramExecute, writers);
-					List scenarioFiles;
-					if (paramExecute.endsWith(".properties")) {
-						debugMessage("Read one scenario", writers);
-						scenarioFiles = new ArrayList();
-						scenarioFiles.add(new File(paramExecute));
-					} else {
-						debugMessage("Read all scenarios from directory '" + paramExecute + "'", writers);
-						scenarioFiles = readScenarioFiles(appConstants, paramExecute, writers);
-					}
-					boolean evenStep = false;
-					debugMessage("Initialize statistics variables", writers);
-					int scenariosPassed = 0;
-					int scenariosAutosaved = 0;
-					int scenariosFailed = 0;
-					long startTime = System.currentTimeMillis();
-					debugMessage("Execute scenario('s)", writers);
-					Iterator scenarioFilesIterator = scenarioFiles.iterator();
-					while (scenarioFilesIterator.hasNext()) {
-						int scenarioPassed = RESULT_ERROR;
-						File scenarioFile = (File)scenarioFilesIterator.next();
-				
-						String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
-						String longName = scenarioFile.getAbsolutePath();
-						String shortName = longName.substring(currentScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
-	
-						if (writers!=null) {
-							if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") < LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
-								writeHtml("<br/>", writers, false);
-								writeHtml("<br/>", writers, false);
-								writeHtml("<div class='scenario'>", writers, false);
-							}
+				debugMessage("Initialize XMLUnit", writers);
+				XMLUnit.setIgnoreWhitespace(true);
+				debugMessage("Initialize 'scenario files' variable", writers);
+				debugMessage("Param execute: " + paramExecute, writers);
+				List scenarioFiles;
+				if (paramExecute.endsWith(".properties")) {
+					debugMessage("Read one scenario", writers);
+					scenarioFiles = new ArrayList();
+					scenarioFiles.add(new File(paramExecute));
+				} else {
+					debugMessage("Read all scenarios from directory '" + paramExecute + "'", writers);
+					scenarioFiles = readScenarioFiles(appConstants, paramExecute, writers);
+				}
+				boolean evenStep = false;
+				debugMessage("Initialize statistics variables", writers);
+				int scenariosPassed = 0;
+				int scenariosAutosaved = 0;
+				long startTime = System.currentTimeMillis();
+				debugMessage("Execute scenario('s)", writers);
+				Iterator scenarioFilesIterator = scenarioFiles.iterator();
+				while (scenarioFilesIterator.hasNext()) {
+					int scenarioPassed = RESULT_ERROR;
+					File scenarioFile = (File)scenarioFilesIterator.next();
+			
+					String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
+					String longName = scenarioFile.getAbsolutePath();
+					String shortName = longName.substring(currentScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
+
+					if (writers!=null) {
+						if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") < LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
+							writeHtml("<br/>", writers, false);
+							writeHtml("<br/>", writers, false);
+							writeHtml("<div class='scenario'>", writers, false);
 						}
-						debugMessage("Read property file " + scenarioFile.getName(), writers);
-						Properties properties = readProperties(appConstants, scenarioFile, writers);
-						List steps = null;
-	
-						if (properties != null) {
-							debugMessage("Read steps from property file", writers);
-							steps = getSteps(properties, writers);
-							if (steps != null) {
-								synchronized(STEP_SYNCHRONIZER) {
-									debugMessage("Open queues", writers);
-									Map queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers);
-									if (queues != null) {
-										debugMessage("Execute steps", writers);
-										boolean allStepsPassed = true;
-										boolean autoSaved = false;
-										Iterator iterator = steps.iterator();
-										while (allStepsPassed && iterator.hasNext()) {
-											if (evenStep) {
-												writeHtml("<div class='even'>", writers, false);
-												evenStep = false;
-											} else {
-												writeHtml("<div class='odd'>", writers, false);
-												evenStep = true;
-											}
-											String step = (String)iterator.next();
-											String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
-											debugMessage("Execute step '" + stepDisplayName + "'", writers);
-											int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers);
-											if (stepPassed==RESULT_OK) {
-												stepPassedMessage("Step '" + stepDisplayName + "' passed", writers);
-											} else if (stepPassed==RESULT_AUTOSAVED) {
-												stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave", writers);
-												autoSaved = true;
-											} else {
-												stepFailedMessage("Step '" + stepDisplayName + "' failed", writers);
-												allStepsPassed = false;
-											}
-											writeHtml("</div>", writers, false);
+					}
+					debugMessage("Read property file " + scenarioFile.getName(), writers);
+					Properties properties = readProperties(appConstants, scenarioFile, writers);
+					List steps = null;
+
+					if (properties != null) {
+						debugMessage("Read steps from property file", writers);
+						steps = getSteps(properties, writers);
+						if (steps != null) {
+							synchronized(STEP_SYNCHRONIZER) {
+								debugMessage("Open queues", writers);
+								Map queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers);
+								if (queues != null) {
+									debugMessage("Execute steps", writers);
+									boolean allStepsPassed = true;
+									boolean autoSaved = false;
+									Iterator iterator = steps.iterator();
+									while (allStepsPassed && iterator.hasNext()) {
+										if (evenStep) {
+											writeHtml("<div class='even'>", writers, false);
+											evenStep = false;
+										} else {
+											writeHtml("<div class='odd'>", writers, false);
+											evenStep = true;
 										}
-										if (allStepsPassed) {
-											if (autoSaved) {
-												scenarioPassed = RESULT_AUTOSAVED;
-											} else {
-												scenarioPassed = RESULT_OK;
-											}
+										String step = (String)iterator.next();
+										String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
+										debugMessage("Execute step '" + stepDisplayName + "'", writers);
+										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers);
+										if (stepPassed==RESULT_OK) {
+											stepPassedMessage("Step '" + stepDisplayName + "' passed", writers);
+										} else if (stepPassed==RESULT_AUTOSAVED) {
+											stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave", writers);
+											autoSaved = true;
+										} else {
+											stepFailedMessage("Step '" + stepDisplayName + "' failed", writers);
+											allStepsPassed = false;
 										}
-										debugMessage("Wait " + waitBeforeCleanUp + " ms before clean up", writers);
-										try {
-											Thread.sleep(waitBeforeCleanUp);
-										} catch(InterruptedException e) {
+										writeHtml("</div>", writers, false);
+									}
+									if (allStepsPassed) {
+										if (autoSaved) {
+											scenarioPassed = RESULT_AUTOSAVED;
+										} else {
+											scenarioPassed = RESULT_OK;
 										}
-										debugMessage("Close queues", writers);
-										boolean remainingMessagesFound = closeQueues(queues, properties, writers);
-										if (remainingMessagesFound) {
-											stepFailedMessage("Found one or more messages on queues or in database after scenario executed", writers);
-											scenarioPassed = RESULT_ERROR;
-										}
+									}
+									debugMessage("Wait " + waitBeforeCleanUp + " ms before clean up", writers);
+									try {
+										Thread.sleep(waitBeforeCleanUp);
+									} catch(InterruptedException e) {
+									}
+									debugMessage("Close queues", writers);
+									boolean remainingMessagesFound = closeQueues(queues, properties, writers);
+									if (remainingMessagesFound) {
+										stepFailedMessage("Found one or more messages on queues or in database after scenario executed", writers);
+										scenarioPassed = RESULT_ERROR;
 									}
 								}
 							}
 						}
-	
-						if (scenarioPassed==RESULT_OK) {
-							scenariosPassed++;
-							scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")", writers);
-							if (silent) {
-								try {
-									out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed");
-								} catch (IOException e) {
-								}
-							}
-						} else if (scenarioPassed==RESULT_AUTOSAVED) {
-							scenariosAutosaved++;
-							scenarioAutosavedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave", writers);
-							if (silent) {
-								try {
-									out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
-								} catch (IOException e) {
-								}
-							}
-						} else {
-							scenariosFailed++;
-							scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")", writers);
-							if (silent) {
-								try {
-									out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed");
-								} catch (IOException e) {
-								}
+					}
+
+					if (scenarioPassed==RESULT_OK) {
+						scenariosPassed++;
+						scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")", writers);
+						if (silent) {
+							try {
+								out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed");
+							} catch (IOException e) {
 							}
 						}
-						
-						writeHtml("</div>", writers, false);
-					}
-					long executeTime = System.currentTimeMillis() - startTime;
-					debugMessage("Print statistics information", writers);
-					int scenariosTotal = scenariosPassed + scenariosAutosaved + scenariosFailed;
-					if (scenariosTotal == 0) {
-						scenariosTotalMessage("No scenarios found", writers, out, silent);
+					} else if (scenarioPassed==RESULT_AUTOSAVED) {
+						scenariosAutosaved++;
+						scenarioAutosavedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave", writers);
+						if (silent) {
+							try {
+								out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
+							} catch (IOException e) {
+							}
+						}
 					} else {
-						if (writers!=null) {
-							if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
-								writeHtml("<br/>", writers, false);
-								writeHtml("<br/>", writers, false);
-							}
-						}
-						debugMessage("Print statistics information", writers);
-						if (scenariosPassed == scenariosTotal) {
-							if (scenariosTotal == 1) {
-								scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + executeTime + " ms)", writers, out, silent);
-							} else {
-								scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers, out, silent);
-							}
-						} else if (scenariosFailed == scenariosTotal) {
-							if (scenariosTotal == 1) {
-								scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + executeTime + " ms)", writers, out, silent);
-							} else {
-								scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers, out, silent);
-							}
-						} else {
-							if (scenariosTotal == 1) {
-								scenariosTotalMessage("1 scenario executed in " + executeTime + " ms", writers, out, silent);
-							} else {
-								scenariosTotalMessage(scenariosTotal + " scenarios executed in " + executeTime + " ms", writers, out, silent);
-							}
-							if (scenariosPassed == 1) {
-								scenariosPassedTotalMessage("1 scenario passed", writers, out, silent);
-							} else {
-								scenariosPassedTotalMessage(scenariosPassed + " scenarios passed", writers, out, silent);
-							}
-							if (autoSaveDiffs) {
-								if (scenariosAutosaved == 1) {
-									scenariosAutosavedTotalMessage("1 scenario passed after autosave", writers, out, silent);
-								} else {
-									scenariosAutosavedTotalMessage(scenariosAutosaved + " scenarios passed after autosave", writers, out, silent);
-								}
-							}
-							if (scenariosFailed == 1) {
-								scenariosFailedTotalMessage("1 scenario failed", writers, out, silent);
-							} else {
-								scenariosFailedTotalMessage(scenariosFailed + " scenarios failed", writers, out, silent);
+						scenariosFailed++;
+						scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")", writers);
+						if (silent) {
+							try {
+								out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed");
+							} catch (IOException e) {
 							}
 						}
 					}
-					debugMessage("Start logging to htmlbuffer until form is written", writers);
-					if (writers!=null) {
-						writers.put("usehtmlbuffer", "start");
-					}
-					writeHtml("<br/>", writers, false);
-					writeHtml("<br/>", writers, false);
-					printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
-					debugMessage("Stop logging to htmlbuffer", writers);
-					if (writers!=null) {
-						writers.put("usehtmlbuffer", "stop");
-					}
-					writeHtml("", writers, true);
+					
+					writeHtml("</div>", writers, false);
 				}
+				long executeTime = System.currentTimeMillis() - startTime;
+				debugMessage("Print statistics information", writers);
+				int scenariosTotal = scenariosPassed + scenariosAutosaved + scenariosFailed;
+				if (scenariosTotal == 0) {
+					scenariosTotalMessage("No scenarios found", writers, out, silent);
+				} else {
+					if (writers!=null) {
+						if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
+							writeHtml("<br/>", writers, false);
+							writeHtml("<br/>", writers, false);
+						}
+					}
+					debugMessage("Print statistics information", writers);
+					if (scenariosPassed == scenariosTotal) {
+						if (scenariosTotal == 1) {
+							scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + executeTime + " ms)", writers, out, silent);
+						} else {
+							scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers, out, silent);
+						}
+					} else if (scenariosFailed == scenariosTotal) {
+						if (scenariosTotal == 1) {
+							scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + executeTime + " ms)", writers, out, silent);
+						} else {
+							scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers, out, silent);
+						}
+					} else {
+						if (scenariosTotal == 1) {
+							scenariosTotalMessage("1 scenario executed in " + executeTime + " ms", writers, out, silent);
+						} else {
+							scenariosTotalMessage(scenariosTotal + " scenarios executed in " + executeTime + " ms", writers, out, silent);
+						}
+						if (scenariosPassed == 1) {
+							scenariosPassedTotalMessage("1 scenario passed", writers, out, silent);
+						} else {
+							scenariosPassedTotalMessage(scenariosPassed + " scenarios passed", writers, out, silent);
+						}
+						if (autoSaveDiffs) {
+							if (scenariosAutosaved == 1) {
+								scenariosAutosavedTotalMessage("1 scenario passed after autosave", writers, out, silent);
+							} else {
+								scenariosAutosavedTotalMessage(scenariosAutosaved + " scenarios passed after autosave", writers, out, silent);
+							}
+						}
+						if (scenariosFailed == 1) {
+							scenariosFailedTotalMessage("1 scenario failed", writers, out, silent);
+						} else {
+							scenariosFailedTotalMessage(scenariosFailed + " scenarios failed", writers, out, silent);
+						}
+					}
+				}
+				debugMessage("Start logging to htmlbuffer until form is written", writers);
+				if (writers!=null) {
+					writers.put("usehtmlbuffer", "start");
+				}
+				writeHtml("<br/>", writers, false);
+				writeHtml("<br/>", writers, false);
+				printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
+				debugMessage("Stop logging to htmlbuffer", writers);
+				if (writers!=null) {
+					writers.put("usehtmlbuffer", "stop");
+				}
+				writeHtml("", writers, true);
 			}
 		}
+		return scenariosFailed;
 	}
 
 	public static void printHtmlForm(List scenariosRootDirectories, List scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List scenarioFiles, int waitBeforeCleanUp, String paramExecute, String autoScroll, Map writers) {

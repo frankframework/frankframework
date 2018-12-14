@@ -368,7 +368,7 @@ public class XmlUtils {
 		return getUtilityTransformerPool(xslt,"RemoveUnusedNamespaces",omitXmlDeclaration,indent);
 	}
 
-	public static String makeRemoveUnusedNamespacesXslt2(boolean omitXmlDeclaration, boolean indent) {
+	protected static String makeRemoveUnusedNamespacesXslt2(boolean omitXmlDeclaration, boolean indent) {
 		return "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 				+ "<xsl:output method=\"xml\" indent=\""
 				+ (indent ? "yes" : "no")

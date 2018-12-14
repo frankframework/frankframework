@@ -69,14 +69,14 @@ public class IbisConsoleTest {
 		if (showConfigurationStatusUrl == null) {
 			throw new ConfigurationException("cannot find resource [" + SHOW_CONFIGURATION_STATUS_XSLT + "]");
 		}
-		showConfigurationStatusTransformer = XmlUtils.createTransformer(showConfigurationStatusUrl, true);
+		showConfigurationStatusTransformer = XmlUtils.createTransformer(showConfigurationStatusUrl);
 
 		URL showEnvironmentVariablesUrl = ClassUtils.getResourceURL(IbisConsoleTest.class,
 				SHOW_ENVIRONMENT_VARIABLES_XSLT);
 		if (showEnvironmentVariablesUrl == null) {
 			throw new ConfigurationException("cannot find resource [" + SHOW_ENVIRONMENT_VARIABLES_XSLT + "]");
 		}
-		showEnvironmentVariablesTransformer = XmlUtils.createTransformer(showEnvironmentVariablesUrl, true);
+		showEnvironmentVariablesTransformer = XmlUtils.createTransformer(showEnvironmentVariablesUrl);
 	}
 
 	@Test
