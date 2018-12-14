@@ -87,12 +87,7 @@ public class JsonXsltPipe extends XsltPipe {
 	private String jsonToXml(String json) throws TransformerException {
 		XMLReader reader=new JsonXmlReader();
 		Source source=new SAXSource(reader, new InputSource(new StringReader(json)));
-		StringWriter writer = new StringWriter();
-        StreamResult result = new StreamResult(writer);
-        TransformerFactory tf = XmlUtils.getTransformerFactory(0);
-        Transformer transformer = tf.newTransformer();
-        transformer.transform(source, result);
-        return writer.toString();
+		return XmlUtils.source2String(source, false);
 	}
 
 	private String xml2Json(String xml) throws TransformerException, DomBuilderException {
