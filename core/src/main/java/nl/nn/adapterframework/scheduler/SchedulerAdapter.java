@@ -112,7 +112,7 @@ public class SchedulerAdapter {
 		return xbRoot;
 	}
 
-    public XmlBuilder getJobTriggers(Scheduler theScheduler, String jobName, String groupName) {
+	public XmlBuilder getJobTriggers(Scheduler theScheduler, String jobName, String groupName) {
 
         XmlBuilder xbRoot = new XmlBuilder("triggersForJob");
 
@@ -122,13 +122,13 @@ public class SchedulerAdapter {
             List<String> tgnames = theScheduler.getTriggerGroupNames();
 
             for (int i = 0; i < tgnames.size(); i++) {
-                Set<TriggerKey> triggerKeys = theScheduler.getTriggerKeys(GroupMatcher.triggerGroupEquals(tgnames.get(i)));
+          	  	List<? extends Trigger> triggers = theScheduler.getTriggersOfJob(JobKey.jobKey(jobName, groupName));
 
-                for (TriggerKey triggerKey : triggerKeys) {
-                    Trigger trigger = theScheduler.getTrigger(TriggerKey.triggerKey(triggerKey.getName(), tgnames.get(i)));
+                for (int j = 0; j < triggers.size(); j++) {
+                	// Trigger trigger = theScheduler.getTrigger(TriggerKey.triggerKey(triggerName, groupName));
 
-                    if ((trigger.getJobKey().getName().equals(jobName)) && (trigger.getJobKey().getGroup().equals(groupName))) {
-                        XmlBuilder tr = triggerToXmlBuilder(theScheduler, triggerKey.getName(), tgnames.get(i));
+                    if ((triggers.get(j).getJobKey().getName().equals(jobName)) && (triggers.get(j).getJobKey().getGroup().equals(groupName))) {
+                    	XmlBuilder tr = triggerToXmlBuilder(theScheduler, triggers.get(j).getKey().getName(), triggers.get(j).getKey().getGroup());
 
                         xbRoot.addSubElement(tr);
                     }
@@ -223,44 +223,44 @@ public class SchedulerAdapter {
         return xbRoot;
     }
 
-    public XmlBuilder getTriggerGroupNamesWithTriggersToXml(Scheduler theScheduler) {
-        XmlBuilder xbRoot = new XmlBuilder("triggerGroups");
+	public XmlBuilder getTriggerGroupNamesWithTriggersToXml(Scheduler theScheduler) {
+		XmlBuilder xbRoot = new XmlBuilder("triggerGroups");
+		
+		try {
+			// process groups
+			List<String> tgnames = theScheduler.getTriggerGroupNames();
+			
+			for (int i = 0; i < tgnames.size(); i++) {
+				XmlBuilder el = new XmlBuilder("triggerGroup");
+				
+				el.addAttribute("name", tgnames.get(i));
+				
+				// process jobs within group
+				XmlBuilder tgg = new XmlBuilder("triggers");
+				List<? extends Trigger> triggers = theScheduler.getTriggersOfJob(JobKey.jobKey(tgnames.get(i)));
+				
+				for (int j = 0; j < triggers.size(); i++) {
+					XmlBuilder tn = new XmlBuilder("trigger");
+					
+					tn.addAttribute("name", triggers.get(j).getKey().getName());
+					
+					//detail of trigger
+					XmlBuilder td = triggerToXmlBuilder(theScheduler, triggers.get(j).getKey().getName(), tgnames.get(i));
+					
+					tn.addSubElement(td);
+					
+					tgg.addSubElement(tn);
+				}
+				el.addSubElement(tgg);
+				
+				xbRoot.addSubElement(el);
+			}
+		} catch (org.quartz.SchedulerException se) {
+			log.error(se);
+		}
+		return xbRoot;
+	}
 
-        try {
-            // process groups
-            List<String> tgnames = theScheduler.getTriggerGroupNames();
-
-            for (int i = 0; i < tgnames.size(); i++) {
-                XmlBuilder el = new XmlBuilder("triggerGroup");
-
-                el.addAttribute("name", tgnames.get(i));
-
-                // process jobs within group
-                XmlBuilder tgg = new XmlBuilder("triggers");
-                Set<TriggerKey> triggerKeys = theScheduler.getTriggerKeys(GroupMatcher.triggerGroupEquals(tgnames.get(i)));
-
-                for (TriggerKey triggerKey : triggerKeys) {
-                    XmlBuilder tn = new XmlBuilder("trigger");
-                    
-                    tn.addAttribute("name", triggerKey.getName());
-
-                    //detail of trigger
-                    XmlBuilder td = triggerToXmlBuilder(theScheduler, triggerKey.getName(), triggerKey.getName());
-
-                    tn.addSubElement(td);
-
-                    tgg.addSubElement(tn);
-                }
-                el.addSubElement(tgg);
-
-                xbRoot.addSubElement(el);
-            }
-        } catch (org.quartz.SchedulerException se) {
-            log.error(se);
-        }
-        return xbRoot;
-    }
-    
     public XmlBuilder jobDataMapToXmlBuilder(Scheduler theScheduler, String jobName, String groupName) {
 
         XmlBuilder xbRoot = new XmlBuilder("jobDataMap");
