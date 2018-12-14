@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.graphviz;
 
 import static org.junit.Assert.*;
+import static nl.nn.adapterframework.util.TestAssertions.*;
 
 import java.io.IOException;
 import java.net.URL;
@@ -58,7 +59,7 @@ public class GraphvizEngineTest {
 		String result = engine.execute(dot);
 		URL svg = ClassUtils.getResourceURL(this, "flow.svg");
 		assertNotNull(svg);
-		assertEquals(Misc.streamToString(svg.openStream()), result);
+		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 	}
 
 	@Test
@@ -70,7 +71,7 @@ public class GraphvizEngineTest {
 		String result = engine.execute(render);
 		URL svg = ClassUtils.getResourceURL(this, "flow.svg");
 		assertNotNull(svg);
-		assertEquals(Misc.streamToString(svg.openStream()), result);
+		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 	}
 
 	@Test
@@ -81,7 +82,7 @@ public class GraphvizEngineTest {
 		String result = engine.execute(dot, Options.create().format(Format.SVG_STANDALONE));
 		URL svg = ClassUtils.getResourceURL(this, "flow.svg_standalone");
 		assertNotNull(svg);
-		assertEquals(Misc.streamToString(svg.openStream()), result);
+		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 	}
 
 	@Test
@@ -98,7 +99,7 @@ public class GraphvizEngineTest {
 		URL svg = ClassUtils.getResourceURL(this, "flow.svg_standalone");
 
 		assertNotNull(svg);
-		assertEquals(Misc.streamToString(svg.openStream()), result);
+		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 	}
 
 	@Test
@@ -110,7 +111,7 @@ public class GraphvizEngineTest {
 
 		URL svg = ClassUtils.getResourceURL(this, "flow.svg");
 		assertNotNull(svg);
-		assertEquals(Misc.streamToString(svg.openStream()), result);
+		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 	}
 
 	@Test(expected = IOException.class)
@@ -140,7 +141,7 @@ public class GraphvizEngineTest {
 
 		URL svg = ClassUtils.getResourceURL(this, "flow.0.5.svg");
 		assertNotNull(svg);
-		assertEquals(Misc.streamToString(svg.openStream()), result);
+		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 	}
 
 	@Test
@@ -155,6 +156,6 @@ public class GraphvizEngineTest {
 
 		URL svg = ClassUtils.getResourceURL(this, "flow.1.5.svg");
 		assertNotNull(svg);
-		assertEquals(Misc.streamToString(svg.openStream()), result);
+		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 	}
 }
