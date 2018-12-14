@@ -64,6 +64,7 @@ public class TransformerPool {
 
 	private Templates templates;
 	private URL reloadURL=null;
+	private int xsltVersion;
 
 	private ClassLoaderURIResolver classLoaderURIResolver =
 			new ClassLoaderURIResolver(
@@ -76,8 +77,7 @@ public class TransformerPool {
 		private String sysId;
 		private boolean xslt2;
 
-		TransformerPoolKey(String xsltString, URL url, String sysId,
-				boolean xslt2) {
+		TransformerPoolKey(String xsltString, URL url, String sysId, boolean xslt2) {
 			this.xsltString = xsltString;
 			if (url == null) {
 				urlString = null;
@@ -137,13 +137,23 @@ public class TransformerPool {
 		}
 	}); 
 
-	private TransformerPool(Source source, String sysId) throws TransformerConfigurationException {
-		this(source,sysId,false);
+//	private TransformerPool(Source source, String sysId) throws TransformerConfigurationException {
+//		this(source,sysId,false);
+//	}	
+
+
+	@Deprecated
+	private TransformerPool(Source source, String sysId, boolean xslt2) throws TransformerConfigurationException {
+		this(source,sysId,xslt2?2:1);
 	}	
 
-	private TransformerPool(Source source, String sysId, boolean xslt2) throws TransformerConfigurationException {
+	private TransformerPool(Source source, String sysId, int xsltVersionPositive) throws TransformerConfigurationException {
 		super();
-		tFactory = XmlUtils.getTransformerFactory(xslt2);
+		if (xsltVersionPositive<=0) {
+			throw new TransformerConfigurationException("xsltVersion ["+xsltVersionPositive+"] must be positive for sysId ["+sysId+"] ");
+		}
+		xsltVersion=xsltVersionPositive;
+		tFactory = XmlUtils.getTransformerFactory(xsltVersion);
 		tFactory.setURIResolver(classLoaderURIResolver);
 		initTransformerPool(source, sysId);
 
@@ -152,32 +162,69 @@ public class TransformerPool {
 		
 		releaseTransformer(t);
 	}	
-	
+
+	@Deprecated
 	private TransformerPool(URL url, boolean xslt2) throws TransformerConfigurationException, IOException {
 		this(new StreamSource(url.openStream()),url.toString(),xslt2);
 	}
 	
+	@Deprecated
 	private TransformerPool(String xsltString, String sysId, boolean xslt2) throws TransformerConfigurationException {
 		this(new StreamSource(new StringReader(xsltString)), sysId, xslt2);
 	}
 
-	public static TransformerPool getInstance(String xsltString)
-			throws TransformerConfigurationException {
-		return getInstance(xsltString, false);
+	private TransformerPool(URL url, int xsltVersion) throws TransformerConfigurationException, IOException {
+		this(new StreamSource(url.openStream()),url.toString(),xsltVersion!=0?xsltVersion:XmlUtils.detectXsltVersion(url));
+	}
+	
+	private TransformerPool(String xsltString, String sysId, int xsltVersion) throws TransformerConfigurationException {
+		this(new StreamSource(new StringReader(xsltString)), sysId, xsltVersion!=0?xsltVersion:XmlUtils.detectXsltVersion(xsltString));
+	}
+	
+	
+	public static TransformerPool getInstance(String xsltString) throws TransformerConfigurationException {
+		return getInstance(xsltString, 0);
 	}
 
-	public static TransformerPool getInstance(String xsltString, boolean xslt2)
-			throws TransformerConfigurationException {
+	public static TransformerPool getInstance(String xsltString, int xsltVersion) throws TransformerConfigurationException {
+		return getInstance(xsltString, null, xsltVersion);
+	}
+
+	public static TransformerPool getInstance(String xsltString, String sysId, int xsltVersion) throws TransformerConfigurationException {
+		return getInstance(xsltString, sysId, xsltVersion, USE_CACHING);
+	}
+
+	public static TransformerPool getInstance(String xsltString, String sysId, int xsltVersion, boolean caching) throws TransformerConfigurationException {
+		if (caching) {
+			return retrieveInstance(xsltString, sysId, xsltVersion);
+		} else {
+			return new TransformerPool(xsltString, sysId, xsltVersion);
+		}
+	}
+
+	private static synchronized TransformerPool retrieveInstance(String xsltString, String sysId, int xsltVersion) throws TransformerConfigurationException {
+		TransformerPoolKey tpKey = new TransformerPoolKey(xsltString, null, sysId, xsltVersion==2);
+		if (transformerPools.containsKey(tpKey)) {
+			return transformerPools.get(tpKey);
+		} else {
+			TransformerPool transformerPool = new TransformerPool(xsltString, sysId, xsltVersion);
+			transformerPools.put(tpKey, transformerPool);
+			return transformerPool;
+		}
+	}
+
+	@Deprecated
+	public static TransformerPool getInstance(String xsltString, boolean xslt2) throws TransformerConfigurationException {
 		return getInstance(xsltString, null, xslt2);
 	}
 
-	public static TransformerPool getInstance(String xsltString, String sysId,
-			boolean xslt2) throws TransformerConfigurationException {
+	@Deprecated
+	public static TransformerPool getInstance(String xsltString, String sysId, boolean xslt2) throws TransformerConfigurationException {
 		return getInstance(xsltString, sysId, xslt2, USE_CACHING);
 	}
 
-	public static TransformerPool getInstance(String xsltString, String sysId,
-			boolean xslt2, boolean caching) throws TransformerConfigurationException {
+	@Deprecated
+	public static TransformerPool getInstance(String xsltString, String sysId, boolean xslt2, boolean caching) throws TransformerConfigurationException {
 		if (caching) {
 			return retrieveInstance(xsltString, sysId, xslt2);
 		} else {
@@ -185,33 +232,52 @@ public class TransformerPool {
 		}
 	}
 
-	private static synchronized TransformerPool retrieveInstance(
-			String xsltString, String sysId, boolean xslt2)
-			throws TransformerConfigurationException {
-		TransformerPoolKey tpKey = new TransformerPoolKey(xsltString, null,
-				sysId, xslt2);
+	@Deprecated
+	private static synchronized TransformerPool retrieveInstance(String xsltString, String sysId, boolean xslt2) throws TransformerConfigurationException {
+		TransformerPoolKey tpKey = new TransformerPoolKey(xsltString, null, sysId, xslt2);
 		if (transformerPools.containsKey(tpKey)) {
 			return transformerPools.get(tpKey);
 		} else {
-			TransformerPool transformerPool = new TransformerPool(xsltString,
-					sysId, xslt2);
+			TransformerPool transformerPool = new TransformerPool(xsltString, sysId, xslt2);
 			transformerPools.put(tpKey, transformerPool);
 			return transformerPool;
 		}
 	}
 
-	public static TransformerPool getInstance(URL url)
-			throws TransformerConfigurationException, IOException {
+	public static TransformerPool getInstance(URL url) throws TransformerConfigurationException, IOException {
 		return getInstance(url, false);
 	}
 
-	public static TransformerPool getInstance(URL url, boolean xslt2)
-			throws TransformerConfigurationException, IOException {
+	public static TransformerPool getInstance(URL url, int xsltVersion) throws TransformerConfigurationException, IOException {
+		return getInstance(url, xsltVersion, USE_CACHING);
+	}
+
+	public static TransformerPool getInstance(URL url, int xsltVersion, boolean caching) throws TransformerConfigurationException, IOException {
+		if (caching) {
+			return retrieveInstance(url, xsltVersion);
+		} else {
+			return new TransformerPool(url, xsltVersion);
+		}
+	}
+
+	private static synchronized TransformerPool retrieveInstance(URL url, int xsltVersion) throws TransformerConfigurationException, IOException {
+		TransformerPoolKey tpKey = new TransformerPoolKey(null, url, null, xsltVersion==2);
+		if (transformerPools.containsKey(tpKey)) {
+			return transformerPools.get(tpKey);
+		} else {
+			TransformerPool transformerPool = new TransformerPool(url, xsltVersion);
+			transformerPools.put(tpKey, transformerPool);
+			return transformerPool;
+		}
+	}
+
+	@Deprecated
+	public static TransformerPool getInstance(URL url, boolean xslt2) throws TransformerConfigurationException, IOException {
 		return getInstance(url, xslt2, USE_CACHING);
 	}
 
-	public static TransformerPool getInstance(URL url, boolean xslt2, boolean caching)
-			throws TransformerConfigurationException, IOException {
+	@Deprecated
+	public static TransformerPool getInstance(URL url, boolean xslt2, boolean caching) throws TransformerConfigurationException, IOException {
 		if (caching) {
 			return retrieveInstance(url, xslt2);
 		} else {
@@ -219,9 +285,8 @@ public class TransformerPool {
 		}
 	}
 
-	private static synchronized TransformerPool retrieveInstance(URL url,
-			boolean xslt2)
-			throws TransformerConfigurationException, IOException {
+	@Deprecated
+	private static synchronized TransformerPool retrieveInstance(URL url, boolean xslt2) throws TransformerConfigurationException, IOException {
 		TransformerPoolKey tpKey = new TransformerPoolKey(null, url, null,
 				xslt2);
 		if (transformerPools.containsKey(tpKey)) {

@@ -89,7 +89,7 @@ public class JsonXsltPipe extends XsltPipe {
 		Source source=new SAXSource(reader, new InputSource(new StringReader(json)));
 		StringWriter writer = new StringWriter();
         StreamResult result = new StreamResult(writer);
-        TransformerFactory tf = XmlUtils.getTransformerFactory(false);
+        TransformerFactory tf = XmlUtils.getTransformerFactory(0);
         Transformer transformer = tf.newTransformer();
         transformer.transform(source, result);
         return writer.toString();
@@ -101,7 +101,7 @@ public class JsonXsltPipe extends XsltPipe {
         SAXResult result = new SAXResult();
 		XmlJsonWriter xjw = new XmlJsonWriter();
 		result.setHandler(xjw);
-        TransformerFactory tf = XmlUtils.getTransformerFactory(false);
+        TransformerFactory tf = XmlUtils.getTransformerFactory(0);
         Transformer transformer = tf.newTransformer();
         transformer.transform(source, result);
 		return xjw.toString();
