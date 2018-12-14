@@ -35,6 +35,8 @@ public abstract class FileHandlerTestBase {
 
 	public static String BASEDIR="/FileHandler/";
 
+	public String TEST_TEMP_DIR="target";
+	
 	private IFileHandler handler;
 	private IPipeLineSession session=new PipeLineSessionBase();
 
@@ -337,14 +339,14 @@ public abstract class FileHandlerTestBase {
 		testWrite(null,null,null,false,"smiley.json",charset,false,false,"create",null, true, false, false);
 		testWrite(null,null,null,false,"smiley.json",charset,false,false,"create",null, true, false, true);
 
-		testWrite("sub",null,null,false,"smiley.json",charset,false,false,"create",null, true, false, false);
-		testWrite("sub",null,null,false,"smiley.json",charset,false,false,"create",null, true, false, true);
+		testWrite(TEST_TEMP_DIR+"/sub",null,null,false,"smiley.json",charset,false,false,"create",null, true, false, false);
+		testWrite(TEST_TEMP_DIR+"/sub",null,null,false,"smiley.json",charset,false,false,"create",null, true, false, true);
 
-		testWrite("sub1/sub2",null,null,false,"smiley.json",charset,false,false,"create",null, true, false, false);
-		testWrite("sub1/sub2",null,null,false,"smiley.json",charset,false,false,"create",null, true, false, true);
+		testWrite(TEST_TEMP_DIR+"/sub1/sub2",null,null,false,"smiley.json",charset,false,false,"create",null, true, false, false);
+		testWrite(TEST_TEMP_DIR+"/sub1/sub2",null,null,false,"smiley.json",charset,false,false,"create",null, true, false, true);
 
-		testWrite("sub",null,".sfx",false,"smiley.json",charset,false,false,"create",null, true, false, false);
-		testWrite("sub",null,".sfx",true,"smiley.json",charset,false,false,"create",null, true, false, true);
+		testWrite(TEST_TEMP_DIR+"/sub",null,".sfx",false,"smiley.json",charset,false,false,"create",null, true, false, false);
+		testWrite(TEST_TEMP_DIR+"/sub",null,".sfx",true,"smiley.json",charset,false,false,"create",null, true, false, true);
 	}
 	@Test
 	public void testWriteJsonEncodeCreateTruncate() throws Exception {

@@ -148,7 +148,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setElementToMoveSessionKey(String) elementToMoveSessionKey}</td><td>(only used when <code>elementToMove</code> is set) name of the session key under which the character data is stored</td><td>"ref_" + the name of the element</td></tr>
  * <tr><td>{@link #setElementToMoveChain(String) elementToMoveChain}</td><td>like <code>elementToMove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. "adapter;pipeline;pipe")</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoveCompactMsgNamespaces (boolean) removeCompactMsgNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the compacted message are removed</td><td>true</td></tr>
- * <tr><td>{@link #setXslt2(boolean) xslt2}</td><td>when set <code>true</code> XSLT processor 2.0 (net.sf.saxon) will be used for extracting correlationID and label, otherwise XSLT processor 1.0 (org.apache.xalan)</td><td>false</td></tr>
  * </table>
  * </p>
  * <p>
@@ -255,7 +254,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
     private String elementToMoveSessionKey = null;
     private String elementToMoveChain = null;
 	private boolean removeCompactMsgNamespaces = true;
-	private boolean xslt2 = false;
 	private boolean recover = false;
 
 	public static final String ONERROR_CONTINUE = "continue";
@@ -330,15 +328,17 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 */
 	private LinkedHashMap poisonMessageIdCache = new LinkedHashMap() {
 
+		@Override
 		protected boolean removeEldestEntry(Entry eldest) {
 			return size() > getPoisonMessageIdCacheSize();
 		}
         
 	};
 
-	private LinkedHashMap processResultCache = new LinkedHashMap() {
+	private LinkedHashMap<String,ProcessResultCacheItem> processResultCache = new LinkedHashMap<String,ProcessResultCacheItem>() {
 
-		protected boolean removeEldestEntry(Entry eldest) {
+		@Override
+		protected boolean removeEldestEntry(Entry<String,ProcessResultCacheItem> eldest) {
 			return size() > getProcessResultCacheSize();
 		}
         
@@ -1306,7 +1306,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return processResultCache.containsKey(messageId);
 	}
 	private synchronized ProcessResultCacheItem getCachedProcessResult(String messageId) {
-		return (ProcessResultCacheItem)processResultCache.get(messageId);
+		return processResultCache.get(messageId);
 	}
 
 	/*
@@ -2140,13 +2140,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 	public boolean isRemoveCompactMsgNamespaces() {
 		return removeCompactMsgNamespaces;
-	}
-
-	public boolean isXslt2() {
-		return xslt2;
-	}
-	public void setXslt2(boolean b) {
-		xslt2 = b;
 	}
 
 	public void setRecover(boolean b) {

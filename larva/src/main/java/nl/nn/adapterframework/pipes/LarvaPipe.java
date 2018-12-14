@@ -61,7 +61,7 @@ import nl.nn.adapterframework.util.AppConstants;
 public class LarvaPipe extends FixedForwardPipe {
 	
 	public final String DEFAULT_LOG_LEVEL = "wrong pipeline messages";
-	public final String FORWARD_FAILURE="fail";
+	public final String FORWARD_FAIL="fail";
 	
 	private boolean writeToLog = false;
 	private boolean writeToSystemOut = false;
@@ -70,7 +70,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	private String waitBeforeCleanup="100";
 	private int timeout=30000;
 	
-	private PipeForward failureForward;
+	private PipeForward failForward;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -84,9 +84,9 @@ public class LarvaPipe extends FixedForwardPipe {
 				throw new ConfigurationException("illegal log level ["+getLogLevel()+"]");
 			}
 		}
-		failureForward=findForward(FORWARD_FAILURE);
-		if (failureForward==null) {
-			failureForward=getForward();
+		failForward=findForward(FORWARD_FAIL);
+		if (failForward==null) {
+			failForward=getForward();
 		}
 	}
 
@@ -126,7 +126,7 @@ public class LarvaPipe extends FixedForwardPipe {
 								paramWaitBeforeCleanUp, realPath,
 								paramScenariosRootDirectory,
 								out, silent);
-		PipeForward forward=numScenariosFailed==0? getForward(): failureForward;
+		PipeForward forward=numScenariosFailed==0? getForward(): failForward;
 		return new PipeRunResult(forward, out.toString());
 	}
 
