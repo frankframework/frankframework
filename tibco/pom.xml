@@ -14,6 +14,12 @@
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-core</artifactId>
+      <exclusions>
+      	<exclusion>
+      		<groupId>javax.servlet</groupId>
+      		<artifactId>servlet-api</artifactId>
+      	</exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.tibco</groupId>
@@ -32,6 +38,11 @@
       <artifactId>geronimo-jms_1.1_spec</artifactId>
       <scope>provided</scope>
     </dependency>
+	<dependency>
+		<groupId>javax.servlet</groupId>
+		<artifactId>javax.servlet-api</artifactId>
+		<scope>provided</scope>
+	</dependency>
   </dependencies>
 
 </project>

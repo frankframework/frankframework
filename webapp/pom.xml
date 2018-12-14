@@ -19,6 +19,12 @@
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-core</artifactId>
+      <exclusions>
+      	<exclusion>
+      		<groupId>javax.servlet</groupId>
+      		<artifactId>servlet-api</artifactId>
+      	</exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.ibissource</groupId>
@@ -78,6 +84,11 @@
           <groupId>org.ibissource</groupId>
           <artifactId>ibis-adapterframework-ibm</artifactId>
         </dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
       </dependencies>
     </profile>
   </profiles>
