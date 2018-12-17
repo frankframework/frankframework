@@ -4060,11 +4060,8 @@ table.table-mail tr td {
   margin-top: 0;
 }
 /* COLORS */
-.text-navy {
-  color: #1ab394;
-}
 .text-primary {
-  color: inherit;
+  color: #1ab394;
 }
 .text-success {
   color: #1c84c6;
