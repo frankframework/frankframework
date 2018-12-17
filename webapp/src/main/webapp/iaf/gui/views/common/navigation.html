@@ -17,17 +17,17 @@
 			<li ng-show="!config_database" ui-sref-active="active">
 				<a ui-sref="pages.configuration"><i class="fa fa-cogs"></i> <span class="nav-label">Configuration</span></a>
 			</li>
-			<li ng-show="config_database" ng-class="{active: $state.includes('configuration')}">
+			<li ng-show="config_database" ng-class="{active: $state.includes('configuration')}" class="nav-group">
 				<a href=""><i class="fa fa-cogs"></i> <span class="nav-label">Configuration</span> <span class="fa arrow"></span></a>
 				<ul class="nav nav-second-level" ng-class="{in: $state.includes('configuration')}">
-					<li><a ui-sref="pages.configuration">Show Configuration</a></li>
-					<li><a ui-sref="pages.manage_configurations">Manage Configurations</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.configuration">Show Configuration</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.manage_configurations">Manage Configurations</a></li>
 				</ul>
 			</li>
 			<li ui-sref-active="active">
 				<a ui-sref="pages.logging"><i class="fa fa-life-ring"></i> <span class="nav-label">Logging</span></a>
 			</li>
-			<li ng-class="{active: $state.includes('testing')}" class="parent" >
+			<li ng-class="{active: $state.includes('testing')}" class="nav-group">
 				<a href=""><i class="fa fa-bug"></i> <span class="nav-label">Testing</span> <span class="fa arrow"></span></a>
 				<ul class="nav nav-second-level" ng-class="{in: $state.includes('testing')}">
 					<li ui-sref-active="active"><a ui-sref="pages.larva">Larva</a></li>
@@ -36,7 +36,7 @@
 					<li ui-sref-active="active"><a ui-sref="pages.test_servicelistener">Test serviceListener</a></li>
 				</ul>
 			</li>
-			<li ng-class="{active: $state.includes('jdbc')}" class="parent">
+			<li ng-class="{active: $state.includes('jdbc')}" class="nav-group">
 				<a href=""><i class="fa fa-cubes"></i> <span class="nav-label">JDBC</span> <span class="fa arrow"></span></a>
 				<ul class="nav nav-second-level" ng-class="{in: $state.includes('jdbc')}">
 					<li ui-sref-active="active"><a ui-sref="pages.execute_query">Execute Query</a></li>
@@ -44,7 +44,7 @@
 					<li ui-sref-active="active"><a ui-sref="pages.ibisstore_summary">IBISstore Summary</a></li>
 				</ul>
 			</li>
-			<li ng-class="{active: $state.includes('jms')}" class="parent">
+			<li ng-class="{active: $state.includes('jms')}" class="nav-group">
 				<a href=""><i class="fa fa-th-large"></i> <span class="nav-label">JMS</span> <span class="fa arrow"></span></a>
 				<ul class="nav nav-second-level" ng-class="{in: $state.includes('jms')}">
 					<li ui-sref-active="active"><a ui-sref="pages.send_message">Send Message</a></li>
