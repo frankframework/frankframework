@@ -239,7 +239,7 @@ public class SchedulerAdapter {
 				XmlBuilder tgg = new XmlBuilder("triggers");
 				List<? extends Trigger> triggers = theScheduler.getTriggersOfJob(JobKey.jobKey(tgnames.get(i)));
 				
-				for (int j = 0; j < triggers.size(); i++) {
+				for (int j = 0; j < triggers.size(); j++) {
 					XmlBuilder tn = new XmlBuilder("trigger");
 					
 					tn.addAttribute("name", triggers.get(j).getKey().getName());
